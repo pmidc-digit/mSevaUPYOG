@@ -40,10 +40,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId ? true : false }
   );
 
-  useEffect(() => {
-    console.log("formData in step 2: ", formData);
-  }, []);
-
   const closeToast = () => {
     setShowToast(false);
     setError("");
@@ -107,7 +103,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const goNext = async (data) => {
-    console.log("Submitting full form data: ", formData);
 
     const { OwnerDetails } = formData || {};
 
@@ -144,11 +139,28 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       }
     }
 
-    const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
-    if (!foundValue && TraidDetails?.address?.pincode) {
-      setShowToast({ key: "error" });
-      setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
-      return;
+    // Validate pincode - check if city exists and pincode is valid format
+    if (TraidDetails?.address?.pincode) {
+      const pincodeRegex = /^[1-9][0-9]{5}$/;
+      if (!pincodeRegex.test(TraidDetails.address.pincode)) {
+        setShowToast({ key: "error" });
+        setError(t("CORE_COMMON_PINCODE_INVALID"));
+        return;
+      }
+      
+      // Check if the selected city is valid
+      if (!TraidDetails?.address?.city) {
+        setShowToast({ key: "error" });
+        setError(t("TL_CITY_REQUIRED"));
+        return;
+      }
+      
+      // Optional: Check if pincode exists in tenant master data (soft validation)
+      const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails.address.pincode));
+      if (!foundValue) {
+        console.warn(`Pincode ${TraidDetails.address.pincode} not found in master data, but proceeding with valid city-locality combination`);
+        // Don't block submission - just log warning
+      }
     }
 
     let accessories = [];
@@ -208,12 +220,26 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
         obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };
         if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
-        if (owner.gender?.code) obj.gender = owner.gender.code;
+        if (owner.gender?.code) {
+          // Handle nested gender objects - extract the final code string
+          let genderCode = owner.gender.code;
+          while (genderCode && typeof genderCode === 'object' && genderCode.code) {
+            genderCode = genderCode.code;
+          }
+          obj.gender = typeof genderCode === 'string' ? genderCode : owner.gender.code;
+        }
         if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
         if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
         if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
         obj.permanentAddress = obj.permanentAddress || null;
-        if (owner.relationship) obj.relationship = owner.relationship?.code;
+        if (owner.relationship) {
+          // Handle nested relationship objects - extract the final code string
+          let relationshipCode = owner.relationship;
+          while (relationshipCode && typeof relationshipCode === 'object' && relationshipCode.code) {
+            relationshipCode = relationshipCode.code;
+          }
+          obj.relationship = typeof relationshipCode === 'string' ? relationshipCode : owner.relationship?.code;
+        }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
         owners.push(obj);
@@ -233,7 +259,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let validityYears = TraidDetails?.validityYears?.code || 1;
     let oldReceiptNo = Number(TraidDetails?.tradedetils?.[0]?.oldReceiptNo) || "";
 
-    console.log("trade type");
+    // console.log("trade type");
 
     let formData = {
       action: "INITIATE",
@@ -282,13 +308,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     const subOwner = sessionStorage.getItem("SubownershipCategory");
 
-    console.log("subOwner", subOwner);
+    // console.log("subOwner", subOwner);
 
     formData.tradeLicenseDetail.subOwnerShipCategory = subOwner;
 
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
-    console.log("formData in step 2: ", formData);
+    // console.log("formData in step 2: ", formData);
     setLoader(true);
     try {
       const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
@@ -308,28 +334,32 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     onBackClick(config.key, data);
   }
 
-  const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+  const onFormValueChange = (setValue, data) => {
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
   };
 
-  console.log("currentStepData in  Administrative details: ", currentStepData);
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        closeToast();
+      }, 3000); 
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   return (
     <React.Fragment>
       <FormComposer
         defaultValues={currentStepData}
-        //heading={t("")}
         config={config.currStepConfig}
         onSubmit={goNext}
         onFormValueChange={onFormValueChange}
-        //isDisabled={!canSubmit}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-        className="employeeCard"
+        
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       {getLoader && <Loader page={true} />}

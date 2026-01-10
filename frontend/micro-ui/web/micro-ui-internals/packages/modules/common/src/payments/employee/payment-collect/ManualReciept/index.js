@@ -44,7 +44,7 @@ const CashDetailsComponent = ({ ...props }) => {
     <React.Fragment>
       <div className="label-field-pair">
         <h2 className="card-label">{t("NOC_PAYMENT_RCPT_NO_LABEL")}</h2>
-        <div className="field">
+        <div className="form-field">
           <div className="field-container">
             <input
               className="employee-card-input"
@@ -58,7 +58,7 @@ const CashDetailsComponent = ({ ...props }) => {
       </div>
       <div className="label-field-pair">
         <h2 className="card-label">{t("NOC_PAYMENT_RECEIPT_ISSUE_DATE_LABEL")} </h2>
-        <div className="field">
+        <div className="form-field">
           <div className="field-container">
             <DatePicker
               date={manualReceiptDate}

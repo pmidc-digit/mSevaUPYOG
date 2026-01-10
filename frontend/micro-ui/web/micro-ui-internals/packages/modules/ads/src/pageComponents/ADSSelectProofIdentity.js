@@ -92,13 +92,12 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     onSelect(config.key, documentStep);
   };
 
-   useEffect(() => {
-      if (toastError) {
-        const timer = setTimeout(() => setToastError(null), 2000);
-        return () => clearTimeout(timer);
-      }
-    }, [toastError]);
-
+  useEffect(() => {
+    if (toastError) {
+      const timer = setTimeout(() => setToastError(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastError]);
 
   const onSkip = () => onSelect();
 
@@ -152,7 +151,6 @@ function ADSSelectDocument({
   const [loading, setLoading] = useState(false);
   const isCitizen = window.location.href.includes("citizen");
 
-
   function selectfile(e) {
     const selected = e.target.files && e.target.files[0];
     if (!selected) return;
@@ -204,17 +202,18 @@ function ADSSelectDocument({
     }
   };
 
-
   return (
     <div style={{ marginBottom: "24px" }}>
       {loading && <Loader />}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
+        <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+          {t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}
+        </CardLabel>
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <div className="field" style={{width:"100%",maxWidth: !isCitizen && "500px"}}>
+        <div className="field" style={{ width: "100%", maxWidth: !isCitizen && "500px" }}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -230,7 +229,7 @@ function ADSSelectDocument({
             error={Boolean(fieldError)}
           />
           {/* Inline file validation error */}
-          {fieldError && <div className="ads-error-message">{fieldError}</div>}
+          {fieldError && <CardLabelError className="ral-error-label">{fieldError}</CardLabelError>}
         </div>
       </LabelFieldPair>
     </div>

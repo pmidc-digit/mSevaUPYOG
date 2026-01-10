@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, MobileNumber, Card, CardSubHeader } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, Card, CardSubHeader, LabelFieldPair, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Controller, useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/ADSTimeline";
 import ADSCartAndCancellationPolicyDetails from "../components/ADSCartAndCancellationPolicyDetails";
@@ -16,51 +17,39 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
 
   let index = window.location.href.charAt(window.location.href.length - 1);
 
-  let validation = {};
   const user = Digit.UserService.getUser().info;
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const mutation = Digit.Hooks.ads.useADSCreateAPI();
-  const [applicantName, setName] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].applicantName) ||
-      formData?.applicant?.applicantName ||
-      value?.existingDataSet?.applicant?.applicantName ||
-      ""
-  );
-  const [emailId, setEmail] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].emailId) ||
-      formData?.applicant?.emailId ||
-      value?.existingDataSet?.applicant?.emailId ||
-      ""
-  );
-  const [mobileNumber, setMobileNumber] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].mobileNumber) ||
-      value?.existingDataSet?.applicant?.mobileNumber ||
-      formData?.applicant?.mobileNumber ||
-      user?.mobileNumber
-  );
-  const [alternateNumber, setAltMobileNumber] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].alternateNumber) ||
-      formData?.applicant?.alternateNumber ||
-      value?.existingDataSet?.applicant?.alternateNumber ||
-      ""
-  );
-  function setApplicantName(e) {
-    const input = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Remove non-alphabetic characters and non-space characters
-    setName(input);
-  }
-  function setApplicantEmail(e) {
-    setEmail(e.target.value);
-  }
+  const [loader, setLoader] = useState(false);
 
-  function setMobileNo(e) {
-    setMobileNumber(e.target.value);
-  }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm({
+    defaultValues: {
+      applicantName: (formData.applicant && formData.applicant[index] && formData.applicant[index].applicantName) ||
+        formData?.applicant?.applicantName ||
+        value?.existingDataSet?.applicant?.applicantName ||
+        "",
+      emailId: (formData.applicant && formData.applicant[index] && formData.applicant[index].emailId) ||
+        formData?.applicant?.emailId ||
+        value?.existingDataSet?.applicant?.emailId ||
+        "",
+      mobileNumber: (formData.applicant && formData.applicant[index] && formData.applicant[index].mobileNumber) ||
+        value?.existingDataSet?.applicant?.mobileNumber ||
+        formData?.applicant?.mobileNumber ||
+        user?.mobileNumber ||
+        "",
+      alternateNumber: (formData.applicant && formData.applicant[index] && formData.applicant[index].alternateNumber) ||
+        formData?.applicant?.alternateNumber ||
+        value?.existingDataSet?.applicant?.alternateNumber ||
+        "",
+    },
+  });
 
-  function setAltMobileNo(e) {
-    setAltMobileNumber(e.target.value);
-  }
-
-  const goNext = () => {
+  const onSubmit = async (data) => {
     let applicantData = formData.applicant && formData.applicant[index];
     // Create the formdata object
     let cartDetails = value?.cartDetails.map((slot) => {
@@ -79,10 +68,10 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
       bookingApplication: {
         tenantId: tenantId,
         applicantDetail: {
-          applicantName: applicantName,
-          applicantMobileNo: mobileNumber,
-          applicantAlternateMobileNo: alternateNumber,
-          applicantEmailId: emailId,
+          applicantName: data.applicantName,
+          applicantMobileNo: data.mobileNumber,
+          applicantAlternateMobileNo: data.alternateNumber,
+          applicantEmailId: data.emailId,
         },
         cartDetails: cartDetails,
         bookingStatus: "BOOKING_CREATED",
@@ -91,29 +80,26 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
     };
 
     // Trigger the mutation
+    setLoader(true);
     mutation.mutate(formdata, {
       onSuccess: (data) => {
+        setLoader(false);
         const newDraftId = data?.bookingApplication[0]?.draftId;
         // Now, only execute the logic you want after the mutation is successful
         let applicantStep;
         if (userType === "citizen") {
-          applicantStep = { ...applicantData, applicantName, mobileNumber, alternateNumber, emailId, draftId: newDraftId };
+          applicantStep = { ...applicantData, applicantName: data.applicantName, mobileNumber: data.mobileNumber, alternateNumber: data.alternateNumber, emailId: data.emailId, draftId: newDraftId };
           onSelect(config.key, { ...formData[config.key], ...applicantStep }, false, index);
         } else {
-          applicantStep = { ...applicantData, applicantName, mobileNumber, alternateNumber, emailId, draftId: newDraftId };
+          applicantStep = { ...applicantData, applicantName: data.applicantName, mobileNumber: data.mobileNumber, alternateNumber: data.alternateNumber, emailId: data.emailId, draftId: newDraftId };
           onSelect(config.key, applicantStep, false, index);
         }
       },
+      onError: () => {
+        setLoader(false);
+      },
     });
   };
-
-  const onSkip = () => onSelect();
-
-  useEffect(() => {
-    if (userType === "citizen") {
-      goNext();
-    }
-  }, []);
 
   return (
     <React.Fragment>
@@ -130,75 +116,143 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
           <ADSCartAndCancellationPolicyDetails />
         </div>
       </Card>
-      <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!applicantName || !mobileNumber || !emailId}>
-        <div>
-          <CardLabel>
-            {`${t("ADS_APPLICANT_NAME")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="applicantName"
-            placeholder={"Enter Applicant Name"}
-            value={applicantName}
-            onChange={setApplicantName}
-            style={{ width: user.type === "EMPLOYEE" ? "51.6%" : null }}
-            ValidationRequired={true}
-            {...(validation = {
-              // isRequired: true,
-              pattern: "^[a-zA-Z ]+$",
-              type: "tel",
-              title: t("CHB_NAME_ERROR_MESSAGE"),
-            })}
-          />
+      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+        <div className="card" style={{width: "100%"}}>
+          {/* Applicant Name */}
 
-          <CardLabel>
-            {`${t("ADS_MOBILE_NUMBER")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <MobileNumber
-            value={mobileNumber}
-            name="mobileNumber"
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : null }}
-            placeholder={"Enter Applicant Register Mobile Number"}
-            onChange={(value) => setMobileNo({ target: { value } })}
-            {...{ pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-          />
+          
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("ADS_APPLICANT_NAME")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="applicantName"
+                rules={{
+                  required: "Applicant name is required",
+                  minLength: { value: 2, message: "Name must be at least 2 characters" },
+                  pattern: { value: /^[a-zA-Z\s]+$/, message: "Name must contain only alphabetic characters" },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.applicantName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.applicantName.message}</p>}
+            </div>
+          </LabelFieldPair>
 
-          <CardLabel>{`${t("ADS_ALT_MOBILE_NUMBER")}`}</CardLabel>
-          <MobileNumber
-            value={alternateNumber}
-            name="alternateNumber"
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : null }}
-            placeholder={"Enter Alternate Mobile Number"}
-            onChange={(value) => setAltMobileNo({ target: { value } })}
-            {...{ required: false, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-          />
+          {/* Mobile Number */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("ADS_MOBILE_NUMBER")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="mobileNumber"
+                rules={{
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={(props) => (
+                  <MobileNumber
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+            </div>
+          </LabelFieldPair>
 
-          <CardLabel>
-            {`${t("ADS_EMAIL_ID")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"email"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="emailId"
-            value={emailId}
-            placeholder={"Enter Applicant Email Id"}
-            style={{ width: user.type === "EMPLOYEE" ? "51.6%" : null }}
-            onChange={setApplicantEmail}
-            ValidationRequired={true}
-            {...(validation = {
-              required: true,
-              pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
-              type: "email",
-              title: t("CHB_NAME_ERROR_MESSAGE"),
-            })}
-          />
+          {/* Alternate Mobile Number */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("ADS_ALT_MOBILE_NUMBER")}`}
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="alternateNumber"
+                rules={{
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={(props) => (
+                  <MobileNumber
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.alternateNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.alternateNumber.message}</p>}
+            </div>
+          </LabelFieldPair>
+
+          {/* Email ID */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("ADS_EMAIL_ID")}`} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="emailId"
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
+                    message: "Invalid email format",
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+            </div>
+          </LabelFieldPair>
         </div>
-      </FormStep>
+        <ActionBar>
+          <SubmitBar label="Next" submit="submit" />
+        </ActionBar>
+      </form>
     </React.Fragment>
   );
 };

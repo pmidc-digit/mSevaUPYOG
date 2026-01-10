@@ -7,7 +7,7 @@ import AvailabilityModal from "./ADSAvailibilityModal";
 import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
 // import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
-import {getScheduleMessage, validateSchedule } from "../utils";
+import { getScheduleMessage, validateSchedule } from "../utils";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
@@ -79,24 +79,19 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   };
 
- 
-
   const onSubmit = async (data) => {
     if (cartSlots?.length === 0) {
       setShowToast({ label: t("ADS_ONE_AD_ATLEAST"), error: true });
       return;
     }
-    
 
-     goNext(cartSlots);
+    goNext(cartSlots);
   };
 
   useEffect(() => {
     const seeded = adsForLocation.map(() => ({
       startDate: "",
-      startTime: "",
       endDate: "",
-      endTime: "",
     }));
     setValue("ads", seeded, { shouldValidate: false, shouldDirty: false });
   }, [adsForLocation, setValue]);
@@ -109,8 +104,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [showToast]);
 
-  const handleViewAvailability = (ad, { startDate, endDate, startTime, endTime }) => {
-    const err = validateSchedule({ startDate, endDate, startTime, endTime, scheduleType });
+  const handleViewAvailability = (ad, { startDate, endDate }) => {
+    const err = validateSchedule({ startDate, endDate, scheduleType });
     if (err) {
       setShowToast({ label: err, error: true });
       return;
@@ -118,79 +113,69 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
     const locationName = location.find((loc) => loc.code === ad?.locationCode);
     setSelectedAd({ ...ad, locationName, startDate, endDate });
-    setDateRange({ startDate, endDate, startTime, endTime });
+    setDateRange({ startDate, endDate });
     setShowModal(true);
   };
 
   const handleRemoveFromCart = (ad, dateRange) => {
-  setCartSlots((prev) =>
-    prev.filter(
-      (item) =>
-        !(
-          item?.ad?.id === ad?.id &&
-          item?.ad?.bookingStartDate === dateRange?.startDate &&
-          item?.ad?.bookingEndDate === dateRange?.endDate
-        )
-    )
-  );
-  setShowToast({
-    label: `Removed slots for ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
-    error: true,
-  });
-};
+    setCartSlots((prev) =>
+      prev.filter(
+        (item) => !(item?.ad?.id === ad?.id && item?.ad?.bookingStartDate === dateRange?.startDate && item?.ad?.bookingEndDate === dateRange?.endDate)
+      )
+    );
+    setShowToast({
+      label: `Removed slots for ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
+      error: true,
+    });
+  };
 
   const handleAddToCart = (slots, ad, dateRange) => {
-  setCartSlots((prev) => {
-    const enrichedSlots = slots?.map((s) => ({
-      ...s,
-      bookingStartDate: s?.bookingDate,
-      bookingEndDate: dateRange?.endDate,
-      bookingFromTime: dateRange?.startTime,
-      bookingToTime: dateRange?.endTime,
-    }));
+    setCartSlots((prev) => {
+      const enrichedSlots = slots?.map((s) => ({
+        ...s,
+        bookingStartDate: s?.bookingDate,
+        bookingEndDate: dateRange?.endDate,
+        bookingFromTime: "06:00",
+        bookingToTime: "05:59",
+      }));
 
-    const existing = prev.find(
-      (item) =>
-        item?.ad?.id === ad?.id &&
-        item?.ad?.bookingStartDate === dateRange?.startDate &&
-        item?.ad?.bookingEndDate === dateRange?.endDate
-    );
-
-    let updated;
-    if (existing) {
-      // Update slots for this ad/dateRange
-      updated = prev.map((item) =>
-        item?.ad?.id === ad?.id &&
-        item?.ad?.bookingStartDate === dateRange?.startDate &&
-        item?.ad?.bookingEndDate === dateRange?.endDate
-          ? { ...item, slots: enrichedSlots }
-          : item
+      const existing = prev.find(
+        (item) => item?.ad?.id === ad?.id && item?.ad?.bookingStartDate === dateRange?.startDate && item?.ad?.bookingEndDate === dateRange?.endDate
       );
-      setShowToast({
-        label: `Updated ${enrichedSlots.length} slot(s) for ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
-        error: false,
-      });
-    } else {
-      // Add new entry for this ad/dateRange
-      updated = [
-        ...prev,
-        {
-          ad: {
-            ...ad,
-            bookingStartDate: dateRange?.startDate,
-            bookingEndDate: dateRange?.endDate,
+
+      let updated;
+      if (existing) {
+        // Update slots for this ad/dateRange
+        updated = prev.map((item) =>
+          item?.ad?.id === ad?.id && item?.ad?.bookingStartDate === dateRange?.startDate && item?.ad?.bookingEndDate === dateRange?.endDate
+            ? { ...item, slots: enrichedSlots }
+            : item
+        );
+        setShowToast({
+          label: `Updated ${enrichedSlots.length} slot(s) for ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
+          error: false,
+        });
+      } else {
+        // Add new entry for this ad/dateRange
+        updated = [
+          ...prev,
+          {
+            ad: {
+              ...ad,
+              bookingStartDate: dateRange?.startDate,
+              bookingEndDate: dateRange?.endDate,
+            },
+            slots: enrichedSlots,
           },
-          slots: enrichedSlots,
-        },
-      ];
-      setShowToast({
-        label: `Added ${enrichedSlots?.length} slot(s) to ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
-        error: false,
-      });
-    }
-    return updated;
-  });
-};
+        ];
+        setShowToast({
+          label: `Added ${enrichedSlots?.length} slot(s) to ${ad?.name} (${dateRange?.startDate} → ${dateRange?.endDate})`,
+          error: false,
+        });
+      }
+      return updated;
+    });
+  };
 
   useEffect(() => {
     if (currentStepData?.ads?.length > 0) {
@@ -218,8 +203,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [currentStepData, locationOptions]);
 
-  const errorStyle = { marginTop: "-18px", color: "red" };
-  const mandatoryStyle = { color: "red" };
+  const errorStyle = { color: "red" };
 
   const guidance = getScheduleMessage(scheduleType, t);
 
@@ -235,29 +219,27 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       )}
       <form className="card" onSubmit={handleSubmit(onSubmit)}>
         <LabelFieldPair>
-        <CardLabel>
-          {t("ADS_SITE_NAME_LABEL")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="siteId"
-            rules={{ required: t("ADS_SITE_NAME_REQUIRED") }}
-            render={(props) => (
-              <Dropdown
-               
-                option={locationOptions}
-                optionKey="name"
-                selected={props.value}
-                select={(e) => {
-                  props.onChange(e);
-                  filterAds(e);
-                }}
-              />
-            )}
-          />
-        </div>
-
+          <CardLabel>
+            {t("ADS_SITE_NAME_LABEL")} <span className="mandatory-asterisk">*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="siteId"
+              rules={{ required: t("ADS_SITE_NAME_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  option={locationOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={(e) => {
+                    props.onChange(e);
+                    filterAds(e);
+                  }}
+                />
+              )}
+            />
+          </div>
         </LabelFieldPair>
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
@@ -298,13 +280,13 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
         {/* Geo Location */}
         <LabelFieldPair>
-        <CardLabel>{t("CS_COMPLAINT_DETAILS_GEO_LOCATION")}</CardLabel>
-        <Controller
-          control={control}
-          name="geoLocation"
-          // rules={{ required: "Geo Location is required" }}
-          render={(props) => <ADSAddressField classname="form-field" value={props.value} onChange={props.onChange} t={t} />}
-        />
+          <CardLabel>{t("CS_COMPLAINT_DETAILS_GEO_LOCATION")}</CardLabel>
+          <Controller
+            control={control}
+            name="geoLocation"
+            // rules={{ required: "Geo Location is required" }}
+            render={(props) => <ADSAddressField classname="form-field" value={props.value} onChange={props.onChange} t={t} />}
+          />
         </LabelFieldPair>
         {/* {errors.geoLocation && <CardLabelError style={errorStyle}>{errors.geoLocation.message}</CardLabelError>} */}
 

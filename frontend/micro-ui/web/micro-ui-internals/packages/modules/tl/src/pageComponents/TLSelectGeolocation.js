@@ -20,16 +20,27 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
   const onChange = (code, location) => {
     console.log("Geolocation:",code,location);
     setPincodeServicability(null);
+    
+    // Validate pincode format
+    const pincodeRegex = /^[1-9][0-9]{5}$/;
+    if (code && !pincodeRegex.test(code)) {
+      setPincodeServicability("CORE_COMMON_PINCODE_INVALID");
+      return;
+    }
+    
+    // Check if pincode exists in tenant master data
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == code));
-    if (!foundValue) {
-      setPincodeServicability("TL_COMMON_PINCODE_NOT_SERVICABLE");
-      setPincode("");
-      setGeoLocation({});
+    if (!foundValue && code) {
+      // Show warning but still allow if city/locality is valid
+      console.warn("Pincode not found in master data:", code);
+      setPincodeServicability("TL_COMMON_PINCODE_NOT_IN_MASTER");
+      // Still set the values - validation will be done at city-locality level
+      setPincode(code);
+      setGeoLocation(location);
     } else {
       setPincode(code);
       setGeoLocation(location);
-      // console.log("GeoLocation key", config.key);
-      // onSelect(config.key, { geoLocation: location });
+      setPincodeServicability(null);
     }
   };
 

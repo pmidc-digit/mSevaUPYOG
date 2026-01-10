@@ -7,14 +7,14 @@ const ApplicationLinks = ({ linkPrefix, classNameForMobileView = "" }) => {
   const { t } = useTranslation();
 
   const allLinks = [
-    {
-      text: t("ES_TITLE_ADD_BOOKING"),
-      link: "/digit-ui/employee/ads/bookad",
-    },
-    {
-      text: t("ES_TITILE_SEARCH_APPLICATION"),
-      link: `${linkPrefix}/my-applications`,
-    },
+    // {
+    //   text: t("ES_TITLE_ADD_BOOKING"),
+    //   link: "/digit-ui/employee/ads/bookad",
+    // },
+    // {
+    //   text: t("ES_TITILE_SEARCH_APPLICATION"),
+    //   link: `${linkPrefix}/my-applications`,
+    // },
   ];
 
   const [links, setLinks] = useState([]);
@@ -44,7 +44,7 @@ const ApplicationLinks = ({ linkPrefix, classNameForMobileView = "" }) => {
       <span className="logo">
         <ShippingTruck />
       </span>{" "}
-      <span className="text">{t("ES_TITLE_ADD_BOOKING")}</span>
+      <span className="text">{t("ADS_SERVICE")}</span>
     </div>
   );
 

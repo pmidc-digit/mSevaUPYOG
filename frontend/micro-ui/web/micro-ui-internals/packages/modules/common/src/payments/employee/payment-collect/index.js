@@ -369,10 +369,11 @@ export const CollectPayment = (props) => {
   }
 
   return (
-    <React.Fragment>
+   <React.Fragment>
       <Header styles={{ marginLeft: "15px" }}>{checkFSM ? t("PAYMENT_COLLECT_LABEL") : t("PAYMENT_COLLECT")}</Header>
       <FormComposer
         cardStyle={{ paddingBottom: "100px" }}
+        className="card"
         label={t("PAYMENT_COLLECT_LABEL")}
         config={getFormConfig()}
         onSubmit={onSubmit}

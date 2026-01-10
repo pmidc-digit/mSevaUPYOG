@@ -52,7 +52,7 @@ public class CalculationService {
 		List<Calculation> calculations = getCalculations(calculationReq);
 
 		if(!getCalculationOnly) {
-			demandService.generateDemands(calculationReq.getRequestInfo(), calculations);
+			demandService.generateDemands(calculationReq.getRequestInfo(), calculations,calculationReq.getCalculationCriteria().get(0).getFeeType());
 		}
 		return calculations;
 	}
@@ -72,7 +72,17 @@ public class CalculationService {
 	                		criteria.getApplicationNumber() + "  NOC application with this number does not exist ");
 			 
 			
-			List<TaxHeadEstimate> estimates;
+			List<TaxHeadEstimate> estimates = new LinkedList<>();;
+
+			if(((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).containsKey("calculations")
+					&& LAYOUTConstants.FEE_TYPE_PAY2.equalsIgnoreCase(criteria.getFeeType())) {
+				String filter = "$.calculations.[?(@.isLatest == true)].taxHeadEstimates.*";
+				List<Map> userCalculations = JsonPath.read(criteria.getLayout().getLayoutDetails().getAdditionalDetails(), filter);
+				for(Map userCalculation : userCalculations){
+					TaxHeadEstimate taxHeadEstimate = mapper.convertValue(userCalculation, TaxHeadEstimate.class);
+					estimates.add(taxHeadEstimate);
+				}
+			}
 			
 			String tenantId = criteria.getTenantId();
 			BigDecimal plotArea = new BigDecimal(0);
@@ -112,8 +122,15 @@ public class CalculationService {
 					finYear = (today.getYear()-1) + "-" + (today.getYear()) % 2000;
 				
 			}
-			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, LAYOUTConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
-			estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal);
+			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, LAYOUTConstants.MDMS_CHARGES_TYPE_CODE, category, finYear,criteria.getFeeType());
+			String feeApplicationType = (String)
+					((Map<String, Object>) criteria.getLayout()
+							.getLayoutDetails()
+							.getAdditionalDetails())
+							.get("feeApplicationType");
+			if(estimates.isEmpty())
+				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal,feeApplicationType);
+
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
 			
@@ -162,7 +179,7 @@ public class CalculationService {
 	 * @param finYear Current financial year
 	 * @return List of TaxHeadEstimate for the Demand creation
 	 */
-	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea,String roadType) {
+	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea,String roadType,String applicationType) {
 		List<TaxHeadEstimate> estimates = new LinkedList<>();
 		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_CHARGES_TYPE_PATH);
 		
@@ -174,7 +191,34 @@ public class CalculationService {
 			
 			switch (taxhead) {
 			
-			case LAYOUTConstants.NOC_PROCESSING_FEES:
+			case LAYOUTConstants.LAYOUT_PROCESSING_FEES:
+				BigDecimal acarPlotArea = plotArea.divide(LAYOUTConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
+				if(acarPlotArea.equals(BigDecimal.ONE))
+					amount = new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0);
+				else {
+					amount = acarPlotArea.subtract(BigDecimal.ONE)
+							.multiply(rate)
+							.add(new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0))
+							.setScale(0, RoundingMode.CEILING);
+				}
+				break;
+			case LAYOUTConstants.LAYOUT_SCRUTINY_FEE:
+
+				List<Map<String, Object>> slabs = (List<Map<String, Object>>) chargesType.get("slabs");
+
+				Map<String, Object> matchedSlab = slabs.stream()
+						.filter(slab -> applicationType.equalsIgnoreCase((String) slab.get("applicationType")))
+						.findFirst()
+						.orElseThrow(() -> new CustomException("INVALID_APPLICATION_TYPE",
+								"No slab found for applicationType: " + applicationType));
+
+			rate = new BigDecimal((Double) matchedSlab.get("rate"));
+
+				amount = plotArea
+						.multiply(rate)
+						.setScale(0, RoundingMode.CEILING);
+
+				break;
 			case LAYOUTConstants.NOC_CLU_CHARGES:
 				if(chargesType.containsKey("slabs")) {
 					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
@@ -198,13 +242,13 @@ public class CalculationService {
 		});
 		
 		//Updating Urban Development Cess based on other fees
-		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
-			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_PROCESSING_FEES) ||
-					est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_CLU_CHARGES) ||
-					est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES))
-			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.HALF_UP));
-		});
+//		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
+//			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.LAYOUT_PROCESSING_FEES) ||
+//					est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_CLU_CHARGES) ||
+//					est.getTaxHeadCode().equalsIgnoreCase(LAYOUTConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES))
+//			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+//			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.HALF_UP));
+//		});
 		
 
 		return estimates;

@@ -1,6 +1,8 @@
 package org.egov.noc.calculator.utils;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,7 @@ public class LAYOUTConstants {
 	public static final String NOC_MODULE = "NOC";
 	public static final String LAYOUT_MODULE = "LAYOUT";
 	public static final String NOC_FEE_MODULE = "NocFee";
-	public static final String LAYOUT_BUSINESS_SERVICE = "layout";
+	public static final String LAYOUT_BUSINESS_SERVICE = "LAYOUT";
 	public static final String SEPARATER = "&";
 	public static final String NOC_TYPE = "NOC";
 	public static final String CONSUMER_CODE_SEARCH_FIELD_NAME = "consumerCode=";
@@ -102,7 +104,8 @@ public class LAYOUTConstants {
 	
 	public static final String MDMS_CHARGES_TYPE_CODE  = "105";
 
-	public static final String NOC_PROCESSING_FEES = "LAYOUT_PROCESSING_FEES";
+	public static final String LAYOUT_PROCESSING_FEES = "LAYOUT_PROCESSING_FEES";
+	public static final String LAYOUT_SCRUTINY_FEE = "LAYOUT_SCRUTINY_FEE";
 
 	public static final String NOC_CLU_CHARGES = "LAYOUT_CLU_CHARGES";
 
@@ -127,5 +130,10 @@ public class LAYOUTConstants {
 	public static final String INVALID_APPLICATION_NUMBER = "INVALID APPLICATION NUMBER";
 
 	public static final String MDMS_ROUNDOFF_TAXHEAD = "TL_ROUNDOFF";
-		
+	public static final String FEE_TYPE_PAY1 = "PAY1";
+
+	public static final String FEE_TYPE_PAY2 = "PAY2";
+	public static final BigDecimal ACAR_TO_SQYARD = BigDecimal.valueOf(4840.00);
+
+
 }

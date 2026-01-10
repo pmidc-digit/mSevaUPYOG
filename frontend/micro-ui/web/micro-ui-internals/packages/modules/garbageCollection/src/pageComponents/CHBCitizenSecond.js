@@ -208,15 +208,15 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   return (
     <React.Fragment>
-      <form className="employeeCard" style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
-        <div className="card">
+      <form style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
+        <div >
           {/* property id */}
           <LabelFieldPair style={{ marginBottom: "16px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NDC_MSG_PROPERTY_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <div className="form-field">
-              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+              <div style={{ display: "block", gap: "8px", alignItems: "flex-start"  }}>
                 <div style={{ flex: 1 }}>
                   <Controller
                     control={control}
@@ -237,7 +237,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                 </div>
-                <button className="submit-bar" type="button" style={{ color: "white", width: "100px", marginTop: "2px" }} onClick={searchProperty}>
+                <button className="submit-bar" type="button" style={{ color: "white", width: "100px", marginTop: "10px" }} onClick={searchProperty}>
                   {`${t("PT_SEARCH")}`}
                 </button>
               </div>

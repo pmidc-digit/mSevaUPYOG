@@ -25,7 +25,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     getValues,
     watch,
     trigger,
+    clearErrors,
   } = useForm({
+    mode: "onSubmit",
     defaultValues: {
       shouldUnregister: false,
       halls: [{ startDate: "", endDate: "", startTime: "", endTime: "" }], // predefine index 0
@@ -153,6 +155,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     console.log("formattedData", formattedData);
     // Restore siteId and trigger hall filtering
     if (formattedData) {
+      // Clear all errors first
+      clearErrors();
+      
       const communityHallsOptions = CHBLocations.CHB.CommunityHalls || [];
       const purposeOptions = CHBPurpose.CHB.Purpose || [];
       const specialCategoryOptions = SpecialCategory.CHB.SpecialCategory || [];
@@ -189,7 +194,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("reason", formattedData?.additionalDetails?.reason || "");
       // disImage
     }
-  }, [currentStepData, setValue]);
+  }, [currentStepData, setValue, clearErrors]);
 
   const startDate = watch("startDate");
 

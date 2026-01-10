@@ -74,7 +74,7 @@ function PTRSummary({ t }) {
     borderRadius: "6px",
   };
 
-  const boldLabelStyle = { fontWeight: "600", color: "#333" };
+  const boldLabelStyle = { fontWeight: "600", color: "#333", marginBottom:"0px" };
 
   const renderRow = (label, value) => (
     <div style={labelFieldPairStyle}>
@@ -120,7 +120,7 @@ function PTRSummary({ t }) {
     <div className="application-summary">
       {/* <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2> */}
 
-      <Card className="summary-section" style={{ padding: "2px" }}>
+      <div className="summary-section" style={{ padding: "2px" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("ES_TITILE_OWNER_DETAILS")}</h3>
@@ -136,9 +136,9 @@ function PTRSummary({ t }) {
           {renderRow(t("CORE_COMMON_EMAIL_ID"), owner?.emailId)}
           {renderRow(t("ADDRESS"), owner?.address)}
         </div>
-      </Card>
+      </div>
 
-      <Card className="summary-section">
+      <div className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("ES_TITILE_PET_DETAILS")}</h3>
@@ -159,9 +159,9 @@ function PTRSummary({ t }) {
           {renderRow(t("PTR_CLINIC_NAME"), pet?.clinicName)}
           {renderRow(t("PTR_DOCTOR_NAME"), pet?.doctorName)}
         </div>
-      </Card>
+      </div>
 
-      <Card className="summary-section">
+      <div className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("ES_TITLE_DOCS")}</h3>
@@ -191,7 +191,7 @@ function PTRSummary({ t }) {
             )}
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -106,7 +106,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
 
   return (
     <React.Fragment>
-      <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div style={{ maxWidth: !isCitizen ? "100%" : "100%" }}>
           {/* Mobile Number */}
           <LabelFieldPair>

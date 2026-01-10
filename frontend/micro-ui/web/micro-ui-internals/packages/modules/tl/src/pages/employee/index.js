@@ -141,7 +141,7 @@ const TLBreadCrumb = ({ location }) => {
     }
   ];
 
-  return <BreadCrumb style={isMobile?{display:"flex"}:{}}  spanStyle={{maxWidth:"min-content"}} crumbs={crumbs} />;
+  return <BreadCrumb style={isMobile?{display:"flex"}:{}}  crumbs={crumbs} />;
 };
 
 

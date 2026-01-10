@@ -303,7 +303,70 @@
 }
 
 /* Mobile view styles for card-link */
+
+/* Document Card Link - Responsive styles */
+.document-card-link {
+  min-width: 160px;
+  margin: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.document-card-label {
+  margin-top: 8px;
+  max-width: 140px;
+  word-break: break-word;
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
+}
+
+@media only screen and (max-width: 768px) {
+  .document-card-link {
+    min-width: 120px;
+    margin: 8px;
+  }
+
+  .document-card-label {
+    max-width: 100px;
+    font-size: 12px;
+  }
+}
+
 @media only screen and (max-width: 640px) {
+  .document-card-link {
+    min-width: 100px;
+    margin: 6px;
+  }
+
+  .document-card-label {
+    max-width: 85px;
+    font-size: 11px;
+  }
+}
+@media only screen and (max-width: 640px) {
+  .card {
+    margin-top: 3rem;
+  }
+  .popup-module{
+    width: 100% !important;
+  }
+  #search-property-field{
+    display: block !important;
+  }
+  .bpa-summary-page{
+    padding: 0 !important;
+  }
+
   .card-link {
     height: 32px;
     width: 140px;
@@ -597,6 +660,7 @@ button.card-link.submit-bar {
   max-height: 70px !important;
   height: 70px !important;
   margin-bottom: 15px !important;
+  align-items: center !important;
 }
 
 .employee-main-application-details {

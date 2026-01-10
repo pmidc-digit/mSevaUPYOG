@@ -29,25 +29,11 @@ function PTRDocument({ petdetail = {} }) {
                 <a
                   target="_"
                   href={documentLink}
-                  style={{
-                    minWidth: "160px",
-                    margin: "12px", // spacing between cards
-                    display: "flex",
-                    flexDirection: "column", // stack icon & text
-                    alignItems: "center", // center text & icon
-                    textAlign: "center", // keep text centered
-                  }}
+                  className="document-card-link"
                   key={index}
                 >
                   <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                  <p
-                    style={{
-                      marginTop: "8px",
-                      maxWidth: "140px",
-                      wordBreak: "break-word",
-                    }}
-                    title={t(`PT_${document?.documentType.replace(".", "_")}`)}
-                  >
+                  <p className="document-card-label" title={t(`PT_${document?.documentType.replace(".", "_")}`)}>
                     {t(`PT_${document?.documentType.replace(".", "_")}`)}
                   </p>
                 </a>

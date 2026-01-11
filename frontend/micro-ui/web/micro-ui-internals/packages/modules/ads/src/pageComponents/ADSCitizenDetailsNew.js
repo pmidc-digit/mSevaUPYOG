@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar, TextArea, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar, TextArea, Toast, LabelFieldPair, CardLabelError } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../../../challanGeneration/src/components/Loader";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
@@ -186,82 +186,95 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
   }, [showToast]);
 
-  const errorStyle = { marginTop: "-18px", color: "red" };
-
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
       <div style={{ maxWidth: !isCitizen && "500px" }}>
-        <CardLabel>
-          {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
-          <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="mobileNumber"
-          rules={{
-            required: t("PTR_MOBILE_REQUIRED"),
-            minLength: { value: 10, message: "Enter at least 10 digits" },
-            pattern: { value: /^[6-9]\d{9}$/, message: "Must start with 9, 8, 7, or 6 and be 10 digits long" },
-          }}
-          render={({ value, onChange, onBlur }) => (
-            <MobileNumber
-              value={value}
-              onChange={(e) => {
-                onChange(e);
-                if (!isCitizen) debouncedHandleMobileChange(e);
+        {/* Mobile Number */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
+            <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="mobileNumber"
+              rules={{
+                required: t("PTR_MOBILE_REQUIRED"),
+                minLength: { value: 10, message: "Enter at least 10 digits" },
+                pattern: { value: /^[6-9]\d{9}$/, message: "Must start with 9, 8, 7, or 6 and be 10 digits long" },
               }}
-              onBlur={onBlur}
-              t={t}
+              render={({ value, onChange, onBlur }) => (
+                <MobileNumber
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e);
+                    if (!isCitizen) debouncedHandleMobileChange(e);
+                  }}
+                  onBlur={onBlur}
+                  t={t}
+                />
+              )}
             />
-          )}
-        />
-        {errors.mobileNumber && <CardLabelError style={errorStyle}>{errors.mobileNumber.message}</CardLabelError>}
-        <CardLabel className="card-label-smaller">
-          {`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span className="mandatory-asterisk">*</span>{" "}
-        </CardLabel>
-        <Controller
-          control={control}
-          name="name"
-          rules={{
-            required: t("Applicant Name is Required"),
-            pattern: {
-              value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
-              message: t("Applicant Name is Invalid"),
-            },
-            maxLength: { value: 100, message: "Maximum 100 characters" },
-            minLength: { value: 2, message: "Minimum 2 characters" },
-          }}
-          render={({ value, onChange, onBlur }) => (
-            <TextInput
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onBlur={(e) => {
-                onBlur(e);
-                trigger("name");
+            {errors.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
+          </div>
+        </LabelFieldPair>
+        {/* Name */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="name"
+              rules={{
+                required: t("Applicant Name is Required"),
+                pattern: {
+                  value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
+                  message: t("Applicant Name is Invalid"),
+                },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
+                minLength: { value: 2, message: "Minimum 2 characters" },
               }}
-              t={t}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("name");
+                  }}
+                  t={t}
+                />
+              )}
             />
-          )}
-        />
-        {errors?.name && <CardLabelError style={errorStyle}>{errors?.name?.message}</CardLabelError>}
+            {errors?.name && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.name?.message}</p>}
+          </div>
+        </LabelFieldPair>
 
-        <CardLabel>
-          {t("NOC_APPLICANT_EMAIL_LABEL")}
-          <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="emailId"
-          rules={{
-            required: t("PTR_EMAIL_REQUIRED"),
-            pattern: { value: /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/, message: "Enter a valid email" },
-          }}
-          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
-        />
-        {errors.emailId && <CardLabelError style={errorStyle}>{errors.emailId.message}</CardLabelError>}
+        {/* Email */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t("NOC_APPLICANT_EMAIL_LABEL")}
+            <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="emailId"
+              rules={{
+                required: t("PTR_EMAIL_REQUIRED"),
+                pattern: { value: /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/, message: "Enter a valid email" },
+              }}
+              render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+            />
+            {errors.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
+          </div>
+        </LabelFieldPair>
 
         {/* Address */}
-        {/* <LabelFieldPair> */}
+        <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {`${t("PT_COMMON_COL_ADDRESS")}`}
           <span className="mandatory-asterisk">*</span>
@@ -291,45 +304,46 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
               />
             )}
           />
-        </div>
-        {/* </LabelFieldPair> */}
-        {errors?.address && <CardLabelError style={errorStyle}>{errors?.address?.message}</CardLabelError>}
+           {errors?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.address?.message}</p>}
 
-        {/* Pincode */}
-        {/* <LabelFieldPair> */}
-        <CardLabel className="card-label-smaller">
-          {`${t("CORE_COMMON_PINCODE")}`}
-          <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <div className="text-input">
-          <Controller
-            control={control}
-            name="pincode"
-            rules={{
-              required: t("PTR_PINCODE_REQUIRED"),
-              pattern: {
-                value: /^[1-9][0-9]{5}$/,
-                message: t("PTR_PINCODE_INVALID"),
-              },
-              minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
-              maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
-            }}
-            render={({ value, onChange, onBlur }) => (
-              <TextInput
-                value={value}
-                onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
-                onBlur={(e) => {
-                  onBlur(e);
-                  trigger("pincode");
-                }}
-                t={t}
-                maxLength={6}
-              />
-            )}
-          />
         </div>
-        {/* </LabelFieldPair> */}
-        {errors.pincode && <CardLabelError style={errorStyle}>{errors?.pincode?.message}</CardLabelError>}
+        </LabelFieldPair>
+       
+        {/* Pincode */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {`${t("CORE_COMMON_PINCODE")}`}
+            <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="pincode"
+              rules={{
+                required: t("PTR_PINCODE_REQUIRED"),
+                pattern: {
+                  value: /^[1-9][0-9]{5}$/,
+                  message: t("PTR_PINCODE_INVALID"),
+                },
+                minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
+                maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("pincode");
+                  }}
+                  t={t}
+                  maxLength={6}
+                />
+              )}
+            />
+            {errors.pincode && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.pincode?.message}</p>}
+          </div>
+        </LabelFieldPair>
       </div>
 
       <ActionBar>

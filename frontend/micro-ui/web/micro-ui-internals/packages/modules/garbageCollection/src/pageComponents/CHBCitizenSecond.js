@@ -209,214 +209,204 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   return (
     <React.Fragment>
       <form className="employeeCard" style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
-        <div>
+        <div className="card">
           {/* property id */}
-          <div style={{ marginBottom: "20px" }}>
-            <CardLabel>
+          <LabelFieldPair style={{ marginBottom: "16px" }}>
+            <CardLabel className="card-label-smaller">
               {`${t("NDC_MSG_PROPERTY_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div
-              style={{
-                display: "flex",
-                gap: "15px",
-                alignItems: "center",
-              }}
-            >
-              <div className="form-field">
-                <Controller
-                  control={control}
-                  name="propertyId"
-                  rules={{
-                    required: `${t("NDC_MESSAGE_PROPERTY_ID")}`,
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      style={{ marginBottom: 0 }}
-                      value={props.value}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                        handleReset();
-                      }}
-                      t={t}
-                    />
-                  )}
-                />
+            <div className="form-field">
+              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  <Controller
+                    control={control}
+                    name="propertyId"
+                    rules={{
+                      required: `${t("NDC_MESSAGE_PROPERTY_ID")}`,
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        style={{ marginBottom: 0 }}
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                          handleReset();
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+                <button className="submit-bar" type="button" style={{ color: "white", width: "100px", marginTop: "2px" }} onClick={searchProperty}>
+                  {`${t("PT_SEARCH")}`}
+                </button>
               </div>
-              <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
-                {`${t("PT_SEARCH")}`}
-              </button>
+              {errors?.propertyId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyId.message}</p>}
             </div>
-            {errors?.propertyId && <p style={{ color: "red" }}>{errors.propertyId.message}</p>}
-          </div>
+          </LabelFieldPair>
           {(propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) && (
             <div>
               {/* property type  */}
-              <LabelFieldPair>
-                <CardLabel>
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">
                   {`${t("NDC_MSG_PROPERTY_TYPE_LABEL")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
                 <div className="form-field">
-                <Controller
-                  control={control}
-                  name={"propertyType"}
-                  rules={{ required: t("GC_PROPERTY_TYPE_REQUIRED") }}
-                  render={(props) => (
-                    <Dropdown
-                      style={{ marginBottom: 0 }}
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={GCData?.["sw-services-calculation"]?.PropertyUsageType}
-                      optionKey="name"
-                    />
-                  )}
-                />
-               
+                  <Controller
+                    control={control}
+                    name={"propertyType"}
+                    rules={{ required: t("GC_PROPERTY_TYPE_REQUIRED") }}
+                    render={(props) => (
+                      <Dropdown
+                        style={{ marginBottom: 0 }}
+                        className="form-field"
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        selected={props.value}
+                        option={GCData?.["sw-services-calculation"]?.PropertyUsageType}
+                        optionKey="name"
+                      />
+                    )}
+                  />
+                  {errors?.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType.message}</p>}
                 </div>
               </LabelFieldPair>
-               {errors?.propertyType && <p style={{ color: "red", marginTop: "4px" }}>{errors.propertyType.message}</p>}
 
               {/* plot size */}
-              <LabelFieldPair>
-                <CardLabel>
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">
                   {`${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
                 <div className="form-field">
-                <Controller
-                  control={control}
-                  name="plotSize"
-                  rules={{
-                    required: `${t("GC_PLOT_SIZE_REQUIRED")}`,
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      style={{ marginBottom: 0 }}
-                      value={props.value}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                      }}
-                      t={t}
-                    />
-                  )}
-                />
-               
+                  <Controller
+                    control={control}
+                    name="plotSize"
+                    rules={{
+                      required: `${t("GC_PLOT_SIZE_REQUIRED")}`,
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        style={{ marginBottom: 0 }}
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.plotSize && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotSize.message}</p>}
                 </div>
               </LabelFieldPair>
-               {errors?.plotSize && <p style={{ color: "red", marginTop: "4px" }}>{errors.plotSize.message}</p>}
 
               {/* location */}
-              <LabelFieldPair>
-                <CardLabel>
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">
                   {`${t("GC_LOCATION")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
                 <div className="form-field">
-                <Controller
-                  control={control}
-                  name="location"
-                  rules={{
-                    required: `${t("GC_LOCATION_REQUIRED")}`,
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      style={{ marginBottom: 0 }}
-                      value={props.value}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                      }}
-                      t={t}
-                    />
-                  )}
-                />
-               
+                  <Controller
+                    control={control}
+                    name="location"
+                    rules={{
+                      required: `${t("GC_LOCATION_REQUIRED")}`,
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        style={{ marginBottom: 0 }}
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
                 </div>
               </LabelFieldPair>
-               {errors?.location && <p style={{ color: "red", marginTop: "4px" }}>{errors.location.message}</p>}
 
               {/* frequency type  */}
-              <LabelFieldPair>
-                <CardLabel>
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">
                   {`${t("GC_FREQUENCY")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
                 <div className="form-field">
-                <Controller
-                  control={control}
-                  name={"frequency"}
-                  rules={{ required: t("GC_FREQUENCY_REQUIRED") }}
-                  render={(props) => (
-                    <Dropdown
-                      style={{ marginBottom: 0 }}
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency}
-                      optionKey="name"
-                    />
-                  )}
-                />
-               
+                  <Controller
+                    control={control}
+                    name={"frequency"}
+                    rules={{ required: t("GC_FREQUENCY_REQUIRED") }}
+                    render={(props) => (
+                      <Dropdown
+                        style={{ marginBottom: 0 }}
+                        className="form-field"
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        selected={props.value}
+                        option={FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency}
+                        optionKey="name"
+                      />
+                    )}
+                  />
+                  {errors?.frequency && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.frequency.message}</p>}
                 </div>
               </LabelFieldPair>
-               {errors?.frequency && <p style={{ color: "red", marginTop: "4px" }}>{errors.frequency.message}</p>}
 
               {/* waste type  */}
-              <LabelFieldPair>
-                <CardLabel>
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">
                   {`${t("GC_WASTE_TYPE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
                 <div className="form-field">
-                <Controller
-                  control={control}
-                  name={"typeOfWaste"}
-                  rules={{ required: t("GC_WASTE_TYPE_REQUIRED") }}
-                  render={(props) => (
-                    <Dropdown
-                      style={{ marginBottom: 0 }}
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={WasteType?.["gc-services-masters"]?.TypeOfWaste}
-                      optionKey="name"
-                    />
-                  )}
-                />
-               
+                  <Controller
+                    control={control}
+                    name={"typeOfWaste"}
+                    rules={{ required: t("GC_WASTE_TYPE_REQUIRED") }}
+                    render={(props) => (
+                      <Dropdown
+                        style={{ marginBottom: 0 }}
+                        className="form-field"
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        selected={props.value}
+                        option={WasteType?.["gc-services-masters"]?.TypeOfWaste}
+                        optionKey="name"
+                      />
+                    )}
+                  />
+                  {errors?.typeOfWaste && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.typeOfWaste.message}</p>}
                 </div>
               </LabelFieldPair>
-               {errors?.typeOfWaste && <p style={{ color: "red", marginTop: "4px" }}>{errors.typeOfWaste.message}</p>}
 
               {/* connectionCategory type  */}
-              <LabelFieldPair>
-                <CardLabel>
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">
                   {`${t("GC_CONNECTION_TYPE")}`} <span style={{ color: "red" }}>*</span>
                 </CardLabel>
                 <div className="form-field">
-                <Controller
-                  control={control}
-                  name={"connectionCategory"}
-                  rules={{ required: t("GC_CONNECTION_TYPE_REQUIRED") }}
-                  render={(props) => (
-                    <Dropdown
-                      style={{ marginBottom: 0 }}
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={connectionCategory?.["gc-services-masters"]?.connectionCategory}
-                      optionKey="name"
-                    />
-                  )}
-                />
-               
+                  <Controller
+                    control={control}
+                    name={"connectionCategory"}
+                    rules={{ required: t("GC_CONNECTION_TYPE_REQUIRED") }}
+                    render={(props) => (
+                      <Dropdown
+                        style={{ marginBottom: 0 }}
+                        className="form-field"
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        selected={props.value}
+                        option={connectionCategory?.["gc-services-masters"]?.connectionCategory}
+                        optionKey="name"
+                      />
+                    )}
+                  />
+                  {errors?.connectionCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.connectionCategory.message}</p>}
                 </div>
               </LabelFieldPair>
-               {errors?.connectionCategory && <p style={{ color: "red", marginTop: "4px" }}>{errors.connectionCategory.message}</p>}
             </div>
           )}
         </div>

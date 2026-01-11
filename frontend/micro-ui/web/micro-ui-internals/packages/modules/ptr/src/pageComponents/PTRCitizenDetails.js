@@ -85,7 +85,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     return fallbackMessages[fieldName] || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
+
 
   const handleMobileChange = async (value) => {
     setLoader(true);
@@ -175,7 +175,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.name && <CardLabelError style={errorStyle}>{getErrorMessage("name")}</CardLabelError>}
+        {errors.name && <CardLabelError >{getErrorMessage("name")}</CardLabelError>}
 
         {/* Email */}
         <LabelFieldPair>
@@ -206,7 +206,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.emailId && <CardLabelError style={errorStyle}>{getErrorMessage("emailId")}</CardLabelError>}
+        {errors.emailId && <CardLabelError>{getErrorMessage("emailId")}</CardLabelError>}
 
         {/* Father/Husband Name */}
         <LabelFieldPair>
@@ -238,7 +238,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.fatherOrHusbandName && <CardLabelError style={errorStyle}>{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
+        {errors.fatherOrHusbandName && <CardLabelError >{getErrorMessage("fatherOrHusbandName")}</CardLabelError>}
 
         {/* Address */}
         <LabelFieldPair>
@@ -270,7 +270,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.address && <CardLabelError style={errorStyle}>{getErrorMessage("address")}</CardLabelError>}
+        {errors.address && <CardLabelError>{getErrorMessage("address")}</CardLabelError>}
 
         {/* Pincode */}
         <LabelFieldPair>
@@ -301,7 +301,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.pincode && <CardLabelError style={errorStyle}>{getErrorMessage("pincode")}</CardLabelError>}
+        {errors.pincode && <CardLabelError>{getErrorMessage("pincode")}</CardLabelError>}
 
         <ActionBar>
           <SubmitBar label={t("Next")} submit="submit" />

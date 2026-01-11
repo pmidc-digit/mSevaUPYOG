@@ -185,7 +185,7 @@ const ComplaintDetailsPage = (props) => {
                       // last={index === arr.length - 1}
                     />
                   ))}
-                <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} last={true} />
+                <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
               </StatusTable>
               {imageShownBelowComplaintDetails?.thumbs ? (
                 <DisplayPhotos srcs={imageShownBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />

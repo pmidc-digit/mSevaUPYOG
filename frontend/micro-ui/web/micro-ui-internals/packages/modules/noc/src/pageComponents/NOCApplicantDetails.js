@@ -6,7 +6,6 @@ import {
   BreakLine,
   Dropdown,
   MobileNumber,
-  CardLabelError,
   TextArea,
   ActionBar,
   SubmitBar,
@@ -285,7 +284,7 @@ const getOwnerDetails = async (idx) => {
         )}
 
         {fields.map((field, index) => (
-          <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
+          <div key={field.id} >
             <CardSubHeader >
              {index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}
             </CardSubHeader>
@@ -299,7 +298,7 @@ const getOwnerDetails = async (idx) => {
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-              <div className="field">
+              <div className="form-field">
                 <div style={{ display: "flex" }}>
                 <Controller
                   control={control}
@@ -326,11 +325,10 @@ const getOwnerDetails = async (idx) => {
                   )}
                 />
                 <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
-                  {" "}
                   <SearchIcon />{" "}
                 </div>
                 </div>
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.mobileNumber?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>}
               </div>
             </LabelFieldPair>
 
@@ -361,7 +359,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.ownerOrFirmName?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.ownerOrFirmName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].ownerOrFirmName.message}</p>}
               </div>
             </LabelFieldPair>
 
@@ -392,7 +390,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.emailId?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].emailId.message}</p>}
               </div>
             </LabelFieldPair>
 
@@ -426,7 +424,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.fatherOrHusbandName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].fatherOrHusbandName.message}</p>}
               </div>
             </LabelFieldPair>
 
@@ -460,7 +458,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.address?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].address.message}</p>}
               </div>
             </LabelFieldPair>
 
@@ -494,7 +492,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.propertyId?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.propertyId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyId.message}</p>}
               </div>
             </LabelFieldPair>
           
@@ -534,7 +532,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.dateOfBirth?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.dateOfBirth && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].dateOfBirth.message}</p>}
               </div>
             </LabelFieldPair>
 
@@ -560,7 +558,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.gender?.message || ""}</CardLabelError>
+                {errors?.owners?.[index]?.gender && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].gender.message}</p>}
               </div>
             </LabelFieldPair>
 

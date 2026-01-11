@@ -156,7 +156,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {}, err
     }
   }, [errorsP]);
 
-  const errorStyle = { marginTop: "-18px" ,color:"red"};
+  const errorStyle = {  color:"red"};
 
   return (
     <div>

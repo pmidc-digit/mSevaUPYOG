@@ -204,7 +204,7 @@ function RentAndLeaseSelectDocument({
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <div className={`field ral-doc-field ${!isCitizen ? "ral-doc-field-employee" : ""}`}>
+        <div className={`form-field ral-doc-field ${!isCitizen ? "ral-doc-field-employee" : ""}`}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

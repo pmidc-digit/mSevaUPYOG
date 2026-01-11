@@ -52,6 +52,13 @@ function NOCSummary({ currentStepData:formData, t }) {
     marginRight: "16px",
   };
 
+    const valueStyle = {
+    textAlign: "right",
+    flex: "0 0 55%",
+    wordBreak: "break-word",
+    color: "#555",
+  };
+
   const coordinates = useSelector(function (state) {
       return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
@@ -69,7 +76,7 @@ function NOCSummary({ currentStepData:formData, t }) {
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div>{value || "NA"}</div>
+      <div style={valueStyle}>{value || "NA"}</div>
     </div>
   );
 

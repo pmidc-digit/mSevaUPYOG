@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TextInput, CardLabel, MobileNumber, TextArea, ActionBar, SubmitBar, LabelFieldPair, CardLabelError } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -139,7 +139,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.mobileNumber && <CardLabelError style={{ marginTop: "4px" }}>{errors.mobileNumber.message}</CardLabelError>}
+              {errors?.mobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.mobileNumber.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -170,7 +170,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.name && <CardLabelError style={{ marginTop: "4px" }}>{errors.name.message}</CardLabelError>}
+              {errors?.name && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.name.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -203,7 +203,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.emailId && <CardLabelError style={{ marginTop: "4px" }}>{errors.emailId.message}</CardLabelError>}
+              {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -234,7 +234,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
                   />
                 )}
               />
-              {errors?.address && <CardLabelError style={{ marginTop: "4px" }}>{errors.address.message}</CardLabelError>}
+              {errors?.address && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.address.message}</p>}
             </div>
           </LabelFieldPair>
         </div>

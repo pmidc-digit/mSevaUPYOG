@@ -9,7 +9,7 @@ import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
 import getRootReducer from "./redux/reducer";
-
+import { NOCFeeTable } from "./pageComponents/NOCFeeTable";
 import CitizenApp from "./pages/citizen";
 import NOCResponseCitizen from "./pages/citizen/NOCResponseCitizen";
 
@@ -97,6 +97,7 @@ const componentsToRegister = {
   NOCApplicantDetails,
   NOCProfessionalDetails,
   NOCSiteDetails,
+  NOCFeeTable,
   NOCSpecificationDetails,
   NOCDocumentsRequired,
   NOCSummary,

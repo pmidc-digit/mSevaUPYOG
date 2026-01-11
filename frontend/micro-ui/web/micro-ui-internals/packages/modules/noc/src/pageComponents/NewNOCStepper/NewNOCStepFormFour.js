@@ -1,6 +1,6 @@
-import React from "react";
+import React ,{useMemo,useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
+import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox,Loader } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM, RESET_NOC_NEW_APPLICATION_FORM } from "../../redux/action/NOCNewApplicationActions";
 import { useState, useRef } from "react";
 import _ from "lodash";
@@ -65,18 +65,53 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     onSubmit(currentStepData, action);
   };
 
+  const calculatorPayload = useMemo(
+    () => ({
+      CalculationCriteria: [
+        {
+          applicationNumber: currentStepData?.apiData?.Noc?.[0]?.applicationNo,
+          tenantId: currentStepData?.apiData?.Noc?.[0]?.tenantId,
+          NOC: mapToNOCPayload(currentStepData, { action: "" }).Noc,
+        },
+      ],
+    }),
+    [currentStepData]
+  );
+
+  const { isLoading: nocCalculatorLoading, data : calculatorData, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
+    { payload: calculatorPayload },
+    { enabled: !!calculatorPayload }
+  );
+
+  useEffect(() => {
+  revalidate();
+}, [currentStepData?.siteDetails, currentStepData?.applicationDetails]);
+
+
+console.log('calculatorData', calculatorData)
+
   const onSubmit = async (data, selectedAction) => {
     console.log("formData inside onSubmit", data);
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
-      setTimeout(()=>{
+      setTimeout(() => {
         setShowToast(null);
-      },3000);
+      }, 3000);
       return;
     }
 
     const finalPayload = mapToNOCPayload(data, selectedAction);
+    
+    const taxHeadEstimates = calculatorData?.Calculation?.[0]?.taxHeadEstimates || [];
+
+    finalPayload.Noc.nocDetails.additionalDetails.calculations = [
+      {
+        isLatest: true,
+        updatedBy: Digit.UserService.getUser()?.info?.name,
+        taxHeadEstimates: taxHeadEstimates
+      }
+    ];
     console.log("finalPayload here==>", finalPayload);
 
     try {
@@ -123,8 +158,10 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     } catch (error) {
       console.log("errors here in goNext - catch block", error);
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }finally{
-      setTimeout(()=>{setShowToast(null);},3000);
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
@@ -163,7 +200,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           },
           coordinates: { ...coordinates },
           ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
-          ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] 
+          ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
         },
       },
       documents: [],
@@ -171,52 +208,49 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     const docsArrayFromRedux = nocFormData?.documents?.documents?.documents || [];
 
-    if(isEdit){
-       
-    const apiResponseDocuments = currentStepData?.apiData?.Noc?.[0]?.documents || [];
+    if (isEdit) {
+      const apiResponseDocuments = currentStepData?.apiData?.Noc?.[0]?.documents || [];
 
-    const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d)=> d.documentType));
+      const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
 
-    const updatedApiResponseDocuments = apiResponseDocuments?.map((doc)=>{
+      const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
+        const fileStoreId =
+          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid ||
+          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
+        return {
+          ...doc,
+          uuid: fileStoreId,
+          documentAttachment: fileStoreId,
+        };
+      });
 
-    const fileStoreId = docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.uuid || docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.documentAttachment;
-      return ({
-        ...doc,
-        uuid: fileStoreId,
-        documentAttachment: fileStoreId
-      })
-    });
+      const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
 
-   const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
+      const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
+        return {
+          uuid: doc?.documentUid,
+          documentType: doc?.documentType,
+          documentAttachment: doc?.filestoreId,
+        };
+      });
 
-   const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc)=>{
-    return {
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.filestoreId,
-    }
-   });
+      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
 
-   const overallDocs= [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-   
-   console.log("overallDocs", overallDocs);
+      console.log("overallDocs", overallDocs);
 
-
-    overallDocs.forEach((doc)=>{
-      updatedApplication?.documents?.push({
-       ...doc
-      })
-    })
-
-    }else{
+      overallDocs.forEach((doc) => {
+        updatedApplication?.documents?.push({
+          ...doc,
+        });
+      });
+    } else {
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.filestoreId,
+          uuid: doc?.documentUid,
+          documentType: doc?.documentType,
+          documentAttachment: doc?.filestoreId,
+        });
       });
-     });
-
     }
 
     const payload = {
@@ -261,15 +295,17 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     goNext(action);
     //console.log("selectedAction here", action);
   }
+  if (nocCalculatorLoading) return <Loader />;
 
   return (
     <React.Fragment>
+      {nocCalculatorLoading && <Loader />}
       <NOCSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       <CheckBox
-        label={
-          `I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${currentStepData?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "NA"}). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`
-        }
+        label={`I/We hereby solemnly affirm and declare that I/We am/are submitting this application on behalf of the applicant (${
+          currentStepData?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "NA"
+        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}
         checked={selectedCheckBox}

@@ -26,20 +26,21 @@ const CLUSiteDetails = (_props) => {
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
 
-  //logic for TotalArea(A+B)
+  //logic for NetTotalAreaAfterWidening(A-B)
   const [netArea, setNetArea] = useState("0.00");
-  const NetPlotArea = watch("netPlotAreaAfterWidening");
+  const TotalPlotArea = watch("netTotalArea");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening");
 
   useEffect(() => {
-    const a = parseFloat(NetPlotArea);
+    const a = parseFloat(TotalPlotArea);
     const b = parseFloat(AreaLeftForRoadWidening);
 
-    const sum = ((isNaN(a) ? 0 : a) + (isNaN(b) ? 0 : b)).toFixed(2);
+    const result = ((isNaN(a) ? 0 : a) - (isNaN(b) ? 0 : b)).toFixed(2);
 
-    setNetArea(sum);
-    setValue("netTotalArea", sum);
-  }, [NetPlotArea, AreaLeftForRoadWidening]);
+    setNetArea(result);
+    setValue("netPlotAreaAfterWidening", result);
+  }, [TotalPlotArea, AreaLeftForRoadWidening]);
+
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00");
@@ -68,7 +69,7 @@ const CLUSiteDetails = (_props) => {
 
   /**Start - ULB Name and Type caculation logic */
 
-  const [ulbName, setUlbName] = useState(currentStepData?.siteDetails?.ulbName || null);
+  const [ulbNamed, setUlbNamed] = useState(currentStepData?.siteDetails?.ulbName || null);
 
   const [ulbType, setUlbType] = useState(currentStepData?.siteDetails?.ulbType || "");
   const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
@@ -84,12 +85,12 @@ const CLUSiteDetails = (_props) => {
   }));
 
   useEffect(() => {
-    if (ulbName) {
-      const ulbTypeFormatted = ulbName?.city?.ulbType;
+    if (ulbNamed) {
+      const ulbTypeFormatted = ulbNamed?.city?.ulbType;
       setUlbType(ulbTypeFormatted);
       setValue("ulbType", ulbTypeFormatted);
     }
-  }, [ulbName, setValue]);
+  }, [ulbNamed, setValue]);
 
   /**Start - District and Zone caculation logic */
   const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
@@ -112,31 +113,22 @@ const CLUSiteDetails = (_props) => {
   // const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
-  // const [localities, setLocalities] = useState([]);
-
-  // const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-  //   selectedCity?.code,
-  //   "revenue",
-  //   {
-  //     enabled: !!selectedCity,
-  //   },
-  //   t
-  // );
-
-  // useEffect(() => {
-  //   if (fetchedLocalities?.length > 0) {
-  //     setLocalities(fetchedLocalities);
-  //   }
-  // }, [fetchedLocalities]);
-
 
   //logic for default selection of district
    useEffect(() => {
     if (tenantId && allCities?.length > 0) {
-      const defaultCity = allCities.find((city) => city.code === tenantId);
-      if (defaultCity) {
+      const defaultCity = allCities.find((city) => city.code === tenantId)?.city?.districtName;
+      //console.log("defaultCity==>", defaultCity);
+      
+      const defaultULB = allCities.find((city) => city.code === tenantId);
+     // console.log("defaultULB==>", defaultULB);
+
+      if (defaultCity && defaultULB) {
         setSelectedCity(defaultCity);
-        setValue("district", defaultCity); // sets default in react-hook-form
+        setValue("district", defaultCity); // sets default in react-hook-form setUlbName
+
+        setUlbNamed(defaultULB);
+        setValue("ulbName", defaultULB);
       }
     }
   }, [tenantId, allCities]);
@@ -210,25 +202,24 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.plotNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
-                name="plotArea"
+                name="proposedSiteAddress"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                    value: 200,
+                    message: t("MAX_200_CHARACTERS_ALLOWED"),
                   },
                 }}
                 render={(props) => (
-                  <TextInput
-                    className="form-field"
+                  <TextArea
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -241,7 +232,73 @@ const CLUSiteDetails = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.plotArea?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="wardNo"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 2,
+                  //   message: t("MIN_2_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_KHASRA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="khasraNo"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextArea
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.khasraNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_KHEWAT_KHATUNI_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -278,142 +335,6 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.khewatOrKhatuniNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_CORE_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-              <Controller
-                control={control}
-                name="coreArea"
-                rules={{required: t("REQUIRED_FIELD")}}
-                render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                  t={t}
-                />
-                )}
-              />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.coreArea?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="proposedSiteAddress"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 200,
-                    message: t("MAX_200_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextArea
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            {!isUlbListLoading && (
-              <Controller
-                control={control}
-                name={"ulbName"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    // select={props.onChange}
-                    select={(e) => {
-                      setUlbName(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={ulbListOptions}
-                    optionKey="displayName"
-                    t={t}
-                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
-                  />
-                )}
-              />
-            )}
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="ulbType"
-                render={(props) => (
-                  <TextInput
-                    // value={props.value}
-                    value={ulbType || props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disable="true"
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_KHASRA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="khasraNo"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextArea
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.khasraNo?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_HADBAST_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -421,6 +342,10 @@ const CLUSiteDetails = (_props) => {
                 name="hadbastNo"
                 rules={{
                   required: t("REQUIRED_FIELD"),
+                  pattern: {
+                  value: /^[0-9]+$/, 
+                  message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
                   // minLength: {
                   //   value: 4,
                   //   message: t("MIN_4_CHARACTERS_REQUIRED"),
@@ -447,169 +372,20 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.hadbastNo?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            {!isRoadTypeLoading && (
-              <Controller
-                control={control}
-                name={"roadType"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t}/>
-                )}
-              />
-            )}
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
-                name="areaLeftForRoadWidening"
+                name="villageName"
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  value: /^[A-Za-z ]+$/,
+                  message: t("ONLY_ALPHABETS_ALLOWED_MSG"),
                   },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="netPlotAreaAfterWidening"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="netTotalArea"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                defaultValue={netArea}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disabled="true"
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="roadWidthAtSite"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="wardNo"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
                   // minLength: {
-                  //   value: 2,
-                  //   message: t("MIN_2_CHARACTERS_REQUIRED"),
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
                   // },
                   maxLength: {
                     value: 100,
@@ -630,49 +406,7 @@ const CLUSiteDetails = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <Controller 
-              control={control}
-              name={"district"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setSelectedCity(e);
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={cities.sort((a, b) => a.name.localeCompare(b.name))}
-                  optionKey="name"
-                  disable="true"
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
-
-         {!isZoneListLoading &&  (<LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <Controller
-              control={control}
-              name={"zone"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={zoneList?.tenant?.zoneMaster?.[0]?.zones} optionKey="code" t={t}/>
-              )}
-            />
-          </LabelFieldPair>
-           )}
-          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VASIKA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -708,45 +442,13 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="villageName"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="ownershipInPct"
                 rules={{
+                  required: t("REQUIRED_FIELD"),
                   validate: (value) => {
                     if (!value) return true;
                     const regex = /^\d+(\.\d{1,2})?$/;
@@ -774,14 +476,53 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.ownershipInPct?.message || ""}</CardLabelError>
 
+           <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+             <Controller
+              control={control}
+              name={"isOriginalCategoryAgriculture"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.isOriginalCategoryAgriculture?.message || ""}</CardLabelError>
+
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            {!isRoadTypeLoading && (
+              <Controller
+                control={control}
+                name={"roadType"}
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t}/>
+                )}
+              />
+            )}
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
-                name="proposedRoadWidthAfterWidening"
+                name="plotArea"
                 rules={{
-                  //required: t("REQUIRED_FIELD"),
+                  required: t("REQUIRED_FIELD"),
                   pattern: {
                     value: /^[0-9]*\.?[0-9]+$/,
                     message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
@@ -793,6 +534,7 @@ const CLUSiteDetails = (_props) => {
                 }}
                 render={(props) => (
                   <TextInput
+                    className="form-field"
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -805,7 +547,99 @@ const CLUSiteDetails = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedRoadWidthAfterWidening?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.plotArea?.message || ""}</CardLabelError>
+
+         {!isZoneListLoading &&  (<LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <Controller
+              control={control}
+              name={"zone"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={zoneList?.tenant?.zoneMaster?.[0]?.zones} optionKey="code" t={t}/>
+              )}
+            />
+          </LabelFieldPair>
+           )}
+          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            {!isUlbListLoading && (
+              <Controller
+                control={control}
+                name={"ulbName"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                defaultValue={ulbNamed}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    // select={props.onChange}
+                    select={(e) => {
+                      // setUlbNamed(e);
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={ulbListOptions}
+                    optionKey="name"
+                    t={t}
+                    disable="true"
+                  />                
+                )}
+              />
+            )}
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="ulbType"
+                render={(props) => (
+                  <TextInput
+                    // value={props.value}
+                    value={ulbType || props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disable="true"
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <Controller 
+              control={control}
+              name={"district"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={selectedCity || props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disable="true"
+                  />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -832,19 +666,70 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.appliedCluCategory?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
+            <CardLabel className="card-label-smaller">{`${t("BPA_CORE_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <Controller
                 control={control}
-                name={"buildingCategory"}
+                name="coreArea"
+                rules={{required: t("REQUIRED_FIELD")}}
+                render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+                )}
+              />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.coreArea?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            {!isBuildingTypeLoading && (
+              <Controller
+                control={control}
+                name={"buildingStatus"}
                 rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory.filter((item)=> item.code !== "RESIDENTIAL_INDEPENDENT_FLOORS")} optionKey="name" t={t} disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}/>
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={props.value}
+                    option={buildingType}
+                    optionKey="name"
+                    t={t}
+                  />
                 )}
               />
             )}
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_RESTRICTED_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+             <Controller
+              control={control}
+              name={"restrictedArea"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.restrictedArea?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_PROPERTY_UID_LABEL")}`}</CardLabel>
@@ -881,74 +766,6 @@ const CLUSiteDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.propertyUid?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            {!isBuildingTypeLoading && (
-              <Controller
-                control={control}
-                name={"buildingStatus"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={buildingType}
-                    optionKey="name"
-                    t={t}
-                  />
-                )}
-              />
-            )}
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
-
-           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-             <Controller
-              control={control}
-              name={"isOriginalCategoryAgriculture"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.isOriginalCategoryAgriculture?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_RESTRICTED_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-             <Controller
-              control={control}
-              name={"restrictedArea"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.restrictedArea?.message || ""}</CardLabelError>
-
-          <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`}<span className="requiredField">*</span></CardLabel>
              <Controller
               control={control}
@@ -970,6 +787,192 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.isSiteUnderMasterPlan?.message || ""}</CardLabelError>
 
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="netTotalArea"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    // disabled="true"
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="areaLeftForRoadWidening"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="netPlotAreaAfterWidening"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                defaultValue={netArea}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                   // disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
+                   disable="true"
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
+
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="roadWidthAtSite"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")}`}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="proposedRoadWidthAfterWidening"
+                rules={{
+                  //required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.proposedRoadWidthAfterWidening?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
+              <Controller
+                control={control}
+                name={"buildingCategory"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory.filter((item)=> item.code !== "RESIDENTIAL_INDEPENDENT_FLOORS")} optionKey="name" t={t} disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}/>
+                )}
+              />
+            )}
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError>
 
         </div>
         <BreakLine />

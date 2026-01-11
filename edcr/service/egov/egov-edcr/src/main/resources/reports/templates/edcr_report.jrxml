@@ -135,7 +135,7 @@
 				<text><![CDATA[Declaration in drawings]]></text>
 			</staticText> -->
 			<staticText>
-				<reportElement x="12" y="105" width="536" height="18" uuid="c90071fa-f965-4d78-8e92-98e7658a97b9"/>
+				<reportElement x="12" y="105" width="536" height="18" backcolor="#99CCFF" mode="Opaque" uuid="c90071fa-f965-4d78-8e92-98e7658a97b9"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -150,7 +150,7 @@
 				<text><![CDATA[APPLICATION DETAILS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="12" y="207" width="536" height="18" uuid="defdf9e4-9f6d-416a-9ca4-be8e0a575bb0"/>
+				<reportElement x="12" y="207" width="536" height="18" backcolor="#99CCFF" mode="Opaque" uuid="defdf9e4-9f6d-416a-9ca4-be8e0a575bb0"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -194,6 +194,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{reportStatus}]]></textFieldExpression>
 			</textField>
+			<!--
 			<staticText>
 				<reportElement x="9" y="663" width="193" height="19" isRemoveLineWhenBlank="true" uuid="1bc539b3-3399-4906-9c6d-2f6ce7399eb8">
 					<printWhenExpression><![CDATA[!$P{errors}.isEmpty()]]></printWhenExpression>
@@ -209,6 +210,29 @@
 				</reportElement>
 				<textFieldExpression><![CDATA[$P{errorString}]]></textFieldExpression>
 			</textField>
+			-->
+			
+			<staticText>
+			    <reportElement x="9" y="663" width="193" height="19" forecolor="#FF0000" isRemoveLineWhenBlank="true"
+			        uuid="1bc539b3-3399-4906-9c6d-2f6ce7399eb8">
+			        <printWhenExpression><![CDATA[!$P{errors}.isEmpty()]]></printWhenExpression>
+			    </reportElement>			
+			    <textElement textAlignment="Left">
+			        <font size="12" isBold="true"/>
+			    </textElement>			
+			    <text><![CDATA[Errors]]></text>
+			</staticText>
+
+			
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			    <reportElement x="9" y="678" width="537" height="34" forecolor="#FF0000" isRemoveLineWhenBlank="true"
+			        uuid="3993cc76-bd9f-4699-897a-2330010ece90">
+			        <printWhenExpression><![CDATA[!$P{errors}.isEmpty()]]></printWhenExpression>
+			    </reportElement>			
+			    <textFieldExpression><![CDATA[$P{errorString}]]></textFieldExpression>
+			</textField>
+
+			
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="142" y="288" width="146" height="21" uuid="4baabfce-be8c-41ca-a630-4f652544996b"/>
 				<box>

@@ -64,7 +64,7 @@ public class JasperReportService {
         detailStyle.setBorderTop(Border.THIN());
         detailStyle.setBorderBottom(Border.THIN());
         detailStyle.setTextColor(Color.BLACK);
-        detailStyle.setHorizontalAlign(HorizontalAlign.LEFT);
+        detailStyle.setHorizontalAlign(HorizontalAlign.CENTER);
         detailStyle.setVerticalAlign(VerticalAlign.TOP);
         detailStyle.setFont(new Font(8, Font._FONT_VERDANA, true));
         detailStyle.setTransparency(Transparency.OPAQUE);
@@ -78,7 +78,7 @@ public class JasperReportService {
         detailStyle.setBorderTop(Border.THIN());
         detailStyle.setBorderBottom(Border.THIN());
         detailStyle.setTextColor(color);
-        detailStyle.setHorizontalAlign(HorizontalAlign.LEFT);
+        detailStyle.setHorizontalAlign(HorizontalAlign.CENTER);
         detailStyle.setVerticalAlign(VerticalAlign.TOP);
         detailStyle.setFont(new Font(8, Font._FONT_VERDANA, true));
         detailStyle.setTransparency(Transparency.OPAQUE);
@@ -106,7 +106,7 @@ public class JasperReportService {
         columnStyle.setBorderBottom(Border.THIN());
         columnStyle.setBorderTop(Border.THIN());
         columnStyle.setTextColor(Color.black);
-        columnStyle.setHorizontalAlign(HorizontalAlign.LEFT); 
+        columnStyle.setHorizontalAlign(HorizontalAlign.CENTER); 
         columnStyle.setFont(new Font(9, Font._FONT_TIMES_NEW_ROMAN, false));
         columnStyle.setStreching(Stretching.RELATIVE_TO_BAND_HEIGHT);   
         columnStyle.setStretchWithOverflow(true);
@@ -126,7 +126,7 @@ public class JasperReportService {
         columnStyle.setBorderBottom(Border.THIN());
         columnStyle.setBorderTop(Border.THIN());
         columnStyle.setTextColor(Color.black);
-        columnStyle.setHorizontalAlign(HorizontalAlign.RIGHT);
+        columnStyle.setHorizontalAlign(HorizontalAlign.CENTER);
         columnStyle.setFont(new Font(9, Font._FONT_TIMES_NEW_ROMAN, false));
         columnStyle.setStreching(Stretching.RELATIVE_TO_BAND_HEIGHT);
         columnStyle.setStretchWithOverflow(true);
@@ -145,7 +145,7 @@ public class JasperReportService {
         columnStyle.setBorderBottom(Border.THIN());
         columnStyle.setBorderTop(Border.THIN());
         columnStyle.setTextColor(Color.black);
-        columnStyle.setHorizontalAlign(HorizontalAlign.RIGHT);
+        columnStyle.setHorizontalAlign(HorizontalAlign.CENTER);
         columnStyle.setFont(new Font(9, Font._FONT_TIMES_NEW_ROMAN, false));
         columnStyle.setStreching(Stretching.RELATIVE_TO_BAND_HEIGHT);
         columnStyle.setStretchWithOverflow(true);
@@ -198,7 +198,8 @@ public class JasperReportService {
     public Style getTitleStyle() {
         final Style titleStyle = new Style("titleStyle");
         titleStyle.setFont(new Font(10, Font._FONT_ARIAL, true));
-        titleStyle.setHorizontalAlign(HorizontalAlign.LEFT);
+        titleStyle.setHorizontalAlign(HorizontalAlign.CENTER);
+        titleStyle.setVerticalAlign(VerticalAlign.MIDDLE);
         return titleStyle;
     }
     public Style getSubReportTitleStyle() {
@@ -217,12 +218,22 @@ public class JasperReportService {
         subTitleStyle.setBorderBottom(Border.NO_BORDER());
         subTitleStyle.setTextColor(Color.black);
         subTitleStyle.setFont(new Font(9, Font._FONT_ARIAL, true));
-        subTitleStyle.setHorizontalAlign(HorizontalAlign.LEFT);
+        subTitleStyle.setHorizontalAlign(HorizontalAlign.CENTER);
         subTitleStyle.setVerticalAlign(VerticalAlign.MIDDLE);
         return subTitleStyle;
     }
 
-   
+   public Style getSubTitleStyleWithColor() {
+	   final Style subTitleStyle = new Style("subTitleStyle");
+       subTitleStyle.setFont(new Font(10, Font._FONT_ARIAL, true));
+       subTitleStyle.setTransparency(Transparency.OPAQUE);
+       subTitleStyle.setBackgroundColor(new Color(153, 204, 255));
+       subTitleStyle.setHorizontalAlign(HorizontalAlign.LEFT);
+       subTitleStyle.setVerticalAlign(VerticalAlign.MIDDLE);
+       subTitleStyle.setPaddingLeft(5);
+       subTitleStyle.setTextColor(Color.black);
+       return subTitleStyle;
+   }
 
     public Style getAcceptedResultStyle() {
 

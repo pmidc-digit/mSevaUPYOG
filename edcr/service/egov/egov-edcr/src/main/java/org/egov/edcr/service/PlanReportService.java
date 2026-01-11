@@ -78,6 +78,7 @@ import ar.com.fdvs.dj.domain.builders.FastReportBuilder;
 import ar.com.fdvs.dj.domain.constants.Font;
 import ar.com.fdvs.dj.domain.constants.HorizontalAlign;
 import ar.com.fdvs.dj.domain.constants.Page;
+import ar.com.fdvs.dj.domain.constants.Transparency;
 import ar.com.fdvs.dj.domain.constants.VerticalAlign;
 import ar.com.fdvs.dj.domain.entities.Subreport;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
@@ -283,10 +284,12 @@ public class PlanReportService {
 
             if (subheading != null)
                 frb.setSubtitle("\t" + subheading);
-
+            
             frb.setTitleStyle(reportService.getTitleStyle());
             frb.setHeaderHeight(5);
-            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+//            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+//                    reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
+            frb.setDefaultStyles(reportService.getSubTitleStyleWithColor(), reportService.getSubTitleStyle(),
                     reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
             frb.setAllowDetailSplit(false);
             frb.setPageSizeAndOrientation(Page.Page_A4_Portrait());
@@ -321,7 +324,7 @@ public class PlanReportService {
 
             AbstractColumn builtUpArea = ColumnBuilder.getNew()
                     .setColumnProperty("builtUpArea", BigDecimal.class.getName()).setTitle("Built Up Area in m²")
-                    .setWidth(120).setStyle(reportService.getNumberStyle()).build();
+                    .setWidth(132).setStyle(reportService.getNumberStyle()).build();
             frb.addGlobalFooterVariable(builtUpArea, DJCalculation.SUM, reportService.getTotalNumberStyle());
             
             AbstractColumn builtUpDeductionArea = ColumnBuilder.getNew().setColumnProperty("builtUpDeductionArea", BigDecimal.class.getName())
@@ -384,7 +387,7 @@ public class PlanReportService {
                     }
 
                     AutoText autoText = new AutoText(text.toString(), AutoText.POSITION_FOOTER,
-                            HorizontalBandAlignment.LEFT, 530);
+                            HorizontalBandAlignment.LEFT, 542);
 
                     autoText.setHeight(40);
                     autoText.setStyle(reportService.getTotalNumberStyle());
@@ -398,7 +401,7 @@ public class PlanReportService {
             frb.setHeaderHeight(5);
             frb.setTopMargin(10);
             frb.setBottomMargin(0);
-            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+            frb.setDefaultStyles(reportService.getSubTitleStyleWithColor(), reportService.getSubTitleStyle(),
                     reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
             frb.setAllowDetailSplit(false);
             frb.setPageSizeAndOrientation(Page.Page_A4_Portrait());
@@ -494,21 +497,21 @@ public class PlanReportService {
                     && virtualBuildingReport.getTotalConstructedArea().compareTo(BigDecimal.ZERO) > 0) {
 
                 AbstractColumn floorArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Plot Area")
-                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Total Plot Area")
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
 //                AbstractColumn carpetArea = ColumnBuilder.getNew()
 //                        .setColumnProperty("totalCarpetArea", BigDecimal.class.getName()).setTitle("Carpet Area in m²")
 //                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
 
                 AbstractColumn coverageArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Plot Coverage")
-                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Ground Coverage")
+                        .setWidth(180).setStyle(reportService.getTotalNumberStyle()).build();
                 
 
                 AbstractColumn builtUpArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalBuitUpArea", BigDecimal.class.getName()).setTitle("Built Up Area")
-                        .setWidth(100).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
                 AbstractColumn constructedArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalConstructedArea", BigDecimal.class.getName())
@@ -524,7 +527,7 @@ public class PlanReportService {
 
                 AbstractColumn floorArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Total Plot Area")
-                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
 //                AbstractColumn carpetArea = ColumnBuilder.getNew()
 //                        .setColumnProperty("totalCarpetArea", BigDecimal.class.getName()).setTitle("Carpet Area in m²")
@@ -535,12 +538,12 @@ public class PlanReportService {
 //                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
                 AbstractColumn coverageArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalCoverageArea", BigDecimal.class.getName()).setTitle("Ground Coverage")
-                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setWidth(180).setStyle(reportService.getTotalNumberStyle()).build();
                 
 
                 AbstractColumn builtUpArea = ColumnBuilder.getNew()
                         .setColumnProperty("totalBuitUpArea", BigDecimal.class.getName()).setTitle("Built Up Area")
-                        .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
+                        .setWidth(181).setStyle(reportService.getTotalNumberStyle()).build();
 
                 frb.addColumn(floorArea);
                 frb.addColumn(coverageArea);
@@ -552,7 +555,7 @@ public class PlanReportService {
             frb.setTitleStyle(reportService.getTitleStyle());
             frb.setHeaderHeight(5);
             frb.setTopMargin(5);
-            frb.setDefaultStyles(reportService.getTitleStyle(), reportService.getSubTitleStyle(),
+            frb.setDefaultStyles(reportService.getSubTitleStyleWithColor(), reportService.getSubTitleStyle(),
                     reportService.getColumnHeaderStyle(), reportService.getDetailStyle());
             frb.setAllowDetailSplit(false);
             frb.setPageSizeAndOrientation(Page.Page_A4_Portrait());
@@ -759,7 +762,7 @@ public class PlanReportService {
                     );
 
             // 🔴 Page break ONLY here
-            overallSummarySub.setStartInNewPage(true);
+            //overallSummarySub.setStartInNewPage(true);
 
             drb.addConcatenatedReport(overallSummarySub);
             valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);

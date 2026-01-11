@@ -493,61 +493,150 @@ public class PlanService {
         return plan;
     }
     
+//    private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
+//
+//        // check whether valid amendments are present
+//       int index = -1;
+//        AmendmentDetails[] a = null;
+//        int length = amd.getDetails().size();
+//        if (!amd.getDetails().isEmpty()) {
+//            index = amd.getIndex(plan.getApplicationDate());
+//            a = new AmendmentDetails[amd.getDetails().size()];
+//            amd.getDetails().toArray(a);
+//        }
+//
+//        for (PlanFeature ruleClass : feature) {
+//
+//            FeatureProcess rule = null;
+//            String str = ruleClass.getRuleClass().getSimpleName();
+//            str = str.substring(0, 1).toLowerCase() + str.substring(1);
+//            LOG.info("Looking for bean " + str);
+//            // when amendments are not present
+//            if (amd.getDetails().isEmpty() || index == -1)
+//                rule = (FeatureProcess) specificRuleService.find(ruleClass.getRuleClass().getSimpleName());
+//            // when amendments are present
+//            else {
+//                if (index >= 0) {
+//                    // find amendment specific beans
+//                    for (int i = index; i < length; i++) {
+//                        if (a[i].getChanges().keySet().contains(ruleClass.getRuleClass().getSimpleName())) {
+//                            String strNew = str + "_" + a[i].getDateOfBylawString();
+//                            rule = (FeatureProcess) specificRuleService.find(strNew);
+//                            if (rule != null)
+//                                break;
+//                        }
+//                    }
+//                    // when amendment specific beans not found
+//                    if (rule == null) {
+//                        rule = (FeatureProcess) specificRuleService.find(ruleClass.getRuleClass().getSimpleName());
+//                    }
+//
+//                }
+//
+//            }
+//
+//            if (rule != null) {
+//                LOG.info("Looking for bean resulted in " + rule.getClass().getSimpleName());
+//                rule.process(plan);
+//                LOG.info("Completed Process " + rule.getClass().getSimpleName() + "  " + new Date());
+//            }
+//
+//            if (plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_ALLOWED_KEY)
+//                    || plan.getErrors().containsKey("units not in meters")
+//                    || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY))
+//                return plan;
+//        }
+//        return plan;
+//    }
+    
     private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
+    try {
+        int index = -1;
+        AmendmentDetails[] amendmentArray = null;
+        int length = 0;
 
-        // check whether valid amendments are present
-       int index = -1;
-        AmendmentDetails[] a = null;
-        int length = amd.getDetails().size();
-        if (!amd.getDetails().isEmpty()) {
+        if (amd != null && amd.getDetails() != null && !amd.getDetails().isEmpty()) {
+            length = amd.getDetails().size();
             index = amd.getIndex(plan.getApplicationDate());
-            a = new AmendmentDetails[amd.getDetails().size()];
-            amd.getDetails().toArray(a);
+            amendmentArray = amd.getDetails().toArray(new AmendmentDetails[0]);
         }
 
-        for (PlanFeature ruleClass : feature) {
+        if (feature != null) {
+            for (PlanFeature ruleClass : feature) {
+                String featureName = "UnknownFeature";
 
-            FeatureProcess rule = null;
-            String str = ruleClass.getRuleClass().getSimpleName();
-            str = str.substring(0, 1).toLowerCase() + str.substring(1);
-            LOG.info("Looking for bean " + str);
-            // when amendments are not present
-            if (amd.getDetails().isEmpty() || index == -1)
-                rule = (FeatureProcess) specificRuleService.find(ruleClass.getRuleClass().getSimpleName());
-            // when amendments are present
-            else {
-                if (index >= 0) {
-                    // find amendment specific beans
-                    for (int i = index; i < length; i++) {
-                        if (a[i].getChanges().keySet().contains(ruleClass.getRuleClass().getSimpleName())) {
-                            String strNew = str + "_" + a[i].getDateOfBylawString();
-                            rule = (FeatureProcess) specificRuleService.find(strNew);
-                            if (rule != null)
-                                break;
+                try {
+                    if (ruleClass == null || ruleClass.getRuleClass() == null) {
+                        continue;
+                    }
+
+                    featureName = ruleClass.getRuleClass().getSimpleName();
+                    FeatureProcess rule = null;
+
+                    String beanName =
+                            featureName.substring(0, 1).toLowerCase() + featureName.substring(1);
+
+                    LOG.info("Looking for bean {}", beanName);
+
+                    // When amendments are NOT present
+                    if (amd == null || amd.getDetails() == null || amd.getDetails().isEmpty() || index == -1) {
+                        rule = (FeatureProcess) specificRuleService.find(featureName);
+                    }
+                    // When amendments ARE present
+                    else {
+                        for (int i = index; i < length; i++) {
+                            if (amendmentArray[i].getChanges().containsKey(featureName)) {
+                                String amendedBean = beanName + "_" + amendmentArray[i].getDateOfBylawString();
+                                rule = (FeatureProcess) specificRuleService.find(amendedBean);
+
+                                if (rule != null) {
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Fallback to default rule
+                        if (rule == null) {
+                            rule = (FeatureProcess) specificRuleService.find(featureName);
                         }
                     }
-                    // when amendment specific beans not found
-                    if (rule == null) {
-                        rule = (FeatureProcess) specificRuleService.find(ruleClass.getRuleClass().getSimpleName());
+
+                    if (rule != null) {
+                        LOG.info("Processing rule {}", rule.getClass().getSimpleName());
+                        rule.process(plan);
+                        LOG.info("Completed rule {} at {}", rule.getClass().getSimpleName(), new Date());
                     }
 
+                    if (plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_ALLOWED_KEY)
+                            || plan.getErrors().containsKey("units not in meters")
+                            || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY)) {
+                        return plan;
+                    }
+
+                } catch (Exception e) {
+                    // FULL STACKTRACE logged
+                    LOG.error("Exception while processing feature: {}", featureName, e);
+
+                    plan.getErrors().put(
+                            "Errors in \"" + featureName + "\"",
+                            "Errors in " + featureName + ". Please correct the file and try again."
+                    );
                 }
-
             }
-
-            if (rule != null) {
-                LOG.info("Looking for bean resulted in " + rule.getClass().getSimpleName());
-                rule.process(plan);
-                LOG.info("Completed Process " + rule.getClass().getSimpleName() + "  " + new Date());
-            }
-
-            if (plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_ALLOWED_KEY)
-                    || plan.getErrors().containsKey("units not in meters")
-                    || plan.getErrors().containsKey(DxfFileConstants.OCCUPANCY_PO_NOT_ALLOWED_KEY))
-                return plan;
         }
-        return plan;
+    } catch (Exception e) {
+        // FULL STACKTRACE logged
+        LOG.error("Critical error in applyRules()", e);
+
+        plan.getErrors().put(
+                "System Error",
+                "Please correct the file and try again."
+        );
     }
+
+    return plan;
+}
+
 
     private InputStream generateReport(Plan plan, Amendment amd, EdcrApplication dcrApplication) {
 

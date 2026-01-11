@@ -197,7 +197,7 @@ public class Ventilation extends FeatureProcess {
 
 	                                String roomNo = room.getNumber();
 
-	                                // ✅ Calculate total ventilation area for this room
+	                                // Calculate total ventilation area for this room
 	                                BigDecimal totalRegularRoomVentilationArea = room.getLightAndVentilation()
 	                                        .getMeasurements()
 	                                        .stream()
@@ -206,7 +206,7 @@ public class Ventilation extends FeatureProcess {
 	                                        .reduce(BigDecimal.ZERO, BigDecimal::add)
 	                                        .setScale(2, RoundingMode.HALF_UP);
 
-	                                // ✅ Calculate total floor area safely
+	                                // Calculate total floor area safely
 	                                BigDecimal totalFloorArea = f.getOccupancies() != null
 	                                        ? f.getOccupancies().stream()
 	                                                .map(Occupancy::getFloorArea)
@@ -215,7 +215,7 @@ public class Ventilation extends FeatureProcess {
 	                                                .setScale(2, RoundingMode.HALF_UP)
 	                                        : BigDecimal.ZERO;
 
-	                                // ✅ Skip if either floor area or ventilation area is zero
+	                                // Skip if either floor area or ventilation area is zero
 	                                if (totalFloorArea.compareTo(BigDecimal.ZERO) <= 0
 	                                        || totalRegularRoomVentilationArea.compareTo(BigDecimal.ZERO) <= 0) {
 	                                    LOG.info("Skipping ventilation check: Floor " + f.getNumber() + " Room " + roomNo +
@@ -223,18 +223,18 @@ public class Ventilation extends FeatureProcess {
 	                                    continue; // skip this room
 	                                }
 
-	                                // ✅ 10% of floor area required
+	                                // 10% of floor area required
 	                                BigDecimal requiredVentilationArea = totalFloorArea
 	                                        .multiply(BigDecimal.valueOf(0.10))
 	                                        .setScale(2, RoundingMode.HALF_UP);
 
-	                                // ✅ Prepare details map
+	                                // Prepare details map
 	                                Map<String, String> details = new HashMap<>();
 	                                details.put(RULE_NO, RULE_LIGHT_VENTILATION);
 	                                details.put(DESCRIPTION, REGULAR_ROOM_LIGHT_VENTILATION_DESCRIPTION);
 	                                details.put(REQUIRED, "≥ 10% of Floor Area (" + requiredVentilationArea + ")");
 
-	                                // ✅ Validation check
+	                                // Validation check
 	                                if (totalRegularRoomVentilationArea.compareTo(requiredVentilationArea) >= 0) {
 	                                    details.put(PROVIDED, "Ventilation area " + totalRegularRoomVentilationArea
 	                                            + " at floor " + f.getNumber()

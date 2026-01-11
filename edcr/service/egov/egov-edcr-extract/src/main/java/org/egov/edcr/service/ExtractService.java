@@ -236,9 +236,13 @@ public class ExtractService {
 				try {
 					rule.extract(planDetail);
 				} catch (Exception e) {
-					planDetail.addError("msg.error.failed.on.extraction",
-							"Please contact the adminstrator for the further information. The plan is failing while extracting data from plan in the feature "
-									+ rule);
+					String str = ruleClass.getRuleClass().getSimpleName();
+//					planDetail.addError("msg.error.failed.on.extraction",
+//							"Please contact the adminstrator for the further information. The plan is failing while extracting data from plan in the feature "
+//									+ rule);
+					String errorFeatureKey = "Error in "+ str +" extraction";
+					planDetail.addError(errorFeatureKey,
+							"The plan is failing while extracting data from plan in the "+ str);
 				}
 			} else
 				LOG.error("Extract Api is not defined for " + ruleClass.getRuleClass());

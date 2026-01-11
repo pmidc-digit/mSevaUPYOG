@@ -17,8 +17,14 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.OwnerDetails);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-
-  console.log("need to check formData", formData);
+  useEffect(() => {
+        if (showToast) {
+          const timer = setTimeout(() => {
+            closeToast();
+          }, 3000); 
+          return () => clearTimeout(timer);
+        }
+      }, [showToast]);
 
   const validateOwnerDetails = (data) => {
     const { ownershipCategory, owners } = data || {};
@@ -123,11 +129,22 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     // Prepare owners
     let owners = [];
     if (OwnerDetails?.owners?.length > 0) {
-      OwnerDetails.owners.map((owner, index) => {
-        console.log("gender-ownerType-relationship", owner?.gender?.code, owner?.relationship?.code, owner?.ownerType?.code);
-        const gender = owner?.gender?.code;
-        const relationship = owner?.relationship?.code;
-        const ownerType = owner?.ownerType?.code;
+      const validOwners = OwnerDetails.owners.filter(owner => {
+        const isValid = owner?.name && 
+                       owner?.mobileNumber && 
+                       owner?.name.trim() !== "" &&
+                       owner?.mobileNumber.toString().length >= 10;        
+        return isValid;
+      });
+
+
+      validOwners.forEach((owner, index) => {
+        const gender = typeof owner?.gender === 'object' ? owner.gender?.code : owner?.gender;
+        const relationship = typeof owner?.relationship === 'object' 
+          ? owner.relationship?.code?.code || owner.relationship?.code 
+          : owner?.relationship;
+        const ownerType = typeof owner?.ownerType === 'object' ? owner.ownerType?.code : owner?.ownerType;
+
 
         let obj = {
           name: owner?.name || "",
@@ -135,14 +152,13 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
           fatherOrHusbandName: owner?.fatherOrHusbandName || "",
           gender: gender || "MALE",
           permanentAddress: owner?.permanentAddress || "",
-          relationship: relationship || "FATHER",
+          relationship: relationship || "FATHER", // ✅ Now guaranteed to be a string
           ownerType: ownerType || "NONE",
           dob: owner?.dob ? convertDateToEpoch(owner.dob) : null,
           additionalDetails: {
             ownerSequence: index,
             ownerName: owner?.name || "",
           },
-          // id: owner?.id
         };
         owners.push(obj);
       });
@@ -150,6 +166,22 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     // Prepare documents
     let applicationDocuments = Documents?.documents?.documents || [];
+
+    // ✅ Validate ownership type vs owner count before API call
+    const ownershipCode = OwnerDetails?.ownershipCategory?.code;
+    
+    if (ownershipCode === "INDIVIDUAL.SINGLEOWNER" && owners.length !== 1) {
+      throw new Error("Single ownership must have exactly 1 owner");
+    }
+    
+    if (ownershipCode === "INDIVIDUAL.MULTIPLEOWNERS" && owners.length < 2) {
+      throw new Error("Multiple ownership must have at least 2 owners");
+    }
+
+    if (owners.length === 0) {
+      throw new Error("At least one valid owner is required");
+    }
+
 
     // Prepare main formData
     let formData = {
@@ -200,14 +232,10 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       isDeclared: "false",
     };
 
-    console.log("Final formData before API hit:", formData);
-
     // Call API
     const response = await Digit.TLService.update({ Licenses: [formData] }, tenantId);
     if (response?.ResponseInfo?.status === "successful") {
-      dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-      console.log("API Success Response:", response.Licenses[0]);
-    }
+      dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));}
 
     return response?.ResponseInfo?.status === "successful";
   };
@@ -227,15 +255,11 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    console.log("Form data before submission: ", formData);
     const res = await onSubmit(formData);
-    console.log("API response: ", res);
 
     if (res) {
-      console.log("Submission successful, moving to next step.");
       onGoNext();
     } else {
-      console.error("Submission failed, not moving to next step.");
     }
     // onGoNext();
   };

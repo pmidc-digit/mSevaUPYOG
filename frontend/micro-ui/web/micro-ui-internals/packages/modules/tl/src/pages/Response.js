@@ -4,32 +4,63 @@ import { useLocation, Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import getPTAcknowledgementData from "../utils/getTLAcknowledgementData";
 import * as func from "../utils";
-
+import { Loader } from "../components/Loader"; 
 
 const Response = (props) => {
   const location = useLocation();
-  const { state } = props.location;
+   const { id: applicationNumber } = useParams();
+  const { state } = props.location|| {};
   const [params, setParams] = useState({});
   const { isEdit } = Digit.Hooks.useQueryParams();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-
-
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+   const { data: applicationData, isLoading } = Digit.Hooks.tl.useTradeLicenseSearch(
+    {
+      tenantId,
+      filters: { applicationNumber },
+    },
+    {
+      enabled: !!applicationNumber, // Only fetch when we have application number
+    }
+  );
   useEffect(() => {
     setParams(func.getQueryStringParams(location.search));
   }, [location]);
   const { t } = useTranslation();
 
+const application = applicationData?.Licenses?.[0] || state?.data?.[0] || {};
+
   const printReciept = async () => {
-    const Licenses = state?.data || [];
-    const license = (Licenses && Licenses[0]) || {};
-    const tenantInfo = tenants.find((tenant) => tenant.code === license.tenantId);
-    const data = await getPTAcknowledgementData({ ...license }, tenantInfo, t);
+    const tenantInfo = tenants.find((tenant) => tenant.code === application.tenantId);
+    const data = await getPTAcknowledgementData({ ...application }, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
   };
 
   const routeToPaymentScreen = async () => {
-    window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/TL/${state?.data?.[0]?.applicationNumber}/${state?.data?.[0]?.tenantId}`);
+    window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/TL/${application?.applicationNumber}/${application?.tenantId}`);
+  }
+  if (isLoading) {
+    return <Loader page={true} />;
+  }
+
+   // ✅ Handle no data case
+  if (!application?.applicationNumber) {
+    return (
+      <Card>
+        <Banner
+          message={t("TL_APPLICATION_NOT_FOUND")}
+          applicationNumber={applicationNumber}
+          info={t("TL_REF_NO_LABEL")}
+          successful={false}
+        />
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+          <Link to={`/digit-ui/employee`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        </ActionBar>
+      </Card>
+    );
   }
 
   return (
@@ -37,12 +68,12 @@ const Response = (props) => {
         <Card>
           <Banner
             message={t("TL_APPLICATION_SUCCESS_MESSAGE_MAIN")}
-            applicationNumber={state?.data?.[0]?.applicationNumber}
+            applicationNumber={application.applicationNumber}
             info={t("TL_REF_NO_LABEL")}
             successful={true}
           />
          
-          <CardText>{t("TL_NEW_SUCESS_RESPONSE_NOTIFICATION_LABEL")}</CardText>
+          {/* <CardText>{t("TL_NEW_SUCESS_RESPONSE_NOTIFICATION_LABEL")}</CardText> */}
           <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printReciept}>
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                 <path d="M0 0h24v24H0z" fill="none" />
@@ -51,17 +82,15 @@ const Response = (props) => {
               {t("TL_PRINT_APPLICATION_LABEL")}
           </div>
           <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-          {state?.data?.[0]?.status !== "PENDINGPAYMENT" ?
+          {application?.status !== "PENDINGPAYMENT" ? (
             <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onClick={() => sessionStorage.removeItem("isCreateEnabled")} />
-            </Link> :
-            // <Link to={`digit-ui/employee/payment/collect/TL/${state?.data?.[0]?.applicationNumber}/${state?.data?.[0]?.tenantId}`} style={{ marginRight: "1rem" }}>
+            </Link>
+          ) : (
             <div onClick={routeToPaymentScreen}>
-                <SubmitBar label={t("TL_COLLECT_PAYMENT")} />
-            </div> 
-            
-            // </Link>
-          }
+              <SubmitBar label={t("TL_COLLECT_PAYMENT")} />
+            </div>
+          )}
           </ActionBar>
         </Card>
     </div>

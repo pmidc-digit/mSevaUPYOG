@@ -83,6 +83,14 @@ export const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     }
     onGoNext();
   };
+  useEffect(() => {
+        if (showToast) {
+          const timer = setTimeout(() => {
+            closeToast();
+          }, 3000); 
+          return () => clearTimeout(timer);
+        }
+      }, [showToast]);
 
 
   console.log("RenewTLFormStepOne localStepData: ", reduxStepData, localStepData);

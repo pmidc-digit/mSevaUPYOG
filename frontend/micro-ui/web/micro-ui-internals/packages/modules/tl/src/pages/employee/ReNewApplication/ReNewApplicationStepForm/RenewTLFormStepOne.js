@@ -63,6 +63,14 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
     return missingFields;
   }
+  useEffect(() => {
+        if (showToast) {
+          const timer = setTimeout(() => {
+            closeToast();
+          }, 3000); 
+          return () => clearTimeout(timer);
+        }
+      }, [showToast]);
 
   const goNext = () => {
     // if (!validateStepData(localStepData)) {

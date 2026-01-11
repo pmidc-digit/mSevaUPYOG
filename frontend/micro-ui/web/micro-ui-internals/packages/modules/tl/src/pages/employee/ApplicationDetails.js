@@ -420,11 +420,11 @@ const ApplicationDetails = () => {
             label: t("TL_APPLICATION"),
             onClick: handleDownloadPdf,
           },
-          {
-            label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-            onClick: printCertificateWithESign,
-            disabled: eSignLoading,
-          },
+          // {
+          //   label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+          //   onClick: printCertificateWithESign,
+          //   disabled: eSignLoading,
+          // },
         ]
       : [
           {

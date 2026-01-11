@@ -1,6 +1,6 @@
 // RenewFormStepThree.jsx
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
@@ -14,7 +14,14 @@ const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const currentStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData[config.key] || {});
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.Documents);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
-
+  useEffect(() => {
+        if (showToast) {
+          const timer = setTimeout(() => {
+            closeToast();
+          }, 3000); 
+          return () => clearTimeout(timer);
+        }
+      }, [showToast]);
   function validateDocuments(data) {
     const requiredTypes = ["OWNERIDPROOF", "OWNERSHIPPROOF", "OWNERSELF"];
     const uploadedDocs = data?.documents?.documents || [];

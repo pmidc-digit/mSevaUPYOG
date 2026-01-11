@@ -187,14 +187,12 @@ const OwnerForm = (_props) => {
             paddingRight: "8px" 
           }}>
               <div onClick={() => removeOwner(owner)} 
-               onMouseEnter={(e) => {
+                onMouseEnter={(e) => {
                   const svg = e.currentTarget.querySelector("svg");
                   const path = svg.querySelector("path");
                   e.currentTarget.style.transform = "scale(1.1)";
                   e.currentTarget.style.opacity = "0.8";
-                  e.currentTarget.style.background = "linear-gradient(135deg, #2563eb, #1e40af)";
-                  e.currentTarget.style.borderRadius = "6px";
-                  path.style.fill = "#FFFFFF"; // White icon on blue gradient
+                  path.style.fill = "#2341e9b2"; // Red color on hover
                 }}
                 onMouseLeave={(e) => {
                   const svg = e.currentTarget.querySelector("svg");
@@ -1065,14 +1063,54 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       formData?.ownershipCategory?.code != "INDIVIDUAL.MULTIPLEOWNERS"
     )
       clearErrors("mulipleOwnerError");
-    if (formData?.ownershipCategory?.code == "INDIVIDUAL.MULTIPLEOWNERS" && owners.length == 1)
-      setError("mulipleOwnerError", { type: "owner_missing", message: `TL_ERROR_MULTIPLE_OWNER` });
+    // if (formData?.ownershipCategory?.code == "INDIVIDUAL.MULTIPLEOWNERS" && owners.length == 1)
+    //   setError("mulipleOwnerError", { type: "owner_missing", message: `TL_ERROR_MULTIPLE_OWNER` });
     const data = owners.map((e) => {
       return e;
     });
     onSelect(config?.key, data);
   }, [owners]);
-
+useEffect(() => {
+  const currentOwnershipCode = formData?.ownershipCategory?.code;
+  const previousOwnershipCode = sessionStorage.getItem("previousOwnershipCategory");
+  
+  if (currentOwnershipCode && previousOwnershipCode && currentOwnershipCode !== previousOwnershipCode) {
+    // console.log("🔄 Ownership category changed from", previousOwnershipCode, "to", currentOwnershipCode);
+    
+    // Check if there's existing data
+    const hasExistingData = owners.some(owner => 
+      owner.name || owner.mobileNumber || owner.instituionName
+    );
+    
+    if (hasExistingData) {
+      // Optionally show confirmation
+      const userConfirmed = window.confirm(
+        t("TL_OWNERSHIP_CHANGE_WARNING") || "Changing ownership category will clear existing owner details. Continue?"
+      );
+      
+      if (!userConfirmed) {
+        // User cancelled - revert to previous
+        return;
+      }
+    }
+    
+    // Reset owners based on new type
+    const newOwnershipType = currentOwnershipCode.split(".")[0];
+    
+    if (newOwnershipType === "INSTITUTIONAL" || currentOwnershipCode.includes("INSTITUTIONAL")) {
+      setOwners([createOwnerDetails()]);
+    } else if (currentOwnershipCode === "INDIVIDUAL.MULTIPLEOWNERS") {
+      setOwners([createOwnerDetails()]);
+    } else if (currentOwnershipCode.includes("SINGLEOWNER")) {
+      setOwners([createOwnerDetails()]);
+    }
+  }
+  
+  // Store current as previous for next comparison
+  if (currentOwnershipCode) {
+    sessionStorage.setItem("previousOwnershipCategory", currentOwnershipCode);
+  }
+}, [formData?.ownershipCategory?.code]);
   useEffect(() => {
     onSelect("tradedetils1", previousLicenseDetails);
   }, [previousLicenseDetails]);
@@ -1080,8 +1118,8 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
   useEffect(() => {
     if (window.location.href.includes("tl/new-application")) {
       if (!formData?.owners) setOwners([createOwnerDetails()]);
-      if (formData?.ownershipCategory?.code == "INDIVIDUAL.MULTIPLEOWNERS")
-        setError("mulipleOwnerError", { type: "owner_missing", message: `TL_ERROR_MULTIPLE_OWNER` });
+      // if (formData?.ownershipCategory?.code == "INDIVIDUAL.MULTIPLEOWNERS")
+      //   setError("mulipleOwnerError", { type: "owner_missing", message: `TL_ERROR_MULTIPLE_OWNER` });
     }
   }, [formData?.ownershipCategory?.code]);
 

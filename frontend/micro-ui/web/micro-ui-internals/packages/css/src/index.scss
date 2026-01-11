@@ -1418,3 +1418,21 @@ video {
 .svgPrimaryH16px {
   display: none !important;
 }
+/* Date input centering for mobile view */
+@media (max-width: 767px) {
+  input[type="date"] {
+    text-align: center !important;
+  }
+  
+  .form-field input[type="date"] {
+    text-align: center !important;
+  }
+  
+  .citizen-card-input[type="date"] {
+    text-align: center !important;
+  }
+  
+  .card input[type="date"] {
+    text-align: center !important;
+  }
+}

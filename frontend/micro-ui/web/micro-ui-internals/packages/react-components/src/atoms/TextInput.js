@@ -143,7 +143,17 @@ function DatePicker(props) {
 function getDDMMYYYY(date) {
   if (!date) return "";
 
-  return new Date(date).toLocaleString("en-In").split(",")[0];
+  // Safari needs full ISO format
+  const safeDate = date.includes("T") ? date : date + "T00:00:00";
+
+  const d = new Date(safeDate);
+  if (isNaN(d)) return "";
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}/${month}/${year}`;
 }
 
 export default TextInput;

@@ -575,6 +575,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
           
+          
           {buildingStatus?.code === "BUILTUP" && (
              <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -602,6 +603,7 @@ const NOCSiteDetails = (_props) => {
             {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
             </div>
           </LabelFieldPair>
+          )}
 
           {buildingStatus?.code === "BUILTUP" && (
             <LabelFieldPair>

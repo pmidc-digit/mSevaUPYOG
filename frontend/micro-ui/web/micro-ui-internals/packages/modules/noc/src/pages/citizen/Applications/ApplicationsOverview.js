@@ -96,6 +96,8 @@ const CitizenApplicationOverview = () => {
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
 
+  const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
+
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [loading, setLoading] = useState(false);
@@ -501,19 +503,41 @@ const CitizenApplicationOverview = () => {
         ))}
       </Card>
 
-      <Card>
+     <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-        {displayData?.coordinates?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+        {displayData?.coordinates?.map((detail, index) => {
+          // Find matching documents for this coordinate block
+          const sitePhotos = displayData?.Documents?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
 
-              <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
+          return (
+            <div
+              key={index}
+              style={{
+                marginBottom: "30px",
+                background: "#FAFAFA",
+                padding: "16px",
+                borderRadius: "4px",
+              }}
+            >
+              <StatusTable>
+                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+
+                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+              </StatusTable>
+
+              {/* Render images for site photographs */}
+              {sitePhotos?.map((photo, idx) => (
+                <div key={photo.uuid}>
+                  <NOCImageView ownerFileStoreId={photo.documentAttachment} ownerName={photo.documentType || `Site Photo ${idx + 1}`} />
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </Card>
 
       <Card>
@@ -549,7 +573,9 @@ const CitizenApplicationOverview = () => {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || []
             }}
+            disable={true}  
           />
         )}
       </Card>

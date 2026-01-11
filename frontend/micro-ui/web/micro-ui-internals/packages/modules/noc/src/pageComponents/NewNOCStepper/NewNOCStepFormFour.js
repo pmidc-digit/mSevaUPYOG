@@ -1,6 +1,6 @@
-import React from "react";
+import React ,{useMemo,useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
+import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox,Loader } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM, RESET_NOC_NEW_APPLICATION_FORM } from "../../redux/action/NOCNewApplicationActions";
 import { useState, useRef } from "react";
 import _ from "lodash";
@@ -65,6 +65,31 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     onSubmit(currentStepData, action);
   };
 
+  const calculatorPayload = useMemo(
+    () => ({
+      CalculationCriteria: [
+        {
+          applicationNumber: currentStepData?.apiData?.Noc?.[0]?.applicationNo,
+          tenantId: currentStepData?.apiData?.Noc?.[0]?.tenantId,
+          NOC: mapToNOCPayload(currentStepData, { action: "" }).Noc,
+        },
+      ],
+    }),
+    [currentStepData]
+  );
+
+  const { isLoading: nocCalculatorLoading, data : calculatorData, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
+    { payload: calculatorPayload },
+    { enabled: !!calculatorPayload }
+  );
+
+  useEffect(() => {
+  revalidate();
+}, [currentStepData?.siteDetails, currentStepData?.applicationDetails]);
+
+
+console.log('calculatorData', calculatorData)
+
   const onSubmit = async (data, selectedAction) => {
     console.log("formData inside onSubmit", data);
 
@@ -77,6 +102,16 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     const finalPayload = mapToNOCPayload(data, selectedAction);
+    
+    const taxHeadEstimates = calculatorData?.Calculation?.[0]?.taxHeadEstimates || [];
+
+    finalPayload.Noc.nocDetails.additionalDetails.calculations = [
+      {
+        isLatest: true,
+        updatedBy: Digit.UserService.getUser()?.info?.name,
+        taxHeadEstimates: taxHeadEstimates
+      }
+    ];
     console.log("finalPayload here==>", finalPayload);
 
     try {
@@ -260,9 +295,11 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     goNext(action);
     //console.log("selectedAction here", action);
   }
+  if (nocCalculatorLoading) return <Loader />;
 
   return (
     <React.Fragment>
+      {nocCalculatorLoading && <Loader />}
       <NOCSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       <CheckBox

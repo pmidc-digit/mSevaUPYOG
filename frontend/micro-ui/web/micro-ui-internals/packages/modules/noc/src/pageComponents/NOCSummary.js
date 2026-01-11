@@ -154,14 +154,27 @@ function NOCSummary({ currentStepData: formData, t }) {
       </Card>
       
       <Card>
-      <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-      <StatusTable>
-        <Row label={t("COMMON_LATITUDE1_LABEL")} text={coordinates?.Latitude1 || "N/A"}/>
-        <Row label={t("COMMON_LONGITUDE1_LABEL")} text={coordinates?.Longitude1 || "N/A"}/>
-        <Row label={t("COMMON_LATITUDE2_LABEL")} text={coordinates?.Latitude2 || "N/A"}/>
-        <Row label={t("COMMON_LONGITUDE2_LABEL")} text={coordinates?.Longitude2 || "N/A"}/>
-      </StatusTable>
+        <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
+        <StatusTable>
+          <Row label={t("COMMON_LATITUDE1_LABEL")} text={coordinates?.Latitude1 || "N/A"} />
+          <Row label={t("COMMON_LONGITUDE1_LABEL")} text={coordinates?.Longitude1 || "N/A"} />
+          <Row label={t("COMMON_LATITUDE2_LABEL")} text={coordinates?.Latitude2 || "N/A"} />
+          <Row label={t("COMMON_LONGITUDE2_LABEL")} text={coordinates?.Longitude2 || "N/A"} />
+        </StatusTable>
+
+        {/* Render site photographs dynamically in same style */}
+        {formData?.documents?.documents?.documents
+          ?.filter((doc) => doc.documentType?.startsWith("OWNER.SITEPHOTOGRAPH"))
+          .map((photo, idx) => (
+            <div key={photo.uuid} style={{ marginTop: "16px" }}>
+              <NOCImageView
+                ownerFileStoreId={photo.documentAttachment}
+                ownerName={photo.documentType || `Site Photo ${idx + 1}`}
+              />
+            </div>
+          ))}
       </Card>
+
 
       {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
@@ -187,14 +200,6 @@ function NOCSummary({ currentStepData: formData, t }) {
         {formData?.documents?.documents?.documents?.length > 0 && <NOCDocumentTableView documents={formData?.documents?.documents?.documents}/>}
       </StatusTable>
       </Card>
-      
-      <Card>
-      <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
-      <StatusTable>
-        {formData && <NOCFeeEstimationDetails formData={formData}/>}
-      </StatusTable>
-      </Card>
-
 
     </div>
   );

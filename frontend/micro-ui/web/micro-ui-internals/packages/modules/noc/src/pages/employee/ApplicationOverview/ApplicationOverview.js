@@ -87,7 +87,6 @@ const NOCEmployeeApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
-
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
@@ -96,8 +95,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
-
-  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const { isLoading, data, refetch  } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
@@ -119,7 +118,6 @@ const NOCEmployeeApplicationOverview = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-
   useEffect(() => {
       if (isLoading || !tenantId || !businessServiceCode) return;
 
@@ -137,6 +135,14 @@ const NOCEmployeeApplicationOverview = () => {
         }
       })();
   }, [tenantId, businessServiceCode, isLoading]);
+
+  useEffect(() => {
+    const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
+    if (latestCalc?.taxHeadEstimates) {
+      setFeeAdjustments(latestCalc.taxHeadEstimates);
+    }
+  }, [applicationDetails?.Noc]);
+
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -250,12 +256,49 @@ const NOCEmployeeApplicationOverview = () => {
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
+    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
 
+    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
+
+
+    if (!hasNonZeroFee) {
+      setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
+      return;
+    }
+
+    if (!allRemarksFilled) {
+      setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
+      return;
+    }
     // console.log("data ==>", data);
+
+    const newCalculation = {
+      isLatest: true,
+      updatedBy: Digit.UserService.getUser()?.info?.name,
+      taxHeadEstimates: feeAdjustments
+        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") // exclude UI-only total row
+        .map((row) => ({
+          taxHeadCode: row.taxHeadCode,
+          estimateAmount: (row.amount || 0) + (row.adjustedAmount ?? 0), // baseline + delta
+          category: row.category,
+          remarks: row.remark || null,
+          // include filestoreId only if backend supports it
+          filestoreId: row.filestoreId || null,
+        })),
+    };
+
+
+
+    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || [])
+    .map(c => ({ ...c, isLatest: false }));
 
     const updatedApplicant = {
       ...payloadData,
       workflow: {},
+      nocDetails: {
+        ...payloadData.nocDetails,
+        additionalDetails: { ...payloadData.nocDetails.additionalDetails, calculations: [...oldCalculations, newCalculation] },
+      },
     };
 
     const filtData = data?.Licenses?.[0];
@@ -298,6 +341,7 @@ const NOCEmployeeApplicationOverview = () => {
           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
+          refetch();
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
@@ -338,9 +382,9 @@ const NOCEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  // if (isLoading) {
-  //   return <Loader />;
-  // }
+  if (isLoading) {
+    return <Loader />;
+  }
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -370,6 +414,7 @@ const NOCEmployeeApplicationOverview = () => {
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
+                <Row label={t("NOC_OWNER_TYPE_LABEL")} text={detail?.ownerType?.i18nKey ? t(detail?.ownerType?.i18nKey) : "N/A"} />
                 <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
@@ -478,16 +523,39 @@ const NOCEmployeeApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-        {displayData?.coordinates?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-              <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
+        {displayData?.coordinates?.map((detail, index) => {
+          // Find matching documents for this coordinate block
+          const sitePhotos = displayData?.Documents?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
+
+          return (
+            <div
+              key={index}
+              style={{
+                marginBottom: "30px",
+                background: "#FAFAFA",
+                padding: "16px",
+                borderRadius: "4px",
+              }}
+            >
+              <StatusTable>
+                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+
+                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+              </StatusTable>
+
+              {/* Render images for site photographs */}
+              {sitePhotos?.map((photo, idx) => (
+                <div key={photo.uuid}>
+                  <NOCImageView ownerFileStoreId={photo.documentAttachment} ownerName={photo.documentType || `Site Photo ${idx + 1}`} />
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </Card>
 
       <Card>
@@ -523,7 +591,10 @@ const NOCEmployeeApplicationOverview = () => {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || []
             }}
+            feeAdjustments={feeAdjustments}          
+            setFeeAdjustments={setFeeAdjustments}  
           />
         )}
       </Card>
@@ -594,7 +665,7 @@ const NOCEmployeeApplicationOverview = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || getLoader) && <Loader />}
     </div>
   );
 };

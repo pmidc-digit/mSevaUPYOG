@@ -445,6 +445,14 @@
   line-height: 28px;
 }
 
+/* Mobile view styles for complaint input container */
+@media only screen and (max-width: 640px) {
+  .complaint-input-container {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
 @screen dt {
   .complaint-links-container .header .removeBorderRadiusLogo {
     border-radius: 2px !important;

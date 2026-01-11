@@ -86,11 +86,8 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
               <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.challanStatus)} />
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
-              <div
-                style={{
-                  display: "flex",
-                  gap: "20px",
-                }}
+              <div className="action-button-myapplication"
+                
               >
                 {
                   <Link to={`/digit-ui/citizen/challangeneration/application/${bill?.challanNo}/${bill?.tenantId}`}>

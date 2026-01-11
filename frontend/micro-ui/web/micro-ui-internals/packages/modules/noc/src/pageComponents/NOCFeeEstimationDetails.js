@@ -146,7 +146,6 @@ const handleRemarkChange = (index, value) => {
 
 
   const onAdjustedAmountBlur = () => {
-  // For NOC, since adjusted amounts don't affect the fee calculation, no action needed
   return;
 };
 
@@ -167,7 +166,7 @@ const handleRemarkChange = (index, value) => {
         }))
       );
     }
-  }, [data?.Calculation?.[0]?.taxHeadEstimates]);
+  }, [data]);
 
 
   const applicationFeeDataWithTotal = useMemo(() => {

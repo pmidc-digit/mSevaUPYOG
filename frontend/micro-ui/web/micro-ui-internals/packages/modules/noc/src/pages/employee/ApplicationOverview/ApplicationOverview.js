@@ -18,8 +18,10 @@ import {
   Toast,
   ConnectingCheckPoints,
   CheckPoint,
+  Table,
+  Modal
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef,useMemo  } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
@@ -28,6 +30,8 @@ import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
+import { SiteInspection } from "../../../pageComponents/SiteInspection";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -97,7 +101,15 @@ const NOCEmployeeApplicationOverview = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const { isLoading, data, refetch  } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const isMobile = window?.Digit?.Utils?.browser?.isMobile();
+  const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
+      documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+  } : {})
+
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
@@ -111,6 +123,45 @@ const NOCEmployeeApplicationOverview = () => {
 
   console.log("workflowDetails here=>", workflowDetails);
 
+  const geoLocations = useMemo(() => {
+    if (siteImages?.documents && siteImages?.documents.length > 0) {
+      return siteImages?.documents?.map((img) => {
+        return {
+          latitude: img?.latitude || "",
+          longitude: img?.longitude || "",
+        }
+      })
+    }
+  }, [siteImages]);
+
+  
+  const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+    title: value?.documentType,
+    fileStoreId: value?.filestoreId,
+  })), [siteImages])
+
+  const documentsColumnsSiteImage = [
+    {
+      Header: t("BPA_SITES"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
+      accessor: "fileStoreId",
+      Cell: ({ value }) => {
+        return value ? (
+          <LinkButton style={{ float: "right", display: "inline" }}
+            label={t("View")}
+            onClick={() => routeToImage(value)}
+          />
+        ) : (
+          t("CS_NA")
+        )
+      },
+    }
+  ];
+
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -118,6 +169,21 @@ const NOCEmployeeApplicationOverview = () => {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
+
+    const Close = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+    </svg>
+  );
+
+  const CloseBtn = (props) => {
+    return (
+      <div className="icon-bg-secondary" onClick={props.onClick}>
+        <Close />
+      </div>
+    );
+  };
   useEffect(() => {
       if (isLoading || !tenantId || !businessServiceCode) return;
 
@@ -141,7 +207,7 @@ const NOCEmployeeApplicationOverview = () => {
     if (latestCalc?.taxHeadEstimates) {
       setFeeAdjustments(latestCalc.taxHeadEstimates);
     }
-  }, [applicationDetails?.Noc]);
+  }, [applicationDetails]);
 
 
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -222,9 +288,57 @@ const NOCEmployeeApplicationOverview = () => {
       };
 
       setDisplayData(finalDisplayData);
+      const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
+
+      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
     }
   }, [applicationDetails?.Noc]);
 
+  function routeToImage(filestoreId) {
+    getUrlForDocumentView(filestoreId)
+  }
+  
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], state);
+      if (result?.data) {
+        const fileUrl = result.data[filestoreId];
+        if (fileUrl) {
+          // window.open(fileUrl, "_blank");
+          if(!isMobile){
+            window.open(fileUrl, "_blank");
+          }else{
+            setShowImageModal(true);
+            setImageUrl(fileUrl);            
+          }         
+        } else {
+          // if (props?.setError) {
+          //   props?.setError(t("CS_FILE_FETCH_ERROR"));
+          // } else {
+            console.error(t("CS_FILE_FETCH_ERROR"))
+          // }
+        }
+      } else {
+        // if (props?.setError) {
+        //   props?.setError(t("CS_FILE_FETCH_ERROR"));
+        // } else {
+          console.error(t("CS_FILE_FETCH_ERROR"))
+        // }
+      }
+    } catch (e) {
+      // if (props?.setError) {
+      //   props?.setError(t("CS_FILE_FETCH_ERROR"));
+      // } else {
+        console.error(t("CS_FILE_FETCH_ERROR"))
+      // }
+    }
+  }
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    setImageUrl(null);
+  }
   function onActionSelect(action) {
     console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
@@ -249,17 +363,26 @@ const NOCEmployeeApplicationOverview = () => {
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
+      if(applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+        setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
+        return;
+      }
       setShowModal(true);
       setSelectedAction(action);
     }
   }
 
+  const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
 
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
+
+    if (!isFeeDisabled) {
+    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
+    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
     if (!hasNonZeroFee) {
       setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
@@ -270,6 +393,7 @@ const NOCEmployeeApplicationOverview = () => {
       setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
       return;
     }
+  }
     // console.log("data ==>", data);
 
     const newCalculation = {
@@ -297,7 +421,11 @@ const NOCEmployeeApplicationOverview = () => {
       workflow: {},
       nocDetails: {
         ...payloadData.nocDetails,
-        additionalDetails: { ...payloadData.nocDetails.additionalDetails, calculations: [...oldCalculations, newCalculation] },
+        additionalDetails: { 
+          ...payloadData.nocDetails.additionalDetails, 
+          calculations: [...oldCalculations, newCalculation],
+          siteImages: siteImages?.documents || []
+         },
       },
     };
 
@@ -321,7 +449,6 @@ const NOCEmployeeApplicationOverview = () => {
 
     try {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
           setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
@@ -382,7 +509,7 @@ const NOCEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  if (isLoading) {
+  if (loading) {
     return <Loader />;
   }
 
@@ -593,8 +720,9 @@ const NOCEmployeeApplicationOverview = () => {
               siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
               calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || []
             }}
-            feeAdjustments={feeAdjustments}          
-            setFeeAdjustments={setFeeAdjustments}  
+            feeAdjustments={feeAdjustments}
+            setFeeAdjustments={setFeeAdjustments}
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
           />
         )}
       </Card>
@@ -619,6 +747,38 @@ const NOCEmployeeApplicationOverview = () => {
         </Card>
       )} */}
 
+
+      {
+              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (user?.info?.roles.filter(role => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 &&
+              <Card>
+                <div id="fieldInspection"></div>
+                <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+              </Card>
+            }
+            {
+                applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
+                  <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
+                  <Table
+                    className="customTable table-border-style"
+                    t={t}
+                    data={documentData}
+                    columns={documentsColumnsSiteImage}
+                    getCellProps={() => ({ style: {} })}
+                    disableSort={false}
+                    autoSort={true}
+                    manualPagination={false}
+                    isPaginationRequired={false}
+                  />
+                  {geoLocations?.length > 0 &&
+                      <React.Fragment>
+                      <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                      <CustomLocationSearch position={geoLocations}/>
+                      </React.Fragment>
+                  }
+                </Card>
+              }
+      
+
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
       {actions?.length > 0 && (
@@ -636,6 +796,22 @@ const NOCEmployeeApplicationOverview = () => {
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}
+
+
+    {showImageModal && <Modal
+        headerBarEnd={<CloseBtn onClick={closeImageModal} />}
+      >
+        {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
+        {imageUrl?.toLowerCase().endsWith(".pdf") ? (
+          <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">{t("CS_VIEW_DOCUMENT")}</a>
+        ) : (
+          <img
+            src={imageUrl}
+            alt="Preview"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
+        )}
+      </Modal>}
 
       {showModal ? (
         <NOCModal
@@ -665,7 +841,7 @@ const NOCEmployeeApplicationOverview = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader />}
+      {loading && <Loader />}
     </div>
   );
 };

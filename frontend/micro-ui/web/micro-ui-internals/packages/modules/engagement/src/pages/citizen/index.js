@@ -22,7 +22,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
   return (
     <React.Fragment>
       <div className="engagement-citizen-wrapper">
-        {!location.pathname.includes("response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
+        {/* {!location.pathname.includes("response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
         <Switch>
           <Route path={`${path}/notifications`} component={() => <NotificationsOrWhatsNew variant="notifications" parentRoute={path} />} />
           <PrivateRoute path={`${path}/whats-new`} component={() => <NotificationsOrWhatsNew variant="whats-new" parentRoute={path} />} />
@@ -37,7 +37,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           {/* <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) =>  /> */}
           {/* New Development */}
           <PrivateRoute path={`${path}/surveys/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
-          <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType}/>} />
+          <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType} />} />
           <PrivateRoute path={`${path}/surveys/submit-survey-response`} component={(props) => <SubmitResponse {...props} />} />
         </Switch>
       </div>

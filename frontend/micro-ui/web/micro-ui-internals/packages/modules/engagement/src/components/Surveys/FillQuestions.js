@@ -308,9 +308,10 @@ const FillQuestions = (props) => {
             setSubmitted(false);
             if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
               fetchUserDetails();
-            } else {
-              fetchPosition();
             }
+            // else {
+            //   fetchPosition();
+            // }
           }
           if (response.status === "Submit") {
             setSubmitted(true);
@@ -336,9 +337,10 @@ const FillQuestions = (props) => {
         } else {
           if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
             fetchUserDetails();
-          } else {
-            fetchPosition();
           }
+          // else {
+          //   fetchPosition();
+          // }
         }
       });
     } catch (error) {
@@ -422,7 +424,7 @@ const FillQuestions = (props) => {
             } else {
               setHasCitizenDetails(true);
 
-              fetchPosition();
+              // fetchPosition();
             }
           }
         } else {
@@ -656,7 +658,7 @@ const FillQuestions = (props) => {
             : city,
         // tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "Draft",
-        coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
+        // coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         answers: answerArr,
       },
     };
@@ -770,7 +772,7 @@ const FillQuestions = (props) => {
         // tenantId: city,
         status: "Submit",
         locality: locality,
-        coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
+        // coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         tenantId:
           city === null
             ? window.location.href.includes("/employee")
@@ -1526,8 +1528,9 @@ const FillQuestions = (props) => {
         content={questionDetailsContent}
         hideSubmit={true}
       />
-    ) : (((prevProps?.userType).toUpperCase() === "EMPLOYEE" || prevProps?.citizenFill) && isgeoLoc === true) ||
-      ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails === true && isgeoLoc === true) ? (
+    ) : (prevProps?.userType).toUpperCase() === "EMPLOYEE" ||
+      prevProps?.citizenFill ||
+      ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails === true) ? (
       <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
         <div className="category-card">
           <div>

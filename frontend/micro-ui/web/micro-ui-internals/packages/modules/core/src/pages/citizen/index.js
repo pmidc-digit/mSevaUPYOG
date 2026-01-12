@@ -132,7 +132,6 @@ const Home = ({
               backgroundColor: "#F9FAFB",
               paddingTop: isMobile ? "20px" : "32px",
               paddingBottom: "80px",
-              marginTop: "3rem",
             }}
           >
             {/* Content Container */}

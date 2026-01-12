@@ -2,6 +2,7 @@ import { Loader } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { pdfDocumentName, pdfDownloadLink } from "../utils";
+import "@mseva/css/components/documentSection";
 
 const PDFSvg = ({ width = 20, height = 20, style }) => (
   <svg style={style} xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 20 20" fill="gray">
@@ -28,17 +29,30 @@ function TLDocument({ value = {} }) {
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="document-container">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="document-grid">
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
             return (
-              <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                <p style={{ marginTop: "8px", textAlign: "center" }}>
-                  {value?.workflowDocs ? t(`${document?.documentType}`) : t(`TL_${document?.documentType}`)}
-                </p>
+              <a 
+                target="_blank"
+                rel="noopener noreferrer"
+                href={documentLink} 
+                className="document-link"
+                key={index}
+              >
+                <div className="document-card">
+                  <div className="document-icon-wrapper">
+                    <PDFSvg width={80} height={100} />
+                  </div>
+                  <p className="document-name">
+                    {value?.workflowDocs ? t(`${document?.documentType}`) : t(`TL_${document?.documentType}`)}
+                  </p>
+                  <div className="document-action-label">
+                    View
+                  </div>
+                </div>
               </a>
             );
           })}

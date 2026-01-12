@@ -1,0 +1,98 @@
+// Document Section Styles - Reusable across services
+// Usage: Import these classes in your components to standardize document display
+
+.document-section-wrapper {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  border: 1px solid #e0e4e8;
+  background-color: #f9f9f9;
+  padding: 16px;
+}
+
+.document-section-header {
+  margin-top: 0;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #505a5f;
+
+  .document-icon {
+    margin-right: 8px;
+    font-size: 18px;
+  }
+}
+
+.document-empty-state {
+  padding: 16px;
+  text-align: center;
+  color: #7a8a96;
+  background-color: #ffffff;
+  border-radius: 4px;
+}
+
+// Document Card Styles
+.document-container {
+  margin-top: 16px;
+}
+
+.document-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 8px;
+}
+
+.document-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover .document-card {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.document-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.document-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 120px;
+  background-color: #fef5f5;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.document-name {
+  margin-top: 0;
+  margin-bottom: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333333;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.document-action-label {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #0b69a4;
+  font-weight: 600;
+}
+

@@ -285,6 +285,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
   const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
   const decimalNumber = /^\d+(\.\d{1,2})?$/;
+  const onlyAlphabetsTest = /^[A-Za-z ]+$/;
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -348,7 +349,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petName"
             rules={{
               required: t("PTR_PET_NAME_REQUIRED"),
-              pattern: { value: alphaNum, message: t("PTR_PET_NAME_INVALID") },
+              pattern: { value: onlyAlphabetsTest, message: t("PTR_PET_NAME_INVALID") },
               maxLength: { value: 100, message: "Maximum 100 characters" },
               minLength: { value: 2, message: "Minimum 2 characters" },
             }}
@@ -601,7 +602,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           <Controller
             control={control}
             name="clinicName"
-            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: /^[a-zA-Z0-9\s&-]+$/, message: t("PTR_CLINIC_NAME_INVALID") } }}
+            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: onlyAlphabetsTest, message: t("PTR_CLINIC_NAME_INVALID") } }}
             render={(props) => (
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}

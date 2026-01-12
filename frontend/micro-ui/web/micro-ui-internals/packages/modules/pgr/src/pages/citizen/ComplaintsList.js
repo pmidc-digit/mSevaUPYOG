@@ -7,10 +7,11 @@ import { LOCALE } from "../../constants/Localization";
 import Complaint from "../../components/Complaint";
 
 export const ComplaintsList = (props) => {
+  console.log("cominasdjb aksjd");
   const User = Digit.UserService.getUser();
   const mobileNumber = User.mobileNumber || User?.info?.mobileNumber || User?.info?.userInfo?.mobileNumber;
   //const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
-  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId ;
+  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
   const { t } = useTranslation();
   const { path, url } = useRouteMatch();
   let { isLoading, error, data, revalidate } = Digit.Hooks.pgr.useComplaintsListByMobile(tenantId, mobileNumber);
@@ -34,30 +35,28 @@ export const ComplaintsList = (props) => {
     complaintsList = (
       <Card>
         {t(LOCALE.ERROR_LOADING_RESULTS)
-          .split("\\n")
-          .map((text, index) => (
-            <p key={index} 
-            className="Pgr-complaintList-error">
+          ?.split("\\n")
+          ?.map((text, index) => (
+            <p key={index} className="Pgr-complaintList-error">
               {text}
             </p>
           ))}
       </Card>
     );
-  } else if (complaints.length === 0) {
+  } else if (complaints?.length === 0) {
     complaintsList = (
       <Card>
         {t(LOCALE.NO_COMPLAINTS)
-          .split("\\n")
-          .map((text, index) => (
-            <p key={index} 
-            className="Pgr-complaintList-noComplaints">
+          ?.split("\\n")
+          ?.map((text, index) => (
+            <p key={index} className="Pgr-complaintList-noComplaints">
               {text}
             </p>
           ))}
       </Card>
     );
   } else {
-    complaintsList = complaints.map(({ service }, index) => <Complaint key={index} data={service} path={path} />);
+    complaintsList = complaints?.map(({ service }, index) => <Complaint key={index} data={service} path={path} />);
   }
 
   return (

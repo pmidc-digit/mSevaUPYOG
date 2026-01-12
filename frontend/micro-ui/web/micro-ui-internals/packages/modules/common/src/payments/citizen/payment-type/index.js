@@ -369,8 +369,8 @@ export const SelectPaymentType = (props) => {
 
   return (
     <React.Fragment>
-      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
-      <form style={{padding:"20px"}} onSubmit={handleSubmit(onSubmit)}>
+      {/* <BackButton>{t("CS_COMMON_BACK")}</BackButton> */}
+      <form style={{ padding: "20px" }} onSubmit={handleSubmit(onSubmit)}>
         <Header>{t("PAYMENT_CS_HEADER")}</Header>
         <Card>
           <div className="payment-amount-info" style={{ marginBottom: "26px" }}>

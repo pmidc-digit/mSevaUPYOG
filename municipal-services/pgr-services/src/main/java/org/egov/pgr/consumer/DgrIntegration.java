@@ -220,6 +220,7 @@ public class DgrIntegration {
                 failedPayload.put("serviceRequest", serviceReqRequest);
                 failedPayload.put("error", ex.getMessage());
                 failedPayload.put("status", "FAILED");
+                failedPayload.put("DgrCreate", requestBody);
 
                 producer.push(failedDgrTopic,serviceReqRequest.getService().getServiceRequestId(), failedPayload);
 
@@ -249,6 +250,8 @@ public class DgrIntegration {
                 Map<String, Object> failedPayload = new HashMap<>();
                 failedPayload.put("serviceRequest", serviceReqRequest);
                 failedPayload.put("dgrResponse", responseBody);
+                failedPayload.put("DgrCreate", requestBody);
+
                 failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
                 failedPayload.put("status", "FAILED");
 

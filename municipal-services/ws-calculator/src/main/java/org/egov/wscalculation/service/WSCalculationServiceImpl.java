@@ -368,7 +368,13 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 				    log.info("BREAKDOWN triggered for connection {}", criteria.getConnectionNo());
 
-				    // Fetch previous meter reading
+				 // current reading object
+				    final MeterReading currentReading = MeterReading.builder()
+				            .lastReadingDate(criteria.getFrom())
+				            .currentReadingDate(criteria.getTo())
+				            .build();
+
+				    // Fetch previous reading (exclude current)
 				    MeterReading previousReading = meterService.searchMeterReadings(
 				            MeterReadingSearchCriteria.builder()
 				                    .tenantId(criteria.getTenantId())
@@ -376,20 +382,29 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				                    .build(),
 				            requestInfo
 				    ).stream()
+				     .filter(r -> !r.equals(currentReading)) // exclude current reading
 				     .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
-				     .skip(1) // skip current
 				     .findFirst()
 				     .orElse(null);
 
-				    if (previousReading != null && MeterReading.MeterStatusEnum.BREAKDOWN.equals(previousReading.getMeterStatus())) {
-				        // Consecutive BREAKDOWN → use previous charge + penalty
+				    // Apply logic
+				    if (previousReading != null
+				            && MeterReading.MeterStatusEnum.BREAKDOWN.equals(previousReading.getMeterStatus())) {
+
+				        // Consecutive BREAKDOWN → penalty applies
 				        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
-				        penalty = waterCharge.multiply(BigDecimal.valueOf(2)).setScale(2, RoundingMode.HALF_UP);
-				        log.info("Consecutive BREAKDOWN: charge={} penalty={}", waterCharge, penalty);
+				        penalty = waterCharge.multiply(BigDecimal.valueOf(2))
+				                .setScale(2, RoundingMode.HALF_UP);
+
+				        log.info("Consecutive BREAKDOWN detected | prevReadingDate={} charge={} penalty={}",
+				                previousReading.getLastReadingDate(), waterCharge, penalty);
+
 				    } else {
-				        // First BREAKDOWN → take last 3 demands average (min 1)
+				        // First BREAKDOWN → no penalty
 				        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
-				        log.info("First BREAKDOWN: charge={}", waterCharge);
+				        penalty = BigDecimal.ZERO;
+
+				        log.info("First BREAKDOWN detected | avgCharge={}", waterCharge);
 				    }
 
 				    // Add WS_CHARGE estimate

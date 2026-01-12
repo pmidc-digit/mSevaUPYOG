@@ -1037,7 +1037,7 @@ const BpaApplicationDetail = () => {
   
       const documentsColumnsSiteImage = [
           {
-            Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+            Header: t("BPA_SITES"),
             accessor: "title",
             Cell: ({ value }) => t(value) || t("CS_NA"),
           },

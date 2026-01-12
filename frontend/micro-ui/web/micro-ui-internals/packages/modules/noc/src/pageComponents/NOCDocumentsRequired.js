@@ -122,6 +122,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {filteredDocuments?.map((document, index) => {
             return (
+              <div className="bpa-doc-required-card">
               <PTRSelectDocument
                 key={index}
                 document={document}
@@ -138,6 +139,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
                 dispatch={dispatch}
                 previewLink={documentLinks?.find(link => link.code === document.code)?.link}
               />
+              </div>
             );
           })}
           {error && <Toast label={error} isDleteBtn={true} onClose={() => setError(null)} error />}
@@ -364,7 +366,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     }
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+      <div className="bpa-doc-required-wrapper">
       {getLoading && <Loader />}
 
         <LabelFieldPair>

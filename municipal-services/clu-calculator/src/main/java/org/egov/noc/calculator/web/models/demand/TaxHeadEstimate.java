@@ -19,4 +19,6 @@ public class TaxHeadEstimate {
     private BigDecimal estimateAmount;
 
     private Category category;
+    
+    private String remarks;
 }

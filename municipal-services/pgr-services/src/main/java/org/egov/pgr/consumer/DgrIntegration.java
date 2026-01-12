@@ -410,7 +410,9 @@ public class DgrIntegration {
         requestBody.put("Citizen_Municipality", municipalityName);
         requestBody.put("Citizen_State", constants.STATE_NAME);
         requestBody.put("Citizen_State_ID", stateId);
-        requestBody.put("Application_Department", constants.DEPARTMENT_ID);
+        requestBody.put("Application_Department",  Optional.ofNullable(catSubCat.get("Department_ID"))
+                .filter(s -> !s.trim().isEmpty())
+                .orElse("0"));
         requestBody.put("locationtype", "2");
         requestBody.put("Application_District", districtId);
         requestBody.put("Application_District_Name", districtNameGgr);
@@ -427,8 +429,10 @@ public class DgrIntegration {
         	    safeValue(constants.DEFAULT_CITIZEN_NAME,
         	              serviceReqRequest.getService().getDescription())
         	);
-        requestBody.put("Application_Department_Name", constants.DEPARTMENT_NAME);
-        requestBody.put("reopen", true);
+         	requestBody.put("Application_Department_Name",   Optional.ofNullable(catSubCat.get("Department_Name"))
+                    .filter(s -> !s.trim().isEmpty())
+                    .orElse("Department of Local Government"));
+         	requestBody.put("reopen", true);
         requestBody.put("Citizen_Type", constants.CITIZEN_TYPE);
         requestBody.put("Citizen_Company_Name", "");
         requestBody.put("Citizen_Company_Designation_Name", "");
@@ -448,7 +452,9 @@ public class DgrIntegration {
         requestBody.put("Citizen_Tehsil_Local_Lang", tehsilNameLocal);
         requestBody.put("Citizen_Village_Local_Lang", villageNameLocal);
         requestBody.put("Citizen_Town_Local_Lang", "");
-        requestBody.put("Application_Department_Local_Lang", constants.DEPARTMENT_LOCAL_LANG);
+        requestBody.put("Application_Department_Local_Lang",  Optional.ofNullable(catSubCat.get("Department_Name_Local"))
+                .filter(s -> !s.trim().isEmpty())
+                .orElse(" ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ"));
         requestBody.put("Application_District_Local_Lang", districtNameGgr);
 
         log.info("District ID: {}", districtId);
@@ -509,28 +515,46 @@ public class DgrIntegration {
         }
     }
 
-    public Map<String, String> mapServiceCodeToCategory(String serviceCode, Object categoryList) {
+    public Map<String, String> mapServiceCodeToCategory(String serviceCode, Object mdmsResponse) {
         Map<String, String> result = new HashMap<>();
         String normalizedCode = serviceCode.replaceAll("\\s+", "").toLowerCase();
 
-        List<Map<String, Object>> categories = JsonPath.read(
-                categoryList, "$.MdmsRes.tenant.dgrIntegration[0].categories"
-        );
+        try {
+            // Read categories array from MDMS response
+            List<Map<String, Object>> categories = JsonPath.read(
+                    mdmsResponse, "$.MdmsRes.tenant.dgrIntegration[0].categories"
+            );
 
-        for (Map<String, Object> category : categories) {
-            List<Map<String, Object>> subcategories = (List<Map<String, Object>>) category.get("subcategories");
-            for (Map<String, Object> sub : subcategories) {
-                String label = String.valueOf(sub.get("label")).replaceAll("\\s+", "").toLowerCase();
-                if (label.equals(normalizedCode)) {
-                    result.put("Category_ID", String.valueOf(category.get("Category_ID")));
-                    result.put("Sub_Category_ID", String.valueOf(sub.get("id")));
-                    return result;
+            for (Map<String, Object> category : categories) {
+                List<Map<String, Object>> subcategories = (List<Map<String, Object>>) category.get("subcategories");
+                for (Map<String, Object> sub : subcategories) {
+                    String label = String.valueOf(sub.get("msevaServiceCode")).replaceAll("\\s+", "").toLowerCase();
+                    if (label.equals(normalizedCode)) {
+                        result.put("Category_ID", String.valueOf(category.get("Category_ID")));
+                        result.put("Sub_Category_ID", String.valueOf(sub.get("id")));
+                        result.put("Department_ID", String.valueOf(category.get("departmentId")));
+                        result.put("Department_Name", String.valueOf(category.get("departmentName"))); // Original English
+                        result.put("Department_Name_Local", String.valueOf(category.get("departmentNameLocal"))); // Punjabi/Local
+                        return result;
+                    }
                 }
             }
+
+            // Default if not found
+            result.put("Category_ID", "0");
+            result.put("Sub_Category_ID", "0");
+            result.put("Department_ID", "0");
+            result.put("Department_Name", "Department of Local Government");
+            result.put("Department_Name_Local", "");
+        } catch (Exception e) {
+            // In case JSON path fails or structure is invalid
+            result.put("Category_ID", "0");
+            result.put("Sub_Category_ID", "0");
+            result.put("Department_ID", "0");
+            result.put("Department_Name", "Department of Local Government");
+            result.put("Department_Name_Local", "ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ");
         }
-        // default if not found
-        result.put("Category_ID", "0");
-        result.put("Sub_Category_ID", "0");
+
         return result;
     }
 }

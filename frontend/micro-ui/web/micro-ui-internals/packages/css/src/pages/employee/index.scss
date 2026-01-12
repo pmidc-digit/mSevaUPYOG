@@ -558,8 +558,8 @@
 /* Mobile view - add margin-top to ground-container */
 @media only screen and (max-width: 639px) {
   .employee .ground-container {
-    margin-top: 36px;
-  }
+    margin-top: 1rem;
+  } 
 }
 
 @media only screen and (max-width: 950px) {

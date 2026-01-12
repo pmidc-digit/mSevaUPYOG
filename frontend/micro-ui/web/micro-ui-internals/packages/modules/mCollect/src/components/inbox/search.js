@@ -52,15 +52,15 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
         <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
-          <div className="search-complaint-container">
+          <div className="search-complaint-container mCollect-filter">
             {(type === "mobile" || mobileView) && (
-              <div className="complaint-header" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <div className="complaint-header" style={{ display: "flex", alignItems: "flex-start" }}>
                 <h2>{t("ES_COMMON_SEARCH_BY")}</h2>
                 <span onClick={onClose} style={{ cursor: "pointer" }}>
                   <CloseSvg />
                 </span>
               </div>
-            )}
+            )} 
             <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields?.map((input, index) => (
                 <div key={input.name} className="input-fields">

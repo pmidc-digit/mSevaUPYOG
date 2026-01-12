@@ -15,6 +15,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
 
+  const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
+
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -43,16 +45,28 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
+    const owners = (data?.cpt?.details?.owners || []).map(({ status, ...rest }) => {
+      if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
+        return {
+          ...rest,
+          emailId: data?.PropertyDetails?.email, // ✅ inject email
+          isPrimaryOwner: true,
+        };
+      }
+
+      return rest; // ✅ keep others unchanged
+    });
+
     // Build owners array
-    const owners = [
-      {
-        name: data?.PropertyDetails?.firstName,
-        mobileNumber: data?.PropertyDetails?.mobileNumber,
-        gender: data?.PropertyDetails?.gender,
-        emailId: data?.PropertyDetails?.email,
-        type: "CITIZEN",
-      },
-    ];
+    // const owners = [
+    //   {
+    //     name: data?.PropertyDetails?.firstName,
+    //     mobileNumber: data?.PropertyDetails?.mobileNumber,
+    //     gender: data?.PropertyDetails?.gender,
+    //     emailId: data?.PropertyDetails?.email,
+    //     type: "CITIZEN",
+    //   },
+    // ];
 
     // Prepare NdcDetails
     const ndcDetails = [];

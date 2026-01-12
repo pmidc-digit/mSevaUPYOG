@@ -93,6 +93,15 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     setError("");
   };
 
+  useEffect(() => {
+      if (showToast) {
+        const timer = setTimeout(() => {
+          closeToast();
+        }, 3000); 
+        return () => clearTimeout(timer);
+      }
+    }, [showToast]);
+
   return (
     <React.Fragment>
       <FormComposer

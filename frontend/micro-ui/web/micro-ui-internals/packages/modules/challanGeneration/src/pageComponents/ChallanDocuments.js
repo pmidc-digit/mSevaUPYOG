@@ -1,5 +1,5 @@
 import React, { use, useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair, ActionBar } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 import EXIF from "exif-js";
 
@@ -52,7 +52,7 @@ const ChallanDocuments = ({
     <div>
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+        <div>
           {data?.Challan?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument
@@ -69,7 +69,23 @@ const ChallanDocuments = ({
             );
           })}
           {error && <Toast isDleteBtn={true} label={error} onClose={() => setError(null)} error />}
-        </FormStep>
+          <ActionBar>
+            <button
+              onClick={onSkip}
+              className="btn-secondary"
+              style={{ marginRight: "8px" }}
+            >
+              {t("COMMON_SKIP")}
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="btn-primary"
+              disabled={enableSubmit}
+            >
+              {t("COMMON_NEXT")}
+            </button>
+          </ActionBar>
+        </div>
       ) : (
         <Loader />
       )}

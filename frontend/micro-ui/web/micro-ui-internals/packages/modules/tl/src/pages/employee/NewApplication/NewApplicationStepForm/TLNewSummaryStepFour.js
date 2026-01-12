@@ -56,7 +56,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-
+   const [showToast, setShowToast] = useState(false);
   useEffect(() => {
     Digit.TLService.fetch_bill({
       tenantId: tenantId,
@@ -69,11 +69,12 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     console.log("Full form data submitted: ", formData);
 
     const res = onSubmit(formData?.CreatedResponse);
-    console.log("API response: ", res);
+    // console.log("API response: ", res);
 
     if (res) {
       console.log("Submission successful, moving to next step.");
-      history.replace(`/digit-ui/employee/tl/application-details/${formData?.CreatedResponse?.applicationNumber}`);
+      // history.replace(`/digit-ui/employee/tl/application-details/${formData?.CreatedResponse?.applicationNumber}`);
+       history.replace(`/digit-ui/employee/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {
       console.error("Submission failed, not moving to next step.");
     }
@@ -113,6 +114,15 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   // };
 
   // console.log("config in step 4", config)
+
+  // useEffect(() => {
+  //     if (showToast) {
+  //       const timer = setTimeout(() => {
+  //         closeToast();
+  //       }, 3000); 
+  //       return () => clearTimeout(timer);
+  //     }
+  //   }, [showToast]);
 
   return (
     <React.Fragment>

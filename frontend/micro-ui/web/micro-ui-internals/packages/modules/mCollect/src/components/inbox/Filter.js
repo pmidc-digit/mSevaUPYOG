@@ -21,9 +21,9 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   return (
     <React.Fragment>
       <div className="filter">
-        <div className="filter-card">
+        <div className="filter-card" style={{ padding: "1rem" }}>
           <div className="heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div className="filter-label" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div className="filter-label" style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent:"space-between" }}>
               <FilterIcon />
               {t("ES_COMMON_FILTER_BY").toUpperCase()}:
             </div>

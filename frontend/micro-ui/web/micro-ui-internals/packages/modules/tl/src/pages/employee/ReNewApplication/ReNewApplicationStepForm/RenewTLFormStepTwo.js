@@ -18,7 +18,14 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-
+useEffect(() => {
+      if (showToast) {
+        const timer = setTimeout(() => {
+          closeToast();
+        }, 3000); 
+        return () => clearTimeout(timer);
+      }
+    }, [showToast]);
   console.log("formData ===>",formData)
 
   const validateOwnerDetails = (data) => {

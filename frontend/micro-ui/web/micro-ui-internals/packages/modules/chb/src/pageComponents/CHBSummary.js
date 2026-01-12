@@ -65,66 +65,11 @@ function CHBSummary({ formData, goNext, onGoBack }) {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  // Responsive styles
-  const pageStyle = {
-    padding: "2vw 2vw 5vw 2vw",
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-    minHeight: "100vh",
-    maxWidth: 900,
-    margin: "0 auto"
-  };
-  const sectionStyle = {
-    backgroundColor: "#fff",
-    padding: "1rem 1.5rem",
-    borderRadius: 8,
-    marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-    width: "100%",
-    boxSizing: "border-box"
-  };
-  const headingStyle = {
-    fontSize: "clamp(1.2rem, 4vw, 2rem)",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: ".3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-    textAlign: "center"
-  };
-  const labelFieldPairStyle = {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: ".5rem 0",
-    color: "#333",
-    flexWrap: "wrap"
-  };
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-    width: "100%",
-    overflowX: "auto"
-  };
-  const documentCardStyle = {
-    flex: "1 1 220px",
-    minWidth: 180,
-    maxWidth: 260,
-    backgroundColor: "#fdfdfd",
-    padding: ".75rem",
-    border: "1px solid #e0e0e0",
-    borderRadius: 6,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-    marginBottom: "1rem"
-  };
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+  // Responsive styles using BPA summary classes
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div style={{ wordBreak: "break-word", maxWidth: "60vw" }}>{t(value) || "NA"}</div>
+    <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
+      <div>{value || "NA"}</div>
     </div>
   );
   const slotlistRows =
@@ -175,22 +120,22 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   //   color: "#333",
   // };
 
-  // const documentsContainerStyle = {
-  //   display: "flex",
-  //   flexWrap: "wrap",
-  //   gap: "1rem",
-  // };
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+  };
 
-  // const documentCardStyle = {
-  //   flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
-  //   minWidth: "200px", // keeps it from shrinking too small
-  //   maxWidth: "250px", // prevents oversized stretching on big screens
-  //   backgroundColor: "#fdfdfd",
-  //   padding: "0.75rem",
-  //   border: "1px solid #e0e0e0",
-  //   borderRadius: "6px",
-  //   boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-  // };
+  const documentCardStyle = {
+    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+    minWidth: "200px", // keeps it from shrinking too small
+    maxWidth: "250px", // prevents oversized stretching on big screens
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
 
   // const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
@@ -213,20 +158,20 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   console.log("docs===", docs);
 
   return (
-    <div className="chb-summary-responsive" style={pageStyle}>
-      <h2 style={headingStyle}>{t("Application Summary")}</h2>
+    <div className="bpa-summary-page">
+      <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
 
       {/* Property Details Section */}
-      <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "clamp(1.1rem, 3vw, 1.5rem)" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
+      <div className="bpa-summary-section">
+        <CardSubHeader>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
         {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
         {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
         {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
         {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.venueDetails?.[0]?.address?.addressLine1)}
       </div>
 
-      <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "clamp(1.1rem, 3vw, 1.5rem)" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+      <div className="bpa-summary-section">
+        <CardSubHeader>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
         {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.ownerDetails?.hallsBookingApplication?.specialCategory?.category)}
         {renderLabel(t("CHB_PURPOSE"), formData?.ownerDetails?.hallsBookingApplication?.purpose?.purpose?.name)}
         {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.ownerDetails?.hallsBookingApplication?.purposeDescription)}
@@ -249,7 +194,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         totalRecords={slotlistRows.length}
       />
 
-      <CardSubHeader style={{ fontSize: "clamp(1.1rem, 3vw, 1.5rem)", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+      <CardSubHeader style={{ marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
         <div style={documentsContainerStyle}>
           {docs?.length > 0 ? (

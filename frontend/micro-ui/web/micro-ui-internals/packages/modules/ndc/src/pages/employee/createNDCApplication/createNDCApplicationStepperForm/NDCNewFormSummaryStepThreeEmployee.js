@@ -36,15 +36,18 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
     console.log("checkFormData", formData);
-    const owners = [
-      {
-        name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
-        mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
-        gender: formData?.NDCDetails?.PropertyDetails?.gender,
-        emailId: formData?.NDCDetails?.PropertyDetails?.email,
-        type: "CITIZEN",
-      },
-    ];
+
+    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+
+    // const owners = [
+    //   {
+    //     name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
+    //     mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
+    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
+    //     emailId: formData?.NDCDetails?.PropertyDetails?.email,
+    //     type: "CITIZEN",
+    //   },
+    // ];
 
     // Pick the source of truth for the application
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};

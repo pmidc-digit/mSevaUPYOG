@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Card, DetailsCard, Loader, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
+import { Card, DetailsCard, Loader, PopUp, SearchAction, CloseSvg } from "@mseva/digit-ui-react-components";
 import { FilterAction } from "@mseva/digit-ui-react-components";
 import SearchApplication from "./search";
 import SortBy from "./SortBy";
@@ -37,6 +37,7 @@ export const ApplicationCard = ({
   }, [type]);
 
   const handlePopupClose = () => {
+    console.log("here comingf");
     setPopup(false);
     setType("");
     setSortParams(sortParams);
@@ -79,32 +80,33 @@ export const ApplicationCard = ({
           <FilterAction
             text="FILTER"
             handleActionClick={() => {
+              console.log("here yes");
               setType("FILTER");
               setPopup(true);
             }}
           />
         )}
-        <FilterAction
+        {/* <FilterAction
           text="SORT"
           handleActionClick={() => {
             setType("SORT");
             setPopup(true);
           }}
-        />
+        /> */}
       </div>
       {result}
       {popup && (
         <PopUp>
           {type === "FILTER" && (
             <div className="popup-module">
-              {<FilterComp onFilterChange={onSearchFilter} Close={handlePopupClose} type="mobile" searchParams={searchParams} />}
+              {<FilterComp onFilterChange={onSearchFilter} onClose={handlePopupClose} type="mobile" searchParams={searchParams} />}
             </div>
           )}
-          {type === "SORT" && (
+          {/* {type === "SORT" && (
             <div className="popup-module">
               {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} onSort={onSort} />}
             </div>
-          )}
+          )} */}
           {type === "SEARCH" && (
             <div className="popup-module">
               <SearchApplication

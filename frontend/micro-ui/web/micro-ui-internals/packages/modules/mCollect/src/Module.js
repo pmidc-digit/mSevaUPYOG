@@ -76,7 +76,7 @@ const componentsToRegister = {
   MCollectSearchChallan: SearchChallan,
   MCollectSearchBill: SearchBill,
   GroupBill,
-  MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  MCOLLECT_INBOX_FILTER_NEW: (props) => <InboxFilter {...props} />,
 };
 
 export const initMCollectComponents = () => {

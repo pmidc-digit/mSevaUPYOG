@@ -67,6 +67,8 @@ const ComplaintDetailsPage = (props) => {
   const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
   const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
 
+  console.log("complaintDetails+++", complaintDetails);
+
   const [imageShownBelowComplaintDetails, setImageToShowBelowComplaintDetails] = useState({});
 
   const [imageZoom, setImageZoom] = useState(null);
@@ -186,6 +188,9 @@ const ComplaintDetailsPage = (props) => {
                     />
                   ))}
                 <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
+                <Row label="DGR Grievence Id" text={complaintDetails?.service?.dgr_grievance_id || "N/A"} />
+                <Row label="Assigned DGR Employee" text={complaintDetails?.service?.dgr_employee_name || "N/A"} />
+                
               </StatusTable>
               {imageShownBelowComplaintDetails?.thumbs ? (
                 <DisplayPhotos srcs={imageShownBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />

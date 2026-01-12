@@ -1,6 +1,6 @@
 // RenewFormStepThree.jsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
@@ -37,7 +37,14 @@ export const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
     }
     onGoNext();
   };
-
+  useEffect(() => {
+        if (showToast) {
+          const timer = setTimeout(() => {
+            closeToast();
+          }, 3000); 
+          return () => clearTimeout(timer);
+        }
+      }, [showToast]);
   const onGoBack = () => {
     onBackClick(config.key, localStepData);
   };

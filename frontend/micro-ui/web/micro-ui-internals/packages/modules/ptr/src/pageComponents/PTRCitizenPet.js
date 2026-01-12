@@ -375,13 +375,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petType"
             rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
             render={(props) => (
-              <Dropdown
-                select={props.onChange}
-                selected={props.value}
-                option={mdmsPetData?.petTypes}
-                optionKey="name"
-                disable={checkForRenew}
-              />
+              <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" disable={checkForRenew} />
             )}
           />
           {errors.petType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petType")}</p>}
@@ -398,15 +392,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
             render={(props) => {
               const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
-              return (
-                <Dropdown
-                  select={props.onChange}
-                  selected={props.value}
-                  option={filteredBreeds}
-                  optionKey="name"
-                  disable={checkForRenew}
-                />
-              );
+              return <Dropdown select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="name" disable={checkForRenew} />;
             }}
           />
           {errors.breedType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("breedType")}</p>}
@@ -422,13 +408,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petGender"
             rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
             render={(props) => (
-              <Dropdown
-                select={props.onChange}
-                selected={props.value}
-                option={mdmsPetData?.genderTypes}
-                optionKey="name"
-                disable={checkForRenew}
-              />
+              <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" disable={checkForRenew} />
             )}
           />
           {errors.petGender && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petGender")}</p>}
@@ -529,9 +509,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petAge && (
-            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petAge")}</p>
-          )}
+          {errors.petAge && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petAge")}</p>}
 
           <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
 
@@ -550,10 +528,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               required: t("PTR_VACCINATION_DATE_REQUIRED"),
             }}
             render={(props) => (
-             <TextInput
-               style={{ marginBottom: 0 }}
+              <TextInput
+                style={{ marginBottom: 0 }}
                 type={"date"}
-                className="form-field"
                 value={props.value}
                 min={minDate}
                 max={maxDate || todayStr}

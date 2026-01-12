@@ -97,6 +97,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           frequency: data?.frequency?.name,
           typeOfWaste: data?.typeOfWaste?.name,
           propertyType: data?.propertyType?.name,
+          connectionType: "Non Metered",
           plotSize: data?.plotSize,
           location: data?.location,
           applicationType: "NEW_GARBAGE_CONNECTION",
@@ -117,6 +118,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           },
           additionalDetails: {
             connectionCategory: data?.connectionCategory?.name,
+            locality: "",
           },
         },
       };
@@ -209,14 +211,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   return (
     <React.Fragment>
       <form style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
-        <div >
+        <div>
           {/* property id */}
           <LabelFieldPair style={{ marginBottom: "16px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NDC_MSG_PROPERTY_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <div className="form-field">
-              <div style={{ display: "block", gap: "8px", alignItems: "flex-start"  }}>
+              <div style={{ display: "block", gap: "8px", alignItems: "flex-start" }}>
                 <div style={{ flex: 1 }}>
                   <Controller
                     control={control}
@@ -404,7 +406,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       />
                     )}
                   />
-                  {errors?.connectionCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.connectionCategory.message}</p>}
+                  {errors?.connectionCategory && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.connectionCategory.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
             </div>

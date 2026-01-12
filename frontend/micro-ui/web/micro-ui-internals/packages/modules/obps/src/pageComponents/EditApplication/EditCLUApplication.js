@@ -213,8 +213,8 @@ const CLUEditApplication = () => {
          // applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
-        const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
-        setSelectedDistrict(districtObj);
+       // const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
+        //setSelectedDistrict(districtObj);
 
         const updatedSiteDetails=
         {
@@ -224,7 +224,7 @@ const CLUEditApplication = () => {
           ulbName: ulbListOptions?.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
           roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
           buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
-          district: districtObj,
+         // district: districtObj,
 
           buildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.buildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
         }

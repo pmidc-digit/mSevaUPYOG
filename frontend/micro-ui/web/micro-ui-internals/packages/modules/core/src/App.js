@@ -64,6 +64,28 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     pathname,
     initData,
   };
+
+  useEffect(() => {
+    const onPopState = () => {
+      const path = window.location.pathname;
+
+      // If browser moved to legacy Citizen SPA, let it boot
+      if (!path.startsWith("/digit-ui")) {
+        window.location.reload();
+        return;
+      }
+
+      // Fix corrupted history entries
+      if (path.includes("//digit-ui")) {
+        const clean = path.replace("//digit-ui", "/digit-ui");
+        window.location.replace(clean);
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   return (
     <Switch>
       <Route path="/digit-ui/employee">
@@ -81,4 +103,3 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     </Switch>
   );
 };
-

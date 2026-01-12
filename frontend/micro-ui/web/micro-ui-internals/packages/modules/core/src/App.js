@@ -66,25 +66,15 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
   };
 
   useEffect(() => {
-    const onPopState = () => {
-      const path = window.location.pathname;
-
-      // If browser moved to legacy Citizen SPA, let it boot
-      if (!path.startsWith("/digit-ui")) {
-        window.location.reload();
-        return;
+    const unblock = history.block((location, action) => {
+      if (action === "POP") {
+        // 🔒 blocks browser back & forward
+        return false;
       }
+    });
 
-      // Fix corrupted history entries
-      if (path.includes("//digit-ui")) {
-        const clean = path.replace("//digit-ui", "/digit-ui");
-        window.location.replace(clean);
-      }
-    };
-
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, []);
+    return () => unblock();
+  }, [history]);
 
   return (
     <Switch>

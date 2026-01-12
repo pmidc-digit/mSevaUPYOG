@@ -60,8 +60,8 @@ const ComplaintDetailsPage = (props) => {
   let { fullUrlAndUlb } = useParams();
 
   const parts = fullUrlAndUlb?.split("/");
-  const ulb = parts[parts.length - 1];
-  const id = parts.slice(0, parts.length - 1).join("/");
+  const ulb = parts[parts?.length - 1];
+  const id = parts.slice(0, parts?.length - 1).join("/");
 
   //let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
   const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
@@ -121,7 +121,7 @@ const ComplaintDetailsPage = (props) => {
   // };
   const onWorkFlowChange = (data) => {
     let timeline = data?.timeline;
-    timeline && timeline[0].timeLineActions?.filter((e) => e === "COMMENT").length ? setDisableComment(false) : setDisableComment(true);
+    timeline && timeline[0].timeLineActions?.filter((e) => e === "COMMENT")?.length ? setDisableComment(false) : setDisableComment(true);
     if (timeline) {
       const actionByCitizenOnComplaintCreation = timeline.find((e) => e?.performedAction === "APPLY");
       const { thumbnailsToShow } = actionByCitizenOnComplaintCreation;
@@ -138,7 +138,7 @@ const ComplaintDetailsPage = (props) => {
     try {
       setCommentError(null);
       const res = await Digit.PGRService.update(detailsToSend, tenantId);
-      if (res.ServiceWrappers.length) setComment("");
+      if (res.ServiceWrappers?.length) setComment("");
       else throw true;
     } catch (er) {
       setCommentError(true);
@@ -166,7 +166,7 @@ const ComplaintDetailsPage = (props) => {
             <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
           </div> */}
         </div>
-        {Object.keys(complaintDetails).length > 0 ? (
+        {Object.keys(complaintDetails)?.length > 0 ? (
           <React.Fragment>
             <Card>
               <CardSubHeader>{t(`SERVICEDEFS.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>

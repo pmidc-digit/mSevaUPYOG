@@ -1,6 +1,6 @@
 import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
 import React from "react";
-
+import { getPattern } from "../utils";
 export const ModalConfig = ({
   t,
   action,
@@ -47,6 +47,11 @@ export const ModalConfig = ({
             type: "textarea",
             populators: {
               name: "comments",
+            },
+            validation: { 
+              pattern: getPattern("Comments"), 
+              required: true, 
+              title: t("WF_COMMON_COMMENTS_ERROR") 
             },
           },
           {

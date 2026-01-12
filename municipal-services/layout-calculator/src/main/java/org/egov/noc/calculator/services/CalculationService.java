@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,8 +104,8 @@ public class CalculationService {
 				Map<String, Object> siteDetails = (Map<String, Object>)((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).get("siteDetails");
 
 
-				if(siteDetails.get("specificationPlotArea") != null)
-					plotArea = new BigDecimal(siteDetails.getOrDefault("specificationPlotArea", "0").toString().trim());
+				if(siteDetails.get("netTotalArea") != null)
+					plotArea = new BigDecimal(siteDetails.getOrDefault("netTotalArea", "0").toString().trim());
 				if(siteDetails.get("totalFloorArea") != null)
 					builtUpArea = new BigDecimal(siteDetails.getOrDefault("totalFloorArea", "0").toString().trim());
 				if(siteDetails.get("basementArea") != null)
@@ -127,7 +128,7 @@ public class CalculationService {
 					((Map<String, Object>) criteria.getLayout()
 							.getLayoutDetails()
 							.getAdditionalDetails())
-							.get("feeApplicationType");
+							.getOrDefault("feeApplicationType", "PROPOSED");
 			if(estimates.isEmpty())
 				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal,feeApplicationType);
 
@@ -191,8 +192,8 @@ public class CalculationService {
 			
 			switch (taxhead) {
 			
-			case LAYOUTConstants.LAYOUT_PROCESSING_FEES:
-				BigDecimal acarPlotArea = plotArea.divide(LAYOUTConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
+			case LAYOUTConstants.LAYOUT_PROCESSING_FEE:
+				BigDecimal acarPlotArea = plotArea.multiply(LAYOUTConstants.SQMETER_TO_SQYARD).divide(LAYOUTConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
 				if(acarPlotArea.equals(BigDecimal.ONE))
 					amount = new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0);
 				else {
@@ -207,12 +208,11 @@ public class CalculationService {
 				List<Map<String, Object>> slabs = (List<Map<String, Object>>) chargesType.get("slabs");
 
 				Map<String, Object> matchedSlab = slabs.stream()
-						.filter(slab -> applicationType.equalsIgnoreCase((String) slab.get("applicationType")))
+						.filter(slab -> ((String) slab.get("applicationType")).equalsIgnoreCase(applicationType))
 						.findFirst()
-						.orElseThrow(() -> new CustomException("INVALID_APPLICATION_TYPE",
-								"No slab found for applicationType: " + applicationType));
+						.orElse(Collections.EMPTY_MAP);
 
-			rate = new BigDecimal((Double) matchedSlab.get("rate"));
+			rate = new BigDecimal((Double) matchedSlab.getOrDefault("rate", 0.0));
 
 				amount = plotArea
 						.multiply(rate)

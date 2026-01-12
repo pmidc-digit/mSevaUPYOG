@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class CalculationCriteria {
-	@JsonProperty("LAYOUT")
+	@JsonProperty("Layout")
 	private Layout layout = null;
 
     @JsonProperty("applicationNumber")

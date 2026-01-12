@@ -188,7 +188,7 @@ public class CalculationService {
 			switch (taxhead) {
 			
 			case CLUConstants.CLU_PROCESSING_FEE:
-				BigDecimal acarPlotArea = plotArea.divide(CLUConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
+				BigDecimal acarPlotArea = plotArea.multiply(CLUConstants.SQMETER_TO_SQYARD).divide(CLUConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
 				if(acarPlotArea.equals(BigDecimal.ONE))
 					amount = new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0);
 				else {

@@ -104,7 +104,7 @@ public class LAYOUTConstants {
 	
 	public static final String MDMS_CHARGES_TYPE_CODE  = "105";
 
-	public static final String LAYOUT_PROCESSING_FEES = "LAYOUT_PROCESSING_FEES";
+	public static final String LAYOUT_PROCESSING_FEE = "LAYOUT_PROCESSING_FEE";
 	public static final String LAYOUT_SCRUTINY_FEE = "LAYOUT_SCRUTINY_FEE";
 
 	public static final String NOC_CLU_CHARGES = "LAYOUT_CLU_CHARGES";

@@ -17,6 +17,7 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
   const id = window.location.pathname.split("/").pop();
   const user = Digit.UserService.getUser();
+  const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
 
   const { isLoading: propertyLoading, data: applicationDetails, refetch } = Digit.Hooks.ndc.useSearchEmployeeApplication(
     { applicationNo: id },
@@ -66,16 +67,17 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
     console.log("checkFormData???====", checkFormData);
 
     // Build owners array
-    const owners = [
-      {
-        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        name: user?.info?.name,
-        mobileNumber: user?.info?.mobileNumber,
-        gender: checkFormData?.NDCDetails?.PropertyDetails?.gender,
-        emailId: user?.info?.emailId,
-        type: user?.info?.type,
-      },
-    ];
+    // const owners = [
+    //   {
+    //     // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+    //     name: user?.info?.name,
+    //     mobileNumber: user?.info?.mobileNumber,
+    //     gender: checkFormData?.NDCDetails?.PropertyDetails?.gender,
+    //     emailId: user?.info?.emailId,
+    //     type: user?.info?.type,
+    //   },
+    // ];
+    const owners = checkApiDataCheck?.Applications?.[0]?.owners || checkFormData?.responseData?.[0]?.owners;
 
     // Pick the source of truth for the application
     const baseApplication = checkFormData?.responseData?.[0] || {};

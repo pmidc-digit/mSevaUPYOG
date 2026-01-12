@@ -1300,12 +1300,12 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 			         //logger.info("FinancialYear is: " + years);
 			         int len = years.size();
 				        }
-				//Added for differenceofdates	
-				if(StringUtils.isNotBlank(filterDateField) && filterDateField.equals("date") ) { 
+				//Added for differenceofdates
+				if(StringUtils.isNotBlank(filterDateField) && filterDateField.equals("date") ) {
 					queryInnerMap.put(filterDateField, valueList);
 					queryMap.put(ElasticProperties.Query.RANGE_CONDITION, queryInnerMap);
 				}
-				else if ((StringUtils.isNotBlank(filterDateField) && filterDateField.equals("financialYear.keyword")) ) { 
+				else if ((StringUtils.isNotBlank(filterDateField) && filterDateField.equals("financialYear.keyword")) ) {
 					if (queryMap.containsKey(ElasticProperties.Query.MATCH_CONDITION)) {
 						Map<String, List<Object>> queryInnerMap1 = queryMap
 								.get(ElasticProperties.Query.MATCH_CONDITION);
@@ -1319,6 +1319,11 @@ public class ElasticSearchDaoImpl implements ElasticSearchDao {
 						queryInnerMap1.put(filterDateField, valueList);
 						queryMap.put(ElasticProperties.Query.MATCH_CONDITION, queryInnerMap1);
 					}
+				}
+				else if (StringUtils.isNotBlank(filterDateField)) {
+					// Handle all other date fields (e.g., dataObject.paymentDetails.receiptDate)
+					queryInnerMap.put(filterDateField, valueList);
+					queryMap.put(ElasticProperties.Query.RANGE_CONDITION, queryInnerMap);
 				}
 			}
 		}

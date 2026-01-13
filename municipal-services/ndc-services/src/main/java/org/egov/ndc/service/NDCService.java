@@ -255,17 +255,17 @@ public class NDCService {
 		}
 		List<Application> applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
 		// Use a LinkedHashSet to preserve insertion order
-		Set<Application> mergedSet = new LinkedHashSet<>();
-		if(whenMobileNumberGiven!=null)
-			mergedSet.addAll(whenMobileNumberGiven);
-		mergedSet.addAll(applications);
+//		Set<Application> mergedSet = new LinkedHashSet<>();
+//		if(whenMobileNumberGiven!=null)
+//			mergedSet.addAll(whenMobileNumberGiven);
+//		mergedSet.addAll(applications);
 
-		List<Application> mergedList = new ArrayList<>(mergedSet);
+//		List<Application> mergedList = new ArrayList<>(mergedSet);
 
 		SearchCriteria searchCriteria = new SearchCriteria();
 		searchCriteria.setTenantId(criteria.getTenantId());
-		enrichmentService.enrichProcessInstance(mergedList, searchCriteria, requestInfo);
-		return mergedList;
+		enrichmentService.enrichProcessInstance(applications, searchCriteria, requestInfo);
+		return applications;
 	}
 
 	private List<Application> getApplicationsWhenMobileNumberGiven(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {

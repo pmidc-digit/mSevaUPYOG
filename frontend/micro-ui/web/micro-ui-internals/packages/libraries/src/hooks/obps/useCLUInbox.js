@@ -1,6 +1,7 @@
 import React from "react";
 import useInbox from "../useInbox";
 import { useQueryClient } from "react-query";
+import {OBPS_CLU_BUSINESS_SERVICES} from "../../../../constants/constants"
 
 const useCLUInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
       assignee: assignee === "ASSIGNED_TO_ME" ? user?.info?.uuid : "",
       moduleName: "clu-service",
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
-      businessService: ["clu_mcl", "clu_mco"],
+      businessService: OBPS_CLU_BUSINESS_SERVICES,
     },
 
     moduleSearchCriteria: {

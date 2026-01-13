@@ -77,7 +77,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     trigger();
 
     //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
-    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
+    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea) && isEqualArea(data?.plotArea, data?.specificationPlotArea); 
 
     if(!isEqual){
         setTimeout(()=>{setShowToast(null);},3000);

@@ -164,7 +164,7 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
             if (value.startsWith("$")) {
                 switch (value) {
                     case "$username":
-                        map.add(key, /*smsProperties.getUsername()*/"pbdwss.sms");
+                        map.add(key,username);// /*smsProperties.getUsername()*/"pbdwss.sms");
                         break;
                     case "$password":
                         map.add(key, /*smsProperties.getPassword()*/"Nkyf%403254");

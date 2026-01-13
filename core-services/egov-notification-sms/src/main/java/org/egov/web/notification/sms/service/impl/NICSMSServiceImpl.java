@@ -110,12 +110,13 @@ public class NICSMSServiceImpl extends BaseSMSService {
 		try {
 			String url = resolveGatewayUrl(sms);
 			String final_data = "";
-			if(url.equalsIgnoreCase(smsProperties.getSmsUrl())){
-				final_data += "username=" + smsProperties.getSmsUsername();
-				final_data += "&pin=" + smsProperties.getSmsPassword();
-			} else if(url.equalsIgnoreCase(smsProperties.getUrl())) {
+			boolean isOtp = isOtpMessage(sms);
+			if(isOtp){
 				final_data += "username=" + smsProperties.getUsername();
 				final_data += "&pin=" + smsProperties.getPassword();
+			} else  {
+				final_data += "username=" + smsProperties.getSmsUsername();
+				final_data += "&pin=" + smsProperties.getSmsPassword();
 			}
 			/*String final_data = "";
 			final_data += "username=" + smsProperties.getUsername();

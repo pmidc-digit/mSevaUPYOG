@@ -23,13 +23,13 @@ public class SMSProperties {
     @Value("${sms.mobile.prefix:}")
     private String mobileNumberPrefix;
 
-    @Value("${sms.provider.url}")
+    @Value("${sms.provider.url.otp}")
     public String url;
 
-    @Value("${sms.provider.username}")
+    @Value("${sms.provider.username.otp}")
     public String username;
 
-    @Value("${sms.provider.password}")
+    @Value("${sms.provider.password.otp}")
     public String password;
 
     @Value("${sms.provider.url}")

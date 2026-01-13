@@ -94,7 +94,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
 
     return result;
   }
-  const splitKeyValue = () => {
+  const splitKeyValue = (onLinkClick) => {
     const keys = Object.keys(configEmployeeSideBar);
     keys.sort((a, b) => a.orderNumber - b.orderNumber);
     for (let i = 0; i < keys.length; i++) {
@@ -148,7 +148,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     //     })
     // );
     return res?.map((item, index) => {
-      return <SubMenu item={item} key={index + 1} />;
+      return <SubMenu item={item} key={index + 1} onLinkClick={onLinkClick} />;
     });
   };
 
@@ -312,7 +312,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
           </div>
           <div style={{ padding: "8px 0" }}>
             {renderSearch()}
-            {splitKeyValue()}
+            {splitKeyValue(closeSidebar)}
           </div>
           {handleLogout && (
             <div style={{ borderTop: "1px solid #e5e7eb", padding: "16px" }}>
@@ -327,6 +327,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
                   borderRadius: "6px",
                   cursor: "pointer",
                   fontWeight: 500,
+                  marginTop:"-1rem"
                 }}
               >
                 {t("CORE_COMMON_LOGOUT")}

@@ -92,29 +92,29 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   }
 
   // ---------------- UI Styles ----------------
-  const pageStyle = {
+  // const pageStyle = {
    
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-  };
+  //   backgroundColor: "#f9f9f9",
+  //   fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  //   color: "#333",
+  // };
 
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  };
+  // const sectionStyle = {
+  //   backgroundColor: "#ffffff",
+  //   padding: "1rem 1.5rem",
+  //   borderRadius: "8px",
+  //   marginBottom: "2rem",
+  //   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  // };
 
-  const headingStyle = {
-    fontSize: "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-  };
+  // const headingStyle = {
+  //   fontSize: "1.5rem",
+  //   borderBottom: "2px solid #ccc",
+  //   paddingBottom: "0.3rem",
+  //   color: "#2e4a66",
+  //   marginTop: "2rem",
+  //   marginBottom: "1rem",
+  // };
 
   const labelFieldPairStyle = {
     display: "flex",
@@ -144,20 +144,20 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-           <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-         </div>
-         <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
-       </div>
+    <div className="bpa-summary-label-field-pair">
+        
+           <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
+      
+         <div>{value || "NA"}</div>
+    </div>
   );
 
   return (
-    <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("Application Summary")}</h2>
+    <div className="bpa-summary-page">
+      <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
 
       {/* Property Details Section */}
-      <div style={sectionStyle}>
+      <div className="bpa-summary-section">
         {renderLabel(t("Full Name"), formData?.NDCDetails?.PropertyDetails?.firstName)}
         {/* {renderLabel(t("Last Name"), formData?.NDCDetails?.PropertyDetails?.lastName)} */}
         {renderLabel(t("Mobile Number"), formData?.NDCDetails?.PropertyDetails?.mobileNumber)}
@@ -188,17 +188,13 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
       {/* Documents Section */}
       {/* Documents Section */}
-      <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
-      <div style={sectionStyle}>
+      <h2 className="bpa-summary-heading">{t("Documents Uploaded")}</h2>
+      <div className="bpa-summary-section">
         {docs?.length > 0 ? (
-          <div style={documentsContainerStyle}>
+          <div style={{display:"flex", flexWrap:"wrap", gap:"16px"}}>
             {docs?.map((doc, index) => (
               <div key={index} style={documentCardStyle}>
                 <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
-                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                  {/* {t(doc?.documentType?.split(".").slice(0, 2).join("_"))} */}
-                  {t(`NDC_${doc?.documentType?.replace(/\./g, "_")}_LABEL`)}
-                </CardSectionHeader>
               </div>
             ))}
           </div>

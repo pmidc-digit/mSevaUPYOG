@@ -549,7 +549,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       </LabelFieldPair>
 
       {/* VACCINATION NUMBER */}
-      <LabelFieldPair style={{ marginTop: "15px" }}>
+      <LabelFieldPair >
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
         <div className="form-field">
           <Controller

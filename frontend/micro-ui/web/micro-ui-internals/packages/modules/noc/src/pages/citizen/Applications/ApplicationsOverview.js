@@ -233,6 +233,8 @@ const CitizenApplicationOverview = () => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
+  
 
   const menuRef = useRef();
 
@@ -369,12 +371,19 @@ const CitizenApplicationOverview = () => {
     return <Loader />;
   }
 
+  const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
   console.log("displayData=>", displayData);
 
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
+        <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        
         {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink

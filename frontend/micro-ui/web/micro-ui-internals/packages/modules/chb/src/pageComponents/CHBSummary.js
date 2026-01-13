@@ -196,12 +196,11 @@ function CHBSummary({ formData, goNext, onGoBack }) {
 
       <CardSubHeader className="bpa-summary-heading">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable >
-        <div className="bpa-summary-section">
+        <div className="bpa-summary-section" style={{display: "flex", flexWrap: "wrap", gap: "16px"}}>
           {docs?.length > 0 ? (
             docs?.map((doc, index) => (
-              <div key={index} style={documentCardStyle}>
+              <div key={index}>
                 <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                <CardSectionHeader>{t(doc?.documentType)}</CardSectionHeader>
               </div>
             ))
           ) : (

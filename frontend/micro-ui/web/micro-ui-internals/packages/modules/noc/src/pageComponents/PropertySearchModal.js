@@ -221,7 +221,7 @@ export const PropertySearchModal = ({
 
   return (
     <React.Fragment>
-      <Modal
+      <Modal className="property-search-modal"
         headerBarEnd={<CloseBtn onClick={closeModal} />}
         formId="modal-action"
         popupStyles={{

@@ -42,7 +42,7 @@ const DashboardFooter = () => {
           </div>
 
           {/* Contact Section */}
-          <div className="new-df-column">
+          {/* <div className="new-df-column">
             <h3 className="new-df-heading">Contact</h3>
             <p className="new-df-text">
               <strong>Helpline:</strong> 01821-260114
@@ -50,7 +50,7 @@ const DashboardFooter = () => {
             <p className="new-df-text">
               <strong>Email:</strong> support@msevapunjab.gov.in
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Copyright Section */}

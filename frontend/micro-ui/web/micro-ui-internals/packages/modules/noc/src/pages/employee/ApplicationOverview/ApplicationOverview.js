@@ -33,6 +33,7 @@ import NOCImageView from "../../../pageComponents/NOCImageView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -94,7 +95,6 @@ const NOCEmployeeApplicationOverview = () => {
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
-  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -202,17 +202,45 @@ const NOCEmployeeApplicationOverview = () => {
       })();
   }, [tenantId, businessServiceCode, isLoading]);
 
-  useEffect(() => {
-    const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
-    if (latestCalc?.taxHeadEstimates) {
-      setFeeAdjustments(latestCalc.taxHeadEstimates);
-    }
-  }, [applicationDetails]);
+ useEffect(() => {
+  const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
+  const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
+  if (apiEstimates.length === 0) return;
+
+  setFeeAdjustments((prev = []) => {
+    // build prev map
+    const prevByTax = (prev || []).reduce((acc, it) => {
+      if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+      return acc;
+    }, {});
+
+    // build merged but keep prev edited rows
+    const merged = apiEstimates.map((tax) => {
+      const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
+      const prevItem = prevByTax[tax.taxHeadCode] || {};
+      const isEdited = !!prevItem.edited;
+
+      return {
+        taxHeadCode: tax.taxHeadCode,
+        category: tax.category,
+        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
+        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
+        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
+        onDocumentLoading: false,
+        documentError: null,
+        edited: prevItem.edited ?? false,
+      };
+    });
+
+    return merged;
+  });
+}, [applicationDetails, data]);
 
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -375,15 +403,10 @@ const NOCEmployeeApplicationOverview = () => {
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
-
-    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
-
 
     if (!isFeeDisabled) {
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
+    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);   
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
-
     if (!hasNonZeroFee) {
       setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
       return;
@@ -400,13 +423,11 @@ const NOCEmployeeApplicationOverview = () => {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
       taxHeadEstimates: feeAdjustments
-        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") // exclude UI-only total row
+        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") 
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: (row.amount || 0) + (row.adjustedAmount ?? 0), // baseline + delta
-          category: row.category,
+          estimateAmount: row.adjustedAmount ?? 0,          category: row.category,
           remarks: row.remark || null,
-          // include filestoreId only if backend supports it
           filestoreId: row.filestoreId || null,
         })),
     };
@@ -469,6 +490,7 @@ const NOCEmployeeApplicationOverview = () => {
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           refetch();
+          setFeeAdjustments(prev => (prev || []).map(p => ({ ...p, edited: false })));
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
@@ -519,12 +541,19 @@ const NOCEmployeeApplicationOverview = () => {
     return `${day}/${month}/${year}`;
   };
 
+  const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
   console.log("displayData here", displayData);
 
   return (
     <div className={"employee-main-application-details"}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
+        <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        
       </div>
 
       <Card>

@@ -358,6 +358,10 @@ const NOCSiteDetails = (_props) => {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
+                  pattern: {
+                    value: /^[0-9]+$/, // only digits allowed
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED"),
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -381,19 +385,19 @@ const NOCSiteDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-            {!isRoadTypeLoading && (
-              <Controller
-                control={control}
-                name={"roadType"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t}/>
-                )}
-              />
-            )}
-            {errors?.roadType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadType.message}</p>}
+              {!isRoadTypeLoading && (
+                <Controller
+                  control={control}
+                  name={"roadType"}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
+                  )}
+                />
+              )}
+              {errors?.roadType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.roadType.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -466,7 +470,9 @@ const NOCSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.areaLeftForRoadWidening && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaLeftForRoadWidening.message}</p>}
+              {errors?.areaLeftForRoadWidening && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaLeftForRoadWidening.message}</p>
+              )}
             </div>
           </LabelFieldPair>
 
@@ -503,7 +509,9 @@ const NOCSiteDetails = (_props) => {
                   />
                 )}
               />
-              {errors?.netPlotAreaAfterWidening && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.netPlotAreaAfterWidening.message}</p>}
+              {errors?.netPlotAreaAfterWidening && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.netPlotAreaAfterWidening.message}</p>
+              )}
             </div>
           </LabelFieldPair>
 
@@ -551,58 +559,60 @@ const NOCSiteDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-            {!isBuildingTypeLoading && (
-              <Controller
-                control={control}
-                name={"buildingStatus"}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      setBuildingStatus(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={buildingType}
-                    optionKey="name"
-                    t={t}
-                  />
-                )}
-              />
-            )}
-            {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.buildingStatus.message}</p>}
-            </div>
-          </LabelFieldPair>
-          
-          
-          {buildingStatus?.code === "BUILTUP" && (
-             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-              <div className="field">
-             <Controller
-              control={control}
-              name={"isBasementAreaAvailable"}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setIsBasementAreaAvailable(e);
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                  t={t}
+              {!isBuildingTypeLoading && (
+                <Controller
+                  control={control}
+                  name={"buildingStatus"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        setBuildingStatus(e);
+                        props.onChange(e);
+                      }}
+                      selected={props.value}
+                      option={buildingType}
+                      optionKey="name"
+                      t={t}
+                    />
+                  )}
                 />
               )}
-            />
-            {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
+              {errors?.buildingStatus && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.buildingStatus.message}</p>}
             </div>
           </LabelFieldPair>
+
+          {buildingStatus?.code === "BUILTUP" && (
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"isBasementAreaAvailable"}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        setIsBasementAreaAvailable(e);
+                        props.onChange(e);
+                      }}
+                      selected={props.value}
+                      option={options}
+                      optionKey="i18nKey"
+                      t={t}
+                    />
+                  )}
+                />
+                {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
+              </div>
+            </LabelFieldPair>
           )}
 
           {buildingStatus?.code === "BUILTUP" && (
@@ -836,25 +846,26 @@ const NOCSiteDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-            {!isZoneListLoading && (
-              <Controller
-                control={control}
-                name={"zone"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown 
-                  className="form-field" 
-                  select={props.onChange} 
-                  selected={props.value} 
-                  option={zoneList?.tenant?.zoneMaster?.[0]?.zones} 
-                  optionKey="code"
-                  t={t} />
-                )}
-              />
-            )}
-            {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.zone.message}</p>}
+              {!isZoneListLoading && (
+                <Controller
+                  control={control}
+                  name={"zone"}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={props.onChange}
+                      selected={props.value}
+                      option={zoneList?.tenant?.zoneMaster?.[0]?.zones}
+                      optionKey="code"
+                      t={t}
+                    />
+                  )}
+                />
+              )}
+              {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.zone.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -984,6 +995,11 @@ const NOCSiteDetails = (_props) => {
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+
+                  pattern: {
+                    value: /^[0-9]+$/, // only digits allowed
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED"),
                   },
                 }}
                 render={(props) => (

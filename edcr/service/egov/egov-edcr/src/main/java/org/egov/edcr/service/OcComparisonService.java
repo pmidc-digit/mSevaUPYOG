@@ -67,7 +67,7 @@ public class OcComparisonService {
         ComparisonDetail comparisonDetail = new ComparisonDetail();
 
         OcComparisonDetail ocComparisonDetail = ocComparisonDetailService.findByOcDcrNoAndDcrNumberAndTenant(ocdcrNo, dcrNo,
-                tenantId);
+                "pb");
 
         if (ocComparisonDetail != null) {
             comparisonDetail.setEdcrNumber(ocComparisonDetail.getDcrNumber());

@@ -16,7 +16,11 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
@@ -35,7 +39,9 @@ import org.egov.dx.web.models.PaymentRequest;
 import org.egov.dx.web.models.PaymentSearchCriteria;
 import org.egov.dx.web.models.Person;
 import org.egov.dx.web.models.PropertyTaxReceipt;
+import org.egov.dx.web.models.PullDocRequest;
 import org.egov.dx.web.models.PullDocResponse;
+import org.egov.dx.web.models.PullURIRequest;
 import org.egov.dx.web.models.PullURIResponse;
 import org.egov.dx.web.models.RequestInfoWrapper;
 import org.egov.dx.web.models.ResponseStatus;
@@ -48,6 +54,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.net.URI;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.AnyTypePermission;
@@ -71,6 +78,75 @@ public class DataExchangeService {
 	
 	@Autowired
 	private Configurations configurations;
+	
+	@Autowired
+    private DataExchangeService dataExchangeService; // if this was earlier another service, rename accordingly
+
+    public String processSearch(String requestBody, HttpServletRequest httpServletRequest)
+            throws IOException, JAXBException {
+
+        XStream xstream = new XStream();
+        xstream.addPermission(NoTypePermission.NONE);
+        xstream.addPermission(NullPermission.NULL);
+        xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
+        xstream.addPermission(AnyTypePermission.ANY);
+
+        Object obj = new Object();
+        ObjectMapper om = new ObjectMapper();
+
+        PullURIRequest pojo = new PullURIRequest();
+        PullDocRequest pojoDoc = new PullDocRequest();
+        SearchCriteria searchCriteria = new SearchCriteria();
+
+        String encodedString = null;
+
+        if (requestBody.contains("PullURIRequest")) {
+
+            log.info("In Pull URI Request");
+
+            xstream.processAnnotations(PullURIRequest.class);
+            obj = xstream.fromXML(requestBody);
+            pojo = om.convertValue(obj, PullURIRequest.class);
+
+            pojo.setTxn((requestBody.split("txn=\"")[1]).split("\"")[0]);
+
+            searchCriteria.setPropertyId(pojo.getDocDetails().getPropertyId());
+            searchCriteria.setCity(pojo.getDocDetails().getCity());
+            searchCriteria.setOrigin("https://partners.digitallocker.gov.in");
+
+            log.info("Request URL is " +
+                URI.create(httpServletRequest.getRequestURL().toString()).getHost());
+
+            searchCriteria.setTxn(pojo.getTxn());
+            searchCriteria.setDocType(pojo.getDocDetails().getDocType());
+            searchCriteria.setPayerName(pojo.getDocDetails().getFullName());
+            searchCriteria.setMobile(pojo.getDocDetails().getMobile());
+
+            encodedString = dataExchangeService.searchPullURIRequest(searchCriteria);
+
+        } else {
+
+            log.info("In Pull Doc Request");
+
+            xstream.processAnnotations(PullDocRequest.class);
+            obj = xstream.fromXML(requestBody);
+            pojoDoc = om.convertValue(obj, PullDocRequest.class);
+
+            pojoDoc.setTxn((requestBody.split("txn=\"")[1]).split("\"")[0]);
+
+            searchCriteria.setOrigin("https://partners.digitallocker.gov.in");
+
+            log.info("Request URL is " +
+                URI.create(httpServletRequest.getRequestURL().toString()).getHost());
+
+            searchCriteria.setURI(pojoDoc.getDocDetails().getURI());
+            searchCriteria.setTxn(pojoDoc.getTxn());
+
+            encodedString = dataExchangeService.searchPullDocRequest(searchCriteria);
+        }
+
+        return encodedString;
+    }
 	
 	public String searchPullURIRequest(SearchCriteria  searchCriteria) throws IOException {
 		
@@ -293,167 +369,161 @@ public class DataExchangeService {
 	}
 
 
-	public String searchForDigiLockerDocRequest(SearchCriteria  searchCriteria) throws IOException
-	{
-			
-		PullDocResponse model= new PullDocResponse();
-		XStream xstream = new XStream();
-		xstream .addPermission(NoTypePermission.NONE); //forbid everything
-		xstream .addPermission(NullPermission.NULL);   // allow "null"
-		xstream .addPermission(PrimitiveTypePermission.PRIMITIVES);
-		xstream .addPermission(AnyTypePermission.ANY);
-		
-		String[] parts = searchCriteria.getURI().split("PTQW|QW");
-		    String part1 = parts[0];
-	        String part2 = parts[1];
-	        String part3 = parts[2];
-	        String part4 = parts[3];
-	        String A="PT-".concat(part2).concat("-").concat(part3);
-	        PaymentSearchCriteria criteria = new PaymentSearchCriteria();
-	    	criteria.setTenantId("pb."+part4);
-	        criteria.setConsumerCodes(Collections.singleton(A));
-	        RequestInfo request=new RequestInfo();
-	        request.setApiId("Rainmaker");
-	        request.setMsgId("1670564653696|en_IN");
-	        RequestInfoWrapper requestInfoWrapper=new RequestInfoWrapper();
-	        UserResponse userResponse =new UserResponse();
-	        try {
-	        	userResponse=userService.getUser();
-	        	}
-	        catch(Exception e)
-	        {
-	        	
+	public String searchForDigiLockerDocRequest(SearchCriteria searchCriteria) throws IOException {
+
+	    PullDocResponse model = new PullDocResponse();
+
+	    XStream xstream = new XStream();
+	    xstream.addPermission(NoTypePermission.NONE);
+	    xstream.addPermission(NullPermission.NULL);
+	    xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
+	    xstream.addPermission(AnyTypePermission.ANY);
+
+	    String[] parts = searchCriteria.getURI().split("PTQW|QW");
+	    if (parts.length < 4) {
+	        throw new RuntimeException("Invalid DigiLocker URI format");
+	    }
+
+	    String part2 = parts[1];
+	    String part3 = parts[2];
+	    String part4 = parts[3];
+
+	    String consumerCode = "PT-" + part2 + "-" + part3;
+
+	    PaymentSearchCriteria criteria = new PaymentSearchCriteria();
+	    criteria.setTenantId("pb." + part4);
+	    criteria.setConsumerCodes(Collections.singleton(consumerCode));
+
+	    RequestInfo request = new RequestInfo();
+	    request.setApiId("Rainmaker");
+	    request.setMsgId("1670564653696|en_IN");
+
+	    RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+
+	    UserResponse userResponse = new UserResponse();
+	    try {
+	        userResponse = userService.getUser();
+	    } catch (Exception e) {
+	        log.error("User service failed", e);
+	    }
+
+	    request.setAuthToken(userResponse.getAuthToken());
+	    request.setUserInfo(userResponse.getUser());
+	    requestInfoWrapper.setRequestInfo(request);
+
+	    List<Payment> payments =
+	            paymentService.getPayments(criteria, "PRTAX", requestInfoWrapper);
+
+	    log.info("Payments found: " + (payments.isEmpty() ? "NONE" : payments.size()));
+
+	    Payment latestPayment = (!payments.isEmpty()) ? payments.get(0) : null;
+
+	    if (
+	        (!payments.isEmpty()
+	            || configurations.getValidationFlag().equalsIgnoreCase("TRUE")
+	            || (latestPayment != null && validateRequest(searchCriteria, latestPayment)))
+	        || (!payments.isEmpty()
+	            && configurations.getValidationFlag().equalsIgnoreCase("FALSE"))
+	    ) {
+
+	        log.info("Valid payment found / validation bypassed");
+
+	        String filestore = null;
+	        String fileResponse = null;
+
+	        if (latestPayment != null && latestPayment.getFileStoreId() != null) {
+	            filestore = latestPayment.getFileStoreId();
+	            fileResponse = paymentService.getFilestore(filestore).toString();
+	        } else if (latestPayment != null) {
+	            List<Payment> latestPaymentList = new ArrayList<>();
+	            latestPaymentList.add(latestPayment);
+
+	            PaymentRequest paymentRequest = new PaymentRequest();
+	            paymentRequest.setPayments(latestPaymentList);
+	            paymentRequest.setRequestInfo(requestInfoWrapper.getRequestInfo());
+
+	            filestore = paymentService.createPDF(paymentRequest);
+	            fileResponse = paymentService.getFilestore(filestore).toString();
 	        }
-	        request.setAuthToken(userResponse.getAuthToken());
-	        request.setUserInfo(userResponse.getUser());
-	        requestInfoWrapper.setRequestInfo(request);
-			List<Payment> payments = paymentService.getPayments(criteria,"PRTAX", requestInfoWrapper);
-			log.info("Payments found are:---" + ((!payments.isEmpty()?payments.size():"No payments found")));
-			xstream .addPermission(NoTypePermission.NONE); //forbid everything
-			xstream .addPermission(NullPermission.NULL);   // allow "null"
-			xstream .addPermission(PrimitiveTypePermission.PRIMITIVES);
-			xstream .addPermission(AnyTypePermission.ANY);
-			log.info("Name to search is " +searchCriteria.getPayerName());
-			//log.info("Mobile to search is " +searchCriteria.getMobile());
-			if(!payments.isEmpty()) {
-			log.info("Name in latest payment is " +payments.get(0).getPayerName());
-			log.info("Mobile in latest payment is " +payments.get(0).getMobileNumber());
-			}
-			
-			
-			if((!payments.isEmpty() || configurations.getValidationFlag().toUpperCase().equals("TRUE") || validateRequest(searchCriteria,payments.get(0)))
-					|| (!payments.isEmpty() && configurations.getValidationFlag().toUpperCase().equals("FALSE"))){ 
-				log.info("Payment object is not null and validations passed!!!");
-				String o=null;
-				String filestore=null;
-				if(payments.get(0).getFileStoreId() != null) {
-					filestore=payments.get(0).getFileStoreId();
-					o=paymentService.getFilestore(payments.get(0).getFileStoreId()).toString();
-				}
-				else
-				{
-					List<Payment> latestPayment=new ArrayList<Payment>();
-					latestPayment.add(payments.get(0));
-					PaymentRequest paymentRequest=new PaymentRequest();
-					paymentRequest.setPayments(latestPayment);
-					paymentRequest.setRequestInfo(requestInfoWrapper.getRequestInfo());
-					filestore=paymentService.createPDF(paymentRequest);
-					o=paymentService.getFilestore(filestore).toString();
-					
-				
-				}
-				
-				
-				if(o!=null)
-				
-				 		{
-					 	String path=o.split("url=")[1];
-					 	String pdfPath=path.substring(0,path.length()-3);
-					 	URL url1 =new URL(pdfPath);
-					 	try {
 
-					     // Read the PDF from the URL and save to a local file
-					     InputStream is1 = url1.openStream();
-					     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	        if (fileResponse != null) {
+	            try {
+	                String path = fileResponse.split("url=")[1];
+	                String pdfPath = path.substring(0, path.length() - 3);
 
-					     int nRead;
-					     byte[] data = new byte[1024];
+	                URL url = new URL(pdfPath);
+	                InputStream is = url.openStream();
 
-					     while ((nRead = is1.read(data, 0, data.length)) != -1) {
-					         buffer.write(data, 0, nRead);
-					     }
+	                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	                byte[] data = new byte[1024];
+	                int nRead;
 
-					     buffer.flush();
-					     byte[] targetArray = buffer.toByteArray();
-					     String encodedString = Base64.getEncoder().encodeToString(targetArray); 
-	     				    
-					     ResponseStatus responseStatus=new ResponseStatus();
-					     responseStatus.setStatus("1");
-					     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-					     LocalDateTime now = LocalDateTime.now();  
-					     responseStatus.setTs(dtf.format(now));
-					     responseStatus.setTxn(searchCriteria.getTxn());
-					     model.setResponseStatus(responseStatus);
-					 
-					     DocDetailsResponse docDetailsResponse=new DocDetailsResponse();
-				    	 Certificate certificate=new Certificate();
+	                while ((nRead = is.read(data, 0, data.length)) != -1) {
+	                    buffer.write(data, 0, nRead);
+	                }
 
-				    	 xstream.processAnnotations(Certificate.class);
-				    	 xstream.processAnnotations(Organization.class);
-				         xstream.processAnnotations(Address.class);
-				         xstream.processAnnotations(IssuedBy.class);
-					     certificate=populateCertificate(payments.get(0));
-    			    	 String xml1 = xstream.toXML(certificate); 
-				    	 System.out.println(xml1);
-					     
-					     
-					     
-					     docDetailsResponse.setDataContent(Base64.getEncoder().encodeToString( xstream.toXML(certificate).getBytes()));
+	                buffer.flush();
 
-					     docDetailsResponse.setDocContent(encodedString);
-					     //System.out.println(docDetailsResponse);
-					     model.setDocDetails(docDetailsResponse);
-					       
+	                String encodedPdf =
+	                        Base64.getEncoder().encodeToString(buffer.toByteArray());
 
-				 }
-				 catch (NullPointerException npe) {
-				      log.error(npe.getMessage());
-				      log.info("Error Occured",npe.getMessage());
-				    }
-				  }	
-			} 
-			
-			else
-			{
-				ResponseStatus responseStatus=new ResponseStatus();
-			     responseStatus.setStatus("0");
-			     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-			     LocalDateTime now = LocalDateTime.now();  
-			     responseStatus.setTs(dtf.format(now));
-			     responseStatus.setTxn(searchCriteria.getTxn());
-			     model.setResponseStatus(responseStatus);
-			 
-			     DocDetailsResponse docDetailsResponse=new DocDetailsResponse();
+	                ResponseStatus responseStatus = new ResponseStatus();
+	                responseStatus.setStatus("1");
+	                responseStatus.setTxn(searchCriteria.getTxn());
+	                responseStatus.setTs(
+	                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+	                );
 
-			     docDetailsResponse.setURI(null);
-			   //  docDetailsResponse.setIssuedTo(issuedTo);
-			     docDetailsResponse.setDataContent("");
-			     docDetailsResponse.setDocContent("");
-			   
-			    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			     log.info(EXCEPTION_TEXT_VALIDATION);
-			     model.setDocDetails(docDetailsResponse);
+	                model.setResponseStatus(responseStatus);
 
-			}
-			
-		    xstream.processAnnotations(PullDocResponse.class);
-	        xstream.toXML(model);
-	        
-			return xstream.toXML(model);   
+	                DocDetailsResponse docDetailsResponse = new DocDetailsResponse();
 
+	                Certificate certificate = populateCertificate(latestPayment);
+
+	                xstream.processAnnotations(Certificate.class);
+	                xstream.processAnnotations(Organization.class);
+	                xstream.processAnnotations(Address.class);
+	                xstream.processAnnotations(IssuedBy.class);
+
+	                docDetailsResponse.setDataContent(
+	                        Base64.getEncoder().encodeToString(
+	                                xstream.toXML(certificate).getBytes()
+	                        )
+	                );
+
+	                docDetailsResponse.setDocContent(encodedPdf);
+	                model.setDocDetails(docDetailsResponse);
+
+	            } catch (Exception e) {
+	                log.error("Error while reading PDF", e);
+	            }
+	        }
+
+	    } else {
+
+	        ResponseStatus responseStatus = new ResponseStatus();
+	        responseStatus.setStatus("0");
+	        responseStatus.setTxn(searchCriteria.getTxn());
+	        responseStatus.setTs(
+	                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+	        );
+
+	        model.setResponseStatus(responseStatus);
+
+	        DocDetailsResponse docDetailsResponse = new DocDetailsResponse();
+	        docDetailsResponse.setURI(null);
+	        docDetailsResponse.setDataContent("");
+	        docDetailsResponse.setDocContent("");
+
+	        model.setDocDetails(docDetailsResponse);
+
+	        log.info(EXCEPTION_TEXT_VALIDATION);
+	    }
+
+	    xstream.processAnnotations(PullDocResponse.class);
+	    return xstream.toXML(model);
 	}
 
-	
 	
 	
 	

@@ -81,59 +81,18 @@ public class DataExchangeController {
 	@Autowired 
     private DataExchangeService dataExchangeService;
 	
-	@RequestMapping(path = {"/_searchReceipt"}, method = RequestMethod.POST ,consumes = {MediaType.APPLICATION_XML_VALUE},produces = {"application/xml","text/xml"})
-    @ResponseBody()
-    public String search(@Valid @RequestBody String requestBody, HttpServletRequest httpServletRequest) throws IOException, JAXBException
-    { 
-	    
-		XStream xstream = new XStream();
-		xstream .addPermission(NoTypePermission.NONE); 
-		xstream .addPermission(NullPermission.NULL);   
-		xstream .addPermission(PrimitiveTypePermission.PRIMITIVES);
-		xstream .addPermission(AnyTypePermission.ANY);
-        //xstream.processAnnotations(DocDetailsResponse.class);
-        Object obj=new Object();
-		ObjectMapper om=new ObjectMapper();
-		PullURIRequest pojo=new PullURIRequest();
-		PullDocRequest pojoDoc=new PullDocRequest();
-		SearchCriteria searchCriteria=new SearchCriteria();
-		              
-		String encodedString=null;
-		if(requestBody.contains("PullURIRequest"))
-		{
-			log.info("In Pull URI Request");
-	        xstream.processAnnotations(PullURIRequest.class);
-	        obj=xstream.fromXML(requestBody);
-			pojo=om.convertValue(obj, PullURIRequest.class);
-			pojo.setTxn((requestBody.split("txn=\"")[1]).split("\"")[0]);
-			searchCriteria.setPropertyId(pojo.getDocDetails().getPropertyId());
-			searchCriteria.setCity(pojo.getDocDetails().getCity());
-			//searchCriteria.setOrigin(httpServetRequest.getRequestURL().toString());
-			searchCriteria.setOrigin("https://partners.digitallocker.gov.in");
-			log.info("Request URL is "+ URI.create(httpServletRequest.getRequestURL().toString()).getHost());
-			searchCriteria.setTxn(pojo.getTxn());
-			searchCriteria.setDocType(pojo.getDocDetails().getDocType());
-			searchCriteria.setPayerName(pojo.getDocDetails().getFullName());
-			searchCriteria.setMobile(pojo.getDocDetails().getMobile());
-			encodedString=dataExchangeService.searchPullURIRequest(searchCriteria);
-		}
-		else
-		{
-			log.info("In Pull Doc Request");
-			xstream.processAnnotations(PullDocRequest.class);
-	        obj=xstream.fromXML(requestBody);
-			pojoDoc=om.convertValue(obj, PullDocRequest.class);
-			pojoDoc.setTxn((requestBody.split("txn=\"")[1]).split("\"")[0]);
-			//searchCriteria.setOrigin(httpServetRequest.getRequestURL().toString());
-			searchCriteria.setOrigin("https://partners.digitallocker.gov.in");
-			log.info("Request URL is "+URI.create(httpServletRequest.getRequestURL().toString()).getHost());
-			searchCriteria.setURI(pojoDoc.getDocDetails().getURI());
-			searchCriteria.setTxn(pojoDoc.getTxn());
-		
-			encodedString=dataExchangeService.searchPullDocRequest(searchCriteria);
+	@RequestMapping(
+	        path = {"/_searchReceipt"},
+	        method = RequestMethod.POST,
+	        consumes = { MediaType.APPLICATION_XML_VALUE },
+	        produces = { "application/xml", "text/xml" }
+	    )
+	    @ResponseBody
+	    public String search(
+	            @Valid @RequestBody String requestBody,
+	            HttpServletRequest httpServletRequest)
+	            throws IOException, JAXBException {
 
-		}
-		
-		return encodedString;	
-     }	
+	        return dataExchangeService.processSearch(requestBody, httpServletRequest);
+	    }
 }

@@ -193,7 +193,7 @@ function CLUSummary({ currentStepData: formData, t }) {
      <Card>
       <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
       <StatusTable>
-        {formData && <CLUFeeEstimationDetails formData={formData}/>}
+        {formData && <CLUFeeEstimationDetails formData={formData} feeType="PAY1"/>}
       </StatusTable>
       </Card>
 

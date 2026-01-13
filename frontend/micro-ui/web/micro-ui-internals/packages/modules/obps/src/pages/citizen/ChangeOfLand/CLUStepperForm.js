@@ -91,6 +91,10 @@ const CLUStepperForm = () => {
     dispatch(RESET_OBPS_FORM());
   }, []);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   // console.log("formData",formData);
 
   const handleSubmit = (dataGet) => {

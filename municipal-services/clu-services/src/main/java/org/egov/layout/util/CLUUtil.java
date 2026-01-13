@@ -111,7 +111,7 @@ public class CLUUtil {
 
 
 
-	public Object mDMSLayoutCall(RequestInfo requestInfo, String tenantId, String ulbType,String category,String area) {
+	public Object mDMSCLUCall(RequestInfo requestInfo, String tenantId, String ulbType,String category,String area) {
 		MdmsCriteriaReq mdmsCriteriaReq = getLayoutMDMSRequest(requestInfo, tenantId,ulbType,category,area);
 		Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
 		return result;
@@ -126,7 +126,7 @@ public class CLUUtil {
 
 
 		return String.format(
-				"$[?(@.ulbType=='%s' && @.category=='%s' && @.minArea<=%s && @.maxArea>=%s)]",
+				"$[?(@.ulbType contains '%s' && @.category contains '%s' && @.minArea < %s && @.maxArea >= %s)]",
 				safeUlbType, safeCategory, area, area
 		);
 	}

@@ -48,6 +48,8 @@ import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import InspectionReport from "../../../pageComponents/InspectionReport";
+import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -121,6 +123,8 @@ const BpaApplicationDetail = () => {
     return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
   });
 
+  const [fieldInspectionPending, setFieldInspectionPending] = useState(data?.applicationData?.additionalDetails?.fieldinspection_pending || [])
+
 
   const [otherCharges, setOtherCharges] = useState(() => {
     return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "";
@@ -193,6 +197,7 @@ const BpaApplicationDetail = () => {
       setMalbafees(charges.BPA_MALBA_CHARGES || "");
       setWaterCharges(charges.BPA_WATER_CHARGES || "");
       setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
+      setFieldInspectionPending(data.applicationData.additionalDetails.fieldinspection_pending || []);
 
       if(data?.applicationData?.additionalDetails?.siteImages?.length > 0){
         setSiteImages(data?.applicationData?.additionalDetails?.siteImages ? {
@@ -347,6 +352,10 @@ const BpaApplicationDetail = () => {
 
     fetchOwnerFileUrls();
   }, [data?.applicationData?.landInfo?.owners]);
+
+  const onChangeReport = (key, value) => {
+    setFieldInspectionPending(value);
+  }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
     let response = null;
@@ -872,7 +881,7 @@ const BpaApplicationDetail = () => {
       setOtherCharges(value);
       sessionStorage.setItem("otherCharges", value);
     } else {
-      alert(t("Please enter numbers"));
+      setShowToast({error: true, label: t("Please enter numbers")});
     }
   }
 
@@ -881,7 +890,7 @@ const BpaApplicationDetail = () => {
       setDevelopment(value);
       sessionStorage.setItem("development", value);
     } else {
-      alert(t("Please enter numbers"));
+      setShowToast({error: true, label: t("Please enter numbers")});
     }
   }
 
@@ -896,13 +905,13 @@ const BpaApplicationDetail = () => {
         parseInt(waterCharges) +
         parseInt(gaushalaFees)
       ) {
-        alert(t("Less adjustment fees cannot be grater than Total of other P2 fees"));
+        setShowToast({error: true, label: t("Less adjustment fees cannot be grater than Total of other P2 fees")});
       } else {
         setLessAdjusment(value);
         sessionStorage.setItem("lessAdjusment", value);
       }
     } else {
-      alert(t("Please enter numbers"));
+      setShowToast({error: true, label: t("Please enter numbers")});
     }
   }
 
@@ -962,7 +971,8 @@ const BpaApplicationDetail = () => {
   function onActionSelect(action) {
     console.log("SelectedAction", action)
     if(action?.action === "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4 || siteImages?.documents?.some(img => !img?.filestoreId)) ){      
-      alert(t("Please_Add_Site_Images_With_Geo_Location"))
+      closeModal();
+      setShowToast({error: true, label: t("Please_Add_Site_Images_With_Geo_Location")})
       return
     }
     if (action) {
@@ -1062,11 +1072,33 @@ const BpaApplicationDetail = () => {
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
     //   alert(t("Please fill in the comments before submitting  "))
     // }
-    if (data?.BPA?.comment?.length == 0) {
-      alert(t("Please fill in the comments before submitting"))
+    if(data?.BPA?.status === "INSPECTION_REPORT_PENDING"){
+      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending)
+      if(fieldInspectionPending?.length === 0){
+        closeModal();
+        setShowToast({error: true, label: t("Please fill in the Field Inspection Report before submitting")})
+        return;
+      }else if(fieldInspectionPending?.[0]?.questionLength === 0){
+        closeModal();
+        setShowToast({error: true, label: t("Please fill in the Field Inspection Report before submitting")})
+        return;
+      }else{
+        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["question_"+index]);
+        if(isQuestionEmpty){
+          closeModal();
+          setShowToast({error: true, label: t("Please fill in all the questions in Field Inspection Report before submitting")})
+          return;
+        }
+      }      
     }
-    else if (data?.BPA?.businessService == "BPA" && !data?.BPA?.additionalDetails?.blockingReason && data?.BPA?.workflow?.action == "BLOCK") {
-      alert(t("Please select Blocking reason"))
+
+    if (data?.BPA?.comment?.length == 0) {
+      closeModal();
+      setShowToast({error: true, label: t("Please fill in the comments before submitting")})
+    }
+    else if (!data?.BPA?.additionalDetails?.blockingReason && data?.BPA?.workflow?.action == "BLOCK") {
+      closeModal();
+      setShowToast({error: true, label: t("Please select Blocking reason")})
     }
     else {
       setIsEnableLoader(true);
@@ -1116,6 +1148,7 @@ const BpaApplicationDetail = () => {
               siteImages: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? siteImages?.documents : data?.BPA?.additionalDetails?.siteImages,
               // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
               // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
+              fieldinspection_pending: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? fieldInspectionPending : data?.BPA?.additionalDetails?.fieldinspection_pending,
             }
           }
         }
@@ -1256,6 +1289,9 @@ const BpaApplicationDetail = () => {
           ?.filter((ob) => Object.keys(ob)?.length > 0)
           .map((detail, index, arr) => {
             console.log("detailforme", detail)
+            if(detail?.isFieldInspection){
+              console.log("detailformeTrue", detail)
+            }
             return (
               <div key={index}>
                 {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
@@ -1315,7 +1351,7 @@ const BpaApplicationDetail = () => {
                                   text={
                                     <div>
                                       <Link to={value?.to}>
-                                        <span className="link" style={{ color: "#a82227" }}>
+                                        <span className="link">
                                           {value?.value}
                                         </span>
                                       </Link>
@@ -1503,13 +1539,57 @@ const BpaApplicationDetail = () => {
                           </>)}                          
 
                         {/* to get FieldInspection values */}
-                        {detail?.isFieldInspection &&
-                          data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 ? (
-                          <InspectionReport
-                            isCitizen={true}
-                            fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
-                          />
-                        ) : null}
+                        {detail?.isFieldInspection ? (<div>
+                          {
+                            data?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
+                            <Card>
+                              <InspectionReport
+                                isCitizen={true}
+                                fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                onSelect={onChangeReport}
+                              />
+                            </Card>
+                          }
+                          {
+                            (!data?.applicationData?.status === "INSPECTION_REPORT_PENDING") && data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 &&
+                            <Card>
+                              <InspectionReportDisplay
+                                fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}                                
+                              />
+                            </Card>
+                          }
+                          {
+                            data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
+                            <Card>
+                              <div id="fieldInspection"></div>
+                              <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+                            </Card>
+                          }
+
+                          {
+                            data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
+                              <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+                              <Table
+                                className="customTable table-border-style"
+                                t={t}
+                                data={documentData}
+                                columns={documentsColumnsSiteImage}
+                                getCellProps={() => ({ style: {} })}
+                                disableSort={false}
+                                autoSort={true}
+                                manualPagination={false}
+                                isPaginationRequired={false}
+                              />
+                              {geoLocations?.length > 0 &&
+                                <React.Fragment>
+                                  <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                                  <CustomLocationSearch position={geoLocations} />
+                                </React.Fragment>
+                              }
+                            </Card>
+                          }
+                        </div>
+                        ) : null} 
 
                         {/* to get NOC values */}
                         {detail?.additionalDetails?.noc?.length > 0
@@ -1856,7 +1936,7 @@ const BpaApplicationDetail = () => {
           </ActionBar>
         )}
 
-        {
+        {/* {
           data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
           <Card>
             <div id="fieldInspection"></div>
@@ -1885,7 +1965,7 @@ const BpaApplicationDetail = () => {
                 </React.Fragment>
             }
           </Card>
-        }
+        } */}
 
         {showImageModal && <Modal
           headerBarEnd={<CloseBtn onClick={closeImageModal} />}
@@ -1926,6 +2006,18 @@ const BpaApplicationDetail = () => {
         />
         } */}
       </div>
+
+      {showToast && (
+        <Toast
+          error={showToast.error}
+          warning={showToast.warning}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          isDleteBtn={true}
+        />
+      )}
 
     </Fragment>
   )

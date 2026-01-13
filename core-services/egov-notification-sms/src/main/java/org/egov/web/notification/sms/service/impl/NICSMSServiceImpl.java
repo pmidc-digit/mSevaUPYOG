@@ -112,9 +112,11 @@ public class NICSMSServiceImpl extends BaseSMSService {
 			String final_data = "";
 			boolean isOtp = isOtpMessage(sms);
 			if(isOtp){
+				log.info("otp user name send the otp");
 				final_data += "username=" + smsProperties.getUsername();
 				final_data += "&pin=" + smsProperties.getPassword();
 			} else  {
+				log.info("sms user name send the otp");
 				final_data += "username=" + smsProperties.getSmsUsername();
 				final_data += "&pin=" + smsProperties.getSmsPassword();
 			}

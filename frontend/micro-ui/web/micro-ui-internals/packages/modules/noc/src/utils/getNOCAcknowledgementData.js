@@ -295,8 +295,7 @@ const getDocuments = async (appData, t) => {
         ? filteredDocs.map((document, index) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
             return {
-              title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA"),
-              value: " ",
+              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,              value: " ",
               link: documentLink || "",
             };
           })
@@ -382,7 +381,7 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,u
   return {
     t: t,
     tenantId: tenantInfo?.code,
-    name: t("NOC_ACKNOWLEDGEMENT_TITLE"),
+    name: t("Noc Application"),
     // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,

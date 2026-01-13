@@ -5,6 +5,7 @@ import { SET_ADSNewApplication_STEP } from "../redux/action/ADSNewApplicationAct
 import ADSDocument from "./ADSDocument";
 import ADSCartDetails from "./ADSCartDetails";
 
+
 function ADSSummary({ t }) {
   const dispatch = useDispatch();
   const TT = (key) => (t ? t(key) : key);
@@ -36,58 +37,51 @@ function ADSSummary({ t }) {
   // const updatedCartSlots = formData?.ads?.flatMap((item) => item.slots);
 
   return (
-    <div className="application-summary">
-      <Card className="summary-section">
-        <div className="ads-summary-section">
-          <div className="ads-summary-header">
-            <h3 className="ads-summary-heading">{TT("ADS_APPLICANT_DETAILS")}</h3>
-            <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
-              {TT("TL_SUMMARY_EDIT")}
-            </span>
-          </div>
-          {renderRow(TT("NOC_APPLICANT_NAME_LABEL"), applicant?.applicantName)}
-          {renderRow(TT("CORE_Mobile_Number"), applicant?.applicantMobileNo)}
-          {renderRow(TT("CORE_EMAIL_ID"), applicant?.applicantEmailId)}
-          {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
-          {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
+    <div className="bpa-summary-page">
+     
+      <h2 className="bpa-summary-heading">{TT("ADS_APPLICANT_DETAILS")}</h2>
+      <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+        {TT("TL_SUMMARY_EDIT")}
+      </span>
+      <div className="bpa-summary-section">
+        {renderRow(TT("NOC_APPLICANT_NAME_LABEL"), applicant?.applicantName)}
+        {renderRow(TT("CORE_Mobile_Number"), applicant?.applicantMobileNo)}
+        {renderRow(TT("CORE_EMAIL_ID"), applicant?.applicantEmailId)}
+        {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
+        {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
+      </div>
+
+      <h2 className="bpa-summary-heading">{TT("ADS_DETAILS")}</h2>
+      <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
+        {TT("TL_SUMMARY_EDIT")}
+      </span>
+      <div className="bpa-summary-section">
+        <ADSCartDetails cartDetails={cartDetails} t={t} />
+      </div>
+
+      <div className="document-section-wrapper">
+        <div className="document-section-header">
+          <span className="document-icon">📄</span>
+          {TT("ADS_DOCUMENTS_DETAILS")}
         </div>
-      </Card>
+        <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
+          {TT("TL_SUMMARY_EDIT")}
+        </span>
 
-      <Card className="summary-section">
-        <div className="ads-summary-section">
-          <div className="ads-summary-header--compact">
-            <h3 className="ads-summary-heading">{TT("ADS_DETAILS")}</h3>
-            <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
-              {TT("TL_SUMMARY_EDIT")}
-            </span>
-          </div>
-
-          <ADSCartDetails cartDetails={cartDetails} t={t} />
-        </div>
-      </Card>
-
-      <Card className="summary-section">
-        <div className="ads-summary-section">
-          <div className="ads-summary-header">
-            <h3 className="ads-summary-heading">{TT("ADS_DOCUMENTS_DETAILS")}</h3>
-            <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
-              {TT("TL_SUMMARY_EDIT")}
-            </span>
-          </div>
-          {docs?.length > 0 ? (
-            <div className="ads-summary-docs">
+        {docs?.length > 0 ? (
+          <div className="document-container">
+            <div className="document-grid">
               {docs.map((doc, idx) => (
-                <div key={idx} className="ads-summary-doc-card">
+                <div key={idx}>
                   <ADSDocument value={docs} Code={doc?.documentType} index={idx} />
-                  {TT(doc?.documentType)}
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="ads-summary-no-docs">{t("TL_NO_DOCUMENTS_MSG")}</div>
-          )}
-        </div>
-      </Card>
+          </div>
+        ) : (
+          <div className="document-empty-state">{t("TL_NO_DOCUMENTS_MSG")}</div>
+        )}
+      </div>
     </div>
   );
 }

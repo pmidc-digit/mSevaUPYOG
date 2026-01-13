@@ -23,9 +23,9 @@ function RentAndLeaseDocument({ applicationdetail = {} }) {
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="document-container">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="document-grid">
           {documents?.length > 0 &&
             documents?.map((document, index) => {
               const fileStoreId = document?.filestoreId || document?.fileStoreId;
@@ -40,27 +40,22 @@ function RentAndLeaseDocument({ applicationdetail = {} }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   href={documentLink || "#"}
-                  style={{
-                    minWidth: "160px",
-                    margin: "12px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    textAlign: "center",
-                  }}
+                  className="document-link"
+                 
                   key={index}
                 >
-                  <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                  <p
-                    style={{
-                      marginTop: "8px",
-                      maxWidth: "140px",
-                      wordBreak: "break-word",
-                    }}
+                  <div className="document-icon-wrapper">
+                    <PDFSvg width={80} height={100} />
+                  </div>
+                  <p className="document-name"
+                   
                     title={t(documentType)}
                   >
                     {t(documentType)}
                   </p>
+                   <div className="document-action-label">
+                    View
+                  </div>
                 </a>
               );
             })}

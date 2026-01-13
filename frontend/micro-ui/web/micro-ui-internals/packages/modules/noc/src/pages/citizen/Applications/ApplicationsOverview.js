@@ -31,7 +31,7 @@ import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDet
 import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
-
+import NocSitePhotographs from "../../../components/NocSitePhotographs";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -87,6 +87,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
+  console.log('id', id.length)
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -233,6 +234,8 @@ const CitizenApplicationOverview = () => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
+  
 
   const menuRef = useRef();
 
@@ -364,17 +367,32 @@ const CitizenApplicationOverview = () => {
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
   };
+  const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
+
 
   if (isLoading) {
     return <Loader />;
   }
 
+  const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
   console.log("displayData=>", displayData);
+  const sitePhotos = displayData?.Documents?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
+  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
+
+  
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
+        <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+
         {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
@@ -393,6 +411,18 @@ const CitizenApplicationOverview = () => {
           ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
         />
       </Card>
+
+      {id.length > 0 && (
+        <React.Fragment>
+          <Card>
+            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+              </StatusTable>
+            </div>
+          </Card>
+        </React.Fragment>
+      )}
 
       {displayData?.applicantDetails?.[0]?.owners?.map((detail, index) => (
         <React.Fragment>
@@ -502,7 +532,7 @@ const CitizenApplicationOverview = () => {
           </div>
         ))}
       </Card>
-
+      {/* 
      <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
         {displayData?.coordinates?.map((detail, index) => {
@@ -530,7 +560,7 @@ const CitizenApplicationOverview = () => {
               </StatusTable>
 
               {/* Render images for site photographs */}
-              {sitePhotos?.map((photo, idx) => (
+      {/* {sitePhotos?.map((photo, idx) => (
                 <div key={photo.uuid}>
                   <NOCImageView ownerFileStoreId={photo.documentAttachment} ownerName={photo.documentType || `Site Photo ${idx + 1}`} />
                 </div>
@@ -538,13 +568,23 @@ const CitizenApplicationOverview = () => {
             </div>
           );
         })}
+      </Card> */}
+
+      <Card>
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable>
+          {sitePhotos?.length > 0 &&
+            sitePhotos?.map((doc) => (
+              <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
+            ))}
+        </StatusTable>
       </Card>
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>
           {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
-            <NOCDocumentTableView documents={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds} />
+            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
           )}
         </StatusTable>
       </Card>
@@ -562,7 +602,7 @@ const CitizenApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}</StatusTable>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
 
       <Card>
@@ -573,9 +613,9 @@ const CitizenApplicationOverview = () => {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || []
+              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || [],
             }}
-            disable={true}  
+            disable={true}
           />
         )}
       </Card>
@@ -600,7 +640,9 @@ const CitizenApplicationOverview = () => {
         </Card>
       )} */}
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      <div id="timeline">
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      </div>
 
       {actions && actions.length > 0 && (
         <ActionBar>

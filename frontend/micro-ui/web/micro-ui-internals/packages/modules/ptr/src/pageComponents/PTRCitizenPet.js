@@ -519,7 +519,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       </LabelFieldPair>
 
       {/* VACCINATED DATE */}
-      <LabelFieldPair style={{ marginTop: "20px" }}>
+      <LabelFieldPair style={{ marginTop: "20px", marginBottom: "1rem" }}>
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATED_DATE")} *</CardLabel>
         <div className="form-field">
           <Controller
@@ -549,7 +549,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       </LabelFieldPair>
 
       {/* VACCINATION NUMBER */}
-      <LabelFieldPair style={{ marginTop: "15px" }}>
+      <LabelFieldPair >
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
         <div className="form-field">
           <Controller

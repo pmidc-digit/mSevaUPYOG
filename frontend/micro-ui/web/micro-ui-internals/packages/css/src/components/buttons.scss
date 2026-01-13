@@ -17,9 +17,13 @@
   align-items: center;
   justify-content: center;
   min-height: 40px;
-  max-height: 40px;
-  width: 30%;
+  height: auto;
+  width: 100%;
   margin: 0;
+
+  @media (min-width: 768px) {
+    width: 30%;
+  }
 
   &:hover {
     opacity: 0.9;
@@ -67,8 +71,8 @@
   line-height: 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: normal; /* allow wrapping */
-  word-break: break-word; /* break long words */
+  white-space: normal;
+  word-break: break-word;
   overflow-wrap: break-word;
   text-align: center;
   display: inline-flex;
@@ -76,9 +80,12 @@
   justify-content: center;
   height: auto;
   min-height: 40px;
-  width: 30%;
-  max-height: 40px;
+  width: 100%;
   margin: 0;
+
+  @media (min-width: 768px) {
+    width: 30%;
+  }
 
   &:hover {
     background-color: #1e3a8a !important;

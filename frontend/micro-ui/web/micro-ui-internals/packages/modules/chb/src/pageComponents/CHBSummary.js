@@ -194,14 +194,14 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         totalRecords={slotlistRows.length}
       />
 
-      <CardSubHeader style={{ marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
-      <StatusTable>
-        <div style={documentsContainerStyle}>
+      <CardSubHeader className="bpa-summary-heading">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+      <StatusTable >
+        <div className="bpa-summary-section">
           {docs?.length > 0 ? (
             docs?.map((doc, index) => (
               <div key={index} style={documentCardStyle}>
                 <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                <CardSectionHeader>{t(doc?.documentType)}</CardSectionHeader>
               </div>
             ))
           ) : (

@@ -600,15 +600,33 @@ const TLApplicationDetails = () => {
                     // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                   />
                 )}
-                <CardSubHeader>{t("TL_COMMON_DOCS")}</CardSubHeader>
-                <div>
-                  {application?.tradeLicenseDetail?.applicationDocuments?.length > 0 ? (
-                    <TLDocument value={{ ...application }}></TLDocument>
-                  ) : (
-                    <StatusTable>
-                      <Row text={t("TL_NO_DOCUMENTS_MSG")} />
-                    </StatusTable>
-                  )}
+                <div style={{ 
+                  marginTop: "20px",
+                  marginBottom: "20px",
+                  borderRadius: "4px",
+                  border: "1px solid #E0E4E8",
+                  backgroundColor: "#F9F9F9",
+                  padding: "16px"
+                }}>
+                  <CardSubHeader style={{ marginTop: "0px", marginBottom: "16px", display: "flex", alignItems: "center" }}>
+                   
+                    {t("TL_COMMON_DOCS")}
+                  </CardSubHeader>
+                  <div>
+                    {application?.tradeLicenseDetail?.applicationDocuments?.length > 0 ? (
+                      <TLDocument value={{ ...application }}></TLDocument>
+                    ) : (
+                      <div style={{ 
+                        padding: "16px",
+                        textAlign: "center",
+                        color: "#7A8A96",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "4px"
+                      }}>
+                        <Row text={t("TL_NO_DOCUMENTS_MSG")} />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {/* {workflowDocs?.length > 0 && (
                   <div>

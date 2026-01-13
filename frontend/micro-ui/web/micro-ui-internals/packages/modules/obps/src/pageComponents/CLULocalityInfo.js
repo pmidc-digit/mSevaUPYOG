@@ -87,7 +87,7 @@ const CLULocalityInfo = (_props) => {
                     setSelectedAreaType(e);
                   }}
                   selected={props.value}
-                  option={areaTypeOptions}
+                  option={areaTypeOptions?.filter((item)=> !(item.code === "APPROVED_COLONY"))}
                   optionKey="name"
                   t={t}
                 />
@@ -126,7 +126,7 @@ const CLULocalityInfo = (_props) => {
         )}
         <CardLabelError style={errorStyle}>{errors?.localitySchemeName?.message || ""}</CardLabelError>
 
-        {selectedAreaType?.code === "APPROVED_COLONY" && (
+        {/* {selectedAreaType?.code === "APPROVED_COLONY" && (
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
@@ -153,7 +153,7 @@ const CLULocalityInfo = (_props) => {
             </div>
           </LabelFieldPair>
         )}
-        <CardLabelError style={errorStyle}>{errors?.localityApprovedColonyName?.message || ""}</CardLabelError>
+        <CardLabelError style={errorStyle}>{errors?.localityApprovedColonyName?.message || ""}</CardLabelError> */}
 
         {selectedAreaType?.code === "NON_SCHEME" && (
           <LabelFieldPair>

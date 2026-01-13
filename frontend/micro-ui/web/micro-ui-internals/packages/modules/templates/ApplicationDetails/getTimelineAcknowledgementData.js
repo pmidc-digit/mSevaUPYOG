@@ -30,6 +30,8 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
     const status = item?.status || item?.state || "N/A";
     const comment = item?.wfComment?.[0] || "-";
     const documents = item?.wfDocuments || [];
+    const sla = item?.sla || "N/A";
+    const assignedTo = Array.isArray(item?.assignes) ? item.assignes.map(a => a?.name).filter(Boolean).join(", ") : "";
 
     return {
       sNo: index + 1,
@@ -49,7 +51,9 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
         fileStoreId: doc?.fileStoreId,
         link: pdfDownloadLink(pdfFiles, doc?.fileStoreId)
       })),
-      hasDocuments: documents.length > 0
+      hasDocuments: documents.length > 0,
+      sla,
+      assignedTo,
     };
   });
 

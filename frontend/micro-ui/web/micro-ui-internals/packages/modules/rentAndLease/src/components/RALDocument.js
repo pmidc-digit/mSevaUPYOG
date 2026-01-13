@@ -24,21 +24,33 @@ function RALDocuments({ value = {}, Code, index }) {
   }
 
   return (
-    <React.Fragment>
-      {data?.pdfFiles && (
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {documents?.map((document, index) => {
-            let documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
-            return (
-              <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                {/* <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`NDC_${document?.documentType}_LABEL`)}</p> */}
-              </a>
-            );
-          })}
+    <div className="document-container">
+      <React.Fragment>
+       
+        <div className="document-grid">
+          {data?.pdfFiles && (
+            <div>
+              {documents?.map((document, index) => {
+                let documentLink = pdfDownloadLink(data?.pdfFiles, document?.fileStoreId);
+                return (
+                  <a className="document-link" target="_" href={documentLink} key={index}>
+                    <div className="document-card">
+                      <div className="document-icon-wrapper">
+                        <PDFSvg width={80} height={100} />
+                      </div>
+                      <p className="document-name">{value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}</p>
+                        <div className="document-action-label">
+                    View
+                  </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
-    </React.Fragment>
+      </React.Fragment>
+    </div>
   );
 }
 

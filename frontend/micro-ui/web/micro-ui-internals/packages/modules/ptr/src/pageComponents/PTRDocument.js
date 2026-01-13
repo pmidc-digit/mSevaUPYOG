@@ -19,23 +19,31 @@ function PTRDocument({ petdetail = {} }) {
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="document-container">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="document-grid">
           {documents?.length > 0 &&
             documents?.map((document, index) => {
               let documentLink = pdfDownloadLink(data.pdfFiles, document?.filestoreId);
               return (
                 <a
-                  target="_"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   href={documentLink}
-                  className="document-card-link"
+                  className="document-link"
                   key={index}
                 >
-                  <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                  <p className="document-card-label" title={t(`PT_${document?.documentType.replace(".", "_")}`)}>
-                    {t(`PT_${document?.documentType.replace(".", "_")}`)}
-                  </p>
+                  <div className="document-card">
+                    <div className="document-icon-wrapper">
+                      <PDFSvg width={80} height={100} />
+                    </div>
+                    <p className="document-name">
+                      {t(`${document?.documentType.replace(".", "_")}`)}
+                    </p>
+                    <div className="document-action-label">
+                      View
+                    </div>
+                  </div>
                 </a>
               );
             })}

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader } from "@mseva/digit-ui-react-components";
-
+import getTimelineAcknowledgementData from "../getTimelineAcknowledgementData";
 const PDFSvg = React.memo(({ width = 20, height = 20, style }) => (
   <svg style={style} xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 20 20" fill="gray">
     <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />
@@ -40,7 +40,28 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   );
 });
 
-export default function NewApplicationTimeline({ workflowDetails, t }) {
+export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId() }) {
+  
+  const { isLoading, data: docData } = Digit.Hooks.ads.useADSDocumentSearch(
+  { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
+  { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
+  null,
+  0
+);
+
+const handleDownloadPDF = React.useCallback(() => {
+  if (!isLoading) {
+    const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
+    const acknowledgementData = getTimelineAcknowledgementData(
+      workflowDetails,
+      tenantInfo,
+      docData?.pdfFiles || {},
+      t
+    );
+    Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
+  }
+}, [workflowDetails, docData, t, isLoading]);
+
   const parseActionDateTime = (auditDetails) => {
     if (!auditDetails?.created || !auditDetails?.timing) return null;
 
@@ -105,6 +126,27 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
   // Assuming data is latest first, we don't reverse.
   const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
 
+  const codesArray = sortedData
+  .map((item) => item?.assigner?.userName)
+  .filter(Boolean);
+
+  const uniqueCodes = [...new Set(codesArray)].join(",");
+
+  const employeeData = Digit.Hooks.useEmployeeSearch(
+    tenantId,
+    { codes: uniqueCodes, isActive: true },
+    { enabled: !!uniqueCodes }
+  );
+
+  const deptMap = {};
+  employeeData?.data?.Employees?.forEach((emp) => {
+    const assignment = emp?.assignments?.[0];
+    const translationKey = `COMMON_MASTERS_DESIGNATION_${assignment?.designation}`; 
+    deptMap[emp?.code] = translationKey;
+  });
+  
+
+  if (isLoading) return <Loader />;
   return (
     <React.Fragment>
       <div className="custom-timeline-container">
@@ -116,6 +158,9 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
           </div>
           <div className="custom-title-bar-row">
             <h2 className="custom-timeline-title">{t("Application History")}</h2>
+            <span onClick={handleDownloadPDF} className="download-button">
+          {t("CS_COMMON_DOWNLOAD")}
+        </span>
             <div className="custom-blue-bar"></div>
           </div>
         </div>
@@ -151,10 +196,14 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
                       {item?.assigner && (
                         <div className="custom-officer-info">
                           <div className="custom-officer-name">{item?.assigner?.name || t("CS_COMMON_NA")}</div>
-
                           {item?.assigner?.emailId && (
                             <div className="custom-officer-email">
                               <span className="custom-email-label">{t("Email")}</span> {item?.assigner?.emailId}
+                            </div>
+                          )}
+                          {deptMap[item?.assigner?.userName] && (
+                            <div className="custom-officer-name">
+                              {t(deptMap[item?.assigner?.userName])}
                             </div>
                           )}
                         </div>
@@ -188,6 +237,11 @@ export default function NewApplicationTimeline({ workflowDetails, t }) {
                           <h3 className="custom-comments-title">{t("Assigned To")}</h3>
                           <div className="custom-officer-info">
                             <div className="custom-officer-name">{item.assignes[0]?.name}</div>
+                            {deptMap[item.assignes[0]?.userName] && (
+                              <div className="custom-officer-email">
+                                 {t(deptMap[item.assignes[0]?.userName])}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

@@ -128,8 +128,8 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+    <div className="bpa-summary-label-field-pair">
+      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
       <div>{t(value) || "NA"}</div>
     </div>
   );
@@ -144,12 +144,12 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
     })) || [];
 
   return (
-    <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("Application Summary")}</h2>
+    <div className="bpa-summary-page">
+      <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
 
       {/* Property Details Section */}
-      <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
+      <div className="bpa-summary-section">
+        <CardSubHeader>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
 
         {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
         {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
@@ -164,8 +164,8 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
         <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={formData?.venueDetails?.[0]?.purposeDescription || t("CS_NA")} />
       </StatusTable> */}
 
-      <div style={sectionStyle}>
-        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+      <div className="bpa-summary-section">
+        <CardSubHeader>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
 
         {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.venueDetails?.[0]?.specialCategory?.category)}
         {renderLabel(t("CHB_PURPOSE"), formData?.venueDetails?.[0]?.purpose?.purpose)}
@@ -207,7 +207,7 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
 
       <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
-        <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+        <Card>
           {docs?.map((doc, index) => (
             <React.Fragment>
               <div>

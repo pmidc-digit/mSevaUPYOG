@@ -20,43 +20,34 @@ function NOCDocument({ value = {}}) {
   if (!data.pdfFiles || Object.keys(data.pdfFiles).length === 0) return <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>;
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="document-container">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+        <div className="document-grid">
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data?.pdfFiles, document?.documentAttachment || document?.documentUid);
             return (
-              <a target="_" href={documentLink} 
-              style={{
-                  width: "120px", 
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-              key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                <p 
-                 style={{
-                    marginTop: "8px",
-                    fontSize: "12px",
-                    wordWrap: "break-word",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2, 
-                    WebkitBoxOrient: "vertical",
-                  }}
-                >
-                  {t(document?.documentType?.replace(".", "_")?.toUpperCase())}
-                </p>
+              <a 
+                target="_blank"
+                rel="noopener noreferrer"
+                href={documentLink}
+                className="document-link"
+                key={index}
+              >
+                <div className="document-card">
+                  <div className="document-icon-wrapper">
+                    <PDFSvg width={80} height={100} />
+                  </div>
+                  <p className="document-name">
+                    {t(document?.documentType?.replace(".", "_")?.toUpperCase())}
+                  </p>
+                  <div className="document-action-label">
+                    View
+                  </div>
+                </div>
               </a>
             );
           })}
         </div>
-       
       </React.Fragment>
     </div>
   );

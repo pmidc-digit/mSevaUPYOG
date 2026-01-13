@@ -729,7 +729,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 <button
                   onClick={updateProfile}
                   className="selector-button-primary"
-                  style={{ width: "100%", maxWidth: "200px", height: "46px", marginTop: "24px" }}
+                  style={{ width: "100%", height: "46px", marginTop: "24px" }}
                 >
                   {t("CORE_COMMON_SAVE")}
                 </button>

@@ -130,7 +130,7 @@ const Home = ({
               width: "100%",
               minHeight: "100vh",
               backgroundColor: "#F9FAFB",
-              paddingTop: isMobile ? "20px" : "32px",
+              paddingTop: isMobile ? "20px" : "",
               paddingBottom: "80px",
               marginTop: "3rem",
             }}

@@ -84,6 +84,7 @@
 @import "./components/staticDynamicMessages.scss";
 @import "./components/toggleSwitch.scss";
 @import "./components/plusMinus.scss";
+@import "./components/documentSection.scss";
 
 @import "./pages/employee/index.scss";
 @import "./pages/employee/cardfix.scss";
@@ -470,6 +471,7 @@
 
 .text-input {
   width: 100%;
+  margin-bottom: 24px;
   input {
     &:hover {
       @apply border-2 border-solid border-primary-main;

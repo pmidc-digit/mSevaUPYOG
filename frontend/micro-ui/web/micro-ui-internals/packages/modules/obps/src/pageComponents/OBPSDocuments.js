@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { pdfDocumentName, pdfDownloadLink, getDocumentsName, stringReplaceAll } from "../utils";
 
+
 function OBPSDocument({
   value = {},
   Code,
@@ -56,38 +57,43 @@ function OBPSDocument({
   }
 
   return (
-    <div style={{  }}>
+    <div className="document-container">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {documents.length > 0 ? (
-            <div style={{ display: "flex", justifyContent: "flex-start", flexWrap: "wrap" }}>
-              {documents?.map((document, index) => {
-                let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
-                return (
-                  <a
-                    target="_blank"
-                    href={documentLink}
-                    style={{  marginRight: "10px", height: "auto" }}
-                    key={index}
-                  >
-                    {/* <div style={{ display: "flex", justifyContent: "center" }}>
-                      <PDFSvg />
-                    </div> */}
-                    {isStakeHolder ? (
-                      <p style={{  textAlign: "center", color: "#505A5F" }}>
-                        {t(`BPAREG_HEADER_${stringReplaceAll(Code?.toUpperCase(), ".", "_")}`)}
-                      </p>
-                    ) : null}{" "}
-                    {/* document?.fileName ? `${document?.fileName}` : `${t(`ES_COMMON_DOC_DOCUMENT`)} - ${index + 1}` */}
-                    {!isStakeHolder ? <p style={{  textAlign: "center", color: "#505A5F" }}>{`${t(Code)}`}</p> : null}
-                  </a>
-                );
-              })}
-            </div>
-          ) : (
-            <CardText>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</CardText>
-          )}
-        </div>
+        {documents.length > 0 ? (
+          <div className="document-grid">
+            {documents?.map((document, index) => {
+              let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
+              return (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={documentLink}
+                  className="document-link"
+                  key={index}
+                >
+                  <div className="document-card">
+                    <div className="document-icon-wrapper">
+                      <PDFSvg width={80} height={100} />
+                    </div>
+                    <p className="document-name">
+                      {isStakeHolder 
+                        ? t(`BPAREG_HEADER_${stringReplaceAll(Code?.toUpperCase(), ".", "_")}`)
+                        : t(Code)
+                      }
+                    </p>
+                    <div className="document-action-label">
+                      View
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="document-empty-state">
+            {t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}
+          </div>
+        )}
       </React.Fragment>
     </div>
   );

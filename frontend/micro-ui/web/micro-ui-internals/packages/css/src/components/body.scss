@@ -189,7 +189,7 @@ body {
 }
 .bpa-summary-page {
   padding: 2rem;
-  background-color: #f9f9f9;
+  
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
 }
@@ -204,8 +204,7 @@ body {
 }
 
 .bpa-summary-section {
-  background-color: #ffffff;
-  padding: 1rem 1.5rem;
+  
   border-radius: 8px;
   margin-bottom: 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -222,6 +221,9 @@ body {
 .bpa-summary-bold-label {
   font-weight: bold;
   color: #555;
+  max-width: 170px !important;
+  text-align: right !important;
+  height: auto !important;
 }
 
 

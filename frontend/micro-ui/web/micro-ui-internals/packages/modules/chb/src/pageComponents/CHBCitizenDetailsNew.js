@@ -260,6 +260,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
             </div>
           </div>
 
+
           {/* email */}
           <div className="label-field-pair" style={{ marginBottom: "20px" }}>
             <CardLabel>

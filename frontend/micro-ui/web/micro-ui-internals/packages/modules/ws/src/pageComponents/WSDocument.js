@@ -30,16 +30,32 @@ function WSDocument({ value = {}, Code, index, showFileName= false}) {
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="document-container">
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="document-grid">
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
             return (
-              <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
-                <PDFSvg /* width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }}  *//>
-               {/*  <p style={{ marginTop: "8px" }}>{pdfDocumentName(documentLink, index)}</p> */}
-               { showFileName ? <p style={{ marginTop: "8px" }}>{t(Code?.split('.').slice(0,3).join('_'))}</p> : null}
+              <a 
+                target="_blank"
+                rel="noopener noreferrer"
+                href={documentLink}
+                className="document-link"
+                key={index}
+              >
+                <div className="document-card">
+                  <div className="document-icon-wrapper">
+                    <PDFSvg width={80} height={100} />
+                  </div>
+                  {showFileName && (
+                    <p className="document-name">
+                      {t(Code?.split('.').slice(0,3).join('_'))}
+                    </p>
+                  )}
+                  <div className="document-action-label">
+                    View
+                  </div>
+                </div>
               </a>
             );
           })}

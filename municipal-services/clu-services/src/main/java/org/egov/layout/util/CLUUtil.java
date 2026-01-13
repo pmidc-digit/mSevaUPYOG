@@ -111,22 +111,23 @@ public class CLUUtil {
 
 
 
-	public Object mDMSLayoutCall(RequestInfo requestInfo, String tenantId, String ulbType) {
-		MdmsCriteriaReq mdmsCriteriaReq = getLayoutMDMSRequest(requestInfo, tenantId,ulbType);
+	public Object mDMSLayoutCall(RequestInfo requestInfo, String tenantId, String ulbType,String category,String area) {
+		MdmsCriteriaReq mdmsCriteriaReq = getLayoutMDMSRequest(requestInfo, tenantId,ulbType,category,area);
 		Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
 		return result;
 	}
 
-	private String buildLayoutWorkflowFilter(String ulbType) {
+	private String buildLayoutWorkflowFilter(String ulbType,String category, String area) {
 		String safeUlbType = escapeForJsonPathLiteral(ulbType);
+		String safeCategory = escapeForJsonPathLiteral(category);
 
 
 		// Most MDMS configs keep minArea/maxArea as integers. We floor the value to be safe.
 
 
 		return String.format(
-				"$[?(@.ulbType=='%s')]",
-				safeUlbType
+				"$[?(@.ulbType=='%s' && @.category=='%s' && @.minArea<=%s && @.maxArea>=%s)]",
+				safeUlbType, safeCategory, area, area
 		);
 	}
 
@@ -147,8 +148,8 @@ public class CLUUtil {
 	/**
 	 * Prepare only the LAYOUT module request with WorkflowConfig + filter.
 	 */
-	public List<ModuleDetail> getLayoutModuleRequest(String ulbType) {
-		String filter = buildLayoutWorkflowFilter(ulbType);
+	public List<ModuleDetail> getLayoutModuleRequest(String ulbType,String category, String area) {
+		String filter = buildLayoutWorkflowFilter(ulbType,category,area);
 
 		List<MasterDetail> layoutMasterDetails = new ArrayList<>();
 		layoutMasterDetails.add(MasterDetail.builder()
@@ -169,10 +170,10 @@ public class CLUUtil {
 	 * Builds MdmsCriteriaReq for LAYOUT → WorkflowConfig with JSONPath filter.
 	 */
 	public MdmsCriteriaReq getLayoutMDMSRequest(RequestInfo requestInfo, String tenantId,
-												String ulbType) {
+												String ulbType,String category, String area) {
 
 		List<ModuleDetail> moduleDetails = new LinkedList<>();
-		moduleDetails.addAll(getLayoutModuleRequest(ulbType));
+		moduleDetails.addAll(getLayoutModuleRequest(ulbType,category,area));
 
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
 				.moduleDetails(moduleDetails)

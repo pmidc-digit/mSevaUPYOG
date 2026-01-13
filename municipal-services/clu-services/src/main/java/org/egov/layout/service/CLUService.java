@@ -85,11 +85,22 @@ public class CLUService {
 
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
-		String acres=null;
+		String acres = (String) siteDetails.get("netTotalArea");
 // Access values
 		String ulbType = (String) siteDetails.get("ulbType");
+		Map<String, Object> appliedCluCategory = (Map<String, Object>) siteDetails.get("appliedCluCategory");
+		String category = (String) appliedCluCategory.get("code");
 
-		LinkedHashMap<String, Object> mdmData = (LinkedHashMap<String, Object>) nocUtil.mDMSLayoutCall(nocRequest.getRequestInfo(),tenantId,ulbType);
+		BigDecimal acresBD = BigDecimal.ZERO;
+		if ( acres!= null && !acres.isEmpty()) {
+			String sanitized = acres.replace(",", "").trim(); // remove thousands separators
+			BigDecimal sqmBD = new BigDecimal(sanitized);
+			BigDecimal SQM_PER_ACRE = new BigDecimal("4046.8564224");
+			acresBD = sqmBD.divide(SQM_PER_ACRE, 6, RoundingMode.HALF_UP); // 6 decimal places
+		}
+		acres = acresBD.toPlainString();
+
+		LinkedHashMap<String, Object> mdmData = (LinkedHashMap<String, Object>) nocUtil.mDMSLayoutCall(nocRequest.getRequestInfo(),tenantId,ulbType,category,acres);
 		LinkedHashMap<String, Object> mdmsRes = (LinkedHashMap<String, Object>) mdmData.get("MdmsRes");
 		LinkedHashMap<String, Object> layout_data = (LinkedHashMap<String, Object>) mdmsRes.get("CLU");
 		List<Object>  workflow_config =  (List<Object>)layout_data.get("WorkflowConfig");

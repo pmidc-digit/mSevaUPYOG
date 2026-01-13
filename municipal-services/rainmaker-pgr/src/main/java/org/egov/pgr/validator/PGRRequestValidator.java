@@ -147,8 +147,10 @@ public class PGRRequestValidator {
 			    // Add existing invalid createdTime error
 
 			    // Add custom error for DGR PGR Service
-			    errorMap.put("ACTION_NOT_ALLOWED_CODE", 
-			                 "Action cannot be performed for this request. Please resolve on DGR PGR Service.");
+			  errorMap.put(
+							    "ACTION_NOT_ALLOWED_CODE",
+							    "Action cannot be performed on mSeva. Please assign or resolve the above grievance on https://connect.punjab.gov.in/ portal."
+							);
 			}
 
 

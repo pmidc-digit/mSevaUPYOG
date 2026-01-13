@@ -29,6 +29,7 @@ public class Workflow   {
 
   @SafeHtml
   @JsonProperty("comment")
+  @Size(max = 5000)
   private String comment = null;
 
   @JsonProperty("documents")

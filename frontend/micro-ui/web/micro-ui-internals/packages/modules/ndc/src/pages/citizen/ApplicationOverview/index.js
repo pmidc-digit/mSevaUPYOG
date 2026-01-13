@@ -307,7 +307,7 @@ const CitizenApplicationOverview = () => {
 
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
-        <div style={{ display: "flex", gap: "16px" }}>
+        <div>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
             <NDCDocument value={{ workflowDocs: displayData?.Documents }} />
           ) : (

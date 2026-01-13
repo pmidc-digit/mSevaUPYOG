@@ -431,7 +431,9 @@ const RALApplicationDetails = () => {
                   // style={MenuStyle}
                 />
               ) : null}
+              <div style={{textAlign:"right"}}>
               <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+              </div>
             </div>
           </ActionBar>
         )}

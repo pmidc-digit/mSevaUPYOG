@@ -20,7 +20,7 @@ import {
 import { useTranslation } from "react-i18next";
 import ReactTooltip from "react-tooltip";
 
-const SubMenu = ({ item }) => {
+const SubMenu = ({ item, onLinkClick }) => {
   const [subnav, setSubnav] = useState(false);
   const location = useLocation();
   const { pathname } = location;
@@ -60,6 +60,7 @@ const SubMenu = ({ item }) => {
                 data-for={`jk-side-${getModuleName}`}
                 className="custom-link"
                 href={getOrigin + "/employee/" + item.navigationURL}
+                onClick={onLinkClick}
               >
                 <span> {trimModuleName} </span>
 
@@ -74,7 +75,7 @@ const SubMenu = ({ item }) => {
               //     <span className="tooltiptext">{t(`ACTION_TEST_${getModuleName}`)}</span>
               //   </div>
               // </a>
-              <Link className="custom-link" to={item.navigationURL}>
+              <Link className="custom-link" to={item.navigationURL} onClick={onLinkClick}>
                 <div data-tip="React-tooltip" data-for={`jk-side-${getModuleName}`}>
                   <span> {trimModuleName} </span>
 
@@ -131,6 +132,7 @@ const SubMenu = ({ item }) => {
                     key={index}
                     className={`dropdown-link ${pathname === item.link ? "active" : ""}`}
                     href={getOrigin + "/employee/" + item.navigationURL}
+                    onClick={onLinkClick}
                   >
                     <div className="actions" data-tip="React-tooltip" data-for={`jk-side-${index}`}>
                       <span> {trimModuleName} </span>
@@ -152,6 +154,7 @@ const SubMenu = ({ item }) => {
                   to={item?.link || item.navigationURL}
                   key={index}
                   className={`dropdown-link ${pathname === item?.link || pathname === item?.navigationURL ? "active" : ""}`}
+                  onClick={onLinkClick}
                 >
                   <div className="actions" data-tip="React-tooltip" data-for={`jk-side-${index}`}>
                     <span> {trimModuleName} </span>

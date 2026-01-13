@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { pdfDownloadLink } from "../utils";
 
+
 /* 
   ADSDocument Component
 
@@ -38,20 +39,32 @@ function ADSDocument({ value = {}, Code, index, showFileName = false }) {
   }
 
   return (
-    <div>
-      <React.Fragment>
-        <div>
-          {documents.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document.fileStoreId);
-            return (
-              <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-              </a>
-            );
-          })}
-        </div>
-      </React.Fragment>
-    </div>
+    <React.Fragment>
+      {documents.map((document, index) => {
+        let documentLink = pdfDownloadLink(data.pdfFiles, document.fileStoreId);
+        return (
+          <a 
+            className="document-link" 
+            target="_blank"
+            rel="noopener noreferrer"
+            href={documentLink} 
+            key={index}
+          >
+            <div className="document-card">
+              <div className="document-icon-wrapper">
+                <PDFSvg width={80} height={100} />
+              </div>
+              <p className="document-name">
+                {value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}
+              </p>
+              <div className="document-action-label">
+                View
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </React.Fragment>
   );
 }
 

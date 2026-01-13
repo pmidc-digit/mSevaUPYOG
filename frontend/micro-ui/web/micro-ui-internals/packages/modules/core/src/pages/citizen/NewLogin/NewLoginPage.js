@@ -6,7 +6,7 @@ import LanguageSelect from "./NewLanguageSelect";
 import LocationSelect from "./NewLocationSelect";
 import MobileInput from "./NewSelectMobileNumber";
 import OtpInput from "./NewSelectOtp";
-import {LoginIcon} from "../../../../../../react-components/src/atoms/svgindex"
+import { LoginIcon } from "../../../../../../react-components/src/atoms/svgindex";
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
 const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/home";
 
@@ -64,8 +64,10 @@ const NewLogin = ({ stateCode }) => {
   const getFromLocation = (state) => {
     const userRoles = user?.info?.roles?.map((roleData) => roleData?.code);
     // const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
-    console.log("StateAtTimeOfLogin", state, selectedCity);    
-    const isUserBPA = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === selectedCity?.code));
+    console.log("StateAtTimeOfLogin", state, selectedCity);
+    const isUserBPA =
+      user?.info?.roles?.some((role) => role?.code === "BPA_ARCHITECT") ||
+      user?.info?.roles?.some((role) => role?.code?.includes("BPA") && role?.tenantId === selectedCity?.code);
     return isUserBPA ? state?.from || DEFAULT_BPA_REDIRECT_URL : state?.from || DEFAULT_REDIRECT_URL;
   };
 
@@ -85,7 +87,7 @@ const NewLogin = ({ stateCode }) => {
       const data = {
         mobileNumber,
         tenantId: stateCode,
-        userType: getUserType(),
+        userType: "citizen",
         type: "login",
       };
       const [res, err] = await sendOtp({ otp: data });
@@ -126,7 +128,7 @@ const NewLogin = ({ stateCode }) => {
         username: mobileNumber,
         password: otp,
         tenantId: stateCode,
-        userType: getUserType(),
+        userType: "citizen",
       };
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
 
@@ -155,7 +157,7 @@ const NewLogin = ({ stateCode }) => {
     const data = {
       mobileNumber,
       tenantId: stateCode,
-      userType: getUserType(),
+      userType: "citizen",
       type: "login",
     };
     const [res, err] = await sendOtp({ otp: data });
@@ -179,14 +181,14 @@ const NewLogin = ({ stateCode }) => {
     });
   };
   return (
-    // <div className="login-page-cover"> 
+    // <div className="login-page-cover">
 
     //   <div className="login-container" >
-        
+
     //      <div className="login-wrapper" >
     //        <div className="login-circle"> <LoginIcon  /> </div>
     //     <div className="login-title" >{t("CORE_COMMON_LOGIN")}</div>
-         
+
     //       <LanguageSelect onLanguageChange={setSelectedLanguage} />
     //       <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
 
@@ -197,7 +199,6 @@ const NewLogin = ({ stateCode }) => {
     //         canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
     //         step={step}
     //       />
-
 
     //       {step === "OTP" && (
     //         <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyOtp} onResendOtp={resendOtp} canSubmit={canSubmit} isOtpValid={isOtpValid} />
@@ -218,8 +219,6 @@ const NewLogin = ({ stateCode }) => {
     //   </div>
     // </div>
 
-
-
     <div className="login-page-cover">
       <div className="login-container">
         {/* Left Panel - Hero Section */}
@@ -229,9 +228,7 @@ const NewLogin = ({ stateCode }) => {
               <LoginIcon />
             </div>
             <h1 className="hero-title">Welcome to UPYOG</h1>
-            <p className="hero-description">
-              Your digital gateway to urban governance services. Access all municipal services in one place.
-            </p>
+            <p className="hero-description">Your digital gateway to urban governance services. Access all municipal services in one place.</p>
             <div className="hero-features">
               <div className="feature-item">
                 <div className="feature-icon">
@@ -330,7 +327,7 @@ const setCitizenDetail = (userObject, token, tenantId) => {
     localStorage.setItem("Citizen.token", token);
     localStorage.setItem("user-info", JSON.stringify(userObject));
     localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
-  } catch (e) { }
+  } catch (e) {}
 };
 
 export default NewLogin;

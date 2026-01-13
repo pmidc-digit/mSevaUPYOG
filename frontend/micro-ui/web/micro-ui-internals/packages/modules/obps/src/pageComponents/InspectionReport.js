@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -15,12 +15,11 @@ const createUnitDetails = () => ({
     key: Date.now(),
 });
 
-const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props }) => {
+const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport }) => {
     const { t } = useTranslation();
     const { pathname } = useLocation();
-    const isEditScreen = pathname.includes("/modify-application/");
-    const fieldInspectionFieldReports = JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"))
-    const [FieldReports, setFieldReports] = useState(fieldInspectionFieldReports ? [fieldInspectionFieldReports] : [createUnitDetails()]);
+    const fieldInspectionFieldReports = fiReport ? fiReport : JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"));
+    const [FieldReports, setFieldReports] = useState(fieldInspectionFieldReports?.length > 0 ? fieldInspectionFieldReports : [createUnitDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
@@ -32,8 +31,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     const [tradeSubTypeOptionsList, setTradeSubTypeOptionsList] = useState([]);
     const [isErrors, setIsErrors] = useState(false);
     const [previousLicenseDetails, setPreviousLicenseDetails] = useState(formData?.tradedetils1 || []);
-    let isRenewal = window.location.href.includes("tl/renew-application-details");
-    if (window.location.href.includes("tl/renew-application-details")) isRenewal = true;
+    // let isRenewal = window.location.href.includes("tl/renew-application-details");
+    // if (window.location.href.includes("tl/renew-application-details")) isRenewal = true;
     const { data: tradeMdmsData, isLoading } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", "TradeUnits", "[?(@.type=='TL')]");
     const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["CheckList"]);
     let type = "LOW"    
@@ -110,19 +109,22 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         stateId
     };
 
-    if (isEditScreen) {
-        return <React.Fragment />;
+    console.log("FieldReports", FieldReports)
+
+    if(bpaDocsLoading){
+        return <Loader />
     }
 
     return (
-        <div>
-            <React.Fragment>
-                {/* {FieldReports && FieldReports.map((unit, index) => ( */}
-                    <InspectionReportForm  index={0} unit={FieldReports[0]} {...commonProps} />
-                {/* ))} */}
-            </React.Fragment>
-            {/* <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} /> */}
-        </div>
+        <InspectionReportForm  index={0} unit={FieldReports[0]} {...commonProps} />
+        // <div>
+        //     <React.Fragment>
+                //  {FieldReports && FieldReports.map((unit, index) => ( 
+                    
+                // ))}
+            // </React.Fragment>
+            // <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} />
+        // </div>
     );
 };
 
@@ -176,10 +178,11 @@ const InspectionReportForm = (_props) => {
     const documentData = siteImages?.map((value, index) => ({
         title: `SITE_IMAGE_${index+1}`,
         imageFileStoreId: value,
-        geoLocation: geoLocations[index] 
+        // geoLocation: geoLocations[index] 
     }))
+    const today = new Date().toISOString().split("T")[0];
 
-    console.log("formDataprops", siteImages, geoLocations, documentData)
+    console.log("formDataprops", siteImages,  documentData)
 
     function routeTo(filestoreId) {
         getUrlForDocumentView(filestoreId)
@@ -240,20 +243,20 @@ const InspectionReportForm = (_props) => {
               t("CS_NA")
             )},
         },
-        {
-          Header: t(" "),
-          accessor: "geoLocation",
-          Cell: ({ value }) =>
-            {          
-              return value ? (
-              <LinkButton style={{ float: "right", display: "inline" }}
-                label={t("View Location")}
-                onClick={() => routeToGeo(value)}
-              />
-            ) : (
-              t("CS_NA")
-            )},
-        },
+        // {
+        //   Header: t(" "),
+        //   accessor: "geoLocation",
+        //   Cell: ({ value }) =>
+        //     {          
+        //       return value ? (
+        //       <LinkButton style={{ float: "right", display: "inline" }}
+        //         label={t("View Location")}
+        //         onClick={() => routeToGeo(value)}
+        //       />
+        //     ) : (
+        //       t("CS_NA")
+        //     )},
+        // },
       ];
 
     useEffect(() => {
@@ -281,12 +284,13 @@ const InspectionReportForm = (_props) => {
     }, [formValue]);
 
     useEffect(() => {
-        if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
-            setError(config.key, { type: errors });
-        }
-        else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
-            clearErrors(config.key);
-        }
+        // if (Object.keys(errors)?.length && !_.isEqual(formState?.errors?.[config?.key]?.type || {}, errors)) {
+        //     setError(config?.key, { type: errors });
+        // }
+        // else if (!Object.keys(errors)?.length && formState?.errors?.[config?.key] && isErrors) {
+        //     clearErrors(config?.key);
+        // }
+        console.error("errors in inspection report" ,{errors})
     }, [errors]);
 
     let ckeckingLocation = window.location.href.includes("renew-application-details");
@@ -303,8 +307,7 @@ const InspectionReportForm = (_props) => {
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     return (
         <React.Fragment>
-            <div style={{ marginBottom: "16px", maxWidth: "950px" }}>
-                <div className="fieldInspectionWrapper">
+            {/* <div>          */}
                     {allFieldReport?.length > 1 ? (
                         <LinkButton
                             label={<DeleteIcon style={{ float: "right", position: "relative", bottom: "-6px" }} fill={!(allFieldReport.length == 1) ? "#494848" : "#FAFAFA"} />}
@@ -313,7 +316,7 @@ const InspectionReportForm = (_props) => {
                         />
                     ) : null}
                     <CardSectionHeader>{allFieldReport?.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
-                    <LabelFieldPair style={{ width: "100%" }}>
+                    {/* <LabelFieldPair style={{ width: "100%" }}>
                         <CardLabel style={{ marginTop: "0px", width: "100%" }} className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")} * `}</CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                             <Controller
@@ -325,6 +328,7 @@ const InspectionReportForm = (_props) => {
                                         date={props.value}
                                         name="InspectionDate"
                                         onChange={props.onChange}
+                                        max={today}
                                     />
                                 )}
                             />
@@ -347,13 +351,13 @@ const InspectionReportForm = (_props) => {
                                 )}
                             />
                         </div>
-                    </LabelFieldPair>
-                    <CardSectionHeader>{t("BPA_CHECK_LIST_DETAILS")}</CardSectionHeader>
+                    </LabelFieldPair> */}
+                    {/* <CardSectionHeader>{t("BPA_CHECK_LIST_DETAILS")}</CardSectionHeader> */}
                     {questionList && questionList.map((ob, ind) => (
-                        <div key={ind} className="fieldInsepctionInsideWrapper" style={{ maxWidth: "100%" }}>
-                            <LabelFieldPair style={{width :"100%"}}>
-                                <CardLabel style={{ marginRight: "30px", width :"100%" }} className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
-                                <div className="field" style={{ width: "100%" }}>
+                        <div key={ind}>
+                            <LabelFieldPair >
+                                <CardLabel  className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
+                                <div className="field" >
                                     <Controller
                                         control={control}
                                         name={`question_${ind}`}
@@ -377,9 +381,9 @@ const InspectionReportForm = (_props) => {
                                     />
                                 </div>
                             </LabelFieldPair>
-                            <LabelFieldPair style={{width :"100%"}}>
-                                <CardLabel style={{ marginRight: "30px", width : "100%" }} className="card-label-smaller">{t("BPA_ENTER_REMARKS")}</CardLabel>
-                                <div className="field" style={{ width: "100%" }}>
+                            <LabelFieldPair >
+                                <CardLabel className="card-label-smaller">{t("BPA_ENTER_REMARKS")}</CardLabel>
+                                <div className="field">
                                     <Controller
                                         control={control}
                                         name={`Remarks_${ind}`}
@@ -398,9 +402,9 @@ const InspectionReportForm = (_props) => {
                             </LabelFieldPair>
                         </div>
                     ))}
-                    <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+                    {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader> */}
                     {/* <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} /> */}
-                    <Table
+                    {/* <Table
                         className="customTable table-border-style"
                         t={t}
                         data={documentData}
@@ -410,10 +414,9 @@ const InspectionReportForm = (_props) => {
                         autoSort={true}
                         manualPagination={false}
                         isPaginationRequired={false}
-                    />
-                </div>
-            </div>
-        </React.Fragment>
+                    /> */}
+            {/* </div> */}
+         </React.Fragment>
     );
 };
 

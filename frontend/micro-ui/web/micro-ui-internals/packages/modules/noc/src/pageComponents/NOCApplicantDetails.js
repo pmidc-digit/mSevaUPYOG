@@ -321,7 +321,7 @@ const NOCApplicantDetails = (_props) => {
             </div>
 
             {index === 0 && (
-              <LabelFieldPair style={{ position: "relative", zIndex: "101" }}>
+              <LabelFieldPair style={{ position: "relative", zIndex: "101" ,marginBottom: "20px"}}>
                 <CardLabel className="card-label-smaller">
                   {`${t("NOC_OWNER_TYPE_LABEL")}`}
                   <span className="requiredField">*</span>
@@ -348,6 +348,7 @@ const NOCApplicantDetails = (_props) => {
                 </div>
               </LabelFieldPair>
             )}
+            
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">

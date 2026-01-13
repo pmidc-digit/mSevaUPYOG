@@ -3,7 +3,7 @@ import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
-const CLUFeeEstimationDetails = ({ formData }) => {
+const CLUFeeEstimationDetails = ({ formData, feeType }) => {
   const { t } = useTranslation();
 
   const payload = useMemo(
@@ -12,6 +12,7 @@ const CLUFeeEstimationDetails = ({ formData }) => {
         {
           applicationNumber: formData?.apiData?.Clu?.[0]?.applicationNo,
           tenantId: formData?.apiData?.Clu?.[0]?.tenantId,
+          feeType: feeType,
           CLU: {
             ...formData?.apiData?.Clu?.[0],
             cluDetails: {

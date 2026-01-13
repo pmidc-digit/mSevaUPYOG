@@ -280,8 +280,8 @@ const CLUSiteDetails = (_props) => {
                   //   message: t("MIN_4_CHARACTERS_REQUIRED"),
                   // },
                   maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                    value: 500,
+                    message: t("MAX_500_CHARACTERS_ALLOWED"),
                   },
                 }}
                 render={(props) => (
@@ -542,6 +542,7 @@ const CLUSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                   />
                 )}
               />
@@ -959,7 +960,7 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.proposedRoadWidthAfterWidening?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
               <Controller
@@ -972,7 +973,7 @@ const CLUSiteDetails = (_props) => {
               />
             )}
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.buildingCategory?.message || ""}</CardLabelError> */}
 
         </div>
         <BreakLine />

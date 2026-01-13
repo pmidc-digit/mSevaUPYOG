@@ -202,6 +202,29 @@ const Home = () => {
     sessionStorage.removeItem("propertyid");
   }, [UserType]);
 
+  const toDigitUrl = (url) => {
+    if (!url) return url;
+
+    // Case 1: React SPA route → stay inside React Router
+    if (url.startsWith("/digit-ui")) {
+      history.push(url);
+      return;
+    }
+
+    // Case 2: Legacy backend route → full page load
+    if (url.startsWith("/citizen")) {
+      window.location.assign(url);
+      return;
+    }
+
+    // Safety fallback
+    window.location.assign(url);
+
+    // if (url.startsWith("/digit-ui")) return url;
+    // if (url.startsWith("/citizen")) return `/digit-ui${url}`;
+    // return `/digit-ui/${url.replace(/^\/+/, "")}`;
+  };
+
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
     sideOption: {
@@ -222,9 +245,10 @@ const Home = () => {
             ?.map((item) => ({
               name: t(item.label),
               Icon: getIconForService(item.code),
-              onClick: () => {
-                window.location.href = item.navigationUrl;
-              },
+              // onClick: () => {
+              //   window.location.href = item.navigationUrl;
+              // },
+              onClick: () => toDigitUrl(item.navigationUrl),
             })),
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };

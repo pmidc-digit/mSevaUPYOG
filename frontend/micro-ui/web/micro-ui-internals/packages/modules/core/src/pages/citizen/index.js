@@ -142,7 +142,7 @@ const Home = ({
               }}
             >
               {/* Back Button - Outside purple card */}
-              <BackButton className="back-btn2" />
+              {/* <BackButton className="back-btn2" /> */}
 
               {/* Breadcrumb - Outside purple card */}
               <div
@@ -156,7 +156,10 @@ const Home = ({
                   fontWeight: "400",
                 }}
               >
-                <span>{t("HOME")}</span>
+                {/* <span>{t("HOME")}</span> */}
+                <span style={{ cursor: "pointer" }} onClick={() => history.push("/digit-ui/citizen")}>
+                  {t("HOME")}
+                </span>
                 <span>›</span>
                 <span>{t("MODULE_" + code.toUpperCase())}</span>
               </div>

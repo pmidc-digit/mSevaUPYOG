@@ -12,10 +12,11 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const formData = reduxFormData || propsFormData || {};
   
   const createdResponse = formData?.CreatedResponse || {};
-  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate } = createdResponse;
+  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory} = createdResponse;
   const [isChecked, setIsChecked] = useState(false);
 
   const owners = tradeLicenseDetail?.owners || [];
+  console.log("ownersPage:+++ ", owners);
   const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
   const accessories = tradeLicenseDetail?.accessories || [];
   const address = tradeLicenseDetail?.address || {};
@@ -31,8 +32,15 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
     return date.toLocaleDateString();
   };
 
-  console.log("formData in Summary", formData);
-
+  const formatTradeType = (tradeType) => {
+  if (!tradeType) return "NA";
+  // Replace dots with underscores and hyphens with underscores
+  const formatted = tradeType.replace(/\./g, '_').replace(/-/g, '_');
+  return `TRADELICENSE_TRADETYPE_${formatted}`;
+};
+console.log("subOwnerShipCategory:+++ ", tradeLicenseDetail?.subOwnerShipCategory);
+const ownershipCategory =tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]?.toUpperCase();
+const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.split(".")[1]?.toUpperCase()
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
       <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
@@ -72,7 +80,8 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
           <div style={{ fontWeight: "600", marginBottom: "0.5rem" }}>#{index + 1}</div>
           {renderLabel(t("Trade Category"), unit?.tradeType?.split(".")[0])}
           {renderLabel(t("Trade Type"), unit?.tradeType?.split(".")[1])}
-          {renderLabel(t("Trade Sub-Type"), unit?.tradeType?.split(".")[2])}
+          {/* {renderLabel(t("Trade Sub-Type"), unit?.tradeType?.split(".")[2])} */}
+          {renderLabel(t("Trade Sub-Type"), t(formatTradeType(unit?.tradeType)))}
           {renderLabel(t("UOM"), unit?.uom)}
           {renderLabel(t("Unit of Measurement Value"), unit?.uomValue)}
         </div>
@@ -90,7 +99,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
 
       <h2 className="bpa-summary-heading">{t("Property Address")}</h2>
       <div className="bpa-summary-section">
-        {renderLabel(t("City"), address?.city)}
+        {renderLabel(t("City"), address?.city?.split(".")[1].toUpperCase())}
         {renderLabel(t("Door/House No."), address?.doorNo)}
         {renderLabel(t("Building/Colony Name"), address?.buildingName)}
         {renderLabel(t("Street Name"), address?.street)}
@@ -106,7 +115,12 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
           {renderLabel(t("Mobile No."), owner?.mobileNumber)}
           {renderLabel(t("Father/Husband's Name"), owner?.fatherOrHusbandName)}
           {renderLabel(t("Relationship"), owner?.relationship)}
-          {renderLabel(t("Gender"), owner?.gender)}
+          {renderLabel(t("Type Of ownership"), ownershipCategory)}
+          {renderLabel(t("Type of sub-ownership"), subOwnerShipCategoryValue)}
+          {renderLabel(t("Email"), owner?.emailId)}
+          {renderLabel(t("Correspondence Address"), owner?.permanentAddress)}
+          {renderLabel(t("Birth Date"), owner?.dob)}
+          {renderLabel(t("Special Category"), owner?.ownerType)}
         </div>
       ))}
 

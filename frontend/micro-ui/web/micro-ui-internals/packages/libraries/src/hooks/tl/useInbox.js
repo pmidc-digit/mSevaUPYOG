@@ -40,7 +40,7 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
     tenantId: tenantId,
     processSearchCriteria: {
       moduleName: "tl-services",
-      businessService: ["NewTL", "DIRECTRENEWAL", "EDITRENEWAL"],
+      businessService: ["NEWTL.NHAZ", "NEWTL.HAZ","NewTL", "DIRECTRENEWAL", "EDITRENEWAL"],
       //...(status?.length > 0 ? { status: status } : {}),
       ...(status?.length > 0 ? { status: status?.map((item) => item?.code) } : {}),
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
@@ -59,7 +59,7 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
 
       //   ...(tenants?.length > 0 ? { tenantId: tenants } : {}),
       ...(sortBy ? { sortBy } : {}),
-      ...(sortOrder ? { sortOrder } : {}),
+      sortOrder: "DESC",
     },
 
     limit,

@@ -36,7 +36,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     const applicant = Digit.UserService.getUser()?.info || {};
     console.log("inputData", inputData);
 
-    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
 
     // const owners = [
     //   {

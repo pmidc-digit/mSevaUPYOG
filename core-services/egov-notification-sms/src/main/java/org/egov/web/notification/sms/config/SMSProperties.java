@@ -32,6 +32,15 @@ public class SMSProperties {
     @Value("${sms.provider.password}")
     public String password;
 
+    @Value("${sms.provider.url}")
+    public String smsUrl;
+
+    @Value("${sms.provider.username}")
+    public String smsUsername;
+
+    @Value("${sms.provider.password}")
+    public String smsPassword;
+
     @Value("${sms.senderid}")
     public String senderid;
 

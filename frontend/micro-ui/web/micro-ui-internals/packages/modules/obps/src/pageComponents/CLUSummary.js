@@ -148,7 +148,7 @@ function CLUSummary({ currentStepData: formData, t }) {
         <Row label={t("BPA_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.restrictedArea?.code || "N/A"}/> 
         <Row label={t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.isSiteUnderMasterPlan?.code || "N/A"}/> 
 
-        <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.buildingCategory?.name || "N/A"}/>
+        {/* <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.buildingCategory?.name || "N/A"}/> */}
       </StatusTable>
       </Card>
       

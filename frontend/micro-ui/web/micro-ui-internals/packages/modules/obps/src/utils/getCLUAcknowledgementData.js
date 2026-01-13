@@ -258,10 +258,10 @@ const getSiteDetails = (appData, t) => {
       title: t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.isSiteUnderMasterPlan?.code || "N/A",
     },
-    {
-      title: t("BPA_BUILDING_CATEGORY_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.buildingCategory?.name || "N/A",
-    },
+    // {
+    //   title: t("BPA_BUILDING_CATEGORY_LABEL"),
+    //   value: appData?.cluDetails?.additionalDetails?.siteDetails?.buildingCategory?.name || "N/A",
+    // },
   ];
   return {
     title: t("BPA_SITE_DETAILS"),

@@ -8,6 +8,12 @@ const NewApplicationModal = ({}) => {
   const { t } = useTranslation();
   const history = useHistory();
   const printRef = useRef();
+  
+  const [showToast, setShowToast] = useState(() => {
+    const hasSeenModal = sessionStorage.getItem('tlModalShown');
+    return !hasSeenModal; // Show only if not seen before
+  });
+
   let { data: mutationDocuments } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["MutationDocuments"], {
     select: (data) => {
       return data?.PropertyTax?.MutationDocuments;
@@ -15,7 +21,7 @@ const NewApplicationModal = ({}) => {
     retry: false,
     enable: false,
   });
-  console.log("mutation docs", mutationDocuments);
+  // console.log("mutation docs", mutationDocuments);
 
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
@@ -40,6 +46,12 @@ const NewApplicationModal = ({}) => {
 
     const content = printRef.current.innerHTML;
     const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+      // If popup is blocked, show alert
+      alert(t("POPUP_BLOCKED_MESSAGE") || "Please allow popups to print");
+      return;
+    }
+
     printWindow.document.write(`
   
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" />
@@ -57,6 +69,19 @@ const NewApplicationModal = ({}) => {
     `);
     printWindow.document.close();
     printWindow.focus();
+
+     // Handle print cancellation or completion
+    printWindow.onafterprint = () => {
+      console.log("Print completed or cancelled");
+      printWindow.close();
+    };
+
+    // For browsers that don't support onafterprint
+    printWindow.onbeforeunload = () => {
+      console.log("Print window closed");
+    };
+
+    
     printWindow.print(); // printWindow.close();
 
     //  onConcent(e)
@@ -68,17 +93,20 @@ const NewApplicationModal = ({}) => {
     // onSelect()
   };
   const closeModalTwo = () => {
+    sessionStorage.setItem('tlModalShown', 'true');
     setShowToast(false);
   };
-  const [showToast, setShowToast] = useState(true);
+  // const [showToast, setShowToast] = useState(true);
 
   const isCitizen = window.location.href.includes("citizen");
 
   const handleSubmit = () => {
+      sessionStorage.setItem('tlModalShown', 'true');
+    //debugger
     if (isCitizen) {
       // history.replace(`/digit-ui/citizen/tl/tradelicence/new-application`);
       setShowToast(false);
-    } else history.replace(`/digit-ui/employee/tl/tradelicence/new-application`);
+    } else history.replace(`/digit-ui/employee/tl/new-application`);
   };
 
   return (
@@ -97,7 +125,7 @@ const NewApplicationModal = ({}) => {
           <React.Fragment>
             <Card>
               {/* <CardHeader>{!config.isMutation ? t("PT_DOC_REQ_SCREEN_HEADER") : t("PT_REQIURED_DOC_TRANSFER_OWNERSHIP")}</CardHeader> */}
-              <div>
+              <div ref={printRef}>
                 <CardSubHeader style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_HEADING")}</CardSubHeader>
 
                 <CardText style={{ color: "#0d43a7" }}>{t("TRADELICENSE_OWNER_OWNERIDPROOF_LABEL")}</CardText>

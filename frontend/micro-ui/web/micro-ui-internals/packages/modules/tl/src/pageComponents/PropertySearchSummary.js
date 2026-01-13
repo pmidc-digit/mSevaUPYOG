@@ -132,7 +132,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
   const isPropertyIdMandatory = window.location.pathname.includes("/ws/new-application");
 
   const propertyIdInput = {
-    label: "TL_NEW_TRADE_DETAILS_PT_ID_LABEL",
+    // label: "TL_NEW_TRADE_DETAILS_PT_ID_LABEL+++",
     type: "text",
     name: "id",
     validation: {
@@ -184,10 +184,10 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
         : true) && (
         <div>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller" style={getInputStyles()}>
-              {`${t(propertyIdInput.label)}`}
+            {/* <CardLabel className="card-label-smaller" style={getInputStyles()}>
+              {`${t(propertyIdInput.label)}`} }
               {propertyIdInput.isMandatory ? "*" : null}
-            </CardLabel>
+            </CardLabel> */}
             <div className="form-field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
               <TextInput
                 key={propertyIdInput.name}
@@ -282,7 +282,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
                     : ""
                 }`}
               >
-                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")}  />
+                {/* <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} /> */}              
               </Link>
             </React.Fragment>
           ) : null}

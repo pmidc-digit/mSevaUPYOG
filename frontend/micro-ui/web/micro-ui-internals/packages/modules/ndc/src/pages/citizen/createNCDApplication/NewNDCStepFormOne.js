@@ -14,6 +14,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const currentStepData = useSelector((state) =>
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
+  const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
+
+  console.log("checkApiDataCheck", checkApiDataCheck);
 
   const [getLoader, setLoader] = useState(false);
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
@@ -50,7 +53,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const createApplication = async (data) => {
-    setLoader(true);
+    // setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
@@ -58,13 +61,30 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     // Build owners array
     // const owners = data?.cpt?.details?.owners;
 
-    const owners = (data?.cpt?.details?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+    // const owners = (data?.cpt?.details?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
+
+    const owners = (data?.cpt?.details?.owners || []).map(({ status, ...rest }) => {
+      if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
+        return {
+          ...rest,
+          emailId: data?.PropertyDetails?.email, // ✅ inject email
+          isPrimaryOwner: true,
+        };
+      }
+
+      return rest; // ✅ keep others unchanged
+    });
+
+    console.log("data==", data);
+    console.log("owners==", owners);
+
+    // return;
 
     // Prepare NdcDetails
     const ndcDetails = [];
 
     // Add each water connection to NdcDetails
-    (data?.PropertyDetails?.waterConnection || []).forEach((wc) => {
+    (data?.PropertyDetails?.waterConnection || [])?.forEach((wc) => {
       ndcDetails.push({
         uuid: wc?.billData?.id,
         applicantId: applicantId,
@@ -82,7 +102,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     });
 
     // Add each sewerage connection to NdcDetails
-    (data?.PropertyDetails?.sewerageConnection || []).forEach((sc) => {
+    (data?.PropertyDetails?.sewerageConnection || [])?.forEach((sc) => {
       ndcDetails.push({
         uuid: sc?.billData?.id,
         applicantId: applicantId,
@@ -133,6 +153,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     try {
       const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
       setLoader(false);
+      console.log("response", response);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(updateNDCForm("apiData", response));
         onGoNext();
@@ -151,7 +172,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const applicantId = applicant?.uuid;
 
     // Build owners array
-    const owners = data?.cpt?.details?.owners;
+    const owners = checkApiDataCheck?.Applications?.[0]?.owners || checkFormData?.responseData?.[0]?.owners;
 
     // Prepare NdcDetails
     let ndcDetails = [];
@@ -209,6 +230,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         });
       }
     }
+    const appNumber = checkApiDataCheck?.Applications?.[0]?.applicationNo || checkFormData?.responseData?.[0]?.applicationNo;
+    const apUUid = checkApiDataCheck?.Applications?.[0]?.uuid || checkFormData?.responseData?.[0]?.uuid;
 
     // Final payload
     const payload = {
@@ -221,8 +244,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
           active: true,
           reason: data?.NDCReason?.code,
           auditDetails: data?.cpt?.details?.auditDetails,
-          applicationNo: id,
-          uuid: checkFormData?.responseData?.[0]?.uuid,
+          applicationNo: appNumber,
+          uuid: apUUid,
           workflow: {
             action: "DRAFT",
           },
@@ -265,7 +288,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     if (propertyDetails?.waterConnection?.length > 0) {
-      propertyDetails.waterConnection.forEach((value) => {
+      propertyDetails.waterConnection?.forEach((value) => {
         if (value?.billData?.totalAmount != 0) {
           missingFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
         }
@@ -276,7 +299,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     if (propertyDetails?.sewerageConnection?.length > 0) {
-      propertyDetails.sewerageConnection.forEach((value) => {
+      propertyDetails.sewerageConnection?.forEach((value) => {
         if (value?.billData?.totalAmount != 0) {
           missingFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
         }

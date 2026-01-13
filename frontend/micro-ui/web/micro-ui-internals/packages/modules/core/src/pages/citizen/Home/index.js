@@ -192,7 +192,38 @@ const Home = () => {
       setShowSurveyModal(true);
       sessionStorage.setItem("survey_modal_shown", "true");
     }
+
+    // Clean up session storage on component mount
+    sessionStorage.removeItem("type");
+    sessionStorage.removeItem("pincode");
+    sessionStorage.removeItem("tenantId");
+    sessionStorage.removeItem("localityCode");
+    sessionStorage.removeItem("landmark");
+    sessionStorage.removeItem("propertyid");
   }, [UserType]);
+
+  const toDigitUrl = (url) => {
+    if (!url) return url;
+
+    // Case 1: React SPA route → stay inside React Router
+    if (url.startsWith("/digit-ui")) {
+      history.push(url);
+      return;
+    }
+
+    // Case 2: Legacy backend route → full page load
+    if (url.startsWith("/citizen")) {
+      window.location.assign(url);
+      return;
+    }
+
+    // Safety fallback
+    window.location.assign(url);
+
+    // if (url.startsWith("/digit-ui")) return url;
+    // if (url.startsWith("/citizen")) return `/digit-ui${url}`;
+    // return `/digit-ui/${url.replace(/^\/+/, "")}`;
+  };
 
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
@@ -214,9 +245,10 @@ const Home = () => {
             ?.map((item) => ({
               name: t(item.label),
               Icon: getIconForService(item.code),
-              onClick: () => {
-                window.location.href = item.navigationUrl;
-              },
+              // onClick: () => {
+              //   window.location.href = item.navigationUrl;
+              // },
+              onClick: () => toDigitUrl(item.navigationUrl),
             })),
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
@@ -251,13 +283,6 @@ const Home = () => {
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
-
-  sessionStorage.removeItem("type");
-  sessionStorage.removeItem("pincode");
-  sessionStorage.removeItem("tenantId");
-  sessionStorage.removeItem("localityCode");
-  sessionStorage.removeItem("landmark");
-  sessionStorage.removeItem("propertyid");
 
   return isLoading ? (
     <Loader />
@@ -361,7 +386,7 @@ const Home = () => {
           </div>
         )} */}
 
-          <div className="UpdatesSection" style={{ marginTop: "40px" }}>
+          <div className="UpdatesSection" style={{ display: "none", marginTop: "40px" }}>
             <CardBasedOptions {...allInfoAndUpdatesProps} />
           </div>
 

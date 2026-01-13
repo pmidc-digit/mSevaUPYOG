@@ -50,8 +50,8 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
     <React.Fragment>
       <div className="filter">
         <div className="filter-card">
-          <div className="heading" style={{ alignItems: "center" }}>
-            <div className="filter-label" style={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
+          <div className="heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="filter-label" style={{ display: "flex", alignItems: "center", justifyContent:"space-between" }}>
               <span>
                 <svg width="17" height="17" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -65,6 +65,9 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
             </div>
+           
+
+         
             {props.type === "desktop" && (
               <span className="clear-search" onClick={clearAll} style={{ border: "1px solid #e0e0e0", padding: "6px" }}>
                 <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -76,9 +79,11 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                 {/* {t("ES_COMMON_CLEAR_ALL")} */}
               </span>
             )}
+              
+                <div style={{display: "flex", flexDirection:"row-reverse", gap:"10px"}}>
             {props.type === "mobile" && (
               <div>
-                <span onClick={props.Close}>
+                <span onClick={props.onClose}>
                   <CloseSvg />
                 </span>
                 <span className="clear-search" onClick={Refresh} style={{ border: "1px solid #e0e0e0", padding: "6px", marginTop: "5px" }}>
@@ -86,9 +91,10 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                 </span>
               </div>
             )}
+             </div>
           </div>
           <div>
-            <div>
+            {/* <div>
               <Status
                 _searchParams={_searchParams}
                 businessServices={_searchParams.services}
@@ -99,7 +105,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                   else localParamChange({ status: _searchParams?.status.filter((e) => e !== status?.code) });
                 }}
               />
-            </div>
+            </div> */}
             <div>
               <ServiceCategory
                 searchParams={_searchParams}

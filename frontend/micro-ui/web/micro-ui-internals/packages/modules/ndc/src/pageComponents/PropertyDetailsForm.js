@@ -11,6 +11,8 @@ import {
   Loader,
   Toast,
   DeleteIcon,
+  Table,
+  RadioOrSelect,
 } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useSelector } from "react-redux";
@@ -27,15 +29,19 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
-
+  const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
   const [showToast, setShowToast] = useState(null);
   const [propertyLoader, setPropertyLoader] = useState(false);
-  // const [error, setError] = useState("");
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedBillData, setSelectedBillData] = useState({});
   const propertyId = formData?.cpt?.details?.propertyId;
-
   const [propertyDetails, setPropertyDetails] = useState(formData?.PropertyDetails || {});
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  console.log("apiDataCheck", apiDataCheck);
+  console.log("formData==?/??", formData);
+  console.log("checkApiDataCheck====", checkApiDataCheck?.Applications?.[0]);
+
   const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
     tenantId,
     filters: {
@@ -48,8 +54,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     bussinessService: "WS",
     t,
   });
-
-  console.log("formData=====", formData);
 
   const { isLoading: sewerageConnectionLoading, data: sewerageConnectionData, error: sewerageConnectionError } = Digit.Hooks.ws.useSearchWS({
     tenantId,
@@ -64,6 +68,34 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     t,
   });
 
+  const applicationFeeColumns = [
+    {
+      Header: t("TL_COMMON_TABLE_COL_OWN_NAME"),
+      accessor: "name",
+      Cell: ({ row }) => {
+        return <div>{row?.original?.name}</div>;
+      },
+    },
+    {
+      Header: "",
+      accessor: "amount",
+      Cell: ({ row }) => {
+        const rowId = row?.index;
+        return (
+          <input
+            type="radio"
+            name="applicationFee"
+            checked={selectedRow?.uuid === row?.original?.uuid}
+            onChange={() => {
+              console.log("row?.original", row?.original);
+              setSelectedRow(row?.original);
+            }}
+          />
+        );
+      },
+    },
+  ];
+
   useEffect(() => {
     const owner = formData?.cpt?.details?.owners?.[0];
     const ownerForName = formData?.cpt?.details?.owners || [];
@@ -72,16 +104,21 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       ?.filter(Boolean)
       ?.join(", ");
 
+    const ownerObj = selectedRow;
+
     const emailApi = apiDataCheck?.[0]?.owners?.[0]?.emailId;
-    const fullName = owner?.name?.split(" ");
-    const firstName = ownerNames;
+    const firstName = ownerObj?.name;
     // let lastName;
     // if (fullName?.length > 1) {
     //   lastName = fullName?.[fullName.length - 1];
+
+    console.log("ownerObj?.emailId", ownerObj?.emailId);
+    console.log("formData?.PropertyDetails?.email", formData?.PropertyDetails?.email);
+    console.log("emailApi", emailApi);
     // }
-    const email = owner?.emailId || formData?.PropertyDetails?.email || emailApi || "";
-    const mobileNumber = owner?.mobileNumber;
-    const address = owner?.permanentAddress;
+    const email = ownerObj?.emailId || emailApi || "";
+    const mobileNumber = ownerObj?.mobileNumber;
+    const address = ownerObj?.permanentAddress;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
@@ -100,7 +137,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         ...combinedObject,
       };
     });
-  }, [formData?.cpt?.details, apiDataCheck]);
+  }, [formData?.cpt?.details, apiDataCheck, selectedRow]);
 
   useEffect(() => {
     let waterConnection;
@@ -132,7 +169,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   useEffect(() => {
     let sewerageConnection;
-    console.log("apiDataCheck", apiDataCheck);
     if (apiDataCheck?.[0]?.NdcDetails) {
       const resData = apiDataCheck?.[0]?.NdcDetails?.filter((item) => {
         return item.businessService == "SW";
@@ -376,21 +412,17 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [showToast]);
 
-  // useEffect(() => {
-  //   if (apiDataCheck) {
-  //     const apiEmail = apiDataCheck?.[0]?.owners?.[0]?.emailId || "";
-  //     setValue("email", apiEmail);
-  //     setPropertyDetails((prev) => ({ ...prev, email: apiEmail }));
-  //   }
-  // }, [apiDataCheck]);
-
-  // useEffect(() => {
-  //   if (formData?.cpt?.details?.owners) {
-  //     const formDataEmail = formData?.cpt?.details?.owners?.[0]?.emailId;
-  //     setValue("email", formDataEmail);
-  //     setPropertyDetails((prev) => ({ ...prev, email: formDataEmail }));
-  //   }
-  // }, [formData?.cpt?.details?.owners]);
+  useEffect(() => {
+    // checkApiDataCheck?.Applications?.[0]
+    // setSelectedRow
+    if (checkApiDataCheck?.Applications?.[0] || apiDataCheck?.[0]) {
+      const checkOwners = checkApiDataCheck?.Applications?.[0]?.owners || apiDataCheck?.[0]?.owners;
+      const filterRow = checkOwners?.find((owner) => owner?.isPrimaryOwner);
+      // const primaryOwner = ndcObject?.owners?.find((owner) => owner?.isPrimaryOwner) || ndcObject?.owners?.[0]; // fallback if none marked
+      console.log("filterRow===", filterRow);
+      setSelectedRow(filterRow);
+    }
+  }, [checkApiDataCheck, apiDataCheck]);
 
   return (
     <div style={{ marginBottom: "16px" }}>
@@ -616,132 +648,133 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {`${t("ADD_SEWERAGE")}`}
           </button>
 
-          <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"firstName"}
-                defaultValue={propertyDetails?.firstName || ""}
-                rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={propertyDetails?.firstName || ""}
-                    onChange={(e) => {
-                      setPropertyDetails((prev) => ({ ...prev, firstName: e.target.value }));
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      // setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[0]?.length > 0}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
+          <div style={{ marginTop: "40px", marginBottom: "20px" }}>
+            <p style={{ color: " green", fontSize: "14px", paddingBottom: "10px" }}>
+              Please Select One Owner Name Who will have the access of No Due Certificate
+            </p>
+            <Table
+              className="customTable table-border-style"
+              t={t}
+              data={formData?.cpt?.details?.owners || []}
+              columns={applicationFeeColumns}
+              getCellProps={() => ({ style: {} })}
+              disableSort={true}
+              manualPagination={false}
+              isPaginationRequired={false}
+            />
+          </div>
 
-          {/* <LabelFieldPair>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_LAST_NAME")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"lastName"}
-                defaultValue={propertyDetails?.lastName || ""}
-                rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={propertyDetails?.lastName || ""}
-                    onChange={(e) => {
-                      setPropertyDetails((prev) => ({ ...prev, lastName: e.target.value }));
-                      props.onChange(e.target.value);
+          {selectedRow && (
+            <div>
+              {/* name */}
+              <LabelFieldPair style={{ marginTop: "40px" }}>
+                <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"firstName"}
+                    defaultValue={propertyDetails?.firstName || ""}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) },
                     }}
-                    onBlur={(e) => {
-                      // setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[1]?.length > 0}
+                    render={(props) => (
+                      <TextInput
+                        value={propertyDetails?.firstName || ""}
+                        onChange={(e) => {
+                          setPropertyDetails((prev) => ({ ...prev, firstName: e.target.value }));
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          // setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[0]?.length > 0}
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair> */}
+                </div>
+              </LabelFieldPair>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"email"}
-                defaultValue={propertyDetails?.email || ""}
-                render={(props) => (
-                  <TextInput
-                    value={propertyDetails?.email}
-                    onChange={(e) => {
-                      setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      // setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
+              {/* email */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"email"}
+                    defaultValue={propertyDetails?.email || ""}
+                    render={(props) => (
+                      <TextInput
+                        value={propertyDetails?.email}
+                        onChange={(e) => {
+                          setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          // setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
+                </div>
+              </LabelFieldPair>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"mobileNumber"}
-                defaultValue={propertyDetails?.mobileNumber || ""}
-                render={(props) => (
-                  <TextInput
-                    value={propertyDetails?.mobileNumber}
-                    onChange={(e) => {
-                      setPropertyDetails((prev) => ({ ...prev, mobileNumber: e.target.value }));
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      // setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    // disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
+              {/* mobile number */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"mobileNumber"}
+                    defaultValue={propertyDetails?.mobileNumber || ""}
+                    render={(props) => (
+                      <TextInput
+                        value={propertyDetails?.mobileNumber}
+                        onChange={(e) => {
+                          setPropertyDetails((prev) => ({ ...prev, mobileNumber: e.target.value }));
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          // setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber}
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
+                </div>
+              </LabelFieldPair>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_ADDRESS")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"address"}
-                defaultValue={propertyDetails?.address || ""}
-                render={(props) => (
-                  <TextInput
-                    value={propertyDetails?.address}
-                    onChange={(e) => {
-                      setPropertyDetails((prev) => ({ ...prev, address: e.target.value }));
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      // setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.permanentAddress?.length > 0}
+              {/* address */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_ADDRESS")} * `}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"address"}
+                    defaultValue={propertyDetails?.address || ""}
+                    render={(props) => (
+                      <TextInput
+                        value={propertyDetails?.address}
+                        onChange={(e) => {
+                          setPropertyDetails((prev) => ({ ...prev, address: e.target.value }));
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          // setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        disabled={formData?.cpt?.details?.owners?.[0]?.permanentAddress?.length > 0}
+                      />
+                    )}
                   />
-                )}
-              />
+                </div>
+              </LabelFieldPair>
             </div>
-          </LabelFieldPair>
+          )}
         </div>
       )}
       <LabelFieldPair>

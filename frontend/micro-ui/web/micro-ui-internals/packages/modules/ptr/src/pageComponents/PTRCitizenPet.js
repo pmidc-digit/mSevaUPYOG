@@ -13,7 +13,6 @@ import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
-import CustomDatePicker from "./CustomDatePicker";
 import { Loader } from "../components/Loader";
 
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
@@ -286,6 +285,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
   const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
   const decimalNumber = /^\d+(\.\d{1,2})?$/;
+  const onlyAlphabetsTest = /^[A-Za-z ]+$/;
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -349,7 +349,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petName"
             rules={{
               required: t("PTR_PET_NAME_REQUIRED"),
-              pattern: { value: alphaNum, message: t("PTR_PET_NAME_INVALID") },
+              pattern: { value: onlyAlphabetsTest, message: t("PTR_PET_NAME_INVALID") },
               maxLength: { value: 100, message: "Maximum 100 characters" },
               minLength: { value: 2, message: "Minimum 2 characters" },
             }}
@@ -363,7 +363,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petName")}</CardLabelError>}
+          {errors.petName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petName")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -376,16 +376,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petType"
             rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
             render={(props) => (
-              <Dropdown
-                select={props.onChange}
-                selected={props.value}
-                option={mdmsPetData?.petTypes}
-                optionKey="name"
-                disable={checkForRenew}
-              />
+              <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" disable={checkForRenew} />
             )}
           />
-          {errors.petType && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petType")}</CardLabelError>}
+          {errors.petType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petType")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -399,18 +393,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
             render={(props) => {
               const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
-              return (
-                <Dropdown
-                  select={props.onChange}
-                  selected={props.value}
-                  option={filteredBreeds}
-                  optionKey="name"
-                  disable={checkForRenew}
-                />
-              );
+              return <Dropdown select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="name" disable={checkForRenew} />;
             }}
           />
-          {errors.breedType && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("breedType")}</CardLabelError>}
+          {errors.breedType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("breedType")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -423,16 +409,10 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petGender"
             rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
             render={(props) => (
-              <Dropdown
-                select={props.onChange}
-                selected={props.value}
-                option={mdmsPetData?.genderTypes}
-                optionKey="name"
-                disable={checkForRenew}
-              />
+              <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" disable={checkForRenew} />
             )}
           />
-          {errors.petGender && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petGender")}</CardLabelError>}
+          {errors.petGender && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petGender")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -459,7 +439,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petColor && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("petColor")}</CardLabelError>}
+          {errors.petColor && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petColor")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -530,9 +510,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petAge && (
-            <CardLabelError className="ptr-error-label" >{getErrorMessage("petAge")}</CardLabelError>
-          )}
+          {errors.petAge && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petAge")}</p>}
 
           <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
 
@@ -551,12 +529,12 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               required: t("PTR_VACCINATION_DATE_REQUIRED"),
             }}
             render={(props) => (
-              <CustomDatePicker
+              <TextInput
+                style={{ marginBottom: 0 }}
+                type={"date"}
                 value={props.value}
-                // min={minVaccineDateStr}
-                // max={todayStr}
                 min={minDate}
-                max={maxDate}
+                max={maxDate || todayStr}
                 onChange={(e) => props.onChange(e.target.value)}
                 onBlur={() => {
                   trigger("lastVaccineDate");
@@ -566,7 +544,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.lastVaccineDate && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
+          {errors.lastVaccineDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("lastVaccineDate")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -592,7 +570,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.vaccinationNumber && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("vaccinationNumber")}</CardLabelError>}
+          {errors.vaccinationNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("vaccinationNumber")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -613,7 +591,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
             )}
           />
-          {errors.doctorName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("doctorName")}</CardLabelError>}
+          {errors.doctorName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("doctorName")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -624,12 +602,12 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           <Controller
             control={control}
             name="clinicName"
-            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: /^[a-zA-Z0-9\s&-]+$/, message: t("PTR_CLINIC_NAME_INVALID") } }}
+            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: onlyAlphabetsTest, message: t("PTR_CLINIC_NAME_INVALID") } }}
             render={(props) => (
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}
           />
-          {errors.clinicName && <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{getErrorMessage("clinicName")}</CardLabelError>}
+          {errors.clinicName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("clinicName")}</p>}
         </div>
       </LabelFieldPair>
 

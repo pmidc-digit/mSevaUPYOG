@@ -928,7 +928,6 @@
 
 .ndc_card_labels {
   width: 100%;
-  max-width: 200px;
 }
 
 .downLoadButton {
@@ -965,9 +964,6 @@
 }
 
 @media screen and (max-width: 768px) {
-  .stepper {
-    display: grid !important;
-  }
   .action-bar-wrap {
     padding: 10px 10px;
     text-align: center;
@@ -1338,32 +1334,44 @@
   width: 100%;
 }
 
-img, video {
-    max-width: 100%;
-    height: auto;
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
-audio, canvas, embed, iframe, img, object, svg, video {
-    display: block;
-    vertical-align: middle;
+audio,
+canvas,
+embed,
+iframe,
+img,
+object,
+svg,
+video {
+  display: block;
+  vertical-align: middle;
 }
 
 /* Global Responsive Font Sizes for Mobile */
 @media only screen and (max-width: 768px) {
-  /* Headers with 32px should become 18px on mobile */
+  .card-header,
+  .employee-upyog-title,
+  .header-title,
+  .heading,
+  .landing-card-header,
+  .page-header,
+  .section-header,
+  .survey-card-header,
   h1,
   h2,
   h3,
-  .card-header,
-  .heading,
-  .header-title,
-  .page-header,
-  .section-header,
-  .landing-card-header,
-  .employee-upyog-title,
-  header,
-  .survey-card-header {
-    font-size: 18px !important;
+  header {
+    font-size: 14px !important;
+
+    .complaint-input-container {
+      display: flex;
+      flex-direction: column;
+    }
   }
 
   /* Headers with ~28px should become 16px on mobile */
@@ -1387,4 +1395,49 @@ audio, canvas, embed, iframe, img, object, svg, video {
     font-size: 14px !important;
   }
 }
+.link-button-margin {
+  margin-top: 10px;
+}
+.tl-add-action-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #ffffff !important;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none !important;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
 
+.svgPrimaryH16px {
+  display: none !important;
+}
+/* Date input centering for mobile view */
+@media (max-width: 767px) {
+  input[type="date"] {
+    text-align: center !important;
+  }
+
+  .form-field input[type="date"] {
+    text-align: center !important;
+  }
+
+  .citizen-card-input[type="date"] {
+    text-align: center !important;
+  }
+
+  .card input[type="date"] {
+    text-align: center !important;
+  }
+}
+
+input[type="date"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}

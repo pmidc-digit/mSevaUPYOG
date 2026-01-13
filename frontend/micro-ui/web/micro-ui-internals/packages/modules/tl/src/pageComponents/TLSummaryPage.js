@@ -1,17 +1,22 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { CardLabel } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import TLDocument from "./TLDocumets";
-import { Controller, useForm } from "react-hook-form";
 
-const TLSummaryPage = ({ config, formData, onSelect }) => {
+const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const { t } = useTranslation();
+  
+  // Get formData directly from Redux to prevent data loss
+  const reduxFormData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
+  const formData = reduxFormData || propsFormData || {};
+  
   const createdResponse = formData?.CreatedResponse || {};
-  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate } = createdResponse;
-  const [getDeclare, setDeclare] = useState(false);
-  const { control } = useForm();
+  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory} = createdResponse;
+  const [isChecked, setIsChecked] = useState(false);
 
   const owners = tradeLicenseDetail?.owners || [];
+  console.log("ownersPage:+++ ", owners);
   const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
   const accessories = tradeLicenseDetail?.accessories || [];
   const address = tradeLicenseDetail?.address || {};
@@ -27,11 +32,18 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
     return date.toLocaleDateString();
   };
 
-  console.log("formData in Summary", formData);
-
+  const formatTradeType = (tradeType) => {
+  if (!tradeType) return "NA";
+  // Replace dots with underscores and hyphens with underscores
+  const formatted = tradeType.replace(/\./g, '_').replace(/-/g, '_');
+  return `TRADELICENSE_TRADETYPE_${formatted}`;
+};
+console.log("subOwnerShipCategory:+++ ", tradeLicenseDetail?.subOwnerShipCategory);
+const ownershipCategory =tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]?.toUpperCase();
+const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.split(".")[1]?.toUpperCase()
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label">{label}</CardLabel>
+      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -68,7 +80,8 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
           <div style={{ fontWeight: "600", marginBottom: "0.5rem" }}>#{index + 1}</div>
           {renderLabel(t("Trade Category"), unit?.tradeType?.split(".")[0])}
           {renderLabel(t("Trade Type"), unit?.tradeType?.split(".")[1])}
-          {renderLabel(t("Trade Sub-Type"), unit?.tradeType?.split(".")[2])}
+          {/* {renderLabel(t("Trade Sub-Type"), unit?.tradeType?.split(".")[2])} */}
+          {renderLabel(t("Trade Sub-Type"), t(formatTradeType(unit?.tradeType)))}
           {renderLabel(t("UOM"), unit?.uom)}
           {renderLabel(t("Unit of Measurement Value"), unit?.uomValue)}
         </div>
@@ -86,7 +99,7 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
 
       <h2 className="bpa-summary-heading">{t("Property Address")}</h2>
       <div className="bpa-summary-section">
-        {renderLabel(t("City"), address?.city)}
+        {renderLabel(t("City"), address?.city?.split(".")[1].toUpperCase())}
         {renderLabel(t("Door/House No."), address?.doorNo)}
         {renderLabel(t("Building/Colony Name"), address?.buildingName)}
         {renderLabel(t("Street Name"), address?.street)}
@@ -102,7 +115,12 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
           {renderLabel(t("Mobile No."), owner?.mobileNumber)}
           {renderLabel(t("Father/Husband's Name"), owner?.fatherOrHusbandName)}
           {renderLabel(t("Relationship"), owner?.relationship)}
-          {renderLabel(t("Gender"), owner?.gender)}
+          {renderLabel(t("Type Of ownership"), ownershipCategory)}
+          {renderLabel(t("Type of sub-ownership"), subOwnerShipCategoryValue)}
+          {renderLabel(t("Email"), owner?.emailId)}
+          {renderLabel(t("Correspondence Address"), owner?.permanentAddress)}
+          {renderLabel(t("Birth Date"), owner?.dob)}
+          {renderLabel(t("Special Category"), owner?.ownerType)}
         </div>
       ))}
 
@@ -115,7 +133,7 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
         )}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+      {/* <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
         <Controller
           name="termsAccepted"
           control={control}
@@ -136,6 +154,23 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
               style={{ width: "18px", height: "18px", cursor: "pointer" }}
             />
           )}
+        />
+        <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0 }}>
+          {t("TL_DECLARATION_MESSAGE")}
+        </label>
+      </div> */}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginTop: "20px" }}>
+        <input
+          id="termsAccepted"
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setIsChecked(checked);
+            // Save to window so Step 4 can access it
+            window.declarationChecked = checked;
+          }}
+          style={{ width: "18px", height: "18px", cursor: "pointer" }}
         />
         <label htmlFor="termsAccepted" style={{ cursor: "pointer", margin: 0 }}>
           {t("TL_DECLARATION_MESSAGE")}

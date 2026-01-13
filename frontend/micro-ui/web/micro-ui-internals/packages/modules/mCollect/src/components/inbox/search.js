@@ -52,64 +52,76 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
         <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
-          <div className="search-complaint-container">
+          <div className="search-complaint-container mCollect-filter">
             {(type === "mobile" || mobileView) && (
-              <div className="complaint-header" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <div className="complaint-header" style={{ display: "flex", alignItems: "flex-start" }}>
                 <h2>{t("ES_COMMON_SEARCH_BY")}</h2>
                 <span onClick={onClose} style={{ cursor: "pointer" }}>
                   <CloseSvg />
                 </span>
               </div>
-            )}
-            <div
-              className={"complaint-input-container for-pt " + (!(type === "desktop" && !mobileView) ? "for-search" : "")}
-              style={{ width: "100%", display: "grid" }}
-            >
+            )} 
+            <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields?.map((input, index) => (
                 <div key={input.name} className="input-fields">
                   <span key={index} className={"complaint-input"}>
-                    <Label>{input.label}</Label>
-                    {input.name === "mobileNumber" ? (
-                      <div className="field-container">
+                    <h4 className="h4">{input.label}</h4>
+                    <div className="text-input  undefined">
+                      {input.name === "mobileNumber" ? (
+                        <div className="field-container">
+                          <Controller
+                            control={control}
+                            name="mobileNumber"
+                            rules={{ pattern: input.pattern, maxLength: input.maxlength }}
+                            defaultValue={searchParams?.mobileNumber || ""}
+                            render={(props) => (
+                              <MobileNumber
+                                onChange={props.onChange}
+                                value={props.value}
+                                componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
+                              />
+                            )}
+                          />
+                        </div>
+                      ) : input.type !== "date" ? (
+                        <div className="field-container">
+                          <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
+                        </div>
+                      ) : (
                         <Controller
+                          render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
+                          name={input.name}
                           control={control}
-                          name="mobileNumber"
-                          rules={{ pattern: input.pattern, maxLength: input.maxlength }}
-                          defaultValue={searchParams?.mobileNumber || ""}
-                          render={(props) => (
-                            <MobileNumber
-                              onChange={props.onChange}
-                              value={props.value}
-                              componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
-                            />
-                          )}
+                          defaultValue={null}
                         />
-                      </div>
-                    ) : input.type !== "date" ? (
-                      <div className="field-container">
-                        <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
-                      </div>
-                    ) : (
-                      <Controller
-                        render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
-                        name={input.name}
-                        control={control}
-                        defaultValue={null}
-                      />
-                    )}
+                      )}
+                    </div>
                   </span>
                 </div>
               ))}
-              {type === "desktop" && !mobileView && (
-                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
-                  <div>{clearAll()}</div>
+              {isInboxPage && (
+                <div className="search-action-wrapper" style={{width: "100%"}}>
+                  {type === "desktop" && !mobileView && (
+                    <SubmitBar
+                      className="submit-bar-search"
+                      label={t("CS_INBOX_SEARCH")}
+                      submit
+                    />
+                  )}
+                  {type === "desktop" && !mobileView && (
+                    <span style={{ paddingTop: "9px" }} className="clear-search">
+                      {clearAll()}
+                    </span>
+                  )}
                 </div>
               )}
 
-              {type === "desktop" && !mobileView && (
-                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
+              {type === "desktop" && !mobileView && !isInboxPage && (
+                <div className="search-action-wrapper">
                   <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
-                  {!isInboxPage && <div>{clearAll()}</div>}
+                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                    {clearAll()}
+                  </div>
                 </div>
               )}
             </div>

@@ -10,7 +10,7 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-
+  
   //   const currentStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData[config.key] || {});
   //     const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
@@ -20,7 +20,7 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     const { tradedetils, tradeUnits, validityYears, address, cpt, accessories } = data;
 
     const missingFields = [];
-
+    
     // Check tradedetils[0]
     const tradeDetail = tradedetils?.[0] || {};
     if (!tradeDetail?.financialYear?.code) missingFields.push("Financial Year");
@@ -42,7 +42,8 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     // Check accessories (only if length > 0)
-    if (accessories && accessories.length > 0) {
+    //if (accessories && accessories.length > 0 ) {
+    if((accessories && accessories.length > 0 ) &&  accessories[0]?.accessoryCategory?.i18nKey != 'NA'){
       accessories.forEach((item, index) => {
         if (item?.accessoryCategory?.code) {
           if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
@@ -62,6 +63,14 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
     return missingFields;
   }
+  useEffect(() => {
+        if (showToast) {
+          const timer = setTimeout(() => {
+            closeToast();
+          }, 3000); 
+          return () => clearTimeout(timer);
+        }
+      }, [showToast]);
 
   const goNext = () => {
     // if (!validateStepData(localStepData)) {

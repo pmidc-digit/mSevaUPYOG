@@ -213,11 +213,11 @@ const OwnerForm1 = (_props) => {
   return (
     <div style={isMobile?{}:{marginTop:"-50px"}}>
       <div style={{ marginBottom: "16px"}}>
-        <div>
+
           <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_DOOR_NO_LABEL")} `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"doorNo"}
@@ -244,7 +244,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <LabelFieldPair>
             <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t("UC_BLDG_NAME_LABEL")} `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"building"}
@@ -271,7 +271,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_SRT_NAME_LABEL")} `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"streetName"}
@@ -298,7 +298,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_PINCODE_LABEL")} `}</CardLabel>
-            <div className="field">
+            <div className="form-field">
               <Controller
                 control={control}
                 name={"pincode"}
@@ -349,7 +349,7 @@ const OwnerForm1 = (_props) => {
               )}
             />
           </LabelFieldPair>     
-      </div>
+ 
       </div>
        <hr style={{ width: "100%", border: "1px solid #D6D5D4", marginTop: "50px", marginBottom: "40px" }} />
     </div>

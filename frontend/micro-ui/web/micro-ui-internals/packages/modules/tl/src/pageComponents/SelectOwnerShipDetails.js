@@ -14,13 +14,14 @@ import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
 import { getOwnersForNewApplication } from "../utils/index";
 
-const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlur, formState, setError, clearErrors }) => {
+const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlur, formState, setError, clearErrors, setValue }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   //const isUpdateProperty = formData?.isUpdateProperty || false;
   //let isEditProperty = formData?.isEditProperty || false;
   let isEdit = window.location.href.includes("edit-application") || window.location.href.includes("renew-trade");
   const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
+  const [isResetting, setIsResetting] = useState(false);
   // const [getSubOwnerShip, setSubOwnerShip] = useState();
   const [isSameAsPropertyOwner, setisSameAsPropertyOwner] = useState(
     (formData?.ownershipCategory?.isSameAsPropertyOwner === "false" ? false : formData?.ownershipCategory?.isSameAsPropertyOwner) || null
@@ -79,9 +80,22 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   function selectedValue(value) {
     console.log("value===???", value);
-    // setSubOwnerShip(value);
     sessionStorage.setItem("SubownershipCategory", value?.code);
     setOwnershipCategory(value);
+    
+    // Clear error when user selects a value
+    if (value?.code && clearErrors) {
+      clearErrors(config.key);
+    }
+    
+    // For employee, trigger goNext after state update
+    if (userType === "employee" && value?.code) {
+      setTimeout(() => {
+        sessionStorage.setItem("ownershipCategory", value?.value);
+        sessionStorage.setItem("isSameAsPropertyOwner", isSameAsPropertyOwner);
+        onSelect(config.key, { ...value, isSameAsPropertyOwner: isSameAsPropertyOwner });
+      }, 0);
+    }
   }
 
   const handleOwnershipMain = (value) => {
@@ -149,6 +163,60 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     }
   }
 
+// ✅ NEW: Reset sub-ownership when main ownership changes
+useEffect(() => {
+  if (ownershipTypeMain && ownershipCategory?.code) {
+    const mainCode = ownershipCategory.code.split(".")[0];
+    
+    if (mainCode !== ownershipTypeMain.code) {
+      // Set resetting flag to prevent error display
+      setIsResetting(true);
+      
+      // Reset sub-ownership dropdown value
+      setOwnershipCategory({
+        code: "",
+        i18nKey: "",
+        label: undefined,
+        value: "",
+      });
+      
+      // Clear form field value with React Hook Form (prevents validation)
+      if (setValue) {
+        setValue(config.key, null, { 
+          shouldValidate: false, 
+          shouldDirty: false, 
+          shouldTouch: false 
+        });
+      }
+      
+      // Clear errors
+      if (clearErrors) {
+        clearErrors(config.key);
+        clearErrors("OwnerDetails");
+        clearErrors("owners");
+      }
+      
+      // Clear session storage
+      sessionStorage.removeItem("SubownershipCategory");
+      sessionStorage.removeItem("ownershipCategory");
+      
+      // Clear owner data
+      if (formData?.owners?.owners) {
+        delete formData.owners;
+        onSelect("formData", formData);
+      }
+      
+      // Reset flag after state updates
+      setTimeout(() => {
+        setIsResetting(false);
+        // Clear errors again after reset completes
+        if (clearErrors) {
+          clearErrors(config.key);
+        }
+      }, 200);
+    }
+  }
+}, [ownershipTypeMain]);
   useEffect(() => {
     if (
       formData?.ownershipCategory?.isSameAsPropertyOwner == true ||
@@ -164,19 +232,11 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   function goNext() {
     sessionStorage.setItem("ownershipCategory", ownershipCategory?.value);
-
     sessionStorage.setItem("isSameAsPropertyOwner", isSameAsPropertyOwner);
     onSelect(config.key, { ...ownershipCategory, isSameAsPropertyOwner: isSameAsPropertyOwner });
   }
 
-  useEffect(() => {
-    if (userType === "employee") {
-      if (!ownershipCategory?.code) setError(config.key, { type: "required", message: t(`REQUIRED_FIELD`) });
-      //message: `${config.key.toUpperCase()}_REQUIRED` }
-      else clearErrors(config.key);
-      goNext();
-    }
-  }, [ownershipCategory]);
+  // Removed problematic useEffect - validation now happens on blur/submit only
 
   const ownershipTypeMainDerived = useMemo(() => {
     if (!ownershipCategory?.code) return null;
@@ -238,17 +298,23 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           <Dropdown
             className="form-field"
             selected={ownershipCategory?.code ? ownershipCategory : {}}
-            errorStyle={formState.touched?.[config.key] && formState.errors[config.key]?.message ? true : false}
+            errorStyle={!isResetting && formState.touched?.[config.key] && formState.errors[config.key]?.message ? true : false}
             disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner}
             option={filteredOwnershipSubTypes}
             select={selectedValue}
             optionKey="i18nKey"
-            onBlur={onBlur}
+            onBlur={(e) => {
+              if (onBlur) onBlur(e);
+              // Validate only if not resetting and field is empty
+              if (userType === "employee" && !isResetting && !ownershipCategory?.code) {
+                setError(config.key, { type: "required", message: t(`REQUIRED_FIELD`) });
+              }
+            }}
             t={t}
             placeholder={t("COMMON-MASTERS_SUBOWNERSHIP_PLACEHOLDER")}
           />
         </LabelFieldPair>
-        {formState.touched?.[config.key] ? (
+        {!isResetting && formState.touched?.[config.key] && formState.errors[config.key]?.message ? (
           <CardLabelError>
             {formState.errors[config.key]?.message}
           </CardLabelError>

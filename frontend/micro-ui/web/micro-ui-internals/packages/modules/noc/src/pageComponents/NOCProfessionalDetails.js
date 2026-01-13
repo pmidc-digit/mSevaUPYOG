@@ -10,7 +10,6 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
-  CardLabelError,
 } from "@mseva/digit-ui-react-components";
 
 const NOCProfessionalDetails = (_props) => {
@@ -111,7 +110,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
+          {errors?.professionalName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalName.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -143,7 +142,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalEmailId?.message || ""}</CardLabelError>
+          {errors?.professionalEmailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalEmailId.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -174,7 +173,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalRegId?.message || ""}</CardLabelError>
+          {errors?.professionalRegId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegId.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -205,7 +204,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
+          {errors?.professionalRegIdValidity && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegIdValidity.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -225,7 +224,7 @@ const NOCProfessionalDetails = (_props) => {
             }}
             render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true"/>}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalMobileNumber?.message || ""}</CardLabelError>
+          {errors?.professionalMobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalMobileNumber.message}</p>}
         </div>
       </LabelFieldPair>
 
@@ -261,7 +260,7 @@ const NOCProfessionalDetails = (_props) => {
               />
             )}
           />
-          <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.professionalAddress?.message || ""}</CardLabelError>
+          {errors?.professionalAddress && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalAddress.message}</p>}
         </div>
       </LabelFieldPair>
     </React.Fragment>

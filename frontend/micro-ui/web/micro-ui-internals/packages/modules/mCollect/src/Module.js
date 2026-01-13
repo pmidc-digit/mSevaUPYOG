@@ -65,9 +65,9 @@ const componentsToRegister = {
   MCollectCard,
   MCollectModule,
   MCollectLinks,
-  MCollectEmployeeChallan: EmployeeChallan,
-  MCollectAcknowledgement: MCollectAcknowledgement,
-  MCollectEditChallan: EditChallan,
+  MCollectEmployeeChallanService: EmployeeChallan,
+  MCollectAcknowledgementPage: MCollectAcknowledgement,
+  MCollectEditChallanPage: EditChallan,
   MCollectNewChallanPage: NewChallan,
   MCollectSearchChallanComponent: SearchChallanComponent,
   MCollectSearchResultsComponent: SearchResultsComponent,
@@ -76,7 +76,7 @@ const componentsToRegister = {
   MCollectSearchChallan: SearchChallan,
   MCollectSearchBill: SearchBill,
   GroupBill,
-  MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  MCOLLECT_INBOX_FILTER_NEW: (props) => <InboxFilter {...props} />,
 };
 
 export const initMCollectComponents = () => {

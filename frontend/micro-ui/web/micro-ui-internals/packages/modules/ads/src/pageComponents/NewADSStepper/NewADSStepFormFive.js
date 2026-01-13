@@ -195,9 +195,15 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
         },
       });
 
+      // 0. Merge updated applicant and address details from ownerDetails
+      const updatedApplicant = payloadState?.ownerDetails?.applicantDetail || payloadState?.CreatedResponse?.applicantDetail;
+      const updatedAddress = payloadState?.ownerDetails?.address || payloadState?.CreatedResponse?.address;
+
       // default formData (before modify)
       let formData = buildFormData({
         ...payloadState?.CreatedResponse,
+        applicantDetail: updatedApplicant,
+        address: updatedAddress,
         documents: payloadState?.documents?.documents?.documents || payloadState?.documents || payloadState?.Documents || [],
       });
 
@@ -211,7 +217,13 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
       try {
         if (changed) {
           //Update payload for modify
-          formData = buildFormData({ ...payloadState?.CreatedResponse, cartDetails: modifiedSlots, documents: [] });
+          formData = buildFormData({
+            ...payloadState?.CreatedResponse,
+            applicantDetail: updatedApplicant,
+            address: updatedAddress,
+            cartDetails: modifiedSlots,
+            documents: [],
+          });
           // 🔄 call modify API
           const modifyRes = await Digit.ADSServices.cart_slots_modify({ bookingApplication: formData }, tenantId);
 
@@ -223,9 +235,11 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
 
           await delay(4000);
 
-          // ✅ override only cartDetails inside CreatedResponse
+          // ✅ override cartDetails, applicantDetail, and address inside CreatedResponse
           const overriddenSource = {
             ...payloadState?.CreatedResponse,
+            applicantDetail: updatedApplicant,
+            address: updatedAddress,
             cartDetails: modifyRes?.bookingApplication?.[0]?.cartDetails,
             documents: payloadState?.documents?.documents?.documents || payloadState?.documents || payloadState?.Documents || [],
           };

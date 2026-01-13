@@ -66,7 +66,6 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
     const missingFields = validateStepData(currentStepData);
 
@@ -94,6 +93,14 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(false);
     setError("");
   };
+useEffect(() => {
+  if (showToast) {
+    const timer = setTimeout(() => {
+      closeToast();
+    }, 3000); 
+    return () => clearTimeout(timer);
+  }
+}, [showToast]);
 
   useEffect(() => {
     setShowApplicationModal(true);
@@ -109,7 +116,7 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-        className="card"
+       
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
 

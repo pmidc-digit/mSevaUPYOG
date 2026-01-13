@@ -17,6 +17,7 @@ import { useParams, useHistory, useRouteMatch } from "react-router-dom";
 import { stringReplaceAll, convertEpochToDate } from "./utils";
 import ActionModal from "./components/Modal";
 import { downloadAndPrintChallan, downloadAndPrintReciept } from "./utils";
+import { Loader } from "./components/Loader";
 
 const EmployeeChallan = (props) => {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ const EmployeeChallan = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [challanBillDetails, setChallanBillDetails] = useState([]);
   const [totalDueAmount, setTotalDueAmount] = useState(0);
-
+  const [getLoading, setLoading] = useState(false);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -59,8 +60,10 @@ const EmployeeChallan = (props) => {
   };
 
   const submitAction = (data) => {
+    setLoading(true);
     Digit.MCollectService.update({ Challan: data?.Challan }, tenantId)
       .then((result) => {
+        setLoading(false);
         if (result.challans && result.challans.length > 0) {
           const challan = result.challans[0];
           let LastModifiedTime = Digit.SessionStorage.set("isMcollectAppChanged", challan.challanNo);
@@ -70,7 +73,10 @@ const EmployeeChallan = (props) => {
           );
         }
       })
-      .catch((e) => setShowToast({ key: true, label: e?.response?.data?.Errors[0].message }));
+      .catch((e) => {
+        setShowToast({ key: true, label: e?.response?.data?.Errors[0].message });
+        setLoading(false);
+      });
     closeModal();
   };
 
@@ -88,40 +94,77 @@ const EmployeeChallan = (props) => {
 
   let billDetails = [];
 
+  // useEffect(() => {
+  //   async function fetchMyAPI() {
+  //     billDetails = [];
+  //     let res = await Digit.PaymentService.searchBill(tenantId, {
+  //       consumerCode: data?.challans[0]?.challanNo,
+  //       service: data?.challans[0]?.businessService,
+  //     });
+  //     res?.Bill[0]?.billDetails[0]?.billAccountDetails?.map((bill) => {
+  //       billDetails.push(bill);
+  //     });
+  //     setTotalDueAmount(res?.Bill[0]?.totalAmount);
+  //     billDetails &&
+  //       billDetails.map((ob) => {
+  //         if (ob.taxHeadCode.includes("CGST")) ob.order = 3;
+  //         else if (ob.taxHeadCode.includes("SGST")) ob.order = 4;
+  //       });
+  //     billDetails.sort((a, b) => a.order - b.order);
+  //     setChallanBillDetails(billDetails);
+  //   }
+  //   if (data?.challans && data?.challans?.length > 0) {
+  //     fetchMyAPI();
+  //   }
+  // }, [data]);
+
   useEffect(() => {
-    async function fetchMyAPI() {
-      billDetails = [];
-      let res = await Digit.PaymentService.searchBill(tenantId, {
-        consumerCode: data?.challans[0]?.challanNo,
-        service: data?.challans[0]?.businessService,
-      });
-      res?.Bill[0]?.billDetails[0]?.billAccountDetails?.map((bill) => {
-        billDetails.push(bill);
-      });
-      setTotalDueAmount(res?.Bill[0]?.totalAmount);
-      billDetails &&
-        billDetails.map((ob) => {
-          if (ob.taxHeadCode.includes("CGST")) ob.order = 3;
-          else if (ob.taxHeadCode.includes("SGST")) ob.order = 4;
-        });
-      billDetails.sort((a, b) => a.order - b.order);
-      setChallanBillDetails(billDetails);
-    }
-    if (data?.challans && data?.challans?.length > 0) {
+    if (data?.challans?.length > 0) {
       fetchMyAPI();
     }
   }, [data]);
 
+  const fetchMyAPI = async () => {
+    setLoading(true); // 🔄 start loader
+    try {
+      let billDetails = [];
+
+      const res = await Digit.PaymentService.searchBill(tenantId, {
+        consumerCode: data?.challans?.[0]?.challanNo,
+        service: data?.challans?.[0]?.businessService,
+      });
+      setLoading(false);
+
+      res?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails?.forEach((bill) => {
+        billDetails.push(bill);
+      });
+
+      setTotalDueAmount(res?.Bill?.[0]?.totalAmount);
+
+      billDetails.forEach((ob) => {
+        if (ob.taxHeadCode?.includes("CGST")) ob.order = 3;
+        else if (ob.taxHeadCode?.includes("SGST")) ob.order = 4;
+        else ob.order = 5;
+      });
+
+      billDetails.sort((a, b) => a.order - b.order);
+      setChallanBillDetails(billDetails);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error fetching bill details", error);
+    }
+  };
+
   const challanDownload = {
     order: 1,
     label: t("UC_CHALLAN"),
-    onClick: () => downloadAndPrintChallan(challanno, "download"),
+    onClick: () => downloadAndPrintChallan(challanno, "download", setLoading),
   };
 
   const receiptDownload = {
     order: 2,
     label: t("Receipt"),
-    onClick: () => downloadAndPrintReciept(challanDetails?.businessService, challanno, "download"),
+    onClick: () => downloadAndPrintReciept(challanDetails?.businessService, challanno, "download", setLoading),
   };
 
   const workflowActions = ["CANCEL_CHALLAN", "UPDATE_CHALLAN", "BUTTON_PAY"];
@@ -179,17 +222,21 @@ const EmployeeChallan = (props) => {
           <StatusTable>
             <Row label={`${t("UC_CONS_NAME_LABEL")}`} text={challanDetails?.citizen.name || t("CS_NA")} />
             <Row label={`${t("UC_MOBILE_NUMBER")}`} text={challanDetails?.citizen.mobileNumber || t("CS_NA")} />
-            <Row label={`${t("UC_EMAIL_ID")}`} text={challanDetails?.citizen.emailId || t("CS_NA")} />
+            <Row label={`${t("CORE_COMMON_EMAIL_ID")}`} text={challanDetails?.citizen.emailId || t("CS_NA")} />
             <Row label={`${t("UC_DOOR_NO_LABEL")}`} text={challanDetails?.address.doorNo || t("CS_NA")} />
             <Row label={`${t("UC_BUILDING_NAME_LABEL")}`} text={challanDetails?.address.buildingName || t("CS_NA")} />
             <Row label={`${t("UC_STREET_NAME_LABEL")}`} text={challanDetails?.address.street || t("CS_NA")} />
             <Row
-              label={`${t("UC_MOHALLA_LABEL")}`}
-              text={`${t(
-                `${stringReplaceAll(challanDetails?.address?.tenantId?.toUpperCase(), ".", "_")}_REVENUE_${
-                  challanDetails?.address?.locality?.code
-                }` || t("CS_NA")
-              )}`}
+              label={t("UC_MOHALLA_LABEL")}
+              text={
+                challanDetails?.address?.locality?.code
+                  ? t(
+                      `${stringReplaceAll(challanDetails?.address?.tenantId?.toUpperCase(), ".", "_")}_REVENUE_${
+                        challanDetails.address.locality.code
+                      }`
+                    )
+                  : t("CS_NA")
+              }
             />
           </StatusTable>
         </Card>
@@ -216,6 +263,7 @@ const EmployeeChallan = (props) => {
           <SubmitBar label={t("ES_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}
+      {(getLoading || isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

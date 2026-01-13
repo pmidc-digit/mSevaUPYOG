@@ -106,7 +106,7 @@ const CardBasedOptions = ({ header, sideOption, options, styles = {}, style = {}
 
       <div className="new-card-header-section" >
         <h2 className="new-card-header-title" >{header}</h2>
-        <button
+        {/* <button
           type="button"
            className="new-card-view-button"
           onClick={sideOption.onClick}
@@ -115,7 +115,7 @@ const CardBasedOptions = ({ header, sideOption, options, styles = {}, style = {}
         >
           {sideOption.name}
           <span>→</span>
-        </button>
+        </button> */}
       </div>
       <div className="new-card-cards-grid" >
         {options.map((props, index) => (

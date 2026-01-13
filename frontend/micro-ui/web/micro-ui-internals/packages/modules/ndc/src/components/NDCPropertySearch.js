@@ -254,7 +254,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
           </CardLabel>
           <div
             className="field ndc_property_search"
-            style={{ marginTop: "20px", display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            style={{ display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
             ref={myElementRef}
             id="search-property-field"
           >

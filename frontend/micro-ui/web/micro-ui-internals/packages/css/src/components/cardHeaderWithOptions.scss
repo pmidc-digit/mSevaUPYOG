@@ -1,5 +1,6 @@
 .cardHeaderWithOptions{
     @apply flex flex-row justify-between;
+    align-items: center;
     .multilinkWrapper{
         @apply relative;
         .multilink-labelWrap{
@@ -12,3 +13,4 @@
         }
     }
 }
+

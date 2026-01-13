@@ -10,7 +10,6 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
-  CardLabelError,
 } from "@mseva/digit-ui-react-components";
 
 const LayoutProfessionalDetails = (_props) => {
@@ -180,7 +179,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
+      {errors?.professionalName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalName.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}*</CardLabel>
@@ -212,7 +211,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalEmailId?.message || ""}</CardLabelError>
+      {errors?.professionalEmailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalEmailId.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}*</CardLabel>
@@ -233,7 +232,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalRegId?.message || ""}</CardLabelError>
+      {errors?.professionalRegId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegId.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}*</CardLabel>
@@ -253,7 +252,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalMobileNumber?.message || ""}</CardLabelError>
+      {errors?.professionalMobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalMobileNumber.message}</p>}
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}*</CardLabel>
@@ -285,9 +284,9 @@ const LayoutProfessionalDetails = (_props) => {
               />
             )}
           />
+          {errors?.professionalAddress && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalAddress.message}</p>}
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalAddress?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REG_VALIDITY_LABEL")}`}*</CardLabel>
@@ -316,7 +315,7 @@ const LayoutProfessionalDetails = (_props) => {
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalRegistrationValidity?.message || ""}</CardLabelError>
+      {errors?.professionalRegistrationValidity && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegistrationValidity.message}</p>}
       {/* TODO: Uncomment when expired license feature is needed
       {licenseStatus === "EXPIRED" && expiredDate && (
         <span style={{ color: "red", fontSize: "14px", fontWeight: "bold", marginTop: "8px", display: "block" }}>

@@ -18,7 +18,6 @@ const EmployeeApp = ({ path, url, userType }) => {
   const location = useLocation();
   const mobileView = innerWidth <= 640;
 
-  console.log("her here here here");
   const inboxInitialState = {
     searchParams: {
       // uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
@@ -52,9 +51,9 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const searchMW = [{ combineTaxDueInSearchData }];
 
-  const EmployeeChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEmployeeChallan");
-  const MCollectAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MCollectAcknowledgement");
-  const EditChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEditChallan");
+  const EmployeeChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEmployeeChallanService");
+  const MCollectAcknowledgementPage = Digit?.ComponentRegistryService?.getComponent("MCollectAcknowledgementPage");
+  const EditChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEditChallanPage");
   const NewChallan = Digit?.ComponentRegistryService?.getComponent("MCollectNewChallanPage");
   const SearchReceiptPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchReceipt");
   const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("MCollectSearchChallan");
@@ -78,7 +77,7 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox
                 parentRoute={path}
                 businessService="PT"
-                filterComponent="MCOLLECT_INBOX_FILTER"
+                filterComponent="MCOLLECT_INBOX_FILTER_NEW"
                 initialStates={inboxInitialState}
                 isInbox={true}
               />
@@ -93,7 +92,7 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox parentRoute={path} businessService="PT" middlewareSearch={searchMW} initialStates={inboxInitialState} isInbox={false} />
             )}
           />
-          <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />
+          <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgementPage />} />
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}
           <PrivateRoute path={`${path}/search-receipt`} component={() => <SearchReceiptPage />} />{" "}

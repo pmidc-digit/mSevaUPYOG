@@ -279,6 +279,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //console.log("selectedAction here", action);
   }
 
+  const ownersList= currentStepData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const combinedOwnersName = ownersList?.join(", ");
+
   const CLUSummary = Digit?.ComponentRegistryService?.getComponent("CLUSummary");
 
   return (
@@ -287,7 +290,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
       <CheckBox
         label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-          currentStepData?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "NA"
+          combinedOwnersName
         }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}

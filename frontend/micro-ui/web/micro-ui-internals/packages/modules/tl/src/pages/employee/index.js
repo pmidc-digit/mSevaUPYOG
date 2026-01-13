@@ -141,7 +141,7 @@ const TLBreadCrumb = ({ location }) => {
     }
   ];
 
-  return <BreadCrumb style={isMobile?{display:"flex"}:{}}  spanStyle={{maxWidth:"min-content"}} crumbs={crumbs} />;
+  return <BreadCrumb style={isMobile?{display:"flex"}:{}}  crumbs={crumbs} />;
 };
 
 
@@ -199,7 +199,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/renew-application-details/:id`} component={(props) => <RenewTLStepForm {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application-details-spa/:id`} component={(props) => <ReNewApplication {...props} header={t("TL_ACTION_RESUBMIT")} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application-details/:id`} component={(props) => <RenewTLStepForm {...props} header={t("TL_ACTION_RESUBMIT")} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/response/:id`} component={(props) => <Response {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/search/:variant`} component={(props) => <Search {...props} parentRoute={path} />} />
           
         </div>

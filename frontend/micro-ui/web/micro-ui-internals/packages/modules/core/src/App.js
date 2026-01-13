@@ -64,6 +64,18 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     pathname,
     initData,
   };
+
+  useEffect(() => {
+    const unblock = history.block((location, action) => {
+      if (action === "POP") {
+        // 🔒 blocks browser back & forward
+        return false;
+      }
+    });
+
+    return () => unblock();
+  }, [history]);
+
   return (
     <Switch>
       <Route path="/digit-ui/employee">
@@ -81,4 +93,3 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     </Switch>
   );
 };
-

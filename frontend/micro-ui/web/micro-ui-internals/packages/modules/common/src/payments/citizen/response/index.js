@@ -1106,7 +1106,7 @@ const WrapPaymentComponent = (props) => {
       ) : null}
 
       {business_service == "chb-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ marginTop:"20px",display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap:"wrap", gap:"20px" }}>
           <div style={IconWrapperStyle1} onClick={printing ? undefined : printCHBReceipt}>
             {printing ? (
               <Loader />
@@ -1136,7 +1136,7 @@ const WrapPaymentComponent = (props) => {
 
           {business_service == "chb-services" && (
             <Link to={`/digit-ui/citizen`}>
-              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginLeft: "100px" }} />
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
           )}
         </div>
@@ -1184,6 +1184,8 @@ const WrapPaymentComponent = (props) => {
             display: "flex",
             justifyContent: "space-between",
             marginTop: "15px",
+            flexWrap: "wrap",
+            gap: "20px",
           }}
         >
           <SubmitBar onSubmit={printNDCReceipt} label={t("CS_DOWNLOAD_RECEIPT")} />
@@ -1200,7 +1202,7 @@ const WrapPaymentComponent = (props) => {
       )}
 
       {business_service == "adv-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
           <div style={IconWrapperStyle} onClick={printing ? undefined : printADVReceipt}>
             {printing ? (
               <Loader />
@@ -1303,7 +1305,7 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null} */}
       {business_service === "BPAREG" ? (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px",flexWrap:"wrap", gap:"20px" }}>
           <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
           <Link to={`/digit-ui/citizen`}>
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
@@ -1321,6 +1323,7 @@ const WrapPaymentComponent = (props) => {
               display: "flex",
               justifyContent: "space-between",
               marginTop: "15px",
+              flexWrap:"wrap", gap:"20px"
             }}
           >
             {printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />}
@@ -2242,7 +2245,7 @@ const WrapPaymentZeroComponent = (props) => {
       ) : null}
 
       {business_service == "chb-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
           <div style={IconWrapperStyle1} onClick={printing ? undefined : printCHBReceipt}>
             {printing ? (
               <Loader />
@@ -2279,7 +2282,7 @@ const WrapPaymentZeroComponent = (props) => {
       ) : null}
 
       {business_service == "adv-services" ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
           <div style={IconWrapperStyle} onClick={printing ? undefined : printADVReceipt}>
             {printing ? (
               <Loader />
@@ -2307,6 +2310,7 @@ const WrapPaymentZeroComponent = (props) => {
             display: "flex",
             justifyContent: "space-between",
             marginTop: "15px",
+            flexWrap:"wrap", gap:"20px"
           }}
         >
           <SubmitBar onSubmit={printNDCReceipt} label={t("CS_DOWNLOAD_RECEIPT")} />

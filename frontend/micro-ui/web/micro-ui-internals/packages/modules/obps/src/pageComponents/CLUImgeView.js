@@ -24,7 +24,7 @@ const CLUImageView = ({ ownerFileStoreId, ownerName }) => {
   }, [ownerFileStoreId]);
 
   return (
-    <Card>
+    <div style={{ padding: "20px 0px" }}>
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
         <div style={{ textAlign: "center" }}>
           <img
@@ -37,7 +37,7 @@ const CLUImageView = ({ ownerFileStoreId, ownerName }) => {
         </div>
       </div>
       {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}
-    </Card>
+    </div>
   );
 };
 

@@ -44,6 +44,8 @@ const Inbox = ({
     isMcollectAppChanged,
   });
 
+  console.log("mcollect data", data);
+
   // useEffect(() => {
   //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
   //   else if (hookLoading || data?.challans?.length) setIsLoader(true);

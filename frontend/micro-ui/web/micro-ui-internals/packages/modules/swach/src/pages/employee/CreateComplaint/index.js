@@ -268,7 +268,6 @@ export const CreateComplaint = ({ parentUrl }) => {
               required: true,
               pattern: /^[6-9]\d{9}$/,
             },
-            componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
             error: t("CORE_COMMON_MOBILE_ERROR"),
           },
         },

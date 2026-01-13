@@ -93,7 +93,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
-    padding: "2rem",
+   
     backgroundColor: "#f9f9f9",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#333",

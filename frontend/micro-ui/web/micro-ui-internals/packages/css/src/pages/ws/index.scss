@@ -12,6 +12,9 @@
   .form-field:nth-child(4n) {
     margin-right: 0 !important;
   }
+    .field:nth-child(4n) {
+    margin-right: 0 !important;
+  }
   
   /* Search/Reset button - same size as fields */
   .submit {
@@ -55,6 +58,14 @@
     .form-field:nth-child(2n) {
       margin-right: 0 !important; /* 2nd field in each row */
     }
+
+     .field:nth-child(4n) {
+      margin-right: 10px !important; /* Reset desktop rule */
+    }
+    
+    .field:nth-child(2n) {
+      margin-right: 0 !important; /* 2nd field in each row */
+    }
     
     .submit {
       width: calc(50% - 10px) !important;
@@ -74,6 +85,9 @@
     }
     
     .form-field:nth-child(2n) {
+      margin-right: 0 !important; /* Reset tablet rule */
+    }
+      .field:nth-child(2n) {
       margin-right: 0 !important; /* Reset tablet rule */
     }
     

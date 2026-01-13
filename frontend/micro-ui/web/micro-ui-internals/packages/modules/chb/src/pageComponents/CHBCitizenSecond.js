@@ -25,7 +25,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     getValues,
     watch,
     trigger,
+    clearErrors,
   } = useForm({
+    mode: "onSubmit",
     defaultValues: {
       shouldUnregister: false,
       halls: [{ startDate: "", endDate: "", startTime: "", endTime: "" }], // predefine index 0
@@ -153,6 +155,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     console.log("formattedData", formattedData);
     // Restore siteId and trigger hall filtering
     if (formattedData) {
+      // Clear all errors first
+      clearErrors();
+
       const communityHallsOptions = CHBLocations.CHB.CommunityHalls || [];
       const purposeOptions = CHBPurpose.CHB.Purpose || [];
       const specialCategoryOptions = SpecialCategory.CHB.SpecialCategory || [];
@@ -189,7 +194,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setValue("reason", formattedData?.additionalDetails?.reason || "");
       // disImage
     }
-  }, [currentStepData, setValue]);
+  }, [currentStepData, setValue, clearErrors]);
 
   const startDate = watch("startDate");
 
@@ -295,11 +300,12 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     type={"date"}
                     className="form-field"
                     value={props.value}
-                    min={
-                      startDate
-                        ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
-                        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
-                    }
+                    // min={
+                    //   startDate
+                    //     ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                    //     : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                    // }
+                    min={startDate || new Date().toISOString().split("T")[0]}
                     // max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -372,33 +378,33 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         width: "100%",
                       }}
                     >
-                    {getSlots?.map((slot, idx) => {
-                      const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
-                      const isChecked = field.value?.some(
-                        (s) =>
-                          s.hallCode === slot.hallCode &&
-                          s.bookingDate === slot.bookingDate &&
-                          s.fromTime === slot.fromTime &&
-                          s.toTime === slot.toTime
-                      );
-                      const isAvailable = slot.slotStaus?.toLowerCase() === "available";
+                      {getSlots?.map((slot, idx) => {
+                        const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
+                        const isChecked = field.value?.some(
+                          (s) =>
+                            s.hallCode === slot.hallCode &&
+                            s.bookingDate === slot.bookingDate &&
+                            s.fromTime === slot.fromTime &&
+                            s.toTime === slot.toTime
+                        );
+                        const isAvailable = slot.slotStaus?.toLowerCase() === "available";
 
-                      return (
-                        <label
-                          key={slotKey}
-                          style={{
-                            border: "1px solid #ccc",
-                            borderRadius: "8px",
-                            padding: "12px",
-                            backgroundColor: isAvailable ? "#e6ffed" : "#ffe6e6",
-                            cursor: isAvailable ? "pointer" : "not-allowed",
-                            opacity: isAvailable ? 1 : 0.6,
-                            // display: "flex",
-                            flexDirection: "column",
-                            gap: "6px",
-                          }}
-                        >
-                          {/* <input
+                        return (
+                          <label
+                            key={slotKey}
+                            style={{
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              backgroundColor: isAvailable ? "#e6ffed" : "#ffe6e6",
+                              cursor: isAvailable ? "pointer" : "not-allowed",
+                              opacity: isAvailable ? 1 : 0.6,
+                              // display: "flex",
+                              flexDirection: "column",
+                              gap: "6px",
+                            }}
+                          >
+                            {/* <input
                             type="checkbox"
                             checked={isChecked}
                             disabled={!isAvailable}
@@ -421,76 +427,77 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               }
                             }}
                           /> */}
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            disabled={!isAvailable}
-                            onChange={(e) => {
-                              if (!isAvailable) return;
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              disabled={!isAvailable}
+                              onChange={(e) => {
+                                if (!isAvailable) return;
 
-                              let updatedSlots = [...(field.value || [])];
+                                let updatedSlots = [...(field.value || [])];
 
-                              if (e.target.checked) {
-                                // Add clicked slot
-                                updatedSlots.push(slot);
+                                if (e.target.checked) {
+                                  // Add clicked slot
+                                  updatedSlots.push(slot);
 
-                                // Sort slots by date and time for consistent order
-                                const sortedSlots = [...getSlots].sort(
-                                  (a, b) =>
-                                    new Date(a.bookingDate) - new Date(b.bookingDate) || (a.fromTime || "00:00").localeCompare(b.fromTime || "00:00")
-                                );
+                                  // Sort slots by date and time for consistent order
+                                  const sortedSlots = [...getSlots].sort(
+                                    (a, b) =>
+                                      new Date(a.bookingDate) - new Date(b.bookingDate) ||
+                                      (a.fromTime || "00:00").localeCompare(b.fromTime || "00:00")
+                                  );
 
-                                // Get indexes of selected slots
-                                const allSelectedKeys = updatedSlots.map((s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}`);
+                                  // Get indexes of selected slots
+                                  const allSelectedKeys = updatedSlots.map((s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}`);
 
-                                const firstIndex = sortedSlots.findIndex(
-                                  (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[0]
-                                );
-                                const lastIndex = sortedSlots.findIndex(
-                                  (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[allSelectedKeys.length - 1]
-                                );
+                                  const firstIndex = sortedSlots.findIndex(
+                                    (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[0]
+                                  );
+                                  const lastIndex = sortedSlots.findIndex(
+                                    (s) => `${s.hallCode}-${s.bookingDate}-${s.fromTime}-${s.toTime}` === allSelectedKeys[allSelectedKeys.length - 1]
+                                  );
 
-                                // Automatically select all slots between first and last
-                                const minIndex = Math.min(firstIndex, lastIndex);
-                                const maxIndex = Math.max(firstIndex, lastIndex);
+                                  // Automatically select all slots between first and last
+                                  const minIndex = Math.min(firstIndex, lastIndex);
+                                  const maxIndex = Math.max(firstIndex, lastIndex);
 
-                                const continuousSlots = sortedSlots
-                                  .slice(minIndex, maxIndex + 1)
-                                  .filter((s) => s.slotStaus?.toLowerCase() === "available");
+                                  const continuousSlots = sortedSlots
+                                    .slice(minIndex, maxIndex + 1)
+                                    .filter((s) => s.slotStaus?.toLowerCase() === "available");
 
-                                field.onChange(continuousSlots);
-                              } else {
-                                // Uncheck → remove that slot only
-                                updatedSlots = updatedSlots.filter(
-                                  (s) =>
-                                    !(
-                                      s.hallCode === slot.hallCode &&
-                                      s.bookingDate === slot.bookingDate &&
-                                      s.fromTime === slot.fromTime &&
-                                      s.toTime === slot.toTime
-                                    )
-                                );
-                                field.onChange(updatedSlots);
-                              }
-                            }}
-                          />
-                          <span style={{ marginLeft: "10px" }}>
-                            {slot.bookingDate} ({slot.hallCode}) –{" "}
-                            <span
-                              style={{
-                                color: slot.slotStaus === "AVAILABLE" ? "green" : "red",
-                                fontWeight: "bold",
+                                  field.onChange(continuousSlots);
+                                } else {
+                                  // Uncheck → remove that slot only
+                                  updatedSlots = updatedSlots.filter(
+                                    (s) =>
+                                      !(
+                                        s.hallCode === slot.hallCode &&
+                                        s.bookingDate === slot.bookingDate &&
+                                        s.fromTime === slot.fromTime &&
+                                        s.toTime === slot.toTime
+                                      )
+                                  );
+                                  field.onChange(updatedSlots);
+                                }
                               }}
-                            >
-                              {slot.slotStaus ? slot.slotStaus.charAt(0).toUpperCase() + slot.slotStaus.slice(1).toLowerCase() : ""}
+                            />
+                            <span style={{ marginLeft: "10px" }}>
+                              {slot.bookingDate} ({slot.hallCode}) –{" "}
+                              <span
+                                style={{
+                                  color: slot.slotStaus === "AVAILABLE" ? "green" : "red",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                {slot.slotStaus ? slot.slotStaus.charAt(0).toUpperCase() + slot.slotStaus.slice(1).toLowerCase() : ""}
+                              </span>
                             </span>
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-              />
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                />
                 {errors.slots && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.slots.message}</p>}
               </div>
             </div>
@@ -577,14 +584,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.purposeDescription && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purposeDescription.message}</p>}
+                {errors.purposeDescription && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purposeDescription.message}</p>
+                )}
               </div>
             </div>
 
             {!isCitizen && (
               <React.Fragment>
                 {/* Discount Amount */}
-                <div style={{ marginBottom: "20px", width: "100%" }}>
+                <div className="label-field-pair" style={{ marginTop: "20px" }}>
                   <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
                   <Controller
                     control={control}
@@ -608,7 +617,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
 
                 {/* Discount Reason */}
-                <div style={{ marginBottom: "20px", width: "100%" }}>
+                <div className="label-field-pair" style={{ marginTop: "20px" }}>
                   <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
                     control={control}

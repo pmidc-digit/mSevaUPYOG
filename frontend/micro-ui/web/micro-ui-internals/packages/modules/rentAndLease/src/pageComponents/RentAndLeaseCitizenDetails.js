@@ -238,6 +238,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           )}
         />
       </LabelFieldPair>
+      {errors?.ownershipType && <CardLabelError className="ral-error-label">{errors.ownershipType.message}</CardLabelError>}
       {watch("ownershipType") &&
         fields?.map((field, index) => (
           <div key={field?.id} className="ral-applicant-container">
@@ -256,7 +257,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
               <CardLabel className="card-label-smaller">
                 {t("NOC_APPLICANT_MOBILE_NO_LABEL")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="field">
+              <div className="form-field">
                 <Controller
                   control={control}
                   name={`applicants.${index}.mobileNumber`}
@@ -290,7 +291,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
               <CardLabel className="card-label-smaller">
                 {t("ES_NEW_APPLICATION_APPLICANT_NAME")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="field">
+              <div className="form-field">
                 <Controller
                   control={control}
                   name={`applicants.${index}.name`}
@@ -316,7 +317,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
               <CardLabel className="card-label-smaller">
                 {t("NOC_APPLICANT_EMAIL_LABEL")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="field">
+              <div className="form-field">
                 <Controller
                   control={control}
                   name={`applicants.${index}.emailId`}
@@ -342,7 +343,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
               <CardLabel className="card-label-smaller">
                 {t("PT_COMMON_COL_ADDRESS")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="field">
+              <div className="form-field">
                 <Controller
                   control={control}
                   name={`applicants.${index}.address`}
@@ -368,7 +369,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
               <CardLabel className="card-label-smaller">
                 {t("CORE_COMMON_PINCODE")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="field">
+              <div className="form-field">
                 <Controller
                   control={control}
                   name={`applicants.${index}.pincode`}

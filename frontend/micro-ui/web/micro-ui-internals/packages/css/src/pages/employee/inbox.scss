@@ -157,6 +157,7 @@
     }
 
     .search-complaint-container {
+      padding: 1rem;
       @apply items-center bg-white p-md;
 
       .complaint-header {
@@ -257,7 +258,9 @@
       margin-left: 0;
     }
   }
-
+.filter-card{
+  padding: 1rem !important;
+}
   .filter-form {
     .filter-card {
       @apply p-md bg-white;
@@ -299,6 +302,7 @@
     }
 
     .search-container {
+      padding:1rem !important;
       .search-complaint-container {
         margin: auto;
         @apply flex flex-col items-start  mb-md bg-white p-md;
@@ -307,6 +311,7 @@
           /* display: inline-block !important; */
           display: grid !important;
           grid-template-columns: 33.33% 33.33% 33.33%;
+          width:100% !important;
 
           &.for-pt {
             &.for-search {
@@ -442,6 +447,14 @@
 }
 .complaint-links-container .header .removeHeight {
   line-height: 28px;
+}
+
+/* Mobile view styles for complaint input container */
+@media only screen and (max-width: 640px) {
+  .complaint-input-container {
+    display: flex !important;
+    flex-direction: column !important;
+  }
 }
 
 @screen dt {
@@ -737,4 +750,10 @@
     line-height: 24px;
     text-align: left;
   }
+}
+.mCollect-filter{
+  padding: 1rem !important;
+}
+.filter-card{
+  padding: 1rem !important;
 }

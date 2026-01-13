@@ -96,11 +96,13 @@ const CitizenApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     console.log("ndcObject", ndcObject);
     if (ndcObject) {
+      const primaryOwner = ndcObject?.owners?.find((owner) => owner?.isPrimaryOwner) || ndcObject?.owners?.[0]; // fallback if none marked
+
       const applicantData = {
-        name: ndcObject?.owners?.[0]?.name,
-        mobile: ndcObject?.owners?.[0]?.mobileNumber,
-        email: ndcObject?.owners?.[0]?.emailId,
-        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
+        name: primaryOwner?.name,
+        mobile: primaryOwner?.mobileNumber,
+        email: primaryOwner?.emailId,
+        address: primaryOwner?.permanentAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
         applicationNo: ndcObject?.applicationNo,
       };
@@ -274,14 +276,14 @@ const CitizenApplicationOverview = () => {
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
                   <>
-                    <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
-                    <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
-                    <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
-                    <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street} />
+                    <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
+                    <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
+                    <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />
+                    <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street || "N/A"} />
                     {/* <Row label={t("Mohalla")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
                     <Row label={t("Pincode")} text={propertyDetailsFetch?.Properties?.[0]?.address?.pincode || "N/A"} />
                     {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
-                    <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
+                    <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId || "N/A"} />
                     <Row
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}

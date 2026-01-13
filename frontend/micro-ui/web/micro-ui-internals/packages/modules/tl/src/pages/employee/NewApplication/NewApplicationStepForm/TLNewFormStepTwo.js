@@ -124,11 +124,28 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       }
     }
 
-    const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
-    if (!foundValue && TraidDetails?.address?.pincode) {
-      setShowToast({ key: "error" });
-      setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
-      return;
+     // Validate pincode - check if city exists and pincode is valid format
+    if (TraidDetails?.address?.pincode) {
+      const pincodeRegex = /^[1-9][0-9]{5}$/;
+      if (!pincodeRegex.test(TraidDetails.address.pincode)) {
+        setShowToast({ key: "error" });
+        setError(t("CORE_COMMON_PINCODE_INVALID"));
+        return;
+      }
+      
+      // Check if the selected city is valid
+      if (!TraidDetails?.address?.city) {
+        setShowToast({ key: "error" });
+        setError(t("TL_CITY_REQUIRED"));
+        return;
+      }
+      
+      // Optional: Check if pincode exists in tenant master data (soft validation)
+      const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails.address.pincode));
+      if (!foundValue) {
+        console.warn(`Pincode ${TraidDetails.address.pincode} not found in master data, but proceeding with valid city-locality combination`);
+        // Don't block submission - just log warning
+      }
     }
 
     let accessories = [];
@@ -287,7 +304,16 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const dispatch = useDispatch();
 
-  console.log("currentStepData in  Administrative details: ", currentStepData);
+  useEffect(() => {
+      if (showToast) {
+        const timer = setTimeout(() => {
+          closeToast();
+        }, 3000); 
+        return () => clearTimeout(timer);
+      }
+    }, [showToast]);
+
+  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

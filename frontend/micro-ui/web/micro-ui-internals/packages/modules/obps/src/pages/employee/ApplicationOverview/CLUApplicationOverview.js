@@ -21,6 +21,7 @@ import {
   MultiLink,
   Table,
   Modal,
+  CheckBox
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { composeInitialProps, useTranslation } from "react-i18next";
@@ -34,6 +35,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
+import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -155,12 +157,12 @@ const CLUEmployeeApplicationDetails = () => {
 
   const documentsColumnsSiteImage = [
     {
-      Header: t("BPA_SITES"),
+      Header: t("BPA_DOCUMENT_NAME"),
       accessor: "title",
       Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
-      Header: t(" "),
+      Header: t("BPA_DOCUMENT_FILE"),
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
@@ -442,6 +444,17 @@ const CLUEmployeeApplicationDetails = () => {
 
   console.log("displayData here", displayData);
 
+  const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
+  console.log("coordinates==>", coordinates);
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+
+  console.log("sitePhotoGrahphs==>", sitePhotographs);
+  console.log("remainingDocs==>", remainingDocs);
+
+  const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const combinedOwnersName = ownersList?.join(", ");
+
   if (isLoading) {
     return <Loader />;
   }
@@ -582,7 +595,7 @@ const CLUEmployeeApplicationDetails = () => {
         ))}
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("BPA_SITE_COORDINATES_LABEL")}</CardSubHeader>
         {displayData?.coordinates?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -595,6 +608,13 @@ const CLUEmployeeApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+      </Card> */}
+
+      <Card>
+      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+      <StatusTable>
+        {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />)}
+      </StatusTable>
       </Card>
 
       <Card>
@@ -604,7 +624,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{displayData?.Documents?.length > 0 && <CLUDocumentTableView documents={displayData.Documents} />}</StatusTable>
+        <StatusTable>{remainingDocs?.length > 0  && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
 
       <Card>
@@ -619,6 +639,13 @@ const CLUEmployeeApplicationDetails = () => {
           />
         )}
       </Card>
+
+      <CheckBox
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
+          combinedOwnersName
+        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      /> 
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>
@@ -649,7 +676,7 @@ const CLUEmployeeApplicationDetails = () => {
       }
       {
           applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
-            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
             <Table
               className="customTable table-border-style"
               t={t}

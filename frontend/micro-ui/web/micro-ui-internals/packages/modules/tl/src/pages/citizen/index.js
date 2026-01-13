@@ -1,8 +1,10 @@
-import { AppContainer, BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
+import { BreadCrumb, AppContainer, BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
 import React from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
+import { Route, Switch, useRouteMatch, useLocation } from "react-router-dom";
 // import TradeLicense from "../../pageComponents/TradeLicense";
 import MyApplications from "../../pages/citizen/Applications/Application";
+import { useTranslation } from "react-i18next";
+
 // import ApplicationDetails from "../../pages/citizen/Applications/ApplicationDetails";
 // import CreateTradeLicence from "./Create";
 // import EditTrade from "./EditTrade";
@@ -10,7 +12,30 @@ import MyApplications from "../../pages/citizen/Applications/Application";
 // import RenewTrade from "./Renewal/renewTrade";
 // import SearchTradeComponent from "./SearchTrade";
 
+const TLBreadCrumbs = ({ location }) => {
+  const { t } = useTranslation();
+  const crumbs = [
+    {
+      path: "/digit-ui/citizen",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/citizen/tl-home",
+      content: `${t("MODULE_TL")} Home`,
+      show: location.pathname.includes("tl/tradelicence/") ? true : false,
+    },
+    {
+      path: "/digit-ui/citizen/ptr-home",
+      content: t("PET_NDCSERVICE"),
+      show: location.pathname.includes("ptr/petservice/test") ? true : false,
+    },
+  ];
+  return <BreadCrumb crumbs={crumbs} />;
+};
+
 const App = () => {
+  const location = useLocation();
   const { path, url, ...match } = useRouteMatch();
   let isSuccessScreen = window.location.href.includes("acknowledgement");
   let isCommonPTPropertyScreen = window.location.href.includes("/tl/tradelicence/new-application/property-details");
@@ -41,21 +66,18 @@ const App = () => {
     return goBacktoFromProperty;
   };
 
-  console.log("path==??", path);
+  const isResponse = window.location.href.includes("/response");
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
     <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
         <AppContainer>
-          {!window.location.href.includes("/acknowledgement") && window.location.href.includes("tl/tradelicence") && (
-            <BackButton
-              /* style={{ position: "fixed", top: "55px" }} */ isCommonPTPropertyScreen={isCommonPTPropertyScreen}
-              isSuccessScreen={isSuccessScreen}
-              getBackPageNumber={getBackPageNumber}
-            >
-              Back
-            </BackButton>
-          )}
+          {!isResponse ? (
+            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+              <TLBreadCrumbs location={location} />
+            </div>
+          ) : null}{" "}
           {/* <PrivateRoute path={`${path}/tradelicence/new-application`} component={CreateTradeLicence} /> */}
           <PrivateRoute path={`${path}/tradelicence/new-application`} component={CreateTradeLicenceStepForm} />
           <PrivateRoute path={`${path}/tradelicence/edit-application/:id/:tenantId`} component={EditTrade} />

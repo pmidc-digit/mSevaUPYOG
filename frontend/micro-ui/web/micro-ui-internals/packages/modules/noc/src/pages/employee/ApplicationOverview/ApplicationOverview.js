@@ -382,18 +382,18 @@ const NOCEmployeeApplicationOverview = () => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
+      setShowToast({ key: "true", warning: true, message: "COMMON_NOT_EDITABLE_HERE_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000);
+      //cant be edited here
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
+      setTimeout(()=>{setShowToast(null);},3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {
-      if(applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+      history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else {      
+      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }

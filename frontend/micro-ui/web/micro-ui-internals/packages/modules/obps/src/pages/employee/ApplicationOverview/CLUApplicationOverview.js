@@ -36,6 +36,7 @@ import CLUImageView from "../../../pageComponents/CLUImgeView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
+import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -113,6 +114,8 @@ const CLUEmployeeApplicationDetails = () => {
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
+
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -203,6 +206,13 @@ const CLUEmployeeApplicationDetails = () => {
      })();
     
   }, [tenantId, businessServiceCode, isLoading]);
+
+  useEffect(() => {
+    const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c?.isLatest);
+    if (latestCalc?.taxHeadEstimates) {
+      setFeeAdjustments(latestCalc.taxHeadEstimates);
+    }
+  }, [applicationDetails]);
 
 
  // console.log("getWorkflowService =>", getWorkflowService);
@@ -359,9 +369,44 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }
 
+  const isFeeDisabled = applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
+
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
     // console.log("data ==>", data);
+
+    if (!isFeeDisabled) {
+    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
+    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
+
+    if (!hasNonZeroFee) {
+      setTimeout(()=>{setShowToast(null);},3000);
+      setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission" });
+      return;
+    }
+
+    if (!allRemarksFilled) {
+      setTimeout(()=>{setShowToast(null);},3000);
+      setShowToast({ key: "true", error: true, message: "Remarks are mandatory for updating fees" });
+      return;
+    }
+   }
+
+   const newCalculation = {
+      isLatest: true,
+      updatedBy: Digit.UserService.getUser()?.info?.name,
+      taxHeadEstimates: feeAdjustments
+        .filter((row) => row.taxHeadCode !== "CLU_TOTAL") // exclude UI-only total row
+        .map((row) => ({
+          taxHeadCode: row.taxHeadCode,
+          estimateAmount: (row.amount || 0) + (row.adjustedAmount ?? 0), // baseline + delta
+          category: row.category,
+          remarks: row.remark || null,
+          filestoreId: row.filestoreId || null,
+        })),
+    };
+
+    const oldCalculations = (payloadData?.cluDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
 
     const updatedApplicant = {
       ...payloadData,
@@ -370,6 +415,7 @@ const CLUEmployeeApplicationDetails = () => {
         additionalDetails: {
           ...payloadData.cluDetails?.additionalDetails,
           siteImages: siteImages?.documents || [],
+          calculations: [...oldCalculations, newCalculation],
         }
       },
       workflow: {},
@@ -627,7 +673,7 @@ const CLUEmployeeApplicationDetails = () => {
         <StatusTable>{remainingDocs?.length > 0  && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetails
@@ -635,7 +681,28 @@ const CLUEmployeeApplicationDetails = () => {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || []
             }}
+            feeType="PAY1"
+          />
+        )}
+      </Card> */}
+
+      <Card>
+        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        {applicationDetails?.Clu?.[0]?.cluDetails && (
+          <CLUFeeEstimationDetailsTable
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || []
+            }}
+            feeType="PAY2"
+            feeAdjustments={feeAdjustments}
+            setFeeAdjustments={setFeeAdjustments}
+            disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+
           />
         )}
       </Card>

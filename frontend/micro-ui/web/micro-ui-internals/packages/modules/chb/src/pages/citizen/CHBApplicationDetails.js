@@ -363,16 +363,14 @@ const CHBApplicationDetails = () => {
 
           <div className="document-section-wrapper">
             <div className="document-section-header">
-              <span className="document-icon">📄</span>
+             
               {t("CS_COMMON_DOCUMENTS")}
             </div>
             {docs?.length > 0 ? (
-              <div>
+              <div style={{display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "16px"}}>
                 {docs?.map((doc, index) => (
                   <React.Fragment key={index}>
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px", marginBottom: "16px" }}>
-                      {t(doc?.documentType)}
-                    </CardSectionHeader>
+                   
                     <CHBDocument value={docs} Code={doc?.documentType} index={index} />
                   </React.Fragment>
                 ))}

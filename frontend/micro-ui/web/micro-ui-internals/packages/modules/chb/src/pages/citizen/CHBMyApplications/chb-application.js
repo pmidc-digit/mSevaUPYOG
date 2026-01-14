@@ -2,6 +2,7 @@ import { Card, KeyNote, SubmitBar, Toast, CardSubHeader } from "@mseva/digit-ui-
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
+import ReasonModal from "../../../pageComponents/ReasonModal";
 import { Loader } from "../../../components/Loader";
 
 const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
@@ -9,6 +10,8 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
   const [loader, setLoader] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const state = tenantId?.split(".")[0];
 
   const getBookingDateRange = (bookingSlotDetails) => {
     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
@@ -24,12 +27,21 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
     }
   };
 
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   const handleMakePayment = async () => {
     history.push(`/digit-ui/citizen/payment/collect/chb-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
   };
 
   const handleCancel = async () => {
+    setShowModal(true);
+  };
+
+  const submitCancel = async () => {
     setLoader(true);
+    setShowModal(false);
     // ✅ Final payload
     const finalPayload = {
       hallsBookingApplication: {
@@ -45,6 +57,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
       setLoader(false);
     } catch (err) {
       setLoader(false);
+      setShowToast({ error: "true", label: "Cancel Error" });
       return err;
     }
   };
@@ -58,6 +71,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
       return () => clearTimeout(timer); // Clear timer on cleanup
     }
   }, [showToast]);
+
   return (
     <Card>
       {/* <div style={{ display: "flex", justifyContent: "space-between" }}> */}
@@ -75,9 +89,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
       {/* <KeyNote keyValue={t("CHB_COMMUNITY_HALL_NAME")} note={t(`${application?.communityHallCode}`)} /> */}
       <KeyNote keyValue={t("CHB_BOOKING_DATE")} note={getBookingDateRange(application?.bookingSlotDetails)} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
-      <div className="action-button-myapplication"
-       
-      >
+      <div className="action-button-myapplication">
         <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />
         </Link>
@@ -91,11 +103,13 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
           error={showToast.error}
           warning={showToast.warning}
           label={t(showToast.label)}
+          isDleteBtn={true}
           onClose={() => {
             setShowToast(null);
           }}
         />
       )}
+      {showModal ? <ReasonModal t={t} closeModal={closeModal} cancelModal={submitCancel} /> : null}
       {loader && <Loader page={true} />}
     </Card>
   );

@@ -26,6 +26,11 @@ const CHBBreadCrumbs = ({ location }) => {
     },
     {
       path: "/digit-ui/citizen/chb-home",
+      content: `${t("MODULE_CHB")} Home`,
+      show: location.pathname.includes("chb/application") ? true : false,
+    },
+    {
+      path: "/digit-ui/citizen/chb-home",
       content: t("MODULE_CHB"),
       show: location.pathname.includes("chb/test") ? true : false,
     },

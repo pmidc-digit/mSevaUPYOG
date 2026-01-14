@@ -284,6 +284,7 @@ const CLUApplicationDetails = () => {
   function onActionSelect(action) {
     console.log("selected action", action);
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
+    const applicationStatus = applicationDetails?.Clu?.[0]?.applicationStatus;
 
     const payload = {
       Licenses: [action],
@@ -297,7 +298,8 @@ const CLUApplicationDetails = () => {
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/citizen/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      const code = applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "CLU.PAY1" : "CLU.PAY2";
+      history.push(`/digit-ui/citizen/payment/collect/${code}/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       setSelectedAction(action);
     }
@@ -563,6 +565,7 @@ const CLUApplicationDetails = () => {
               applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
             }}
+            feeType="PAY1"
           />
         )}
       </Card>

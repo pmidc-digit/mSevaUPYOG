@@ -63,9 +63,9 @@ const TopBar = ({
       <div className="center-container_navbar" style={{}}>
         <div className="left-wrapper_navbar" style={{}}>
           {isLoggedIn && <Hamburger handleClick={toggleSidebar} />}
-          <div className="ulb-info" style={{marginLeft : "1rem"}}>
+          <div className="ulb-info" style={{display:"flex", gap:"10px",marginLeft : "1rem"}}>
             <img src={ulbLogo} alt="ULB Logo" className="ulb-logo" style={{minWidth : "25px", height : "25px"}} />
-            <span className="ulb-name">{ulbName}</span>
+           <span className="ulb-name" style={isMobile ? {display:"flex", justifyContent:"center", alignItems:"center", fontSize: "12px", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis"} : {}}>{ulbName}</span>
           </div>
         </div>
 

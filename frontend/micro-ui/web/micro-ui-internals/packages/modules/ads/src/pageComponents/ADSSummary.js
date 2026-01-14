@@ -61,7 +61,7 @@ function ADSSummary({ t }) {
 
       <div className="document-section-wrapper">
         <div className="document-section-header">
-          <span className="document-icon">📄</span>
+         
           {TT("ADS_DOCUMENTS_DETAILS")}
         </div>
         <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>

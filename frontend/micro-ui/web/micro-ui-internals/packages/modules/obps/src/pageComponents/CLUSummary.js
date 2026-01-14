@@ -105,7 +105,9 @@ function CLUSummary({ currentStepData: formData, t }) {
         {formData?.siteDetails?.localityNoticeIssued?.code === "YES" &&
           <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={formData?.siteDetails?.localityNoticeNumber || "N/A"}/>}
 
-        <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={formData?.siteDetails?.localityColonyType?.name || "N/A"}/>
+        {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
+          <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={formData?.siteDetails?.localityColonyType?.name || "N/A"}/>}
+
         <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={formData?.siteDetails?.localityTransferredSchemeType?.name || "N/A"}/>
 
       </StatusTable>
@@ -133,7 +135,7 @@ function CLUSummary({ currentStepData: formData, t }) {
         <Row label={t("BPA_ROAD_WIDTH_AT_SITE_LABEL")} text={formData?.siteDetails?.roadWidthAtSite || "N/A"}/> 
 
         <Row label={t("BPA_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"}/>
-        <Row label={t("BPA_DISTRICT_LABEL")} text={formData?.siteDetails?.district?.name || "N/A"}/> 
+        <Row label={t("BPA_DISTRICT_LABEL")} text={formData?.siteDetails?.district?.name || formData?.siteDetails?.district || "N/A"}/> 
         <Row label={t("BPA_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/> 
 
         <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"}/>

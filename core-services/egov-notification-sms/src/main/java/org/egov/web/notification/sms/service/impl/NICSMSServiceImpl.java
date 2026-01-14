@@ -175,6 +175,8 @@ public class NICSMSServiceImpl extends BaseSMSService {
 				log.info("conn: " + conn.toString());
 				if (smsProperties.isDebugMsggateway()) {
 					log.info("sms api url : " + smsProperties.getUrl());
+					log.info("sms user name : " + smsProperties.getSmsUsername());
+					log.info("otp user name : " + smsProperties.getUrl());
 					log.info("sms response: " + stringBuffer.toString());
 					log.info("sms data: " + final_data);
 				}

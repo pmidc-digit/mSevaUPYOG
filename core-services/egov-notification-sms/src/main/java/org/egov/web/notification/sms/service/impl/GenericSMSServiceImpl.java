@@ -32,8 +32,8 @@ public class GenericSMSServiceImpl extends BaseSMSService {
     protected void submitToExternalSmsService(Sms sms) {
         try {
 
-            String url = smsProperties.getUrl();
-
+          //  String url = smsProperties.getUrl();
+             String url = resolveGatewayUrl(sms);
             if (smsProperties.requestType.equals("POST")) {
                 HttpEntity<MultiValueMap<String, String>> request = getRequest(sms);
 

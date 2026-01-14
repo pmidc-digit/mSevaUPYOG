@@ -368,11 +368,13 @@ public class WorkflowService {
     private List<User> getNextActionUsers(ProcessInstanceRequest request){
     	RequestInfo requestInfo = request.getRequestInfo();
         String tenantId = request.getProcessInstances().get(0).getTenantId();
+        Role systemRole = util.getSystemRole();
         
         List<String> nextActionRoles = request.getProcessInstances().get(0).getState()
         		.getActions()
         		.stream()
         		.map(action -> action.getRoles()).flatMap(List::stream).distinct()
+        		.filter(role -> !systemRole.getCode().equalsIgnoreCase(role))
         		.collect(Collectors.toList());
         
         if(CollectionUtils.isEmpty(nextActionRoles))

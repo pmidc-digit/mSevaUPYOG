@@ -341,7 +341,8 @@ public class WorkflowService {
         boolean isterminateActionRolesContains = checkNextActonRoles(request, terminateActionRoles);
         while(nextActionUsers.isEmpty() && !isterminateActionRolesContains) {
         	Role systemRole = util.getSystemRole();
-        	String nextAction = request.getProcessInstances().get(0).getNextActions()
+        	String nextAction = request.getProcessInstances().get(0).getState()
+        			.getActions()
             		.stream().filter(action -> action.getRoles().contains(systemRole.getCode()))
             		.map(Action::getAction).findFirst().orElse("");
         	

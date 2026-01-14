@@ -243,8 +243,10 @@ public class CalculationService {
 		}
 
 		// 2. SecurityDeposit (always applicable, non-taxable)
-		List<AdditionalFeeRate> securityDeposits = mdmsUtil.getSecurityDeposits(
-				bookingRequest.getRequestInfo(), tenantId, config.getModuleName());
+		// Fetched from hall-specific SecurityDeposit master configuration
+		List<AdditionalFeeRate> securityDeposits = mdmsUtil.getSecurityDepositForHall(
+				bookingRequest.getRequestInfo(), tenantId, config.getModuleName(),
+				bookingRequest.getHallsBookingApplication());
 
 		for (AdditionalFeeRate security : securityDeposits) {
 			BigDecimal amount = feeCalculationUtil.calculateFeeAmount(
@@ -257,7 +259,8 @@ public class CalculationService {
 						.tenantId(tenantId)
 						.build();
 				demandDetails.add(demand); // Non-taxable
-				log.info("SecurityDeposit added: {}", amount);
+				log.info("SecurityDeposit added: {} for hall {}", amount, 
+						bookingRequest.getHallsBookingApplication().getCommunityHallCode());
 			}
 		}
 

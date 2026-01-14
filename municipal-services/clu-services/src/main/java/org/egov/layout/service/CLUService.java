@@ -86,7 +86,7 @@ public class CLUService {
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
 		String acres = (String) siteDetails.get("netTotalArea");
-// Access values
+		// Access values
 		String ulbType = (String) siteDetails.get("ulbType");
 		Map<String, Object> appliedCluCategory = (Map<String, Object>) siteDetails.get("appliedCluCategory");
 		String category = (String) appliedCluCategory.get("code");
@@ -100,10 +100,10 @@ public class CLUService {
 		}
 		acres = acresBD.toPlainString();
 
-		LinkedHashMap<String, Object> mdmData = (LinkedHashMap<String, Object>) nocUtil.mDMSLayoutCall(nocRequest.getRequestInfo(),tenantId,ulbType,category,acres);
+		LinkedHashMap<String, Object> mdmData = (LinkedHashMap<String, Object>) nocUtil.mDMSCLUCall(nocRequest.getRequestInfo(),tenantId,ulbType,category,acres);
 		LinkedHashMap<String, Object> mdmsRes = (LinkedHashMap<String, Object>) mdmData.get("MdmsRes");
-		LinkedHashMap<String, Object> layout_data = (LinkedHashMap<String, Object>) mdmsRes.get("CLU");
-		List<Object>  workflow_config =  (List<Object>)layout_data.get("WorkflowConfig");
+		LinkedHashMap<String, Object> clu_data = (LinkedHashMap<String, Object>) mdmsRes.get("CLU");
+		List<Object>  workflow_config =  (List<Object>)clu_data.get("WorkflowConfig");
 		LinkedHashMap<String, Object> workflowconfig_data = (LinkedHashMap<String, Object> ) workflow_config.get(0);
 		String businessService = (String) workflowconfig_data.get("businessService");
 		return businessService;

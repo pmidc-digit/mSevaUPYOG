@@ -141,10 +141,10 @@ const Inbox = ({ parentRoute }) => {
     logoIcon: <ComplaintIcon />,
     headerText: "ACTION_TEST_NOC",
     links: [
-      // {
-      //   text: t("ES_COMMON_APPLICATION_SEARCH"),
-      //   link: "/digit-ui/employee/noc/search",
-      // },
+      {
+        text: t("ES_COMMON_APPLICATION_SEARCH"),
+        link: "/digit-ui/employee/noc/search/application",
+      },
       {
         text: t("NOC_NEW_APPLICATION"),
         link: "/digit-ui/employee/noc/new-application",

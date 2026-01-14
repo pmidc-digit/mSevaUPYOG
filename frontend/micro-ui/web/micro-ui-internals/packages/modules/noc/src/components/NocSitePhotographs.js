@@ -26,10 +26,10 @@ const NocSitePhotographs = ({ filestoreId, documentType, coordinates }) => {
   return (
     <div style={{ padding: "20px 0px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", padding: "0px 20px" }}>
-        <div>
+        <div style={{ textAlign: "start" }}>
+          <div>
           <span>{t(documentType?.replaceAll(".", "_"))}</span>
         </div>
-        <div style={{ textAlign: "start" }}>
           <img
             src={imageCitizenZoom}
             alt={t(documentType?.replaceAll(".", "_"))}

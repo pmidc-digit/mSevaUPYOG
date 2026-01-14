@@ -169,7 +169,7 @@ function NOCSummary({ currentStepData: formData, t }) {
         </StatusTable>
 
         {/* Render site photographs dynamically in same style */}
-        {formData?.documents?.documents?.documents
+        {/* {formData?.documents?.documents?.documents
           ?.filter((doc) => doc.documentType?.startsWith("OWNER.SITEPHOTOGRAPH"))
           .map((photo, idx) => (
             <div key={photo.uuid} style={{ marginTop: "16px" }}>
@@ -178,12 +178,17 @@ function NOCSummary({ currentStepData: formData, t }) {
                 ownerName={photo.documentType || `Site Photo ${idx + 1}`}
               />
             </div>
-          ))}
+          ))} */}
       {/* </Card> */} 
 
       <Card>
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-      <StatusTable>
+      <StatusTable style={{
+            display: "flex",
+            gap: "20px", 
+            flexWrap: "wrap", 
+            justifyContent : "space-between"
+          }}>
         {sitePhotos?.length > 0 && sitePhotos?.map((doc)=> <NocSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />)}
       </StatusTable>
       </Card>

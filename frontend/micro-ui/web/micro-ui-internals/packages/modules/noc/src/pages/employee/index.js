@@ -24,6 +24,12 @@ const NOCBreadCrumbs = ({ location }) => {
       show: location.pathname.includes("noc/new-application") ? true : false,
     },
     {
+      path: "/digit-ui/employee/noc/search/application",
+      content: t("ES_COMMON_SEARCH_APPLICATION"),
+      show: location.pathname.includes("noc/search/application") ? true : false,
+
+    },
+    {
       path: "/digit-ui/employee/noc/inbox/application-overview/:id",
       content: t("NOC_APPLICATION_OVERVIEW_HEADER"),
       show: location.pathname.includes("noc/inbox/application-overview") ? true : false,
@@ -50,6 +56,7 @@ const EmployeeApp = ({ path }) => {
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
   const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCEmployeeApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
+  const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -68,6 +75,8 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/response/:id`} component={Response} />
+        <PrivateRoute path={`${path}/search/application`} component={NOCCitizenApplicationOverview} />
+        
       </Switch>
     </Fragment>
   );

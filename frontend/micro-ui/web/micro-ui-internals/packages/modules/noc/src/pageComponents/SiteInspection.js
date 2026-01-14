@@ -38,7 +38,7 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
     const stateId = Digit.ULBService.getStateId();
     const [error, setError] = useState(null);
     const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "FieldInspection", [{ name: "Documents" }]);
-    
+    console.log('docData here in fieldinspe', docData)
 
     const handleUpload = (key, ids) => {
         setSiteImages(ids)

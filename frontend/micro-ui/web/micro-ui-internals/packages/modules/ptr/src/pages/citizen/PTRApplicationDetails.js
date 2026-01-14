@@ -60,13 +60,13 @@ const PTRApplicationDetails = () => {
     filters: { applicationNumber },
   });
 
+  console.log("data====", data);
+
   const [billData, setBillData] = useState(null);
 
   const ulb = tenantInfo?.city?.name;
   const ulbType = tenantInfo?.city?.ulbType;
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
-
-  const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
 
   const pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
   const application = pet_details;
@@ -102,16 +102,6 @@ const PTRApplicationDetails = () => {
     fetchBillData();
   }, [tenantId, applicationNumber]);
 
-  const { isLoading: auditDataLoading, isError: isAuditError, data: auditResponse } = Digit.Hooks.ptr.usePTRSearch(
-    {
-      tenantId,
-      filters: { applicationNumber: applicationNumber, audit: true },
-    },
-    {
-      enabled: true,
-    }
-  );
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -136,14 +126,6 @@ const PTRApplicationDetails = () => {
       assignes: null,
     };
     pet_details.workflow = workflow;
-  }
-
-  if (isLoading || auditDataLoading) {
-    return <Loader />;
-  }
-
-  if (isLoading || approverDataLoading) {
-    return <Loader />;
   }
 
   const printCertificate = async () => {

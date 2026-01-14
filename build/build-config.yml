@@ -1004,3 +1004,8 @@ config:
         dockerfile: 'build/maven/Dockerfile'
    #   - work-dir: "municipal-services/clu-calculator/migration"
     #    image-name: "clu-calculator-db"
+  - name: "builds/upyog/utilities/ticketing-module"
+    build:
+      - work-dir: "utilities/ticketing-module"
+        image-name: "ticketing-module"
+        dockerfile: 'build/maven/Dockerfile'

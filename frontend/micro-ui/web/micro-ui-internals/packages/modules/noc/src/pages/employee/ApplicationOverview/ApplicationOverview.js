@@ -20,7 +20,8 @@ import {
   CheckPoint,
   Table,
   Modal,
-  CheckBox
+  CheckBox,
+  MultiLink
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef,useMemo  } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,6 +35,8 @@ import NOCImageView from "../../../pageComponents/NOCImageView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
+import { EmployeeData } from "../../../utils/index";
+import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -112,11 +115,24 @@ const NOCEmployeeApplicationOverview = () => {
       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
   } : {})
 
+  const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
+  const [showOptions, setShowOptions] = useState(false);
+  
+
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
    console.log("businessService here==>", businessServiceCode);
 
+   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "obpas_noc",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -125,6 +141,16 @@ const NOCEmployeeApplicationOverview = () => {
 
   console.log("workflowDetails here=>", workflowDetails);
 
+
+  useEffect(() => {
+      if (eSignError) {
+        setShowToast({
+          key: "error",
+          error: true,
+          label: eSignError.message || "eSign process failed. Please try again.",
+        });
+      }
+    }, [eSignError]);
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -204,6 +230,77 @@ const NOCEmployeeApplicationOverview = () => {
       })();
   }, [tenantId, businessServiceCode, isLoading]);
 
+  
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
+    const application = applicationDetails?.Noc?.[0];
+    try {
+      setLoader(true);
+      if (!application) {
+        throw new Error("Noc Application data is missing");
+      }
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
+      const fileStoreId = response?.filestoreIds?.[0]; 
+      if (!fileStoreId) throw new Error("Failed to generate filestoreId");
+       return fileStoreId;    
+    }catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoader(false);
+    }
+  }
+  const printCertificateWithESign = async () => {
+    try {
+      console.log("🎯 Starting certificate eSign process with custom hook...");
+
+      // Reuse existing certificate data or generate if not available
+      const fileStoreId = await getRecieptSearch({
+        tenantId: reciept_data?.Payments[0]?.tenantId,
+        payments: reciept_data?.Payments[0],
+        pdfkey: "noc-sanctionletter",
+        EmpData,
+      });
+
+      // Use custom hook for eSign
+      eSignCertificate(
+        { fileStoreId, tenantId },
+        {
+          onSuccess: () => {
+            console.log("✅ eSign process initiated successfully");
+          },
+          onError: (error) => {
+            console.error("❌ Certificate eSign failed:", error);
+            setShowToast({
+              key: "error",
+              error: true,
+              label: error.message || "Failed to initiate digital signing process",
+            });
+          },
+        }
+      );
+    } catch (error) {
+      console.error("❌ Certificate preparation failed:", error);
+      setShowToast({
+        key: "error",
+        error: true,
+        label: error.message || "Failed to prepare certificate for eSign",
+      });
+    }
+  };
+
+  
+
+  const dowloadOptions = [];
+  let EmpData = EmployeeData(tenantId, id);
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+        onClick: printCertificateWithESign,
+        disabled: eSignLoading,
+      });
+    }
+  }
  useEffect(() => {
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
   const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -372,7 +469,7 @@ const NOCEmployeeApplicationOverview = () => {
   function onActionSelect(action) {
     console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
-
+    const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
@@ -391,9 +488,9 @@ const NOCEmployeeApplicationOverview = () => {
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {      
-      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+      if (applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && !allDocumentsUploaded) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -563,6 +660,15 @@ const NOCEmployeeApplicationOverview = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        {loading && <Loader />}
+        {dowloadOptions && dowloadOptions.length > 0 && (
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions}
+          />
+        )}
       </div>
 
       <Card>
@@ -735,8 +841,13 @@ const NOCEmployeeApplicationOverview = () => {
       </Card> */}
 
       <Card>
-        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable>
+        <CardSubHeader >{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable style={{
+            display: "flex",
+            gap: "20px", 
+            flexWrap: "wrap", 
+            justifyContent : "space-between"
+          }}>
           {sitePhotos?.length > 0 &&
             sitePhotos?.map((doc) => (
               <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
@@ -787,11 +898,9 @@ const NOCEmployeeApplicationOverview = () => {
       </Card>
 
       <CheckBox
-              label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-                combinedOwnersName
-              }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
-              checked="true"
-            /> 
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      />
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>

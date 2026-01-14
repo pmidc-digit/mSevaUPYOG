@@ -20,6 +20,9 @@ const ChallanDocuments = ({
   customOpen
 }) => {
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+
+  console.log('documents for field insepecttion in challan', documents)
+  console.log('data for challandocs', data)
   // const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -35,15 +38,9 @@ const ChallanDocuments = ({
   function onAdd() {}
 
   useEffect(() => {
-    if (data?.FieldInspection) {
-      // For NOC field inspection, require exactly 4 site images
-      if (documents?.length === 4) setEnableSubmit(false);
-      else setEnableSubmit(true);
-    } else {
       let count = 0;
-      data?.Challan?.Documents?.map((doc) => {
+      data?.FieldInspection?.Documents?.map((doc) => {
         doc.hasDropdown = true;
-
         let isRequired = false;
         documents?.map((data) => {
           if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
@@ -52,7 +49,7 @@ const ChallanDocuments = ({
       });
       if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
       else setEnableSubmit(true);
-    }
+    
   }, [documents, checkRequiredFields]);
 
   useEffect(() => {

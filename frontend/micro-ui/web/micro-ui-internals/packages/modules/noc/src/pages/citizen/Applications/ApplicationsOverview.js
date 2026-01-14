@@ -572,7 +572,12 @@ const CitizenApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable>
+        <StatusTable style={{
+            display: "flex",
+            gap: "20px", 
+            flexWrap: "wrap", 
+            justifyContent : "space-between"
+          }}>
           {sitePhotos?.length > 0 &&
             sitePhotos?.map((doc) => (
               <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
@@ -604,8 +609,7 @@ const CitizenApplicationOverview = () => {
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
-
-      <Card>
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && ( <Card>
         <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Noc?.[0]?.nocDetails && (
           <NOCFeeEstimationDetails
@@ -618,7 +622,8 @@ const CitizenApplicationOverview = () => {
             disable={true}
           />
         )}
-      </Card>
+      </Card>)}
+     
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>

@@ -177,5 +177,18 @@ public class UserService {
     	
     	return uri;
     }
+    
+    public User searchSystemUser(){
+        UserSearchRequest userSearchRequest = new UserSearchRequest();
+        userSearchRequest.setUserType("SYSTEM");
+        userSearchRequest.setUserName("SYSTEM");
+        userSearchRequest.setTenantId("pb");
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
+        if(CollectionUtils.isEmpty(userDetailResponse.getUser()))
+        	throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+        return userDetailResponse.getUser().get(0);
+
+    }
 
 }

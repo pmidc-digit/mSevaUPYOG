@@ -17,6 +17,8 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import static java.util.Objects.isNull;
 
 import java.util.*;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
 public class WorkflowService {
 
     private final WorkflowConstants workflowConstants;
@@ -91,7 +94,11 @@ public class WorkflowService {
         	
         	if(!autoSkipStepsMdmsDataList.isEmpty()) {
         		Map<String, Object> autoSkipStepsMdmsData = autoSkipStepsMdmsDataList.get(0);
-        		autoSkipTransition(request, autoSkipStepsMdmsData);
+        		try {
+        			autoSkipTransition(request, autoSkipStepsMdmsData);
+				} catch (Exception ex) {
+					log.error("Enable to Skip State : " + request.getProcessInstances().get(0).getState().getState());
+				}
         	}
         	
         }
@@ -320,6 +327,13 @@ public class WorkflowService {
      */
     public List<ProcessInstance> autoSkipTransition(ProcessInstanceRequest request, Map<String, Object> autoSkipStepsMdmsData){
         RequestInfo requestInfo = request.getRequestInfo();
+        RequestInfo systemRequestInfo = RequestInfo.builder().userInfo(userService.searchSystemUser()).build();
+        
+    	//Uncomment below line if you are working on local
+    	systemRequestInfo.setAuthToken(requestInfo.getAuthToken());
+        
+    	request.setRequestInfo(systemRequestInfo);
+    	
         String comment = autoSkipStepsMdmsData.get("comment").toString();
         List<String> terminateActionRoles = (List<String>)autoSkipStepsMdmsData.get("terminateActionRoles");
         
@@ -339,9 +353,9 @@ public class WorkflowService {
         	request.getProcessInstances().get(0).setComment(comment);
         	
         	List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActions(request.getProcessInstances(),true);
-            enrichmentService.enrichProcessRequest(requestInfo,processStateAndActions);
-            workflowValidator.validateRequest(requestInfo,processStateAndActions);
-            statusUpdateService.updateStatus(requestInfo,processStateAndActions);
+            enrichmentService.enrichProcessRequest(systemRequestInfo,processStateAndActions);
+            workflowValidator.validateRequest(systemRequestInfo,processStateAndActions);
+            statusUpdateService.updateStatus(systemRequestInfo,processStateAndActions);
             
             nextActionUsers = getNextActionUsers(request);
             isterminateActionRolesContains = checkNextActonRoles(request, terminateActionRoles);

@@ -39,7 +39,7 @@ public class GarbageConnectionRowMapper implements ResultSetExtractor<List<Garba
 				currentWaterConnection.setTenantId(rs.getString("tenantid"));
 				currentWaterConnection.setConnectionCategory(rs.getString("connectionCategory"));
 				currentWaterConnection.setConnectionType(rs.getString("connectionType"));
-//				currentWaterConnection.setWaterSource(rs.getString("waterSource"));
+                currentWaterConnection.setFrequency(rs.getString("frequency_of_garbage_collection"));//				currentWaterConnection.setWaterSource(rs.getString("waterSource"));
 //				currentWaterConnection.setMeterId(rs.getString("meterId"));
 //				currentWaterConnection.setMeterInstallationDate(rs.getLong("meterInstallationDate"));
 				currentWaterConnection.setId(rs.getString("connection_Id"));
@@ -74,13 +74,13 @@ public class GarbageConnectionRowMapper implements ResultSetExtractor<List<Garba
 				additionalDetails.put(GCCalculationConstant.ADHOC_PENALTY_COMMENT, rs.getString("adhocpenaltycomment"));
 				additionalDetails.put(GCCalculationConstant.ADHOC_REBATE_REASON, rs.getString("adhocrebatereason"));
 				additionalDetails.put(GCCalculationConstant.ADHOC_REBATE_COMMENT, rs.getString("adhocrebatecomment"));
-				additionalDetails.put(GCCalculationConstant.INITIAL_METER_READING_CONST, rs.getBigDecimal("initialmeterreading"));
-				additionalDetails.put(GCCalculationConstant.APP_CREATED_DATE, rs.getBigDecimal("appCreatedDate"));
-				additionalDetails.put(GCCalculationConstant.DETAILS_PROVIDED_BY, rs.getString("detailsprovidedby"));
-				additionalDetails.put(GCCalculationConstant.ESTIMATION_FILESTORE_ID, rs.getString("estimationfileStoreId"));
-				additionalDetails.put(GCCalculationConstant.SANCTION_LETTER_FILESTORE_ID, rs.getString("sanctionfileStoreId"));
-				additionalDetails.put(GCCalculationConstant.ESTIMATION_DATE_CONST, rs.getBigDecimal("estimationLetterDate"));
-				additionalDetails.put(GCCalculationConstant.LOCALITY, rs.getString("locality"));
+//				additionalDetails.put(GCCalculationConstant.INITIAL_METER_READING_CONST, rs.getBigDecimal("initialmeterreading"));
+//				additionalDetails.put(GCCalculationConstant.APP_CREATED_DATE, rs.getBigDecimal("appCreatedDate"));
+//				additionalDetails.put(GCCalculationConstant.DETAILS_PROVIDED_BY, rs.getString("detailsprovidedby"));
+//				additionalDetails.put(GCCalculationConstant.ESTIMATION_FILESTORE_ID, rs.getString("estimationfileStoreId"));
+//				additionalDetails.put(GCCalculationConstant.SANCTION_LETTER_FILESTORE_ID, rs.getString("sanctionfileStoreId"));
+//				additionalDetails.put(GCCalculationConstant.ESTIMATION_DATE_CONST, rs.getBigDecimal("estimationLetterDate"));
+//				additionalDetails.put(GCCalculationConstant.LOCALITY, rs.getString("locality"));
 
 				currentWaterConnection.setAdditionalDetails(additionalDetails);
 				currentWaterConnection
@@ -105,9 +105,10 @@ public class GarbageConnectionRowMapper implements ResultSetExtractor<List<Garba
 
 	private void addChildrenToProperty(ResultSet rs, GarbageConnection waterConnection) throws SQLException {
 		//addDocumentToWaterConnection(rs, waterConnection);
-		addPlumberInfoToWaterConnection(rs, waterConnection);
+		// Garbage collection doesn't have plumber info or road cutting info
+		//addPlumberInfoToWaterConnection(rs, waterConnection);
 		addHoldersDeatilsToWaterConnection(rs, waterConnection);
-		addRoadCuttingInfotToWaterConnection(rs, waterConnection);
+		//addRoadCuttingInfotToWaterConnection(rs, waterConnection);
 	}
 
 	private void addDocumentToWaterConnection(ResultSet rs, GarbageConnection waterConnection) throws SQLException {

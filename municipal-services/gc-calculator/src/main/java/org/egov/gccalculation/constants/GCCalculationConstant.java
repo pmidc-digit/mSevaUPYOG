@@ -36,6 +36,7 @@ public class GCCalculationConstant {
 
 	public static final String MDMS_FINANCIALYEAR = "FinancialYear";
 	public static final String MDMS_NO_FILTER_TAXPERIOD = "$.MdmsRes.BillingService.TaxPeriod.*";
+	public static final String MDMS_MONTHLY_TAXPERIOD = "$.MdmsRes.gc-services-calculation.MonthlyTaxPeriods.*";
 	/*
 	 * Module names
 	 */

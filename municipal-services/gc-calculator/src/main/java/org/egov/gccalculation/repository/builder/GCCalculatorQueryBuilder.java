@@ -86,7 +86,7 @@ public class GCCalculatorQueryBuilder {
 			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id,"
 			+ " conn.action, conn.adhocpenalty, conn.adhocrebate, conn.adhocpenaltyreason, conn.applicationType, conn.dateEffectiveFrom,"
 			+ " conn.adhocpenaltycomment, conn.adhocrebatereason, conn.adhocrebatecomment, conn.createdBy as ws_createdBy, conn.lastModifiedBy as ws_lastModifiedBy,"
-			+ " conn.createdTime as ws_createdTime, conn.lastModifiedTime as ws_lastModifiedTime,conn.additionaldetails, conn.frequency,"
+			+ " conn.createdTime as ws_createdTime, conn.lastModifiedTime as ws_lastModifiedTime,conn.additionaldetails, conn.frequency_of_garbage_collection,"
 			+ " conn.locality, conn.isoldapplication,  document.id as doc_Id, document.documenttype, document.filestoreid, document.active as doc_active,"
 //			+ " plumber.name as plumber_name, plumber.licenseno, roadcuttingInfo.id as roadcutting_id, roadcuttingInfo.roadtype as roadcutting_roadtype, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea,"
 //			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"
@@ -114,7 +114,6 @@ public class GCCalculatorQueryBuilder {
 //			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"
 			+ holderSelectValues + " FROM eg_gc_connection conn " + INNER_JOIN_STRING
 			+ " eg_gc_service wc ON wc.connection_id = conn.id" + LEFT_OUTER_JOIN_STRING
-			+ LEFT_OUTER_JOIN_STRING
 			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
 //			+ LEFT_OUTER_JOIN_STRING + "eg_ws_roadcuttinginfo roadcuttingInfo ON roadcuttingInfo.wsid = conn.id ";
 
@@ -534,16 +533,16 @@ public class GCCalculatorQueryBuilder {
 
 		addClauseIfRequired(preparedStatement, query);
 		query.append(
-				" conn.connectionno NOT IN (select distinct(consumercode) from egbs_demand_v1 dmd where (dmd.taxperiodfrom >= ? and dmd.taxperiodto <= ?) and businessservice = 'WS' and tenantid=? and consumercode = ?)");
+				" conn.connectionno NOT IN (select distinct(consumercode) from egbs_demand_v1 dmd where (dmd.taxperiodfrom >= ? and dmd.taxperiodto <= ?) and businessservice = 'GC' and tenantid=? and consumercode = ?)");
 		preparedStatement.add(fromDate);
 		preparedStatement.add(toDate);
 		preparedStatement.add(tenantId);
 		preparedStatement.add(consumerCode);
 
-		addClauseIfRequired(preparedStatement, query);
+//		addClauseIfRequired(preparedStatement, query);
 		String orderbyClause = " conn.connectionno =? ";
-		preparedStatement.add(consumerCode);
-		query.append(orderbyClause);
+//		preparedStatement.add(consumerCode);
+//		query.append(orderbyClause);
 
 		return query.toString();
 

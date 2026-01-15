@@ -523,6 +523,65 @@ public class CalculatorUtil {
 			throw new CustomException("NO_TAXPERIOD_FOUND", "Exception while getting the tax periods from the MDMS service");
 		}
 	}
+
+	/**
+	 * Fetches monthly tax periods from MDMS (gc-services-calculation module)
+	 * @param requestInfo RequestInfo object
+	 * @param tenantId Tenant ID
+	 * @return List of monthly tax periods sorted by fromDate in ascending order
+	 */
+	public List<TaxPeriod> getMonthlyTaxPeriodsFromMDMS(RequestInfo requestInfo, String tenantId) {
+		try {
+			// Build MDMS request for monthly tax periods
+			MasterDetail masterDetail = MasterDetail.builder()
+					.name("MonthlyTaxPeriods")
+					.build();
+
+			ModuleDetail moduleDetail = ModuleDetail.builder()
+					.moduleName("gc-services-calculation")
+					.masterDetails(Collections.singletonList(masterDetail))
+					.build();
+
+			MdmsCriteriaReq mdmsReq = MdmsCriteriaReq.builder()
+					.requestInfo(requestInfo)
+					.mdmsCriteria(MdmsCriteria.builder()
+							.tenantId(tenantId)
+							.moduleDetails(Collections.singletonList(moduleDetail))
+							.build())
+					.build();
+
+			DocumentContext documentContext = JsonPath.parse(
+					serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsReq));
+
+			List<TaxPeriod> monthlyTaxPeriods = mapper.convertValue(
+					documentContext.read(GCCalculationConstant.MDMS_MONTHLY_TAXPERIOD),
+					new TypeReference<List<TaxPeriod>>() {});
+
+			if (monthlyTaxPeriods == null || monthlyTaxPeriods.isEmpty()) {
+				log.warn("No monthly tax periods found in MDMS for tenant: {}", tenantId);
+				throw new CustomException("NO_MONTHLY_TAXPERIOD_FOUND",
+						"No monthly tax periods configured in MDMS for tenant: " + tenantId);
+			}
+
+			// Sort by fromDate ascending
+			monthlyTaxPeriods = monthlyTaxPeriods.stream()
+					.sorted(Comparator.comparing(TaxPeriod::getFromDate))
+					.collect(Collectors.toList());
+
+			log.info("Loaded {} monthly tax periods from MDMS for tenant: {}",
+					monthlyTaxPeriods.size(), tenantId);
+
+			return monthlyTaxPeriods;
+
+		} catch (CustomException ce) {
+			throw ce;
+		} catch (Exception e) {
+			log.error("Error while fetching monthly tax periods from MDMS for tenant: {}", tenantId, e);
+			throw new CustomException("NO_MONTHLY_TAXPERIOD_FOUND",
+					"Exception while getting the monthly tax periods from MDMS service: " + e.getMessage());
+		}
+	}
+
 	/**
 	 *
 	 * @param dateInLong

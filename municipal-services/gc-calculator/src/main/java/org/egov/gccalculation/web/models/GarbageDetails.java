@@ -19,5 +19,7 @@ public class GarbageDetails {
 
 	@JsonProperty("connectionExecutionDate")
 	private Long connectionExecutionDate = null;
+
+
 	
 }

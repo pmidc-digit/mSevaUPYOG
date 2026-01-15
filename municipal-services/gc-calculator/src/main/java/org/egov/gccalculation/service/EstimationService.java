@@ -321,16 +321,34 @@ public class EstimationService {
 	            }
 	        } else {
 	            // Flat rate calculation
-	            waterCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
-	            
-	            // Adjust charge based on billing frequency
-	            String frequency = waterConnection.getFrequency();
-	            if (frequency != null && frequency.equalsIgnoreCase("Monthly")) {
-	                // minimumCharge is quarterly rate, divide by 3 for monthly
-	                waterCharge = waterCharge.divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP);
-	                log.info("Monthly billing: Adjusted charge from " + applicableBillSlab.getMinimumCharge() 
-	                        + " to " + waterCharge);
-	            }
+            request.setTaxPeriodFrom(criteria.getFrom());
+            request.setTaxPeriodTo(criteria.getTo());
+
+            // Pro-rate charge if connection execution date is after tax period start
+            if (request.getTaxPeriodFrom() > 0 && request.getTaxPeriodTo() > 0
+                    && waterConnection.getConnectionExecutionDate() > request.getTaxPeriodFrom()) {
+
+                long milliBetweenConnDate = Math.abs(request.getTaxPeriodTo() - waterConnection.getConnectionExecutionDate());
+                long milliBetweenQuarter = Math.abs(request.getTaxPeriodTo() - request.getTaxPeriodFrom());
+
+                long daysConn = TimeUnit.MILLISECONDS.toDays(milliBetweenConnDate) + 1;
+                long daysQuarter = TimeUnit.MILLISECONDS.toDays(milliBetweenQuarter) + 1;
+
+                waterCharge = BigDecimal.valueOf(daysConn * (applicableBillSlab.getMinimumCharge() / daysQuarter))
+                        .setScale(2, RoundingMode.HALF_UP);
+                
+                log.info("Pro-rated billing: Connection started on {} ({} days out of {} days), charge: {} (from {})",
+                        new Date(waterConnection.getConnectionExecutionDate()), daysConn, daysQuarter, 
+                        waterCharge, applicableBillSlab.getMinimumCharge());
+            } else {
+                waterCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+            }
+            
+            // NO frequency-based division needed anymore!
+            // Monthly connections now receive monthly tax periods (not quarterly divided by 3)
+            // The slab charge should already be configured for the appropriate period
+            log.info("Final charge for connection {}: {} (Frequency: {})", 
+                    waterConnection.getConnectionNo(), waterCharge, waterConnection.getFrequency());
 	        }
 	    }
 
@@ -350,23 +368,30 @@ public class EstimationService {
 				? waterConnection.getConnectionType() 
 				: "Non Metered";
 		
-		log.info("Matching billing slab for Unit ID: {}, UsageCategory: {}", 
-			unit.getId(), fullUsageCategory);
+		// Get connection frequency (default to Quarterly if not set)
+		final String frequency = waterConnection.getFrequency() != null 
+				? waterConnection.getFrequency() 
+				: "Quarterly";
+		
+		log.info("Matching billing slab for Unit ID: {}, UsageCategory: {}, Frequency: {}", 
+			unit.getId(), fullUsageCategory, frequency);
 		
 		// Hierarchical matching from specific to general
 		// Example: NONRESIDENTIAL.COMMERCIAL.RETAIL.MALLS -> NONRESIDENTIAL.COMMERCIAL.RETAIL -> NONRESIDENTIAL.COMMERCIAL -> NONRESIDENTIAL
 		String[] parts = fullUsageCategory.split("\\.");
 		
-		// Pre-filter slabs by connectionType and calculationAttribute for better performance
+		// Pre-filter slabs by connectionType, calculationAttribute, and billingCycle for better performance
 		List<BillingSlab> eligibleSlabs = billingSlabs.stream()
 			.filter(slab -> slab.getConnectionType().equalsIgnoreCase(connectionType)
-				&& slab.getCalculationAttribute().equalsIgnoreCase(calculationAttribute))
+				&& slab.getCalculationAttribute().equalsIgnoreCase(calculationAttribute)
+				&& (slab.getBillingCycle() == null || slab.getBillingCycle().equalsIgnoreCase(frequency)))
 			.collect(Collectors.toList());
 		
 		if (eligibleSlabs.isEmpty()) {
 			throw new CustomException("NO_ELIGIBLE_SLABS", 
 				"No billing slabs found for connectionType: " + connectionType 
-				+ " and calculationAttribute: " + calculationAttribute);
+				+ ", calculationAttribute: " + calculationAttribute
+				+ ", frequency: " + frequency);
 		}
 		
 		// Try matching from most specific to most general level
@@ -388,7 +413,8 @@ public class EstimationService {
 		throw new CustomException("BILLING_SLAB_NOT_FOUND", 
 			"No billing slab found for unit usage category: " + fullUsageCategory
 			+ ", connectionType: " + connectionType 
-			+ ", calculationAttribute: " + calculationAttribute);
+			+ ", calculationAttribute: " + calculationAttribute
+			+ ", frequency: " + frequency);
 	}
 
 	private String getCalculationAttribute(Map<String, Object> calculationAttributeMap, String connectionType) {

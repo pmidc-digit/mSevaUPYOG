@@ -1676,16 +1676,63 @@ public class DemandService {
 			Long taxPeriodFrom, Long taxPeriodTo) {
 		log.info("generateDemandForULB:: {} taxPeriodFrom:: {} taxPeriodTo {}", tenantId, taxPeriodFrom, taxPeriodTo);
 		try {
-			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
+			// Determine frequency from requestInfo key
+			String processingFrequency = requestInfo.getKey();
+			boolean isMonthly = "MONTHLY".equals(processingFrequency);
+			boolean isQuarterly = "QUARTERLY".equals(processingFrequency);
+			
+//			if (!isMonthly && !isQuarterly) {
+//				// Fallback: determine from billing period dates
+//				long periodDays = TimeUnit.MILLISECONDS.toDays(taxPeriodTo - taxPeriodFrom);
+//				isMonthly = (periodDays >= 28 && periodDays <= 31);
+//				isQuarterly = (periodDays >= 89 && periodDays <= 92);
+//			}
+			
+			String targetFrequency = isMonthly ? "Monthly" : "Quarterly";
+			log.info("Processing {} connections for tenant: {}", targetFrequency, tenantId);
+			
+			// Load appropriate tax periods based on frequency
+			List<TaxPeriod> taxPeriods;
+			if (isMonthly) {
+				taxPeriods = calculatorUtils.getMonthlyTaxPeriodsFromMDMS(requestInfo, tenantId);
+				log.info("Loaded {} monthly tax periods", taxPeriods.size());
+			} else {
+				taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
+				log.info("Loaded {} quarterly tax periods", taxPeriods.size());
+			}
 
-			int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
-					.filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
+            int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
+                    .filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
 
-			String cone = requestInfo.getKey();
-			log.info("Billing master data values for non metered connection:: {}", master);
+            String cone = processingFrequency;
+            log.info("Billing master data values for non metered connection:: {}", master);
 
-			List<GarbageDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
-					GCCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            // Fetch ALL connections for this billing cycle (using getConnection to get full objects with frequency)
+            List<GarbageConnection> allConnections = waterCalculatorDao.getConnection(tenantId,
+                    null, // consumerCode - null to get all
+                    GCCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo);
+
+            allConnections = enrichmentService.filterConnections(allConnections);
+			
+			// FILTER connections by frequency
+			List<GarbageConnection> connectionNos = allConnections.stream()
+					.filter(conn -> {
+						String connFrequency = conn.getFrequency();
+						if (connFrequency == null || connFrequency.trim().isEmpty()) {
+							connFrequency = "Quarterly"; // Default to quarterly
+						}
+						return connFrequency.equalsIgnoreCase(targetFrequency);
+					})
+					.collect(Collectors.toList());
+			
+			if (connectionNos.isEmpty()) {
+				log.info("No {} connections found for tenant: {} (total connections: {})", 
+						targetFrequency, tenantId, allConnections.size());
+				return;
+			}
+			
+			log.info("Filtered {} connections: {} out of {} total connections", 
+					targetFrequency, connectionNos.size(), allConnections.size());
 
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
@@ -1694,13 +1741,17 @@ public class DemandService {
 			int totalRecordsPushedToKafka = 0;
 
 			for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
-				GarbageDetails waterConnection = connectionNos.get(connectionNosIndex);
-				log.info("Connection Number: {}", waterConnection.getConnectionNo());
+			GarbageConnection fullConnection = connectionNos.get(connectionNosIndex);
+			
+			// Create GarbageDetails for compatibility with isValidBillingCycle()
+			GarbageDetails waterConnection = new GarbageDetails();
+			waterConnection.setConnectionNo(fullConnection.getConnectionNo());
+			waterConnection.setConnectionExecutionDate(fullConnection.getConnectionExecutionDate());
 
-				try {
-					int startIndex = 0;
-					Long lastDemandFromDate = waterCalculatorDao
-							.searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
+                try {
+                    int startIndex = 0;
+                    Long lastDemandFromDate = waterCalculatorDao
+                            .searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
 
 					if (lastDemandFromDate != null) {
 						startIndex = IntStream.range(0, taxPeriods.size())
@@ -1738,7 +1789,7 @@ public class DemandService {
 					}
 
 				} catch (Exception e) {
-					log.error("Exception while generating demand for connectionNo: {} tenantId: {} msg: {}",
+					log.error("Exception while generating demand for connectionNo: {} tenantId: msg: {}",
 							waterConnection.getConnectionNo(), tenantId, e.getMessage(), e);
 				}
 			}
@@ -1750,7 +1801,8 @@ public class DemandService {
 				calculationCriteriaList.clear();
 			}
 
-			log.info("totalRecordsPushedToKafka: {}", totalRecordsPushedToKafka);
+			log.info("Completed {} processing for tenant {}: totalRecordsPushedToKafka: {}", 
+					targetFrequency, tenantId, totalRecordsPushedToKafka);
 
 		} catch (Exception e) {
 			log.error("Exception occurred while processing demand generation for tenantId: {}", tenantId, e);

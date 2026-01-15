@@ -93,6 +93,8 @@ public class NocQueryBuilder {
 //			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
 
 
+	private final String DOCUMENT_CHECK_LIST_QUERY = "SELECT * from eg_noc_document_check_list where applicationno = ? AND tenantId = ?";
+
 	private final String paginationWrapper = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY lastModifiedTime DESC) FROM " + "({})"
 			+ " result) ranked_result";
@@ -104,6 +106,14 @@ public class NocQueryBuilder {
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();
+	}
+
+	public String getNOCDocumantsCheckListQuery(String applicationNo, String tenantId, List<Object> params) {
+
+		params.add(applicationNo);
+		params.add(tenantId);
+
+		return DOCUMENT_CHECK_LIST_QUERY;
 	}
 
 //	private final String paginationWrapper = "SELECT * FROM "

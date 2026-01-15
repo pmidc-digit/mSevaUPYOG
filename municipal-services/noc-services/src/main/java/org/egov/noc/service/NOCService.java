@@ -105,6 +105,31 @@ public class NOCService {
 		return Arrays.asList(nocRequest.getNoc());
 	}
 
+	public List<DocumentCheckList> saveDocumentCheckLists(CheckListRequest checkListRequest){
+		Long currentTime = System.currentTimeMillis();
+		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+
+		checkListRequest.getCheckList().forEach(document -> {
+			document.setId(UUID.randomUUID().toString());
+			document.setCreatedtime(currentTime);
+			document.setLastmodifiedtime(currentTime);
+			document.setCreatedby(userUUID);
+			document.setLastmodifiedby(userUUID);
+		});
+		nocRepository.saveDocumentCheckList(checkListRequest);
+		return checkListRequest.getCheckList();
+	}
+	public List<DocumentCheckList> updateDocumentCheckLists(CheckListRequest checkListRequest){
+		Long currentTime = System.currentTimeMillis();
+		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+
+		checkListRequest.getCheckList().forEach(document -> {
+			document.setLastmodifiedtime(currentTime);
+			document.setLastmodifiedby(userUUID);
+		});
+		nocRepository.updateDocumentCheckList(checkListRequest);
+		return checkListRequest.getCheckList();
+	}
 	public void getCalculation(NocRequest request){
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
@@ -127,6 +152,12 @@ public class NOCService {
 		log.info("Calculation Response: " + calculationRes);
 	}
 
+
+	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
+		if(net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(applicatioinNo))
+			throw new CustomException(NOCConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
+		return nocRepository.getDocumentCheckList(applicatioinNo, tenantId);
+	}
 
 
 	/**

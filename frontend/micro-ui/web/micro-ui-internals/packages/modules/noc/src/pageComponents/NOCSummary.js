@@ -87,6 +87,11 @@ function NOCSummary({ currentStepData: formData, t }) {
          <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"}/>
          <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"}/>
          <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={owner?.propertyId || "N/A"}/>
+         <Row label={t("PROPERTY_OWNER_NAME")} text={owner?.PropertyOwnerName || "N/A"}/>
+         <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={owner?.PropertyOwnerMobileNumber || "N/A"}/>
+         <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={owner?.PropertyOwnerAddress || "N/A"}/>
+         <Row label={t("PROPERTY_PLOT_AREA")} text={owner?.PropertyOwnerPlotArea || "N/A"}/>
+
          <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(owner?.dateOfBirth) || "N/A"}/>   
          <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"}/>
          <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"}/>    
@@ -137,7 +142,7 @@ function NOCSummary({ currentStepData: formData, t }) {
 
         {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={formData?.siteDetails?.totalFloorArea || "N/A"}/>}
 
-        <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district?.name || "N/A"}/>
+        <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"}/>
         <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/>
         <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"}/>
         <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={ formData?.siteDetails?.villageName || "N/A"}/>

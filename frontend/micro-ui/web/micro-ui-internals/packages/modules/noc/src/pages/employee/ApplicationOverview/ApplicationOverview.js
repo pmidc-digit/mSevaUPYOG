@@ -100,6 +100,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
+  const [approverComment , setApproverComment] = useState(null);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -229,6 +230,16 @@ const NOCEmployeeApplicationOverview = () => {
         }
       })();
   }, [tenantId, businessServiceCode, isLoading]);
+  useEffect(()=>{
+      if(workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
+        const commentsobj = workflowDetails?.data?.timeline
+          ?.filter((item) => item?.performedAction === "APPROVE")
+          ?.flatMap((item) => item?.wfComment || []);
+        const approvercomments = commentsobj?.[0];
+        const finalComment = commentsobj ? `The above approval is subjected to the following conditions: ${approvercomments}` : "";
+        setApproverComment(finalComment);
+      }
+    },[workflowDetails])
 
   
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -238,7 +249,7 @@ const NOCEmployeeApplicationOverview = () => {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData);
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData,approverComment);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
       const fileStoreId = response?.filestoreIds?.[0]; 
       if (!fileStoreId) throw new Error("Failed to generate filestoreId");
@@ -490,7 +501,7 @@ const NOCEmployeeApplicationOverview = () => {
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {      
-      if (applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && !allDocumentsUploaded) {
+      if (applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4)) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -705,6 +716,11 @@ const NOCEmployeeApplicationOverview = () => {
                 <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
                 <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
                 <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
+                <Row label={t("PROPERTY_OWNER_NAME")} text={detail?.PropertyOwnerName || "N/A"} />
+                <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={detail?.PropertyOwnerMobileNumber || "N/A"} />
+                <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={detail?.PropertyOwnerAddress || "N/A"} />
+                <Row label={t("PROPERTY_PLOT_AREA")} text={detail?.PropertyOwnerPlotArea || "N/A"}/>                
+
               </StatusTable>
             </div>
           </Card>
@@ -841,13 +857,15 @@ const NOCEmployeeApplicationOverview = () => {
       </Card> */}
 
       <Card>
-        <CardSubHeader >{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable style={{
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable
+          style={{
             display: "flex",
-            gap: "20px", 
-            flexWrap: "wrap", 
-            justifyContent : "space-between"
-          }}>
+            gap: "20px",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
           {sitePhotos?.length > 0 &&
             sitePhotos?.map((doc) => (
               <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />

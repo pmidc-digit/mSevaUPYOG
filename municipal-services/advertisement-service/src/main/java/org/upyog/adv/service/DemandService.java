@@ -76,7 +76,7 @@ public class DemandService {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		String consumerCode = bookingRequest.getBookingApplication().getBookingNo();
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
-		User user = bookingRequest.getRequestInfo().getUserInfo();
+		User user = (User) bookingRequest.getBookingApplication().getOwners();
 
 		User owner = User.builder()
 				.name(user.getName())

@@ -5,13 +5,14 @@ import _ from "lodash";
 import {NOCFeeTable} from './NOCFeeTable'
 
 import { buildFeeHistoryByTax } from "../utils";
+import { formatDuration } from "../utils";
 
 const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustments = () => {} , disable = false}) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
   const stateCode = Digit.ULBService.getStateId();
-   const [totalTimeMs , setTotalTimeMs] = useState(null); 
+  const [timeObj , setTimeObj] = useState(null);
 console.log('savedCalc', formData)
 
   useEffect(() => {
@@ -248,7 +249,10 @@ data?.Calculation?.[0]?.taxHeadEstimates?.forEach((tax, i) => {
      const lastModified = formData?.apiData?.Noc?.[0]?.auditDetails?.lastModifiedTime;
      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
-     setTotalTimeMs(totalTime);
+     const time = formatDuration(totalTime)
+
+     setTimeObj(time);
+
    }
  }, [formData]);
 
@@ -303,7 +307,7 @@ const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
             t={t}
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
-            totalTimeMs={totalTimeMs}
+            timeObj={timeObj}
 
           />
           {showToast && (

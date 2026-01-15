@@ -106,14 +106,17 @@ const NOCSiteDetails = (_props) => {
   ];
 
   const allCities = Digit.Hooks.noc.useTenants();
+  console.log('allcities', allCities)
   const [cities, setcitiesopetions] = useState(allCities);
-
+  
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
   ]);
   // const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
   const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
+
+  console.log('selectedCity', selectedCity)
   // const [localities, setLocalities] = useState([]);
 
   // const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
@@ -134,7 +137,9 @@ const NOCSiteDetails = (_props) => {
   //logic for default selection of district
   useEffect(() => {
     if (tenantId && allCities?.length > 0) {
-      const defaultCity = allCities.find((city) => city.code === tenantId);
+      const defaultCity = allCities.find((city) => city.code === tenantId)?.city?.districtName;
+
+      console.log('defaultCity', defaultCity)
       if (defaultCity) {
         setSelectedCity(defaultCity);
         setValue("district", defaultCity); // sets default in react-hook-form
@@ -208,7 +213,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {t("NOC_PROPOSED_SITE_ADDRESS")}
               <span className="requiredField">*</span>
@@ -246,7 +251,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ULB_NAME_LABEL")}`}
               <span className="requiredField">*</span>
@@ -277,7 +282,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ULB_TYPE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -303,7 +308,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_KHASRA_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -339,7 +344,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_HADBAST_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -379,7 +384,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ROAD_TYPE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -401,7 +406,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_NET_TOTAL_AREA_LABEL")}`}
               <span className="requiredField">*</span>
@@ -438,7 +443,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}
               <span className="requiredField">*</span>
@@ -476,7 +481,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}
               <span className="requiredField">*</span>
@@ -515,7 +520,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ROAD_WIDTH_AT_SITE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -553,7 +558,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_BUILDING_STATUS_LABEL")}`}
               <span className="requiredField">*</span>
@@ -584,7 +589,7 @@ const NOCSiteDetails = (_props) => {
           </LabelFieldPair>
 
           {buildingStatus?.code === "BUILTUP" && (
-            <LabelFieldPair style ={{marginBottom: "20px"}}>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">
                 {`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -615,9 +620,8 @@ const NOCSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
-            <LabelFieldPair style ={{marginBottom: "20px"}}>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">
                 {`${t("NOC_BASEMENT_AREA_LABEL")}`}
                 <span className="requiredField">*</span>
@@ -718,7 +722,7 @@ const NOCSiteDetails = (_props) => {
           )}
 
           {buildingStatus?.code === "BUILTUP" && (
-            <LabelFieldPair style ={{marginBottom: "20px"}}>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")}`}</CardLabel>
               <div className="field">
                 <Controller
@@ -742,7 +746,7 @@ const NOCSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_WARD_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -778,7 +782,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_DISTRICT_LABEL")}`}
               <span className="requiredField">*</span>
@@ -791,17 +795,16 @@ const NOCSiteDetails = (_props) => {
                   required: t("REQUIRED_FIELD"),
                 }}
                 render={(props) => (
-                  <Dropdown
+                  <TextInput
                     className="form-field"
-                    select={(e) => {
-                      setSelectedCity(e);
-                      props.onChange(e);
+                    value={selectedCity || props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
                     }}
-                    selected={props.value}
-                    option={cities.sort((a, b) => a.name.localeCompare(b.name))}
-                    optionKey="name"
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
                     disable="true"
-                    t={t}
                   />
                 )}
               />
@@ -809,7 +812,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_ZONE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -838,7 +841,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_VILLAGE_NAME_LABEL")}`}
               <span className="requiredField">*</span>
@@ -874,7 +877,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_COLONY_NAME_LABEL")}`}
               <span className="requiredField">*</span>
@@ -910,7 +913,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_VASIKA_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -946,7 +949,7 @@ const NOCSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair style ={{marginBottom: "20px"}}>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")}`}
               <span className="requiredField">*</span>

@@ -190,7 +190,7 @@ console.log('calculatorData', calculatorData)
             roadType: nocFormData?.siteDetails?.roadType?.name || "",
             buildingStatus: nocFormData?.siteDetails?.buildingStatus?.name || "",
             isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
-            district: nocFormData?.siteDetails?.district?.name || "",
+            district: nocFormData?.siteDetails?.district || "",
             zone: nocFormData?.siteDetails?.zone?.name || "",
 
             specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",

@@ -155,6 +155,11 @@ const NOCModal = ({
     }
 
     const commentsText = data?.comments?.toString().trim();
+    const conditionalText = data?.conditionalComments?.trim();
+    let finalComments = commentsText;
+    if (action?.action === "APPROVE" && conditionalText) {
+      finalComments = `${commentsText} , ${conditionalText}`;
+    }
 
     if (action?.action !== "APPROVE" && action?.action !== "REJECT"  && !selectedApprover?.uuid) {
       setTimeout(()=>{
@@ -180,7 +185,7 @@ const NOCModal = ({
     applicationData = {
       ...applicationData,
       action: action?.action,
-      comment: data?.comments,
+      comment: finalComments,
       assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
       // assignee: action?.isTerminateState ? [] : [selectedApprover?.uuid],
       wfDocuments: uploadedFile

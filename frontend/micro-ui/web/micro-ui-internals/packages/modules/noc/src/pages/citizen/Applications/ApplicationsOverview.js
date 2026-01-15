@@ -96,7 +96,7 @@ const CitizenApplicationOverview = () => {
 
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-
+ const [approverComment , setApproverComment] = useState(null);
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -171,7 +171,7 @@ const CitizenApplicationOverview = () => {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData);
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -283,6 +283,17 @@ const CitizenApplicationOverview = () => {
     });
 
   console.log("actions here", actions);
+
+  useEffect(()=>{
+    if(workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
+      const commentsobj = workflowDetails?.data?.timeline
+        ?.filter((item) => item?.performedAction === "APPROVE")
+        ?.flatMap((item) => item?.wfComment || []);
+      const approvercomments = commentsobj?.[0];
+      const finalComment = commentsobj ? `The above approval is subjected to the following conditions: ${approvercomments}` : "";
+      setApproverComment(finalComment);
+    }
+  },[workflowDetails])
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -438,6 +449,11 @@ const CitizenApplicationOverview = () => {
                 <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
                 <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
                 <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
+                <Row label={t("PROPERTY_OWNER_NAME")} text={detail?.PropertyOwnerName || "N/A"}/>
+                <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={detail?.PropertyOwnerMobileNumber || "N/A"}/>
+                <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={detail?.PropertyOwnerAddress || "N/A"}/>    
+                <Row label={t("PROPERTY_PLOT_AREA")} text={detail?.PropertyOwnerPlotArea || "N/A"}/>                
+            
               </StatusTable>
             </div>
           </Card>

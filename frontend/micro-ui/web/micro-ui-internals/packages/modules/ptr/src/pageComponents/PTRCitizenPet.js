@@ -179,6 +179,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         mobileNumber: pick(filteredOwnerDetails.mobileNumber, existing.mobileNumber),
       };
       setLoader(true);
+
       try {
         const response = await Digit.PTRService.update({ PetRegistrationApplications: [updateFormData] }, tenantId);
         setLoader(false);
@@ -192,7 +193,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       }
     } else {
       // No existing application -> create (unchanged)
-
+      setLoader(true);
       try {
         const response = await Digit.PTRService.create({ petRegistrationApplications: [formData] }, formData.tenantId);
         setLoader(false);
@@ -549,7 +550,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       </LabelFieldPair>
 
       {/* VACCINATION NUMBER */}
-      <LabelFieldPair >
+      <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
         <div className="form-field">
           <Controller

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -143,6 +144,19 @@ public class NocQueryBuilder {
 		}
 
 
+		if ( !StringUtils.isEmpty(criteria.getVasikaNumber()) ) {
+	        addClauseIfRequired(builder);
+	        builder.append(" noc.vasikaNumber=? ");
+	        preparedStmtList.add(criteria.getVasikaNumber());
+			log.info(criteria.getVasikaNumber());
+		}
+		
+		if ( !StringUtils.isEmpty(criteria.getVasikaDate()) ) {
+	        addClauseIfRequired(builder);
+	        builder.append(" noc.vasikaDate=? ");
+	        preparedStmtList.add(criteria.getVasikaDate());
+			log.info(criteria.getVasikaDate());
+		}
 
 
 		List<String> ids = criteria.getIds();

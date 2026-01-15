@@ -24,6 +24,7 @@ import org.egov.noc.web.model.enums.Status;
 import org.egov.noc.web.model.workflow.BusinessService;
 import org.egov.noc.web.model.workflow.ProcessInstance;
 import org.egov.noc.web.model.workflow.ProcessInstanceResponse;
+import org.egov.noc.web.model.workflow.State;
 import org.egov.noc.workflow.WorkflowIntegrator;
 import org.egov.noc.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
@@ -138,6 +139,10 @@ public class NOCService {
 	public List<Noc> update(NocRequest nocRequest) {
 		String tenantId = nocRequest.getNoc().getTenantId().split("\\.")[0];
 		Object mdmsData = nocUtil.mDMSCall(nocRequest.getRequestInfo(), tenantId);
+
+		Noc noc = nocRequest.getNoc();
+
+
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getNoc().getNocDetails().getAdditionalDetails();
@@ -145,6 +150,8 @@ public class NOCService {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
 		String businessServiceName = JsonPath.read(additionalDetails, "$.businessService");
+		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getNoc(),
+				nocRequest.getRequestInfo(), businessServiceName);
 		Noc searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
 		if (owners != null) {
@@ -155,8 +162,29 @@ public class NOCService {
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getNoc().getApplicationNo());
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
+
+			State currentState = workflowService.getCurrentState(noc.getApplicationStatus(), businessServicename);
+			String nextStateId = currentState.getActions().stream()
+					.filter(act -> act.getAction().equalsIgnoreCase(noc.getWorkflow().getAction()))
+					.findFirst().get().getNextState();
+			State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+			String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
+
+			if (nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
+					&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(action) || NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+				List<String> roles = new ArrayList<>();
+				nextState.getActions().forEach(stateAction -> {
+					roles.addAll(stateAction.getRoles());
+				});
+				List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo());
+				noc.getWorkflow().setAssignes(assignee);
+			}
+
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
+
+
 				wfIntegrator.callWorkFlow(nocRequest, businessServiceName);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
@@ -189,7 +217,25 @@ public class NOCService {
 							.getAdditionalDetails()).put("approvedOn", LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 					getCalculation(nocRequest);
 				}
-				
+				State currentState = workflowService.getCurrentState(noc.getApplicationStatus(), businessServicename);
+				String nextStateId = currentState.getActions().stream()
+						.filter(act -> act.getAction().equalsIgnoreCase(noc.getWorkflow().getAction()))
+						.findFirst().get().getNextState();
+				State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
+
+				if (nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
+						&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(action) || NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+					List<String> roles = new ArrayList<>();
+					nextState.getActions().forEach(stateAction -> {
+						roles.addAll(stateAction.getRoles());
+					});
+					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo());
+					noc.getWorkflow().setAssignes(assignee);
+				}
+
+
 				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),

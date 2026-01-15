@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -26,6 +27,8 @@ import org.egov.bpa.validator.BPAValidator;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.CheckListRequest;
+import org.egov.bpa.web.model.DocumentCheckList;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
@@ -856,6 +859,39 @@ public class BPAService {
     				}
     			}
     		}
+    	}
+    	
+    	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
+    		if(StringUtils.isEmpty(applicatioinNo))
+    			throw new CustomException(BPAErrorConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
+    		return repository.getDocumentCheckList(applicatioinNo, tenantId);
+    	}
+    	
+    	public List<DocumentCheckList> saveDocumentCheckLists(CheckListRequest checkListRequest){
+    		Long currentTime = System.currentTimeMillis();
+    		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+    		
+    		checkListRequest.getCheckList().forEach(document -> {
+    			document.setId(UUID.randomUUID().toString());
+    			document.setCreatedtime(currentTime);
+    			document.setLastmodifiedtime(currentTime);
+    			document.setCreatedby(userUUID);
+    			document.setLastmodifiedby(userUUID);
+    		});
+    		repository.saveDocumentCheckList(checkListRequest);
+    		return checkListRequest.getCheckList();
+    	}
+    	
+    	public List<DocumentCheckList> updateDocumentCheckLists(CheckListRequest checkListRequest){
+    		Long currentTime = System.currentTimeMillis();
+    		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+    		
+    		checkListRequest.getCheckList().forEach(document -> {
+    			document.setLastmodifiedtime(currentTime);
+    			document.setLastmodifiedby(userUUID);
+    		});
+    		repository.updateDocumentCheckList(checkListRequest);
+    		return checkListRequest.getCheckList();
     	}
         
 }

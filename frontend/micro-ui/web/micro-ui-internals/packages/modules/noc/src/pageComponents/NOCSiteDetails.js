@@ -615,37 +615,6 @@ const NOCSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          {buildingStatus?.code === "BUILTUP" && (
-            <LabelFieldPair style ={{marginBottom: "20px"}}>
-              <CardLabel className="card-label-smaller">
-                {`${t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}`}
-                <span className="requiredField">*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"isBasementAreaAvailable"}
-                  rules={{
-                    required: t("REQUIRED_FIELD"),
-                  }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      select={(e) => {
-                        setIsBasementAreaAvailable(e);
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={options}
-                      optionKey="i18nKey"
-                      t={t}
-                    />
-                  )}
-                />
-                <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.isBasementAreaAvailable?.message || ""}</CardLabelError>
-              </div>
-            </LabelFieldPair>
-          )}
 
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair style ={{marginBottom: "20px"}}>

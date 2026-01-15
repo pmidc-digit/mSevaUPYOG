@@ -160,10 +160,17 @@ const getOriginals = (taxHeadCode) => {
     [formData]
   );
 
-  const feeHistory = useMemo(() => {
-    const allCalcs = formData?.calculations || [];
-    return buildFeeHistoryByTax(allCalcs, { newestFirst: true });
-  }, [formData?.calculations]);
+ const feeHistory = useMemo(() => {
+  const allCalcs = formData?.calculations || [];
+
+  // Discard any calculation where every taxHeadEstimate has estimateAmount = 0
+  const filteredCalcs = allCalcs.filter(calc =>
+    (calc?.taxHeadEstimates || []).some(tax => tax?.estimateAmount > 0)
+  );
+
+  return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
+}, [formData?.calculations]);
+
 
   console.log("[payload] built with formData:", formData);
 console.log("[payload] CalculationCriteria:", payload.CalculationCriteria);

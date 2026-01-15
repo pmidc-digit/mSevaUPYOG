@@ -261,7 +261,7 @@ public class InboxService {
         if (CollectionUtils.isEmpty(businessKeys)) {
         	response.setTotalCount(0);
             response.setItems(new ArrayList<>());
-            response.setStatusMap(new ArrayList<>());
+            response.setStatusMap(fullStatusCountMap);
             response.setNearingSlaCount(0);
             return response;
         }     

@@ -246,22 +246,37 @@ public class NDCService {
 				|| !CollectionUtils.isEmpty(criteria.getUuid()) || criteria.getMobileNumber()!=null || criteria.getName()!=null;
 		if (!isSpecificLookup) {
 			criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+			criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
 		}
-
+		List<Application> whenMobileNumberGiven=new ArrayList<>();
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
-			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-			if (userDetailResponse.getUser().isEmpty()) {
-				return Collections.emptyList();
-			}
-			else {
-				criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
-			}
+			whenMobileNumberGiven = getApplicationsWhenMobileNumberGiven(criteria, requestInfo);
+//			if (whenMobileNumberGiven != null) return whenMobileNumberGiven;
 		}
 		List<Application> applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
+		// Use a LinkedHashSet to preserve insertion order
+//		Set<Application> mergedSet = new LinkedHashSet<>();
+//		if(whenMobileNumberGiven!=null)
+//			mergedSet.addAll(whenMobileNumberGiven);
+//		mergedSet.addAll(applications);
+
+//		List<Application> mergedList = new ArrayList<>(mergedSet);
+
 		SearchCriteria searchCriteria = new SearchCriteria();
 		searchCriteria.setTenantId(criteria.getTenantId());
 		enrichmentService.enrichProcessInstance(applications, searchCriteria, requestInfo);
 		return applications;
+	}
+
+	private List<Application> getApplicationsWhenMobileNumberGiven(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
+		UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+		if (userDetailResponse.getUser().isEmpty()) {
+			return Collections.emptyList();
+		}
+		else {
+			criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
+		}
+		return null;
 	}
 
 	public List<Application> getApplicationsWithOwnerInfo(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {

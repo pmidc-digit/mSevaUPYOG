@@ -2,6 +2,9 @@ package org.egov.layout.util;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Component
 public class LAYOUTConstants {
 
@@ -87,5 +90,11 @@ public class LAYOUTConstants {
 	public static final String AIRPORT_NOC_TYPE = "AIRPORT_AUTHORITY";
 
 	public static final String PARSING_ERROR = "PARSING_ERROR";
+
+	public static final String ACTION_STATUS_APPLICATION_FEE = "PENDINGAPPLICATIONPAYMENT";
+
+	public static final String ACTION_STATUS_SANCTION_FEE = "PENDINGSANCTIONPAYMENT";
+
+	public static final List<String> BUSINESS_SERVICE_LIST = Arrays.asList("LAYOUT.PAY1", "LAYOUT.PAY2", "LAYOUT");
 
 }

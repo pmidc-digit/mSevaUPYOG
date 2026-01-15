@@ -466,18 +466,18 @@ public class WorkflowUtil {
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Create System level Role
+     * 
+     * @return System Role
+     */
+    public Role getSystemRole() {
+    	return Role.builder()
+    			.name("SYSTEM user for cron job")
+    			.code("SYSTEM")
+    			.tenantId(config.getStateLevelTenantId())
+    			.build();
+    }
 
 
 }

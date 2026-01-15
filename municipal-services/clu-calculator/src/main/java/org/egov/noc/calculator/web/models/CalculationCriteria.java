@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class CalculationCriteria {
-	@JsonProperty("Clu")
+	@JsonProperty("CLU")
 	private Clu layout = null;
 
     @JsonProperty("applicationNumber")
@@ -18,5 +18,7 @@ public class CalculationCriteria {
     @JsonProperty("tenantId")
     private String tenantId = null;
 
+    @JsonProperty("feeType")
+    private String feeType = null;
 
 }

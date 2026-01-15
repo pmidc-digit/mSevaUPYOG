@@ -105,35 +105,7 @@ public class NdcQueryBuilder {
 
 			query.append(" ) ");
 
-
-//			query.append(" a.uuid IN (SELECT ndcapplicationuuid FROM eg_ndc_owner WHERE uuid IN (");
-//			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
-//			query.append(placeholders).append("))");
-//			preparedStmtList.addAll(criteria.getOwnerIds());
 		}
-
-
-
-//		if ((hasOwnerIds || hasCreatedBy) && criteria.getApplicationNo()==null){
-//			addClauseIfRequired(query, whereAdded);
-//			query.append(" ( ");
-//
-//			boolean wroteOne = false;
-//
-//			if (hasOwnerIds) {
-//				query.append(" ndc.accountId IN (").append(createQuery(ownerIds)).append(") ");
-//				addToPreparedStatement(preparedStmtList, ownerIds);
-//				wroteOne = true;
-//			}
-//
-//			if (hasCreatedBy) {
-//				if (wroteOne) builder.append(" OR ");
-//				builder.append(" noc.createdby = ? ");
-//				preparedStmtList.add(createdBy);
-//			}
-//
-//			builder.append(" ) ");
-//		}
 
 		query.append(" ORDER BY a.lastmodifiedtime DESC");
 

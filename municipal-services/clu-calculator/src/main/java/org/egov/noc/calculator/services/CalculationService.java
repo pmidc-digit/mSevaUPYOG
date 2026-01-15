@@ -52,7 +52,7 @@ public class CalculationService {
 		List<Calculation> calculations = getCalculations(calculationReq);
 
 		if(!getCalculationOnly) {
-			demandService.generateDemands(calculationReq.getRequestInfo(), calculations);
+			demandService.generateDemands(calculationReq.getRequestInfo(), calculations, calculationReq.getCalculationCriteria().get(0).getFeeType());
 		}
 		return calculations;
 	}
@@ -72,7 +72,17 @@ public class CalculationService {
 	                		criteria.getApplicationNumber() + "  NOC application with this number does not exist ");
 			 
 			
-			List<TaxHeadEstimate> estimates;
+			 List<TaxHeadEstimate> estimates = new LinkedList<>();
+				
+				if(((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).containsKey("calculations")
+						&& CLUConstants.FEE_TYPE_PAY2.equalsIgnoreCase(criteria.getFeeType())) {
+					String filter = "$.calculations.[?(@.isLatest == true)].taxHeadEstimates.*";
+					List<Map> userCalculations = JsonPath.read(criteria.getLayout().getLayoutDetails().getAdditionalDetails(), filter);
+					for(Map userCalculation : userCalculations){
+						TaxHeadEstimate taxHeadEstimate = mapper.convertValue(userCalculation, TaxHeadEstimate.class);
+						estimates.add(taxHeadEstimate);
+					}
+				}
 			
 			String tenantId = criteria.getTenantId();
 			BigDecimal plotArea = new BigDecimal(0);
@@ -89,8 +99,8 @@ public class CalculationService {
 				Map<String, Object> siteDetails = (Map<String, Object>)((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).get("siteDetails");
 
 
-				if(siteDetails.get("specificationPlotArea") != null)
-					plotArea = new BigDecimal(siteDetails.getOrDefault("specificationPlotArea", "0").toString().trim());
+				if(siteDetails.get("netTotalArea") != null)
+					plotArea = new BigDecimal(siteDetails.getOrDefault("netTotalArea", "0").toString().trim());
 				if(siteDetails.get("totalFloorArea") != null)
 					builtUpArea = new BigDecimal(siteDetails.getOrDefault("totalFloorArea", "0").toString().trim());
 				if(siteDetails.get("basementArea") != null)
@@ -112,8 +122,11 @@ public class CalculationService {
 			LinkedHashMap<String, Object> roadType = (LinkedHashMap<String, Object>) siteDetails1.get("roadType");
 			roadTypeVal = (String) roadType.get("name");
 
-			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, CLUConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
-			estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal);
+			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, CLUConstants.MDMS_CHARGES_TYPE_CODE, category, finYear, criteria.getFeeType());
+			
+			if(estimates.isEmpty())
+				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal);
+			
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
 			
@@ -174,18 +187,29 @@ public class CalculationService {
 			
 			switch (taxhead) {
 			
-			case CLUConstants.NOC_PROCESSING_FEES:
-			case CLUConstants.NOC_CLU_CHARGES:
+			case CLUConstants.CLU_PROCESSING_FEE:
+				BigDecimal acarPlotArea = plotArea.multiply(CLUConstants.SQMETER_TO_SQYARD).divide(CLUConstants.ACAR_TO_SQYARD, 0, RoundingMode.CEILING).setScale(0, RoundingMode.CEILING);
+				if(acarPlotArea.equals(BigDecimal.ONE))
+					amount = new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0);
+				else {
+					amount = acarPlotArea.subtract(BigDecimal.ONE)
+							.multiply(rate)
+							.add(new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0))
+							.setScale(0, RoundingMode.CEILING);
+				}
+			case CLUConstants.CLU_CHARGES:
 				if(chargesType.containsKey("slabs")) {
 					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
 							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
 					Double cluSlabAmount = slabAmountMap.containsKey(roadType) ? slabAmountMap.get(roadType) : slabAmountMap.get("Other Road");
-					amount = BigDecimal.valueOf(cluSlabAmount).multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
+					amount = BigDecimal.valueOf(cluSlabAmount).multiply(plotArea).setScale(0, RoundingMode.CEILING);
 				}
 				break;
-			case CLUConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES:
-				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
+			case CLUConstants.CLU_EXTERNAL_DEVELOPMENT_CHARGES:
+				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
 				break;
+			default:
+				amount = BigDecimal.ZERO;
 
 			}
 			
@@ -197,16 +221,14 @@ public class CalculationService {
 		});
 		
 		//Updating Urban Development Cess based on other fees
-		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
-			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_PROCESSING_FEES) ||
-					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_CLU_CHARGES) ||
-					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.NOC_EXTERNAL_DEVELOPMENT_CHARGES))
-			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.HALF_UP));
-		});
+//		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
+//			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_PROCESSING_FEE) ||
+//					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_CHARGES) ||
+//					est.getTaxHeadCode().equalsIgnoreCase(CLUConstants.CLU_EXTERNAL_DEVELOPMENT_CHARGES))
+//			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+//			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING));
+//		});
 		
-		//Updating Water Charges based on Malba Charges
-
 		
 		return estimates;
 	}

@@ -85,14 +85,25 @@ public class CLUService {
 
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
-		String acres=null;
-// Access values
+		String acres = (String) siteDetails.get("netTotalArea");
+		// Access values
 		String ulbType = (String) siteDetails.get("ulbType");
+		Map<String, Object> appliedCluCategory = (Map<String, Object>) siteDetails.get("appliedCluCategory");
+		String category = (String) appliedCluCategory.get("code");
 
-		LinkedHashMap<String, Object> mdmData = (LinkedHashMap<String, Object>) nocUtil.mDMSLayoutCall(nocRequest.getRequestInfo(),tenantId,ulbType);
+		BigDecimal acresBD = BigDecimal.ZERO;
+		if ( acres!= null && !acres.isEmpty()) {
+			String sanitized = acres.replace(",", "").trim(); // remove thousands separators
+			BigDecimal sqmBD = new BigDecimal(sanitized);
+			BigDecimal SQM_PER_ACRE = new BigDecimal("4046.8564224");
+			acresBD = sqmBD.divide(SQM_PER_ACRE, 6, RoundingMode.HALF_UP); // 6 decimal places
+		}
+		acres = acresBD.toPlainString();
+
+		LinkedHashMap<String, Object> mdmData = (LinkedHashMap<String, Object>) nocUtil.mDMSCLUCall(nocRequest.getRequestInfo(),tenantId,ulbType,category,acres);
 		LinkedHashMap<String, Object> mdmsRes = (LinkedHashMap<String, Object>) mdmData.get("MdmsRes");
-		LinkedHashMap<String, Object> layout_data = (LinkedHashMap<String, Object>) mdmsRes.get("CLU");
-		List<Object>  workflow_config =  (List<Object>)layout_data.get("WorkflowConfig");
+		LinkedHashMap<String, Object> clu_data = (LinkedHashMap<String, Object>) mdmsRes.get("CLU");
+		List<Object>  workflow_config =  (List<Object>)clu_data.get("WorkflowConfig");
 		LinkedHashMap<String, Object> workflowconfig_data = (LinkedHashMap<String, Object> ) workflow_config.get(0);
 		String businessService = (String) workflowconfig_data.get("businessService");
 		return businessService;
@@ -133,13 +144,14 @@ public class CLUService {
 		return Arrays.asList(nocRequest.getLayout());
 	}
 
-	public void getCalculation(CluRequest request){
+	public void getCalculation(CluRequest request, String feeType){
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
 				.layout(request.getLayout())
 				.tenantId(request.getLayout().getTenantId())
 				.applicationNumber(request.getLayout().getApplicationNo())
+				.feeType(feeType)
 				.build();
 		calculationCriteriaList.add(calculationCriteria);
 
@@ -212,11 +224,6 @@ public class CLUService {
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
-				
-				if (nocRequest.getLayout().getWorkflow().getAction().equalsIgnoreCase(CLUConstants.ACTION_APPROVE)) {
-					getCalculation(nocRequest);
-				}
-				
 
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
@@ -230,7 +237,12 @@ public class CLUService {
 				nocRepository.update(nocRequest, Boolean.FALSE);
 			}
 		}
-
+		
+		if (CLUConstants.ACTION_STATUS_APPLICATION_FEE.equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus()))
+			getCalculation(nocRequest, "PAY1");
+		
+		if (CLUConstants.ACTION_STATUS_SANCTION_FEE.equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus()))
+			getCalculation(nocRequest, "PAY2");
 
 		return Arrays.asList(nocRequest.getLayout());
 	}

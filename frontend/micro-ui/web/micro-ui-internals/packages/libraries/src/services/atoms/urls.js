@@ -375,6 +375,7 @@ const Urls = {
     search: "/gc-services/gc/_search",
     update: "/gc-services/gc/_update",
     location: "/egov-location/location/v11/boundarys/_search",
+    validateConnection: "/gc-services/gc/_validateConnection",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

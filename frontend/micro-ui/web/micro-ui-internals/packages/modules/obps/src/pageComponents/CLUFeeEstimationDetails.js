@@ -39,6 +39,7 @@ const CLUFeeEstimationDetails = ({ formData, feeType }) => {
   const { isLoading: cluCalculatorLoading, data, revalidate } = Digit.Hooks.obps.useCLUFeeCalculator(
     {
       payload,
+      feeType
     },
     {
       enabled: !!payload,

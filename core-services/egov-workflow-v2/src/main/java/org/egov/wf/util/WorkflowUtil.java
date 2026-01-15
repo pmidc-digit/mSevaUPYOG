@@ -241,8 +241,8 @@ public class WorkflowUtil {
         Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = businessServiceRepository.getRoleTenantAndStatusMapping();
         Map<String,List<String>> roleToTenantIdMap = getRoleToTenantId(requestInfo);
 
-        List<String> tenantSpecificStatuses = new LinkedList<>();
-        List<String> statusIrrespectiveOfTenant = new LinkedList<>();
+        Set<String> tenantSpecificStatuses = new LinkedHashSet<>();
+        Set<String> statusIrrespectiveOfTenant = new LinkedHashSet<>();
 
 
 
@@ -313,11 +313,11 @@ public class WorkflowUtil {
         }
 
         if(!CollectionUtils.isEmpty(tenantSpecificStatuses))
-            criteria.setTenantSpecifiStatus(tenantSpecificStatuses);
+            criteria.setTenantSpecifiStatus(new ArrayList<>(tenantSpecificStatuses));
 
         if(!CollectionUtils.isEmpty(statusIrrespectiveOfTenant)) {
-            criteria.setStatus(statusIrrespectiveOfTenant);
-            criteria.setStatusesIrrespectiveOfTenant(statusIrrespectiveOfTenant);
+            criteria.setStatus(new ArrayList<>(statusIrrespectiveOfTenant));
+            criteria.setStatusesIrrespectiveOfTenant(new ArrayList<>(statusIrrespectiveOfTenant));
         }
 
 

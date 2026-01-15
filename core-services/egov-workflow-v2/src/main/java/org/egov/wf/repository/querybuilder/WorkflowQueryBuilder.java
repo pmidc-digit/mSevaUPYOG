@@ -459,6 +459,117 @@ public class WorkflowQueryBuilder {
 
         return countQuery;
     }
+    public String getInboxCount2(ProcessInstanceSearchCriteria criteria, List<Object> preparedStmtList, Boolean statusCount) {
+        if (statusCount) {
+            return getOptimizedInboxStatusCountQuery(criteria, preparedStmtList);
+        } else {
+            return getOptimizedInboxCountQuery(criteria, preparedStmtList);
+        }
+    }
+
+    /**
+     * Optimized query using latest=true instead of correlated subquery
+     */
+    private String getOptimizedInboxStatusCountQuery(ProcessInstanceSearchCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT count(DISTINCT cq.id), cq.applicationStatus, cq.businessservice, cq.PI_STATUS as statusId ");
+        query.append("FROM ( ");
+        query.append("  SELECT ppi.id, ppi.businessservice, ppst.applicationstatus, ppi.status as PI_STATUS ");
+        query.append("  FROM eg_wf_processinstance_v2 ppi ");
+        query.append("  JOIN eg_wf_state_v2 ppst ON (ppst.uuid = ppi.status) ");
+        query.append("  WHERE ppi.latest = true ");
+        query.append("    AND ppi.tenantid = ? ");
+        preparedStmtList.add(criteria.getTenantId());
+
+        // Assignee + tenantSpecificStatus condition
+        addAssigneeAndStatusClause(query, criteria, preparedStmtList);
+
+        // Business service filter
+        if (!StringUtils.isEmpty(criteria.getBusinessService())) {
+            query.append(" AND ppi.businessservice = ? ");
+            preparedStmtList.add(criteria.getBusinessService());
+        }
+
+        // Module name filter
+        if (!StringUtils.isEmpty(criteria.getModuleName())) {
+            query.append(" AND ppi.modulename = ? ");
+            preparedStmtList.add(criteria.getModuleName());
+        }
+
+        // Nearing SLA filter
+        if (!ObjectUtils.isEmpty(criteria.getIsNearingSlaCount()) && criteria.getIsNearingSlaCount()) {
+            query.append(" AND ((extract(epoch from current_timestamp) * 1000) - ppi.lastmodifiedTime) BETWEEN ? AND ? ");
+            preparedStmtList.add(0L);
+            preparedStmtList.add(criteria.getSlotPercentageSlaLimit());
+        }
+
+        query.append("  ORDER BY ppi.lastModifiedTime DESC ");
+        query.append(") cq ");
+        query.append("GROUP BY cq.applicationStatus, cq.businessservice, cq.PI_STATUS");
+
+        return query.toString();
+    }
+
+    /**
+     * Optimized count query using latest=true
+     */
+    private String getOptimizedInboxCountQuery(ProcessInstanceSearchCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT count(DISTINCT ppi.id) ");
+        query.append("FROM eg_wf_processinstance_v2 ppi ");
+        query.append("WHERE ppi.latest = true ");
+        query.append("  AND ppi.tenantid = ? ");
+        preparedStmtList.add(criteria.getTenantId());
+
+        // Assignee + tenantSpecificStatus condition
+        addAssigneeAndStatusClause(query, criteria, preparedStmtList);
+
+        // Business service filter
+        if (!StringUtils.isEmpty(criteria.getBusinessService())) {
+            query.append(" AND ppi.businessservice = ? ");
+            preparedStmtList.add(criteria.getBusinessService());
+        }
+
+        // Module name filter
+        if (!StringUtils.isEmpty(criteria.getModuleName())) {
+            query.append(" AND ppi.modulename = ? ");
+            preparedStmtList.add(criteria.getModuleName());
+        }
+
+        // Nearing SLA filter
+        if (!ObjectUtils.isEmpty(criteria.getIsNearingSlaCount()) && criteria.getIsNearingSlaCount()) {
+            query.append(" AND ((extract(epoch from current_timestamp) * 1000) - ppi.lastmodifiedTime) BETWEEN ? AND ? ");
+            preparedStmtList.add(0L);
+            preparedStmtList.add(criteria.getSlotPercentageSlaLimit());
+        }
+
+        return query.toString();
+    }
+
+    /**
+     * Helper method to add assignee and status clause
+     */
+    private void addAssigneeAndStatusClause(StringBuilder query, ProcessInstanceSearchCriteria criteria, List<Object> preparedStmtList) {
+        List<String> tenantSpecificStatus = criteria.getTenantSpecifiStatus();
+
+        if (criteria.getIsAssignedToMeCount() != null && criteria.getIsAssignedToMeCount()) {
+            // Only assigned to me
+            query.append(" AND ppi.id IN (SELECT processinstanceid FROM eg_wf_assignee_v2 WHERE assignee = ?) ");
+            preparedStmtList.add(criteria.getAssignee());
+        } else if (!config.getAssignedOnly() && !CollectionUtils.isEmpty(tenantSpecificStatus)) {
+            // Assigned OR has specific status
+            query.append(" AND ( ");
+            query.append("   ppi.id IN (SELECT processinstanceid FROM eg_wf_assignee_v2 WHERE assignee = ?) ");
+            preparedStmtList.add(criteria.getAssignee());
+            query.append("   OR (ppi.tenantid || ':' || ppi.status) IN (").append(createQuery(tenantSpecificStatus)).append(") ");
+            addToPreparedStatement(preparedStmtList, tenantSpecificStatus);
+            query.append(" ) ");
+        } else {
+            // Only assigned to me (default)
+            query.append(" AND ppi.id IN (SELECT processinstanceid FROM eg_wf_assignee_v2 WHERE assignee = ?) ");
+            preparedStmtList.add(criteria.getAssignee());
+        }
+    }
 
 
     public String getProcessInstanceCount(ProcessInstanceSearchCriteria criteria, List<Object> preparedStmtList, boolean statuCount) {

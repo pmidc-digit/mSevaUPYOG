@@ -94,7 +94,7 @@ public class Workflow   {
   **/
   @ApiModelProperty(value = "Comment by actor.")
   
-  @Size(min=1,max=64)   public String getComment() {
+  public String getComment() {
     return comment;
   }
 

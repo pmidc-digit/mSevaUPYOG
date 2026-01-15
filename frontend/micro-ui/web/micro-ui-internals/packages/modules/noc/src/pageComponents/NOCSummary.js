@@ -6,7 +6,7 @@ import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationAct
 import NOCDocument from "./NOCDocument";
 import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
-import NOCFeeEstimationDetails from "./NOCFeeEstimationDetails";
+import NocSitePhotographs from "../components/NocSitePhotographs";
 
 function NOCSummary({ currentStepData: formData, t }) {
   const { pathname: url } = useLocation();
@@ -58,6 +58,12 @@ function NOCSummary({ currentStepData: formData, t }) {
 
   let docs = formData?.documents?.documents?.documents;
   console.log("documents here in summary", docs);
+
+  const sitePhotos = formData?.documents?.documents?.documents?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
+  const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+
 
   return (
     <div className="employee-main-application-details">
@@ -153,7 +159,7 @@ function NOCSummary({ currentStepData: formData, t }) {
       </StatusTable>
       </Card>
       
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
         <StatusTable>
           <Row label={t("COMMON_LATITUDE1_LABEL")} text={coordinates?.Latitude1 || "N/A"} />
@@ -163,7 +169,7 @@ function NOCSummary({ currentStepData: formData, t }) {
         </StatusTable>
 
         {/* Render site photographs dynamically in same style */}
-        {formData?.documents?.documents?.documents
+        {/* {formData?.documents?.documents?.documents
           ?.filter((doc) => doc.documentType?.startsWith("OWNER.SITEPHOTOGRAPH"))
           .map((photo, idx) => (
             <div key={photo.uuid} style={{ marginTop: "16px" }}>
@@ -172,8 +178,21 @@ function NOCSummary({ currentStepData: formData, t }) {
                 ownerName={photo.documentType || `Site Photo ${idx + 1}`}
               />
             </div>
-          ))}
+          ))} */}
+      {/* </Card> */} 
+
+      <Card>
+      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+      <StatusTable style={{
+            display: "flex",
+            gap: "20px", 
+            flexWrap: "wrap", 
+            justifyContent : "space-between"
+          }}>
+        {sitePhotos?.length > 0 && sitePhotos?.map((doc)=> <NocSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />)}
+      </StatusTable>
       </Card>
+
 
 
       {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
@@ -197,7 +216,7 @@ function NOCSummary({ currentStepData: formData, t }) {
       <Card>
       <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
       <StatusTable>
-        {formData?.documents?.documents?.documents?.length > 0 && <NOCDocumentTableView documents={formData?.documents?.documents?.documents}/>}
+        {remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs}/>}
       </StatusTable>
       </Card>
 

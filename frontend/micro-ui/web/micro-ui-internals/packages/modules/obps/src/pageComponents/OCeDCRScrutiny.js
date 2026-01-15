@@ -26,7 +26,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
     let validation = {};
 
     function setPermitNo(e) {
-        setPermitNumber(e.target.value);
+        setPermitNumber(e.target.value.trim());
     }
     function setOCPermitDate(e) {
         setPermitDate(e);

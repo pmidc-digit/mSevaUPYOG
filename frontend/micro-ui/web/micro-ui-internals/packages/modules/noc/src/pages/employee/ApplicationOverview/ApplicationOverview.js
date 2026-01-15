@@ -19,7 +19,9 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   Table,
-  Modal
+  Modal,
+  CheckBox,
+  MultiLink
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef,useMemo  } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,6 +34,10 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
+import NocSitePhotographs from "../../../components/NocSitePhotographs";
+import { EmployeeData } from "../../../utils/index";
+import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
+
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -94,7 +100,6 @@ const NOCEmployeeApplicationOverview = () => {
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
-  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -110,11 +115,24 @@ const NOCEmployeeApplicationOverview = () => {
       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
   } : {})
 
+  const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
+  const [showOptions, setShowOptions] = useState(false);
+  
+
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
    console.log("businessService here==>", businessServiceCode);
 
+   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "obpas_noc",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -123,6 +141,16 @@ const NOCEmployeeApplicationOverview = () => {
 
   console.log("workflowDetails here=>", workflowDetails);
 
+
+  useEffect(() => {
+      if (eSignError) {
+        setShowToast({
+          key: "error",
+          error: true,
+          label: eSignError.message || "eSign process failed. Please try again.",
+        });
+      }
+    }, [eSignError]);
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -202,17 +230,116 @@ const NOCEmployeeApplicationOverview = () => {
       })();
   }, [tenantId, businessServiceCode, isLoading]);
 
-  useEffect(() => {
-    const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
-    if (latestCalc?.taxHeadEstimates) {
-      setFeeAdjustments(latestCalc.taxHeadEstimates);
+  
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
+    const application = applicationDetails?.Noc?.[0];
+    try {
+      setLoader(true);
+      if (!application) {
+        throw new Error("Noc Application data is missing");
+      }
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
+      const fileStoreId = response?.filestoreIds?.[0]; 
+      if (!fileStoreId) throw new Error("Failed to generate filestoreId");
+       return fileStoreId;    
+    }catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoader(false);
     }
-  }, [applicationDetails]);
+  }
+  const printCertificateWithESign = async () => {
+    try {
+      console.log("🎯 Starting certificate eSign process with custom hook...");
+
+      // Reuse existing certificate data or generate if not available
+      const fileStoreId = await getRecieptSearch({
+        tenantId: reciept_data?.Payments[0]?.tenantId,
+        payments: reciept_data?.Payments[0],
+        pdfkey: "noc-sanctionletter",
+        EmpData,
+      });
+
+      // Use custom hook for eSign
+      eSignCertificate(
+        { fileStoreId, tenantId },
+        {
+          onSuccess: () => {
+            console.log("✅ eSign process initiated successfully");
+          },
+          onError: (error) => {
+            console.error("❌ Certificate eSign failed:", error);
+            setShowToast({
+              key: "error",
+              error: true,
+              label: error.message || "Failed to initiate digital signing process",
+            });
+          },
+        }
+      );
+    } catch (error) {
+      console.error("❌ Certificate preparation failed:", error);
+      setShowToast({
+        key: "error",
+        error: true,
+        label: error.message || "Failed to prepare certificate for eSign",
+      });
+    }
+  };
+
+  
+
+  const dowloadOptions = [];
+  let EmpData = EmployeeData(tenantId, id);
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+        onClick: printCertificateWithESign,
+        disabled: eSignLoading,
+      });
+    }
+  }
+ useEffect(() => {
+  const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
+  const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
+  if (apiEstimates.length === 0) return;
+
+  setFeeAdjustments((prev = []) => {
+    // build prev map
+    const prevByTax = (prev || []).reduce((acc, it) => {
+      if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+      return acc;
+    }, {});
+
+    // build merged but keep prev edited rows
+    const merged = apiEstimates.map((tax) => {
+      const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
+      const prevItem = prevByTax[tax.taxHeadCode] || {};
+      const isEdited = !!prevItem.edited;
+
+      return {
+        taxHeadCode: tax.taxHeadCode,
+        category: tax.category,
+        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
+        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
+        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
+        onDocumentLoading: false,
+        documentError: null,
+        edited: prevItem.edited ?? false,
+      };
+    });
+
+    return merged;
+  });
+}, [applicationDetails, data]);
 
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -342,7 +469,7 @@ const NOCEmployeeApplicationOverview = () => {
   function onActionSelect(action) {
     console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
-
+    const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
@@ -352,18 +479,18 @@ const NOCEmployeeApplicationOverview = () => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
+      setShowToast({ key: "true", warning: true, message: "COMMON_NOT_EDITABLE_HERE_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000);
+      //cant be edited here
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
+      setTimeout(()=>{setShowToast(null);},3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {
-      if(applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+    } else {      
+      if (applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && !allDocumentsUploaded) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -375,15 +502,10 @@ const NOCEmployeeApplicationOverview = () => {
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
-
-    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
-
 
     if (!isFeeDisabled) {
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
+    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);   
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
-
     if (!hasNonZeroFee) {
       setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
       return;
@@ -400,13 +522,11 @@ const NOCEmployeeApplicationOverview = () => {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
       taxHeadEstimates: feeAdjustments
-        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") // exclude UI-only total row
+        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") 
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: (row.amount || 0) + (row.adjustedAmount ?? 0), // baseline + delta
-          category: row.category,
+          estimateAmount: row.adjustedAmount ?? 0,          category: row.category,
           remarks: row.remark || null,
-          // include filestoreId only if backend supports it
           filestoreId: row.filestoreId || null,
         })),
     };
@@ -469,6 +589,7 @@ const NOCEmployeeApplicationOverview = () => {
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           refetch();
+          setFeeAdjustments(prev => (prev || []).map(p => ({ ...p, edited: false })));
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
@@ -518,13 +639,36 @@ const NOCEmployeeApplicationOverview = () => {
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
   };
+  const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
 
+  const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
   console.log("displayData here", displayData);
+  const sitePhotos = displayData?.Documents?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
+  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+
+  const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const combinedOwnersName = ownersList?.join(", ");
 
   return (
     <div className={"employee-main-application-details"}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
+        <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        {loading && <Loader />}
+        {dowloadOptions && dowloadOptions.length > 0 && (
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions}
+          />
+        )}
       </div>
 
       <Card>
@@ -535,6 +679,17 @@ const NOCEmployeeApplicationOverview = () => {
         />
       </Card>
 
+      {id.length > 0 && (
+        <React.Fragment>
+          <Card>
+            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+              </StatusTable>
+            </div>
+          </Card>
+        </React.Fragment>
+      )}
       {displayData?.applicantDetails?.[0]?.owners?.map((detail, index) => (
         <React.Fragment>
           <Card>
@@ -648,7 +803,7 @@ const NOCEmployeeApplicationOverview = () => {
         ))}
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
         {displayData?.coordinates?.map((detail, index) => {
           // Find matching documents for this coordinate block
@@ -675,7 +830,7 @@ const NOCEmployeeApplicationOverview = () => {
               </StatusTable>
 
               {/* Render images for site photographs */}
-              {sitePhotos?.map((photo, idx) => (
+      {/* {sitePhotos?.map((photo, idx) => (
                 <div key={photo.uuid}>
                   <NOCImageView ownerFileStoreId={photo.documentAttachment} ownerName={photo.documentType || `Site Photo ${idx + 1}`} />
                 </div>
@@ -683,13 +838,28 @@ const NOCEmployeeApplicationOverview = () => {
             </div>
           );
         })}
+      </Card> */}
+
+      <Card>
+        <CardSubHeader >{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable style={{
+            display: "flex",
+            gap: "20px", 
+            flexWrap: "wrap", 
+            justifyContent : "space-between"
+          }}>
+          {sitePhotos?.length > 0 &&
+            sitePhotos?.map((doc) => (
+              <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
+            ))}
+        </StatusTable>
       </Card>
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>
           {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
-            <NOCDocumentTableView documents={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds} />
+            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
           )}
         </StatusTable>
       </Card>
@@ -707,7 +877,7 @@ const NOCEmployeeApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{displayData?.Documents?.length > 0 && <NOCDocumentTableView documents={displayData.Documents} />}</StatusTable>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
 
       <Card>
@@ -718,7 +888,7 @@ const NOCEmployeeApplicationOverview = () => {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || []
+              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || [],
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
@@ -726,6 +896,11 @@ const NOCEmployeeApplicationOverview = () => {
           />
         )}
       </Card>
+
+      <CheckBox
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      />
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>
@@ -747,40 +922,39 @@ const NOCEmployeeApplicationOverview = () => {
         </Card>
       )} */}
 
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+        (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
+          <Card>
+            <div id="fieldInspection"></div>
+            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+          </Card>
+        )}
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
+          <Table
+            className="customTable table-border-style"
+            t={t}
+            data={documentData}
+            columns={documentsColumnsSiteImage}
+            getCellProps={() => ({ style: {} })}
+            disableSort={false}
+            autoSort={true}
+            manualPagination={false}
+            isPaginationRequired={false}
+          />
+          {geoLocations?.length > 0 && (
+            <React.Fragment>
+              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CustomLocationSearch position={geoLocations} />
+            </React.Fragment>
+          )}
+        </Card>
+      )}
 
-      {
-              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (user?.info?.roles.filter(role => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 &&
-              <Card>
-                <div id="fieldInspection"></div>
-                <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-              </Card>
-            }
-            {
-                applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
-                  <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
-                  <Table
-                    className="customTable table-border-style"
-                    t={t}
-                    data={documentData}
-                    columns={documentsColumnsSiteImage}
-                    getCellProps={() => ({ style: {} })}
-                    disableSort={false}
-                    autoSort={true}
-                    manualPagination={false}
-                    isPaginationRequired={false}
-                  />
-                  {geoLocations?.length > 0 &&
-                      <React.Fragment>
-                      <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                      <CustomLocationSearch position={geoLocations}/>
-                      </React.Fragment>
-                  }
-                </Card>
-              }
-      
-
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-
+      <div id="timeline">
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      </div>
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
@@ -797,21 +971,18 @@ const NOCEmployeeApplicationOverview = () => {
         </ActionBar>
       )}
 
-
-    {showImageModal && <Modal
-        headerBarEnd={<CloseBtn onClick={closeImageModal} />}
-      >
-        {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
-        {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-          <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">{t("CS_VIEW_DOCUMENT")}</a>
-        ) : (
-          <img
-            src={imageUrl}
-            alt="Preview"
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-          />
-        )}
-      </Modal>}
+      {showImageModal && (
+        <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
+          {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
+          {imageUrl?.toLowerCase().endsWith(".pdf") ? (
+            <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">
+              {t("CS_VIEW_DOCUMENT")}
+            </a>
+          ) : (
+            <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          )}
+        </Modal>
+      )}
 
       {showModal ? (
         <NOCModal

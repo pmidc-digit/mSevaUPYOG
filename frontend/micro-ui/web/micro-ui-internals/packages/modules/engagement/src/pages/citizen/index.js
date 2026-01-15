@@ -1,13 +1,30 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, Route } from "react-router-dom";
-import { BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
+import { BreadCrumb, BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
 import DocumentCategories from "./Documents/DocumentCategories";
 import ViewDocument from "./Documents/ViewDocument";
 import Response from "./CitizenSurvey/Response";
 import ActiveAndOpenSurveys from "../../components/Surveys/ActiveAndOpenSurveys";
 import FillQuestions from "../../components/Surveys/FillQuestions";
 import SubmitResponse from "./Responses/submit";
+
+const SurveyBreadCrumbs = ({ location }) => {
+  const { t } = useTranslation();
+  const crumbs = [
+    {
+      path: "/digit-ui/citizen",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/citizen",
+      content: t("Survey"),
+      show: location.pathname.includes("/engagement") ? true : false,
+    },
+  ];
+  return <BreadCrumb crumbs={crumbs} />;
+};
 
 const CitizenApp = ({ path, url, userType, tenants }) => {
   const location = useLocation();
@@ -19,10 +36,17 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
   const SurveyList = Digit.ComponentRegistryService.getComponent("SurveyList");
   const FillSurvey = Digit.ComponentRegistryService.getComponent("FillSurvey");
   const ShowSurvey = Digit.ComponentRegistryService.getComponent("ShowSurvey");
+  const isResponse = window.location.href.includes("/response");
+  const isMobile = window.Digit.Utils.browser.isMobile();
   return (
     <React.Fragment>
       <div className="engagement-citizen-wrapper">
-        {!location.pathname.includes("response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
+        {/* {!location.pathname.includes("response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
+        {!isResponse ? (
+          <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+            <SurveyBreadCrumbs location={location} />
+          </div>
+        ) : null}
         <Switch>
           <Route path={`${path}/notifications`} component={() => <NotificationsOrWhatsNew variant="notifications" parentRoute={path} />} />
           <PrivateRoute path={`${path}/whats-new`} component={() => <NotificationsOrWhatsNew variant="whats-new" parentRoute={path} />} />
@@ -37,7 +61,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           {/* <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) =>  /> */}
           {/* New Development */}
           <PrivateRoute path={`${path}/surveys/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
-          <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType}/>} />
+          <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType} />} />
           <PrivateRoute path={`${path}/surveys/submit-survey-response`} component={(props) => <SubmitResponse {...props} />} />
         </Switch>
       </div>

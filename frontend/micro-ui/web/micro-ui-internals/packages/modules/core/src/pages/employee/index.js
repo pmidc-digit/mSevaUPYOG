@@ -197,17 +197,7 @@ const EmployeeApp = ({
 
                 {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
               </div>
-              <div className="upyog-copyright-footer-web">
-                <span
-                  className=""
-                  style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
-                  onClick={() => {
-                    window.open("", "_blank").focus();
-                  }}
-                >
-                  Copyright © {new Date().getFullYear()}
-                </span>
-              </div>
+             
             </div>
           </div>
         </Route>

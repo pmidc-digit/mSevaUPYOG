@@ -548,7 +548,7 @@ const ApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
-        <div style={{ display: "flex", gap: "16px" }}>
+        <div>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
             <NDCDocument value={{ workflowDocs: displayData?.Documents }}></NDCDocument>
           ) : (

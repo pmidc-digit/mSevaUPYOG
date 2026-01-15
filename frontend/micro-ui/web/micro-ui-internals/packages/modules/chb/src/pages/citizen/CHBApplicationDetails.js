@@ -361,24 +361,28 @@ const CHBApplicationDetails = () => {
             totalRecords={slotlistRows.length}
           />
 
-          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
-          <StatusTable>
-            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
-              {docs?.length > 0 ? (
-                docs?.map((doc, index) => (
+          <div className="document-section-wrapper">
+            <div className="document-section-header">
+             
+              {t("CS_COMMON_DOCUMENTS")}
+            </div>
+            {docs?.length > 0 ? (
+              <div style={{display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "16px"}}>
+                {docs?.map((doc, index) => (
                   <React.Fragment key={index}>
-                    <div>
-                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
-                    </div>
+                   
+                    <CHBDocument value={docs} Code={doc?.documentType} index={index} />
                   </React.Fragment>
-                ))
-              ) : (
-                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
-              )}
-            </Card>
-          </StatusTable>
+                ))}
+              </div>
+            ) : (
+              <div className="document-empty-state">
+                {t("CS_NO_DOCUMENTS_UPLOADED")}
+              </div>
+            )}
+          </div>
         </Card>
+
         <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>

@@ -139,20 +139,20 @@ export const CitizenSideBar = ({
           onClick: onLogout,
         },
       },
-      {
-        text: (
-          <React.Fragment>
-            {t("CS_COMMON_HELPLINE")}
-            <div className="telephone" >
-              <div className="link">
-                <a href={`tel:${filteredTenantContact}`}>{filteredTenantContact}</a>
-              </div>
-            </div>
-          </React.Fragment>
-        ),
-        element: "Helpline",
-        icon: "Phone",
-      },
+      // {
+      //   text: (
+      //     <React.Fragment>
+      //       {t("CS_COMMON_HELPLINE")}
+      //       <div className="telephone" >
+      //         <div className="link">
+      //           <a href={`tel:${filteredTenantContact}`}>{filteredTenantContact}</a>
+      //         </div>
+      //       </div>
+      //     </React.Fragment>
+      //   ),
+      //   element: "Helpline",
+      //   icon: "Phone",
+      // },
     ];
   }
 

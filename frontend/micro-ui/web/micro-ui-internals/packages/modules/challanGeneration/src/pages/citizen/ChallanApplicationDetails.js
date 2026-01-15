@@ -224,6 +224,7 @@ const ChallanApplicationDetails = () => {
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
+            <Row className="border-none" label={t("NDC_ADDRESS")} text={getChallanData?.address?.addressLine1 || t("CS_NA")} />
             {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
           </StatusTable>
 

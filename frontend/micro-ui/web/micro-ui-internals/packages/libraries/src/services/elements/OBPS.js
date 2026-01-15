@@ -689,50 +689,50 @@ const getFormattedULBName = (ulbCode = "") => {
     }));
     let inspectionReport = [];
     let checklist = [];
-    BPA?.additionalDetails?.fieldinspection_pending
-      ?.filter((ob) => ob.docs && ob.docs.length > 0)
-      .map((ob, ind) => {
-        checklist = [];
-        inspectionReport.push({
-          title: "BPA_FI_REPORT",
-          asSectionHeader: true,
-          values: [
-            {
-              title: "BPA_FI_DATE_LABEL",
-              value: ob.date.includes("-") ? `${ob.date?.split("-")[2]}/${ob.date?.split("-")[1]}/${ob.date?.split("-")[0]}` : ob.date,
-            },
-            { title: "BPA_FI_TIME_LABEL", value: ob.time },
-          ],
-        });
-        ob?.questions?.map((q, index) => {
-          checklist.push({ title: q.question, value: q.value });
-          checklist.push({ title: "BPA_ENTER_REMARKS", value: q.remarks });
-        });
-        inspectionReport.push({
-          title: "BPA_CHECK_LIST_DETAILS",
-          asSectionHeader: true,
-          values: checklist,
-        });
-        inspectionReport.push({
-          title: "BPA_DOCUMENT_DETAILS_LABEL",
-          asSectionHeader: true,
-          additionalDetails: {
-            obpsDocuments: [
-              {
-                title: "",
-                values: ob?.docs?.map((doc) => ({
-                  title: doc?.documentType?.replaceAll(".", "_"),
-                  documentType: doc?.documentType,
-                  documentUid: doc?.fileStore,
-                  fileStoreId: doc?.fileStoreId,
-                  id: doc?.id,
-                  url: fileDetails?.data?.[doc?.fileStoreId] ? fileDetails?.data?.[doc?.fileStoreId]?.split(",")[0] : "",
-                })),
-              },
-            ],
-          },
-        });
-      });
+    // BPA?.additionalDetails?.fieldinspection_pending
+    //   ?.filter((ob) => ob.docs && ob.docs.length > 0)
+    //   .map((ob, ind) => {
+    //     checklist = [];
+    //     inspectionReport.push({
+    //       title: "BPA_FI_REPORT",
+    //       asSectionHeader: true,
+    //       values: [
+    //         {
+    //           title: "BPA_FI_DATE_LABEL",
+    //           value: ob.date.includes("-") ? `${ob.date?.split("-")[2]}/${ob.date?.split("-")[1]}/${ob.date?.split("-")[0]}` : ob.date,
+    //         },
+    //         { title: "BPA_FI_TIME_LABEL", value: ob.time },
+    //       ],
+    //     });
+    //     ob?.questions?.map((q, index) => {
+    //       checklist.push({ title: q.question, value: q.value });
+    //       checklist.push({ title: "BPA_ENTER_REMARKS", value: q.remarks });
+    //     });
+    //     inspectionReport.push({
+    //       title: "BPA_CHECK_LIST_DETAILS",
+    //       asSectionHeader: true,
+    //       values: checklist,
+    //     });
+    //     inspectionReport.push({
+    //       title: "BPA_DOCUMENT_DETAILS_LABEL",
+    //       asSectionHeader: true,
+    //       additionalDetails: {
+    //         obpsDocuments: [
+    //           {
+    //             title: "",
+    //             values: ob?.docs?.map((doc) => ({
+    //               title: doc?.documentType?.replaceAll(".", "_"),
+    //               documentType: doc?.documentType,
+    //               documentUid: doc?.fileStore,
+    //               fileStoreId: doc?.fileStoreId,
+    //               id: doc?.id,
+    //               url: fileDetails?.data?.[doc?.fileStoreId] ? fileDetails?.data?.[doc?.fileStoreId]?.split(",")[0] : "",
+    //             })),
+    //           },
+    //         ],
+    //       },
+    //     });
+    //   });
 
     let details = [];
 
@@ -1091,42 +1091,42 @@ const getFormattedULBName = (ulbCode = "") => {
     let val;
     var i;
     let FieldInspectionData = [];
-    inspectionReport &&
-      BPA?.additionalDetails?.fieldinspection_pending?.[0]?.questions.length > 0 &&
-      inspectionReport.map((ob, index) => {
-        if (ob.title.includes("FI_REPORT"))
-          FieldInspectionData = [...FieldInspectionData, { title: ob.title, additionalDetails: { inspectionReport: [], values: ob.values } }];
-        else if (ob.title.includes("CHECK_LIST"))
-          FieldInspectionData = [
-            ...FieldInspectionData,
-            { title: ob.title, additionalDetails: { isChecklist: true, inspectionReport: [], values: ob.values } },
-          ];
-        else {
-          let improvedDoc = [...ob.additionalDetails.obpsDocuments?.[0]?.values];
-          improvedDoc.map((ob) => {
-            ob["isNotDuplicate"] = true;
-          });
-          improvedDoc.map((ob, index) => {
-            val = ob.documentType;
-            if (ob.isNotDuplicate == true)
-              for (i = index + 1; i < improvedDoc.length; i++) {
-                if (val === improvedDoc[i].documentType) improvedDoc[i].isNotDuplicate = false;
-              }
-          });
-          FieldInspectionData = [
-            ...FieldInspectionData,
-            { title: ob.title, additionalDetails: { FIdocuments: [], documents: [{ values: improvedDoc }] } },
-          ];
-        }
-      });
+    // inspectionReport &&
+    //   BPA?.additionalDetails?.fieldinspection_pending?.[0]?.questions.length > 0 &&
+    //   inspectionReport.map((ob, index) => {
+    //     if (ob.title.includes("FI_REPORT"))
+    //       FieldInspectionData = [...FieldInspectionData, { title: ob.title, additionalDetails: { inspectionReport: [], values: ob.values } }];
+    //     else if (ob.title.includes("CHECK_LIST"))
+    //       FieldInspectionData = [
+    //         ...FieldInspectionData,
+    //         { title: ob.title, additionalDetails: { isChecklist: true, inspectionReport: [], values: ob.values } },
+    //       ];
+    //     else {
+    //       let improvedDoc = [...ob.additionalDetails.obpsDocuments?.[0]?.values];
+    //       improvedDoc.map((ob) => {
+    //         ob["isNotDuplicate"] = true;
+    //       });
+    //       improvedDoc.map((ob, index) => {
+    //         val = ob.documentType;
+    //         if (ob.isNotDuplicate == true)
+    //           for (i = index + 1; i < improvedDoc.length; i++) {
+    //             if (val === improvedDoc[i].documentType) improvedDoc[i].isNotDuplicate = false;
+    //           }
+    //       });
+    //       FieldInspectionData = [
+    //         ...FieldInspectionData,
+    //         { title: ob.title, additionalDetails: { FIdocuments: [], documents: [{ values: improvedDoc }] } },
+    //       ];
+    //     }
+    //   });
 
     const fiReports = {
-      title: "",
+      title: "BPA_FI_REPORT",
       isFieldInspection: true,
-      isNotAllowed: BPA?.additionalDetails?.fieldinspection_pending?.length > 0 ? false : true,
+      // isNotAllowed: BPA?.additionalDetails?.fieldinspection_pending?.length > 0 ? false : true,
       additionalDetails: {
         values: [],
-        fiReport: BPA?.additionalDetails?.fieldinspection_pending?.length > 0 ? true : false,
+        // fiReport: BPA?.additionalDetails?.fieldinspection_pending?.length > 0 ? true : false,
       },
     };
 

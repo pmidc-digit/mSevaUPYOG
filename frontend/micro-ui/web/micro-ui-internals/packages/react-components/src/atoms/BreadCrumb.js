@@ -11,7 +11,7 @@ const Breadcrumb = (props) => {
   return (
     <ol className="bread-crumb">
       {props?.crumbs?.map((crumb, ci) => {
-        if (!crumb?.show) return;
+        if (crumb?.show === false) return;
         if (crumb?.isBack)
           return (
             <li key={ci} style={{ ...props.style }} className="bread-crumb--item">

@@ -25,6 +25,7 @@ import Inbox from "../employee/Inbox";
 import LayoutResponseCitizen from "./Applications/LayoutResponseCitizen";
 import LayoutApplicantDetails from "../../pageComponents/LayoutApplicantDetails";
 import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
+import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
 
 
 
@@ -56,6 +57,7 @@ const App = ({ path }) => {
   const LayoutSearchApplication = Digit?.ComponentRegistryService?.getComponent("LayoutSearchApplication");
   const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications"); 
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
+  const OCStepperForm = Digit?.ComponentRegistryService?.getComponent("OCStepperForm")
 
    const getBackPageNumber = () => {
     let goBacktoFromProperty = -1;
@@ -120,6 +122,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
         <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
         <PrivateRoute path={`${path}/self-certification/response/:id`} component={SelfCertificationResponse} />
+        <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType/stepper`} component={OCStepperForm} />
       </Switch>
       </div>
     </React.Fragment>

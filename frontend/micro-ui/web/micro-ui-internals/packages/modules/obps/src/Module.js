@@ -120,6 +120,11 @@ import LayoutApplicationOverview from "./pages/employee/ApplicationOverview/Layo
 import LayoutResponseEmployee from "./pages/employee/ApplicationOverview/LayoutResponseEmployee";
 import EditLayoutApplication from "./pageComponents/EditApplication/EditLayoutApplication";
 import LayoutMyApplications from "./pages/citizen/Applications/LayoutMyApplications";
+import OCStepFormOne from "./pages/citizen/OcupationalCertificateStepper/OCStepFormOne";
+import { OCStepperForm } from "./pages/citizen/OcupationalCertificateStepper/OCStepperForm";
+import OCStepFormTwo from "./pages/citizen/OcupationalCertificateStepper/OCStepFormTwo";
+import OCStepFormThree from "./pages/citizen/OcupationalCertificateStepper/OCStepFormThree";
+import OCStepFormFour from "./pages/citizen/OcupationalCertificateStepper/OCStepFormFour";
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -283,7 +288,12 @@ const componentsToRegister = {
   LayoutSearchApplication,
   LayoutMyApplications,
   CLUInbox,
-  CLUEmployeeApplicationDetails
+  CLUEmployeeApplicationDetails,
+  OCStepFormOne,
+  OCStepFormTwo,
+  OCStepFormThree,
+  OCStepFormFour,
+  OCStepperForm
 }
 
 export const initOBPSComponents = () => {

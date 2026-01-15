@@ -123,7 +123,7 @@ class BusinessServiceRepositoryTest {
         when(this.businessServiceQueryBuilder
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any(), (List<Object>) any()))
                 .thenReturn("Business Services");
-        assertTrue(this.businessServiceRepository.getRoleTenantAndStatusMapping().isEmpty());
+        assertTrue(this.businessServiceRepository.getRoleTenantAndStatusMapping(null).isEmpty());
         verify(this.mDMSService).getStateLevelMapping();
         verify(this.jdbcTemplate).query((String) any(), (Object[]) any(),
                 (org.springframework.jdbc.core.ResultSetExtractor<Object>) any());

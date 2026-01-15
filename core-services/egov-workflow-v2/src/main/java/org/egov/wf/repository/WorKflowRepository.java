@@ -113,7 +113,7 @@ public class WorKflowRepository {
     public List getInboxStatusCount(ProcessInstanceSearchCriteria criteria) {
         List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getInboxCount(criteria, preparedStmtList,Boolean.TRUE);
-        log.info(query);
+        log.info(query, preparedStmtList.toString());
         return jdbcTemplate.queryForList(query, preparedStmtList.toArray());
     }
 

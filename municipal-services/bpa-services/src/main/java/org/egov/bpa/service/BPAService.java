@@ -130,7 +130,6 @@ public class BPAService {
 		if(!StringUtils.isEmpty(bpaRequest.getBPA().getApprovalNo())) {
 			bpaRequest.getBPA().setApprovalNo(null);
 		}
-		
 		Map<String, String> values = edcrService.validateEdcrPlan(bpaRequest, mdmsData);
 		String applicationType = values.get(BPAConstants.APPLICATIONTYPE);
 		this.validateCreateOC(applicationType, values, requestInfo, bpaRequest);
@@ -179,6 +178,11 @@ public class BPAService {
 			criteria.setEdcrNumber(ocBpas.get(0).getEdcrNumber());
 			ocService.validateAdditionalData(bpaRequest, criteria);
 			bpaRequest.getBPA().setLandInfo(ocBpas.get(0).getLandInfo());
+			bpaRequest.getBPA().setLandId(ocBpas.get(0).getLandId());
+			
+			//Set old property ID
+			((Map<String, Object>)bpaRequest.getBPA().getAdditionalDetails())
+			.put("propertyuid", ((Map<String, Object>)ocBpas.get(0).getAdditionalDetails()).getOrDefault("propertyuid", null));
 			
 		}
 	}
@@ -432,7 +436,7 @@ public class BPAService {
 		this.handleRejectSendBackActions(applicationType, bpaRequest, businessService, searchResult, mdmsData, edcrResponse);
                 String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
                 String businessSrvc = businessService.getBusinessService();
-
+                
                 /*
                  * Before Citizen approval we need to create Application fee demand
                  */
@@ -443,7 +447,8 @@ public class BPAService {
                 	}
                 	
                 	Boolean isPropertyAvailable = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isPropertyAvailable");
-                	if(!isPropertyAvailable)
+                	String propertyId = ((Map<String, String>)bpa.getAdditionalDetails()).getOrDefault("propertyuid", "");
+                	if(!isPropertyAvailable && StringUtils.isEmpty(propertyId))
                 		bpaPropertyService.createProperty(bpaRequest);
 //                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
                 }

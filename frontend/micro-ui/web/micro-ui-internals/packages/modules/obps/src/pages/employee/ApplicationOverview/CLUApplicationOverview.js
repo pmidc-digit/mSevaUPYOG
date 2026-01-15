@@ -360,7 +360,7 @@ const CLUEmployeeApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {      
-      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "FORWARD" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -374,6 +374,7 @@ const CLUEmployeeApplicationDetails = () => {
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
     // console.log("data ==>", data);
+    console.log("feeAdjustments==>", feeAdjustments);
 
     if (!isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
@@ -577,7 +578,10 @@ const CLUEmployeeApplicationDetails = () => {
                 <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
               )}
 
-              <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
+              )}
+
               <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
             </StatusTable>
           </div>
@@ -624,7 +628,7 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_RESTRICTED_AREA_LABEL")} text={detail?.restrictedArea?.code || "N/A"} />
               <Row label={t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.isSiteUnderMasterPlan?.code || "N/A"} />
 
-              <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={detail?.buildingCategory?.name || "N/A"} />
+              {/* <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={detail?.buildingCategory?.name || "N/A"} /> */}
             </StatusTable>
           </div>
         ))}
@@ -673,7 +677,7 @@ const CLUEmployeeApplicationDetails = () => {
         <StatusTable>{remainingDocs?.length > 0  && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
 
-      {/* <Card>
+      <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetails
@@ -686,7 +690,7 @@ const CLUEmployeeApplicationDetails = () => {
             feeType="PAY1"
           />
         )}
-      </Card> */}
+      </Card>
 
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
@@ -708,9 +712,9 @@ const CLUEmployeeApplicationDetails = () => {
       </Card>
 
       <CheckBox
-        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
           combinedOwnersName
-        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       /> 
 
@@ -770,7 +774,7 @@ const CLUEmployeeApplicationDetails = () => {
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={(applicationDetails?.Clu?.[0]?.applicationStatus === "DOCUMENTVERIFY_MTP/ME")  && (businessServiceCode === "clu_mco") ? "WF_EMPLOYEE_BPA_JC":`WF_EMPLOYEE_${"BPA"}`}
+              localeKeyPrefix= "WF_EMPLOYEE_BPA"
               options={actions}
               optionKey={"action"}
               t={t}

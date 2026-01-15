@@ -361,7 +361,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 		log.info("FINAL FLAG | isBreakdownAvgEnabled={}", isBreakdownAvgEnabled);
 		
-		if (WSCalculationConstant.meteredConnectionType
+	/*	if (WSCalculationConstant.meteredConnectionType
 		        .equalsIgnoreCase(waterConnection.getConnectionType())
 		        && MeterReading.MeterStatusEnum.BREAKDOWN.equals(criteria.getMeterStatus())
 		        && isBreakdownAvgEnabled) {
@@ -425,7 +425,59 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				    }
 
 				    log.info("BREAKDOWN calculation completed | charge={} penalty={}", waterCharge, penalty);
-				}
+				} */
+		
+		if (WSCalculationConstant.meteredConnectionType
+		        .equalsIgnoreCase(waterConnection.getConnectionType())
+		        && MeterReading.MeterStatusEnum.BREAKDOWN.equals(criteria.getMeterStatus())
+		        && isBreakdownAvgEnabled) {
+
+				    log.info("BREAKDOWN triggered for connection {}", criteria.getConnectionNo());
+
+				    // Fetch previous meter reading
+				    MeterReading previousReading = meterService.searchMeterReadings(
+				            MeterReadingSearchCriteria.builder()
+				                    .tenantId(criteria.getTenantId())
+				                    .connectionNos(Collections.singleton(criteria.getConnectionNo()))
+				                    .build(),
+				            requestInfo
+				    ).stream()
+				     .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
+				     .skip(1) // skip current
+				     .findFirst()
+				     .orElse(null);
+
+				    if (previousReading != null && MeterReading.MeterStatusEnum.BREAKDOWN.equals(previousReading.getMeterStatus())) {
+				        // Consecutive BREAKDOWN → use previous charge + penalty
+				        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
+				        penalty = waterCharge.multiply(BigDecimal.valueOf(2)).setScale(2, RoundingMode.HALF_UP);
+				        log.info("Consecutive BREAKDOWN: charge={} penalty={}", waterCharge, penalty);
+				    } else {
+				        // First BREAKDOWN → take last 3 demands average (min 1)
+				        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
+				        log.info("First BREAKDOWN: charge={}", waterCharge);
+				    }
+
+				    // Add WS_CHARGE estimate
+				    estimates.removeIf(e -> TaxHeadCategory.CHARGES.equals(e.getCategory()));
+				    estimates.add(TaxHeadEstimate.builder()
+				            .taxHeadCode(WSCalculationConstant.WS_CHARGE)
+				            .estimateAmount(waterCharge)
+				            .category(TaxHeadCategory.CHARGES)
+				            .build());
+
+				    // Add penalty estimate if any
+				    if (penalty.compareTo(BigDecimal.ZERO) > 0) {
+				        estimates.add(TaxHeadEstimate.builder()
+				                .taxHeadCode(WSCalculationConstant.WS_BREAKDOWN_PENALTY)
+				                .estimateAmount(penalty)
+				                .category(TaxHeadCategory.PENALTY)
+				                .build());
+				    }
+
+				    log.info("BREAKDOWN calculation completed | charge={} penalty={}", waterCharge, penalty);
+				} 
+		//
 
 
 		

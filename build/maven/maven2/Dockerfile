@@ -5,7 +5,6 @@ WORKDIR /app
 
 # copy the project files
 COPY ${WORK_DIR}/pom.xml ./pom.xml
-COPY build/maven/maven2/start.sh ./start.sh
 
 # not useful for stateless builds
 # RUN mvn -B dependency:go-offline
@@ -16,17 +15,10 @@ RUN mvn -B -f /app/pom.xml package -Dmaven.test.skip=true -DskipTests
 RUN ls -lh /app/target
 
 # Create runtime image
-FROM upyogio/8-openjdk-alpine
-#FROM ghcr.io/egovernments/8-openjdk-alpine:latest
+FROM tomcat:9-jdk8-temurin
 
-RUN apk update && \
-    apk add --no-cache ca-certificates && \
-    update-ca-certificates
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/*.war
 
-WORKDIR /opt/egov
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
 
-COPY --from=build /app/target/*.war /app/start.sh /opt/egov/
-
-RUN chmod +x /opt/egov/start.sh
-
-CMD ["/opt/egov/start.sh"]

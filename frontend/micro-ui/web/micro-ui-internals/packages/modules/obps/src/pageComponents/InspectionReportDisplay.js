@@ -60,11 +60,7 @@ const InspectionReportDisplay = ({fiReport}) => {
                                 {
                                     Header: t("BPA_CHECK_LIST_DETAILS"),
                                     accessor: "question"
-                                },
-                                {
-                                    Header: t("ACTION_TEST_RESPONSE"),
-                                    accessor: "answer"
-                                },
+                                },                                
                                 {
                                     Header: t("BPA_REMARKS"),
                                     accessor: "remarks"

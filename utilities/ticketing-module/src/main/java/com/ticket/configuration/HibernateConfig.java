@@ -10,16 +10,16 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public class HibernateConfig {
 
 
-	@Value("${db.driver}")
+	@Value("${db.sv.driver}")
     private String dbDriver;
 	
-	@Value("${db.user}")
+	@Value("${db.sv.user}")
     private String dbUser;
 	
-	@Value("${db.url}")
+	@Value("${db.sv.url}")
     private String dbUrl;
 	
-	@Value("${db.password}")
+	@Value("${db.sv.password}")
     private String dbPassword;
 
 

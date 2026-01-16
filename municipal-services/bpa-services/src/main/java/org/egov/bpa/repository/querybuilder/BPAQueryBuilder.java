@@ -45,6 +45,8 @@ public class BPAQueryBuilder {
             + " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
     
     private final String countWrapper = "SELECT COUNT(DISTINCT(bpa_id)) FROM ({INTERNAL_QUERY}) as bpa_count";
+    
+    private final String DOCUMENT_CHECK_LIST_QUERY = "SELECT * from eg_bpa_document_check_list where applicationno = ? AND tenantId = ?";
 
     /**
      * To give the Search query based on the requirements.
@@ -325,5 +327,13 @@ public class BPAQueryBuilder {
         
         return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
 
+    }
+    
+    public String getBPADocumantsCheckListQuery(String applicationNo, String tenantId, List<Object> params) {
+    	
+    	params.add(applicationNo);
+    	params.add(tenantId);
+    	
+    	return DOCUMENT_CHECK_LIST_QUERY;
     }
 }

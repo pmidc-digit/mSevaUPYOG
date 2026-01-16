@@ -34,6 +34,7 @@ import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.bpa.web.model.user.UserSearchRequest;
+import org.egov.bpa.web.model.workflow.Action;
 import org.egov.bpa.web.model.workflow.BusinessService;
 import org.egov.bpa.web.model.workflow.State;
 import org.egov.bpa.workflow.ActionValidator;
@@ -488,7 +489,7 @@ public class BPAService {
         		State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), businessService);
         		String nextStateId = currentState.getActions().stream()
         				.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
-        				.findFirst().get().getNextState();
+        				.findFirst().orElse(new Action()).getNextState();
         		State nextState = businessService.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
         		
         		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";

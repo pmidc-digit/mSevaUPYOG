@@ -21,6 +21,7 @@ import org.egov.noc.web.model.calculator.CalculationReq;
 import org.egov.noc.web.model.calculator.CalculationRes;
 import org.egov.noc.web.model.enums.ApplicationType;
 import org.egov.noc.web.model.enums.Status;
+import org.egov.noc.web.model.workflow.Action;
 import org.egov.noc.web.model.workflow.BusinessService;
 import org.egov.noc.web.model.workflow.ProcessInstance;
 import org.egov.noc.web.model.workflow.ProcessInstanceResponse;
@@ -197,7 +198,7 @@ public class NOCService {
 			State currentState = workflowService.getCurrentState(noc.getApplicationStatus(), businessServicename);
 			String nextStateId = currentState.getActions().stream()
 					.filter(act -> act.getAction().equalsIgnoreCase(noc.getWorkflow().getAction()))
-					.findFirst().get().getNextState();
+					.findFirst().orElse(new Action()).getNextState();
 			State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
 			String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
@@ -251,7 +252,7 @@ public class NOCService {
 				State currentState = workflowService.getCurrentState(noc.getApplicationStatus(), businessServicename);
 				String nextStateId = currentState.getActions().stream()
 						.filter(act -> act.getAction().equalsIgnoreCase(noc.getWorkflow().getAction()))
-						.findFirst().get().getNextState();
+						.findFirst().orElse(new Action()).getNextState();
 				State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
 				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";

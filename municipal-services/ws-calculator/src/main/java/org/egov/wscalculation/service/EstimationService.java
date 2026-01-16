@@ -272,15 +272,8 @@ public class EstimationService {
 	                if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
 	                        || WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
 
-	                	Object val = additionalDetail.getOrDefault(
-	                	        WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
-
-	                	if (val instanceof Number) {
-	                	    meterReading = ((Number) val).doubleValue();
-	                	} else {
-	                	    meterReading = totalUOM;
-	                	}
-
+	                    meterReading = (Double) additionalDetail.getOrDefault(
+	                            WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
 	                }
 
 	                waterCharge = BigDecimal.valueOf(meterReading * applicableSlab.getCharge());

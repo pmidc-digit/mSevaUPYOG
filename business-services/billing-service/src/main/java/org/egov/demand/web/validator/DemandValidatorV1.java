@@ -250,31 +250,12 @@ public class DemandValidatorV1 {
 
 	    if (taxPeriods != null) {
 
-	        TaxPeriod taxPeriod = null;
+	        TaxPeriod taxPeriod=null;
 
-	        // Fetch connectionType from demand additionalDetails
-	        String connectionType = null;
-
-	        if (demand.getAdditionalDetails() instanceof Map) {
-
-	            Map<String, Object> additionalDetails =
-	                    (Map<String, Object>) demand.getAdditionalDetails();
-
-	            Object typeObj = additionalDetails.get("connectionType");
-
-	            if (typeObj != null) {
-	                connectionType = typeObj.toString();
-	            }
-	        }
-
-	        /*
-	         * Special handling only when:
-	         * - BusinessService is WS or SW
-	         * - AND connectionType is Metered
-	         */
-	        if (("WS".equalsIgnoreCase(demand.getBusinessService())
-	                || "SW".equalsIgnoreCase(demand.getBusinessService()))
-	                && "Metered".equalsIgnoreCase(connectionType)) {
+			/* Putting If else as In metered its failing coz  Meter reading From and To date may vary in Two or more than 2 quaters and here its failing
+			 * So I Putted this If and else as if will work for water and sewerage rest for all works as previous ----> PI-20373
+			*/	        if ("WS".equalsIgnoreCase(demand.getBusinessService()) 
+	                || "SW".equalsIgnoreCase(demand.getBusinessService())) {
 
 	            taxPeriod = taxPeriods.stream()
 	                .filter(t -> demand.getTaxPeriodFrom().compareTo(t.getToDate()) <= 0
@@ -283,7 +264,6 @@ public class DemandValidatorV1 {
 
 	        } else {
 
-	            // Default existing behavior
 	            taxPeriod = taxPeriods.stream()
 	                .filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
 	                          && demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0)
@@ -303,7 +283,6 @@ public class DemandValidatorV1 {
 	        businessServicesWithNoTaxPeriods.add(demand.getBusinessService());
 	    }
 	}
-
 
 	/**
 	 * Method to enrich the businessConsumerMap which will be passed to consumer code validator

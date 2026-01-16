@@ -38,7 +38,8 @@ public class TradeLicenseConsumer {
       "${persister.save.tradelicense.topic}",
       "${persister.update.tradelicense.workflow.topic}"
     },
-    concurrency = "4"             // set "1" if you truly want a single consumer
+    concurrency = "${egov-tl-services.listener.concurrency}"
+            // set "1" if you truly want a single consumer
 )
   public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         ObjectMapper mapper = new ObjectMapper();

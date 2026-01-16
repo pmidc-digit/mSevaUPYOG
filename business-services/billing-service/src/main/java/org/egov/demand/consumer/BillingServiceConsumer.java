@@ -70,8 +70,7 @@ public class BillingServiceConsumer {
 	@KafkaListener(topics = { "${kafka.topics.receipt.update.collecteReceipt}", "${kafka.topics.save.bill}",
 			"${kafka.topics.save.demand}", "${kafka.topics.update.demand}", "${kafka.topics.receipt.update.demand}",
 			"${kafka.topics.receipt.cancel.name}", "${kafka.topics.receipt.update.demand.v2}",
-			"${kafka.topics.receipt.cancel.name.v2}" },
-			concurrency = "${kafka.consumer.config.concurreny.count}")
+			"${kafka.topics.receipt.cancel.name.v2}" })
 	public void processMessage(Map<String, Object> consumerRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		log.debug("key:" + topic + ":" + "value:" + consumerRecord);

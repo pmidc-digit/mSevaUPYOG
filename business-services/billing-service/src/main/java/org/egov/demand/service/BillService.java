@@ -283,8 +283,7 @@ public class BillService {
 			//throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
 
 		BillRequest billRequest = BillRequest.builder().bills(bills).requestInfo(requestInfo).build();
-		String key = billRequest.getBills().get(0).getTenantId() + billRequest.getBills().get(0).getMobileNumber();
-		kafkaTemplate.send(notifTopicName, key, billRequest);
+		kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
 	}
 
@@ -600,8 +599,7 @@ public class BillService {
 	public BillResponse sendBillToKafka(BillRequest billRequest) {
 
 		try {
-			String key = billRequest.getBills().get(0).getTenantId() + billRequest.getBills().get(0).getMobileNumber();
-			kafkaTemplate.send(appProps.getCreateBillTopic(), key , billRequest);
+			kafkaTemplate.send(appProps.getCreateBillTopic(), appProps.getCreateBillTopicKey(), billRequest);
 		} catch (Exception e) {
 			log.debug("BillService createAsync:" + e);
 			throw new CustomException("EGBS_BILL_SAVE_ERROR", e.getMessage());

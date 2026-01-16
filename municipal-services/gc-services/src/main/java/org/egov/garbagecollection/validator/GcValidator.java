@@ -237,41 +237,51 @@ public class GcValidator {
         String unitId = request.getGarbageConnection().getUnitId();
         String tenantId = request.getGarbageConnection().getTenantId();
 
-        // Search for existing connections for this property
-        SearchCriteria criteria = SearchCriteria.builder()
+        // Search for existing connections for this property and unit
+        SearchCriteria criteriaForUnit = SearchCriteria.builder()
+                .propertyId(propertyId)
+                .unitId(unitId)
+                .tenantId(tenantId)
+                .build();
+
+        // Search for all connections on the property to check max limit
+        SearchCriteria criteriaForProperty = SearchCriteria.builder()
                 .propertyId(propertyId)
                 .tenantId(tenantId)
                 .build();
 
-        List<GarbageConnection> existingConnections = gcService.search(criteria, request.getRequestInfo());
-
-        if (existingConnections == null || existingConnections.isEmpty()) {
-            return; // First connection for this property
+        // Check if unit already has a connection
+        List<GarbageConnection> unitConnections = gcService.search(criteriaForUnit, request.getRequestInfo());
+        
+        if (unitConnections != null && !unitConnections.isEmpty()) {
+            // Filter active connections only for this unit
+            boolean unitHasActiveConnection = unitConnections.stream()
+                    .anyMatch(conn -> conn.getStatus() == StatusEnum.ACTIVE);
+            
+            if (unitHasActiveConnection) {
+                throw new CustomException("UNIT_ALREADY_HAS_CONNECTION",
+                        "Unit " + unitId + " already has an active garbage connection. " +
+                                "Only one connection is allowed per unit.");
+            }
         }
 
-        // Filter active connections only
-        List<GarbageConnection> activeConnections = existingConnections.stream()
-                .filter(conn -> conn.getStatus() == StatusEnum.ACTIVE)
-                .collect(Collectors.toList());
-
-        // Validate 1: Check if unit already has a connection
-        boolean unitHasConnection = activeConnections.stream()
-                .anyMatch(conn -> unitId.equals(conn.getUnitId()));
-
-        if (unitHasConnection) {
-            throw new CustomException("UNIT_ALREADY_HAS_CONNECTION",
-                    "Unit " + unitId + " already has an active garbage connection. " +
-                            "Only one connection is allowed per unit.");
+        // Check max 3 connections per property
+        List<GarbageConnection> propertyConnections = gcService.search(criteriaForProperty, request.getRequestInfo());
+        
+        if (propertyConnections != null && !propertyConnections.isEmpty()) {
+            // Filter active connections only
+            List<GarbageConnection> activeConnections = propertyConnections.stream()
+                    .filter(conn -> conn.getStatus() == StatusEnum.ACTIVE)
+                    .collect(Collectors.toList());
+            
+            if (activeConnections.size() >= 3) {
+                throw new CustomException("MAX_CONNECTIONS_EXCEEDED",
+                        "Property " + propertyId + " already has 3 active connections. " +
+                                "Maximum 3 garbage connections are allowed per property.");
+            }
+            
+            log.info("Validation passed: Property {} has {} active connections, adding connection for unit {}",
+                    propertyId, activeConnections.size(), unitId);
         }
-
-        // Validate 2: Check max 3 connections per property
-        if (activeConnections.size() >= 3) {
-            throw new CustomException("MAX_CONNECTIONS_EXCEEDED",
-                    "Property " + propertyId + " already has 3 active connections. " +
-                            "Maximum 3 garbage connections are allowed per property.");
-        }
-
-        log.info("Validation passed: Property {} has {} active connections, adding connection for unit {}",
-                propertyId, activeConnections.size(), unitId);
     }
 }

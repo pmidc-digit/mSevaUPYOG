@@ -196,6 +196,11 @@ public class GcQueryBuilder {
 				preparedStatement.add(criteria.getPropertyId());
 			}
 		}
+		if (!StringUtils.isEmpty(criteria.getUnitId())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" conn.unit_id = ? ");
+			preparedStatement.add(criteria.getUnitId());
+		}
 		if (!CollectionUtils.isEmpty(criteria.getIds())) {
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" conn.id in (").append(createQuery(criteria.getIds())).append(" )");

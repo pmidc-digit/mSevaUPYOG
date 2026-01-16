@@ -155,9 +155,10 @@ public class GcController {
 			@RequestParam String unitId,
 			@RequestParam String tenantId) {
 		
-		// Search for existing connections for this property
+		// Search for existing connections for this property and unit
 		SearchCriteria criteria = SearchCriteria.builder()
 			.propertyId(propertyId)
+			.unitId(unitId)
 			.tenantId(tenantId)
 			.build();
 		

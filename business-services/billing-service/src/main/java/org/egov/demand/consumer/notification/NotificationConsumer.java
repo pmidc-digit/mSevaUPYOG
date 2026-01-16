@@ -127,7 +127,8 @@ public class NotificationConsumer {
 				request.put("mobileNumber", phNo);
 				request.put("message", message);
 				log.info("Msg sent to user : " + message);
-				producer.send(smsTopic, smsTopickey, request);
+				String key = phNo + bill.getConsumerCode();
+				producer.send(smsTopic, key, request);
 			} else {
 				log.error("No message configured! Notification will not be sent.");
 			}
@@ -176,7 +177,8 @@ public class NotificationConsumer {
 					Map<String, Object> request = new HashMap<>();
 					request.put("mobileNumber", phNo);
 					request.put("message", message);
-					producer.send(smsTopic, smsTopickey, request);
+					String key = phNo + bill.getConsumerCode();
+					producer.send(smsTopic, key, request);
 					log.info("******Notification sent Successfully*******");
 				} else {
 					log.error("No message configured! Notification will not be sent.");
@@ -198,7 +200,8 @@ public class NotificationConsumer {
 				request.put("mobileNumber", phNo);
 				request.put("message", message);
 				log.info("Msg sent to user : " + message);
-				producer.send(smsTopic, smsTopickey, request);
+				String key = phNo + bill.getBillDetails().get(0).getConsumerCode();
+				producer.send(smsTopic, key, request);
 			} else {
 				log.error("No message configured! Notification will not be sent.");
 			}

@@ -39,7 +39,8 @@ public class BulkBillGenerationConsumer {
 	@Autowired
 	private CustomKafkaTemplate<String, Object> kafkaTemplate;
 	
-	@KafkaListener(topics = { "${kafka.topics.bulk.bill.generation}" })
+	@KafkaListener(topics = { "${kafka.topics.bulk.bill.generation}" },
+			concurrency = "${kafka.consumer.config.concurreny.count}")
 	public void processMessage(Map<String, Object> consumerRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		log.debug("key:" + topic + ":" + "value:" + consumerRecord);

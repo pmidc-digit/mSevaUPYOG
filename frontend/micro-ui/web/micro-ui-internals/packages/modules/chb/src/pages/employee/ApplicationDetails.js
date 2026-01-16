@@ -227,9 +227,11 @@ const CHBApplicationDetails = () => {
       history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
-    } else if (action?.action == "CANCEL") {
-      handleCancel();
-    } else {
+    }
+    //  else if (action?.action == "CANCEL") {
+    //   handleCancel();
+    // }
+    else {
       setShowModal(true);
       setSelectedAction(action);
     }
@@ -418,7 +420,8 @@ const CHBApplicationDetails = () => {
       filtData.action !== "REJECT" &&
       filtData.action !== "SENDBACK" &&
       filtData.action !== "NOT_VERIFIED" &&
-      filtData.action !== "VERIFIED"
+      filtData.action !== "VERIFIED" &&
+      filtData.action !== "CANCEL"
     ) {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);
@@ -438,8 +441,6 @@ const CHBApplicationDetails = () => {
         workflow,
       },
     };
-
-    // return;
 
     try {
       const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });

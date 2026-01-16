@@ -203,7 +203,7 @@ public class NOCService {
 
 			String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
 
-			if (nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
+			if (nextState != null && nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
 					&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(action) || NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
 				List<String> roles = new ArrayList<>();
 				nextState.getActions().forEach(stateAction -> {
@@ -257,7 +257,7 @@ public class NOCService {
 
 				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
 
-				if (nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
+				if (nextState != null && nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
 						&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(action) || NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
 					List<String> roles = new ArrayList<>();
 					nextState.getActions().forEach(stateAction -> {

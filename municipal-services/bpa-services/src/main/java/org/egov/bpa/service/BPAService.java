@@ -494,7 +494,7 @@ public class BPAService {
         		
         		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
         		
-        		if ((nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
+        		if (nextState != null && (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
         				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
         			List<String> roles = new ArrayList<>();
         			nextState.getActions().forEach(stateAction -> {

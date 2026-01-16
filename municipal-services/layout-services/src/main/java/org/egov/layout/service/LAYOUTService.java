@@ -20,6 +20,7 @@ import org.egov.layout.web.model.calculator.CalculationRes;
 import org.egov.layout.web.model.workflow.BusinessService;
 import org.egov.layout.web.model.workflow.ProcessInstance;
 import org.egov.layout.web.model.workflow.ProcessInstanceResponse;
+import org.egov.layout.web.model.workflow.*;
 import org.egov.layout.workflow.WorkflowIntegrator;
 import org.egov.layout.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
@@ -191,6 +192,9 @@ public class LAYOUTService {
 		String tenantId = nocRequest.getLayout().getTenantId().split("\\.")[0];
 		Object mdmsData = nocUtil.mDMSCall(nocRequest.getRequestInfo(), tenantId);
 		String businessServicedata = businessServiceVal(nocRequest);
+		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getLayout(),
+				nocRequest.getRequestInfo(), businessServicedata);
+		Layout layout = nocRequest.getLayout();
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getLayout().getNocDetails().getAdditionalDetails();
@@ -201,6 +205,24 @@ public class LAYOUTService {
 		List<OwnerInfo> owners = nocRequest.getLayout().getOwners();
 		if (owners != null) {
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
+		}
+
+		State currentState = workflowService.getCurrentState(layout.getApplicationStatus(), businessServicename);
+		String nextStateId = currentState.getActions().stream()
+				.filter(act -> act.getAction().equalsIgnoreCase(layout.getWorkflow().getAction()))
+				.findFirst().orElse(new Action()).getNextState();
+		State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+		String action = layout.getWorkflow() != null ? layout.getWorkflow().getAction() : "";
+
+		if (nextState.getState().equalsIgnoreCase(LAYOUTConstants.FI_STATUS)
+				&& (LAYOUTConstants.ACTION_PAY.equalsIgnoreCase(action) || LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+			List<String> roles = new ArrayList<>();
+			nextState.getActions().forEach(stateAction -> {
+				roles.addAll(stateAction.getRoles());
+			});
+			List<String> assignee = userService.getAssigneeFromLayout(layout, roles, nocRequest.getRequestInfo());
+			layout.getWorkflow().setAssignes(assignee);
 		}
 		if(nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(LAYOUTConstants.ACTION_APPLY)){
 			searchResult = new Layout();

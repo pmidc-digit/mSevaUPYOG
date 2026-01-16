@@ -112,7 +112,15 @@ public class LAYOUTConfiguration {
 
 	@Value("${persister.update.layout.topic}")
 	private String updateTopic;
-	
+
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
+
+
 	@Value("${persister.update.layout.workflow.topic}")
 	private String updateWorkflowTopic;
 	

@@ -37,7 +37,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
-import { convertToDDMMYYYY } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -116,7 +116,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
   } : {})
-
+    const [timeObj , setTimeObj] = useState(null);
+  
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
   
@@ -429,6 +430,13 @@ const NOCEmployeeApplicationOverview = () => {
       };
 
       setDisplayData(finalDisplayData);
+      const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = nocObject?.auditDetails?.lastModifiedTime;
+      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = formatDuration(totalTime);
+
+      setTimeObj(time);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
@@ -588,6 +596,16 @@ const NOCEmployeeApplicationOverview = () => {
     console.log("final Payload ", finalPayload);
 
     try {
+
+      if (["SENDBACKTOCITIZEN", "REJECT"].includes(filtData?.action)) {
+        const proceed = window.confirm("Are you sure you want to reject this application?");
+        if (!proceed) {
+          setSelectedAction(null);
+          return; // Exit early if canceled, no API call
+        }
+      }
+
+
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
@@ -597,19 +615,20 @@ const NOCEmployeeApplicationOverview = () => {
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
           }, 3000);
-        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
+        }  else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           console.log("We are calling employee response page");
           history.replace({
             pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
           });
-        } else {
+        }
+        else{
           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           refetch();
-          setFeeAdjustments(prev => (prev || []).map(p => ({ ...p, edited: false })));
+          setFeeAdjustments((prev) => (prev || []).map((p) => ({ ...p, edited: false })));
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
@@ -1003,7 +1022,7 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj= {timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>

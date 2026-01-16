@@ -116,11 +116,11 @@ const [showHistory, setShowHistory] = useState(false);
 
           {showHistory && (
             <>
-              {timeObj && (
+              {/* {timeObj && (
                 <div style={{ marginBottom: "8px", fontStyle: "italic" }}>
                   {t("TOTAL_TIME_TAKEN")}: {timeObj?.days} {t("DAYS")} {timeObj?.hours} {t("HOURS")} {timeObj?.minutes} {t("MINUTES")} {timeObj?.seconds} {t("SECONDS")} 
                 </div>
-              )}
+              )} */}
               <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
                 <thead>
                   <tr>

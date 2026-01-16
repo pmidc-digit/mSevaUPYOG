@@ -33,7 +33,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY } from "../../../utils/index";
+import { convertToDDMMYYYY,formatDuration } from "../../../utils/index";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -98,7 +98,8 @@ const CitizenApplicationOverview = () => {
 
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-
+  const [timeObj , setTimeObj] = useState(null);
+  
   console.log('applicationD', applicationDetails)
  const [approverComment , setApproverComment] = useState(null);
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
@@ -139,6 +140,14 @@ const CitizenApplicationOverview = () => {
       };
 
       setDisplayData(finalDisplayData);
+
+      const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = nocObject?.auditDetails?.lastModifiedTime;
+      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = formatDuration(totalTime)
+      
+      setTimeObj(time);
     }
   }, [applicationDetails?.Noc]);
 
@@ -165,7 +174,7 @@ const CitizenApplicationOverview = () => {
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
 
-    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
   };
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -190,7 +199,7 @@ const CitizenApplicationOverview = () => {
   let EmpData = EmployeeData(tenantId, id);
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
+      label: t("Download Application Form"),
       onClick: handleDownloadPdf,
     });
 
@@ -690,7 +699,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
       )} */}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj= {timeObj} />
       </div>
 
       {actions && actions.length > 0 && (

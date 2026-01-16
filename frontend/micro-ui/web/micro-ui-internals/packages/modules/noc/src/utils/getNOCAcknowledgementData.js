@@ -113,6 +113,22 @@ const getApplicantDetails = (appData, t) => {
         title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
         value: owner?.propertyId || "NA",
       },
+      {
+        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
+        value: owner?.propertyId || "NA",
+      },
+      {
+        title: t("PROPERTY_OWNER_NAME"),
+        value: owner?.PropertyOwnerName || "NA",
+      },
+      {
+        title: t("PROPERTY_OWNER_MOBILE_NUMBER"),
+        value: owner?.PropertyOwnerMobileNumber || "NA",
+      },
+      {
+        title: t("PROPERTY_PLOT_AREA"),
+        value: owner?.PropertyOwnerPlotArea || "NA",
+      }
     ],
   }));
 
@@ -192,6 +208,10 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("NOC_SITE_VASIKA_NO_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
+    },
+    {
+      title: t("NOC_VASIKA_DATE"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
     },
     {
       title: t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"),

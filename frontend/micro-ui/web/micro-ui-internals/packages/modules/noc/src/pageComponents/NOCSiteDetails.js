@@ -76,6 +76,7 @@ const NOCSiteDetails = (_props) => {
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
   let { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
+  console.log('roadType', roadType)
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
   const ulbListOptions = ulbList?.map((city) => ({
@@ -83,10 +84,10 @@ const NOCSiteDetails = (_props) => {
     displayName: t(city.i18nKey),
   }));
 
-  if (roadType & !isRoadTypeLoading) {
-    roadType = [...roadType].sort((a, b) => a.name.localeCompare(b.name));
-  }
-
+const sortedRoadType = useMemo(
+  () => roadType?.slice().sort((a, b) => a.name.localeCompare(b.name)),
+  [roadType]
+);
 
   useEffect(() => {
     if (ulbName) {
@@ -404,7 +405,7 @@ const NOCSiteDetails = (_props) => {
                     required: t("REQUIRED_FIELD"),
                   }}
                   render={(props) => (
-                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
+                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={sortedRoadType} optionKey="name" t={t} />
                   )}
                 />
               )}

@@ -206,7 +206,10 @@ export const pdfDownloadLinkUpdated = (documents = {}, fileStoreId = "") => {
 };
 
 
-export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {
+export function buildFeeHistoryByTax(
+  calculations = [],
+  { newestFirst = true, limit = null } = {}
+) {
   const map = {};
   if (!Array.isArray(calculations)) return map;
 
@@ -216,13 +219,20 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
 
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
+
       map[th.taxHeadCode] = map[th.taxHeadCode] || [];
-      map[th.taxHeadCode].push({
-        who,
-        estimateAmount: th?.estimateAmount ?? null,
-        remarks: th?.remarks ?? null,
-        isLatest: calc?.isLatest ?? false,
-      });
+
+      const lastEntry = map[th.taxHeadCode][map[th.taxHeadCode].length - 1];
+
+      // Only add if estimateAmount differs from last entry
+      if (!lastEntry || lastEntry.estimateAmount !== th?.estimateAmount) {
+        map[th.taxHeadCode].push({
+          who,
+          estimateAmount: th?.estimateAmount ?? null,
+          remarks: th?.remarks ?? null, // still stored, but not part of uniqueness check
+          isLatest: calc?.isLatest ?? false,
+        });
+      }
     });
   });
 
@@ -237,6 +247,7 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
 
   return map;
 }
+
 
 export function formatDuration(totalTimeMs) {
   const totalSeconds = Math.floor(totalTimeMs / 1000);

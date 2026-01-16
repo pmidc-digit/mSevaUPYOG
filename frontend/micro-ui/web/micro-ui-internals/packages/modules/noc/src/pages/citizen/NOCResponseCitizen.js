@@ -42,7 +42,7 @@ const NOCResponseCitizen = (props) => {
     const ulbName = site?.ulbName?.city?.name || site?.ulbName;
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     }catch(error){
       console.log("Eroor Occurred !!!", error);
     }

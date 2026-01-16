@@ -116,7 +116,7 @@ public class UserService {
 	}
 
 	public List<String> getAssigneeFromNOC(Noc noc, List<String> userRoles, RequestInfo requestInfo) {
-		Map<String, Object> additionalDetails = (Map<String, Object>)noc.getNocDetails().getAdditionalDetails();
+		Map<String, String> additionalDetails = (Map<String, String>)noc.getNocDetails().getAdditionalDetails();
 		String roles = userRoles.stream().collect(Collectors.joining(","));
 		StringBuilder uri = getEmployeeSearchURL(noc.getTenantId(), roles, additionalDetails, false);
 
@@ -130,9 +130,8 @@ public class UserService {
 		assignees = assignees.stream().distinct().collect(Collectors.toList());
 		return CollectionUtils.isEmpty(assignees) ? null :assignees;
 	}
-	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, Object> additionalDetails, boolean isAllAssignees) {
-		String zones = org.springframework.util.StringUtils.isEmpty(additionalDetails.get("zonenumber")) ? null : additionalDetails.get("zonenumber").toString();
-
+	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, String> additionalDetails, boolean isAllAssignees) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone");
 
 		StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
 		uri.append("?tenantId=").append(tenantId)

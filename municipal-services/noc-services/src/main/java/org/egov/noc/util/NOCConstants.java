@@ -86,4 +86,6 @@ public class NOCConstants {
 
 	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
 
+	public static final String INVALID_REQUEST = "INVALID REQUEST";
+
 }

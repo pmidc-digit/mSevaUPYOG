@@ -49,22 +49,27 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     formState: { errors },
     trigger,
     watch,
-    reset
+    reset,
   } = useForm({
-    defaultValues:{
-     owners: [
-     {
-      mobileNumber: "",
-      ownerOrFirmName: "",
-      emailId: "",
-      fatherOrHusbandName: "",
-      propertyId:"",
-      gender: null,
-      dateOfBirth: "",
-      address: "",
-     }
-    ]
-   }
+    defaultValues: {
+      owners: [
+        {
+          mobileNumber: "",
+          ownerOrFirmName: "",
+          emailId: "",
+          fatherOrHusbandName: "",
+          propertyId: "",
+          gender: null,
+          dateOfBirth: "",
+          address: "",
+          PropertyOwnerName: "",
+          PropertyOwnerMobileNumber: "",
+          PropertyOwnerAddress: "",
+          PropertyOwnerPlotArea: null,
+          ownerType:""
+        },
+      ],
+    },
   });
 
   const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};

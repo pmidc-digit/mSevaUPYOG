@@ -91,56 +91,56 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
 
   // Build single certificate body by concatenating translated fragments and dynamic values
   const certificateBody = [
-  { text: "NDC No: ", bold: false },
-  { text: `${appData?.applicationNo}`, bold: true },
-  { text: ", Property ID: ", bold: false },
-  { text: `${propertyId}`, bold: true },
-  { text: ", Property Type: ", bold: false },
-  { text: `${propertyType}\n`, bold: true },
+  { text: "NDC No: ", bold: false , fontSize: 9,},
+  { text: `${appData?.applicationNo}`, bold: true,  fontSize: 9, },
+  { text: ", Property ID: ", bold: false , fontSize: 9,},
+  { text: `${propertyId}`, bold: true ,  fontSize: 9,},
+  { text: ", Property Type: ", bold: false ,  fontSize: 9, },
+  { text: `${propertyType}\n`, bold: true ,  fontSize: 9, },
 
-  { text: "Property Address: ", bold: false },
-  { text: `${formattedAddress}`, bold: true }, { text: " Owned by: ", bold: false }, { text: `${ownerNames}\n`, bold: true },
-  { text: "Applicant Name: ", bold: false },
-  { text: `${applicantName}`, bold: true },
-  { text: " (s/o, d/o) ", bold: false },
-  { text: `${appData?.owners?.[0]?.fatherOrHusbandName || "NA"}`, bold: true },
-  { text: " resident of ", bold: false },
-  { text: `${address}.\n`, bold: true },
+  { text: "Property Address: ", bold: false ,  fontSize: 9, },
+  { text: `${formattedAddress}`, bold: true ,  fontSize: 9, }, { text: " Owned by: ", bold: false , fontSize: 9, }, { text: `${ownerNames}\n`, bold: true ,  fontSize: 9,},
+  { text: "Applicant Name: ", bold: false , fontSize: 9},
+  { text: `${applicantName}`, bold: true , fontSize: 9},
+  { text: " (s/o, d/o) ", bold: false , fontSize: 9 },
+  { text: `${appData?.owners?.[0]?.fatherOrHusbandName || "NA"}`, bold: true , fontSize: 9 },
+  { text: " resident of ", bold: false , fontSize: 9},
+  { text: `${address}.\n`, bold: true ,fontSize: 9 },
   {
     text: [
-      { text: `• This is to certify that, as per the records and data with ${ulbName}, all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. `, bold: true },
-      { text: `${t("NDC_CERTIFY_NOTE_ONE_PB")} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")}\n`, bold: false }
+      { text: `• This is to certify that, as per the records and data with ${ulbName}, all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. `, bold: true , fontSize: 9 },
+      { text: `${t("NDC_CERTIFY_NOTE_ONE_PB")} ${ulbName} ${t("NDC_CERTIFY_NOTE_TWO_PB")}\n`, bold: false , fontSize: 9}
     ]
   },
 
   {
     text: [
-      { text: `• This No Dues Certificate is valid for one month from the date of issuance.`, bold: true },
-      { text: `${t("NDC_VALIDITY_NOTE_PB")}\n`, bold: false }
+      { text: `• This No Dues Certificate is valid for one month from the date of issuance.`, bold: true , fontSize: 9 },
+      { text: `${t("NDC_VALIDITY_NOTE_PB")}\n`, bold: false , fontSize: 9 }
     ]
   },
   {
     text: [
-      { text: `• This is only a No Dues Certificate for municipal dues as on date and it does not regulate the compliance of building regulations, change of land use, any fire safety regulations or any other compliance under any act/rules. `, bold: true },
-      { text: `${t("NDC_BUILDING_NOTE_PB")}\n`, bold: false }
+      { text: `• This is only a No Dues Certificate for municipal dues as on date and it does not regulate the compliance of building regulations, change of land use, any fire safety regulations or any other compliance under any act/rules. `, bold: true , fontSize: 9},
+      { text: `${t("NDC_BUILDING_NOTE_PB")}\n`, bold: false , fontSize: 9 }
     ]
   },
   {
     text: [
-      { text: `• This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. `, bold: true },
-      { text: `${t("NDC_AUTHORITY_NOTE_PB")}\n`, bold: false }
+      { text: `• This No Dues Certificate does not bar any competent authority to take action under their prevailing act/rules. `, bold: true, fontSize: 9 },
+      { text: `${t("NDC_AUTHORITY_NOTE_PB")}\n`, bold: false , fontSize: 9 }
     ]
   },
   {
     text: [
-      { text: `• In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council, which will have the full right to recover the same. `, bold: true },
-      { text: `${t("NDC_DISCREPANCY_NOTE_PB")}\n`, bold: false }
+      { text: `• In case any discrepancies in the amount deposited are discovered by the Municipal Corporation/Council at any stage, it shall be the responsibility of the owner to deposit the differential amount as notified by the Municipal Corporation/Council, which will have the full right to recover the same. `, bold: true , fontSize: 9 },
+      { text: `${t("NDC_DISCREPANCY_NOTE_PB")}\n`, bold: false , fontSize: 9}
     ]
   },
   {
     text: [
-      { text: `• This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. `, bold: true },
-      { text: `${t("NDC_OWNERSHIP_NOTE_PB")}\n`, bold: false }
+      { text: `• This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. `, bold: true , fontSize: 9 },
+      { text: `${t("NDC_OWNERSHIP_NOTE_PB")}\n`, bold: false , fontSize: 9 }
     ]
   }
 ];

@@ -3,8 +3,9 @@ import {
   TextInput,
   CardSubHeader,
 } from "@mseva/digit-ui-react-components";
-import NOCCustomUploadFile from "./NOCCustomUploadFile";
+// import NOCCustomUploadFile from "./NOCCustomUploadFile";
 
+import { amountToWords } from "../utils";
 export const NOCFeeTable = ({
   feeDataWithTotal,
   disable,
@@ -18,12 +19,14 @@ export const NOCFeeTable = ({
   handleRemarkChange,
   onAdjustedAmountBlur,
   feeHistory,
-  totalTimeMs
+  timeObj
+
 }) => {
   
 const [showHistory, setShowHistory] = useState(false);
+
  console.log('feeHistory', feeHistory)
- console.log('totalTimeMs', totalTimeMs)
+ console.log('timeObj', timeObj)
  console.log("feeHistory keys", Object.keys(feeHistory || {}));
   return (
     <div className="noc-table-container">
@@ -75,7 +78,13 @@ const [showHistory, setShowHistory] = useState(false);
 
               <td>
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
-                  <strong>{row.grandTotal}</strong>
+                  <div>
+      <strong>{row.grandTotal}</strong>
+      <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>
+        {amountToWords(row.grandTotal)}
+      </div>
+    </div>
+                  
                 ) : (
                   <TextInput
                     t={t}
@@ -107,12 +116,11 @@ const [showHistory, setShowHistory] = useState(false);
 
           {showHistory && (
             <>
-              {totalTimeMs && (
+              {/* {timeObj && (
                 <div style={{ marginBottom: "8px", fontStyle: "italic" }}>
-                  {t("TOTAL_TIME_TAKEN")}: {Math.floor(totalTimeMs / (1000 * 60 * 60 * 24))} {t("DAYS")} ({Math.floor(totalTimeMs / (1000 * 60 * 60))}{" "}
-                  {t("HOURS")})
+                  {t("TOTAL_TIME_TAKEN")}: {timeObj?.days} {t("DAYS")} {timeObj?.hours} {t("HOURS")} {timeObj?.minutes} {t("MINUTES")} {timeObj?.seconds} {t("SECONDS")} 
                 </div>
-              )}
+              )} */}
               <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
                 <thead>
                   <tr>

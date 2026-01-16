@@ -227,8 +227,9 @@ const CLULocalityInfo = (_props) => {
           </LabelFieldPair>
         )}
         <CardLabelError style={errorStyle}>{errors?.localityNoticeNumber?.message || ""}</CardLabelError>
-
-        <LabelFieldPair>
+        
+        {selectedAreaType?.code === "SCHEME_AREA" && 
+         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_COLONY_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             control={control}
@@ -240,8 +241,10 @@ const CLULocalityInfo = (_props) => {
               <Dropdown className="form-field" select={props.onChange} selected={props.value} option={colonyTypeOptions} optionKey="name" t={t}/>
             )}
           />
-        </LabelFieldPair>
+         </LabelFieldPair>
+         }
         <CardLabelError style={errorStyle}>{errors?.localityColonyType?.message || ""}</CardLabelError>
+        
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>

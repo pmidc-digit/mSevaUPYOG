@@ -1,12 +1,13 @@
 import { useQuery, useQueryClient } from "react-query";
 
-const useCLUFeeCalculator = ({ payload, enabled = true }) => {
+const useCLUFeeCalculator = ({ payload, enabled = true, feeType }) => {
   const client = useQueryClient();
 
   const siteDetails = payload?.CalculationCriteria?.[0]?.CLU?.cluDetails?.additionalDetails?.siteDetails;
 
   const queryKey = [
     "CLU_FEE_CALCULATION",
+    feeType,
     payload?.CalculationCriteria?.[0]?.applicationNumber,
     JSON.stringify(siteDetails), // ensures deep comparison
   ];

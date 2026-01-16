@@ -40,8 +40,9 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   );
 });
 
-export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId() }) {
+export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj  }) {
   
+  console.log('timeObj in timeline', timeObj)
   const { isLoading, data: docData } = Digit.Hooks.ads.useADSDocumentSearch(
   { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
   { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
@@ -150,6 +151,12 @@ const handleDownloadPDF = React.useCallback(() => {
   return (
     <React.Fragment>
       <div className="custom-timeline-container">
+        {timeObj && (
+          <div style={{ marginBottom: "8px", fontStyle: "italic" }}>
+            {t("TOTAL_TIME_TAKEN")}: {timeObj?.days} {t("DAYS")} {timeObj?.hours} {t("HOURS")} {timeObj?.minutes} {t("MINUTES")} {timeObj?.seconds}{" "}
+            {t("SECONDS")}
+          </div>
+        )}
         <div className="custom-timeline-header">
           <div className="custom-tracking-status-header">
             <div className="custom-tracking-line"></div>
@@ -159,8 +166,8 @@ const handleDownloadPDF = React.useCallback(() => {
           <div className="custom-title-bar-row">
             <h2 className="custom-timeline-title">{t("Application History")}</h2>
             <span onClick={handleDownloadPDF} className="download-button">
-          {t("CS_COMMON_DOWNLOAD")}
-        </span>
+              {t("CS_COMMON_DOWNLOAD")}
+            </span>
             <div className="custom-blue-bar"></div>
           </div>
         </div>
@@ -201,11 +208,7 @@ const handleDownloadPDF = React.useCallback(() => {
                               <span className="custom-email-label">{t("Email")}</span> {item?.assigner?.emailId}
                             </div>
                           )}
-                          {deptMap[item?.assigner?.userName] && (
-                            <div className="custom-officer-name">
-                              {t(deptMap[item?.assigner?.userName])}
-                            </div>
-                          )}
+                          {deptMap[item?.assigner?.userName] && <div className="custom-officer-name">{t(deptMap[item?.assigner?.userName])}</div>}
                         </div>
                       )}
                     </div>
@@ -238,9 +241,7 @@ const handleDownloadPDF = React.useCallback(() => {
                           <div className="custom-officer-info">
                             <div className="custom-officer-name">{item.assignes[0]?.name}</div>
                             {deptMap[item.assignes[0]?.userName] && (
-                              <div className="custom-officer-email">
-                                 {t(deptMap[item.assignes[0]?.userName])}
-                              </div>
+                              <div className="custom-officer-email">{t(deptMap[item.assignes[0]?.userName])}</div>
                             )}
                           </div>
                         </div>

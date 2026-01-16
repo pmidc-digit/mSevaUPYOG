@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useLocation } from "react-router-dom";
-
+import { convertToDDMMYYYY } from "../../utils";
 const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -27,7 +27,9 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     watch
   } = useForm({ 
      defaultValues: {
-       floorArea: [{ value: "" }] 
+       floorArea: [{ value: "" }] ,
+       vasikaNumber: "",
+       vasikaDate: ""
   }
 });
 
@@ -36,6 +38,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const currentStepData = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.formData;
   });
+
+  console.log('currentStepData at step 2', currentStepData)
 
   const ownerIds = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.ownerIds;
@@ -53,6 +57,9 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
   
+  
+
+
   // console.log("tenantId here==>", tenantId);
   const toNum2 = (val) => {
   if (val === null || val === undefined) return NaN;
@@ -63,6 +70,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   // Round to 5 decimals to normalize "300", "300.0", "300.00", "300.000", "300.0000", "300.00000"
   return Number(num.toFixed(5));
   };
+   
 
  const isEqualArea = (a, b) => {
   const n1 = toNum2(a);
@@ -95,52 +103,71 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     }
  };
 
-  const onSubmit = (data) => {
-    trigger();
+  const onSubmit = async (data) => {
+  trigger();
+  if (!checkValidation(data)) return;
 
-    if(!checkValidation(data))return;
+  try {
+    const searchResponse = await Digit.NOCService.NOCsearch({
+      tenantId,
+      filters: {
+        vasikaNumber: data?.vasikaNumber,
+        vasikaDate: convertToDDMMYYYY(data?.vasikaDate),
+      },
+    });
 
-    //Save data in redux
+    const applications = searchResponse?.Noc ?? [];
+    const currentAppNo = currentStepData?.apiData?.Noc?.[0]?.applicationNo;
+    const activeApp = applications.find((app) => app?.applicationNo && app?.status !== "REJECTED" && app?.applicationNo !== currentAppNo);
+
+
+    if (activeApp) {
+      setShowToast({ key: "true", error: true, message: "Active application already exists..." });
+      return;
+    }
+
+    // Save data in redux
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
-    
-    //If create api is already called then move to next step
+
+    // ✅ Only one create call
     if (currentStepData?.apiData?.Noc?.[0]?.applicationNo) {
       onGoNext();
     } else {
-    //Call Create API and move to next Page
-    callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+      callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
     }
+  } catch (error) {
+    setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+  }
+};
 
-  // onGoNext();
-
-  };
 
 
-  const callCreateAPI= async (formData)=>{ 
+  const callCreateAPI= async (formData)=>{
+    
+    console.log('formData', formData)
         
         // Prepare nocFormData
-      const nocFormData = 
-      {
-        applicationDetails:{
+      const nocFormData = {
+        applicationDetails: {
           ...formData?.applicationDetails,
           // applicantGender : formData?.applicationDetails?.applicantGender?.code || "",
         },
-        siteDetails:{
-         ...formData?.siteDetails,
-         ulbName: formData?.siteDetails?.ulbName?.name || "",
-         roadType: formData?.siteDetails?.roadType?.name || "",
-         buildingStatus:formData?.siteDetails?.buildingStatus?.name || "",
-         isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
-         district: formData?.siteDetails?.district?.name || "",
-         zone: formData?.siteDetails?.zone?.name || "",
-
-         specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
-         specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
-         specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
-         specificationIsSiteUnderMasterPlan:formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+        siteDetails: {
+          ...formData?.siteDetails,
+          ulbName: formData?.siteDetails?.ulbName?.name || "",
+          roadType: formData?.siteDetails?.roadType?.name || "",
+          buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
+          isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
+          district: formData?.siteDetails?.district || "",
+          zone: formData?.siteDetails?.zone?.name || "",
+          vasikaDate: formData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) : "",
+          specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
+          specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
+          specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
+          specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
         },
         ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
-        ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] 
+        ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
       };
 
        // console.log("nocFormData ==>", nocFormData)
@@ -166,6 +193,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         // Final payload
         const payload = {
           Noc: {
+              vasikaDate: convertToDDMMYYYY (formData?.siteDetails?.vasikaDate),
+              vasikaNumber : formData?.siteDetails?.vasikaNumber,
               applicationType: "NEW",
               documents: [],
               nocType: "NOC",

@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum Status {
 
-	ACTIVE("ACTIVE"), APPROVED("APPROVED"),
+	ACTIVE("ACTIVE"), 
+	APPROVED("APPROVED"),
+	PENDING_FOR_PAYMENT("PENDING_FOR_PAYMENT"),
 	
 	REQUEST_FOR_DISCONNECTION("REQUEST_FOR_DISCONNECTION"), 
 	

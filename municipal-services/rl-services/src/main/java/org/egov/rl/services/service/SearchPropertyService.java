@@ -19,6 +19,7 @@ import org.egov.rl.services.models.RLProperty;
 import org.egov.rl.services.models.enums.Status;
 import org.egov.rl.services.models.user.User;
 import org.egov.rl.services.repository.AllotmentRepository;
+import org.egov.rl.services.util.RLConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -54,24 +55,32 @@ public class SearchPropertyService {
 		allotmentId.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
 		allotmentCriteria.setAllotmentIds(allotmentId);
 		Set<Status> status = new HashSet<>();
+		status.add(Status.PENDING_FOR_PAYMENT);
 		status.add(Status.APPROVED);
 		status.add(Status.REQUEST_FOR_DISCONNECTION);
+		allotmentCriteria.setStatus(status);
 		allotmentCriteria.setTenantId(propertyReportSearchRequest.getSearchProperty().getTenantId());
-		List<AllotmentDetails> allotmentDetailsList = allotmentRepository.getAllotmentSearch(allotmentCriteria).stream().map(d->{
+		allotmentCriteria.setIsExpaireFlag(false);
+		allotmentCriteria.setCurrentDate(RLConstants.CURRENT_DATE);
+	
+		List<AllotmentDetails> runningApplication = allotmentRepository.getAllotmentSearch(allotmentCriteria).stream().map(d->{
 			AllotmentDetails al1=d;
 			al1.setOwnerInfo(userList(d, propertyReportSearchRequest.getSearchProperty().getTenantId()));
 			return al1;
 		}).collect(Collectors.toList());
 		
-		List<String> propertyIdList = allotmentDetailsList.stream().map(d -> d.getPropertyId())
+		System.out.println("--RL--"+runningApplication.size());
+		
+		List<String> runingPropertyIdList = runningApplication.stream().map(d -> d.getPropertyId()).distinct()
 				.collect(Collectors.toList());
 		List<RLProperty> propertyList = boundaryService.loadPropertyData(propertyReportSearchRequest);
 		boolean isVacant = propertyReportSearchRequest.getSearchProperty().getSearchType().equals("1");
 		Object propertyLists = isVacant
-				? (propertyList.stream().filter(prop -> !propertyIdList.contains(prop.getPropertyId()))
+				? (propertyList.stream().filter(prop -> runingPropertyIdList.stream().noneMatch(id->id.equals(prop.getPropertyId())))
 						.collect(Collectors.toList()))
-				: (propertyList.stream().filter(prop -> propertyIdList.contains(prop.getPropertyId())).map(d -> {
-					AllotmentDetails al = allotmentDetailsList.stream().filter(d2 -> d2.getPropertyId().equals(d.getPropertyId())).collect(Collectors.toList()).get(0);
+				: (propertyList.stream().filter(prop -> runingPropertyIdList.stream().anyMatch(id->id.equals(prop.getPropertyId())))
+						.map(d -> {
+					AllotmentDetails al = runningApplication.stream().filter(d2 -> d2.getPropertyId().equals(d.getPropertyId())).collect(Collectors.toList()).get(0);
 					LocalDate endDate = new Date(al.getEndDate()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 					LocalDate currentDate = LocalDate.now();
 					// Calculate difference

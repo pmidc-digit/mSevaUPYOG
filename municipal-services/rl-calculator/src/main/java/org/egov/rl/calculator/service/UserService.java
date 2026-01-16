@@ -27,6 +27,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -269,4 +270,17 @@ public class UserService {
 		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
 		return userCall(userSearchRequest, uri);
 	}
+	
+	 public UserDetailResponse searchSystemUser(){
+	        UserSearchRequest userSearchRequest = new UserSearchRequest();
+	        userSearchRequest.setUserType("SYSTEM");
+	        userSearchRequest.setUserName("SYSTEM");
+	        userSearchRequest.setTenantId("pb");
+	        StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
+	        UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
+	        if(CollectionUtils.isEmpty(userDetailResponse.getUser()))
+	        	throw new CustomException("SYSTEM_USER_NOT_FOUND", "System User Not Found.");
+	        return userDetailResponse;
+
+	    }
 }

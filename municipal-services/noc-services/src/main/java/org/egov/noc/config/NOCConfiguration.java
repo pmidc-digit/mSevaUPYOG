@@ -136,4 +136,11 @@ public class NOCConfiguration {
 	@Value("${spring.kafka.consumer.group-id}")
 	private String kafkaGroupId;
 
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
+
 }

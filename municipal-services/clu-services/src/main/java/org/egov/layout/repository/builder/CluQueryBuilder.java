@@ -31,7 +31,7 @@ public class CluQueryBuilder {
 
 
 
-
+	private final String DOCUMENT_CHECK_LIST_QUERY = "SELECT * from eg_clu_document_check_list where applicationno = ? AND tenantId = ?";
 
 
 	private static final String QUERY =
@@ -341,6 +341,14 @@ public class CluQueryBuilder {
 				builder.append(",");
 		}
 		return builder.toString();
+	}
+
+	public String getCLUDocumantsCheckListQuery(String applicationNo, String tenantId, List<Object> params) {
+
+		params.add(applicationNo);
+		params.add(tenantId);
+
+		return DOCUMENT_CHECK_LIST_QUERY;
 	}
 	
 	private String addCountWrapper(String query) {

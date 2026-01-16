@@ -5,16 +5,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import org.egov.layout.config.LAYOUTConfiguration;
 import org.egov.layout.producer.Producer;
 import org.egov.layout.repository.builder.LayoutQueryBuilder;
+import org.egov.layout.repository.rowmapper.LayoutDocumentCheckListRowMapper;
 import org.egov.layout.repository.rowmapper.LayoutRowMapper;
 import org.egov.layout.web.model.Layout;
 import org.egov.layout.web.model.LayoutRequest;
 import org.egov.layout.web.model.LayoutSearchCriteria;
+import org.egov.layout.web.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -37,6 +40,9 @@ public class LAYOUTRepository {
 
 	@Autowired
 	private LayoutRowMapper rowMapper;
+
+	@Autowired
+	private LayoutDocumentCheckListRowMapper checkListRowMapper;
 	
 	/**
 	 * push the nocRequest object to the producer on the save topic
@@ -120,5 +126,19 @@ public class LAYOUTRepository {
                 int count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
                 return count;
         }
+
+	public List<DocumentCheckList> getDocumentCheckList(String applicationNo, String tenantId){
+		List<Object> params = new LinkedList<>();
+		String query = queryBuilder.getLayoutDocumantsCheckListQuery(applicationNo, tenantId, params);
+		return jdbcTemplate.query(query, params.toArray(), checkListRowMapper);
+	}
+
+	public void saveDocumentCheckList(CheckListRequest checkListRequest) {
+		producer.push(config.getSaveCheckListTopic(), checkListRequest);
+	}
+
+	public void updateDocumentCheckList(CheckListRequest checkListRequest) {
+		producer.push(config.getUpdateCheckListTopic(), checkListRequest);
+	}
 
 }

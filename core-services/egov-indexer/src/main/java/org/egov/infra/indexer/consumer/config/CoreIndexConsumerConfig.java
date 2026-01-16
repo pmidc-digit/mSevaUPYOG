@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @EnableKafka
 @PropertySource("classpath:application.properties")
-@Order(2)
+@Order(6)
 @Slf4j
 public class CoreIndexConsumerConfig implements ApplicationRunner {
 

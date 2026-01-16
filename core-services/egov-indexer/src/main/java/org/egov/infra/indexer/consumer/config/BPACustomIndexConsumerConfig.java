@@ -28,7 +28,7 @@ import java.util.Map;
 @Configuration
 @EnableKafka
 @PropertySource("classpath:application.properties")
-@Order(6)
+@Order(1)
 @Slf4j
 public class BPACustomIndexConsumerConfig  implements ApplicationRunner {
 

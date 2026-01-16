@@ -545,7 +545,8 @@ public class DemandService {
 				
 			}
 			
-	        
+	        	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
+
 //	        List<String> sewConnectionList = waterCalculatorDao.fetchSewConnection(consumerCode); 
 //	        sewConsumerCode = sewConnectionList.isEmpty() ? "" : sewConnectionList.get(0).toString();
 	        
@@ -555,7 +556,6 @@ public class DemandService {
 	        if (!matchingUsages.isEmpty() && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 	        	// For the metered connections demand has to create one by one
 	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
-	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
 	 					for (DemandDetail ddSew : demandDetails) {

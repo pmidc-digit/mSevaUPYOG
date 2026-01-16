@@ -215,7 +215,7 @@ public class LAYOUTService {
 
 		String action = layout.getWorkflow() != null ? layout.getWorkflow().getAction() : "";
 
-		if (nextState.getState().equalsIgnoreCase(LAYOUTConstants.FI_STATUS)
+		if (nextState != null && nextState.getState().equalsIgnoreCase(LAYOUTConstants.FI_STATUS)
 				&& (LAYOUTConstants.ACTION_PAY.equalsIgnoreCase(action) || LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
 			List<String> roles = new ArrayList<>();
 			nextState.getActions().forEach(stateAction -> {

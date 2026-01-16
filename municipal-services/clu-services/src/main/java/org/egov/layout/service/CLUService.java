@@ -199,7 +199,7 @@ public class CLUService {
 
 		String action = clu.getWorkflow() != null ? clu.getWorkflow().getAction() : "";
 
-		if (nextState.getState().equalsIgnoreCase(CLUConstants.FI_STATUS)
+		if (nextState != null && nextState.getState().equalsIgnoreCase(CLUConstants.FI_STATUS)
 				&& (CLUConstants.ACTION_PAY.equalsIgnoreCase(action) || CLUConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
 			List<String> roles = new ArrayList<>();
 			nextState.getActions().forEach(stateAction -> {

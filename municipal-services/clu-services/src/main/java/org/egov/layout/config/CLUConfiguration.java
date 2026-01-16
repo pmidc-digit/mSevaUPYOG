@@ -101,6 +101,12 @@ public class CLUConfiguration {
 	@Value("${persister.save.clu.topic}")
 	private String saveTopic;
 
+	@Value("${persister.save.checkList.topic}")
+	private String saveCheckListTopic;
+
+	@Value("${persister.update.checkList.topic}")
+	private String updateCheckListTopic;
+
 	@Value("${egov.billingservice.host}")
 	private String billingServiceHost;
 

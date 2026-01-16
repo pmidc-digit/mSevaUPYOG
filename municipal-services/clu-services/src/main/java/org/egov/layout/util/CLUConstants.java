@@ -19,6 +19,7 @@ public class CLUConstants {
 	public static final String CLU_TYPE = "CluType";
 	public static final String SOURCE_RefId = "SourceRefId";
 	public static final String ACTION_APPLY = "APPLY";
+	public static final String INVALID_REQUEST = "INVALID REQUEST";
 
 	public static final String CLU_MODULE = "CLU";
 	public static final String WORKFLOW_CONFIG = "WorkflowConfig";

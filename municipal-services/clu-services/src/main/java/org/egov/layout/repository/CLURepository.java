@@ -1,16 +1,19 @@
 package org.egov.layout.repository;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.producer.Producer;
 import org.egov.layout.repository.builder.CluQueryBuilder;
+import org.egov.layout.repository.rowmapper.CLUDocumentCheckListRowMapper;
 import org.egov.layout.repository.rowmapper.CluRowMapper;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.LayoutSearchCriteria;
+import org.egov.layout.web.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -33,6 +36,9 @@ public class CLURepository {
 
 	@Autowired
 	private CluRowMapper rowMapper;
+
+	@Autowired
+	private CLUDocumentCheckListRowMapper checkListRowMapper;
 	
 	/**
 	 * push the nocRequest object to the producer on the save topic
@@ -100,5 +106,18 @@ public class CLURepository {
                 int count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
                 return count;
         }
+	public List<DocumentCheckList> getDocumentCheckList(String applicationNo, String tenantId){
+		List<Object> params = new LinkedList<>();
+		String query = queryBuilder.getCLUDocumantsCheckListQuery(applicationNo, tenantId, params);
+		return jdbcTemplate.query(query, params.toArray(), checkListRowMapper);
+	}
+
+	public void saveDocumentCheckList(CheckListRequest checkListRequest) {
+		producer.push(config.getSaveCheckListTopic(), checkListRequest);
+	}
+
+	public void updateDocumentCheckList(CheckListRequest checkListRequest) {
+		producer.push(config.getUpdateCheckListTopic(), checkListRequest);
+	}
 
 }

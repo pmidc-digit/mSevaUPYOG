@@ -59,6 +59,7 @@ public class LayoutQueryBuilder {
 
 
 
+	private final String DOCUMENT_CHECK_LIST_QUERY = "SELECT * from eg_layout_document_check_list where applicationno = ? AND tenantId = ?";
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
@@ -337,7 +338,13 @@ public class LayoutQueryBuilder {
 		}
 		return builder.toString();
 	}
-	
+	public String getLayoutDocumantsCheckListQuery(String applicationNo, String tenantId, List<Object> params) {
+
+		params.add(applicationNo);
+		params.add(tenantId);
+
+		return DOCUMENT_CHECK_LIST_QUERY;
+	}
 	private String addCountWrapper(String query) {
 	    return countWrapper.replace("{INTERNAL_QUERY}", query);
 	}

@@ -65,16 +65,16 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
       <KeyNote keyValue={t("CS_APPLICATION_DETAILS_APPLICATION_DATE")} note={appDate} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
 
-      <div>
+      <div className="action-button-myapplication">
         <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />
         </Link>
         {/* application.bookingStatus === "BOOKING_CREATED" */}
         {(application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} disabled={expired} />
+          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment}  disabled={expired} />
         )}
         {application.bookingStatus === "BOOKED" && (
-          <SubmitBar label={t("ADS_CANCEL_BOOKING")} onSubmit={handleCancelBooking} style={{ margin: "20px" }} disabled={expired} />
+          <SubmitBar label={t("ADS_CANCEL_BOOKING")} onSubmit={handleCancelBooking} disabled={expired} />
         )}
       </div>
 

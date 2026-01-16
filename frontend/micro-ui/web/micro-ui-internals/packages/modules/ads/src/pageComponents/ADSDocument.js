@@ -13,6 +13,7 @@ import { pdfDownloadLink } from "../utils";
 
 function ADSDocument({ value = {}, Code, index, showFileName = false }) {
   const { t } = useTranslation();
+  const isMobile = window.Digit.Utils.browser.isMobile();
   const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
   // const PDFSvg = () => (
   //   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -39,7 +40,13 @@ function ADSDocument({ value = {}, Code, index, showFileName = false }) {
   }
 
   return (
+    <div className="document-container">
+
+   
     <React.Fragment>
+      <div className="document-grid">
+
+    
       {documents.map((document, index) => {
         let documentLink = pdfDownloadLink(data.pdfFiles, document.fileStoreId);
         return (
@@ -51,20 +58,26 @@ function ADSDocument({ value = {}, Code, index, showFileName = false }) {
             key={index}
           >
             <div className="document-card">
-              <div className="document-icon-wrapper">
-                <PDFSvg width={80} height={100} />
-              </div>
-              <p className="document-name">
-                {value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}
-              </p>
-              <div className="document-action-label">
-                View
-              </div>
-            </div>
+                  <div className="document-icon-wrapper">
+                    <PDFSvg width={isMobile ? 50 : 80} height={isMobile ? 60 : 100} />
+                  </div>
+                  <p className="document-name" title={t(document?.documentType)}>
+                    {(() => {
+                      const text = t(document?.documentType);
+                      const maxLength = isMobile ? 8 : 12;
+                      return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+                    })()}
+                  </p>
+                  <div className="document-action-label">
+                    View
+                  </div>
+                </div>
           </a>
         );
       })}
+      </div>
     </React.Fragment>
+     </div>
   );
 }
 

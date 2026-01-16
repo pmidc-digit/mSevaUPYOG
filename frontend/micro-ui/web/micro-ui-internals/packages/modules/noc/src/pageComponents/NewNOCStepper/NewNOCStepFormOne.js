@@ -66,6 +66,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           PropertyOwnerMobileNumber: "",
           PropertyOwnerAddress: "",
           PropertyOwnerPlotArea: null,
+          ownerType:""
         },
       ],
     },

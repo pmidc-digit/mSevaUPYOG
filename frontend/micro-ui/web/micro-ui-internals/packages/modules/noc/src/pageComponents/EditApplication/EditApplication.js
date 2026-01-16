@@ -189,9 +189,7 @@ const EditApplication = () => {
           //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
-        const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
-        setSelectedDistrict(districtObj);
-
+        
         const updatedSiteDetails=
         {
           ...siteDetails,
@@ -200,7 +198,6 @@ const EditApplication = () => {
           buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
           isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
         
-          district: districtObj,
 
           zone: zoneOptions?.find((obj)=> (obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone)),
 

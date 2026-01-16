@@ -4,6 +4,8 @@ import {
   CardSubHeader,
 } from "@mseva/digit-ui-react-components";
 // import NOCCustomUploadFile from "./NOCCustomUploadFile";
+
+import { amountToWords } from "../utils";
 export const NOCFeeTable = ({
   feeDataWithTotal,
   disable,
@@ -76,7 +78,13 @@ const [showHistory, setShowHistory] = useState(false);
 
               <td>
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
-                  <strong>{row.grandTotal}</strong>
+                  <div>
+      <strong>{row.grandTotal}</strong>
+      <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>
+        {amountToWords(row.grandTotal)}
+      </div>
+    </div>
+                  
                 ) : (
                   <TextInput
                     t={t}

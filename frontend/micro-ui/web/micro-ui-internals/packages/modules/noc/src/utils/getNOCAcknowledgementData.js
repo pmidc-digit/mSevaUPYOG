@@ -381,7 +381,7 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,u
   return {
     t: t,
     tenantId: tenantInfo?.code,
-    name: t("Noc Application"),
+    name: "NOC Application",
     // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,

@@ -244,39 +244,44 @@ public class DemandValidatorV1 {
 	 * @param businessServicesWithNoTaxPeriods
 	 */
 	private void validateTaxPeriod(Map<String, List<TaxPeriod>> taxPeriodBusinessMap, Demand demand,
-			Map<String, String> errorMap, Set<String> businessServicesWithNoTaxPeriods) {
-		
-		/*
-		 * Getting the list of tax periods belonging to the current business service
-		 */
-		List<TaxPeriod> taxPeriods = taxPeriodBusinessMap.get(demand.getBusinessService());
+	        Map<String, String> errorMap, Set<String> businessServicesWithNoTaxPeriods) {
 
+	    List<TaxPeriod> taxPeriods = taxPeriodBusinessMap.get(demand.getBusinessService());
 
-		if (taxPeriods != null) {
+	    if (taxPeriods != null) {
 
-			/*
-			 * looping the list of business services to check if the given demand periods gets match
-			 */
-			TaxPeriod taxPeriod = taxPeriods.stream()
-					.filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
-							&& demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0)
-					.findAny().orElse(null);
+	        TaxPeriod taxPeriod=null;
 
-			if (taxPeriod == null) {
+			/* Putting If else as In metered its failing coz  Meter reading From and To date may vary in Two or more than 2 quaters and here its failing
+			 * So I Putted this If and else as if will work for water and sewerage rest for all works as previous ----> PI-20373
+			*/	        if ("WS".equalsIgnoreCase(demand.getBusinessService()) 
+	                || "SW".equalsIgnoreCase(demand.getBusinessService())) {
 
-				String msg = TAXPERIOD_NOT_FOUND_MSG
-						.replace(TAXPERIOD_NOT_FOUND_FROMDATE, demand.getTaxPeriodFrom().toString())
-						.replace(TAXPERIOD_NOT_FOUND_TODATE, demand.getTaxPeriodTo().toString());
-				errorMap.put(TAXPERIOD_NOT_FOUND_KEY, msg);
-			}
+	            taxPeriod = taxPeriods.stream()
+	                .filter(t -> demand.getTaxPeriodFrom().compareTo(t.getToDate()) <= 0
+	                          && demand.getTaxPeriodTo().compareTo(t.getFromDate()) >= 0)
+	                .findAny().orElse(null);
 
-		} else {
-			/*
-			 * Adding business service name to the set "businessServicesWithNoTaxPeriods"
-			 */
-			businessServicesWithNoTaxPeriods.add(demand.getBusinessService());
-		}
+	        } else {
 
+	            taxPeriod = taxPeriods.stream()
+	                .filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
+	                          && demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0)
+	                .findAny().orElse(null);
+	        }
+
+	        if (taxPeriod == null) {
+
+	            String msg = TAXPERIOD_NOT_FOUND_MSG
+	                    .replace(TAXPERIOD_NOT_FOUND_FROMDATE, demand.getTaxPeriodFrom().toString())
+	                    .replace(TAXPERIOD_NOT_FOUND_TODATE, demand.getTaxPeriodTo().toString());
+
+	            errorMap.put(TAXPERIOD_NOT_FOUND_KEY, msg);
+	        }
+
+	    } else {
+	        businessServicesWithNoTaxPeriods.add(demand.getBusinessService());
+	    }
 	}
 
 	/**

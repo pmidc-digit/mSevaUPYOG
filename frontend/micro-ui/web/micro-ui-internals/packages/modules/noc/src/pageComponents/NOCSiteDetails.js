@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -12,7 +12,7 @@ import {
   CardLabelError,
   UploadFile,
 } from "@mseva/digit-ui-react-components";
-
+import { formatDateForInput } from "../utils";
 const NOCSiteDetails = (_props) => {
   let tenantId;
   if (window.location.pathname.includes("employee")) {
@@ -74,14 +74,20 @@ const NOCSiteDetails = (_props) => {
   const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
-  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
+  let { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
+  console.log('roadType', roadType)
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
   const ulbListOptions = ulbList?.map((city) => ({
     ...city,
     displayName: t(city.i18nKey),
   }));
+
+const sortedRoadType = useMemo(
+  () => roadType?.slice().sort((a, b) => a.name.localeCompare(b.name)),
+  [roadType]
+);
 
   useEffect(() => {
     if (ulbName) {
@@ -147,6 +153,7 @@ const NOCSiteDetails = (_props) => {
     }
   }, [tenantId, allCities]);
 
+  
   useEffect(() => {
     //console.log("currentStepData3", currentStepData);
     const formattedData = currentStepData?.siteDetails;
@@ -398,7 +405,7 @@ const NOCSiteDetails = (_props) => {
                     required: t("REQUIRED_FIELD"),
                   }}
                   render={(props) => (
-                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
+                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={sortedRoadType} optionKey="name" t={t} />
                   )}
                 />
               )}
@@ -946,6 +953,45 @@ const NOCSiteDetails = (_props) => {
                 )}
               />
               {errors?.vasikaNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.vasikaNumber.message}</p>}
+            </div>
+          </LabelFieldPair>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("NOC_VASIKA_DATE")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="vasikaDate"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  validate: (value) => {
+                    // const today = new Date();
+                    // const dob = new Date(value);
+                    // const age = today.getFullYear() - dob.getFullYear();
+                    // const m = today.getMonth() - dob.getMonth();
+                    // const d = today.getDate() - dob.getDate();
+                    // const is18OrOlder = age >= 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+                    // return is18OrOlder || t("DOB_MUST_BE_18_YEARS_OLD");
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    type="date"
+                    value={formatDateForInput(props.value)} 
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    min="1900-01-01"
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+                )}
+              />
+              {errors?.vasikaDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.vasikaDate?.message}</p>}
             </div>
           </LabelFieldPair>
 

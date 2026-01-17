@@ -229,7 +229,7 @@ const NOCApplicantDetails = (_props) => {
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
-            ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt.code === o.ownerType) : null,
+            ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
           }))
         : [defaultOwner()];
 
@@ -555,22 +555,12 @@ const NOCApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair>
+            {index === 0 &&(
+              <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}</CardLabel>
               <div className="field">
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <button
-                    type="button"
-                    className="submit-bar"
-                    style={{ marginBottom: "1rem", width: "100%" }}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setShowModal(true);
-                    }}
-                  >
-                    {t("PT_SEARCH_PROPERTY")}
-                  </button>
-
+                 
                   {watch(`owners[${index}].propertyId`) && (
                     <StatusTable style={{ marginBottom: "1rem" }}>
                       <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
@@ -604,6 +594,19 @@ const NOCApplicantDetails = (_props) => {
                     )}
                   />
 
+                   <button
+                    type="button"
+                    className="submit-bar"
+                    style={{ marginBottom: "1rem", width: "100%" }}
+                    onClick={() => {
+                      setCurrentIndex(index);
+                      setShowModal(true);
+                    }}
+                  >
+                    {t("PT_SEARCH_PROPERTY")}
+                  </button>
+
+
                   {/* Property Owner Name */}
                   <Controller
                     control={control}
@@ -614,18 +617,6 @@ const NOCApplicantDetails = (_props) => {
                         message: t("MAX_100_CHARACTERS_ALLOWED"),
                       },
                     }}
-                    render={(props) => (
-                      <>
-                        <TextInput
-                          style={{ display: "none" }}
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={(e) => props.onBlur(e)}
-                          t={t}
-                        />
-                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
-                      </>
-                    )}
                   />
                   {errors?.owners?.[index]?.PropertyOwnerName && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerName.message}</p>
@@ -641,18 +632,7 @@ const NOCApplicantDetails = (_props) => {
                         message: t("INVALID_MOBILE_NUMBER"),
                       },
                     }}
-                    render={(props) => (
-                      <>
-                        <TextInput
-                          style={{ display: "none" }}
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={(e) => props.onBlur(e)}
-                          t={t}
-                        />
-                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
-                      </>
-                    )}
+                    
                   />
                   {errors?.owners?.[index]?.PropertyOwnerMobileNumber && (
                     <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerMobileNumber.message}</p>
@@ -672,18 +652,7 @@ const NOCApplicantDetails = (_props) => {
                         message: t("MAX_500_CHARACTERS_ALLOWED"),
                       },
                     }}
-                    render={(props) => (
-                      <>
-                        <TextInput
-                          style={{ display: "none" }}
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={(e) => props.onBlur(e)}
-                          t={t}
-                        />
-                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
-                      </>
-                    )}
+                    
                   />
 
                   {errors?.owners?.[index]?.PropertyOwnerAddress && (
@@ -704,18 +673,7 @@ const NOCApplicantDetails = (_props) => {
                         message: t("MAX_100_CHARACTERS_ALLOWED"),
                       },
                     }}
-                    render={(props) => (
-                      <>
-                        <TextInput
-                          style={{ display: "none" }}
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={(e) => props.onBlur(e)}
-                          t={t}
-                        />
-                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
-                      </>
-                    )}
+                    
                   />
                   {errors?.owners?.[index]?.PropertyOwnerPlotArea && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerPlotArea.message}</p>
@@ -723,6 +681,7 @@ const NOCApplicantDetails = (_props) => {
                 </div>
               </div>
             </LabelFieldPair>
+            )}
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">

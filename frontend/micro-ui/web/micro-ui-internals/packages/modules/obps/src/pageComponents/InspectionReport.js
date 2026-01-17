@@ -355,7 +355,7 @@ const InspectionReportForm = (_props) => {
                     {/* <CardSectionHeader>{t("BPA_CHECK_LIST_DETAILS")}</CardSectionHeader> */}
                     {questionList && questionList.map((ob, ind) => (
                         <div key={ind}>
-                            <LabelFieldPair >
+                            {/* <LabelFieldPair >
                                 <CardLabel  className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
                                 <div className="field" >
                                     <Controller
@@ -399,7 +399,23 @@ const InspectionReportForm = (_props) => {
                                         )}
                                     />
                                 </div>
-                            </LabelFieldPair>
+                            </LabelFieldPair> */}
+                            <CardLabel className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
+                            <Controller
+                                control={control}
+                                name={`Remarks_${ind}`}
+                                defaultValue={unit?.uomValue}
+                                render={(props) => (
+                                    <TextInput
+                                        value={getValues(`Remarks${ind}`)}
+                                        onChange={(e) => {
+                                            props.onChange(e);
+                                        }}
+                                        placeholder={t("BPA_ENTER_REMARKS")}
+                                        onBlur={props.onBlur}
+                                    />
+                                )}
+                            />
                         </div>
                     ))}
                     {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader> */}

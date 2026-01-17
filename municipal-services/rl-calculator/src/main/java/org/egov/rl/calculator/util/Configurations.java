@@ -111,6 +111,25 @@ public class Configurations {
     
     @Value("${rl.batch.demand.size}")
     private int demandBatchSize;
+    
+ // Workflow
+
+    @Value("${workflow.host}")
+    private String wfHost;
+
+    @Value("${workflow.transition.path}")
+    private String wfTransitionPath;
+
+    @Value("${workflow.businessservice.search.path}")
+    private String wfBusinessServiceSearchPath;
+
+    @Value("${workflow.processinstance.search.path}")
+    private String wfProcessInstanceSearchPath;
+
+    @Value("${is.workflow.enabled}")
+    private Boolean isWorkflowEnabled;
+
+
 
 
 

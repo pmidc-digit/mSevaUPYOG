@@ -11,6 +11,8 @@ public class RLConstants {
     public static final String TIME_ZONE = "Asia/Kolkata";
 
     public static final String NEW_RL_APPLICATION = "NEW";
+    
+    public static final String RL_WORKFLOW_NAME = "RENT_N_LEASE_NEW";
 
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";
 	

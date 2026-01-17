@@ -85,7 +85,8 @@ public class DemandService {
 			boolean isSecurityDeposite = calculationReq.getCalculationCriteria().get(0).isSecurityDeposite();
 			List<Demand> demands = new ArrayList<>();
 			RequestInfo requestInfo = calculationReq.getRequestInfo();
-			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)					.getTenantId();
+			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
+					.getTenantId();
 
 			for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
 
@@ -105,50 +106,33 @@ public class DemandService {
 				String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
 				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
-				String status = property.path("feesPeriodCycle").asText();
-				long startDay = 0;
-				long endDay = 0;
-				long exparyDate = 0;
-				switch (status) {
-				case RLConstants.RL_MONTHLY_CYCLE: {
-					startDay = allotmentDetails.getStartDate();
-					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 1);
-					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-							allotmentDetails.getTenantId());
-					break;
-				}
-				case RLConstants.RL_QUATERLY_CYCLE: {
-					startDay = allotmentDetails.getStartDate();
-					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 3);
-					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-							allotmentDetails.getTenantId());
-					break;
-				}
-				case RLConstants.RL_BIAANNUALY_CYCLE: {
-					startDay = allotmentDetails.getStartDate();
-					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 6);
-					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-							allotmentDetails.getTenantId());
-					break;
-				}
-				default: {
-					startDay = allotmentDetails.getStartDate();
-					endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 12);
-					exparyDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo,
-							allotmentDetails.getTenantId());
-					break;
-				}
-				}
+				String cycle = property.path("feesPeriodCycle").asText();
 
-				amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
-						BigDecimal::add);
+				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
+				BillingPeriod billingPeriod = billingPeriods.stream()
+						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null); // Assuming
+				if (billingPeriod != null) {
+					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
+							? billingPeriod.getTaxPeriodFrom()
+							: allotmentDetails.getStartDate();
 
-				Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
-						.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(startDay)
-						.taxPeriodTo(endDay).fixedbillexpirydate(exparyDate).billExpiryTime(exparyDate)
-						.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME)
-						.additionalDetails(null).build();
-				demands.add(demand);
+					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
+							? billingPeriod.getTaxPeriodTo()
+							: allotmentDetails.getEndDate();
+
+					long exparyDate = billingPeriod.getDemandExpiryDate();
+
+					amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
+							BigDecimal::add);
+					amountPayable = calculationService.calculatePaybleAmount(startDay, endDay, amountPayable, cycle);
+
+					Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
+							.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)
+							.taxPeriodFrom(startDay).taxPeriodTo(endDay).fixedbillexpirydate(exparyDate)
+							.billExpiryTime(exparyDate).consumerType(applicationType)
+							.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+					demands.add(demand);
+				}
 			}
 
 			List<Demand> demands1 = demandRepository.saveDemand(
@@ -165,9 +149,13 @@ public class DemandService {
 		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 				.getTenantId();
 
+		JsonNode property = allotmentRequest.getAllotment().get(0).getAdditionalDetails().get(0);
+		String cycle = property.path("feesPeriodCycle").asText();
+		
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
-		BillingPeriod billingPeriod = billingPeriods.get(0); // Assuming that each ulb will follow only one type of
-																// billing
+		BillingPeriod billingPeriod = billingPeriods.stream()
+				.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null); // Assuming
+		if(billingPeriod!=null) {
 		String consumerCode = allotmentRequest.getAllotment().get(0).getApplicationNumber();
 
 		OwnerInfo ownerInfo = allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0);
@@ -180,21 +168,17 @@ public class DemandService {
 		String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
-				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
+				.minimumAmountPayable(amountPayable).tenantId(tenantId)
+				.taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
 				.taxPeriodTo(daysCycleCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
 				.billExpiryTime(billingPeriod.getDemandExpiryDate())
-
 				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null)
 				.build();
-
 		demands.add(demand);
+		}
 		List<Demand> demands1 = demandRepository.saveDemand(
 				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
 		return DemandResponse.builder().demands(demands1).build();
-	}
-
-	public void createBulkDemand() {
-
 	}
 
 	public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {
@@ -389,18 +373,21 @@ public class DemandService {
 
 		String baseHost = config.getRlServiceHost();
 		String basePath = config.getRlSearchEndpoint();
-
-		Set<Status> statusSet = new HashSet<>(Arrays.asList(Status.APPROVED,
-				Status.FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION, Status.FORWARD_FOT_SETLEMENT, // verify spelling
-				Status.CLOSE, Status.REQUEST_FOR_DISCONNECTION));
+        
+		Set<Status> statusSet = new HashSet<>(Arrays.asList(
+				Status.APPROVED,
+				Status.FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION, 
+				Status.FORWARD_FOT_SETLEMENT, // verify spelling
+				Status.CLOSE, 
+				Status.REQUEST_FOR_DISCONNECTION));
+		StringJoiner joiner = new StringJoiner(",");
+		statusSet.stream().filter(Objects::nonNull).map(Status::name).forEach(joiner::add);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath).queryParam("tenantId",
 				tenantId);
-
-		statusSet.forEach(s -> builder.queryParam("status", s.toString()));
-
+		builder.queryParam("status",joiner.toString());
 		if (consumerCode != null) {
-			builder.queryParam("applicationNumber", consumerCode);
+			builder.queryParam("applicationNumbers", consumerCode);
 		}
 
 		String url = builder.build().toUriString();
@@ -433,47 +420,41 @@ public class DemandService {
 
 						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo,
 								consumerCode);
-                     	List<Demand> demandList = new ArrayList<>();
+						List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
 						list.forEach(d -> {
 							JsonNode property = d.getAdditionalDetails().get(0);
-							String status = property.path("feesPeriodCycle").asText();
+							String cycle = property.path("feesPeriodCycle").asText();
 
-							switch (status) {
+							List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo,
+									tenantId);
+							BillingPeriod billingPeriod = billingPeriods.stream()
+									.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
+									.collect(Collectors.toList()).get(0); // Assuming
 
-							case RLConstants.RL_MONTHLY_CYCLE:
-								Demand demandM=schedulerService.monthlyBillGenerate(currentDate, d, requestInfo);
-								if(demandM!=null) 
-									demandList.add(demandM);
-								break;
+							long startDay = billingPeriod.getTaxPeriodFrom() <= d.getStartDate()
+									? billingPeriod.getTaxPeriodFrom()
+									: d.getStartDate();
 
-							case RLConstants.RL_QUATERLY_CYCLE:
-								Demand demandQ=schedulerService.quterlyBillGenerate(currentDate, d, requestInfo);
-								if(demandQ!=null) {
-									demandList.add(demandQ);
-								}
-								break;
+							long endDay = billingPeriod.getTaxPeriodTo() <= d.getEndDate()
+									? billingPeriod.getTaxPeriodTo()
+									: d.getEndDate();
 
-							case RLConstants.RL_BIAANNUALY_CYCLE:
-								Demand demandB=schedulerService.biannualBillGenerate(currentDate, d, requestInfo);
-								if(demandB!=null) {
-								    demandList.add(demandB);
-								}
-								break;
-							default:
-								Demand demandY=schedulerService.yearlyBillGenerate(currentDate, d, requestInfo);
-								if(demandY!=null)
-								demandList.add(demandY);
-							}
+							long exparyDate = billingPeriod.getDemandExpiryDate();
+
+							Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, exparyDate, d,
+									requestInfo, cycle);
+							if (demand != null)
+								demandList.add(demand);
 						});
 //						log.info
 						System.out.println("------::List of consummercode which have to generate demand::-----");
-						demandList.stream().forEach(d->{
+						demandList.stream().forEach(d -> {
 //							log.info("{} Demand consummerCode :{} ",currentDate,d.getConsumerCode());
-							System.out.println(currentDate+" Demand consummerCode : "+d.getConsumerCode());
-								
+							System.out.println(currentDate + " Demand consummerCode : " + d.getConsumerCode());
+
 						});
-						
+
 						batchDemanService.batchRun(demandList, batchSize, requestInfo);
 
 					} catch (Exception e) {
@@ -490,12 +471,12 @@ public class DemandService {
 
 	}
 
-	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo,String tenantCode,String consumerCode) {
+	public void sendNotificationAndUpdateDemand(RequestInfo requestInfo, String tenantCode, String consumerCode) {
 
 		List<String> tenantIds = (tenantCode == null) ? demandRepository.getDistinctTenantIds()
 				: Arrays.asList(tenantCode);
 		log.info("Starting Notification job for tenants: {}", tenantIds);
-															// requestInfo.getUserInfo().getTenantId());
+		// requestInfo.getUserInfo().getTenantId());
 		log.info("Starting Notification job for tenants: {}", tenantIds);
 
 		for (String tenantId : tenantIds) {
@@ -505,7 +486,7 @@ public class DemandService {
 				@Override
 				public void run() {
 					try {
-						sendNotificationUpdateDemand(tenantId, requestInfo,consumerCode);
+						sendNotificationUpdateDemand(tenantId, requestInfo, consumerCode);
 					} catch (Exception e) {
 						log.error("Error while Notification for tenant: " + tenantId, e);
 					}
@@ -520,23 +501,25 @@ public class DemandService {
 
 	}
 
-	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo,String consumerCode) {
-		
-		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo, consumerCode);
-		
+	public void sendNotificationUpdateDemand(String tenantId, RequestInfo requestInfo, String consumerCode) {
+
+		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo,
+				consumerCode);
+
 		allotmentDetails.stream().forEach(alt -> {
-			List<Demand> dmdlist = demandRepository.getDemandsNotiByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
+			List<Demand> dmdlist = demandRepository
+					.getDemandsNotiByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
 			dmdlist = dmdlist.stream().map(d -> {
 				d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
 				return d;
 			}).collect(Collectors.toList());
-			
+
 			dmdlist.stream().forEach(d -> {
-				
+
 				ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 				LocalDate expireDate = Instant.ofEpochMilli(d.getBillExpiryTime()).atZone(zone).toLocalDate();
 				LocalDate today = LocalDate.now(zone);
-				if (ChronoUnit.DAYS.between(expireDate,today)==1) {
+				if (ChronoUnit.DAYS.between(expireDate, today) == 1) {
 					DemandDetail baseAmount = d.getDemandDetails().stream()
 							.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
 							.findFirst().get();
@@ -570,7 +553,8 @@ public class DemandService {
 		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
 	}
 
-	public Demand createSingleDemand(long expireDate, AllotmentDetails allotmentDetails, RequestInfo requestInfo) {
+	public Demand createSingleDemand(long expireDate, AllotmentDetails allotmentDetails, RequestInfo requestInfo,
+			String cycle) {
 		List<Demand> demands = new ArrayList<>();
 
 		String consumerCode = allotmentDetails.getApplicationNumber();
@@ -585,6 +569,8 @@ public class DemandService {
 		String applicationType = allotmentDetails.getApplicationType();
 
 		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+		amountPayable = calculationService.calculatePaybleAmount(allotmentDetails.getStartDate(),
+				allotmentDetails.getEndDate(), amountPayable, cycle);
 
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(allotmentDetails.getTenantId())

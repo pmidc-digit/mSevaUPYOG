@@ -6,18 +6,20 @@ import java.util.Optional;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.tracer.model.CustomException;
 import org.egov.tracer.model.ServiceCallException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Repository
 @Slf4j
+@Repository
 public class ServiceRequestRepository {
 
 	@Autowired
@@ -25,6 +27,13 @@ public class ServiceRequestRepository {
 	
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}	
 
 	/**
 	 * Fetches results from a REST service using the uri and object

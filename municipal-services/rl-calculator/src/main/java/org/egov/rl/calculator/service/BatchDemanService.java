@@ -2,6 +2,10 @@ package org.egov.rl.calculator.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,6 +26,9 @@ public class BatchDemanService {
 
 	@Autowired
 	private DemandRepository demandRepository;
+	
+	@Autowired
+	private CycleWorkflowService cycleWorkflowService;
 
 	@Autowired
 	private Configurations config;
@@ -50,6 +57,7 @@ public class BatchDemanService {
 			LocalDate currentDate = LocalDate.now();
 			try {
 				demandRepository.saveDemand(requestInfo, demands);
+				batchWorkflowUpdate(requestInfo,demands);
 				demands.forEach(d -> {
 					
 //					log.info("{} , Batch No :{} ,Success Bulk demands generation for consumerCode: {} , from: {} , to: {} and for amount: {}",
@@ -71,5 +79,19 @@ public class BatchDemanService {
 
 		});
 	}
+	
+	public void batchWorkflowUpdate(RequestInfo requestInfo,List<Demand> list) {
 
+       try {
+        	CompletableFuture.runAsync(() -> {
+        		list.stream().forEach(dmd->{
+        			cycleWorkflowService.process(dmd.getTenantId(),requestInfo,dmd.getConsumerCode()
+                );});
+        	  });
+        	
+            
+        } catch (Exception e) {
+			// TODO: handle exception
+		} 
+    }
 }

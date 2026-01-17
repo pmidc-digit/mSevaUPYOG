@@ -33,87 +33,14 @@ public class SchedulerService {
 
 	@Autowired
 	DemandRepository demandRepository;
-
-	public Demand monthlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-		log.info("----------Monthly  Demand Creation----for Application Number--"+d.getApplicationNumber());
-		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
-				.findFirst().orElse(null);
-		if (demands != null) {
-			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 3);
-			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
-					endDay) == null)) {
-				d.setStartDate(startDay);
-				d.setEndDate(endDay);
-				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
-				return demands;
-			}
-		}
+	
+	public Demand billGenerateByCycle(long startDay,long endDay,long expiryDate, AllotmentDetails allotmentDetails, RequestInfo requestInfo,String cycle) {
+		  if (demandRepository.getDemandsByConsumerCodeAndPerioud(allotmentDetails.getApplicationNumber(), startDay,endDay) == null) {
+			  allotmentDetails.setStartDate(startDay);
+			  allotmentDetails.setEndDate(endDay);
+			  return demandService.createSingleDemand(expiryDate, allotmentDetails, requestInfo,cycle);
+		  }
 		return null;
 		
-	}
-
-	public Demand quterlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-
-		log.info("----------Quterly  Demand Creation----for Application Number--"+d.getApplicationNumber());
-		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
-				.findFirst().orElse(null);
-		if (demands != null) {
-			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 3);
-			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
-					endDay) == null)) {
-				d.setStartDate(startDay);
-				d.setEndDate(endDay);
-				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
-				return demands;
-			}
-		}
-		return null;
-	}
-
-	public Demand biannualBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-
-		log.info("----------Biaaual create demand------for Application Number--"+d.getApplicationNumber());
-		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
-				.findFirst().orElse(null);
-		if (demands != null) {
-			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 6);
-			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
-					endDay) == null)) {
-				d.setStartDate(startDay);
-				d.setEndDate(endDay);
-				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
-				return demands;
-			}
-		}
-		return null;
-	}
-
-	public Demand yearlyBillGenerate(LocalDate currentDate, AllotmentDetails d, RequestInfo requestInfo) {
-		log.info("----------Yearly create demand-----for Application Number--"+d.getApplicationNumber());
-		Demand demands = demandRepository.getDemandsByConsumerCode(Arrays.asList(d.getApplicationNumber())).stream()
-				.findFirst().orElse(null);
-		if (demands != null) {
-			long diff = daysCycleCalculationService.diffDay(demands.getTaxPeriodTo());
-			long startDay = daysCycleCalculationService.firstDay(demands.getTaxPeriodTo());
-			long endDay = daysCycleCalculationService.lastDayTimeOfCycle(startDay, 12);
-			long expiryDate = daysCycleCalculationService.addAfterPenaltyDays(endDay, requestInfo, d.getTenantId());
-			if (diff == 2 && (demandRepository.getDemandsByConsumerCodeAndPerioud(d.getApplicationNumber(), startDay,
-					endDay) == null)) {
-				d.setStartDate(startDay);
-				d.setEndDate(endDay);
-				demands = demandService.createSingleDemand(expiryDate, d, requestInfo);
-				return demands;
-			}
-		}
-		return null;
 	}
 }

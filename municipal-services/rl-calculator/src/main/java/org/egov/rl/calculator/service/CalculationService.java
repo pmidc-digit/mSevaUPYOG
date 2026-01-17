@@ -13,9 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -124,5 +126,46 @@ public class CalculationService {
 				.tenantId(tenantId)
 				.build());
 		return demandDetails;
+	}
+	
+	public BigDecimal calculatePaybleAmount(long startDay,long endDay,BigDecimal amount,String cycle) {
+		long durationInDays = TimeUnit.MILLISECONDS.toDays(endDay - startDay);
+		BigDecimal duration = BigDecimal.valueOf(durationInDays);
+		
+		System.out.println("Days = " + durationInDays);
+        BigDecimal payAmount=BigDecimal.ZERO;
+		switch (cycle) {
+		case RLConstants.RL_MONTHLY_CYCLE:
+			if(durationInDays>21) {
+				payAmount=amount;
+			}else {
+			    payAmount = amount.divide(new BigDecimal(30), 8, RoundingMode.HALF_UP).multiply(duration); // high precision for intermediate
+			}			
+		break;
+		case RLConstants.RL_QUATERLY_CYCLE:
+			if(durationInDays>81) {
+				payAmount=amount;
+			}else {
+			    payAmount = amount.divide(new BigDecimal(90), 8, RoundingMode.HALF_UP).multiply(duration); // high precision for intermediate
+				}
+		break;
+		case RLConstants.RL_BIAANNUALY_CYCLE:
+			if(durationInDays>171) {
+				payAmount=amount;
+			}else {
+			    payAmount = amount.divide(new BigDecimal(180), 8, RoundingMode.HALF_UP).multiply(duration); // high precision for intermediate
+				
+			}
+		break;
+		default:
+			if(durationInDays>356) {
+				payAmount=amount;
+			}else {
+			    payAmount = amount.divide(new BigDecimal(365), 8, RoundingMode.HALF_UP).multiply(duration); // high precision for intermediate		
+			}
+		
+		break;
+		}
+		return payAmount;
 	}
 }

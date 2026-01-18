@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 @Component
 @Slf4j
@@ -151,6 +152,19 @@ public class CluQueryBuilder {
 //			addToPreparedStatement(preparedStmtList, ownerIds);
 //		}
 
+		if ( !StringUtils.isEmpty(criteria.getVasikaNumber()) ) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.vasikaNumber=? ");
+			preparedStmtList.add(criteria.getVasikaNumber());
+			log.info(criteria.getVasikaNumber());
+		}
+
+		if ( !StringUtils.isEmpty(criteria.getVasikaDate()) ) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.vasikaDate=? ");
+			preparedStmtList.add(criteria.getVasikaDate());
+			log.info(criteria.getVasikaDate());
+		}
 
 		String applicationNo = criteria.getApplicationNo();
                 if (applicationNo != null) {

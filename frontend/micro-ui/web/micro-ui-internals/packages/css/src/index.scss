@@ -472,7 +472,7 @@
 
 .text-input {
   width: 100%;
-  margin-bottom: 24px;
+
   input {
     &:hover {
       @apply border-2 border-solid border-primary-main;
@@ -739,7 +739,6 @@
   .citizen-obps-wrapper,
   .selection-card-wrapper,
   .fsm-citizen-wrapper,
-  .pgr-citizen-wrapper,
   .pt-citizen,
   .bill-citizen,
   .bills-citizen-wrapper,

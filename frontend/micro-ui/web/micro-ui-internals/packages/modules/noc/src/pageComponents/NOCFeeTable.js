@@ -79,12 +79,9 @@ const [showHistory, setShowHistory] = useState(false);
               <td>
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
                   <div>
-      <strong>{row.grandTotal}</strong>
-      <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>
-        {amountToWords(row.grandTotal)}
-      </div>
-    </div>
-                  
+                    <strong>{row.grandTotal.toLocaleString("en-IN")}</strong>
+                    <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                  </div>
                 ) : (
                   <TextInput
                     t={t}

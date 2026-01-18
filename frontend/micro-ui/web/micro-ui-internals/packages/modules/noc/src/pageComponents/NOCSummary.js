@@ -64,6 +64,7 @@ function NOCSummary({ currentStepData: formData, t }) {
           );
   const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 const primaryOwner = formData?.applicationDetails?.owners?.[0];
+const propertyId =formData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className="employee-main-application-details">
@@ -82,7 +83,7 @@ const primaryOwner = formData?.applicationDetails?.owners?.[0];
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>
             <StatusTable>
-              <Row label={t("NOC_OWNER_TYPE_LABEL")} text={owner?.ownerType?.i18nKey || "N/A"} />
+                {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
               <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
@@ -95,7 +96,7 @@ const primaryOwner = formData?.applicationDetails?.owners?.[0];
         );
       })}
 
-      {primaryOwner && (
+      {primaryOwner && propertyId && (
         <Card>
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>

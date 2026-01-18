@@ -90,6 +90,32 @@ export const useNOCSearchApplicationByIdOrMobile = (params, tenantId, config = {
   return { ...result, revalidate: () => client.invalidateQueries(["NOC_SEARCH_APPLICATION", params]) };
 };
 
+const useNOCCheckListSearchFn = (params, tenantId) => {
+  return async () => {
+    return await Digit.NOCService.NOCCheckListSearch({ tenantId, filters: params, });
+  };
+};
+
+export const useNOCCheckListSearch = (params, tenantId, config = {}) => {
+  const client = useQueryClient();
+
+  const result = useQuery(
+    ["NOC_CHECKLIST_SEARCH", params],
+    useNOCCheckListSearchFn(params, tenantId),
+    {
+      staleTime: Infinity,
+      ...config,
+    }
+  );
+
+  // Add a helper to revalidate if you want
+  return {
+    ...result,
+    revalidate: () => client.invalidateQueries(["NOC_CHECKLIST_SEARCH", params]),
+  };
+};
+
+
 // export const useNOCSearchApplication = (tenantId,filters, config = {}) => {
 //   return useQuery(
 //     ["APPLICATION_SEARCH", "NOC_SEARCH", tenantId, ...Object.entries(filters)],

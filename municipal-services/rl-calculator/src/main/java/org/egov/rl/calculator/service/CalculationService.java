@@ -129,7 +129,13 @@ public class CalculationService {
 	}
 	
 	public BigDecimal calculatePaybleAmount(long startDay,long endDay,BigDecimal amount,String cycle) {
-		long durationInDays = TimeUnit.MILLISECONDS.toDays(endDay - startDay);
+		int durationInDays=0;
+		long durationInDays1 = TimeUnit.MILLISECONDS.toDays(endDay - startDay);
+		try {
+		  durationInDays = Math.toIntExact(durationInDays1); // throws exception if overflow
+		}catch (Exception e) {
+		}
+		
 		BigDecimal duration = BigDecimal.valueOf(durationInDays);
 		
 		System.out.println("Days = " + durationInDays);

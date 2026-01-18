@@ -113,8 +113,8 @@ public class DemandService {
 						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null); // Assuming
 				if (billingPeriod != null) {
 					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
-							? billingPeriod.getTaxPeriodFrom()
-							: allotmentDetails.getStartDate();
+							? allotmentDetails.getStartDate()
+							: billingPeriod.getTaxPeriodFrom();
 
 					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
 							? billingPeriod.getTaxPeriodTo()
@@ -151,30 +151,30 @@ public class DemandService {
 
 		JsonNode property = allotmentRequest.getAllotment().get(0).getAdditionalDetails().get(0);
 		String cycle = property.path("feesPeriodCycle").asText();
-		
+
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
-		BillingPeriod billingPeriod = billingPeriods.stream()
-				.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null); // Assuming
-		if(billingPeriod!=null) {
-		String consumerCode = allotmentRequest.getAllotment().get(0).getApplicationNumber();
+		BillingPeriod billingPeriod = billingPeriods.stream().filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
+				.findFirst().orElse(null); // Assuming
+		if (billingPeriod != null) {
+			String consumerCode = allotmentRequest.getAllotment().get(0).getApplicationNumber();
 
-		OwnerInfo ownerInfo = allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0);
-		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
-				.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId())
-				.build();
+			OwnerInfo ownerInfo = allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0);
+			Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
+					.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo())
+					.tenantId(ownerInfo.getTenantId()).build();
 
-		List<DemandDetail> demandDetails = calculationService.calculateSatelmentDemand(allotmentRequest);
-		BigDecimal amountPayable = new BigDecimal(0);
-		String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
-		amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
-				.minimumAmountPayable(amountPayable).tenantId(tenantId)
-				.taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
-				.taxPeriodTo(daysCycleCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
-				.billExpiryTime(billingPeriod.getDemandExpiryDate())
-				.consumerType(applicationType).businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null)
-				.build();
-		demands.add(demand);
+			List<DemandDetail> demandDetails = calculationService.calculateSatelmentDemand(allotmentRequest);
+			BigDecimal amountPayable = new BigDecimal(0);
+			String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
+			amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
+					BigDecimal::add);
+			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
+					.minimumAmountPayable(amountPayable).tenantId(tenantId)
+					.taxPeriodFrom(billingPeriod.getTaxPeriodFrom())
+					.taxPeriodTo(daysCycleCalculationService.minus5Days(billingPeriod.getTaxPeriodTo()))
+					.billExpiryTime(billingPeriod.getDemandExpiryDate()).consumerType(applicationType)
+					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+			demands.add(demand);
 		}
 		List<Demand> demands1 = demandRepository.saveDemand(
 				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
@@ -373,18 +373,16 @@ public class DemandService {
 
 		String baseHost = config.getRlServiceHost();
 		String basePath = config.getRlSearchEndpoint();
-        
-		Set<Status> statusSet = new HashSet<>(Arrays.asList(
-				Status.APPROVED,
-				Status.FORWARD_FOT_SETLEMENT, // verify spelling
-				Status.PENDING_FOR_PAYMENT, 
-				Status.REQUEST_FOR_DISCONNECTION));
+
+		Set<Status> statusSet = new HashSet<>(Arrays.asList(Status.APPROVED, Status.FORWARD_FOT_SETLEMENT, // verify
+																											// spelling
+				Status.PENDING_FOR_PAYMENT, Status.REQUEST_FOR_DISCONNECTION));
 		StringJoiner joiner = new StringJoiner(",");
 		statusSet.stream().filter(Objects::nonNull).map(Status::name).forEach(joiner::add);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath).queryParam("tenantId",
 				tenantId);
-		builder.queryParam("status",joiner.toString());
+		builder.queryParam("status", joiner.toString());
 		if (consumerCode != null) {
 			builder.queryParam("applicationNumbers", consumerCode);
 		}
@@ -430,25 +428,25 @@ public class DemandService {
 							BillingPeriod billingPeriod = billingPeriods.stream()
 									.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
 									.collect(Collectors.toList()).get(0); // Assuming
+							if (billingPeriod != null) {
+								long startDay = billingPeriod.getTaxPeriodFrom() <= d.getStartDate() ? d.getStartDate()
+										: billingPeriod.getTaxPeriodFrom();
 
-							long startDay = billingPeriod.getTaxPeriodFrom() <= d.getStartDate()
-									? billingPeriod.getTaxPeriodFrom()
-									: d.getStartDate();
+								long endDay = billingPeriod.getTaxPeriodTo() <= d.getEndDate()
+										? billingPeriod.getTaxPeriodTo()
+										: d.getEndDate();
 
-							long endDay = billingPeriod.getTaxPeriodTo() <= d.getEndDate()
-									? billingPeriod.getTaxPeriodTo()
-									: d.getEndDate();
+								long exparyDate = billingPeriod.getDemandExpiryDate();
 
-							long exparyDate = billingPeriod.getDemandExpiryDate();
-
-							Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, exparyDate, d,
-									requestInfo, cycle);
-							if (demand != null)
-								demandList.add(demand);
+								Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, exparyDate, d,
+										requestInfo, cycle);
+								if (demand != null)
+									demandList.add(demand);
+							}
 						});
 //						log.info
 						System.out.println("------::List of consummercode which have to generate demand::-----");
-						if(demandList.isEmpty()) {
+						if (demandList.isEmpty()) {
 							System.out.println("------::All demand alreday has been generated::-----");
 						}
 						demandList.stream().forEach(d -> {
@@ -550,7 +548,7 @@ public class DemandService {
 		demand.setDemandDetails(dataList);
 		demand.setBillExpiryTime(exparyDate);
 		demand.setFixedbillexpirydate(exparyDate);
-		//addRoundOffTaxHead(demand.getTenantId(), dataList);
+		// addRoundOffTaxHead(demand.getTenantId(), dataList);
 		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
 	}
 

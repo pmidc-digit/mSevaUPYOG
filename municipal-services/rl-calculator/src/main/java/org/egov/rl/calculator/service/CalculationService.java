@@ -8,9 +8,12 @@ import org.egov.rl.calculator.web.models.AllotmentRequest;
 
 import org.egov.rl.calculator.web.models.RLProperty;
 import org.egov.rl.calculator.web.models.TaxRate;
+import org.egov.rl.calculator.web.models.demand.BillingPeriod;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,6 +28,14 @@ public class CalculationService {
 
 	@Autowired
 	private PropertyUtil mdmsUtil;
+	
+	@Autowired
+	private MasterDataService masterDataService;
+	
+
+	@Autowired
+	private DemandService demandService;
+
 
 	/**
 	 * @return A list of DemandDetail objects representing the calculated demand.
@@ -56,6 +67,25 @@ public class CalculationService {
 					|| (applicationType.equalsIgnoreCase(RLConstants.RENEWAL_RL_APPLICATION))) {
 				
 				fee = new BigDecimal(amount.getBaseRent());
+				AllotmentDetails allotmentDetails=allotmentRequest.getAllotment().get(0);
+				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
+				String cycle = property.path("feesPeriodCycle").asText();
+
+				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
+				BillingPeriod billingPeriod = billingPeriods.stream()
+						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null); // Assuming
+				if (billingPeriod != null) {
+					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
+							? allotmentDetails.getStartDate()
+							: billingPeriod.getTaxPeriodFrom();
+
+					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
+							? billingPeriod.getTaxPeriodTo()
+							: allotmentDetails.getEndDate();
+					fee = calculatePaybleAmount(startDay, endDay, fee, cycle);
+				}
+				
+				
 				
 				demandDetails.add(DemandDetail.builder().taxAmount(fee)
 //						.collectionAmount(fee)
@@ -64,14 +94,14 @@ public class CalculationService {
 		}
 
 		// Step 2: Calculate additional fees (Penality, cowcass, cgst,sgst)
-		calculateAdditionalFees(calculateAmount.get(0), allotmentRequest, tenantId, demandDetails);
+		calculateAdditionalFees(fee,calculateAmount.get(0), allotmentRequest, tenantId, demandDetails);
 		return demandDetails;
 	}
 
-	private void calculateAdditionalFees(RLProperty calculateAmount, AllotmentRequest allotmentRequest, String tenantId,
+	private void calculateAdditionalFees(BigDecimal baseAmount,RLProperty calculateAmount, AllotmentRequest allotmentRequest, String tenantId,
 			List<DemandDetail> demandDetails) {
 
-		BigDecimal baseAmount = new BigDecimal(calculateAmount.getBaseRent());
+//		BigDecimal baseAmount = new BigDecimal(calculateAmount.getBaseRent());
 //		Long lastModifiedDate = allotmentRequest.getAllotment().get(0).getAuditDetails().getLastModifiedTime();
 //		Long rentLeasePayDate = Instant.ofEpochMilli(lastModifiedDate).plus(Duration.ofDays(30)).toEpochMilli();
 //		Long rentLeasePayWithPenaltyDate = Instant.ofEpochMilli(rentLeasePayDate).plus(Duration.ofDays(30)).toEpochMilli();
@@ -97,6 +127,7 @@ public class CalculationService {
 				}
 			}
 		});
+		addRoundOffTaxHead(tenantId,demandDetails);
 	}
 
 	public List<DemandDetail> calculateSatelmentDemand(AllotmentRequest allotmentRequest) {
@@ -176,4 +207,52 @@ public class CalculationService {
         
 		return payAmount;
 	}
+	
+	/**
+	 * Adds roundOff taxHead if decimal values exists
+	 * 
+	 * @param tenantId      The tenantId of the demand
+	 * @param demandDetails The list of demandDetail
+	 */
+
+	public void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
+		if (demandDetails == null || demandDetails.isEmpty())
+			return;
+
+		BigDecimal totalTax = BigDecimal.ZERO;
+		BigDecimal previousRoundOff = BigDecimal.ZERO;
+
+		// Sum all taxHeads except RoundOff
+		for (DemandDetail dd : demandDetails) {
+			String code = dd.getTaxHeadMasterCode();
+			if (code != null && RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(code)) {
+				previousRoundOff = previousRoundOff.add(safe(dd.getTaxAmount()));
+			} else {
+				totalTax = totalTax.add(safe(dd.getTaxAmount()));
+			}
+		}
+
+		// Nearest rupee target via HALF_UP
+		BigDecimal rounded = totalTax.setScale(0, RoundingMode.HALF_UP);
+		BigDecimal roundOff = rounded.subtract(totalTax); // +ve to go up, -ve to go down
+
+		// Adjust with any previous round-off already present
+		if (previousRoundOff.compareTo(BigDecimal.ZERO) != 0) {
+			roundOff = roundOff.subtract(previousRoundOff);
+		}
+
+		// Add only if non-zero
+		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
+			DemandDetail roundOffDemandDetail = DemandDetail.builder()
+					.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).taxAmount(roundOff)
+					.collectionAmount(BigDecimal.ZERO).tenantId(tenantId).build();
+			demandDetails.add(roundOffDemandDetail);
+		}
+	}
+	
+	private static BigDecimal safe(BigDecimal value) {
+		return value == null ? BigDecimal.ZERO : value;
+	}
+
+
 }

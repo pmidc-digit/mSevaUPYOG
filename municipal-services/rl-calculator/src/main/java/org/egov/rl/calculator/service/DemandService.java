@@ -267,7 +267,7 @@ public class DemandService {
 				applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods, billingPeriods, penaltySlabs);
 			}
 
-			addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
+//			calculationService.addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
 			demandsToBeUpdated.add(demand);
 		}
 
@@ -579,51 +579,4 @@ public class DemandService {
 		demands.add(demand);
 		return demand;
 	}
-
-	/**
-	 * Adds roundOff taxHead if decimal values exists
-	 * 
-	 * @param tenantId      The tenantId of the demand
-	 * @param demandDetails The list of demandDetail
-	 */
-
-	public void addRoundOffTaxHead(String tenantId, List<DemandDetail> demandDetails) {
-		if (demandDetails == null || demandDetails.isEmpty())
-			return;
-
-		BigDecimal totalTax = BigDecimal.ZERO;
-		BigDecimal previousRoundOff = BigDecimal.ZERO;
-
-		// Sum all taxHeads except RoundOff
-		for (DemandDetail dd : demandDetails) {
-			String code = dd.getTaxHeadMasterCode();
-			if (code != null && RLConstants.ROUND_OFF_RL_APPLICATION.equalsIgnoreCase(code)) {
-				previousRoundOff = previousRoundOff.add(safe(dd.getTaxAmount()));
-			} else {
-				totalTax = totalTax.add(safe(dd.getTaxAmount()));
-			}
-		}
-
-		// Nearest rupee target via HALF_UP
-		BigDecimal rounded = totalTax.setScale(0, RoundingMode.HALF_UP);
-		BigDecimal roundOff = rounded.subtract(totalTax); // +ve to go up, -ve to go down
-
-		// Adjust with any previous round-off already present
-		if (previousRoundOff.compareTo(BigDecimal.ZERO) != 0) {
-			roundOff = roundOff.subtract(previousRoundOff);
-		}
-
-		// Add only if non-zero
-		if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
-			DemandDetail roundOffDemandDetail = DemandDetail.builder()
-					.taxHeadMasterCode(RLConstants.ROUND_OFF_RL_APPLICATION).taxAmount(roundOff)
-					.collectionAmount(BigDecimal.ZERO).tenantId(tenantId).build();
-			demandDetails.add(roundOffDemandDetail);
-		}
-	}
-
-	private static BigDecimal safe(BigDecimal value) {
-		return value == null ? BigDecimal.ZERO : value;
-	}
-
 }

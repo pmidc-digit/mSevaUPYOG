@@ -23,22 +23,22 @@ const NOCImageView = ({ownerFileStoreId, ownerName}) => {
     })();
   }, [ownerFileStoreId]);
   
-return(
-    <Card>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
-            <div style={{ textAlign: "center" }}>
-                <img
-                    src={imageCitizenZoom}
-                    alt="Primary Owner Photo"
-                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
-                    onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
-                />
-                <div>{ownerName || "Primary Owner Photo"}</div>
-            </div>
-        </div>
-        {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}
-    </Card>
-)
+return (
+  <div style={{ padding: "20px 0px" }}>
+    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", padding: "0px 20px" }}>
+      <div style={{ textAlign: "center" }}>
+        <img
+          src={imageCitizenZoom}
+          alt="Primary Owner Photo"
+          style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
+          onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
+        />
+        <div>{ownerName || "Primary Owner Photo"}</div>
+      </div>
+    </div>
+    {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}
+  </div>
+);
 };
 
 export default NOCImageView;

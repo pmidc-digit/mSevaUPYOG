@@ -45,10 +45,10 @@ const CLUResponse = (props) => {
    }
   };
 
-  // const handlePayment = () => {
-  //   //need to change payment path as per CLU
-  //   history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${cluCode}/${tenantId}?tenantId=${tenantId}`);
-  // };
+  const handlePayment = () => {
+    const code = cluData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "CLU.PAY1" : "CLU.PAY2";
+    history.push(`/digit-ui/citizen/payment/collect/${code}/${cluCode}/${tenantId}?tenantId=${tenantId}`);
+  };
 
 
   const handleDownloadPdf = async () => {
@@ -83,14 +83,14 @@ const CLUResponse = (props) => {
         />
         {downloading && <Loader />}
         {cluData?.applicationStatus !== "REJECTED" ? (
-          <div>
+          <div style={{display:"flex", justifyContent:"space-evenly"}}>
           <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+          {(cluData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || cluData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </div>
         ) : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_OBPS")} onSubmit={onGoToHome} />
-          {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>
     </div>

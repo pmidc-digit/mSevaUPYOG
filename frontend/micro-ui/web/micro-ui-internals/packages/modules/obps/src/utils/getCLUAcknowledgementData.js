@@ -109,10 +109,6 @@ const getLocationInfo = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeIssued?.code || "N/A",
     },
     {
-      title: t("BPA_SCHEME_COLONY_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityColonyType?.name || "N/A",
-    },
-    {
       title: t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name || "N/A",
     },
@@ -143,6 +139,13 @@ const getLocationInfo = (appData, t) => {
     values.push({
       title: t("BPA_NOTICE_NUMBER_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeNumber || "N/A",
+    });
+  }
+
+  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
+    values.push({
+      title: t("BPA_SCHEME_COLONY_TYPE_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityColonyType?.name || "N/A",
     });
   }
 

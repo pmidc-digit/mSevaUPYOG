@@ -18,10 +18,12 @@ const NOCBreadCrumbs = ({ location }) => {
       content: t("ES_COMMON_INBOX"),
       show: (location.pathname.includes("noc/inbox") || location.pathname.includes("noc/new-application")) ? true : false,
     },
+   
     {
-      path: "/digit-ui/employee/noc/new-application",
-      content: t("NOC_NEW_APPLICATION"),
-      show: location.pathname.includes("noc/new-application") ? true : false,
+      path: "/digit-ui/employee/noc/search/application",
+      content: t("ES_COMMON_SEARCH_APPLICATION"),
+      show: location.pathname.includes("noc/search/application") ? true : false,
+
     },
     {
       path: "/digit-ui/employee/noc/inbox/application-overview/:id",
@@ -50,6 +52,7 @@ const EmployeeApp = ({ path }) => {
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
   const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCEmployeeApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
+  const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -63,11 +66,11 @@ const EmployeeApp = ({ path }) => {
         {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} /> */}
         <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={NOCEmployeeApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
-        <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
-        <PrivateRoute path={`${path}/edit-application/:id`} component={NewNOCEditApplication} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/response/:id`} component={Response} />
+        <PrivateRoute path={`${path}/search/application`} component={NOCCitizenApplicationOverview} />
+        
       </Switch>
     </Fragment>
   );

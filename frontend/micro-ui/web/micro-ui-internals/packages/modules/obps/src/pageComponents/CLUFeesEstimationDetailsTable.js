@@ -11,15 +11,18 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
   const stateCode = Digit.ULBService.getStateId();
 
   const handleAdjustedAmountChange = (index, value, amount) => {
-    if (amount + Number(value) < 0) {
+    if(Number(value) == 0) return;
+    else if (amount + Number(value) < 0) {
       setTimeout(()=>{setShowToast(null);},3000);
 
       setShowToast({key: "true", error: true, message: "Net Amount After Adjustment Must Be Greater Than Or Equal To Zero" });
       return;
     }
+    else{
     setFeeAdjustments((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, adjustedAmount: value === "" ? null : Number(value), edited: true, remark: "" } : item))
+      prev.map((item, i) => (i === index ? { ...item, adjustedAmount: value === "" ? null : Number(value), edited: true, remark: "", filestoreId: null } : item))
     );
+    }
   };
 
   const handleRemarkChange = (index, value) => {
@@ -95,6 +98,7 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
   const { isLoading: cluCalculatorLoading, data, revalidate } = Digit.Hooks.obps.useCLUFeeCalculator(
     {
       payload,
+      feeType
     },
     {
       enabled: !!payload,
@@ -166,18 +170,6 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
   ];
   }, [data, t, feeAdjustments]);
 
-//   const applicationFeeColumns = [
-//     {
-//       Header: t("BPA_FEE_TYPE_LABEL"),
-//       accessor: "title",
-//       Cell: ({ value }) => value || t("CS_NA"),
-//     },
-//     {
-//       Header: t("BPA_AMOUNT_LABEL"),
-//       accessor: "amount",
-//       Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
-//     },
-//   ];
 
   if (cluCalculatorLoading) return <Loader />;
 

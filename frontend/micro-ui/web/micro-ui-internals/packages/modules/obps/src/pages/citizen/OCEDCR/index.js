@@ -26,7 +26,8 @@ const CreateOCEDCR = ({ parentRoute }) => {
     setIsSubmitBtnDisable(true);
     const data = params;
     const loggedInuserInfo = Digit.UserService.getUser();
-    const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    // const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    const userInfo = loggedInuserInfo?.info;
     let edcrRequest = {
       transactionNumber: "",
       edcrNumber: "",
@@ -48,7 +49,7 @@ const CreateOCEDCR = ({ parentRoute }) => {
 
     const transactionNumber = uuidv4();
     const edcrNumber = data?.ScrutinyDetails?.edcrNumber;
-    const tenantId = data?.ScrutinyDetails?.tenantId;
+    const tenantId = localStorage.getItem("CITIZEN.CITY");
     const applicantName = data?.ScrutinyDetails?.applicantName;
     const appliactionType = "BUILDING_OC_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
@@ -56,6 +57,15 @@ const CreateOCEDCR = ({ parentRoute }) => {
     const permitNumber = data?.ScrutinyDetails?.ocPermitNumber;
     const comparisonEdcrNumber = data?.ScrutinyDetails?.edcrNumber;
     const file = uploadData?.file;
+    const ulb = data?.ScrutinyDetails?.planDetail?.edcrRequest?.ulb;
+    const areaType = data?.ScrutinyDetails?.planDetail?.edcrRequest?.areaType;
+    const schName = data?.ScrutinyDetails?.planDetail?.edcrRequest?.schName;
+    const siteReserved = data?.ScrutinyDetails?.planDetail?.edcrRequest?.siteReserved;
+    const approvedCS = data?.ScrutinyDetails?.planDetail?.edcrRequest?.approvedCS;
+    const cluApprove = data?.ScrutinyDetails?.planDetail?.edcrRequest?.cluApprove;
+    const purchasableFar = data?.ScrutinyDetails?.planDetail?.edcrRequest?.purchasableFar;
+    const schemeArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.schemeArea;
+    const coreArea = data?.ScrutinyDetails?.planDetail?.edcrRequest?.coreArea;    
 
     edcrRequest = { ...edcrRequest, transactionNumber };
     edcrRequest = { ...edcrRequest, edcrNumber };
@@ -66,6 +76,18 @@ const CreateOCEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, permitDate };
     edcrRequest = { ...edcrRequest, permitNumber };
     edcrRequest = { ...edcrRequest, comparisonEdcrNumber };
+
+    edcrRequest = { ...edcrRequest, ulb };
+    edcrRequest = { ...edcrRequest, areaType };
+    edcrRequest = { ...edcrRequest, schName };
+    edcrRequest = { ...edcrRequest, siteReserved };
+    edcrRequest = { ...edcrRequest, approvedCS };
+    edcrRequest = { ...edcrRequest, schemeArea };
+    edcrRequest = { ...edcrRequest, cluApprove };
+    edcrRequest = {...edcrRequest, purchasableFar};
+    edcrRequest = { ...edcrRequest, coreArea };
+
+    console.log("OC_EDCR_Data", data, edcrRequest);
 
     let bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));

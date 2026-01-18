@@ -445,7 +445,7 @@ public class DemandService {
 							}
 						});
 //						log.info
-						System.out.println("------::List of consummercode which have to generate demand::-----");
+						System.out.println("------::List of consummercode which have to generate bulk demand::-----");
 						if (demandList.isEmpty()) {
 							System.out.println("------::All demand alreday has been generated::-----");
 						}

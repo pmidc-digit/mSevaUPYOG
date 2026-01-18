@@ -88,10 +88,10 @@ public class JobScheduler {
 
 		// -------- BODY (x-www-form-urlencoded) --------
 		MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-		body.add("username", "ramesh123");
-		body.add("password", "eGov@123");
-		body.add("tenantId", "pb.testing");
-		body.add("userType", "employee");
+		body.add("username", "9872904783");
+		body.add("password", "123456");
+		body.add("tenantId", "pb");
+		body.add("userType", "citizen");
 		body.add("grant_type", "password");
 
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);

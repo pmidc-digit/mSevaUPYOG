@@ -172,6 +172,8 @@ public class CalculationService {
 		
 		break;
 		}
+		System.out.println("payAmount = " + payAmount);
+        
 		return payAmount;
 	}
 }

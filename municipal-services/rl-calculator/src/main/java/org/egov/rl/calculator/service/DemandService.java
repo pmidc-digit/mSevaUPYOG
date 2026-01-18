@@ -376,9 +376,8 @@ public class DemandService {
         
 		Set<Status> statusSet = new HashSet<>(Arrays.asList(
 				Status.APPROVED,
-				Status.FORWARD_FOR_DISCONNECTION_FIELD_INSPECTION, 
 				Status.FORWARD_FOT_SETLEMENT, // verify spelling
-				Status.CLOSE, 
+				Status.PENDING_FOR_PAYMENT, 
 				Status.REQUEST_FOR_DISCONNECTION));
 		StringJoiner joiner = new StringJoiner(",");
 		statusSet.stream().filter(Objects::nonNull).map(Status::name).forEach(joiner::add);
@@ -449,6 +448,9 @@ public class DemandService {
 						});
 //						log.info
 						System.out.println("------::List of consummercode which have to generate demand::-----");
+						if(demandList.isEmpty()) {
+							System.out.println("------::All demand alreday has been generated::-----");
+						}
 						demandList.stream().forEach(d -> {
 //							log.info("{} Demand consummerCode :{} ",currentDate,d.getConsumerCode());
 							System.out.println(currentDate + " Demand consummerCode : " + d.getConsumerCode());
@@ -505,7 +507,6 @@ public class DemandService {
 
 		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, requestInfo,
 				consumerCode);
-
 		allotmentDetails.stream().forEach(alt -> {
 			List<Demand> dmdlist = demandRepository
 					.getDemandsNotiByConsumerCode(Arrays.asList(alt.getApplicationNumber()));
@@ -515,16 +516,16 @@ public class DemandService {
 			}).collect(Collectors.toList());
 
 			dmdlist.stream().forEach(d -> {
-
-				ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
-				LocalDate expireDate = Instant.ofEpochMilli(d.getBillExpiryTime()).atZone(zone).toLocalDate();
-				LocalDate today = LocalDate.now(zone);
-				if (ChronoUnit.DAYS.between(expireDate, today) == 1) {
+				Instant expireDate = Instant.ofEpochMilli(d.getBillExpiryTime());
+				Instant now = Instant.now();
+				if (expireDate.isBefore(now)) {
+					System.out.println("----Panelty has been added successfully-----");
 					DemandDetail baseAmount = d.getDemandDetails().stream()
 							.filter(dt -> dt.getTaxHeadMasterCode().equals(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
 							.findFirst().get();
 					updatePenalty(baseAmount.getTaxAmount(), d, requestInfo);
 				} else {
+					System.out.println("----Prepare for send notification-----");
 					notificationService.sendNotificationSMS(
 							AllotmentRequest.builder().allotment(Arrays.asList(alt)).requestInfo(requestInfo).build());
 				}
@@ -549,7 +550,7 @@ public class DemandService {
 		demand.setDemandDetails(dataList);
 		demand.setBillExpiryTime(exparyDate);
 		demand.setFixedbillexpirydate(exparyDate);
-		addRoundOffTaxHead(demand.getTenantId(), dataList);
+		//addRoundOffTaxHead(demand.getTenantId(), dataList);
 		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
 	}
 

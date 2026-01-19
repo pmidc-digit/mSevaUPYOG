@@ -203,21 +203,23 @@ public class AssessmentService {
 	    Map<String, Map<String, Object>> scheduledTenants =
 	            fetchScheduledTenants(assessmentRequest.getRequestInfo());
 
+	    // 1. Prepare User and RequestInfo
 	    User user = userService.fetchPTAsseessmentUser();
 	    RequestInfo requestInfo = assessmentRequest.getRequestInfo();
 	    requestInfo.setUserInfo(user);
 
 	    final int BATCH_SIZE = configs.getMaxAssessmentBatchSize();
-
+	    
+	    // Global list to return to the caller
 	    List<Assessment> scheduledAssessments = new ArrayList<>();
 
 	    for (Map.Entry<String, Map<String, Object>> tenantConfig : scheduledTenants.entrySet()) {
-
-	        List<AssessmentRequest> kafkaBatch = new ArrayList<>(BATCH_SIZE);
-
+	        
+	        String tenantId = tenantConfig.getKey();
 	        Map<String, Object> configData = tenantConfig.getValue();
 
-	        assessmentRequest.setTenantId(tenantConfig.getKey());
+	        // 2. Setup Request Parameters for Property Search
+	        assessmentRequest.setTenantId(tenantId);
 	        assessmentRequest.setAssessmentYear(
 	                configData.get(CalculatorConstants.FINANCIALYEAR_KEY).toString());
 	        assessmentRequest.setLocality(
@@ -229,8 +231,7 @@ public class AssessmentService {
 	                        ? true
 	                        : (Boolean) configData.get(CalculatorConstants.IS_RENTED));
 
-	        int count = repository.getActivePropertyCount(assessmentRequest);
-
+	        int totalPropertyCount = repository.getActivePropertyCount(assessmentRequest);
 	        Long limit = assessmentRequest.getLimit() == null
 	                ? configs.getDefaultLimit()
 	                : Math.min(assessmentRequest.getLimit(), configs.getMaxSearchLimit());
@@ -239,7 +240,11 @@ public class AssessmentService {
 	                ? configs.getDefaultOffset()
 	                : assessmentRequest.getOffset();
 
-	        while (offset < count) {
+	        // Temporary batch list for Kafka
+	        List<AssessmentRequest> kafkaBatch = new ArrayList<>();
+
+	        // 3. Pagination Loop
+	        while (offset < totalPropertyCount) {
 
 	            assessmentRequest.setLimit(limit);
 	            assessmentRequest.setOffset(offset);
@@ -250,7 +255,7 @@ public class AssessmentService {
 	            for (Property property : properties) {
 
 	                Assessment assessment = Assessment.builder()
-	                        .tenantId(assessmentRequest.getTenantId())
+	                        .tenantId(tenantId)
 	                        .propertyId(property.getPropertyId())
 	                        .financialYear(assessmentRequest.getAssessmentYear())
 	                        .source(Source.MUNICIPAL_RECORDS)
@@ -258,56 +263,54 @@ public class AssessmentService {
 	                        .assessmentDate(System.currentTimeMillis())
 	                        .build();
 
-	                AssessmentRequest assessmentReq = AssessmentRequest.builder()
+	                AssessmentRequest kafkaReq = AssessmentRequest.builder()
 	                        .assessment(assessment)
 	                        .requestInfo(requestInfo)
 	                        .build();
 
-	                kafkaBatch.add(assessmentReq);
-	                scheduledAssessments.add(assessment); // ✅ collect for return
-	               
-	                if (kafkaBatch.size() == BATCH_SIZE) {
+	                kafkaBatch.add(kafkaReq);
+	                scheduledAssessments.add(assessment); 
 
-	                	String tenant = assessmentRequest.getTenantId();
-	                	String ulbName = tenant.substring(tenant.indexOf('.') + 1);
-	                	ulbName = ulbName.substring(0, 1).toUpperCase() + ulbName.substring(1);
-
-	                	String kafkaKey =
-	                	        scheduledAssessments.get(0).getPropertyId()+"|"+ count + "|" + ulbName + "|" + assessmentRequest.getAssessmentYear() +"|"+offset;
-
+	                // 4. Batch Push Trigger
+	                if (kafkaBatch.size() >= BATCH_SIZE) {
+	                    
+	                    // Generate Unique Key: Tenant-FY-Offset-Timestamp
+	                    String uniqueKafkaKey = String.format("%s-%s-%d-%d", 
+	                            tenantId, 
+	                            assessmentRequest.getAssessmentYear(), 
+	                            offset, 
+	                            System.nanoTime());
 
 	                    producer.push(
 	                            configs.getKafkaAssessmentSaveTopic(),
-	                            kafkaKey,
+	                            uniqueKafkaKey,
 	                            kafkaBatch
 	                    );
-	                    kafkaBatch.clear();
+	                    
+	                    // Clear the batch list for the next set
+	                    kafkaBatch = new ArrayList<>(); 
 	                }
 	            }
 	            offset += limit;
 	        }
 
+	        // 5. Final Remainder Push (Leftover properties that didn't fill a full batch)
 	        if (!kafkaBatch.isEmpty()) {
-
-	        	String tenant = assessmentRequest.getTenantId();
-	        	String ulbName = tenant.substring(tenant.indexOf('.') + 1);
-	        	ulbName = ulbName.substring(0, 1).toUpperCase() + ulbName.substring(1);
-
-	        	String kafkaKey =
-	        	        count + "|" + ulbName + "|" + assessmentRequest.getAssessmentYear();
+	            String remainderKey = String.format("%s-%s-FINAL-%d", 
+	                    tenantId, 
+	                    assessmentRequest.getAssessmentYear(), 
+	                    System.nanoTime());
 
 	            producer.push(
 	                    configs.getKafkaAssessmentSaveTopic(),
-	                    kafkaKey,
+	                    remainderKey,
 	                    kafkaBatch
 	            );
 	        }
 	    }
 
-
 	    return scheduledAssessments;
 	}
-
 	  
 	@SuppressWarnings("unchecked")
 	public void createReAssessmentsForFY(CreateAssessmentRequest assessmentRequest) {

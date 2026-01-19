@@ -97,10 +97,9 @@ public class TransactionService {
         }
 
         // Persist transaction and transaction dump objects
-        String key = transaction.getConsumerCode();
-        producer.push(appProperties.getSaveTxnTopic(), key , new org.egov.pg.models.TransactionRequest
+        producer.push(appProperties.getSaveTxnTopic(), new org.egov.pg.models.TransactionRequest
                 (requestInfo, transaction));
-        producer.push(appProperties.getSaveTxnDumpTopic(), key , new TransactionDumpRequest(requestInfo, dump));
+        producer.push(appProperties.getSaveTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
 
         return transaction;
     }
@@ -180,9 +179,8 @@ public class TransactionService {
 
        	TransactionDump dump = dumpBuilder.build();
         log.info("dumps "+dump);
-        String key = newTxn.getBankTransactionNo() + newTxn.getBillId();
-        producer.push(appProperties.getUpdateTxnTopic(), key ,new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
-        producer.push(appProperties.getUpdateTxnDumpTopic(), key ,new TransactionDumpRequest(requestInfo, dump));
+        producer.push(appProperties.getUpdateTxnTopic(), new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
+        producer.push(appProperties.getUpdateTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
 
         return Collections.singletonList(newTxn);
     }
@@ -233,10 +231,9 @@ public class TransactionService {
                 .txnResponse(newTxn.getResponseJson())
                 .auditDetails(newTxn.getAuditDetails())
                 .build();
-        
-        String key = newTxn.getBankTransactionNo() + newTxn.getBillId();
-        producer.push(appProperties.getUpdateTxnTopic(), key ,new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
-        producer.push(appProperties.getUpdateTxnDumpTopic(), key , new TransactionDumpRequest(requestInfo, dump));
+
+        producer.push(appProperties.getUpdateTxnTopic(), new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
+        producer.push(appProperties.getUpdateTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
 
         return Collections.singletonList(newTxn);
     }

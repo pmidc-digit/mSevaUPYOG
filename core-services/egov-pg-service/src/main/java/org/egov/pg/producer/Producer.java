@@ -16,8 +16,4 @@ public class Producer {
     public void push(String topic, Object value) {
         kafkaTemplate.send(topic, value);
     }
-    
-    public void push(String topic,String key  ,Object value) {
-        kafkaTemplate.send(topic, key , value);
-    }
 }

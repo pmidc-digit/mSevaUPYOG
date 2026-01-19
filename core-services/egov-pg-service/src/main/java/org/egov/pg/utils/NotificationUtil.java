@@ -92,8 +92,7 @@ public class NotificationUtil {
                 return;
             }
             for (SMSRequest smsRequest : smsRequestList) {
-            	String key = smsRequest.getMobileNumber() + smsRequest.getCategory().toString();
-                producer.push(appProperties.getSmsNotifTopic(), key , smsRequest);
+                producer.push(appProperties.getSmsNotifTopic(), smsRequest);
                 log.info("Messages: " + smsRequest.getMessage());
             }
         }

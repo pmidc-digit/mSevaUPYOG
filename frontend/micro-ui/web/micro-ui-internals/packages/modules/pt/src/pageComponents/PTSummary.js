@@ -1,20 +1,20 @@
 import React, { Fragment } from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
-import { useLocation ,useHistory} from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { SET_PtNewApplication } from "../redux/actions/PTNewApplicationActions";
-const PTSummary = ({ formData, t}) => {
+
+const PTSummary = ({ formData, t }) => {
   console.log("form data in summary component", formData);
   const { pathname: url } = useLocation();
-    const history = useHistory();
-    const dispatch=useDispatch()
+  const history = useHistory();
+  const dispatch = useDispatch();
   const mutateScreen = url.includes("/property-mutate/");
-  const onEdit = (step) =>{
-    console.log("on edit step",step)
-    if(step==="PersonalDetails"){
-      history.push({pathname:"/digit-ui/citizen/pt/property/edit-step-form",state:{edit:true,currentStepNumber:1}})
+  const onEdit = (step) => {
+    console.log("on edit step", step);
+    if (step === "PersonalDetails") {
+      history.push({ pathname: "/digit-ui/citizen/pt/property/edit-step-form", state: { edit: true, currentStepNumber: 1 } });
     }
-   }
+  };
 
   const styles = {
     wrapper: {
@@ -61,10 +61,6 @@ const PTSummary = ({ formData, t}) => {
 
           {/* Property Address Section */}
           <Card className="summary-section" style={styles.section}>
-            <div className="section-header" style={styles.sectionHeader}>
-              <h3>{t("Property Address")}</h3>
-              <label onClick={() => dispatch(SET_PtNewApplication(1))}>{t("EDIT")}</label>
-            </div>
             <div className="section-content">
               <LabelFieldPair style={styles.labelFieldPair}>
                 <CardLabel>{t("City")}</CardLabel>
@@ -107,10 +103,6 @@ const PTSummary = ({ formData, t}) => {
 
           {/* Property Details Section */}
           <div className="summary-section" style={styles.section}>
-            <div className="section-header" style={styles.sectionHeader}>
-              <h3>{t("Property Details")}</h3>
-              <label onClick={() => dispatch(SET_PtNewApplication(2))}>{t("EDIT")}</label>
-            </div>
             <div className="section-content">
               {[
                 ["Property Usage Type", formData?.PropertyDetails?.usageCategoryMajor?.i18nKey],
@@ -150,10 +142,6 @@ const PTSummary = ({ formData, t}) => {
 
           {/* Owner Details Section */}
           <div className="summary-section" style={styles.section}>
-            <div className="section-header" style={styles.sectionHeader}>
-              <h3>{t("Owner Details")}</h3>
-              <label onClick={() => dispatch(SET_PtNewApplication(3))}>{t("EDIT")}</label>
-            </div>
             <div className="section-content">
               {formData?.ownerShipDetails?.owners?.map((owner, index) => (
                 <div key={index}>
@@ -182,10 +170,6 @@ const PTSummary = ({ formData, t}) => {
 
           {/* Documents Section */}
           <div className="summary-section" style={styles.section}>
-            <div className="section-header" style={styles.sectionHeader}>
-              <h3>{t("Documents")}</h3>
-              <label onClick={() => dispatch(SET_PtNewApplication(4))}>{t("EDIT")}</label>
-            </div>
             <div className="section-content">
               {formData?.DocummentDetails?.documents?.documents?.map((doc, index) => (
                 <LabelFieldPair key={index} style={styles.labelFieldPair}>

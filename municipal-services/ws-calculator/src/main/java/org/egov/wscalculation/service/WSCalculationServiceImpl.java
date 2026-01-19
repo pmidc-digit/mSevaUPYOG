@@ -361,72 +361,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 		log.info("FINAL FLAG | isBreakdownAvgEnabled={}", isBreakdownAvgEnabled);
 		
-	/*	if (WSCalculationConstant.meteredConnectionType
-		        .equalsIgnoreCase(waterConnection.getConnectionType())
-		        && MeterReading.MeterStatusEnum.BREAKDOWN.equals(criteria.getMeterStatus())
-		        && isBreakdownAvgEnabled) {
 
-				    log.info("BREAKDOWN triggered for connection {}", criteria.getConnectionNo());
-
-				 // current reading object
-				    final MeterReading currentReading = MeterReading.builder()
-				            .lastReadingDate(criteria.getFrom())
-				            .currentReadingDate(criteria.getTo())
-				            .build();
-
-				    // Fetch previous reading (exclude current)
-				    MeterReading previousReading = meterService.searchMeterReadings(
-				            MeterReadingSearchCriteria.builder()
-				                    .tenantId(criteria.getTenantId())
-				                    .connectionNos(Collections.singleton(criteria.getConnectionNo()))
-				                    .build(),
-				            requestInfo
-				    ).stream()
-				     .filter(r -> !r.equals(currentReading)) // exclude current reading
-				     .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
-				     .findFirst()
-				     .orElse(null);
-
-				    // Apply logic
-				    if (previousReading != null
-				            && MeterReading.MeterStatusEnum.BREAKDOWN.equals(previousReading.getMeterStatus())) {
-
-				        // Consecutive BREAKDOWN → penalty applies
-				        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
-				        penalty = waterCharge.multiply(BigDecimal.valueOf(2))
-				                .setScale(2, RoundingMode.HALF_UP);
-
-				        log.info("Consecutive BREAKDOWN detected | prevReadingDate={} charge={} penalty={}",
-				                previousReading.getLastReadingDate(), waterCharge, penalty);
-
-				    } else {
-				        // First BREAKDOWN → no penalty
-				        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
-				        penalty = BigDecimal.ZERO;
-
-				        log.info("First BREAKDOWN detected | avgCharge={}", waterCharge);
-				    }
-
-				    // Add WS_CHARGE estimate
-				    estimates.removeIf(e -> TaxHeadCategory.CHARGES.equals(e.getCategory()));
-				    estimates.add(TaxHeadEstimate.builder()
-				            .taxHeadCode(WSCalculationConstant.WS_CHARGE)
-				            .estimateAmount(waterCharge)
-				            .category(TaxHeadCategory.CHARGES)
-				            .build());
-
-				    // Add penalty estimate if any
-				    if (penalty.compareTo(BigDecimal.ZERO) > 0) {
-				        estimates.add(TaxHeadEstimate.builder()
-				                .taxHeadCode(WSCalculationConstant.WS_BREAKDOWN_PENALTY)
-				                .estimateAmount(penalty)
-				                .category(TaxHeadCategory.PENALTY)
-				                .build());
-				    }
-
-				    log.info("BREAKDOWN calculation completed | charge={} penalty={}", waterCharge, penalty);
-				} */
-		
 		if (WSCalculationConstant.meteredConnectionType
 		        .equalsIgnoreCase(waterConnection.getConnectionType())
 		        && MeterReading.MeterStatusEnum.BREAKDOWN.equals(criteria.getMeterStatus())
@@ -443,7 +378,6 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				            requestInfo
 				    ).stream()
 				     .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
-				     .skip(1) // skip current
 				     .findFirst()
 				     .orElse(null);
 

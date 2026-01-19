@@ -39,7 +39,7 @@ import { EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import { convertToDDMMYYYY, formatDuration } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
-
+import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -112,6 +112,7 @@ const NOCEmployeeApplicationOverview = () => {
   const applicationDetails = data?.resData;
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
+  const [checklistRemarks, setChecklistRemarks] = useState({});
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
@@ -143,6 +144,8 @@ const NOCEmployeeApplicationOverview = () => {
   });
 
   console.log("workflowDetails here=>", workflowDetails);
+
+ const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
 
   useEffect(() => {
@@ -523,6 +526,7 @@ const NOCEmployeeApplicationOverview = () => {
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const submitAction = async (data) => {
+    
     const payloadData = applicationDetails?.Noc?.[0] || {};
     console.log('payloadData', payloadData)
     const vasikaNumber =  payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
@@ -530,7 +534,22 @@ const NOCEmployeeApplicationOverview = () => {
     
     if (!isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);   
-    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
+
+    const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || [])
+  .find((c) => c.isLatest);
+    const allRemarksFilled = (feeAdjustments || []).every((row) => {
+      if (!row.edited) return true;
+
+      // Find the original estimate for this taxHeadCode
+      const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
+
+      console.log("originalRemark", originalRemark);
+
+      const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+      console.log("isremarksSame", isremarksSame);
+      // Require remark to be non-empty AND different from the original
+      return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+    });
     if (!hasNonZeroFee) {
       setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
       return;
@@ -596,15 +615,49 @@ const NOCEmployeeApplicationOverview = () => {
     console.log("final Payload ", finalPayload);
 
     try {
-
       if (["SENDBACKTOCITIZEN", "REJECT"].includes(filtData?.action)) {
-        const proceed = window.confirm("Are you sure you want to reject this application?");
+        const message =
+          filtData?.action === "SENDBACKTOCITIZEN"
+            ? "Are you sure you want to send this application back to the citizen?"
+            : "Are you sure you want to reject this application?";
+
+        const proceed = window.confirm(message);
+
         if (!proceed) {
           setSelectedAction(null);
           return; // Exit early if canceled, no API call
         }
       }
 
+      // Build checklist payload from remarks state
+      const checklistPayload = {
+        checkList: (remainingDocs || []).map((doc) => {
+          const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.documentUid);
+          return {
+            id: existing?.id, // include if updating
+            documentuid: doc?.documentUid,
+            applicationNo: id,
+            tenantId,
+            action: existing ? "update" : "INITIATE",
+            remarks: checklistRemarks[doc?.documentUid] || "",
+          };
+        }),
+      };
+
+      // Call checklist API before NOCUpdate
+      if (checklistPayload?.checkList?.length > 0) {
+        if (searchChecklistData?.checkList?.length > 0) {
+          await Digit.NOCService.NOCCheckListUpdate({
+            details: checklistPayload,
+            filters: { tenantId },
+          });
+        } else {
+          await Digit.NOCService.NOCCheckListCreate({
+            details: checklistPayload,
+            filters: {},
+          });
+        }
+      }
 
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
       if (response?.ResponseInfo?.status === "successful") {
@@ -615,15 +668,14 @@ const NOCEmployeeApplicationOverview = () => {
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
           }, 3000);
-        }  else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
+        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           console.log("We are calling employee response page");
           history.replace({
             pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
           });
-        }
-        else{
+        } else {
           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
@@ -694,6 +746,7 @@ const NOCEmployeeApplicationOverview = () => {
   const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
 const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className={"employee-main-application-details"}>
@@ -736,7 +789,7 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-                <Row label={t("NOC_OWNER_TYPE_LABEL")} text={detail?.ownerType?.i18nKey ? t(detail?.ownerType?.i18nKey) : "N/A"} />
+                {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
@@ -750,7 +803,7 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
         </React.Fragment>
       ))}
 
-      {primaryOwner && (
+      {primaryOwner && propertyId && (
         <Card>
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
@@ -855,43 +908,6 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
         ))}
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-        {displayData?.coordinates?.map((detail, index) => {
-          // Find matching documents for this coordinate block
-          const sitePhotos = displayData?.Documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-
-          return (
-            <div
-              key={index}
-              style={{
-                marginBottom: "30px",
-                background: "#FAFAFA",
-                padding: "16px",
-                borderRadius: "4px",
-              }}
-            >
-              <StatusTable>
-                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-
-                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-              </StatusTable>
-
-              {/* Render images for site photographs */}
-      {/* {sitePhotos?.map((photo, idx) => (
-                <div key={photo.uuid}>
-                  <NOCImageView ownerFileStoreId={photo.documentAttachment} ownerName={photo.documentType || `Site Photo ${idx + 1}`} />
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </Card> */}
-
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
@@ -918,20 +934,10 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
         </StatusTable>
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <div style={{ display: "flex", gap: "16px" }}>
-          {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
-            <NOCDocument value={{ workflowDocs: displayData?.Documents }} />
-          ) : (
-            <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
-          )}
-        </div>
-      </Card> */}
-
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}   
+        tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
       </Card>
 
       <Card>
@@ -956,26 +962,6 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
         checked="true"
       />
 
-      {/* {workflowDetails?.data?.timeline && (
-        <Card>
-          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
-          {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
-          ) : (
-            <ConnectingCheckPoints>
-              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
-                <CheckPoint
-                  keyValue={index}
-                  isCompleted={index === 0}
-                  label={t("NOC_STATUS_" + checkpoint.status)}
-                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
-                />
-              ))}
-            </ConnectingCheckPoints>
-          )}
-        </Card>
-      )} */}
-
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
         (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
           <Card>
@@ -983,46 +969,41 @@ const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
             <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
           </Card>
         )}
-      {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" &&
-  siteImages?.documents?.length > 0 && (
-    <Card>
-  <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
-  <StatusTable
-    style={{
-      display: "flex",
-      gap: "20px",
-      flexWrap: "wrap",
-      justifyContent: "space-between",
-    }}
-  >
-      {documentData?.length > 0 &&
-      documentData.map((doc) => (
-        <NocUploadedDocument
-          key={doc?.fileStoreId || doc?.uuid}
-          filestoreId={doc?.fileStoreId || doc?.uuid}
-          documentType={doc?.title}
-          documentName={doc?.title}
-          latitude={doc?.latitude}
-          longitude={doc?.longitude}
-        />
-      ))}
-  </StatusTable>
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+          <StatusTable
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            {documentData?.length > 0 &&
+              documentData.map((doc) => (
+                <NocUploadedDocument
+                  key={doc?.fileStoreId || doc?.uuid}
+                  filestoreId={doc?.fileStoreId || doc?.uuid}
+                  documentType={doc?.title}
+                  documentName={doc?.title}
+                  latitude={doc?.latitude}
+                  longitude={doc?.longitude}
+                />
+              ))}
+          </StatusTable>
 
-  {geoLocations?.length > 0 && (
-    <>
-      <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-        {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
-      </CardSectionHeader>
-      <CustomLocationSearch position={geoLocations} />
-    </>
-  )}
-</Card>
-
-  )}
-
+          {geoLocations?.length > 0 && (
+            <>
+              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CustomLocationSearch position={geoLocations} />
+            </>
+          )}
+        </Card>
+      )}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj= {timeObj} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
       {actions?.length > 0 && (
         <ActionBar>

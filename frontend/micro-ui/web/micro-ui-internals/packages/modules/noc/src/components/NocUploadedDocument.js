@@ -16,6 +16,7 @@ const NocUploadedDocument = ({ filestoreId, documentType, documentName, latitude
     if (filestoreId) {
       const fileUrl = `${window.origin}/filestore/v1/files/id?fileStoreId=${filestoreId}&tenantId=${stateCode}`;
       setDocUrl(fileUrl);
+      console.log('fileUrl in latlong component', fileUrl)
       extractExifDate(fileUrl);
     }
   }, [filestoreId, stateCode]);
@@ -54,9 +55,8 @@ const NocUploadedDocument = ({ filestoreId, documentType, documentName, latitude
 
         {(latitude || longitude) && (
           <div style={{ marginTop: "8px", fontSize: "12px", color: "#666" }}>
-            {latitude && <span>Lat: {latitude}</span>}
-            {latitude && longitude && <span>, </span>}
-            {longitude && <span>Long: {longitude}</span>}
+            {latitude && <div>Lat: {latitude}</div>}
+            {longitude && <div>Long: {longitude}</div>}
           </div>
         )}
 

@@ -8,6 +8,7 @@ import org.egov.rl.calculator.web.models.CalculationReq;
 import org.egov.rl.calculator.web.models.GetBillCriteria;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
+import org.egov.rl.calculator.web.models.DemandRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +60,11 @@ public class CalculatorController {
 		demandService.generateBatchDemand(requestInfo,getBillCriteria.getTenantId(),getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining()));
 		log.info("Finished bulk demands for rent/lease demands.");
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+    
+    @PostMapping("/_searchdemand")
+	public ResponseEntity<DemandResponse> searchdemand(@RequestBody @Valid DemandRequest demandRequest) {
+    	DemandResponse demandResponse=DemandResponse.builder().demands(demandService.searchDemandsByTenantId(demandRequest)).build();
+    	return new ResponseEntity<>(demandResponse, HttpStatus.OK);
 	}
 }

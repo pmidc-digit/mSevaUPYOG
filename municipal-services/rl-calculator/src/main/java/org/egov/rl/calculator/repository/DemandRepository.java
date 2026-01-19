@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.calculator.repository.rowmapper.DemandDetailRowMapper;
 import org.egov.rl.calculator.repository.rowmapper.DemandRowMapper;
+import org.egov.rl.calculator.repository.rowmapper.SearchDemandRowMapper;
 import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
 import org.egov.rl.calculator.web.models.demand.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
+import org.egov.rl.calculator.web.models.demand.DemandCriteria;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,6 +41,9 @@ public class DemandRepository {
 
 	@Autowired
 	private DemandDetailRowMapper demandDetailRowMapper;
+	
+	@Autowired
+	private SearchDemandRowMapper searchDemandRowMapper;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -218,4 +223,32 @@ public class DemandRepository {
 					"Failed to fetch demands for the given rentable IDs and period");
 		}
 	}
+	
+	public List<Demand> getSearchDemandByTenentId(DemandCriteria createria) {
+		if (createria.getTenantIds() == null || createria.getTenantIds().isEmpty()) {
+			return Collections.emptyList(); // avoid "IN ()" SQL
+		}
+		List<Object> preparedStmtList = new ArrayList<>();
+		List<Object> subQueryParams = new ArrayList<>();
+
+		String tenentId = createria.getTenantIds().stream().map(id ->id).collect(Collectors.joining(", "));
+
+		String sql = "SELECT d.id as uuid,d.*,dd.* "
+				+ "FROM public.egbs_demand_v1 d INNER JOIN public.egbs_demanddetail_v1 dd ON d.id=dd.demandid  where d.tenantid IN (?) AND d.ispaymentcompleted=false "
+				+ "ORDER BY d.id DESC, d.createdtime DESC, d.tenantid DESC";
+		log.info("tenentId :: " + tenentId);
+		subQueryParams.add(tenentId);
+		try {
+			preparedStmtList.addAll(subQueryParams);
+			return jdbcTemplate.query(sql, preparedStmtList.toArray(),searchDemandRowMapper);
+		} catch (NoSuchElementException e) {
+			return Collections.emptyList();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("Error while fetching demands for rentable IDs and period", e);
+			throw new CustomException("DEMAND_FETCH_ERROR",
+					"Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
+
 }

@@ -11,6 +11,7 @@ import org.egov.rl.calculator.util.NotificationUtil;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.*;
+import org.egov.rl.calculator.web.models.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.*;
 import org.egov.rl.calculator.web.models.demand.Status;
 import org.egov.rl.calculator.web.models.property.AuditDetails;
@@ -579,4 +580,8 @@ public class DemandService {
 		demands.add(demand);
 		return demand;
 	}
-}
+	
+	public List<Demand> searchDemandsByTenantId(DemandRequest demandRequest) {
+		return demandRepository.getSearchDemandByTenentId(demandRequest.getDemandCriteria());
+	  }
+	}

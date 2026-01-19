@@ -59,8 +59,6 @@ public class DemandCriteria {
 	
 	private Set<String> demandId;
 	
-	//private Set<String> owner;
-	
 	private Set<String> consumerCode;
 	
 	private String businessService;
@@ -74,4 +72,11 @@ public class DemandCriteria {
 	private String email;
 	
 	private Boolean receiptRequired;
+	
+
+	
+	private Set<String> tenantIds;
+	private boolean isPaymentCompleted;
+	private long offset;
+	private long limit;
 }

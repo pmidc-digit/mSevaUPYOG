@@ -19,7 +19,7 @@ public class LAYOUTConstants {
 	public static final String LAYOUT_TYPE = "LayoutType";
 	public static final String SOURCE_RefId = "SourceRefId";
 	public static final String ACTION_APPLY = "APPLY";
-
+	public static final String INVALID_REQUEST = "INVALID REQUEST";
 	public static final String LAYOUT_MODULE = "LAYOUT";
 	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
 	// mdms path codes
@@ -96,5 +96,8 @@ public class LAYOUTConstants {
 	public static final String ACTION_STATUS_SANCTION_FEE = "PENDINGSANCTIONPAYMENT";
 
 	public static final List<String> BUSINESS_SERVICE_LIST = Arrays.asList("LAYOUT.PAY1", "LAYOUT.PAY2", "LAYOUT");
+
+	public static final String FI_STATUS = "FIELDINSPECTION_INPROGRESS";
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
 
 }

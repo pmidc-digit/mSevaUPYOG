@@ -101,12 +101,26 @@ public class LAYOUTConfiguration {
 	@Value("${persister.save.layout.topic}")
 	private String saveTopic;
 
+	@Value("${persister.save.checkList.topic}")
+	private String saveCheckListTopic;
+
+	@Value("${persister.update.checkList.topic}")
+	private String updateCheckListTopic;
+
 	@Value("${egov.billingservice.host}")
 	private String billingServiceHost;
 
 	@Value("${persister.update.layout.topic}")
 	private String updateTopic;
-	
+
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
+
+
 	@Value("${persister.update.layout.workflow.topic}")
 	private String updateWorkflowTopic;
 	

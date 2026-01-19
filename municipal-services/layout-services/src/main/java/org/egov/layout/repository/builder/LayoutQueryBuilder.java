@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 @Component
 @Slf4j
@@ -59,6 +60,7 @@ public class LayoutQueryBuilder {
 
 
 
+	private final String DOCUMENT_CHECK_LIST_QUERY = "SELECT * from eg_layout_document_check_list where applicationno = ? AND tenantId = ?";
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
@@ -148,6 +150,21 @@ public class LayoutQueryBuilder {
 //			builder.append(" (layout.accountId IN (").append(createQuery(ownerIds)).append(")) ");
 //			addToPreparedStatement(preparedStmtList, ownerIds);
 //		}
+
+		if ( !StringUtils.isEmpty(criteria.getVasikaNumber()) ) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.vasikaNumber=? ");
+			preparedStmtList.add(criteria.getVasikaNumber());
+			log.info(criteria.getVasikaNumber());
+		}
+
+		if ( !StringUtils.isEmpty(criteria.getVasikaDate()) ) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.vasikaDate=? ");
+			preparedStmtList.add(criteria.getVasikaDate());
+			log.info(criteria.getVasikaDate());
+		}
+
 
 
 		String applicationNo = criteria.getApplicationNo();
@@ -337,7 +354,13 @@ public class LayoutQueryBuilder {
 		}
 		return builder.toString();
 	}
-	
+	public String getLayoutDocumantsCheckListQuery(String applicationNo, String tenantId, List<Object> params) {
+
+		params.add(applicationNo);
+		params.add(tenantId);
+
+		return DOCUMENT_CHECK_LIST_QUERY;
+	}
 	private String addCountWrapper(String query) {
 	    return countWrapper.replace("{INTERNAL_QUERY}", query);
 	}

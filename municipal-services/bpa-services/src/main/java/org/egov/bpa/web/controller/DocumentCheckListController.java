@@ -1,0 +1,63 @@
+package org.egov.bpa.web.controller;
+
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.websocket.server.PathParam;
+
+import org.egov.bpa.service.BPAService;
+import org.egov.bpa.util.ResponseInfoFactory;
+import org.egov.bpa.web.model.CheckListRequest;
+import org.egov.bpa.web.model.CheckListResponse;
+import org.egov.bpa.web.model.DocumentCheckList;
+import org.egov.bpa.web.model.RequestInfoWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/v1/checklist")
+public class DocumentCheckListController {
+	
+	@Autowired
+	private BPAService bpaService;
+	
+	@Autowired
+	private ResponseInfoFactory responseInfoFactory;
+
+	@PostMapping("/_search")
+	public ResponseEntity<CheckListResponse> getDocumentCheckList(@RequestBody RequestInfoWrapper requestInfoWrapper,
+			@PathParam("applicationNo") String applicationNo, @PathParam("tenantId") String tenantId){
+		List<DocumentCheckList> checkLists = bpaService.searchDocumentCheckLists(applicationNo, tenantId);
+		
+		return new ResponseEntity<>(CheckListResponse.builder()
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+				.checkList(checkLists).build(), HttpStatus.OK);
+	}
+	
+	@PostMapping("/_create")
+	public ResponseEntity<CheckListResponse> saveDocumentCheckList(@Valid @RequestBody CheckListRequest checkListRequest){
+		List<DocumentCheckList> checkLists = bpaService.saveDocumentCheckLists(checkListRequest);
+		
+		return new ResponseEntity<>(CheckListResponse.builder()
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(checkListRequest.getRequestInfo(), true))
+				.checkList(checkLists).build(), HttpStatus.OK);
+	}
+	
+	@PostMapping("/_update")
+	public ResponseEntity<CheckListResponse> updateDocumentCheckList(@Valid @RequestBody CheckListRequest checkListRequest){
+		List<DocumentCheckList> checkLists = bpaService.updateDocumentCheckLists(checkListRequest);
+		
+		return new ResponseEntity<>(CheckListResponse.builder()
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(checkListRequest.getRequestInfo(), true))
+				.checkList(checkLists).build(), HttpStatus.OK);
+	}
+	
+}

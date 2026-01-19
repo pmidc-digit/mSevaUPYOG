@@ -3,7 +3,9 @@ package org.egov.noc.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -12,6 +14,7 @@ import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.repository.ServiceRequestRepository;
 import org.egov.noc.web.model.*;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -112,6 +115,40 @@ public class UserService {
 		}
 	}
 
+	public List<String> getAssigneeFromNOC(Noc noc, List<String> userRoles, RequestInfo requestInfo) {
+		Map<String, String> additionalDetails = (Map<String, String>)noc.getNocDetails().getAdditionalDetails();
+		String roles = userRoles.stream().collect(Collectors.joining(","));
+		StringBuilder uri = getEmployeeSearchURL(noc.getTenantId(), roles, additionalDetails, false);
+
+		JSONObject hrmsRequest = new JSONObject();
+		UserSearchRequest userSearchRequest = new UserSearchRequest();
+		userSearchRequest.setRequestInfo(requestInfo);
+		hrmsRequest.put("RequestInfo", requestInfo);
+		Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+
+		List<String> assignees = JsonPath.read(response, "$.Employees.*.user.uuid");
+		assignees = assignees.stream().distinct().collect(Collectors.toList());
+		return CollectionUtils.isEmpty(assignees) ? null :assignees;
+	}
+	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, String> additionalDetails, boolean isAllAssignees) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone");
+
+		StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
+		uri.append("?tenantId=").append(tenantId)
+				.append("&isActive=true");
+
+		if(!org.springframework.util.StringUtils.isEmpty(roles))
+			uri.append("&roles=").append(roles);
+
+		if(!isAllAssignees) {
+			uri.append("&assignedtenattids=").append(tenantId);
+			if(!org.springframework.util.StringUtils.isEmpty(zones))
+				uri.append("&zones=").append(zones);
+
+		}
+
+		return uri;
+	}
 	/**
 	 * Parses date formats to long for all users in responseMap
 	 * 

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -26,11 +27,14 @@ import org.egov.bpa.validator.BPAValidator;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.CheckListRequest;
+import org.egov.bpa.web.model.DocumentCheckList;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.bpa.web.model.user.UserSearchRequest;
+import org.egov.bpa.web.model.workflow.Action;
 import org.egov.bpa.web.model.workflow.BusinessService;
 import org.egov.bpa.web.model.workflow.State;
 import org.egov.bpa.workflow.ActionValidator;
@@ -485,12 +489,12 @@ public class BPAService {
         		State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), businessService);
         		String nextStateId = currentState.getActions().stream()
         				.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
-        				.findFirst().get().getNextState();
+        				.findFirst().orElse(new Action()).getNextState();
         		State nextState = businessService.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
         		
         		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
         		
-        		if ((nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
+        		if (nextState != null && (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
         				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
         			List<String> roles = new ArrayList<>();
         			nextState.getActions().forEach(stateAction -> {
@@ -861,6 +865,39 @@ public class BPAService {
     				}
     			}
     		}
+    	}
+    	
+    	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
+    		if(StringUtils.isEmpty(applicatioinNo))
+    			throw new CustomException(BPAErrorConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
+    		return repository.getDocumentCheckList(applicatioinNo, tenantId);
+    	}
+    	
+    	public List<DocumentCheckList> saveDocumentCheckLists(CheckListRequest checkListRequest){
+    		Long currentTime = System.currentTimeMillis();
+    		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+    		
+    		checkListRequest.getCheckList().forEach(document -> {
+    			document.setId(UUID.randomUUID().toString());
+    			document.setCreatedtime(currentTime);
+    			document.setLastmodifiedtime(currentTime);
+    			document.setCreatedby(userUUID);
+    			document.setLastmodifiedby(userUUID);
+    		});
+    		repository.saveDocumentCheckList(checkListRequest);
+    		return checkListRequest.getCheckList();
+    	}
+    	
+    	public List<DocumentCheckList> updateDocumentCheckLists(CheckListRequest checkListRequest){
+    		Long currentTime = System.currentTimeMillis();
+    		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+    		
+    		checkListRequest.getCheckList().forEach(document -> {
+    			document.setLastmodifiedtime(currentTime);
+    			document.setLastmodifiedby(userUUID);
+    		});
+    		repository.updateDocumentCheckList(checkListRequest);
+    		return checkListRequest.getCheckList();
     	}
         
 }

@@ -1008,4 +1008,4 @@ config:
     build:
       - work-dir: "utilities/ticketing-module"
         image-name: "ticketing-module"
-        dockerfile: 'build/maven/Dockerfile'
+        dockerfile: 'build/maven/maven2/Dockerfile'

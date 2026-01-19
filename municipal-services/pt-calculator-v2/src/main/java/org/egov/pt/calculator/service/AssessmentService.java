@@ -273,7 +273,7 @@ public class AssessmentService {
 	                	ulbName = ulbName.substring(0, 1).toUpperCase() + ulbName.substring(1);
 
 	                	String kafkaKey =
-	                	        count + "|" + ulbName + "|" + assessmentRequest.getAssessmentYear() +"|"+offset;
+	                	        scheduledAssessments.get(0).getPropertyId()+"|"+ count + "|" + ulbName + "|" + assessmentRequest.getAssessmentYear() +"|"+offset;
 
 
 	                    producer.push(

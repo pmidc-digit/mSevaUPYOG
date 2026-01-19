@@ -186,6 +186,7 @@ const TopBar = ({
                 )}
             </div>
             <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
+           
             {userDetails?.access_token && (
               <div className="left">
                 <Dropdown
@@ -194,8 +195,8 @@ const TopBar = ({
                   select={handleUserDropdownSelection}
                   showArrow={true}
                   freeze={true}
-                  style={mobileView ? { right: 0 } : {}}
-                  optionCardStyles={{ overflow: "revert" }}
+                  style={mobileView ? { right: 0} : {}}
+                  optionCardStyles={{ overflow: "revert", left:"-56px"   }}
                   customSelector={
                     profilePic == null ? (
                       <TextToImg name={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"} />

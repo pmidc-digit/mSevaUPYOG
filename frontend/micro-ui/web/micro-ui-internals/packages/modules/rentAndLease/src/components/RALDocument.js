@@ -10,6 +10,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 );
 
 function RALDocuments({ value = {}, Code, index }) {
+  const isMobile = window.Digit.Utils.browser.isMobile();
   const { t } = useTranslation();
   const { isLoading, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
 
@@ -36,9 +37,15 @@ function RALDocuments({ value = {}, Code, index }) {
                   <a className="document-link" target="_" href={documentLink} key={index}>
                     <div className="document-card">
                       <div className="document-icon-wrapper">
-                        <PDFSvg width={80} height={100} />
+                        <PDFSvg width={isMobile ? 50 : 80} height={isMobile ? 60 : 100} />
                       </div>
-                      <p className="document-name">{value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}</p>
+                      <p className="document-name" title={t(document?.documentType)}>
+                    {(() => {
+                      const text = t(document?.documentType);
+                      const maxLength = isMobile ? 8 : 12;
+                      return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+                    })()}
+                  </p>
                         <div className="document-action-label">
                     View
                   </div>

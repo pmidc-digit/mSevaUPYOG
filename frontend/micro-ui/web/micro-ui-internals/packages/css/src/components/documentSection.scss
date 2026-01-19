@@ -35,8 +35,8 @@
 }
 
 .document-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+   display: flex;
+   flex-wrap: wrap;
   gap: 16px;
   padding: 8px;
 }
@@ -91,5 +91,44 @@
   font-size: 11px;
   color: #0b69a4;
   font-weight: 600;
+}
+
+/* Mobile responsive styles for document section */
+@media only screen and (max-width: 768px) {
+  .document-container {
+    margin-top: 8px;
+  }
+
+  .document-grid {
+   display: flex;
+   flex-wrap: wrap;
+    gap: 12px;
+    padding: 4px;
+  }
+
+  .document-card {
+    padding: 8px;
+    min-height: 140px;
+    max-height: 140px;
+    width: 100%;
+  }
+
+  .document-icon-wrapper {
+    width: 60px;
+    height: 70px;
+    margin-bottom: 6px;
+  }
+
+  .document-name {
+    font-size: 10px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .document-action-label {
+    font-size: 9px;
+    margin-top: 4px;
+  }
 }
 

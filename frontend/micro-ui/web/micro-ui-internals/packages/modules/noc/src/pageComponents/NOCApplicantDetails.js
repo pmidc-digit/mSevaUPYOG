@@ -361,7 +361,10 @@ const NOCApplicantDetails = (_props) => {
                       />
                     )}
                   />
-                  <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.ownerType?.message || ""}</CardLabelError>
+                
+                 {errors?.owners?.[index]?.ownerType  && (
+                  <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message }</p>
+                )}
                 </div>
               </LabelFieldPair>
             )}

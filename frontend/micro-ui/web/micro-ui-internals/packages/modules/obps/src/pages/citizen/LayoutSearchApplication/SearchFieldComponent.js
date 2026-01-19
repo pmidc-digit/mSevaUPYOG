@@ -22,15 +22,15 @@ const SearchFormFieldsComponent = (props) => {
   
   
   return (
-    <div className="search-form-wrapper">
+    <div style={{width: "100%", gap:"20px"}} className="search-form-wrapper">
       <SearchField>
         <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
       
-      <SearchField>
+      <SearchField style={{display: "flex", flexDirection: "column"}}>
         <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
-        <MobileNumber
+        <TextInput
           name="mobileNumber"
           inputRef={register({
             minLength: {

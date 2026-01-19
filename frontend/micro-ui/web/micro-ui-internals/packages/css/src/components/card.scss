@@ -807,17 +807,24 @@ button.card-link.submit-bar {
   width: 100% !important;
 }
 
-
+.ws-citizen-wrapper .app-container {
+  margin-top: 1rem !important;
+  padding: 0 !important;
+  
+}
 
 @media (max-width: 768px) {
  .chb-citizen .app-container{
-  margin-top: 2rem !important;
+  margin-top: 3rem !important;
  }
 
  .pet-citizen .app-container{
   margin-top: 2rem !important;
  }
  .mcollect-citizen .app-container{
+  margin-top: 2rem !important;
+ }
+ .ads-citizen .app-container{
   margin-top: 2rem !important;
  }
 

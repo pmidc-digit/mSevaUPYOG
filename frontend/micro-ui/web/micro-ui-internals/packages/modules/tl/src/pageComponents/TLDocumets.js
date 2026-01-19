@@ -12,6 +12,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 
 function TLDocument({ value = {} }) {
   const { t } = useTranslation();
+  const isMobile = window.Digit.Utils.browser.isMobile();
   const { isLoading, isError, error, data } = Digit.Hooks.tl.useTLDocumentSearch(
     {
       value,
@@ -44,10 +45,14 @@ function TLDocument({ value = {} }) {
               >
                 <div className="document-card">
                   <div className="document-icon-wrapper">
-                    <PDFSvg width={80} height={100} />
+                     <PDFSvg width={isMobile ? 50 : 80} height={isMobile ? 60 : 100} />
                   </div>
-                  <p className="document-name">
-                    {value?.workflowDocs ? t(`${document?.documentType}`) : t(`TL_${document?.documentType}`)}
+                   <p className="document-name" title={t(document?.documentType)}>
+                    {(() => {
+                      const text = t(document?.documentType);
+                      const maxLength = isMobile ? 8 : 12;
+                      return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+                    })()}
                   </p>
                   <div className="document-action-label">
                     View

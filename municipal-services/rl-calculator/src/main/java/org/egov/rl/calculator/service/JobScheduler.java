@@ -46,22 +46,22 @@ public class JobScheduler {
 //	@Scheduled(cron = "0 30 3 * * *", zone = RLConstants.TIME_ZONE)
 	public void bulkDemandGenerationCronJob() {
 		log.info("Scheduler Start Every day at 03:30 AM");
-		getOAuthToken();
+//		getOAuthToken();
 		log.info("Morning Scheduler Start Date Time :{}",LocalDateTime.now());
 		  demandService.generateBatchDemand(getOAuthToken(),null,null);
 		log.info("Morning Scheduler End Date Time :{}",LocalDateTime.now());
 	}
 	
 //	@Scheduled(cron = "0 30 10 * * *", zone = RLConstants.TIME_ZONE)
-	@Scheduled(fixedRate = 60000, zone = RLConstants.TIME_ZONE)
-	public void sendNotificationAndUpdateDemandCronJob() {
-		log.info("Scheduler Start Every day at 10:30 PM");
-		
-		log.info("Afternoon Scheduler Start Date Time :{}",LocalDateTime.now());
-		  demandService.sendNotificationAndUpdateDemand(getOAuthToken(),null,null);
-		log.info("Afternoon Scheduler End Date Time :{}",LocalDateTime.now());
-		
-	}
+//	@Scheduled(fixedRate = 60000, zone = RLConstants.TIME_ZONE)
+//	public void sendNotificationAndUpdateDemandCronJob() {
+//		log.info("Scheduler Start Every day at 10:30 PM");
+//		
+//		log.info("Afternoon Scheduler Start Date Time :{}",LocalDateTime.now());
+//		  demandService.sendNotificationAndUpdateDemand(getOAuthToken(),null,null);
+//		log.info("Afternoon Scheduler End Date Time :{}",LocalDateTime.now());
+//		
+//	}
 
 
 //	public RequestInfo getOAuthToken() {

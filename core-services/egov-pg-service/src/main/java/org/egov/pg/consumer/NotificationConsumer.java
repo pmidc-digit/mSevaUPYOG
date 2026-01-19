@@ -29,7 +29,8 @@ public class NotificationConsumer {
      * @param topic
      */
 
-    @KafkaListener(topics = { "${persister.save.pg.txns}" ,"${persister.update.pg.txns}"})
+    @KafkaListener(topics = { "${persister.save.pg.txns}" ,"${persister.update.pg.txns}"},
+    		concurrency = "${kafka.consumer.config.councurrency.count}")
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
             TransactionRequest transactionRequest = mapper.convertValue(record, TransactionRequest.class);

@@ -17,7 +17,7 @@ RUN ls -lh /app/target
 # Create runtime image
 FROM tomcat:9-jdk8-temurin
 
-COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/*.war
+COPY --from=build /app/target/ticket.war /usr/local/tomcat/webapps/ticket.war
 
 EXPOSE 8080
 CMD ["catalina.sh", "run"]

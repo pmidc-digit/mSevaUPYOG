@@ -97,4 +97,7 @@ public class LAYOUTConstants {
 
 	public static final List<String> BUSINESS_SERVICE_LIST = Arrays.asList("LAYOUT.PAY1", "LAYOUT.PAY2", "LAYOUT");
 
+	public static final String FI_STATUS = "FIELDINSPECTION_INPROGRESS";
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
+
 }

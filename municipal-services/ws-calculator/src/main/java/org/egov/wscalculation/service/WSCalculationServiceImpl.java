@@ -453,42 +453,20 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	    );
 
 	    if (CollectionUtils.isEmpty(demands)) {
-	        log.warn("No demands found for connection {}", criteria.getConnectionNo());
 	        return BigDecimal.ZERO;
 	    }
 
-	    long readingFrom = reading.getLastReadingDate();
-	    long readingTo   = reading.getCurrentReadingDate();
 
-	    log.info("Finding demand for reading window [{} - {}]", readingFrom, readingTo);
-
-	    // 1️⃣ Try matching by period overlap
-	    for (Demand d : demands) {
-	        boolean overlaps =
-	                readingFrom <= d.getTaxPeriodTo() &&
-	                readingTo   >= d.getTaxPeriodFrom();
-
-	        if (overlaps) {
-	            BigDecimal amount = extractWsCharge(d);
-	            log.info("Matched demand {} with WS_CHARGE {}", d.getId(), amount);
-	            return amount;
-	        }
-	    }
-
-	    // 2️⃣ Fallback: pick latest ACTIVE demand
+	    // 3️⃣ Fallback: pick latest ACTIVE demand
 	    Demand latestDemand = demands.stream()
 	            .filter(d -> Demand.StatusEnum.ACTIVE.equals(d.getStatus()))
 	            .max(Comparator.comparing(Demand::getTaxPeriodTo))
 	            .orElse(null);
 
 	    if (latestDemand != null) {
-	        BigDecimal amount = extractWsCharge(latestDemand);
-	        log.warn("Fallback used. Latest ACTIVE demand {} with WS_CHARGE {}",
-	                latestDemand.getId(), amount);
-	        return amount;
+	        return extractWsCharge(latestDemand);
 	    }
 
-	    log.error("No matching or fallback demand found");
 	    return BigDecimal.ZERO;
 	}
 

@@ -52,7 +52,7 @@ public class JobScheduler {
 		log.info("Morning Scheduler End Date Time :{}",LocalDateTime.now());
 	}
 	
-	@Scheduled(cron = "0 30 10 * * *", zone = RLConstants.TIME_ZONE)
+//	@Scheduled(cron = "0 30 10 * * *", zone = RLConstants.TIME_ZONE)
 	@Scheduled(fixedRate = 60000, zone = RLConstants.TIME_ZONE)
 	public void sendNotificationAndUpdateDemandCronJob() {
 		log.info("Scheduler Start Every day at 10:30 PM");

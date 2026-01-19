@@ -67,6 +67,7 @@ const CLUModal = ({
        //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
+      zones: applicationData?.[0]?.cluDetails?.additionalDetails?.siteDetails?.zone?.code 
     },
     { enabled: !action?.isTerminateState }
   );

@@ -71,7 +71,8 @@ public class CollectionConsumer {
     @Autowired
     private BankAccountMappingService bankAccountMappingService;
 
-    @KafkaListener(topics = { "${kafka.topics.bankaccountservicemapping.create.name}" })
+    @KafkaListener(topics = { "${kafka.topics.bankaccountservicemapping.create.name}" },
+				concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         logger.info("Record: " + record.toString());
         try {

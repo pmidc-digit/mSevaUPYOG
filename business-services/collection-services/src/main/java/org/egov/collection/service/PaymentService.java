@@ -346,7 +346,8 @@ public class PaymentService {
 			payment.setPayerId(payerId);
 		paymentRepository.savePayment(payment);
 
-		producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
+		String key = paymentRequest.getPayment().getMobileNumber() + paymentRequest.getPayment().getId();
+		producer.producer(applicationProperties.getCreatePaymentTopicName(), key ,paymentRequest);
 
 		return payment;
 	}
@@ -452,7 +453,8 @@ public class PaymentService {
 				Collections.singletonList(paymentRequest.getPayment()), paymentRequest.getRequestInfo());
 
 		paymentRepository.updatePayment(validatedPayments);
-		producer.producer(applicationProperties.getUpdatePaymentTopicName(),
+		String key = paymentRequest.getPayment().getMobileNumber() + paymentRequest.getPayment().getId();
+		producer.producer(applicationProperties.getUpdatePaymentTopicName(), key,
 				new PaymentRequest(paymentRequest.getRequestInfo(), paymentRequest.getPayment()));
 
 		return validatedPayments;

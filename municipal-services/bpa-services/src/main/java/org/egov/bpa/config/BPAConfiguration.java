@@ -75,6 +75,12 @@ public class BPAConfiguration {
 	@Value("${persister.update.buildingplan.adhoc.topic}")
 	private String updateAdhocTopic;
 
+	@Value("${persister.save.checkList.topic}")
+	private String saveCheckListTopic;
+	
+	@Value("${persister.update.checkList.topic}")
+	private String updateCheckListTopic;
+	
 	// Location Config
 	@Value("${egov.location.host}")
 	private String locationHost;
@@ -121,8 +127,11 @@ public class BPAConfiguration {
 	@Value("${egov.property.service.context.path}")
 	private String propertyContextPath;
 
-	@Value("${egov.property.endpoint}")
+	@Value("${egov.property.searchendpoint}")
 	private String propertySearchEndpoint;
+	
+	@Value("${egov.property.createendpoint}")
+	private String propertyCreateEndpoint;
 
 	// SMS
 	@Value("${kafka.topics.notification.sms}")
@@ -180,7 +189,10 @@ public class BPAConfiguration {
 
 	@Value("${employee.allowed.search.params}")
 	private String allowedEmployeeSearchParameters;
-
+	
+	@Value("${system.allowed.search.params}")
+	private String allowedSystemSearchParameters;
+	
 	@Value("${egov.tl.previous.allowed}")
 	private Boolean isPreviousTLAllowed;
 
@@ -208,6 +220,9 @@ public class BPAConfiguration {
 
 	@Value("${is.external.workflow.enabled}")
 	private Boolean isExternalWorkFlowEnabled;
+	
+	@Value("${workflow.escalate.search.autoescalation.path}")
+	private String wfAutoEscalationPath;
 
 	// USER EVENTS
 	@Value("${egov.ui.app.host}")
@@ -346,5 +361,12 @@ public class BPAConfiguration {
 
 	@Value("${egov.bpa.application.details.link}")
 	private String applicationDetailsLink;
+	
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
 
 }

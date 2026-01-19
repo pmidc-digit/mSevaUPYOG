@@ -1,15 +1,21 @@
 package org.egov.bpa.repository;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.producer.Producer;
 import org.egov.bpa.repository.querybuilder.BPAQueryBuilder;
+import org.egov.bpa.repository.rowmapper.BPADocumentCheckListRowMapper;
 import org.egov.bpa.repository.rowmapper.BPARowMapper;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.CheckListRequest;
+import org.egov.bpa.web.model.DocumentCheckList;
 import org.egov.common.contract.request.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,6 +38,9 @@ public class BPARepository {
 
 	@Autowired
 	private BPARowMapper rowMapper;
+	
+	@Autowired
+	private BPADocumentCheckListRowMapper checkListRowMapper;
 
 	/**
 	 * Pushes the request on save topic through kafka
@@ -102,6 +111,20 @@ public class BPARepository {
     		String query = queryBuilder.getBPASearchQueryForPlainSearch(criteria, preparedStmtList, edcrNos, false);
     		List<BPA> BPAData = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     		return BPAData;
+    	}
+        
+        public List<DocumentCheckList> getDocumentCheckList(String applicationNo, String tenantId){
+        	List<Object> params = new LinkedList<>();
+        	String query = queryBuilder.getBPADocumantsCheckListQuery(applicationNo, tenantId, params);
+        	return jdbcTemplate.query(query, params.toArray(), checkListRowMapper);
+        }
+        
+        public void saveDocumentCheckList(CheckListRequest checkListRequest) {
+        	producer.push(config.getSaveCheckListTopic(), checkListRequest);
+    	}
+        
+        public void updateDocumentCheckList(CheckListRequest checkListRequest) {
+        	producer.push(config.getUpdateCheckListTopic(), checkListRequest);
     	}
 
 }

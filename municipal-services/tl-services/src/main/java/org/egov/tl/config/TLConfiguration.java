@@ -352,5 +352,13 @@ public class TLConfiguration {
     @Value("${egov.tl.calculator.billingSlab.endpoint}")
     private String billingSlabEndPoint;
 
+    @Value("${egov.tl.kafka.batch.size}")
+    private Integer batchSize;
+    
+    @Value("${egov.tl.kafka.max.request.size}")
+    private Integer maxRequestSize;
+    
+    @Value("${egov.tl.kafka.linger.ms}")
+    private Integer lingerMs;
 
 }

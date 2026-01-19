@@ -23,6 +23,7 @@ public class UserRowMapper implements RowMapper<User> {
                 .guardian(rs.getString("guardian")).signature(rs.getString("signature"))
                 .accountLocked(rs.getBoolean("accountlocked")).photo(rs.getString("photo")).identificationMark(rs.getString("identificationmark")).uuid(rs.getString("uuid")).alternateMobileNumber(rs.getString("alternatemobilenumber")).build();
 
+
         for (UserType type : UserType.values()) {
             if (type.toString().equals(rs.getString("type"))) {
                 user.setType(type);

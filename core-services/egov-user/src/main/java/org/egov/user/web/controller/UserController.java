@@ -120,6 +120,13 @@ public class UserController {
         }
         return searchUsers(request, headers);
     }
+    
+    @PostMapping("/_searchV2")
+    public UserSearchResponse getV2(@RequestBody @Valid UserSearchRequest request, @RequestHeader HttpHeaders headers) {
+
+        log.info("Received User search Request  " + request);
+        return searchUsers(request, headers);
+    }
 
     /**
      * end-point to search the users by providing userSearchRequest. In Request

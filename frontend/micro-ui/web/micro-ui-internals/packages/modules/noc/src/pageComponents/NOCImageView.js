@@ -33,7 +33,7 @@ return (
           style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
           onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
         />
-        <div>{ownerName || "Primary Owner Photo"}</div>
+        <div> <h2>{t("OWNER_OWNERPHOTO")} : {ownerName}</h2></div>
       </div>
     </div>
     {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}

@@ -22,7 +22,7 @@ const SearchFormFieldsComponent = (props) => {
   
   
   return (
-    <>
+    <div style={{width: "100%", gap:"20px"}} className="search-form-wrapper">
       <SearchField>
         <label>{t("BPA_APPLICATION_NUMBER_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
@@ -30,7 +30,7 @@ const SearchFormFieldsComponent = (props) => {
       
       <SearchField>
         <label>{t("BPA_APPLICANT_MOBILE_NO_LABEL")}</label>
-        <MobileNumber
+        <TextInput
           name="mobileNumber"
           inputRef={register({
             minLength: {
@@ -74,7 +74,7 @@ const SearchFormFieldsComponent = (props) => {
           {t(`ES_COMMON_CLEAR_ALL`)}
         </p>
       </SearchField>
-    </>
+    </div>
   );
 };
 

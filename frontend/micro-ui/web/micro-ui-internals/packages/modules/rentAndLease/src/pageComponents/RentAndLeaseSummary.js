@@ -104,7 +104,7 @@ function RentAndLeaseSummary({ t }) {
                 {docs?.map((doc, index) => (
                   <div key={index} className="ral-summary-doc-card">
                     <RALDocuments value={formData?.documents} Code={doc?.documentType} index={index} />
-                    {t(doc?.documentType)}
+                   
                   </div>
                 ))}
               </div>

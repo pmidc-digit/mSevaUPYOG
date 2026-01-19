@@ -172,7 +172,11 @@ public class CalculationService {
 			if(!node.containsKey("builtUpArea"))
 				throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "builtUpArea should not be null!!");
 
-			List<Map<String,Object>> applicationFees = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_APPLIOCATION_FEES_PATH);
+			String categorie = node.getOrDefault("categories", "");
+	    	String subcategorie = node.getOrDefault("subcategories", "");
+	    	String proposedSite = node.getOrDefault("proposedSite", "").toUpperCase();
+			
+			List<Map<String,Object>> applicationFees = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_APPLIOCATION_FEES_PATH.replace("{0}", categorie).replace("{1}", subcategorie).replace("{2}", proposedSite));
 			
 			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")).multiply(BigDecimal.valueOf(3.2808)); //In Running Feet
 			BigDecimal area=new BigDecimal(node.get("builtUpArea")).multiply(BigDecimal.valueOf(10.7639)); //In Sq Feet
@@ -202,7 +206,7 @@ public class CalculationService {
 		}
 		
 		else if (calulationCriteria.getFeeType().equalsIgnoreCase(BPACalculatorConstants.MDMS_CALCULATIONTYPE_SANC_FEETYPE) 
-				&& ( calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA) 
+				&& ( calulationCriteria.getBpa().getBusinessService().startsWith(BPACalculatorConstants.MDMS_BPA) 
 						|| calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW) ) )
 		{
 			

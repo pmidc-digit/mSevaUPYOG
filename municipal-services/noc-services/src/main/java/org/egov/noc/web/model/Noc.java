@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,6 +14,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +108,16 @@ public class Noc   {
   @JsonProperty("nocDetails")
   private NocDetails nocDetails = null;
 
+  @SafeHtml
+  @NotNull(message = "Vasika Number is required")
+  @Size(min = 1, max = 15)
+  @JsonProperty("vasikaNumber")
+  private String vasikaNumber = null;
+  
+  @NotNull(message = "Vasika Date is required in dd-MM-yyyy format")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+  @JsonProperty("vasikaDate")
+  private LocalDate vasikaDate = null;
 
   public Noc id(String id) {
     this.id = id;

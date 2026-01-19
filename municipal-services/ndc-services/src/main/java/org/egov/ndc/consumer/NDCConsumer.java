@@ -23,17 +23,15 @@ public class NDCConsumer {
 	
 	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}" })
 	public void listen(final String record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-		log.info("Incoming raw message: {}", record);
 		ObjectMapper mapper = new ObjectMapper();
 		NdcApplicationRequest ndcRequest = new NdcApplicationRequest();
 		try {
-			log.debug("Consuming record: " + record);
 			ndcRequest = mapper.readValue(record, NdcApplicationRequest.class);
 		} catch (final Exception e) {
 			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
 		}
 		List<Application> applications = ndcRequest.getApplications();
-		log.debug("BPA Received: " + applications);
+		log.debug("Received: " + applications);
 		notificationService.process(ndcRequest);
 	}
 }

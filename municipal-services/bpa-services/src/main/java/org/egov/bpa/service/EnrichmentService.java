@@ -123,7 +123,7 @@ public class EnrichmentService {
 				bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_MODULE_CODE);
 
 		} else {
-			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_OC_MODULE_CODE);
+//			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_OC_MODULE_CODE);
 			bpaRequest.getBPA().setLandId(values.get("landId"));
 		}
 		if (bpaRequest.getBPA().getLandInfo() != null) {
@@ -303,9 +303,14 @@ public class EnrichmentService {
 		log.info("Application state is : " + state);
 		this.generateApprovalNo(bpaRequest, state);
 		
+		// Generate the Application Fees Demand
+		if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.APPL_FEE_STATE))
+			calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
+		
 		// Generate the sanction Fees Demand
-				if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
-					calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+		if(bpaRequest.getBPA().getStatus().equalsIgnoreCase(BPAConstants.SANC_FEE_STATE))
+			calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+				
 				
 //		nocService.initiateNocWorkflow(bpaRequest, mdmsData);
 
@@ -325,7 +330,7 @@ public class EnrichmentService {
 				|| (!bpa.getBusinessService().equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
 						&& ((!bpa.getRiskType().toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)
 								&& state.equalsIgnoreCase(BPAConstants.APPROVED_STATE))
-								|| (state.equalsIgnoreCase(BPAConstants.SANC_FEE_STATE) && bpa.getRiskType()
+								|| (state.equalsIgnoreCase(BPAConstants.APPROVED_STATE) && bpa.getRiskType()
 										.toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE))))) {
 			int vailidityInMonths = config.getValidityInMonths();
 			Calendar calendar = Calendar.getInstance();
@@ -342,9 +347,11 @@ public class EnrichmentService {
 			}
 
 			additionalDetail.put("validityDate", calendar.getTimeInMillis());
-			List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), bpa.getTenantId(),
-					config.getPermitNoIdgenName(), config.getPermitNoIdgenFormat(), 1).getIdResponses();
-			bpa.setApprovalNo(idResponses.get(0).getId());
+			if(StringUtils.isEmpty(bpa.getApprovalNo())) {
+				List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), bpa.getTenantId(),
+						config.getPermitNoIdgenName(), config.getPermitNoIdgenFormat(), 1).getIdResponses();
+				bpa.setApprovalNo(idResponses.get(0).getId());
+			}
 			if (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE)
 					&& bpa.getRiskType().toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)) {
 
@@ -373,6 +380,8 @@ public class EnrichmentService {
 					log.warn("No approval conditions found for the application " + bpa.getApplicationNo());
 				}
 			}
+			
+			additionalDetail.put("isSanctionLetterGenerated", Boolean.TRUE);
 		}
 	}
 

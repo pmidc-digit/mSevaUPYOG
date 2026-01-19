@@ -74,7 +74,7 @@ public class BPACustomDecorator {
 	public EnrichedBPARequest transformData(BPARequest bpaRequest) {
 		List<EnrichedUnit> enrichedUnitList = new ArrayList<>();
 		Double plotAreaApproved = null;
-		Integer plotArea = null;
+		Double plotArea = null;
 
 		//fetching plotArea after approval based on approval number
 		if (bpaRequest.getBPA().getStatus().equals("APPROVED")) {
@@ -206,7 +206,7 @@ public class BPACustomDecorator {
 		}
 
 		String jsonString = new JSONObject(responseMap).toString();
-		log.error("Exception while fetching edcr number from bpa response "+jsonString);
+//		log.error("Exception while fetching edcr number from bpa response "+jsonString);
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
 		//edcrNumber = context.read("BPA[0].edcrNumber");
 		 edcrNumber = context.read("$.BPA[0].edcrNumber");
@@ -221,9 +221,9 @@ public class BPACustomDecorator {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public Integer getPlotAreafromEdcr(String edcrNo, RequestInfo requestInfo, BPA bpa) {
+	public Double getPlotAreafromEdcr(String edcrNo, RequestInfo requestInfo, BPA bpa) {
 		StringBuilder uri = new StringBuilder(edcrHost);
-		Integer plotArea=null;
+		Double plotArea=null;
 
 		uri.append(getPlanEndPoint);
 		uri.append("?").append("tenantId=").append(bpa.getTenantId());
@@ -244,7 +244,7 @@ public class BPACustomDecorator {
 		}
 		String jsonString = new JSONObject(responseMap).toString();
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
-		plotArea = context.read("edcrDetail[0].planDetail.planInformation.plotArea");
+		plotArea = Double.valueOf(context.read("edcrDetail[0].planDetail.planInformation.plotArea").toString());
 
 		return plotArea;
 	}
@@ -279,7 +279,7 @@ public class BPACustomDecorator {
 		}
 		String jsonString = new JSONObject(responseMap).toString();
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
-		plotArea = context.read("edcrDetail[0].planDetail.virtualBuilding.totalBuitUpArea");
+		plotArea = Double.valueOf(context.read("edcrDetail[0].planDetail.virtualBuilding.totalBuitUpArea").toString());
 
 		return plotArea;
 	}

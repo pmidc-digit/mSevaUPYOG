@@ -14,12 +14,14 @@ import org.egov.ndc.calculator.web.models.demand.Demand;
 import org.egov.ndc.calculator.web.models.demand.DemandDetail;
 import org.egov.ndc.calculator.web.models.demand.DemandRequest;
 import org.egov.ndc.calculator.web.models.demand.DemandResponse;
+import org.egov.ndc.calculator.web.models.ndc.Application;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.egov.ndc.calculator.utils.NDCConstants.EMPTY_DEMAND_ERROR_CODE;
 import static org.egov.ndc.calculator.utils.NDCConstants.EMPTY_DEMAND_ERROR_MESSAGE;
@@ -48,12 +50,18 @@ public class DemandService {
                     .taxAmount(BigDecimal.valueOf(calculation.getTotalAmount()))
                     .taxHeadMasterCode(ndcConfiguration.getTaxHeadMasterCode()).build();
 
-            User owner = calculationReq.getCalculationCriteria().get(0).getNdcApplicationRequest().getApplications().get(0).getOwners().get(0).toCommonUser();
+            AtomicReference<User> owner = new AtomicReference<>(calculationReq.getCalculationCriteria().get(0).getNdcApplicationRequest().getApplications().get(0).getOwners().get(0).toCommonUser());
+
+            Application application = calculationReq.getCalculationCriteria().get(0).getNdcApplicationRequest().getApplications().get(0);
+            application.getOwners().forEach(ownerInfo -> {
+                if (ownerInfo.getIsPrimaryOwner() != null && ownerInfo.getIsPrimaryOwner())
+                    owner.set(ownerInfo.toCommonUser());
+            });
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId()).consumerCode(calculation.getApplicationNumber())
                     .consumerType("NDC_APPLICATION_FEE")
                     .businessService("NDC")
-                    .payer(owner)
+                    .payer(owner.get())
                     .taxPeriodFrom(System.currentTimeMillis()).taxPeriodTo(System.currentTimeMillis())
                     .demandDetails(Collections.singletonList(demandDetail))
                     .build();

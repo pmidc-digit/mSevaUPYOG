@@ -49,6 +49,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -388,7 +389,7 @@ public class UserRepository {
         else
             updateuserInputs.put("Password", oldUser.getPassword());
 
-        if (oldUser != null && user.getPhoto() != null && user.getPhoto().contains("http"))
+        if (oldUser != null && ((user.getPhoto() != null && user.getPhoto().contains("http")) || StringUtils.isEmpty(user.getPhoto())))
             updateuserInputs.put("Photo", oldUser.getPhoto());
         else
             updateuserInputs.put("Photo", user.getPhoto());
@@ -398,9 +399,11 @@ public class UserRepository {
         else
             updateuserInputs.put("PasswordExpiryDate", oldUser.getPasswordExpiryDate());
         updateuserInputs.put("Salutation", user.getSalutation());
-        updateuserInputs.put("Signature", user.getSignature());
+        if(!StringUtils.isEmpty(user.getSignature()))
+        	updateuserInputs.put("Signature", user.getSignature());
+        else
+        	updateuserInputs.put("Signature", oldUser.getSignature());
         updateuserInputs.put("Title", user.getTitle());
-
 
         List<Enum> userTypeEnumValues = Arrays.asList(UserType.values());
         if (user.getType() != null) {

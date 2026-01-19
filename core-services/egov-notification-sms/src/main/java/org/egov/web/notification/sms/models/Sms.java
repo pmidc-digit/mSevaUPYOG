@@ -4,6 +4,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
+@NoArgsConstructor   // ✅ REQUIRED for Jackson
+
 @ToString
 @Setter
 public class Sms {
@@ -12,6 +14,7 @@ public class Sms {
     private Category category;
     private Long expiryTime;
     private String templateId;
+    
     public boolean isValid() {
         return isNotEmpty(mobileNumber) && isNotEmpty(message);
     }

@@ -199,7 +199,7 @@ public class DemandService {
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId())
                     .consumerCode(calculation.getApplicationNumber())
-                    .consumerType("NOC_APPLICATION_FEE")
+                    .consumerType("NOC-" + NOCConstants.MDMS_CHARGES_TYPE_CODE)
                     .businessService(NOCConstants.NOC_BUSINESS_SERVICE)
                     .payer(owner)
                     .minimumAmountPayable(nocConfiguration.getMinimumPayableAmount())

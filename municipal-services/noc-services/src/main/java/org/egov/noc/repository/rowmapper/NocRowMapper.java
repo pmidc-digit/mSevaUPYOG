@@ -3,6 +3,8 @@ package org.egov.noc.repository.rowmapper;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,10 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
                 noc.setApplicationStatus(rs.getString("applicationStatus"));
                 noc.setApplicationType(ApplicationType.fromValue(rs.getString("applicationType")));
                 noc.setStatus(Status.fromValue(rs.getString("status")));
+                noc.setVasikaNumber(rs.getString("vasikaNumber"));
+                String vasikaDate = rs.getString("vasikaDate");
+                if(!StringUtils.isEmpty(vasikaDate))
+                	noc.setVasikaDate(LocalDate.parse(vasikaDate, DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 //                noc.setLandId(rs.getString("landId"));
 //                noc.setSource(rs.getString("source"));
 //                noc.getNocDetails().getAdditionalDetails().setSourceRefId(rs.getString("sourceRefId"));
@@ -138,10 +144,12 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 			try {
 				List<Document> documents = new Gson().fromJson(documentsJson, new TypeToken<List<Document>>() {}.getType());
 				for (Document doc : documents) {
-					// Optional: set tenantId or other fields if needed
-					doc.setDocumentUid(doc.getUuid()); // if you need to copy uuid to documentUid
-					doc.setNocId(noc.getId());
-					noc.addDocumentsItem(doc);
+					if(doc.getUuid()!=null) {
+						// Optional: set tenantId or other fields if needed
+						doc.setDocumentUid(doc.getUuid()); // if you need to copy uuid to documentUid
+						doc.setNocId(noc.getId());
+						noc.addDocumentsItem(doc);
+					}
 				}
 			} catch (JsonSyntaxException e) {
 				log.error("Failed to parse documents JSON", e);

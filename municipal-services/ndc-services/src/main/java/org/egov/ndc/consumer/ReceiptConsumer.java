@@ -23,7 +23,6 @@ public class ReceiptConsumer {
 
     @KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
     public void listenPayments(final String rawRecord) {
-        log.info("Incoming raw message: {}", rawRecord);
         try {
             PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
             paymentUpdateService.process(record);

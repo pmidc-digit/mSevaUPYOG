@@ -323,6 +323,69 @@ public class MdmsUtil {
 	}
 
 	/**
+	 * Fetch SecurityDeposit based on hall-specific configuration
+	 * This method retrieves security deposit rates from the SecurityDeposit master data
+	 * which is configured per hall (similar to CowCess structure)
+	 */
+	public List<AdditionalFeeRate> getSecurityDepositForHall(RequestInfo requestInfo, String tenantId, 
+			String moduleName, CommunityHallBookingDetail bookingDetail) {
+		String masterName = "SecurityDeposit";
+		List<AdditionalFeeRate> securityDepositRates = new ArrayList<>();
+
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getMdmsHost()).append(config.getMdmsPath());
+
+		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHeadMaster(requestInfo, tenantId, moduleName, masterName, null);
+
+		try {
+			MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
+					MdmsResponse.class);
+
+			if (mdmsResponse.getMdmsRes().get(moduleName) == null) {
+				log.info("SecurityDeposit configuration not available in MDMS for tenant: {}", tenantId);
+				return securityDepositRates;
+			}
+
+			JSONArray jsonArray = mdmsResponse.getMdmsRes().get(moduleName).get(masterName);
+
+			com.fasterxml.jackson.databind.JsonNode rootNode = null;
+			try {
+				rootNode = mapper.readTree(jsonArray.toJSONString());
+			} catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+				log.error("Error parsing SecurityDeposit JSON: ", e);
+			}
+
+			if (rootNode != null) {
+				String hallCode = bookingDetail.getCommunityHallCode();
+				log.info("Fetching security deposit for hall: {}", hallCode);
+				
+				for (com.fasterxml.jackson.databind.JsonNode hallNode : rootNode) {
+					com.fasterxml.jackson.databind.JsonNode hallConfigNode = hallNode.get(hallCode);
+					if (hallConfigNode != null) {
+						try {
+							securityDepositRates = mapper.readValue(hallConfigNode.toString(),
+									mapper.getTypeFactory().constructCollectionType(List.class, AdditionalFeeRate.class));
+							log.info("Retrieved security deposit rates for hall {}: {}", hallCode, securityDepositRates);
+						} catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+							log.error("Error converting security deposit rates for hall {}: ", hallCode, e);
+						}
+						break;
+					}
+				}
+				
+				if (securityDepositRates.isEmpty()) {
+					log.warn("No security deposit configuration found for hall: {}", hallCode);
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("Exception occurred while fetching security deposit from MDMS: {}", e.getMessage());
+		}
+
+		return securityDepositRates != null ? securityDepositRates : new ArrayList<>();
+	}
+
+	/**
 	 * Generic method to fetch additional fee rates from MDMS
 	 */
 	private List<AdditionalFeeRate> getAdditionalFeeRates(RequestInfo requestInfo, String tenantId,

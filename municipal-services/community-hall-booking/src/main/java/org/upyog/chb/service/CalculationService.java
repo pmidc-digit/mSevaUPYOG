@@ -128,6 +128,22 @@ public class CalculationService {
 
 		log.info("Total Taxable amount (including additional fees): {}", totalTaxableAmount);
 
+		// *** Apply discount BEFORE tax calculation ***
+		BigDecimal discountAmount = extractDiscountAmount(bookingRequest);
+		if (discountAmount.compareTo(BigDecimal.ZERO) > 0) {
+			// Reduce taxable amount by discount
+			BigDecimal discountedTaxableAmount = totalTaxableAmount.subtract(discountAmount);
+			// Ensure we don't go negative
+			if (discountedTaxableAmount.compareTo(BigDecimal.ZERO) < 0) {
+				log.warn("Discount {} exceeds taxable amount {} for booking {}, clamping to taxable amount", 
+						discountAmount, totalTaxableAmount, bookingRequest.getHallsBookingApplication().getBookingId());
+				discountedTaxableAmount = BigDecimal.ZERO;
+			}
+			log.info("Applying discount {} to taxable amount. Original: {}, Discounted: {}", 
+					discountAmount, totalTaxableAmount, discountedTaxableAmount);
+			totalTaxableAmount = discountedTaxableAmount;
+		}
+
 		calculateTaxDemands(bookingRequest, tenantId, demandDetails, totalTaxableAmount);
 
 		return demandDetails;
@@ -227,8 +243,10 @@ public class CalculationService {
 		}
 
 		// 2. SecurityDeposit (always applicable, non-taxable)
-		List<AdditionalFeeRate> securityDeposits = mdmsUtil.getSecurityDeposits(
-				bookingRequest.getRequestInfo(), tenantId, config.getModuleName());
+		// Fetched from hall-specific SecurityDeposit master configuration
+		List<AdditionalFeeRate> securityDeposits = mdmsUtil.getSecurityDepositForHall(
+				bookingRequest.getRequestInfo(), tenantId, config.getModuleName(),
+				bookingRequest.getHallsBookingApplication());
 
 		for (AdditionalFeeRate security : securityDeposits) {
 			BigDecimal amount = feeCalculationUtil.calculateFeeAmount(
@@ -241,7 +259,8 @@ public class CalculationService {
 						.tenantId(tenantId)
 						.build();
 				demandDetails.add(demand); // Non-taxable
-				log.info("SecurityDeposit added: {}", amount);
+				log.info("SecurityDeposit added: {} for hall {}", amount, 
+						bookingRequest.getHallsBookingApplication().getCommunityHallCode());
 			}
 		}
 
@@ -363,6 +382,41 @@ public class CalculationService {
 				securityDepositPaid, totalPenaltyDeduction, refundAmount);
 
 		return refundAmount;
+	}
+
+	/**
+	 * Extract discount amount from additionalDetails
+	 * Returns ZERO if no discount or invalid format
+	 */
+	private BigDecimal extractDiscountAmount(CommunityHallBookingRequest bookingRequest) {
+		try {
+			Object addDetails = bookingRequest.getHallsBookingApplication().getAdditionalDetails();
+			if (addDetails == null) {
+				return BigDecimal.ZERO;
+			}
+
+			BigDecimal discountAmount = BigDecimal.ZERO;
+			if (addDetails instanceof Map) {
+				Object val = ((Map<?, ?>) addDetails).get("discountAmount");
+				if (val != null) {
+					discountAmount = new BigDecimal(val.toString());
+				}
+			} else {
+				// Try parse as JSON string
+				com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+				Map<?, ?> map = mapper.readValue(addDetails.toString(), Map.class);
+				Object val = map.get("discountAmount");
+				if (val != null) {
+					discountAmount = new BigDecimal(val.toString());
+				}
+			}
+
+			return discountAmount != null ? discountAmount : BigDecimal.ZERO;
+		} catch (Exception ex) {
+			log.warn("Unable to extract discount from additionalDetails for booking {}: {}", 
+					bookingRequest.getHallsBookingApplication().getBookingId(), ex.getMessage());
+			return BigDecimal.ZERO;
+		}
 	}
 
 }

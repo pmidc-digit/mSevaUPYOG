@@ -18,8 +18,10 @@ import org.egov.tl.web.models.workflow.BusinessService;
 import org.egov.tl.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 //import org.springframework.util.StringUtils;
 import org.egov.tl.repository.ServiceRequestRepository;
 
@@ -27,6 +29,8 @@ import com.jayway.jsonpath.JsonPath;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static org.egov.tl.util.TLConstants.*;
 
 
@@ -40,6 +44,10 @@ public class EnrichmentService {
     private BoundaryService boundaryService;
     private UserService userService;
     private WorkflowService workflowService;
+    
+    @Autowired
+    @Lazy
+    private TradeLicenseService licenseService;
 
     @Autowired
     public EnrichmentService(IdGenRepository idGenRepository, TLConfiguration config, TradeUtil tradeUtil,
@@ -307,7 +315,10 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                 break;
 
             case businessService_BPA:
-                applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNumberIdgenNameBPA(), config.getApplicationNumberIdgenFormatBPA(), request.getLicenses().size());
+            	String idFormateBPAREG = config.getApplicationNumberIdgenFormatBPA();
+            	String tradeType = request.getLicenses().get(0).getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+            	idFormateBPAREG = idFormateBPAREG.replace("SK", TRADETYPE_TO_IDGEN_SHORTNAME.get(tradeType));
+                applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNumberIdgenNameBPA(), idFormateBPAREG, request.getLicenses().size());
                 break;
         }
         ListIterator<String> itr = applicationNumbers.listIterator();
@@ -552,6 +563,15 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                     });
                 }
             }
+            
+            //Add Signature in 
+            if(StringUtils.isEmpty(tradeLicense.getTradeLicenseDetail().getOwners().get(0).getSignature())) {
+            	String signatureId = tradeLicense.getTradeLicenseDetail().getApplicationDocuments().stream()
+            	.filter(documnet -> documnet.getDocumentType().equalsIgnoreCase(SIGNATURE_DOC_TYPE))
+            	.map(Document::getFileStoreId).findAny().orElse(null);
+            	tradeLicense.getTradeLicenseDetail().getOwners().get(0).setSignature(signatureId);
+            }
+            
         });
     }
 
@@ -565,7 +585,8 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
         int count=0;
         
         
-        if (licenses.get(0).getApplicationType() != null && licenses.get(0).getApplicationType().toString().equals(TLConstants.APPLICATION_TYPE_RENEWAL)) {
+        if (licenses.get(0).getApplicationType() != null && licenses.get(0).getApplicationType().toString().equals(TLConstants.APPLICATION_TYPE_RENEWAL) &&
+        		!businessService_BPA.equalsIgnoreCase(licenses.get(0).getBusinessService())) {
             for(int i=0;i<licenses.size();i++){
                 TradeLicense license = licenses.get(i);
                 Long time = System.currentTimeMillis();
@@ -580,6 +601,9 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
             if (count != 0) {
                 List<String> licenseNumbers = new ArrayList<>();
                 for(TradeLicense license : licenses) {
+                	String applicationType = license.getApplicationType() != null
+            				? license.getApplicationType().toString()
+            				: "";
                 	 String businessService = licenses.isEmpty() ? null : license.getBusinessService();
                      if (businessService == null)
                          businessService = businessService_TL;
@@ -589,7 +613,15 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                              break;
 
                          case businessService_BPA:
-                             licenseNumbers = getIdList(requestInfo, license.getTenantId(), config.getLicenseNumberIdgenNameBPA(), config.getLicenseNumberIdgenFormatBPA(), count);
+                        	 if(ACTION_REAPPROVE.equalsIgnoreCase(license.getAction()) ||
+                        			 APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(applicationType)) {
+                        		 licenseNumbers.add(license.getLicenseNumber());
+                        	 }else {
+                        		 String licenseFormateBPAREG = config.getLicenseNumberIdgenFormatBPA();
+                             	 String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+                             	 licenseFormateBPAREG = licenseFormateBPAREG.replace("SK", TRADETYPE_TO_IDGEN_SHORTNAME.get(tradeType));
+                                 licenseNumbers = getIdList(requestInfo, license.getTenantId(), config.getLicenseNumberIdgenNameBPA(), licenseFormateBPAREG, count);
+                        	 }
                              break;
                      }
 				};
@@ -621,8 +653,32 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.YEAR, res.get(0));
                             String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
-                            if(!tradeType.equalsIgnoreCase("ARCHITECT"))
-                            	license.setValidTo(calendar.getTimeInMillis());
+                            String applicationType = license.getApplicationType() != null
+                    				? license.getApplicationType().toString()
+                    				: "";
+                            if(!(tradeType.equalsIgnoreCase("ARCHITECT") || ACTION_REAPPROVE.equalsIgnoreCase(license.getAction()))) {
+                            	TradeLicense existingLicense = getExistingApplication(requestInfo, license.getTenantId(), 
+                        				license.getTradeLicenseDetail().getOwners().get(0).getMobileNumber(), license.getApplicationNumber());
+                            	switch (applicationType) {
+								case APPLICATION_TYPE_UPGRADE:
+									if(existingLicense != null && existingLicense.getValidTo() != null)
+										license.setValidTo(existingLicense.getValidTo());
+									else
+										license.setValidTo(calendar.getTimeInMillis());
+									break;
+								case APPLICATION_TYPE_RENEWAL:
+									if(existingLicense != null && existingLicense.getValidTo() != null && !STATUS_EXPIRED.equalsIgnoreCase(existingLicense.getStatus()))
+										license.setValidTo((existingLicense.getValidTo() - time) + calendar.getTimeInMillis());
+									else
+										license.setValidTo(calendar.getTimeInMillis());
+									
+									license.setLicenseNumber(existingLicense.getLicenseNumber());
+									break;
+								default:
+									license.setValidTo(calendar.getTimeInMillis());
+									break;
+								}
+                            }
                             license.setValidFrom(time);
                         }
 
@@ -729,4 +785,44 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                     license.setAssignee(new LinkedList<>(assignes));
             }
     }
+    
+    private List<String> getIdListFromExistingApplication(RequestInfo requestInfo, String tenantId, String mobileNumber, String tradeType, int count){
+    	List<String> licenseNumbers = new ArrayList<String>();
+    	TradeLicenseSearchCriteria criteria = TradeLicenseSearchCriteria.builder().tenantId(tenantId)
+    			.status(Arrays.asList(TLConstants.STATUS_APPROVED)).onlyLatestApplication(true)
+    			.mobileNumber(mobileNumber).tradeType(tradeType).businessService(businessService_BPA).build();
+    	
+    	List<TradeLicense> licenses = licenseService.getLicensesFromMobileNumber(criteria, requestInfo);
+    	
+    	if(!CollectionUtils.isEmpty(licenses)) {
+    		IntStream.range(0, count).forEach(i -> licenseNumbers.add(licenses.get(0).getLicenseNumber()));
+    	}
+    	
+    	return licenseNumbers;
+    }
+    
+	/**
+	 * Get the Existing approved Application
+	 * 
+	 * @param requestInfo
+	 * @param tenantId
+	 * @param mobileNumber
+	 * @param tradeType
+	 * @return Existing Professional Application
+	 */
+	private TradeLicense getExistingApplication(RequestInfo requestInfo, String tenantId, String mobileNumber, String newApplicationNo) {
+		TradeLicenseSearchCriteria criteria = TradeLicenseSearchCriteria.builder().tenantId(tenantId)
+				.status(Arrays.asList(STATUS_APPROVED,STATUS_EXPIRED)).mobileNumber(mobileNumber)
+				.businessService(businessService_BPA).build();
+
+		List<TradeLicense> licenses = licenseService.getLicensesFromMobileNumber(criteria, requestInfo);
+
+		// Remove latest Approved application
+		licenses = licenses.stream().filter(
+				license -> !(license.getApplicationNumber().equalsIgnoreCase(newApplicationNo)))
+				.collect(Collectors.toList());
+
+		return CollectionUtils.isEmpty(licenses) ? null : licenses.get(0);
+	}
+    
 }

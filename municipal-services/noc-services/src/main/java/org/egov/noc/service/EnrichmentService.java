@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import com.jayway.jsonpath.JsonPath;
+
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
 @Service
@@ -70,8 +72,15 @@ public class EnrichmentService {
 
 		List<Document> documents = nocRequest.getNoc().getDocuments();
 
-
-
+		String ulbType = JsonPath.read(nocRequest.getNoc().getNocDetails().getAdditionalDetails(), "$.siteDetails.ulbType");
+		String filter = "$.MdmsRes.NOC.WorkflowConfig.[?(@.ulbType contains '" + ulbType + "' )].businessService";
+		List<String> businessServices = JsonPath.read(mdmsData, filter);
+		
+		if(CollectionUtils.isEmpty(businessServices))
+			throw new CustomException("INVALID CREATE", "Business Services not found for the ULB Type: " + ulbType);
+		
+		((Map)nocRequest.getNoc().getNocDetails().getAdditionalDetails()).put("businessService", businessServices.get(0));
+				
 		for (Document doc : documents) {
 			doc.setUuid(UUID.randomUUID().toString()); // Set your desired ID here
 			doc.setNocId(nocRequest.getNoc().getId());

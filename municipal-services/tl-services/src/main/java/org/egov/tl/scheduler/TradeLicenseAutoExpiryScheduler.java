@@ -61,8 +61,8 @@ public class TradeLicenseAutoExpiryScheduler {
 	 * @author Roshan Chaudhary
 	 */
 
-//	@Scheduled(cron = "0 0 0 * * ?")
-	@Scheduled(initialDelay = 1000, fixedRate = 60000)
+	@Scheduled(cron = "0 0 0 * * ?")
+//	@Scheduled(initialDelay = 1000, fixedRate = 60000)
 	public void expireTradeLicense() {
 		log.info("Start Trade License Auto Expiration Scheduler....");
 		

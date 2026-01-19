@@ -94,6 +94,9 @@ public class JobScheduler {
 		body.add("userType", "citizen");
 		body.add("grant_type", "password");
 
+		System.out.println("userReq:---"+headers);
+
+		System.out.println("userbody:---"+body);
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
 		RestTemplate restTemplate = new RestTemplate();

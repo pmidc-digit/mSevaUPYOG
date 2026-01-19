@@ -1307,3 +1307,45 @@ export const businessServiceListLayout = (isCode= false) => {
 
     return newAvailableBusinessServices;
 }
+ //Convert date from YYYY-MM-DD to DD/MM/YYYY
+export const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+ };
+
+export const formatDateForInput = (dateString) => {
+  if (!dateString) return "";
+  // If already yyyy-mm-dd, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+  // Otherwise, convert from dd-mm-yyyy
+  const [day, month, year] = dateString.split("-");
+  return `${year}-${month}-${day}`;
+};
+
+export const convertToDDMMYYYY = (dateString) => {
+     if (!dateString) return "";
+
+     const parts = dateString.split("-");
+     if (parts.length !== 3) return dateString; // fallback
+
+     const [a, b, c] = parts;
+
+     // Case 1: already dd-mm-yyyy
+     if (a.length === 2 && c.length === 4) {
+       return dateString;
+     }
+
+     // Case 2: yyyy-mm-dd → dd-mm-yyyy
+     if (a.length === 4) {
+       return `${c}-${b}-${a}`;
+     }
+
+     // Case 3: mm-dd-yyyy → dd-mm-yyyy
+     if (c.length === 4 && a.length === 2 && b.length === 2) {
+       return `${b}-${a}-${c}`;
+     }
+
+     // Fallback: return original
+     return dateString;
+};

@@ -233,6 +233,10 @@ const getSiteDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
     },
     {
+      title: t("BPA_SITE_VASIKA_DATE_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
+    },
+    {
       title: t("NOC_SITE_VILLAGE_NAME_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.villageName || "N/A",
     },

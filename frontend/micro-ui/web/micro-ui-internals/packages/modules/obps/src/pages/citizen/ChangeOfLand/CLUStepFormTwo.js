@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
+import { convertToDDMMYYYY } from "../../../utils";
+
 
 const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
@@ -73,7 +75,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
  };
 
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     trigger();
 
     //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
@@ -84,16 +86,47 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         setShowToast({ key: "true", error:true, message: "BPA_PLOT_AREA_VALIDATION_MESG_LABEL"});
         return;
     }
+
+    try{
+    const searchResponse = await Digit.OBPSService.CLUSearch({
+      tenantId,
+      filters: {
+        vasikaNumber: data?.vasikaNumber,
+        vasikaDate: convertToDDMMYYYY(data?.vasikaDate),
+      },
+    });
     
-    //Save data in redux
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
+    console.log("searchResponse in CLUStepFormTwo==>", searchResponse);
+
+    const applications = searchResponse?.Clu ?? [];
+    //console.log("applications==>", applications);
+
+    const currentAppNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo;
+    //console.log("currentAppNo==>", currentAppNo);
+    const activeApp = applications.find((app) => app?.applicationNo && app?.applicationStatus !== "REJECTED" && app?.applicationNo !== currentAppNo);
+    //console.log("activeApp==>", activeApp);
+
+
+    if (activeApp) {
+      setShowToast({ key: "true", error: true, message: "BPA_VASIKA_NUMBER_EXISTS_LABEL" });
+      return;
+    }
     
-   // If create api is already called then move to next step
+       //Save data in redux
+       dispatch(UPDATE_OBPS_FORM(config.key, data));
+    
+       // If create api is already called then move to next step
     if (currentStepData?.apiData?.Clu?.[0]?.applicationNo) {
       onGoNext();
     } else {
-    //Call Create API and move to next Page
-    callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+      //Call Create API and move to next Page
+      callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+    }
+
+    }catch(error){
+        setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }finally{
+       setTimeout(()=>{setShowToast(null);},3000);
     }
     
   //  onGoNext();
@@ -160,6 +193,8 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
        }catch(error){
           console.log("errors here in goNext - catch block", error);
           setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
+      }finally{
+         setTimeout(()=>{setShowToast(null);},3000);
       }
 
 

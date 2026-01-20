@@ -17,9 +17,7 @@ import org.egov.layout.web.model.bpa.BPASearchCriteria;
 import org.egov.layout.web.model.calculator.CalculationCriteria;
 import org.egov.layout.web.model.calculator.CalculationReq;
 import org.egov.layout.web.model.calculator.CalculationRes;
-import org.egov.layout.web.model.workflow.BusinessService;
-import org.egov.layout.web.model.workflow.ProcessInstance;
-import org.egov.layout.web.model.workflow.ProcessInstanceResponse;
+import org.egov.layout.web.model.workflow.*;
 import org.egov.layout.workflow.WorkflowIntegrator;
 import org.egov.layout.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
@@ -179,6 +177,9 @@ public class CLUService {
 		String tenantId = nocRequest.getLayout().getTenantId().split("\\.")[0];
 		Object mdmsData = nocUtil.mDMSCall(nocRequest.getRequestInfo(), tenantId);
 		String businessServicedata = businessServiceVal(nocRequest);
+		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getLayout(),
+				nocRequest.getRequestInfo(), businessServicedata);
+		Clu clu = nocRequest.getLayout();
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getLayout().getNocDetails().getAdditionalDetails();
@@ -190,11 +191,29 @@ public class CLUService {
 		if (owners != null) {
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
 		}
+		State currentState = workflowService.getCurrentState(clu.getApplicationStatus(), businessServicename);
+		String nextStateId = currentState.getActions().stream()
+				.filter(act -> act.getAction().equalsIgnoreCase(clu.getWorkflow().getAction()))
+				.findFirst().orElse(new Action()).getNextState();
+		State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+		String action = clu.getWorkflow() != null ? clu.getWorkflow().getAction() : "";
+
+		if (nextState != null && nextState.getState().equalsIgnoreCase(CLUConstants.FI_STATUS)
+				&& (CLUConstants.ACTION_PAY.equalsIgnoreCase(action) || CLUConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+			List<String> roles = new ArrayList<>();
+			nextState.getActions().forEach(stateAction -> {
+				roles.addAll(stateAction.getRoles());
+			});
+			List<String> assignee = userService.getAssigneeFromCLU(clu, roles, nocRequest.getRequestInfo());
+			clu.getWorkflow().setAssignes(assignee);
+		}
 		if(nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_APPLY)){
 			searchResult = new Clu();
 			searchResult.setAuditDetails(nocRequest.getLayout().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getLayout().getApplicationNo());
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
+
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);

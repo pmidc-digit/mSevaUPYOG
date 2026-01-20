@@ -21,6 +21,8 @@ public class CLUConstants {
 	public static final String ACTION_APPLY = "APPLY";
 	public static final String INVALID_REQUEST = "INVALID REQUEST";
 
+	public static final String FI_STATUS = "FIELDINSPECTION_INPROGRESS";
+
 	public static final String CLU_MODULE = "CLU";
 	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
 	// mdms path codes
@@ -97,5 +99,9 @@ public class CLUConstants {
 	public static final String ACTION_STATUS_SANCTION_FEE = "PENDINGSANCTIONPAYMENT";
 
 	public static final List<String> BUSINESS_SERVICE_LIST = Arrays.asList("CLU.PAY1", "CLU.PAY2", "CLU");
+
+
+
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
 	
 }

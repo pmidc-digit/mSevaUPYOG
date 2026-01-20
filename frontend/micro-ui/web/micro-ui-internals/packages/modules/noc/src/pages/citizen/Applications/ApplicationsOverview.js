@@ -199,7 +199,7 @@ const CitizenApplicationOverview = () => {
   let EmpData = EmployeeData(tenantId, id);
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
-      label: t("Download Application Form"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
 
@@ -412,6 +412,8 @@ const CitizenApplicationOverview = () => {
           );
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+
 const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
   console.log("combinerOwnersName", combinedOwnersName);
@@ -461,7 +463,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-                <Row label={t("NOC_OWNER_TYPE_LABEL")} text={detail?.ownerType?.i18nKey ? t(detail?.ownerType?.i18nKey) : "N/A"} />
+                {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
@@ -494,7 +496,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
           </React.Fragment>
         ))}
 
-      {primaryOwner && (
+      {primaryOwner && propertyId && (
         <Card>
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>

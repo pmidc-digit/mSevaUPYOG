@@ -383,6 +383,7 @@ public class DemandService {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath).queryParam("tenantId",
 				tenantId);
 		builder.queryParam("status", joiner.toString());
+		builder.queryParam("isExpaireFlag", false);
 		if (consumerCode != null) {
 			builder.queryParam("applicationNumbers", consumerCode);
 		}

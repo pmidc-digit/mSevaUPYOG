@@ -57,7 +57,7 @@ const OCBuildingPermit = () => {
   const handleSkip = () => { };
 
   let config = [];
-  newConfig = newConfig?.OCBuildingPermitConfig ? newConfig?.OCBuildingPermitConfig : newConfigOCBPA;
+  newConfig = newConfigOCBPA;
   newConfig.forEach((obj) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });

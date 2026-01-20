@@ -84,13 +84,12 @@ public class AssessmentSchedulerConsumer {
                 } catch (Exception e) {
                     log.error("Failed to process assessment request", e);
                     
-                    // Attempt to record failure if the object was at least partially parsed
                     if (assessmentReq != null && assessmentReq.getAssessment() != null) {
                         repository.saveAssessmentGenerationDetails(
                                 assessmentReq.getAssessment(),
                                 "FAILED",
                                 "Assessment",
-                                e.getMessage()
+                                e.getMessage() != null ? e.getMessage() : e.toString() // Safety check
                         );
                     }
                 }

@@ -27,19 +27,22 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConsumerFactory<String, List<AssessmentRequest>> consumerFactory() {
-
         Map<String, Object> props = new HashMap<>();
-
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-
-        // 🔥 CHANGE HERE – Use JsonDeserializer instead of HashMapDeserializer
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+
+        // ✅ Keep this true as you requested
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+
+        // 🔥 ADD THESE TWO LINES BELOW:
+        // 1. Give the consumer 10 minutes to finish the REST calls before timing out
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 600000); 
+
+        // 2. Fetch fewer records at once so the batch finishes faster
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 5); 
 
         return new DefaultKafkaConsumerFactory<>(props);
     }

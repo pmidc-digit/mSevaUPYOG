@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fromUnixTime, format } from 'date-fns';
-import { Card, CardHeader, Label, SearchIconSvg, Toast, StatusTable, TextInput, Row, CardCaption, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
+import { Card, CardHeader, Label, SearchIconSvg, Toast, StatusTable, TextInput, Row, CardCaption, SubmitBar, Loader, ActionBar } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
 import { ocScrutinyDetailsData } from "../utils";
@@ -41,17 +41,17 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
     let ocData = details?.ocEdcrDetails;
 
     if (otherData && ocData && ocData?.tenantId && otherData?.edcrDetails?.[0]?.tenantId) {
-      if (otherData?.edcrDetails?.[0]?.tenantId != ocData?.tenantId) {
-        setShowToast({ key: "true", message: "BPA_INVALID_PERMIT_CITY" });
-        return;
-      } else if (otherData?.bpaApprovalResponse?.[0]?.edcrNumber === ocData?.edcrNumber && ((otherData?.bpaResponse?.[0]?.status != "REJECTED") && (otherData?.bpaResponse?.[0]?.status != "PERMIT REVOCATION") || (otherData?.bpaResponse?.[0]?.status != "INITIATED"))) {
-        setShowToast({ key: "true", message: "APPLICATION_NUMBER_ALREADY_EXISTS" });
-        return;
-      } else {
+      // if (otherData?.edcrDetails?.[0]?.tenantId != ocData?.tenantId) {
+      //   setShowToast({ key: "true", message: "BPA_INVALID_PERMIT_CITY" });
+      //   return;
+      // } else if (otherData?.bpaApprovalResponse?.[0]?.edcrNumber === ocData?.edcrNumber && ((otherData?.bpaResponse?.[0]?.status != "REJECTED") && (otherData?.bpaResponse?.[0]?.status != "PERMIT REVOCATION") || (otherData?.bpaResponse?.[0]?.status != "INITIATED"))) {
+      //   setShowToast({ key: "true", message: "APPLICATION_NUMBER_ALREADY_EXISTS" });
+      //   return;
+      // } else {
         sessionStorage.setItem("checkForProcced", JSON.stringify(false));
         setShowToast(null);
         setData(data);
-      }
+      // }
     }
 
     if (details?.ocEdcrDetails?.edcrNumber) {
@@ -180,7 +180,7 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
 
   return (
     <div>
-      <Timeline currentStep={1} flow="OCBPA" />
+      {/* <Timeline currentStep={1} flow="OCBPA" /> */}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { maxWidth: "960px", minWidth: "640px", marginRight: "auto" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
         <TextInput className="searchInput"
@@ -202,9 +202,13 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)} text={t(`WF_BPA_${Digit.Utils.obps.calculateRiskType(mdmsData?.BPA?.RiskTypeComputation, data?.planDetail?.plot?.area, data?.planDetail?.blocks)}`)} />
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL`)} text={data?.planDetail?.planInformation?.applicantName} />
         </StatusTable>
-        <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} />
+        {/* <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} /> */}
       </Card>
       }
+
+      <ActionBar>
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoadingApplication || isMdmsLoading || !riskType} />}
+      </ActionBar>
       {showToast && <Toast
         error={showToast?.key ? true : false}
         warning={showToast?.warning ? true : false}

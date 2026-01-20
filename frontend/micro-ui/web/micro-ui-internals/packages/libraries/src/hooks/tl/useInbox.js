@@ -5,7 +5,7 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
   console.log("filters coming useTLInbox ", filters);
 
   const { pgrQuery = {}, tlfilters = {}, wfFilters = {}, sortBy, sortOrder, limit, offset } = filters;
-  //const { applicationStatus, mobileNumber, applicationNumber, sortBy, sortOrder, locality, uuid, limit, offset } = filters;
+  // const { applicationStatus, mobileNumber, applicationNumber, sortBy, sortOrder, locality, uuid, limit, offset } = filters;
   const USER_UUID = Digit.UserService.getUser()?.info?.uuid;
 
   const applicationNumber = filters?.search?.applicationNumber;
@@ -71,23 +71,24 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
     filters: _filters,
     config: {
       select: (data) => ({
-        statuses: data.statusMap,
-        table: data?.items.map((application) => ({
-          applicationId: application.businessObject.applicationNumber,
-          date: application.businessObject.applicationDate,
-          businessService: application?.ProcessInstance?.businessService,
+        statuses: data?.statusMap || [],
+        table: data?.items?.map((application) => ({
+          applicationId: application.businessObject?.applicationNumber || "N/A",
+          date: application.businessObject?.applicationDate || 0,
+          businessService: application?.ProcessInstance?.businessService || "N/A",
           locality: `${application.businessObject?.tenantId
             ?.toUpperCase()
             ?.split(".")
             ?.join("_")}_REVENUE_${application.businessObject?.tradeLicenseDetail?.address?.locality?.code?.toUpperCase()}`,
-          status: application.businessObject.status,
-          owner: application.ProcessInstance?.assigner?.name,
-          sla: application?.businessObject?.status.match(/^(EXPIRED|APPROVED|CANCELLED)$/)
+          status: application.businessObject?.status || "N/A",
+          owner: application.ProcessInstance?.assigner?.name || "Unassigned",
+          sla: application?.businessObject?.status?.match(/^(EXPIRED|APPROVED|CANCELLED)$/)
             ? "0"
-            : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
-        })),
-        totalCount: data.totalCount,
-        nearingSlaCount: data?.nearingSlaCount,
+            : Math.round((application.ProcessInstance?.businesssServiceSla || 0) / (24 * 60 * 60 * 1000)),
+          tenantId: application.businessObject?.tenantId,
+        })) || [],
+        totalCount: data?.totalCount || 0,
+        nearingSlaCount: data?.nearingSlaCount || 0,
       }),
       ...config,
     },

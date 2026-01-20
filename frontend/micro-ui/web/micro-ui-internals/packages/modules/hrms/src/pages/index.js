@@ -24,19 +24,106 @@ const EmployeeApp = ({ path, url, userType }) => {
   const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
   const EmpMaping = Digit?.ComponentRegistryService?.getComponent("EmpMaping");
 
-  const crumbs = [
-    {
-      path: "/digit-ui/employee",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: "/digit-ui/employee/hrms",
-      content: t("HR_COMMON_HEADER"),
-      show: true,
-      isclickable: false,
-    },
-  ];
+  // Dynamic breadcrumbs based on current route
+  const getBreadcrumbs = () => {
+    const baseCrumbs = [
+      {
+        path: "/digit-ui/employee",
+        content: t("ES_COMMON_HOME"),
+        show: true,
+      },
+      {
+        path: `${path}/inbox`,
+        content: t("HR_INBOX_HEADER") || "Inbox",
+        show: true,
+      },
+    ];
+
+    const pathname = location.pathname;
+
+    // Inbox - no additional breadcrumb needed
+    if (pathname.includes("/inbox")) {
+      baseCrumbs[baseCrumbs.length - 1].isclickable = false;
+    }
+    // Create Employee
+    else if (pathname.includes("/create")) {
+      baseCrumbs.push({
+        path: `${path}/create`,
+        content: t("HR_CREATE_EMPLOYEE") || "Create Employee",
+        show: true,
+        isclickable: false,
+      });
+    }
+    // Employee Mapping
+    else if (pathname.includes("/empMaping")) {
+      baseCrumbs.push({
+        path: `${path}/empMaping`,
+        content: t("HR_EMPLOYEE_MAPPING") || "Employee Mapping",
+        show: true,
+        isclickable: false,
+      });
+    }
+    // Mapping Details
+    else if (pathname.includes("/Mapdetails/")) {
+      const pathParts = pathname.split("/");
+      const employeeId = pathParts[pathParts.length - 2];
+      baseCrumbs.push({
+        path: `${path}/empMaping`,
+        content: t("HR_EMPLOYEE_MAPPING") || "Employee Mapping",
+        show: true,
+      });
+      baseCrumbs.push({
+        path: pathname,
+        content: t("HR_MAPPING_DETAILS") || `Mapping Details - ${employeeId}`,
+        show: true,
+        isclickable: false,
+      });
+    }
+    // Edit Employee
+    else if (pathname.includes("/edit/")) {
+      const pathParts = pathname.split("/");
+      const employeeId = pathParts[pathParts.length - 1];
+      baseCrumbs.push({
+        path: pathname,
+        content: t("HR_EDIT_EMPLOYEE") || `Edit Employee - ${employeeId}`,
+        show: true,
+        isclickable: false,
+      });
+    }
+    // Employee Details
+    else if (pathname.includes("/details/")) {
+      const pathParts = pathname.split("/");
+      const employeeId = pathParts[pathParts.length - 1];
+      baseCrumbs.push({
+        path: pathname,
+        content: t("HR_EMPLOYEE_DETAILS") || `Employee Details - ${employeeId}`,
+        show: true,
+        isclickable: false,
+      });
+    }
+    // Response Page
+    else if (pathname.includes("/response")) {
+      baseCrumbs.push({
+        path: pathname,
+        content: t("HR_RESPONSE") || "Response",
+        show: true,
+        isclickable: false,
+      });
+    }
+    // Reports
+    else if (pathname.includes("/report/")) {
+      baseCrumbs.push({
+        path: pathname,
+        content: t("HR_REPORTS") || "Reports",
+        show: true,
+        isclickable: false,
+      });
+    }
+
+    return baseCrumbs;
+  };
+
+  const crumbs = getBreadcrumbs();
 
   //console.log("Path in hrms: ", path);
   return (

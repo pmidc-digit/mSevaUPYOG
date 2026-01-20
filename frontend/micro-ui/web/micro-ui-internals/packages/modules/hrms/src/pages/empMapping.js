@@ -304,7 +304,7 @@ const EmpMaping = () => {
     );
 
     setMappingsToCreate((prev) => [...prev, ...newMappings]);
-    setFormData((prev) => ({ employeeCode: prev.employeeCode, category: [], subCategory: [], zone: [] }));
+    setFormData((prev) => ({ employeeCode: prev.employeeCode, roleNames: prev.roleNames, category: [], subCategory: [], zone: [] }));
     setModalToast({ key: true, label: `${newMappings.length} mapping(s) added to list` });
   };
 

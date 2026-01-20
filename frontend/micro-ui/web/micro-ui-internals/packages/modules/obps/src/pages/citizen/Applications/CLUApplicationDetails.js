@@ -32,6 +32,7 @@ import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
+import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -89,6 +90,8 @@ const CLUApplicationDetails = () => {
   const [displayData, setDisplayData] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
+
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
 
@@ -96,6 +99,7 @@ const CLUApplicationDetails = () => {
   const { tenants } = storeData || {};
 
   let user = Digit.UserService.getUser();
+  const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS","INSPECTION_REPORT_PENDING"]
 
   //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
   //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
@@ -231,6 +235,13 @@ const CLUApplicationDetails = () => {
       });
     }
   }
+
+  useEffect(() => {
+      const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c?.isLatest);
+      if (latestCalc?.taxHeadEstimates) {
+        setFeeAdjustments(latestCalc.taxHeadEstimates);
+      }
+  }, [applicationDetails]);
 
   //here workflow details
   const [showToast, setShowToast] = useState(null);
@@ -394,14 +405,14 @@ const CLUApplicationDetails = () => {
         )}
       </div>
 
-      <Card>
+
         <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
         <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
-      </Card>
+   
 
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
       <React.Fragment>
-        <Card>
+   
           <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
@@ -414,14 +425,14 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
               </StatusTable>
             </div>
-        </Card>
+   
         </React.Fragment>
       ))}
 
       {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
-            <Card>
+       
               <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
@@ -433,11 +444,11 @@ const CLUApplicationDetails = () => {
                   <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
-            </Card>
+        
           </React.Fragment>
        ))}
 
-      <Card>
+  
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -460,14 +471,17 @@ const CLUApplicationDetails = () => {
                 <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
               )}
 
-              <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
+              )}
+
               <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
             </StatusTable>
           </div>
         ))}
-      </Card>
+   
 
-      <Card>
+   
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -507,13 +521,13 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_RESTRICTED_AREA_LABEL")} text={detail?.restrictedArea?.code || "N/A"} />
               <Row label={t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.isSiteUnderMasterPlan?.code || "N/A"} />
 
-              <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={detail?.buildingCategory?.name || "N/A"} />
+              {/* <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={detail?.buildingCategory?.name || "N/A"} /> */}
             </StatusTable>
           </div>
         ))}
-      </Card>
+    
 
-      <Card>
+    
         <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -522,7 +536,7 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
-      </Card>
+    
 
       {/* <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
@@ -539,24 +553,24 @@ const CLUApplicationDetails = () => {
         ))}
       </Card> */}
 
-      <Card>
+    
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
         {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />)}
       </StatusTable>
-      </Card>
+    
 
-      <Card>
+    
         <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
-      </Card>
+      
 
-      <Card>
+    
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
-      </Card>
+      
 
-      <Card>
+      
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetails
@@ -568,12 +582,33 @@ const CLUApplicationDetails = () => {
             feeType="PAY1"
           />
         )}
+    
+
+      {applicationDetails?.Clu?.[0]?.applicationStatus && !disableFeeTable?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && 
+        <Card>
+        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        {applicationDetails?.Clu?.[0]?.cluDetails && (
+          <CLUFeeEstimationDetailsTable
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || []
+            }}
+            feeType="PAY2"
+            feeAdjustments={feeAdjustments}
+            setFeeAdjustments={setFeeAdjustments}
+            disable= "true"
+
+          />
+        )}
       </Card>
+      }
 
       <CheckBox
-        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
           combinedOwnersName
-        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />      
 

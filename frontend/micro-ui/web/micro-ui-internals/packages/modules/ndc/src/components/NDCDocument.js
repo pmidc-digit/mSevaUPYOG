@@ -45,7 +45,15 @@ function NDCDocument({ value = {}, Code, index }) {
                       <div className="document-icon-wrapper">
                         <PDFSvg width={80} height={100} />
                       </div>
-                      <p className="document-name">{value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}</p>
+                      {/* <p className="document-name">{value?.workflowDocs ? t(`${document?.documentType}`) : t(`${document?.documentType}`)}</p> */}
+                       <p className="document-name" title={t(document?.documentType)}>
+                    {(() => {
+                      const text = t(document?.documentType);
+                      return text?.length > 7
+                        ? `${text.substring(0, 7)}...`
+                        : text;
+                    })()}
+                  </p>
                       <div className="document-action-label">View</div>
                     </div>
                   </a>

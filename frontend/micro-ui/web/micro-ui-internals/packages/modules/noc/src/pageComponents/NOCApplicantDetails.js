@@ -182,6 +182,7 @@ const NOCApplicantDetails = (_props) => {
     return menu.find((g) => g.code === code) || null;
   };
 
+ 
   // default owner object
   const defaultOwner = () => ({
     mobileNumber: "",
@@ -189,6 +190,10 @@ const NOCApplicantDetails = (_props) => {
     emailId: "",
     fatherOrHusbandName: "",
     propertyId: "",
+    PropertyOwnerName: "",
+    PropertyOwnerMobileNumber: "",
+    PropertyOwnerAddress: "",
+    PropertyOwnerPlotArea: null,
     gender: null,
     dateOfBirth: "",
     address: "",
@@ -216,10 +221,15 @@ const NOCApplicantDetails = (_props) => {
             emailId: o.emailId || "",
             fatherOrHusbandName: o.fatherOrHusbandName || "",
             propertyId: o.propertyId || "",
+            PropertyOwnerName: o.PropertyOwnerName || "",
+            PropertyOwnerMobileNumber: o.PropertyOwnerMobileNumber || "",
+            PropertyOwnerAddress: o.PropertyOwnerAddress || "",
+            PropertyOwnerPlotArea: o.PropertyOwnerPlotArea || null,
+
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
-            ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt.code === o.ownerType) : null,
+            ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
           }))
         : [defaultOwner()];
 
@@ -234,6 +244,7 @@ const NOCApplicantDetails = (_props) => {
   const closeToast = () => {
     setShowToast(null);
   };
+  
 
   const getOwnerDetails = async (idx) => {
     const currentMobile = mobileAtIndex(idx);
@@ -274,8 +285,14 @@ const NOCApplicantDetails = (_props) => {
   };
 
   const handlePropertySelect = (property) => {
+    console.log('property', property)
     if (currentIndex !== null && property?.propertyId) {
+      const ownerNames = property?.owners?.map((o) => o?.name).filter(Boolean).join(", ") || "";
       setValue(`owners[${currentIndex}].propertyId`, property.propertyId, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerName`, ownerNames || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
     }
   };
 
@@ -321,7 +338,7 @@ const NOCApplicantDetails = (_props) => {
             </div>
 
             {index === 0 && (
-              <LabelFieldPair style={{ position: "relative", zIndex: "101" ,marginBottom: "20px"}}>
+              <LabelFieldPair style={{ position: "relative", zIndex: "101", marginBottom: "20px" }}>
                 <CardLabel className="card-label-smaller">
                   {`${t("NOC_OWNER_TYPE_LABEL")}`}
                   <span className="requiredField">*</span>
@@ -344,11 +361,13 @@ const NOCApplicantDetails = (_props) => {
                       />
                     )}
                   />
-                  <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.owners?.[index]?.ownerType?.message || ""}</CardLabelError>
+                
+                 {errors?.owners?.[index]?.ownerType  && (
+                  <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message }</p>
+                )}
                 </div>
               </LabelFieldPair>
             )}
-            
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
@@ -539,25 +558,19 @@ const NOCApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            <LabelFieldPair>
+            {index === 0 &&(
+              <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}</CardLabel>
               <div className="field">
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <button
-                    type="button"
-                    className="submit-bar"
-                    style={{ marginBottom: "1rem", width: "100%" }}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setShowModal(true);
-                    }}
-                  >
-                    {t("PT_SEARCH_PROPERTY")}
-                  </button>
-
+                 
                   {watch(`owners[${index}].propertyId`) && (
                     <StatusTable style={{ marginBottom: "1rem" }}>
                       <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
+                      <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
+                      <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
+                      <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={watch(`owners[${index}].PropertyOwnerAddress`)} />{" "}
+                      <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`)} />
                     </StatusTable>
                   )}
 
@@ -572,7 +585,6 @@ const NOCApplicantDetails = (_props) => {
                     }}
                     render={(props) => (
                       <>
-                        
                         <TextInput
                           style={{ display: "none" }}
                           value={props.value}
@@ -580,18 +592,99 @@ const NOCApplicantDetails = (_props) => {
                           onBlur={(e) => props.onBlur(e)}
                           t={t}
                         />
-                        <TextInput
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={(e) => props.onBlur(e)}
-                          placeholder={t("PROPERTY_ID_PLACEHOLDER")}
-                        />
+                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
                       </>
                     )}
                   />
+
+                   <button
+                    type="button"
+                    className="submit-bar"
+                    style={{ marginBottom: "1rem", width: "100%" }}
+                    onClick={() => {
+                      setCurrentIndex(index);
+                      setShowModal(true);
+                    }}
+                  >
+                    {t("PT_SEARCH_PROPERTY")}
+                  </button>
+
+
+                  {/* Property Owner Name */}
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].PropertyOwnerName`}
+                    rules={{
+                      maxLength: {
+                        value: 100,
+                        message: t("MAX_100_CHARACTERS_ALLOWED"),
+                      },
+                    }}
+                  />
+                  {errors?.owners?.[index]?.PropertyOwnerName && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerName.message}</p>
+                  )}
+
+                  {/* Property Owner Mobile Number */}
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].PropertyOwnerMobileNumber`}
+                    rules={{
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: t("INVALID_MOBILE_NUMBER"),
+                      },
+                    }}
+                    
+                  />
+                  {errors?.owners?.[index]?.PropertyOwnerMobileNumber && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerMobileNumber.message}</p>
+                  )}
+
+                  {/* Property Owner Address */}
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].PropertyOwnerAddress`}
+                    rules={{
+                      // minLength: {
+                      //   value: 4,
+                      //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                      // },
+                      maxLength: {
+                        value: 500,
+                        message: t("MAX_500_CHARACTERS_ALLOWED"),
+                      },
+                    }}
+                    
+                  />
+
+                  {errors?.owners?.[index]?.PropertyOwnerAddress && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerAddress.message}</p>
+                  )}
+
+                  {/* Property Owner Plot Area */}
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].PropertyOwnerPlotArea`}
+                    rules={{
+                      pattern: {
+                        value: /^[0-9]*\.?[0-9]+$/,
+                        message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                      },
+                      maxLength: {
+                        value: 100,
+                        message: t("MAX_100_CHARACTERS_ALLOWED"),
+                      },
+                    }}
+                    
+                  />
+                  {errors?.owners?.[index]?.PropertyOwnerPlotArea && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerPlotArea.message}</p>
+                )}
                 </div>
               </div>
             </LabelFieldPair>
+            )}
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">

@@ -213,7 +213,7 @@ const EditForm = ({ tenantId, data }) => {
 
   const config =mdmsData?.config?mdmsData.config: newConfig;
   return (
-    <div>
+    <div className="employeeCard">
       <FormComposer
         heading={t("HR_COMMON_EDIT_EMPLOYEE_HEADER")}
         isDisabled={!canSubmit}
@@ -224,7 +224,7 @@ const EditForm = ({ tenantId, data }) => {
             body: config.body.filter((a) => !a.hideInEmployee),
           };
         })}
-        className="hrms-mr-0"
+        className="card"
         onSubmit={onSubmit}
         defaultValues={defaultValues}
         onFormValueChange={onFormValueChange}

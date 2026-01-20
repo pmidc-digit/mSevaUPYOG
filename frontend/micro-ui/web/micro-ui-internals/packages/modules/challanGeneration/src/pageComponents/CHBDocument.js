@@ -36,7 +36,14 @@ function CHBDocument({ value = {}, Code, index, showFileName = false }) {
                   <PDFSvg width={80} height={100} />
                 </div>
 
-                {showFileName ? <p className="document-name" style={{ marginTop: "8px" }}>{t(Code)}</p> : null}
+                {showFileName ? (
+                  <p className="document-name" style={{ marginTop: "8px" }} title={t("CHB_" + (Code?.split('.').slice(0,2).join('_')))}>
+                    {(() => {
+                      const text = t((Code?.split('.').slice(0,2).join('_')));
+                      return text?.length > 6 ? `${text.substring(0, 6)}...` : text;
+                    })()}
+                  </p>
+                ) : null}
               </a>
             );
           })}

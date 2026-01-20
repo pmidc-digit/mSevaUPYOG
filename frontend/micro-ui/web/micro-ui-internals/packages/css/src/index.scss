@@ -139,6 +139,7 @@
 
 @import "./modules/adv/index.scss";
 @import "./modules/hrms/index.scss";
+
 .display-none {
   display: none;
 }
@@ -471,7 +472,7 @@
 
 .text-input {
   width: 100%;
-  margin-bottom: 24px;
+
   input {
     &:hover {
       @apply border-2 border-solid border-primary-main;
@@ -738,7 +739,6 @@
   .citizen-obps-wrapper,
   .selection-card-wrapper,
   .fsm-citizen-wrapper,
-  .pgr-citizen-wrapper,
   .pt-citizen,
   .bill-citizen,
   .bills-citizen-wrapper,
@@ -941,10 +941,6 @@
 
 .ndc_label {
   padding-bottom: 20px;
-}
-
-.ndc_card_main {
-  padding: 25px 25px;
 }
 
 .step-label {

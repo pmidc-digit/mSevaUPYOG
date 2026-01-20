@@ -1,4 +1,4 @@
-const getNOCSanctionLetter = async (application, t,EmpData) => {
+const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
   
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -80,6 +80,7 @@ const getNOCSanctionLetter = async (application, t,EmpData) => {
       currentDate,
       sanctionTerms,
       ...EmpData,
+      approverComment
       },
     ],
   };

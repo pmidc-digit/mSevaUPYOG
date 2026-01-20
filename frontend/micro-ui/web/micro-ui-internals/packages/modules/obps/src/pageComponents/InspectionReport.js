@@ -106,7 +106,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         setquestionList,
         documentList,
         props,
-        stateId
+        stateId,
+        fiReport
     };
 
     console.log("FieldReports", FieldReports)
@@ -165,7 +166,8 @@ const InspectionReportForm = (_props) => {
         setquestionList,
         documentList,
         props,
-        stateId
+        stateId,
+        fiReport
     } = _props;
 
     const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
@@ -182,7 +184,7 @@ const InspectionReportForm = (_props) => {
     }))
     const today = new Date().toISOString().split("T")[0];
 
-    console.log("formDataprops", siteImages,  documentData)
+    console.log("formDataprops", siteImages,  documentData, questionList)
 
     function routeTo(filestoreId) {
         getUrlForDocumentView(filestoreId)
@@ -353,9 +355,9 @@ const InspectionReportForm = (_props) => {
                         </div>
                     </LabelFieldPair> */}
                     {/* <CardSectionHeader>{t("BPA_CHECK_LIST_DETAILS")}</CardSectionHeader> */}
-                    {questionList && questionList.map((ob, ind) => (
-                        <div key={ind}>
-                            <LabelFieldPair >
+                    {/* {questionList && questionList.map((ob, ind) => (
+                        <div key={ind}> */}
+                            {/* <LabelFieldPair >
                                 <CardLabel  className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
                                 <div className="field" >
                                     <Controller
@@ -399,9 +401,59 @@ const InspectionReportForm = (_props) => {
                                         )}
                                     />
                                 </div>
-                            </LabelFieldPair>
+                            </LabelFieldPair> */}
+                            {/* <CardLabel className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
+                            <Controller
+                                control={control}
+                                name={`Remarks_${ind}`}
+                                defaultValue={unit?.uomValue}
+                                render={(props) => (
+                                    <TextInput
+                                        value={getValues(`Remarks${ind}`)}
+                                        onChange={(e) => {
+                                            props.onChange(e);
+                                        }}
+                                        placeholder={t("BPA_ENTER_REMARKS")}
+                                        onBlur={props.onBlur}
+                                    />
+                                )}
+                            />
                         </div>
-                    ))}
+                    ))} */}                
+                    <div className="bpa-table-container">
+                        <table className="customTable table-border-style">
+                            <thead>
+                                <tr>
+                                    <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
+                                    <th>{t("BPA_REMARKS")}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {questionList && questionList.map((ob, ind) => (
+                                    <tr key={ind}>
+                                        <td>{t(ob?.question)|| t("CS_NA")}</td>
+                                        <td>
+                                            <Controller
+                                                control={control}
+                                                name={`Remarks_${ind}`}
+                                                defaultValue={unit?.uomValue}
+                                                render={(props) => (
+                                                    <TextInput
+                                                        value={getValues(`Remarks_${ind}`)}
+                                                        onChange={(e) => {
+                                                            props.onChange(e);
+                                                        }}
+                                                        placeholder={t("BPA_ENTER_REMARKS")}
+                                                        onBlur={props.onBlur}
+                                                    />
+                                                )}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                     {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader> */}
                     {/* <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} /> */}
                     {/* <Table

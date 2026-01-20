@@ -131,6 +131,7 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
       if (data) {
+        console.log('data?.table', data?.table)
         setStatuses(data?.statuses || []);
         setTable(data?.table || []);
         setTotalCount(data?.totalCount || 0);
@@ -144,10 +145,6 @@ const Inbox = ({ parentRoute }) => {
       {
         text: t("ES_COMMON_APPLICATION_SEARCH"),
         link: "/digit-ui/employee/noc/search/application",
-      },
-      {
-        text: t("NOC_NEW_APPLICATION"),
-        link: "/digit-ui/employee/noc/new-application",
       },
     ],
   };

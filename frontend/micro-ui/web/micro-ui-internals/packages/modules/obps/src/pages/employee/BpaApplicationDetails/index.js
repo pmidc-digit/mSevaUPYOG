@@ -50,6 +50,7 @@ import ApplicationTimeline from "../../../../../templates/ApplicationDetails/com
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
+import { LoaderNew } from "../../../components/LoaderNew";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -145,6 +146,7 @@ const BpaApplicationDetail = () => {
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
   console.log("DATA DATA", data);
   const [appData, setAppData] = useState(data);
+  const [getLoading, setLoading] = useState(false);
 
   const geoLocations = useMemo(() => {
           if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -354,6 +356,7 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
+    console.log("key,value", key, value);
     setFieldInspectionPending(value);
   }
 
@@ -1006,8 +1009,10 @@ const BpaApplicationDetail = () => {
   
   const getUrlForDocumentView = async (filestoreId) => {
     if (filestoreId?.length === 0) return;
+    setLoading(true);
     try {
       const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+      setLoading(false);
       if (result?.data) {
         const fileUrl = result.data[filestoreId];
         if (fileUrl) {
@@ -1033,6 +1038,7 @@ const BpaApplicationDetail = () => {
         }
       }
     } catch (e) {
+      setLoading(false);
       if (props?.setError) {
         props?.setError(t("CS_FILE_FETCH_ERROR"));
       } else {
@@ -1083,7 +1089,7 @@ const BpaApplicationDetail = () => {
         setShowToast({error: true, label: t("Please fill in the Field Inspection Report before submitting")})
         return;
       }else{
-        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["question_"+index]);
+        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_"+index]);
         if(isQuestionEmpty){
           closeModal();
           setShowToast({error: true, label: t("Please fill in all the questions in Field Inspection Report before submitting")})
@@ -1091,6 +1097,8 @@ const BpaApplicationDetail = () => {
         }
       }      
     }
+
+    console.log("fieldInspectionPending",fieldInspectionPending)
 
     if (data?.BPA?.comment?.length == 0) {
       closeModal();
@@ -1148,7 +1156,7 @@ const BpaApplicationDetail = () => {
               siteImages: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? siteImages?.documents : data?.BPA?.additionalDetails?.siteImages,
               // geoLocations: data?.BPA?.action === "SEND_FOR_INSPECTION_REPORT" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? geoLocations : data?.BPA?.additionalDetails?.geoLocations,
               // FieldReports: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 ? canSubmit : null,
-              fieldinspection_pending: appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 ? fieldInspectionPending : data?.BPA?.additionalDetails?.fieldinspection_pending,
+              fieldinspection_pending: fieldInspectionPending,
             }
           }
         }
@@ -1551,7 +1559,7 @@ const BpaApplicationDetail = () => {
                             </Card>
                           }
                           {
-                            (!data?.applicationData?.status === "INSPECTION_REPORT_PENDING") && data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 &&
+                            ((data?.applicationData?.status != "INSPECTION_REPORT_PENDING") && data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0) &&
                             <Card>
                               <InspectionReportDisplay
                                 fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}                                
@@ -1969,6 +1977,7 @@ const BpaApplicationDetail = () => {
 
         {showImageModal && <Modal
           headerBarEnd={<CloseBtn onClick={closeImageModal} />}
+          hideSubmit={true}
         >
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
@@ -2006,6 +2015,8 @@ const BpaApplicationDetail = () => {
         />
         } */}
       </div>
+
+      {getLoading && <LoaderNew />}
 
       {showToast && (
         <Toast

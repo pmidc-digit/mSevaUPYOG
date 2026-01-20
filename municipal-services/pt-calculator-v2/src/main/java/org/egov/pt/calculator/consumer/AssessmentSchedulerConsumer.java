@@ -37,7 +37,8 @@ public class AssessmentSchedulerConsumer {
     @KafkaListener(
         topics = "${kafka.topics.assessment.save.service}",
         groupId = "rainmaker-pt-calculator-group",
-        containerFactory = "kafkaListenerContainerFactory"
+        containerFactory = "kafkaListenerContainerFactory",
+        concurrency = "${kafka.consumer.config.concurrency.count}"
     )
     public void listen(List<List<HashMap<String, Object>>> recordBatches) {
 

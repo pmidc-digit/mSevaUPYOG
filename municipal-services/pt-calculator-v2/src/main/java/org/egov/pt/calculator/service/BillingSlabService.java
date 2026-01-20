@@ -50,13 +50,13 @@ public class BillingSlabService {
 
 	public BillingSlabRes createBillingSlab(BillingSlabReq billingSlabReq) {
 		enrichBillingSlabForCreate(billingSlabReq);
-		producer.push(configurations.getBillingSlabSavePersisterTopic(), billingSlabReq);
+		producer.push(configurations.getBillingSlabSavePersisterTopic(), producerKey(billingSlabReq), billingSlabReq);
 		return billingSlabUtils.getBillingSlabResponse(billingSlabReq);
 	}
 	
 	public BillingSlabRes updateBillingSlab(BillingSlabReq billingSlabReq) {
 		enrichBillingSlabForUpdate(billingSlabReq);
-		producer.push(configurations.getBillingSlabUpdatePersisterTopic(), billingSlabReq);
+		producer.push(configurations.getBillingSlabUpdatePersisterTopic(), producerKey(billingSlabReq), billingSlabReq);
 		return billingSlabUtils.getBillingSlabResponse(billingSlabReq);
 	}
 	
@@ -101,6 +101,10 @@ public class BillingSlabService {
 		}
 		return BillingSlabRes.builder().responseInfo(factory.createResponseInfoFromRequestInfo(requestInfo, true))
 				.billingSlab(billingSlabs).build();
+	}
+	
+	public String producerKey(BillingSlabReq billingSlabReq) {
+		return billingSlabReq.getBillingSlab().get(0).getId();
 	}
 }
  

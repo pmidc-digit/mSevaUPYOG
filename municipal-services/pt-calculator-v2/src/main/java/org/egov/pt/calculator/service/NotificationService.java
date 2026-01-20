@@ -39,7 +39,7 @@ public class NotificationService {
 		for (DefaultersInfo defaulter : defaulterDetails) {
 
 			SMSRequest smsRequest = getSMSRequest(defaulter, smsTemplate);
-			producer.push(configs.getSmsNotifTopic(), smsRequest);
+			producer.push(configs.getSmsNotifTopic(), smsRequest.getMobileNumber() ,smsRequest);
 			log.info("MobileNumber: " + smsRequest.getMobileNumber() + " Messages: " + smsRequest.getMessage());
 			saveNotificationDetails(defaulter, "SUCCESS", null);
 		}

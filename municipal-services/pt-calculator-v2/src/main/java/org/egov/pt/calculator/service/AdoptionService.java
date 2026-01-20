@@ -81,7 +81,7 @@ public class AdoptionService {
 			}
 		});
 
-		producer.push(configurations.getKafkaWhatsappAdoptionDataTopic(), mapData);
+		producer.push(configurations.getKafkaWhatsappAdoptionDataTopic(), propertiesList.get(daysForIncrement) , mapData);
 	}
 	
 	public void pushPaymentDataTokafka(List<String> propertiesList, int daysForIncrement) {
@@ -98,7 +98,7 @@ public class AdoptionService {
 			}
 		});
 
-		producer.push(configurations.getKafkaWhatsappAdoptionDataTopic(), mapData);
+		producer.push(configurations.getKafkaWhatsappAdoptionDataTopic(), propertiesList.get(daysForIncrement) , mapData);
 	}
 
 	static <T> Collection<List<T>> partitionBasedOnSize(List<T> inputList, int size) {

@@ -41,13 +41,13 @@ public class MutationBillingSlabService {
 
     public MutationBillingSlabRes createBillingSlab(MutationBillingSlabReq billingSlabReq) {
         enrichBillingSlabForCreate(billingSlabReq);
-        producer.push(configurations.getMutationbillingSlabSavePersisterTopic(), billingSlabReq);
+        producer.push(configurations.getMutationbillingSlabSavePersisterTopic(), producerKey(billingSlabReq), billingSlabReq);
         return billingSlabUtils.getMutationBillingSlabResponse(billingSlabReq);
     }
 
     public MutationBillingSlabRes updateBillingSlab(MutationBillingSlabReq billingSlabReq) {
         enrichBillingSlabForUpdate(billingSlabReq);
-        producer.push(configurations.getMutationbillingSlabUpdatePersisterTopic(), billingSlabReq);
+        producer.push(configurations.getMutationbillingSlabUpdatePersisterTopic(), producerKey(billingSlabReq) , billingSlabReq);
         return billingSlabUtils.getMutationBillingSlabResponse(billingSlabReq);
     }
 
@@ -79,4 +79,8 @@ public class MutationBillingSlabService {
         return MutationBillingSlabRes.builder().responseInfo(factory.createResponseInfoFromRequestInfo(requestInfo, true))
                 .billingSlab(billingSlabs).build();
     }
+    
+    public String producerKey(MutationBillingSlabReq billingSlabReq) {
+		return billingSlabReq.getBillingSlab().get(0).getId();
+	}
 }

@@ -288,7 +288,12 @@ public class AssessmentService {
 	                    );
 	                    
 	                    // Clear the batch list for the next set
-	                    kafkaBatch = new ArrayList<>(); 
+	                    kafkaBatch = new ArrayList<>();
+	                    try {
+	                        Thread.sleep(1000); 
+	                    } catch (InterruptedException e) {
+	                        Thread.currentThread().interrupt();
+	                    }
 	                }
 	            }
 	            offset += limit;

@@ -32,6 +32,8 @@ import org.egov.common.entity.edcr.EdcrPdfDetail;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.PlanFeature;
 import org.egov.common.entity.edcr.PlanInformation;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.ComparisonRequest;
 //import org.egov.edcr.contract.EdcrRequest;
@@ -55,6 +57,7 @@ import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.custom.CustomImplProvider;
 import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.microservice.models.RequestInfo;
 import org.egov.infra.microservice.models.Role;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +89,9 @@ public class PlanService {
     private OcComparisonService ocComparisonService;
     @Autowired
     private OcComparisonDetailService ocComparisonDetailService;
+    
+    @Autowired
+    private BpaMdmsUtil bpaMdmsUtil;
 
     public Plan process(EdcrApplication dcrApplication, String applicationType) {
         Map<String, String> cityDetails = specificRuleService.getCityDetails();
@@ -319,6 +325,23 @@ public class PlanService {
                 || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
 
             plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
+        }
+        
+        if(plan.getPlanInformation().getUlbType()!=null) {
+        	String ulbType = "";
+        	try {
+        	    Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(new RequestInfo(),plan.getEdcrRequest());
+        	    ulbType = BpaMdmsUtil
+        	            .extractMdmsValue(mdmsData, MdmsFilter.ULB_TYPE_FILTER, String.class)
+        	            .orElse("");
+        	    if (ulbType.isEmpty()) {
+        	        LOG.warn("ULB Type not found in MDMS response for the logged in ULB : " + plan.getEdcrRequest().getTenantId());
+        	    }
+        	} catch (Exception e) {
+        	    LOG.error("Error while fetching ULB Type from MDMS", e);
+        	}
+        	plan.getPlanInformation().setUlbType(ulbType);
+        	LOG.info("ULB Type  : {}", ulbType);
         }
 
         

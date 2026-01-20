@@ -2,6 +2,8 @@ package org.egov.commons.edcr.mdms.filter;
 
 public class MdmsFilter {
 	//public static final String FAR_PATH = "$.MdmsRes.EDCR.MasterPlan[*].FAR[*]";
+	public static final String ULB_TYPE_FILTER = "$.MdmsRes.tenant.tenants[0]";
+	
 	public static final String FAR_PATH = "$.MdmsRes.EDCR.MasterPlan[*]";
 	
 	public static final String MASTER_PLAN_FILTER = "$.MdmsRes.EDCR.MasterPlan";

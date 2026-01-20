@@ -396,6 +396,10 @@ public class AdditionalFeature extends FeatureProcess {
                        */
                 }
             }
+            
+            if(floorAbvGround.compareTo(BigDecimal.ZERO) >= 0) {
+            	pl.getPlanInformation().setNumberOfFloors(floorAbvGround.toPlainString());
+            }
 
             
 

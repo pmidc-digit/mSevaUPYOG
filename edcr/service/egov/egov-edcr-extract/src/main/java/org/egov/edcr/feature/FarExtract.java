@@ -261,7 +261,7 @@ public class FarExtract extends FeatureExtract {
 
                         if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
                         		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
-                            pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+                            //pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
                         }else
     						floor.addDeductionArea(occupancy);
                     }                    
@@ -269,6 +269,7 @@ public class FarExtract extends FeatureExtract {
                 floor.setFloordeductions(deductionsMap);
             }
            
+            
             if (!typicals.isEmpty()) {
                 LOG.info("Adding typical:" + block.getNumber());
                 List<TypicalFloor> typicalFloors = new ArrayList<>();

@@ -996,7 +996,7 @@ public class EdcrRestService {
             errorDetails.add(new ErrorDetail("BPA-29", "Comparison eDcr number is mandatory"));
         } else {
             EdcrApplicationDetail permitDcr = applicationDetailService.findByDcrNumberAndTPUserTenant(dcrNo,
-                    "pb");
+            		edcrRequest.getTenantId());
 
             if (permitDcr != null && permitDcr.getApplication() != null
                     && StringUtils.isBlank(permitDcr.getApplication().getServiceType())) {

@@ -133,6 +133,20 @@ public class BpaMdmsUtil {
 		mdmsCriteriaReq.setRequestInfo(requestInfo);
 		return mdmsCriteriaReq;
 	}
+	
+	private MdmsCriteriaReq getUlbTypeRequest(RequestInfo requestInfo, EdcrRequest edcrRequest) {
+		List<ModuleDetail> moduleRequest = getUlbTypeRequest(edcrRequest.getTenantId());
+
+		List<ModuleDetail> moduleDetails = new LinkedList<>();
+		moduleDetails.addAll(moduleRequest);
+		MdmsCriteria mdmsCriteria = new MdmsCriteria();
+		mdmsCriteria.setModuleDetails(moduleDetails);
+		mdmsCriteria.setTenantId("pb");
+		MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
+		mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
+		mdmsCriteriaReq.setRequestInfo(requestInfo);
+		return mdmsCriteriaReq;
+	}
 
     public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
         MdmsCriteriaReq mdmsCriteriaReq = getBpaMDMSRequest(requestInfo,tenantId);
@@ -150,6 +164,29 @@ public class BpaMdmsUtil {
 
 	public Object mDMSCall(RequestInfo requestInfo, EdcrRequest edcrRequest, String occType, BigDecimal plotArea) {
 		MdmsCriteriaReq mdmsCriteriaReq = getBpaFARMDMSRequest(requestInfo, edcrRequest, occType, plotArea);
+
+		try {
+			return serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			// Handles 4xx and 5xx HTTP errors
+			System.err.println("MDMS server error: " + ex.getMessage());
+			return Collections.singletonMap("error", "MDMS not responding");
+
+		} catch (ResourceAccessException ex) {
+			// Handles connection timeout / unreachable server
+			System.err.println("MDMS connection error: " + ex.getMessage());
+			return Collections.singletonMap("error", "MDMS not responding");
+
+		} catch (Exception ex) {
+			// Any other unexpected error
+			System.err.println("Unexpected error during MDMS call: " + ex.getMessage());
+			return Collections.singletonMap("error", ex.getMessage());
+		}
+	}
+	
+	public Object getUlbTypeFromMdms(RequestInfo requestInfo, EdcrRequest edcrRequest) {
+		MdmsCriteriaReq mdmsCriteriaReq = getUlbTypeRequest(requestInfo, edcrRequest);
 
 		try {
 			return serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
@@ -283,6 +320,24 @@ public class BpaMdmsUtil {
 		ModuleDetail bpaModuleDtls = new ModuleDetail();
 		bpaModuleDtls.setMasterDetails(bpaMasterDtls);
 		bpaModuleDtls.setModuleName("EDCR");
+
+		return Arrays.asList(bpaModuleDtls);
+	}
+	
+	public List<ModuleDetail> getUlbTypeRequest(String loggedInUlb) {
+
+		List<MasterDetail> bpaMasterDtls = new ArrayList<>();
+		String filterBuilder = new String("$.[?(@.code == '%s')].city.ulbType");
+		filterBuilder = filterBuilder.format(filterBuilder, loggedInUlb);
+		
+		MasterDetail masterDetailAppType = new MasterDetail();
+		masterDetailAppType.setName("tenants");
+		masterDetailAppType.setFilter(filterBuilder);
+		bpaMasterDtls.add(masterDetailAppType);
+
+		ModuleDetail bpaModuleDtls = new ModuleDetail();
+		bpaModuleDtls.setMasterDetails(bpaMasterDtls);
+		bpaModuleDtls.setModuleName("tenant");
 
 		return Arrays.asList(bpaModuleDtls);
 	}

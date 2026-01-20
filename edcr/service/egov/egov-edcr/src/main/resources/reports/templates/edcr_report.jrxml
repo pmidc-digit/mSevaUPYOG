@@ -796,7 +796,8 @@
 					<paragraph leftIndent="3"/>
 				</textElement>
 				<!-- <textFieldExpression><![CDATA["Residential".equals($F{planInformation}.getOccupancy()) ? "Residential Plotted" : $F{planInformation}.getOccupancy()]]></textFieldExpression> -->
-				<textFieldExpression><![CDATA["Residential".equals($F{planInformation}.getOccupancy()) ? "Residential" : $F{planInformation}.getOccupancy()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{planInformation} != null ? $F{planInformation}.getOccupancy() : ""]]></textFieldExpression>
+				
 				
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">

@@ -78,8 +78,7 @@ public enum OccupancyType {
 	OCCUPANCY_F16("Compressed Natural Gas Station"),	
 	
 	OCCUPANCY_G("Industrial"), OCCUPANCY_G1("Industrial Plotted - General, Textile, Knitwear, Sports"),
-	OCCUPANCY_G2("Industrial Plotted - Information Technology"),OCCUPANCY_G3("Industrial Flatted"),
-	
+	OCCUPANCY_G2("Industrial Plotted - Information Technology"),OCCUPANCY_G3("Industrial Flatted"),	
 	OCCUPANCY_H("Storage"),
 	OCCUPANCY_I1("Hazardous (I1)"), OCCUPANCY_I2("Hazardous (I2)"),
 	OCCUPANCY_J("Petrol Pumps"), OCCUPANCY_J1("Filling Station"), OCCUPANCY_J2("Filling Cum Service Station"), 

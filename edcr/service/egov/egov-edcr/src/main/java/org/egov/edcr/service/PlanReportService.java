@@ -652,9 +652,13 @@ public class PlanReportService {
 
         if (plan.getVirtualBuilding() != null && !plan.getVirtualBuilding().getOccupancyTypes().isEmpty()) {
             List<String> occupancies = new ArrayList<>();
+//            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
+//                if (occ.getType() != null)
+//                    occupancies.add(occ.getType().getName());
+//            });
             plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
-                if (occ.getType() != null)
-                    occupancies.add(occ.getType().getName());
+                if (occ.getSubtype() != null)
+                    occupancies.add(occ.getSubtype().getName());
             });
             Set<String> distinctOccupancies = new HashSet<>(occupancies);
             plan.getPlanInformation()

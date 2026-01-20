@@ -1448,7 +1448,7 @@ public class DemandService {
 					if (lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-								.getAsInt();
+								.orElse(-1);
 						generateDemandFromIndex++;
 					}
 					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {

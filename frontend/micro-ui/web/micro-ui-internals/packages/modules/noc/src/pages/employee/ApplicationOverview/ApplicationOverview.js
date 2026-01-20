@@ -625,7 +625,7 @@ const NOCEmployeeApplicationOverview = () => {
 
         if (!proceed) {
           setSelectedAction(null);
-          return; // Exit early if canceled, no API call
+          return; 
         }
       }
 
@@ -682,6 +682,7 @@ const NOCEmployeeApplicationOverview = () => {
           refetch();
           setFeeAdjustments((prev) => (prev || []).map((p) => ({ ...p, edited: false })));
           setSelectedAction(null);
+          refetchChecklist();
           setTimeout(() => {
             history.push("/digit-ui/employee/noc/inbox");
           }, 3000);
@@ -764,13 +765,10 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
         <NOCImageView
           ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
           ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
         />
-      </Card>
 
       {id.length > 0 && (
         <React.Fragment>
@@ -924,45 +922,7 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
             ))}
         </StatusTable>
       </Card>
-
-      <Card>
-        <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
-        <StatusTable>
-          {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
-            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
-          )}
-        </StatusTable>
-      </Card>
-
-      <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}   
-        tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
-      </Card>
-
-      <Card>
-        <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
-        {applicationDetails?.Noc?.[0]?.nocDetails && (
-          <NOCFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || [],
-            }}
-            feeAdjustments={feeAdjustments}
-            setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
-          />
-        )}
-      </Card>
-
-      <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
-        checked="true"
-      />
-
-      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
         (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
           <Card>
             <div id="fieldInspection"></div>
@@ -1001,6 +961,45 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
           )}
         </Card>
       )}
+
+      <Card>
+        <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
+        <StatusTable>
+          {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
+            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
+          )}
+        </StatusTable>
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}   
+        tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
+      </Card>
+
+      <Card>
+        <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Noc?.[0]?.nocDetails && (
+          <NOCFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || [],
+            }}
+            feeAdjustments={feeAdjustments}
+            setFeeAdjustments={setFeeAdjustments}
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+          />
+        )}
+      </Card>
+
+      <CheckBox
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      />
+
+     
 
       <div id="timeline">
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />

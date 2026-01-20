@@ -53,7 +53,11 @@ public class BoundaryService {
             if(license.getTradeLicenseDetail().getAddress()==null ||
                     license.getTradeLicenseDetail().getAddress().getLocality()==null)
                 throw new CustomException("INVALID ADDRESS","The address or locality cannot be null");
-            localities.add(license.getTradeLicenseDetail().getAddress().getLocality().getCode());
+            String localityCode = license.getTradeLicenseDetail().getAddress().getLocality().getCode();
+            // Only add non-null locality codes
+            if(localityCode != null) {
+                localities.add(localityCode);
+            }
         });
 
         StringBuilder uri = new StringBuilder(config.getLocationHost());
@@ -82,11 +86,17 @@ public class BoundaryService {
         DocumentContext context = JsonPath.parse(jsonString);
 
         request.getLicenses().forEach(license -> {
-            Object boundaryObject = context.read(propertyIdToJsonPath.get(license.getId()));
+            // Skip enrichment for licenses with null locality codes
+            String jsonPath = propertyIdToJsonPath.get(license.getId());
+            if(jsonPath == null) {
+                return;
+            }
+
+            Object boundaryObject = context.read(jsonPath);
             if(!(boundaryObject instanceof ArrayList) || CollectionUtils.isEmpty((ArrayList)boundaryObject))
                 throw new CustomException("BOUNDARY MDMS DATA ERROR","The boundary data was not found");
 
-            ArrayList boundaryResponse = context.read(propertyIdToJsonPath.get(license.getId()));
+            ArrayList boundaryResponse = context.read(jsonPath);
             Boundary boundary = mapper.convertValue(boundaryResponse.get(0),Boundary.class);
             if(boundary.getName()==null)
                 throw new CustomException("INVALID BOUNDARY DATA","The boundary data for the code "+license.getTradeLicenseDetail().getAddress().getLocality().getCode()+ " is not available");
@@ -105,8 +115,11 @@ public class BoundaryService {
         Map<String,String> idToJsonPath = new LinkedHashMap<>();
         String jsonpath = "$..boundary[?(@.code==\"{}\")]";
         request.getLicenses().forEach(license -> {
-            idToJsonPath.put(license.getId(),jsonpath.replace("{}",license.getTradeLicenseDetail().getAddress().getLocality().getCode()
-            ));
+            String localityCode = license.getTradeLicenseDetail().getAddress().getLocality().getCode();
+            // Skip licenses with null locality codes
+            if(localityCode != null) {
+                idToJsonPath.put(license.getId(), jsonpath.replace("{}", localityCode));
+            }
         });
 
         return  idToJsonPath;

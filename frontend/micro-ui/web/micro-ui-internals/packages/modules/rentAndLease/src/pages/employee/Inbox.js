@@ -25,16 +25,21 @@ const Inbox = ({
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
+  const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: true }]);
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
   const [isLoader, setIsLoader] = useState(false);
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
 
-  const isMobile = window.Digit.Utils.browser.isMobile();
-  const paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" }
-    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+  let isMobile = window.Digit.Utils.browser.isMobile();
+  let paginationParams = isMobile
+    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
+    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+
+  // const isMobile = window.Digit.Utils.browser.isMobile();
+  // const paginationParams = isMobile
+  //   ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" }
+  //   : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
 
   const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
     ? Digit.Hooks.useNewInboxGeneral({

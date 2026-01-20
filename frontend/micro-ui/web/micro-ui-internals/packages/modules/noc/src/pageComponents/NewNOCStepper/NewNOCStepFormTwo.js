@@ -87,18 +87,30 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
 
     const netPlotArea= parseFloat(data?.specificationPlotArea);;
-    const groundFloorArea = data?.floorArea?.[0]?.value ? parseFloat(data?.floorArea?.[0]?.value) : 0;
+    const floorAreas = data?.floorArea?.map(f => parseFloat(f?.value) || 0) || [];
 
     if(!isEqual){
         setTimeout(()=>{setShowToast(null);},3000);
         setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
         return false;
     }
-    else if(isBuiltUp && groundFloorArea > netPlotArea){
-        setTimeout(()=>{setShowToast(null);},3000);
-        setShowToast({ key: "true", error:true, message: "NOC_GROUND_FLOOR_AREA_VALIDATION_LABEL"});
+    else if (
+      isBuiltUp &&
+      floorAreas.some((area, i) => {
+        if (area > netPlotArea) {
+          setTimeout(() => setShowToast(null), 3000);
+          setShowToast({
+            key: "true",
+            error: true,
+            message: `NOC_GROUND_FLOOR_AREA_VALIDATION_LABEL`,
+          });
+          return true; 
+        }
         return false;
-    }else{
+      })
+    ) {
+      return false;
+    } else {
       return true;
     }
  };

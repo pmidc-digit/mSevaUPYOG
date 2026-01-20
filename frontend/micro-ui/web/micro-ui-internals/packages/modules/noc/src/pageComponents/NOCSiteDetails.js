@@ -936,8 +936,8 @@ const sortedRoadType = useMemo(
                   //   message: t("MIN_4_CHARACTERS_REQUIRED"),
                   // },
                   maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                    value: 15,
+                    message: t("MAX_15_CHARACTERS_ALLOWED"),
                   },
                 }}
                 render={(props) => (

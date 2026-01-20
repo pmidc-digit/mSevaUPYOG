@@ -154,14 +154,14 @@ public class CluQueryBuilder {
 
 		if ( !StringUtils.isEmpty(criteria.getVasikaNumber()) ) {
 			addClauseIfRequired(builder);
-			builder.append(" layout.vasikaNumber=? ");
+			builder.append(" clu.vasikaNumber=? ");
 			preparedStmtList.add(criteria.getVasikaNumber());
 			log.info(criteria.getVasikaNumber());
 		}
 
 		if ( !StringUtils.isEmpty(criteria.getVasikaDate()) ) {
 			addClauseIfRequired(builder);
-			builder.append(" layout.vasikaDate=? ");
+			builder.append(" clu.vasikaDate=? ");
 			preparedStmtList.add(criteria.getVasikaDate());
 			log.info(criteria.getVasikaDate());
 		}

@@ -156,7 +156,7 @@ public class UserService {
 	}
 
 	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, String> additionalDetails, boolean isAllAssignees) {
-		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone");
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone.code");
 
 		StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
 		uri.append("?tenantId=").append(tenantId)

@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.calculator.service.DemandService;
 import org.egov.rl.calculator.util.ResponseInfoFactory;
+import org.egov.rl.calculator.web.models.ApplicantDemansStatusResponse;
 import org.egov.rl.calculator.web.models.CalculationReq;
 import org.egov.rl.calculator.web.models.GetBillCriteria;
+import org.egov.rl.calculator.web.models.demand.DemandCriteria;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
 import org.egov.rl.calculator.web.models.DemandRequest;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -63,8 +66,11 @@ public class CalculatorController {
 	}
     
     @PostMapping("/_searchdemand")
-	public ResponseEntity<DemandResponse> searchdemand(@RequestBody @Valid DemandRequest demandRequest) {
-    	DemandResponse demandResponse=DemandResponse.builder().demands(demandService.searchDemandsByTenantId(demandRequest)).build();
-    	return new ResponseEntity<>(demandResponse, HttpStatus.OK);
+	public ResponseEntity<List<ApplicantDemansStatusResponse>> searchdemand(@Valid @RequestBody RequestInfo requestInfo,
+			@ModelAttribute DemandCriteria demandCriteria) {
+    	List<ApplicantDemansStatusResponse> demandDetails=demandService.searchDemandsByTenantId(DemandRequest.builder().requestInfo(requestInfo).demandCriteria(demandCriteria).build());
+    	
+//    	DemandResponse demandResponse=DemandResponse.builder().demands().build();
+    	return new ResponseEntity<>(demandDetails, HttpStatus.OK);
 	}
 }

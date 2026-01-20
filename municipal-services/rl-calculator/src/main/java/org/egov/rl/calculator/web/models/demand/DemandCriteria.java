@@ -77,6 +77,8 @@ public class DemandCriteria {
 	
 	private Set<String> tenantIds;
 	private boolean isPaymentCompleted;
+	private long taxperiodfrom;
+	private long taxperiodto;
 	private long offset;
 	private long limit;
 }

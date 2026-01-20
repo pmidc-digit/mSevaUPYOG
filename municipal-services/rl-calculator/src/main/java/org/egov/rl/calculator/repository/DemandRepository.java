@@ -178,28 +178,28 @@ public class DemandRepository {
 		}
 	}
 
-	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> applicationNumber) {
-		if (applicationNumber == null || applicationNumber.isEmpty()) {
-			return Collections.emptyList(); // avoid "IN ()" SQL
-		}
-		List<Object> preparedStmtList = new ArrayList<>();
-		List<Object> subQueryParams = new ArrayList<>();
-		String consumerCode = applicationNumber.stream().map(id ->id).collect(Collectors.joining(", "));
-
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC limit 1";
-		subQueryParams.add(consumerCode);
-		try {
-
-			preparedStmtList.addAll(subQueryParams);
-			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
-		} catch (NoSuchElementException e) {
-			return Collections.emptyList();
-		}  catch (Exception e) {
-			log.error("Error while fetching demands for rentable IDs and period", e);
-			throw new CustomException("DEMAND_FETCH_ERROR",
-					"Failed to fetch demands for the given rentable IDs and period");
-		}
-	}
+//	public List<Demand> getDemandsByConsumerCodeByOrderBy(List<String> applicationNumber) {
+//		if (applicationNumber == null || applicationNumber.isEmpty()) {
+//			return Collections.emptyList(); // avoid "IN ()" SQL
+//		}
+//		List<Object> preparedStmtList = new ArrayList<>();
+//		List<Object> subQueryParams = new ArrayList<>();
+//		String consumerCode = applicationNumber.stream().map(id ->id).collect(Collectors.joining(", "));
+//
+//		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) ORDER BY textperiodto DESC limit 1";
+//		subQueryParams.add(consumerCode);
+//		try {
+//
+//			preparedStmtList.addAll(subQueryParams);
+//			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
+//		} catch (NoSuchElementException e) {
+//			return Collections.emptyList();
+//		}  catch (Exception e) {
+//			log.error("Error while fetching demands for rentable IDs and period", e);
+//			throw new CustomException("DEMAND_FETCH_ERROR",
+//					"Failed to fetch demands for the given rentable IDs and period");
+//		}
+//	}
 
 	public List<DemandDetail> getDemandsDetailsByDemandId(List<String> dId) {
 		if (dId == null || dId.isEmpty()) {
@@ -232,12 +232,18 @@ public class DemandRepository {
 		List<Object> subQueryParams = new ArrayList<>();
 
 		String tenentId = createria.getTenantIds().stream().map(id ->id).collect(Collectors.joining(", "));
+		String consumercode = createria.getConsumerCode().stream().map(id ->id).collect(Collectors.joining(", "));
 
-		String sql = "SELECT d.id as uuid,d.*,dd.* "
-				+ "FROM public.egbs_demand_v1 d INNER JOIN public.egbs_demanddetail_v1 dd ON d.id=dd.demandid  where d.tenantid IN (?) AND d.ispaymentcompleted=false "
+		String sql = "SELECT d.id as uuid,dd.id as ddid,d.*,dd.* "
+				+ "FROM public.egbs_demand_v1 as d INNER JOIN public.egbs_demanddetail_v1 as dd ON d.id=dd.demandid  "
+				+ "where d.businessservice='rl-services' AND d.ispaymentcompleted=false  "
+				+ " AND d.tenantid IN (?) AND d.consumercode IN (?) AND taxperiodfrom = ? AND taxperiodto=? "
 				+ "ORDER BY d.id DESC, d.createdtime DESC, d.tenantid DESC";
 		log.info("tenentId :: " + tenentId);
 		subQueryParams.add(tenentId);
+		subQueryParams.add(consumercode);
+		subQueryParams.add(createria.getTaxperiodfrom());
+		subQueryParams.add(createria.getTaxperiodto());
 		try {
 			preparedStmtList.addAll(subQueryParams);
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(),searchDemandRowMapper);

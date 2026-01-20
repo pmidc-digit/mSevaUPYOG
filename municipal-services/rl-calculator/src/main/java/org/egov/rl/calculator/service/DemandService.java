@@ -384,6 +384,8 @@ public class DemandService {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath).queryParam("tenantId",
 				tenantId);
 		builder.queryParam("status", joiner.toString());
+		builder.queryParam("isExpaireFlag", false);
+		
 		if (consumerCode != null) {
 			builder.queryParam("applicationNumbers", consumerCode);
 		}
@@ -581,7 +583,52 @@ public class DemandService {
 		return demand;
 	}
 	
-	public List<Demand> searchDemandsByTenantId(DemandRequest demandRequest) {
-		return demandRepository.getSearchDemandByTenentId(demandRequest.getDemandCriteria());
+	public List<ApplicantDemansStatusResponse> searchDemandsByTenantId(DemandRequest demandRequest) {
+		List<ApplicantDemansStatusResponse> applicantDemansStatusResponse = new ArrayList<>();
+		
+//		List<String> tenantIds = (tenantCode == null) ? demandRepository.getDistinctTenantIds()
+//				: Arrays.asList(tenantCode);
+		
+		demandRequest.getDemandCriteria().getTenantIds().stream().forEach(tenantId->{
+		
+		masterDataService.getBillingPeriod(demandRequest.getRequestInfo(), tenantId).stream().forEach(billCycle->{
+			
+		List<AllotmentDetails> allotmentDetails = fetchApprovedAllotmentApplications(tenantId, demandRequest.getRequestInfo(),null);
+		allotmentDetails.stream().forEach(alt -> {
+			long taxPeriodFrom = billCycle.getTaxPeriodFrom() <= alt.getStartDate()
+					? alt.getStartDate()
+					: billCycle.getTaxPeriodFrom();
+
+			long taxPeriodTo = billCycle.getTaxPeriodTo() <= alt.getEndDate()
+					? billCycle.getTaxPeriodTo()
+					: alt.getEndDate();
+
+			System.out.println("Application Number ---"+alt.getApplicationNumber());
+			System.out.println("Tax from ---"+taxPeriodFrom);
+			System.out.println("Tax to ---"+taxPeriodTo);
+			
+			Set<String> consumerCode=new HashSet<>();
+			consumerCode.add(alt.getApplicationNumber());
+			demandRequest.getDemandCriteria().setConsumerCode(consumerCode);
+			Set<String> tenantIds=new HashSet<>();
+			tenantIds.add(tenantId);
+			demandRequest.getDemandCriteria().setTenantIds(tenantIds);
+			demandRequest.getDemandCriteria().setTaxperiodfrom(taxPeriodFrom);
+			demandRequest.getDemandCriteria().setTaxperiodto(taxPeriodTo);
+			List<Demand> demands=demandRepository.getSearchDemandByTenentId(demandRequest.getDemandCriteria());
+			String demandStatus=null;
+			if(demands!=null&&!demands.isEmpty()) {
+				demandStatus="Bill has been Generated Successfully.";
+			}else {
+				demandStatus="Bill has not been Generated.";
+			}
+			applicantDemansStatusResponse.add(ApplicantDemansStatusResponse.builder().cycle(billCycle.getBillingCycle()).demandStatus(demandStatus).demand(demands).allotment(Arrays.asList(alt)).build());
+		});
+		
+        });
+		
+
+		});
+		return applicantDemansStatusResponse;
 	  }
 	}

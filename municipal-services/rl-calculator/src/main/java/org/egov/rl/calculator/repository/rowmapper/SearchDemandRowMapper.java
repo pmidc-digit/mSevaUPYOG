@@ -23,16 +23,16 @@ public class SearchDemandRowMapper implements ResultSetExtractor<List<Demand>> {
 	public List<Demand> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		// Map the basic fields of the Demand object
 
-		List<Demand> demandList = new ArrayList<>();
 		Map<String, Demand> searchDemand = new LinkedHashMap<>();
 
 		while (rs.next()) {
-			String uuid = rs.getString("id");
+			String uuid = rs.getString("uuid");
+//			System.out.println("uuid:----"+uuid);
 			Demand demand = searchDemand.get(uuid);
 			if (demand == null) {
 
 				// Map the basic fields of the Demand object
-				demandList.add(Demand.builder().id(rs.getString("id"))
+				demand=Demand.builder().id(rs.getString("uuid"))
 						.ispaymentcompleted(rs.getBoolean("ispaymentcompleted"))
 						.consumerCode(rs.getString("consumercode")).consumerType(rs.getString("consumertype"))
 						.tenantId(rs.getString("tenantid")).payer(Owner.builder().uuid(rs.getString("payer")).build())
@@ -41,11 +41,12 @@ public class SearchDemandRowMapper implements ResultSetExtractor<List<Demand>> {
 						.fixedbillexpirydate(rs.getLong("fixedbillexpirydate"))
 						.billExpiryTime(rs.getLong("billexpirytime"))
 						.minimumAmountPayable(rs.getBigDecimal("minimumamountpayable"))
-						.status(Demand.DemandStatusEnum.valueOf(rs.getString("status"))).build());
-				searchDemand.put(uuid, demand);
+						.status(Demand.DemandStatusEnum.valueOf(rs.getString("status"))).build();
 			} else {
 				demandDetails(demand,rs);
 			}
+			searchDemand.put(uuid, demand);
+			
 		}
 		return new ArrayList<>(searchDemand.values());
 	}
@@ -53,7 +54,7 @@ public class SearchDemandRowMapper implements ResultSetExtractor<List<Demand>> {
 	private void demandDetails(Demand demand, ResultSet rs) {
 		DemandDetail demandDetail = null;
 		try {
-			DemandDetail.builder().id(rs.getString("id")).demandId(rs.getString("demandid"))
+			DemandDetail.builder().id(rs.getString("ddid")).demandId(rs.getString("demandid"))
 					.tenantId(rs.getString("tenantid")).taxHeadMasterCode(rs.getString("taxheadcode"))
 					.collectionAmount(rs.getBigDecimal("collectionamount")).taxAmount(rs.getBigDecimal("taxamount"))
 					.auditDetails(auditDetails(rs)).build();

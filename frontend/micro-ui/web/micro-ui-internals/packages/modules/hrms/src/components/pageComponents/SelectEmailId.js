@@ -23,29 +23,36 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
   return (
     <div>
       {inputs?.map((input, index) => {
-        let currentValue=formData && formData[config.key] && formData[config.key][input.name]||'';
-        return(<React.Fragment key={index}>
-          {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " * " : null}
-            </CardLabel>
-            <div className="field">
-              <TextInput
-                type={input.type}
-                key={input.name}
-                value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
-                onChange={(e) => setValue(e.target.value, input.name)}
-                disable={false}
-                defaultValue={undefined}
-                {...input.validation}
-              />
-              {currentValue&&currentValue.length>0&&!currentValue.match(Digit.Utils.getPattern('Email'))&&<CardLabelError style={{ width: "100%", marginTop: '-15px', fontSize: '16px', marginBottom: '12px'}}>{t("CS_PROFILE_EMAIL_ERRORMSG")}</CardLabelError>}
-            </div>
-          </LabelFieldPair>
-        </React.Fragment>
-      )})}
+        let currentValue = (formData && formData[config.key] && formData[config.key][input.name]) || "";
+        return (
+          <React.Fragment key={index}>
+            {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {t(input.label)}
+                {input.isMandatory ? " * " : null}
+              </CardLabel>
+              <div className="field">
+                <TextInput
+                  type={input.type}
+                  key={input.name}
+                  value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
+                  onChange={(e) => setValue(e.target.value, input.name)}
+                  disable={false}
+                  defaultValue={undefined}
+                  {...input.validation}
+                />
+              
+              </div>
+            </LabelFieldPair>
+              {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern("Email")) && (
+                  <CardLabelError style={{ width: "100%", marginTop: "-15px", fontSize: "16px", marginBottom: "12px" }}>
+                    {t("CS_PROFILE_EMAIL_ERRORMSG")}
+                  </CardLabelError>
+                )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 };

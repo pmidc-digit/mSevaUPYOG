@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { useDispatch } from "react-redux";
 import {
   LabelFieldPair,
@@ -19,22 +19,23 @@ import {
   DeleteIcon,
   LinkButton,
   Loader,
-
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 
-const LayoutApplicantDetails = (_props) => {
-  const dispatch = useDispatch()
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger } = _props
+const LayoutApplicantDetails = forwardRef((_props, ref) => {
+  const dispatch = useDispatch();
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger } = _props;
 
-  const tenantId = Digit.ULBService.getCurrentTenantId()
-  const stateId = Digit.ULBService.getStateId()
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const stateId = Digit.ULBService.getStateId();
 
-  const [mobileNo, setMobileNo] = useState("")
-  const [showToast, setShowToast] = useState(null)
-  const [userInfo, setUserInfo] = useState(null)
+  const [mobileNo, setMobileNo] = useState("");
+  const [showToast, setShowToast] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoadingMobile, setIsLoadingMobile] = useState(false);
+
   const [applicants, setApplicants] = useState([
     {
       name: "",
@@ -45,67 +46,72 @@ const LayoutApplicantDetails = (_props) => {
       dob: "",
       gender: "",
     },
-  ])
-  const [documentUploadedFiles, setDocumentUploadedFiles] = useState({})
-  const [photoUploadedFiles, setPhotoUploadedFiles] = useState({})
-  const [applicantErrors, setApplicantErrors] = useState({})
-  const [loader, setLoader] = useState(false)
-  const [isDataRestored, setIsDataRestored] = useState(false)
+  ]);
+  const [documentUploadedFiles, setDocumentUploadedFiles] = useState({});
+  const [photoUploadedFiles, setPhotoUploadedFiles] = useState({});
+  const [applicantErrors, setApplicantErrors] = useState({});
+  const [loader, setLoader] = useState(false);
+  const [isDataRestored, setIsDataRestored] = useState(false);
   // State for additional owner mobile search
-  const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({})
-  const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({})
+  const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
+  const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
 
-  const closeToast = () => setShowToast(null)
+  // Expose validation method via ref
+  useImperativeHandle(ref, () => ({
+    validateAdditionalApplicants: validateAdditionalApplicants,
+  }));
 
-  const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"])
+  const closeToast = () => setShowToast(null);
 
-  const menu = []
+  const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+
+  const menu = [];
   genderTypeData &&
     genderTypeData["common-masters"].GenderType.filter((data) => data.active).map((genderDetails) => {
       menu.push({
         i18nKey: `COMMON_GENDER_${genderDetails.code}`,
         code: `${genderDetails.code}`,
         value: `${genderDetails.code}`,
-      })
-    })
+      });
+    });
 
   useEffect(() => {
     // Prevent running multiple times
     if (isDataRestored) return;
 
-    console.log("[v0] LayoutApplicantDetails - Full currentStepData:", currentStepData)
-    const formattedData = currentStepData?.applicationDetails
+    console.log("[v0] LayoutApplicantDetails - Full currentStepData:", currentStepData);
+    const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value)
-      })
+        setValue(key, value);
+      });
     }
 
     // Restore additional applicants from currentStepData (if already in Redux from previous step navigation)
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
-      console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants)
-      setApplicants(currentStepData.applicants)
-    } 
+      console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
+      setApplicants(currentStepData.applicants);
+    }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
     else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners
-      console.log("[v0] Mapping owners from API response:", ownersFromApi)
-      
+      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      console.log("[v0] Mapping owners from API response:", ownersFromApi);
+
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
       const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
         // Convert timestamp to YYYY-MM-DD format for date input
-        let formattedDob = ""
+        let formattedDob = "";
         if (owner?.dob) {
-          const dobDate = new Date(owner.dob)
-          const year = dobDate.getFullYear()
-          const month = String(dobDate.getMonth() + 1).padStart(2, "0")
-          const day = String(dobDate.getDate()).padStart(2, "0")
-          formattedDob = `${year}-${month}-${day}`
+          const dobDate = new Date(owner.dob);
+          const year = dobDate.getFullYear();
+          const month = String(dobDate.getMonth() + 1).padStart(2, "0");
+          const day = String(dobDate.getDate()).padStart(2, "0");
+          formattedDob = `${year}-${month}-${day}`;
         }
 
         // Map gender to the dropdown format
-        const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender
+        const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
 
         return {
           name: owner?.name || "",
@@ -118,11 +124,11 @@ const LayoutApplicantDetails = (_props) => {
           // Store original owner data for reference
           uuid: owner?.uuid || "",
           id: owner?.id || "",
-        }
-      })
+        };
+      });
 
-      console.log("[v0] Mapped additional applicants:", additionalApplicants)
-      
+      console.log("[v0] Mapped additional applicants:", additionalApplicants);
+
       // Keep the first empty placeholder at index 0, then add additional applicants
       // This is because the render logic skips index 0 (index > 0)
       const emptyPlaceholder = {
@@ -133,123 +139,137 @@ const LayoutApplicantDetails = (_props) => {
         address: "",
         dob: "",
         gender: "",
-      }
-      setApplicants([emptyPlaceholder, ...additionalApplicants])
+      };
+      setApplicants([emptyPlaceholder, ...additionalApplicants]);
     }
 
     // Restore document uploaded files from Redux state
     if (currentStepData?.documentUploadedFiles && Object.keys(currentStepData.documentUploadedFiles).length > 0) {
-      setDocumentUploadedFiles(currentStepData.documentUploadedFiles)
+      setDocumentUploadedFiles(currentStepData.documentUploadedFiles);
     }
     // Map documents from additionalDetails in API response during edit mode
     else if (isEdit && currentStepData?.apiData?.Layout?.[0]?.owners) {
-      const ownersFromApi = currentStepData.apiData.Layout[0].owners
-      console.log("[v0] Mapping documents from owners additionalDetails")
-      
-      const docFiles = {}
-      const photoFiles = {}
-      
+      const ownersFromApi = currentStepData.apiData.Layout[0].owners;
+      console.log("[v0] Mapping documents from owners additionalDetails");
+
+      const docFiles = {};
+      const photoFiles = {};
+
       // Map documents for all owners from their additionalDetails
       ownersFromApi.forEach((owner, ownerIndex) => {
         if (owner?.additionalDetails?.documentFile) {
-          docFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.documentFile, fileName: "Document" }
+          docFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.documentFile, fileName: "Document" };
         }
         if (owner?.additionalDetails?.ownerPhoto) {
-          photoFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.ownerPhoto, fileName: "Photo" }
+          photoFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.ownerPhoto, fileName: "Photo" };
         }
-      })
-      
-      console.log("[v0] Mapped document files:", docFiles)
-      console.log("[v0] Mapped photo files:", photoFiles)
-      
+      });
+
+      console.log("[v0] Mapped document files:", docFiles);
+      console.log("[v0] Mapped photo files:", photoFiles);
+
       if (Object.keys(docFiles).length > 0) {
-        setDocumentUploadedFiles(docFiles)
+        setDocumentUploadedFiles(docFiles);
       }
       if (Object.keys(photoFiles).length > 0) {
-        setPhotoUploadedFiles(photoFiles)
+        setPhotoUploadedFiles(photoFiles);
       }
     }
 
     // Restore photo uploaded files from Redux state
     if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
-      setPhotoUploadedFiles(currentStepData.photoUploadedFiles)
+      setPhotoUploadedFiles(currentStepData.photoUploadedFiles);
     }
 
     // Mark as restored to prevent re-running
     if (currentStepData) {
-      setIsDataRestored(true)
+      setIsDataRestored(true);
     }
-  }, [currentStepData, isDataRestored, menu])
+  }, [currentStepData, isDataRestored, menu]);
 
   const getOwnerDetails = async () => {
-    if (mobileNo === "" || mobileNo.length !== 10) {
+    // Validation first (no loader needed)
+    if (!mobileNo || mobileNo.length !== 10) {
       setShowToast({
         key: "true",
         error: true,
         message: t("INVALID_MOBILE_NUMBER"),
-      })
-      return
+      });
+      return;
     }
-
-    const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {})
-
-    if (!userResponse?.user?.length) {
-      setShowToast({
-        key: "true",
-        warning: true,
-        message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
-      })
-      return
-    }
-
-    setUserInfo(userResponse.user[0])
-  }
-
-  // Search function for additional owners
-  const getAdditionalOwnerDetails = async (index) => {
-    const mobileNumber = applicants[index]?.mobileNumber
-    
-    if (!mobileNumber || mobileNumber.length !== 10) {
-      setShowToast({
-        key: "true",
-        error: true,
-        message: t("INVALID_MOBILE_NUMBER"),
-      })
-      return
-    }
-
-    setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: true }))
 
     try {
-      const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNumber }, {})
+      setIsLoadingMobile(true); // 🔄 start loader
+
+      const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
 
       if (!userResponse?.user?.length) {
         setShowToast({
           key: "true",
           warning: true,
           message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
-        })
-        setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: false }))
-        return
+        });
+        return;
       }
 
-      const user = userResponse.user[0]
-      
+      setUserInfo(userResponse.user[0]);
+    } catch (err) {
+      console.error(err);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: t("SOMETHING_WENT_WRONG"),
+      });
+    } finally {
+      setIsLoadingMobile(false); // ✅ stop loader (always)
+    }
+  };
+
+  // Search function for additional owners
+  const getAdditionalOwnerDetails = async (index) => {
+    const mobileNumber = applicants[index]?.mobileNumber;
+
+    if (!mobileNumber || mobileNumber.length !== 10) {
+      setShowToast({
+        key: "true",
+        error: true,
+        message: t("INVALID_MOBILE_NUMBER"),
+      });
+      return;
+    }
+
+    setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: true }));
+
+    try {
+      const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNumber }, {});
+
+      if (!userResponse?.user?.length) {
+        setShowToast({
+          key: "true",
+          warning: true,
+          message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
+        });
+        setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: false }));
+        return;
+      }
+
+      const user = userResponse.user[0];
+
       // Convert dob timestamp to YYYY-MM-DD format
-      let formattedDob = ""
+      let formattedDob = "";
       if (user?.dob) {
-        const dobDate = new Date(user.dob)
-        const year = dobDate.getFullYear()
-        const month = String(dobDate.getMonth() + 1).padStart(2, "0")
-        const day = String(dobDate.getDate()).padStart(2, "0")
-        formattedDob = `${year}-${month}-${day}`
+        const dobDate = new Date(user.dob);
+        const year = dobDate.getFullYear();
+        const month = String(dobDate.getMonth() + 1).padStart(2, "0");
+        const day = String(dobDate.getDate()).padStart(2, "0");
+        formattedDob = `${year}-${month}-${day}`;
       }
 
       // Map gender to the dropdown format
-      const genderObj = menu.find((g) => g.code === user?.gender) || user?.gender
+      const genderObj = menu.find((g) => g.code === user?.gender) || user?.gender;
 
       // Update the applicant at the given index with user data
-      const updatedApplicants = [...applicants]
+      const updatedApplicants = [...applicants];
       updatedApplicants[index] = {
         ...updatedApplicants[index],
         name: user?.name || "",
@@ -260,176 +280,261 @@ const LayoutApplicantDetails = (_props) => {
         dob: formattedDob,
         gender: genderObj,
         uuid: user?.uuid || "",
-      }
-      setApplicants(updatedApplicants)
+      };
+      setApplicants(updatedApplicants);
 
       setShowToast({
         key: "true",
         warning: false,
         error: false,
         message: t("Applicant details fetched successfully"),
-      })
+      });
     } catch (error) {
-      console.error("Error fetching user details:", error)
+      console.error("Error fetching user details:", error);
       setShowToast({
         key: "true",
         error: true,
         message: t("Error fetching applicant details"),
-      })
+      });
     } finally {
-      setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: false }))
+      setAdditionalOwnerSearchLoading((prev) => ({ ...prev, [index]: false }));
     }
-  }
+  };
 
   // Prefill UI on userInfo
   useEffect(() => {
     if (userInfo) {
       Object.entries(userInfo).forEach(([key, value]) => {
-        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true })
+        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true });
 
-        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true })
+        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true });
 
-        if (key === "dob") setValue("applicantDateOfBirth", value, { shouldValidate: true })
+        if (key === "dob") setValue("applicantDateOfBirth", value, { shouldValidate: true });
 
-        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value)
+        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value);
 
-        if (key === "permanentAddress") setValue("applicantAddress", value, { shouldValidate: true })
+        if (key === "permanentAddress") {
+          setValue("applicantAddress", value, { shouldValidate: true });
+          // Also set professional address if available
+          if (value) setValue("professionalAddress", value, { shouldValidate: true });
+        }
 
         if (key === "gender") {
-          const genderObj = menu.find((obj) => obj.code === value)
-          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true })
+          const genderObj = menu.find((obj) => obj.code === value);
+          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true });
         }
-      })
+      });
     }
-  }, [userInfo])
+  }, [userInfo]);
+
+  // Sync applicantErrors to Redux so parent can check before proceeding
+  useEffect(() => {
+    if (Object.keys(applicantErrors).length > 0) {
+      dispatch(UPDATE_LayoutNewApplication_FORM("applicantErrors", applicantErrors));
+    }
+  }, [applicantErrors]);
 
   // Save applicants data to Redux
   useEffect(() => {
     if (applicants?.length > 0 || Object.keys(documentUploadedFiles)?.length > 0 || Object.keys(photoUploadedFiles)?.length > 0) {
-      dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants))
-      dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles))
-      dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles))
+      dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants));
+      dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles));
+      dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles));
     }
-  }, [applicants, documentUploadedFiles, photoUploadedFiles, dispatch])
+  }, [applicants, documentUploadedFiles, photoUploadedFiles, dispatch]);
 
   // Sync document files with react-hook-form for validation
   useEffect(() => {
     // Set primary owner photo validation
     if (photoUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerPhoto", photoUploadedFiles[0].fileStoreId, { shouldValidate: true })
+      setValue("primaryOwnerPhoto", photoUploadedFiles[0].fileStoreId, { shouldValidate: true });
     } else {
-      setValue("primaryOwnerPhoto", "", { shouldValidate: false })
+      setValue("primaryOwnerPhoto", "", { shouldValidate: false });
     }
 
     // Set primary owner document validation
     if (documentUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerDocument", documentUploadedFiles[0].fileStoreId, { shouldValidate: true })
+      setValue("primaryOwnerDocument", documentUploadedFiles[0].fileStoreId, { shouldValidate: true });
     } else {
-      setValue("primaryOwnerDocument", "", { shouldValidate: false })
+      setValue("primaryOwnerDocument", "", { shouldValidate: false });
     }
-  }, [photoUploadedFiles, documentUploadedFiles, setValue])
+  }, [photoUploadedFiles, documentUploadedFiles, setValue]);
 
   const handleAddApplicant = () => {
     const newApplicant = {
+       mobileNumber: "",
       name: "",
       fatherOrHusbandName: "",
-      mobileNumber: "",
       emailId: "",
       address: "",
       dob: "",
       gender: "",
-    }
-    setApplicants([...applicants, newApplicant])
-  }
+    };
+    setApplicants([...applicants, newApplicant]);
+  };
 
   const handleRemoveApplicant = (index) => {
-    const updatedApplicants = applicants.filter((_, i) => i !== index)
-    setApplicants(updatedApplicants)
+    const updatedApplicants = applicants.filter((_, i) => i !== index);
+    setApplicants(updatedApplicants);
 
     // Remove associated files
-    const newDocFiles = { ...documentUploadedFiles }
-    const newPhotoFiles = { ...photoUploadedFiles }
-    delete newDocFiles[index]
-    delete newPhotoFiles[index]
-    setDocumentUploadedFiles(newDocFiles)
-    setPhotoUploadedFiles(newPhotoFiles)
+    const newDocFiles = { ...documentUploadedFiles };
+    const newPhotoFiles = { ...photoUploadedFiles };
+    delete newDocFiles[index];
+    delete newPhotoFiles[index];
+    setDocumentUploadedFiles(newDocFiles);
+    setPhotoUploadedFiles(newPhotoFiles);
 
     // Remove errors for this applicant
-    const newErrors = { ...applicantErrors }
-    delete newErrors[index]
-    setApplicantErrors(newErrors)
-  }
+    const newErrors = { ...applicantErrors };
+    delete newErrors[index];
+    setApplicantErrors(newErrors);
+  };
 
   const updateApplicant = (index, field, value) => {
-    const updatedApplicants = [...applicants]
-    updatedApplicants[index] = { ...updatedApplicants[index], [field]: value }
-    setApplicants(updatedApplicants)
-  }
+    const updatedApplicants = [...applicants];
+    updatedApplicants[index] = { ...updatedApplicants[index], [field]: value };
+    setApplicants(updatedApplicants);
+  };
 
   const selectDocumentFile = (index) => async (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
-      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") })
-      return
+      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
+      return;
     }
     try {
-      setLoader(true)
-      const response = await Digit.UploadServices.Filestorage("PT", file, stateId)
-      setLoader(false)
+      setLoader(true);
+      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      setLoader(false);
       if (response?.data?.files?.length > 0) {
-        const fileId = response.data.files[0].fileStoreId
-        setDocumentUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }))
-        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "" } }))
+        const fileId = response.data.files[0].fileStoreId;
+        setDocumentUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }));
+        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "" } }));
       } else {
-        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
     } catch (err) {
-      setLoader(false)
-      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+      setLoader(false);
+      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
     }
-  }
+  };
 
   const selectPhotoFile = (index) => async (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
-      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") })
-      return
+      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
+      return;
     }
     try {
-      setLoader(true)
-      const response = await Digit.UploadServices.Filestorage("PT", file, stateId)
-      setLoader(false)
+      setLoader(true);
+      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      setLoader(false);
       if (response?.data?.files?.length > 0) {
-        const fileId = response.data.files[0].fileStoreId
-        setPhotoUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }))
-        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "" } }))
+        const fileId = response.data.files[0].fileStoreId;
+        setPhotoUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }));
+        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "" } }));
       } else {
-        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
     } catch (err) {
-      setLoader(false)
-      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+      setLoader(false);
+      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
     }
-  }
+  };
 
   const deleteDocument = (index) => {
-    const newDocFiles = { ...documentUploadedFiles }
-    delete newDocFiles[index]
-    setDocumentUploadedFiles(newDocFiles)
-  }
+    const newDocFiles = { ...documentUploadedFiles };
+    delete newDocFiles[index];
+    setDocumentUploadedFiles(newDocFiles);
+  };
 
   const deletePhoto = (index) => {
-    const newPhotoFiles = { ...photoUploadedFiles }
-    delete newPhotoFiles[index]
-    setPhotoUploadedFiles(newPhotoFiles)
-  }
+    const newPhotoFiles = { ...photoUploadedFiles };
+    delete newPhotoFiles[index];
+    setPhotoUploadedFiles(newPhotoFiles);
+  };
 
-  const isEdit = window.location.pathname.includes("edit")
+  const isEdit = window.location.pathname.includes("edit");
 
-  const ErrorMessage = ({ message }) => {
-    if (!message) return null
-    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{message}</div>
-  }
+  // Validate additional applicants
+  const validateAdditionalApplicants = () => {
+    if (applicants.length === 1) return true; // No additional applicants
+
+    let isValid = true;
+    const errors = {};
+
+    applicants.forEach((applicant, index) => {
+      if (index === 0) return; // Skip primary applicant
+
+      const applicantErrors = {};
+
+      // Validate each field
+      if (!applicant.name?.trim()) {
+        applicantErrors.name = t("REQUIRED_FIELD");
+        isValid = false;
+      }
+
+      if (!applicant.mobileNumber?.trim()) {
+        applicantErrors.mobileNumber = t("REQUIRED_FIELD");
+        isValid = false;
+      } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
+        applicantErrors.mobileNumber = t("INVALID_MOBILE_NUMBER");
+        isValid = false;
+      }
+
+      if (!applicant.emailId?.trim()) {
+        applicantErrors.emailId = t("REQUIRED_FIELD");
+        isValid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicant.emailId)) {
+        applicantErrors.emailId = t("INVALID_EMAIL_FORMAT");
+        isValid = false;
+      }
+
+      if (!applicant.address?.trim()) {
+        applicantErrors.address = t("REQUIRED_FIELD");
+        isValid = false;
+      }
+
+      if (!applicant.dob?.trim()) {
+        applicantErrors.dob = t("REQUIRED_FIELD");
+        isValid = false;
+      }
+
+      if (!applicant.gender || (typeof applicant.gender === "object" && !applicant.gender.code)) {
+        applicantErrors.gender = t("REQUIRED_FIELD");
+        isValid = false;
+      }
+
+      // Make photo mandatory
+      if (!photoUploadedFiles[index]?.fileStoreId) {
+        applicantErrors.photo = t("BPA_PASSPORT_PHOTO_REQUIRED");
+        isValid = false;
+      }
+
+      // Make document mandatory
+      if (!documentUploadedFiles[index]?.fileStoreId) {
+        applicantErrors.document = t("BPA_ID_PROOF_REQUIRED");
+        isValid = false;
+      }
+
+      if (Object.keys(applicantErrors).length > 0) {
+        errors[index] = applicantErrors;
+      }
+    });
+
+    setApplicantErrors(errors);
+    return isValid;
+  };
+
+  // Wrapper function to validate additional applicants before proceeding
+  const handleGoNext = (data) => {
+    if (!validateAdditionalApplicants()) {
+      console.log("Additional applicants validation failed");
+      return;
+    }
+    goNext(data);
+  };
 
   return (
     <React.Fragment>
@@ -441,9 +546,7 @@ const LayoutApplicantDetails = (_props) => {
 
         {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
-            {t(
-              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section",
-            )}
+            {t("To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section")}
           </CardSectionSubText>
         )}
 
@@ -452,59 +555,12 @@ const LayoutApplicantDetails = (_props) => {
             {t("BPA_APPLICANT_DETAILS")} - Primary
           </CardSectionHeader>
 
-          {/* Applicant Name */}
-          <LabelFieldPair style={{ marginBottom: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="applicantOwnerOrFirmName"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={props.onChange}
-                    onBlur={props.onBlur}
-                    disabled={isEdit}
-                    t={t}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}
-          </CardLabelError>
-
-          {/* Father/Husband Name */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="applicantFatherHusbandName"
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value)
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e)
-                    }}
-                    t={t}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-
           {/* Mobile Number */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div style={{ display: "flex" }} className="field">
               <Controller
                 control={control}
@@ -520,8 +576,8 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
-                      setMobileNo(e.target.value)
+                      props.onChange(e.target.value);
+                      setMobileNo(e.target.value);
                     }}
                     onBlur={props.onBlur}
                     disabled={isEdit}
@@ -529,16 +585,71 @@ const LayoutApplicantDetails = (_props) => {
                   />
                 )}
               />
-              <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
-                <SearchIcon />
-              </div>
+              {isLoadingMobile ? (
+                <div style={{marginTop:"-20px"}}>
+                    <Loader />
+                  </div>
+              
+              ) : (
+                <div style={{ marginTop: "17px", marginLeft: "10px" }} className="search-icon">
+                  <div onClick={isEdit ? null : getOwnerDetails} style={{ cursor: isEdit ? "not-allowed" : "pointer" }}>
+                    <SearchIcon />
+                  </div>
+                </div>
+              )}
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
+          {/* Applicant Name */}
+          <LabelFieldPair style={{ marginBottom: "15px" }}>
+            <CardLabel className="card-label-smaller">
+              {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="applicantOwnerOrFirmName"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} disabled={isEdit} t={t} />}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
+
+          {/* Father/Husband Name */}
+          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="applicantFatherHusbandName"
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+
           {/* Email ID */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -554,10 +665,10 @@ const LayoutApplicantDetails = (_props) => {
                   <TextInput
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value)
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
-                      props.onBlur(e)
+                      props.onBlur(e);
                     }}
                     t={t}
                   />
@@ -569,7 +680,10 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Address */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -581,9 +695,7 @@ const LayoutApplicantDetails = (_props) => {
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
                 }}
-                render={(props) => (
-                  <TextArea value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />
-                )}
+                render={(props) => <TextArea value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />}
               />
             </div>
           </LabelFieldPair>
@@ -591,7 +703,10 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* DOB */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_APPLICANT_DOB_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -599,13 +714,13 @@ const LayoutApplicantDetails = (_props) => {
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   validate: (value) => {
-                    const today = new Date()
-                    const dob = new Date(value)
-                    const age = today.getFullYear() - dob.getFullYear()
-                    const m = today.getMonth() - dob.getMonth()
-                    const d = today.getDate() - dob.getDate()
-                    const valid = age >= 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)))
-                    return valid || t("DOB_MUST_BE_18_YEARS_OLD")
+                    const today = new Date();
+                    const dob = new Date(value);
+                    const age = today.getFullYear() - dob.getFullYear();
+                    const m = today.getMonth() - dob.getMonth();
+                    const d = today.getDate() - dob.getDate();
+                    const valid = age >= 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+                    return valid || t("DOB_MUST_BE_18_YEARS_OLD");
                   },
                 }}
                 render={(props) => (
@@ -626,7 +741,10 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Gender */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_APPLICANT_GENDER_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -640,7 +758,7 @@ const LayoutApplicantDetails = (_props) => {
                     value={props.value}
                     selectedOption={props.value}
                     onSelect={(e) => {
-                      props.onChange(e)
+                      props.onChange(e);
                     }}
                     isDependent={true}
                     disabled={isEdit}
@@ -652,42 +770,50 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.applicantGender?.message || ""}</CardLabelError>
 
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {t("BPA_APPLICANT_PASSPORT_PHOTO")}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <CustomUploadFile
                 id="passport-photo-primary"
                 onUpload={selectPhotoFile(0)}
                 onDelete={() => {
-                  deletePhoto(0)
-                  setPhotoUploadedFiles((prev) => ({ ...prev, [0]: null }))
-                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], photo: "Passport photo is required" } }))
+                  deletePhoto(0);
+                  setPhotoUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], photo: "Passport photo is required" } }));
                 }}
                 uploadedFile={photoUploadedFiles[0]?.fileStoreId}
                 message={photoUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                 error={applicantErrors[0]?.photo}
                 uploadMessage=""
                 accept="image/*"
+                required
               />
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
 
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}*</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {t("BPA_APPLICANT_ID_PROOF")}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <CustomUploadFile
                 id="id-proof-primary"
                 onUpload={selectDocumentFile(0)}
                 onDelete={() => {
-                  deleteDocument(0)
-                  setDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }))
-                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], document: "Document upload is required" } }))
+                  deleteDocument(0);
+                  setDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], document: "Document upload is required" } }));
                 }}
                 uploadedFile={documentUploadedFiles[0]?.fileStoreId}
                 message={documentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                 error={applicantErrors[0]?.document}
                 uploadMessage=""
                 accept=".pdf"
+                required
               />
             </div>
           </LabelFieldPair>
@@ -695,18 +821,8 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Hidden Controllers for document validation */}
           <div style={{ display: "none" }}>
-            <Controller
-              control={control}
-              name="primaryOwnerPhoto"
-              rules={{ required: t("BPA_PASSPORT_PHOTO_REQUIRED") }}
-              render={() => null}
-            />
-            <Controller
-              control={control}
-              name="primaryOwnerDocument"
-              rules={{ required: t("BPA_ID_PROOF_REQUIRED") }}
-              render={() => null}
-            />
+            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("BPA_PASSPORT_PHOTO_REQUIRED") }} render={() => null} />
+            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("BPA_ID_PROOF_REQUIRED") }} render={() => null} />
           </div>
 
           {/* Additional Applicants Section */}
@@ -714,15 +830,13 @@ const LayoutApplicantDetails = (_props) => {
             <React.Fragment>
               <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
                 {t("Additional Applicants")}
+                <span className="requiredField">*</span>
               </CardSectionHeader>
 
               {applicants.map(
                 (applicant, index) =>
                   index > 0 && (
-                    <div
-                      key={index}
-                     
-                    >
+                    <div key={index}>
                       <div
                         style={{
                           display: "flex",
@@ -749,20 +863,37 @@ const LayoutApplicantDetails = (_props) => {
                         </span>
                       </div>
 
+                             {/* Mobile Number */}
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                        <CardLabel className="card-label-smaller">
+                          {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
+                          <span className="requiredField">*</span>
+                        </CardLabel>
+                        <div style={{ display: "flex" }} className="field">
+                          <TextInput value={applicant.mobileNumber} onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)} t={t} />
+                          <div
+                            style={{ marginTop: "17px", cursor: "pointer" }}
+                            className="search-icon"
+                            onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
+                          >
+                            {additionalOwnerSearchLoading[index] ? <div style={{marginTop:"-20px"}}><Loader /></div> : <SearchIcon />}
+                          </div>
+                        </div>
+                      </LabelFieldPair>
+                      {applicantErrors[index]?.mobileNumber && <CardLabelError>{applicantErrors[index].mobileNumber}</CardLabelError>}
+
+
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
+                          <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <TextInput
-                            value={applicant.name}
-                            onChange={(e) => updateApplicant(index, "name", e.target.value)}
-                            t={t}
-                          />
+                          <TextInput value={applicant.name} onChange={(e) => updateApplicant(index, "name", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.name && <ErrorMessage>{applicantErrors[index].name}</ErrorMessage>}
+                      {applicantErrors[index]?.name && <CardLabelError>{applicantErrors[index].name}</CardLabelError>}
 
                       {/* Father/Husband Name */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -776,63 +907,37 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
 
-                      {/* Mobile Number */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*
-                        </CardLabel>
-                        <div style={{ display: "flex" }} className="field">
-                          <TextInput
-                            value={applicant.mobileNumber}
-                            onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)}
-                            t={t}
-                          />
-                          <div
-                            style={{ marginTop: "17px", cursor: "pointer" }}
-                            className="search-icon"
-                            onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
-                          >
-                            {additionalOwnerSearchLoading[index] ? <Loader /> : <SearchIcon />}
-                          </div>
-                        </div>
-                      </LabelFieldPair>
-                      {applicantErrors[index]?.mobileNumber && (
-                        <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>
-                      )}
-
+               
                       {/* Email ID */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}
+                          <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <TextInput
-                            value={applicant.emailId}
-                            onChange={(e) => updateApplicant(index, "emailId", e.target.value)}
-                            t={t}
-                          />
+                          <TextInput value={applicant.emailId} onChange={(e) => updateApplicant(index, "emailId", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.emailId && <ErrorMessage>{applicantErrors[index].emailId}</ErrorMessage>}
+                      {applicantErrors[index]?.emailId && <CardLabelError>{applicantErrors[index].emailId}</CardLabelError>}
 
                       {/* Address */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}
+                          <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <TextArea
-                            value={applicant.address}
-                            onChange={(e) => updateApplicant(index, "address", e.target.value)}
-                            t={t}
-                          />
+                          <TextArea value={applicant.address} onChange={(e) => updateApplicant(index, "address", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.address && <ErrorMessage>{applicantErrors[index].address}</ErrorMessage>}
+                      {applicantErrors[index]?.address && <CardLabelError>{applicantErrors[index].address}</CardLabelError>}
 
                       {/* DOB */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                          {`${t("BPA_APPLICANT_DOB_LABEL")}`}
+                          <span className="requiredField">*</span>
+                        </CardLabel>
                         <div className="field">
                           <TextInput
                             type="date"
@@ -843,11 +948,14 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.dob && <ErrorMessage>{applicantErrors[index].dob}</ErrorMessage>}
+                      {applicantErrors[index]?.dob && <CardLabelError>{applicantErrors[index].dob}</CardLabelError>}
 
                       {/* Gender */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                          {`${t("BPA_APPLICANT_GENDER_LABEL")}`}
+                          <span className="requiredField">*</span>
+                        </CardLabel>
                         <div className="field">
                           <RadioButtons
                             t={t}
@@ -856,25 +964,28 @@ const LayoutApplicantDetails = (_props) => {
                             value={applicant.gender}
                             selectedOption={applicant.gender}
                             onSelect={(e) => {
-                              const selectedGenderObj = menu.find((m) => m.code === e.code)
-                              updateApplicant(index, "gender", selectedGenderObj || e)
+                              const selectedGenderObj = menu.find((m) => m.code === e.code);
+                              updateApplicant(index, "gender", selectedGenderObj || e);
                             }}
                             isDependent={true}
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>}
+                      {applicantErrors[index]?.gender && <CardLabelError>{applicantErrors[index].gender}</CardLabelError>}
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
-                        <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                          {t("BPA_APPLICANT_PASSPORT_PHOTO")}
+                          <span className="requiredField">*</span>
+                        </CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`passport-photo-${index}`}
                             onUpload={selectPhotoFile(index)}
                             onDelete={() => {
-                              deletePhoto(index)
-                              setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }))
-                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "Passport photo is required" } }))
+                              deletePhoto(index);
+                              setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "Passport photo is required" } }));
                             }}
                             uploadedFile={photoUploadedFiles[index]?.fileStoreId}
                             message={photoUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
@@ -886,15 +997,18 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
-                        <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}*</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                          {t("BPA_APPLICANT_ID_PROOF")}
+                          <span className="requiredField">*</span>
+                        </CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`id-proof-${index}`}
                             onUpload={selectDocumentFile(index)}
                             onDelete={() => {
-                              deleteDocument(index)
-                              setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }))
-                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "Document upload is required" } }))
+                              deleteDocument(index);
+                              setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "Document upload is required" } }));
                             }}
                             uploadedFile={documentUploadedFiles[index]?.fileStoreId}
                             message={documentUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
@@ -905,7 +1019,7 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                     </div>
-                  ),
+                  )
               )}
 
               {/* Add More Applicants Button */}
@@ -925,7 +1039,6 @@ const LayoutApplicantDetails = (_props) => {
               </div>
             </React.Fragment>
           )}
-
 
           {/* Add First Additional Applicant Button */}
           {applicants.length === 1 && (
@@ -947,16 +1060,10 @@ const LayoutApplicantDetails = (_props) => {
         </div>
       </div>
       {/* TOAST */}
-      {showToast && (
-        <Toast
-          error={showToast?.error}
-          warning={showToast?.warning}
-          label={t(showToast?.message)}
-          onClose={closeToast}
-        />
-      )}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
-  )
-}
+  );
+});
 
+LayoutApplicantDetails.displayName = "LayoutApplicantDetails";
 export default LayoutApplicantDetails;

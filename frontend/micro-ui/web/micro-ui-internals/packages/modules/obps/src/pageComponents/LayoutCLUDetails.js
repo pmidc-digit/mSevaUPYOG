@@ -47,10 +47,10 @@ const LayoutCLUDetails = (_props) => {
     <React.Fragment>
       <CardSectionHeader>{t("BPA_CLU_DETAILS")}</CardSectionHeader>
 
-      <div>
+      <div style={{marginBottom:"16px"}}>
         
         <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_IS_CLU_APPROVED_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_IS_CLU_REQUIRED_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           
         <Controller
           control={control}
@@ -79,7 +79,7 @@ const LayoutCLUDetails = (_props) => {
 
         {selectedIsCluApproved.code === "YES" && (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_CLU_APPROVED_NUMBER_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_CLU_APPROVED_NUMBER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}

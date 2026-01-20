@@ -200,10 +200,11 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
+           <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+           <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
           <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
           <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+         
         </div>
         <ActionBar>
           <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />

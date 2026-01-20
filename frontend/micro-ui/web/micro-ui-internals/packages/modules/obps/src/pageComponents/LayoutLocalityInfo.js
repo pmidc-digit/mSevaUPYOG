@@ -58,7 +58,7 @@ useEffect(() => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICATION_APPLIED_UNDER")}`} <span className="requiredField">*</span></CardLabel>
           {areaTypeOptions.length > 0 && (
             <Controller
               control={control}
@@ -87,7 +87,7 @@ useEffect(() => {
 
         {selectedAreaType?.code === "SCHEME_AREA" && (
           <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_NAME_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -118,7 +118,7 @@ useEffect(() => {
 
         {selectedAreaType?.code === "APPROVED_COLONY" && (
           <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -148,7 +148,7 @@ useEffect(() => {
 
         {selectedAreaType?.code === "NON_SCHEME" && (
            <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NON_SCHEME_TYPE_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NON_SCHEME_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <Controller
                 control={control}
                 name={"layoutNonSchemeType"}

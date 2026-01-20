@@ -1,6 +1,7 @@
 import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
+import EXIF from "exif-js";
 const pdfMake = require("pdfmake/build/pdfmake.js");
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -334,7 +335,7 @@ background: [
     footer: function (currentPage, pageCount) {
       if (currentPage === pageCount) {
         return {
-          text: "- Note: This is a system generated acknowledgement and does not require any signature",
+          text: "**- Note: This is a system generated acknowledgement and does not require any signature**",
           font: "Hind",
           fontSize: 11,
           color: "#6f777c",
@@ -1876,11 +1877,60 @@ function createHeader(headerDetails, logo, tenantId) {
   return headerData;
 }
 
+async function normalizeImageByExif(url, orientation = 1) {
+  const img = await loadImage(url);
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  if (orientation === 6 || orientation === 8) {
+    canvas.width = h;
+    canvas.height = w;
+  } else {
+    canvas.width = w;
+    canvas.height = h;
+  }
+
+  ctx.save();
+
+  switch (orientation) {
+    case 3: // 180°
+      ctx.translate(canvas.width, canvas.height);
+      ctx.rotate(Math.PI);
+      break;
+    case 6: // 90° CW
+      ctx.translate(canvas.width, 0);
+      ctx.rotate(Math.PI / 2);
+      break;
+    case 8: // 90° CCW
+      ctx.translate(0, canvas.height);
+      ctx.rotate(-Math.PI / 2);
+      break;
+    default:
+      break;
+  }
+
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+
+  return canvas.toDataURL("image/jpeg");
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
 async function buildAttachment(doc) {
   try {
     const baseUrl = window.location.origin;
     let finalUrl;
-
     if (doc?.link?.includes("filestore")) {
       const splitURL = doc.link.split("filestore")?.[1];
       finalUrl = `${baseUrl}/filestore${splitURL}`;
@@ -1888,13 +1938,18 @@ async function buildAttachment(doc) {
       finalUrl = doc.link;
     }
 
-    const base64Image = finalUrl ? await getBase64FromUrl(finalUrl) : null;
-    return base64Image;
+    if (!finalUrl) return null;
+
+    // Normalize orientation before returning base64
+    const uprightBase64 = await normalizeImageByExif(finalUrl, doc?.orientation || 1);
+    return uprightBase64;
   } catch (err) {
     console.error("Error converting attachment:", err);
     return null;
   }
 }
+
+
 
 
 
@@ -1924,9 +1979,11 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       let valueRows;
 
       if (detail?.isAttachments) {
+        console.log(detail ,"detail rn")
         valueRows = [];
         for (let i = 0; i < detail.values.length; i++) {
           const doc = detail.values[i];
+          console.log("doc passed to buildattachment",doc)
           const isLast = i === detail.values.length - 1;
 
           const base64Image = await buildAttachment(doc);
@@ -1945,7 +2002,8 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
                 width: 100,
                 height: 100,
                 margin: [0, 2, 0, 2],
-                border: isLast ? [false, false, true, true] : [false, false, true, false]
+                border: isLast ? [false, false, true, true] : [false, false, true, false],
+                rotation: doc?.orientation === 6 ? 90 : doc?.orientation === 3 ? 180 : doc?.orientation === 8 ? -90 : 0
               }
             ]);
           } else {
@@ -2135,7 +2193,7 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
     layout: "noBorders",
     margin: [0, 0, 0, 0],
     table: {
-      widths: ["100%"], // left, center, right
+      widths: ["90%" , "10%"], // center, right
       body: [
         [
           // Left: Logo
@@ -2172,6 +2230,14 @@ function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, ema
           },
 
           // Right: QR code (if available
+          qrCodeDataUrl
+            ? {
+                image: qrCodeDataUrl,
+                width: 70,
+                margin: [30, 15 , 2, 10],
+                alignment: "right",
+              }
+            : {},
         ],
       ],
     },

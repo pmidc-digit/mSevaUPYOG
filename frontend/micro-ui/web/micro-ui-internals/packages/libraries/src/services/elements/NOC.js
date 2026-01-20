@@ -41,5 +41,35 @@ export const NOCService = {
       userService: true,
       data: details,
       params:filters
-    })
+    }),
+    NOCCheckListCreate: ({ filters, details }) => 
+    Request({
+      url: Urls.noc.nocCheckListCreate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+    NOCCheckListUpdate: ({ filters, details }) => 
+    Request({
+      url: Urls.noc.nocCheckListUpdate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+    NOCCheckListSearch: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.noc.nocCheckListSearch,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
 }

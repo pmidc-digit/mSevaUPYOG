@@ -28,6 +28,7 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
@@ -199,7 +200,7 @@ const CitizenApplicationOverview = () => {
   let EmpData = EmployeeData(tenantId, id);
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
-      label: t("Download Application Form"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
 
@@ -412,6 +413,8 @@ const CitizenApplicationOverview = () => {
           );
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+
 const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
   console.log("combinerOwnersName", combinedOwnersName);
@@ -435,13 +438,10 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView
-          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-        />
-      </Card>
+      <NOCImageView
+        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+      />
 
       {id.length > 0 && (
         <React.Fragment>
@@ -461,7 +461,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-                <Row label={t("NOC_OWNER_TYPE_LABEL")} text={detail?.ownerType?.i18nKey ? t(detail?.ownerType?.i18nKey) : "N/A"} />
+                {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
@@ -494,7 +494,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
           </React.Fragment>
         ))}
 
-      {primaryOwner && (
+      {primaryOwner && propertyId && (
         <Card>
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
@@ -654,7 +654,11 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
 
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+        <StatusTable>
+          {remainingDocs?.length > 0 && (
+            <NOCDocumentChecklist documents={remainingDocs} applicationNo={id} tenantId={tenantId} onRemarksChange={() => {}} readOnly={true} />
+          )}
+        </StatusTable>
       </Card>
       {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
         <Card>
@@ -699,7 +703,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
       )} */}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj= {timeObj} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
 
       {actions && actions.length > 0 && (

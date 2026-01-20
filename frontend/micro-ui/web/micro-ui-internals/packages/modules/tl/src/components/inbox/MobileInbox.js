@@ -25,8 +25,14 @@ const MobileInbox = ({
   parentRoute,
   removeParam,
   sortParams,
+  filterComponent,
+  localities,
 }) => {
   const { t } = useTranslation();
+  console.log("🔍 MobileInbox - filterComponent:", filterComponent);
+  console.log("🔍 MobileInbox - localities:", localities);
+  console.log("🔍 MobileInbox - data?.statuses:", data?.statuses);
+  
   const getData = () => data?.table.map(e => ({
       [t("WF_INBOX_HEADER_APPLICATION_NO")]:e?.["applicationId"],
       [t("TL_COMMON_TABLE_COL_APP_DATE")]:convertEpochToDateDMY(e?.["date"]),
@@ -87,6 +93,9 @@ const MobileInbox = ({
             linkPrefix={linkPrefix}
             removeParam={removeParam}
             sortParams={sortParams}
+            filterComponent={filterComponent}
+            localities={localities}
+            statuses={data?.statuses}
           />
         </div>
       </div>

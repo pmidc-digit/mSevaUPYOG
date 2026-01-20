@@ -57,6 +57,13 @@ const HRMSEMPMAPDetails = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [obpsRoleMap, setObpsRoleMap] = useState({});
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
+    show: false,
+    type: null, // 'single' or 'all'
+    mappingId: null,
+    employeeUUID: null,
+  });
   const stateId = Digit.ULBService.getStateId();
 
   useEffect(() => {
@@ -78,6 +85,12 @@ const HRMSEMPMAPDetails = () => {
       return;
     }
     
+    // Safety check: Ensure data and obpsRoleMap are loaded before fetching
+    if (!data?.Employees?.[0] || !obpsRoleMap || Object.keys(obpsRoleMap).length === 0) {
+      console.warn("Data or OBPS roles not yet loaded, skipping fetch");
+      return;
+    }
+    
     try {
       setMappingLoading(true);
       
@@ -88,16 +101,16 @@ const HRMSEMPMAPDetails = () => {
       });
       
       if (response?.Employees) {
+        // Get employee's OBPS roles from main data object (calculated once for all mappings)
+        let roleNames = "No OBPS Roles";
+        if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
+          const empRoles = data.Employees[0].user.roles
+            .filter(role => obpsRoleMap[role.code])
+            .map(role => obpsRoleMap[role.code]);
+          roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
+        }
+        
         const transformedData = response.Employees.map((emp, index) => {
-          // Get employee's OBPS roles from main data object
-          let roleNames = "No OBPS Roles";
-          if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
-            const empRoles = data.Employees[0].user.roles
-              .filter(role => obpsRoleMap[role.code])
-              .map(role => obpsRoleMap[role.code]);
-            roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
-          }
-          
           return {
             id: emp.uuid || emp.id,
             displayId: String(pageOffset + index + 1),
@@ -107,7 +120,7 @@ const HRMSEMPMAPDetails = () => {
             subCategory: emp.subcategory || "N/A",
             ward: emp.assignedTenantId || "N/A",
             zone: emp.zone || "N/A",
-            roles: roleNames,
+            roles: roleNames, // Same roles for all mappings since it's per employee
           };
         });
         setMappingData(transformedData);
@@ -135,7 +148,7 @@ const HRMSEMPMAPDetails = () => {
     if (data && Object.keys(obpsRoleMap).length > 0) {
       fetchMappingData();
     }
-  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap]);
+  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, refreshCounter]);
 
   function onActionSelect(action) {
     setSelectedAction(action);
@@ -171,9 +184,17 @@ const HRMSEMPMAPDetails = () => {
 
   const submitAction = (data) => { };
    // ==================== MODAL ACTIONS ====================
-  const handleDeleteAll = async () => {
-    if (window.confirm(t("HR_CONFIRM_DELETE_ALL_MAPPINGS") || "Are you sure you want to delete ALL mappings for this employee?")) {
-      try {
+  const handleDeleteAll = () => {
+    setDeleteConfirmModal({
+      show: true,
+      type: 'all',
+      mappingId: null,
+      employeeUUID: null,
+    });
+  };
+
+  const confirmDeleteAll = async () => {
+    try {
         setMappingLoading(true);
         
         // Prepare payload - send ALL mapping UUIDs, not the user UUID
@@ -188,14 +209,17 @@ const HRMSEMPMAPDetails = () => {
         const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
         
         if (response?.ResponseInfo?.status === "successful") {
-          // Refresh data from server
-          await fetchMappingData();
+          // Trigger refresh through useEffect to ensure proper data flow
+          setRefreshCounter(prev => prev + 1);
+          setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null });
           setShowToast({ key: true, label: "All mappings deleted successfully!" });
         } else {
+          setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null });
           setShowToast({ key: true, label: "Failed to delete mappings", error: true });
         }
       } catch (error) {
         console.error("Error deleting all mappings:", error);
+        setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null });
         setShowToast({ 
           key: true, 
           label: error?.response?.data?.Errors?.[0]?.message || "Failed to delete mappings", 
@@ -204,12 +228,20 @@ const HRMSEMPMAPDetails = () => {
       } finally {
         setMappingLoading(false);
       }
-    }
   };
 
-  const handleDelete = async (mappingId, employeeUUID) => {
-    if (window.confirm(t("HR_CONFIRM_DELETE_MAPPING") || "Are you sure you want to delete this mapping?")) {
-      try {
+  const handleDelete = (mappingId, employeeUUID) => {
+    setDeleteConfirmModal({
+      show: true,
+      type: 'single',
+      mappingId: mappingId,
+      employeeUUID: employeeUUID,
+    });
+  };
+
+  const confirmDelete = async () => {
+    const { mappingId, employeeUUID } = deleteConfirmModal;
+    try {
         setMappingLoading(true);
         
         // Prepare payload for DELETE API (as per CURL format)
@@ -226,14 +258,17 @@ const HRMSEMPMAPDetails = () => {
         const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
         
         if (response?.ResponseInfo?.status === "successful") {
-          // Refresh data from server
-          await fetchMappingData();
+          // Trigger refresh through useEffect to ensure proper data flow
+          setRefreshCounter(prev => prev + 1);
+          setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null });
           setShowToast({ key: true, label: "Mapping deleted successfully!" });
         } else {
+          setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null });
           setShowToast({ key: true, label: "Failed to delete mapping", error: true });
         }
       } catch (error) {
         console.error("Error deleting mapping:", error);
+        setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null });
         setShowToast({ 
           key: true, 
           label: error?.response?.data?.Errors?.[0]?.message || "Failed to delete mapping", 
@@ -242,7 +277,6 @@ const HRMSEMPMAPDetails = () => {
       } finally {
         setMappingLoading(false);
       }
-    }
   };
   // Table columns for mapping data
   const mappingColumns = useMemo(
@@ -517,6 +551,89 @@ const HRMSEMPMAPDetails = () => {
           onClose={() => setShowToast(null)}
           isDleteBtn
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.show && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null })}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "8px",
+              padding: "24px",
+              maxWidth: "450px",
+              width: "90%",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ marginBottom: "20px" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600", color: "#333" }}>
+                {deleteConfirmModal.type === 'all' 
+                  ? t("HR_CONFIRM_DELETE_ALL_MAPPINGS") || "Delete All Mappings"
+                  : t("HR_CONFIRM_DELETE_MAPPING") || "Delete Mapping"}
+              </h2>
+            </div>
+            
+            <div style={{ marginBottom: "24px", fontSize: "14px", color: "#666", lineHeight: "1.5" }}>
+              {deleteConfirmModal.type === 'all'
+                ? t("HR_CONFIRM_DELETE_ALL_MAPPINGS_MESSAGE") || "Are you sure you want to delete ALL mappings for this employee? This action cannot be undone."
+                : t("HR_CONFIRM_DELETE_MAPPING_MESSAGE") || "Are you sure you want to delete this mapping? This action cannot be undone."}
+            </div>
+            
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setDeleteConfirmModal({ show: false, type: null, mappingId: null, employeeUUID: null })}
+                disabled={mappingLoading}
+                style={{
+                  padding: "10px 20px",
+                  border: "1px solid #ddd",
+                  backgroundColor: "white",
+                  color: "#666",
+                  borderRadius: "4px",
+                  cursor: mappingLoading ? "not-allowed" : "pointer",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  opacity: mappingLoading ? 0.6 : 1,
+                }}
+              >
+                {t("COMMON_CANCEL") || "Cancel"}
+              </button>
+              
+              <button
+                onClick={deleteConfirmModal.type === 'all' ? confirmDeleteAll : confirmDelete}
+                disabled={mappingLoading}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  background: LINEAR_BLUE_GRADIENT,
+                  color: "white",
+                  borderRadius: "4px",
+                  cursor: mappingLoading ? "not-allowed" : "pointer",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  opacity: mappingLoading ? 0.6 : 1,
+                }}
+              >
+                {mappingLoading ? (t("COMMON_DELETING") || "Deleting...") : (t("COMMON_DELETE") || "Delete")}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* <ActionBar>

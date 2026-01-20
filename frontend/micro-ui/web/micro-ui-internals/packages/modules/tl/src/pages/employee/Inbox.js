@@ -132,6 +132,8 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
           parentRoute={parentRoute}
           searchParams={searchParams}
           sortParams={sortParams}
+          filterComponent={filterComponent}
+          localities={localities}
         />
       );
     } else {

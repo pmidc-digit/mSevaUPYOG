@@ -17,6 +17,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
+          console.log('row in inbox', row)
           return (
             <div>
               <Link to={`${parentRoute}/inbox/application-overview/${row.original["applicationId"]}`}>
@@ -52,6 +53,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => t(row?.status),
         disableSortBy: true,
       },
+      {
+        Header: t("CM_TIMELINE_ACTION_TAKEN"),
+        accessor: (row) => t(row?.action),
+        disableSortBy: true,
+      }
       // {
       //   Header: t("ES_INBOX_LOCALITY"),
       //   accessor: (row) => t(row?.locality),

@@ -553,7 +553,9 @@ useEffect(() => {
     const stakeholderState = userDetails?.user[0]?.correspondenceState
     const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
-    const base64Signature = await getBase64Img(userDetails?.user[0]?.signature, state);
+    // const base64Signature = await getBase64Img(userDetails?.user[0]?.signature, state);
+    // const result = await Digit.UploadServices.Filefetch([userDetails?.user[0]?.signature], state);
+    const signURL = userDetails?.user[0]?.signature || "";
     const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid;
     const address = {
       ...currentStepData?.cpt?.details?.address,
@@ -618,7 +620,10 @@ useEffect(() => {
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
       subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
       oldEDCR,
-      signature: {base64Signature}
+      signature: {
+        signURL
+        // base64Signature
+      }
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -663,7 +668,10 @@ useEffect(() => {
       categoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.name,
       subcategoriesName: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.name,
       oldEDCR,
-      signature: {base64Signature}
+      signature: {
+        signURL
+        // base64Signature
+      }
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;

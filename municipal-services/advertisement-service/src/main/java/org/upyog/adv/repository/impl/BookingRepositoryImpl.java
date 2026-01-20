@@ -129,6 +129,16 @@ public class BookingRepositoryImpl implements BookingRepository {
 	if (documentDetails != null) documentDetails.stream().forEach(documentDetail -> {
 			bookingMap.get(documentDetail.getBookingId()).addUploadedDocumentDetailsItem(documentDetail);
 		});
+		
+		// Fetch and set owners for each booking
+		for (String bid : bookingIds) {
+			List<OwnerInfo> ownersForBooking = getOwnerByBookingId(bid);
+			if (ownersForBooking != null && !ownersForBooking.isEmpty()) {
+				bookingMap.get(bid).setOwners(ownersForBooking);
+				log.info("Set owners for booking {}: {}", bid, ownersForBooking.size());
+			}
+		}
+		
 		return bookingDetails;
 	}
 	public Integer getBookingCount(@Valid AdvertisementSearchCriteria criteria) {

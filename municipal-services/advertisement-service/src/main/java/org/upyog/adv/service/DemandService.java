@@ -76,13 +76,15 @@ public class DemandService {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		String consumerCode = bookingRequest.getBookingApplication().getBookingNo();
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
-		User user = (User) bookingRequest.getBookingApplication().getOwners();
-
-		User owner = User.builder()
-				.name(user.getName())
-				.emailId(user.getEmailId())
-				.mobileNumber(user.getMobileNumber())
-				.build();
+		
+		// Get the first owner from the owners list and convert to User
+		List<org.upyog.adv.web.models.OwnerInfo> owners = bookingRequest.getBookingApplication().getOwners();
+		if (CollectionUtils.isEmpty(owners)) {
+			throw new CustomException("OWNER_NOT_FOUND", "No owner found in booking application for demand creation");
+		}
+		org.upyog.adv.web.models.OwnerInfo ownerInfo = owners.get(0);
+		
+		User owner = ownerInfo.toCommonUser();
 
 		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
 

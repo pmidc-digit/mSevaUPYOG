@@ -125,6 +125,9 @@ public class UserController {
     public UserSearchResponse getV2(@RequestBody @Valid UserSearchRequest request, @RequestHeader HttpHeaders headers) {
 
         log.info("Received User search Request  " + request);
+     // Force active = null to disable filtering
+        request.setActive(null);
+        log.info("Received User search Request  " + request);
         return searchUsers(request, headers);
     }
 

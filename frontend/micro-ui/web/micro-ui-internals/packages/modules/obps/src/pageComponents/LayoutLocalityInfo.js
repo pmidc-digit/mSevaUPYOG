@@ -54,7 +54,7 @@ useEffect(() => {
 
   return (
     <React.Fragment>
-      <CardSectionHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSectionHeader>
+
 
       <div>
         <LabelFieldPair>

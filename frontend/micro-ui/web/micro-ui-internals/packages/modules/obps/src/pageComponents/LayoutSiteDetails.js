@@ -10,6 +10,7 @@ import {
   SubmitBar,
   CardSectionHeader,
   UploadFile,
+  CardLabelError,
 } from "@mseva/digit-ui-react-components";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
 
@@ -33,6 +34,9 @@ const LayoutSiteDetails = (_props) => {
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening"); // A = Total Plot Area
   const NetPlotArea = watch("netPlotAreaAfterWidening"); // B = Net Plot Area After Widening
 
+  const [areaMismatchError, setAreaMismatchError] = useState(null);
+  const [totalAreaPercentage, setTotalAreaPercentage] = useState("0.00");
+
   console.log("STEPERDFATA", currentStepData);
 
   console.log(isEditMode, "LOOK EDIT");
@@ -51,9 +55,9 @@ const LayoutSiteDetails = (_props) => {
 
   // Watch percentage fields to display calculated values
   const watchedEWSPct = watch("areaUnderEWSInPct");
-  const watchedResidentialPct = watch("areaUnderResidentialInPct");
-  const watchedCommercialPct = watch("areaUnderCommercialInPct");
-  const watchedInstitutionalPct = watch("areaUnderInstitutionalInPct");
+  const watchedResidentialPct = watch("areaUnderResidentialUseInPct");
+  const watchedCommercialPct = watch("areaUnderCommercialUseInPct");
+  const watchedInstitutionalPct = watch("areaUnderInstutionalUseInPct");
   const watchedCommunityCenterPct = watch("areaUnderCommunityCenterInPct");
   const watchedParkPct = watch("areaUnderParkInPct");
   const watchedRoadPct = watch("areaUnderRoadInPct");
@@ -69,7 +73,7 @@ const LayoutSiteDetails = (_props) => {
     const numericBasementArea = isNaN(basementAreaValues) ? 0 : basementAreaValues;
     const finalSum = (sum + Number.parseFloat(numericBasementArea)).toFixed(2);
     const balanceArea = parseFloat(netArea) || 0;
-    
+
     setTotalArea(finalSum);
     setValue("totalFloorArea", finalSum);
 
@@ -139,10 +143,56 @@ const LayoutSiteDetails = (_props) => {
   const watchedNetArea = watch("netTotalArea");
 
   // Auto-calculate percentage fields from SqM fields and netSiteArea sum
+  // useEffect(() => {
+  //   const netArea = parseFloat(watchedNetArea) || 0;
+
+  //   // Calculate sum of all 9 area categories (netSiteArea = 1+2+3+4+5+6+7+8+9)
+  //   const ews = parseFloat(areaUnderEWSInSqM) || 0;
+  //   const residential = parseFloat(areaUnderResidentialUseInSqM) || 0;
+  //   const commercial = parseFloat(areaUnderCommercialUseInSqM) || 0;
+  //   const institutional = parseFloat(areaUnderInstutionalUseInSqM) || 0;
+  //   const communityCenter = parseFloat(areaUnderCommunityCenterInSqM) || 0;
+  //   const park = parseFloat(areaUnderParkInSqM) || 0;
+  //   const road = parseFloat(areaUnderRoadInSqM) || 0;
+  //   const parking = parseFloat(areaUnderParkingInSqM) || 0;
+  //   const otherAmenities = parseFloat(areaUnderOtherAmenitiesInSqM) || 0;
+
+  //   const totalAreaSum = (ews + residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities).toFixed(2);
+  //   setValue("netSiteArea", totalAreaSum);
+
+  //   if (netArea > 0) {
+  //     const calculatePercentage = (sqmValue) => {
+  //       const val = parseFloat(sqmValue) || 0;
+  //       return ((val / netArea) * 100).toFixed(2);
+  //     };
+
+  //     setValue("areaUnderEWSInPct", calculatePercentage(areaUnderEWSInSqM));
+  //     setValue("areaUnderResidentialUseInPct", calculatePercentage(areaUnderResidentialUseInSqM));
+  //     setValue("areaUnderCommercialUseInPct", calculatePercentage(areaUnderCommercialUseInSqM));
+  //     setValue("areaUnderInstutionalUseInPct", calculatePercentage(areaUnderInstutionalUseInSqM));
+  //     setValue("areaUnderCommunityCenterInPct", calculatePercentage(areaUnderCommunityCenterInSqM));
+  //     setValue("areaUnderParkInPct", calculatePercentage(areaUnderParkInSqM));
+  //     setValue("areaUnderRoadInPct", calculatePercentage(areaUnderRoadInSqM));
+  //     setValue("areaUnderParkingInPct", calculatePercentage(areaUnderParkingInSqM));
+  //     setValue("areaUnderOtherAmenitiesInPct", calculatePercentage(areaUnderOtherAmenitiesInSqM));
+  //   }
+  // }, [
+  //   areaUnderEWSInSqM,
+  //   areaUnderResidentialUseInSqM,
+  //   areaUnderCommercialUseInSqM,
+  //   areaUnderInstutionalUseInSqM,
+  //   areaUnderCommunityCenterInSqM,
+  //   areaUnderParkInSqM,
+  //   areaUnderRoadInSqM,
+  //   areaUnderParkingInSqM,
+  //   areaUnderOtherAmenitiesInSqM,
+  //   watchedNetArea,
+  //   setValue,
+  // ]);
+
   useEffect(() => {
     const netArea = parseFloat(watchedNetArea) || 0;
-    
-    // Calculate sum of all 9 area categories (netSiteArea = 1+2+3+4+5+6+7+8+9)
+
     const ews = parseFloat(areaUnderEWSInSqM) || 0;
     const residential = parseFloat(areaUnderResidentialUseInSqM) || 0;
     const commercial = parseFloat(areaUnderCommercialUseInSqM) || 0;
@@ -152,26 +202,34 @@ const LayoutSiteDetails = (_props) => {
     const road = parseFloat(areaUnderRoadInSqM) || 0;
     const parking = parseFloat(areaUnderParkingInSqM) || 0;
     const otherAmenities = parseFloat(areaUnderOtherAmenitiesInSqM) || 0;
-    
-    const totalAreaSum = (ews + residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities).toFixed(2);
-    setValue("netSiteArea", totalAreaSum);
-    
-    if (netArea > 0) {
-      const calculatePercentage = (sqmValue) => {
-        const val = parseFloat(sqmValue) || 0;
-        return ((val / netArea) * 100).toFixed(2);
-      };
 
-      setValue("areaUnderEWSInPct", calculatePercentage(areaUnderEWSInSqM));
-      setValue("areaUnderResidentialUseInPct", calculatePercentage(areaUnderResidentialUseInSqM));
-      setValue("areaUnderCommercialUseInPct", calculatePercentage(areaUnderCommercialUseInSqM));
-      setValue("areaUnderInstutionalUseInPct", calculatePercentage(areaUnderInstutionalUseInSqM));
-      setValue("areaUnderCommunityCenterInPct", calculatePercentage(areaUnderCommunityCenterInSqM));
-      setValue("areaUnderParkInPct", calculatePercentage(areaUnderParkInSqM));
-      setValue("areaUnderRoadInPct", calculatePercentage(areaUnderRoadInSqM));
-      setValue("areaUnderParkingInPct", calculatePercentage(areaUnderParkingInSqM));
-      setValue("areaUnderOtherAmenitiesInPct", calculatePercentage(areaUnderOtherAmenitiesInSqM));
+    const totalUsedArea = ews + residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities;
+
+    const balance = (netArea - totalUsedArea).toFixed(2);
+
+    // 🔴 Area mismatch validation
+    if (netArea > 0 && Math.abs(balance) > 0.01) {
+      setAreaMismatchError(`Area mismatch: Used Area = ${totalUsedArea.toFixed(2)} SqM, Balance = ${balance} SqM`);
+    } else {
+      setAreaMismatchError(null);
     }
+
+    // Percentage calculation
+    const calcPct = (val) => (netArea > 0 ? ((val / netArea) * 100).toFixed(2) : "0.00");
+
+    setValue("areaUnderEWSInPct", calcPct(ews));
+    setValue("areaUnderResidentialUseInPct", calcPct(residential));
+    setValue("areaUnderCommercialUseInPct", calcPct(commercial));
+    setValue("areaUnderInstutionalUseInPct", calcPct(institutional));
+    setValue("areaUnderCommunityCenterInPct", calcPct(communityCenter));
+    setValue("areaUnderParkInPct", calcPct(park));
+    setValue("areaUnderRoadInPct", calcPct(road));
+    setValue("areaUnderParkingInPct", calcPct(parking));
+    setValue("areaUnderOtherAmenitiesInPct", calcPct(otherAmenities));
+
+    // ✅ Total percentage
+    const totalPct = calcPct(totalUsedArea);
+    setTotalAreaPercentage(totalPct);
   }, [
     areaUnderEWSInSqM,
     areaUnderResidentialUseInSqM,
@@ -209,7 +267,7 @@ const LayoutSiteDetails = (_props) => {
   const [isDistrictInitialized, setIsDistrictInitialized] = useState(false);
 
   // Zone dropdown from MDMS (like CLU) - REMOVED
-  // const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
@@ -308,10 +366,44 @@ const LayoutSiteDetails = (_props) => {
   return (
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
-        <CardSectionHeader className="card-section-header">{t("BPA_SITE_DETAILS")}</CardSectionHeader>
+      
         <div>
+         
+          {/* ===== TYPE OF APPLICATION ===== */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_NO_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              Type Of Application <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="typeOfApplication"
+                defaultValue=""
+                rules={{
+                  required: "Type of Application is required",
+                }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={props.onChange}
+                    selected={props.value}
+                    option={[
+                      { code: "PROPOSED", name: "Proposed" },
+                      { code: "REVISED", name: "Revised" },
+                    ]}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+              {errors?.typeOfApplication && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.typeOfApplication.message}</p>}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_PLOT_NO_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -342,7 +434,9 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {t("BPA_PROPOSED_SITE_ADDRESS")} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -373,8 +467,14 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
+          {/* ===== SECTION 2: Location & Locality Information ===== */}
+          <CardSectionHeader>{t("BPA_LOCATION_LABEL")}</CardSectionHeader>
+
+          {/* District, ULB, Zone, Village grouped together */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_ULB_NAME_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             {!isUlbListLoading && (
               <Controller
                 control={control}
@@ -399,120 +499,58 @@ const LayoutSiteDetails = (_props) => {
             {errors?.ulbName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbName.message}</p>}
           </LabelFieldPair>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="ulbType"
-                defaultValue=""
-                render={(props) => (
-                  <TextInput
-                    value={ulbType || props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disable="true"
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-
           {/* District - Non-editable, auto-fetched from tenantId */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <Controller 
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_DISTRICT_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <Controller
               control={control}
               name={"district"}
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
               render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={selectedCity?.city?.districtName || selectedCity?.districtName || props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disable="true"
-                  />
+                <TextInput
+                  className="form-field"
+                  value={selectedCity?.city?.districtName || selectedCity?.districtName || props.value}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  disable="true"
+                />
               )}
             />
           </LabelFieldPair>
           {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.district.message}</p>}
 
-          {/* Ward No */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_WARD_NO_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_ZONE_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
-                name="wardNo"
-                defaultValue=""
+                name={"zone"}
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
                 }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
+                 render={(props) => (
+                   <Dropdown className="form-field" select={props.onChange} selected={props.value} option={zoneList?.tenant?.zoneMaster?.[0]?.zones} optionKey="code" t={t}/>
                 )}
               />
-              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.wardNo.message}</p>}
+              {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.zone.message}</p>}
             </div>
           </LabelFieldPair>
 
-          {/* Khatuni No */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_KHATUNI_NO_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="khanutiNo"
-                defaultValue=""
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextArea
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-              {errors?.khanutiNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.khanutiNo.message}</p>}
-            </div>
-          </LabelFieldPair>
-
-          {/* Village Name */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_VILLAGE_NAME_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_VILLAGE_NAME_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -541,8 +579,78 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
+          {/* Ward Number */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_KHASRA_NO_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_SITE_WARD_NO_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="wardNo"
+                defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.wardNo.message}</p>}
+            </div>
+          </LabelFieldPair>
+
+          {/* ===== SECTION 3: Land Records & Documentation ===== */}
+          <CardSectionHeader>Land Records</CardSectionHeader>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_KHATUNI_NO_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="khanutiNo"
+                defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextArea
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+              {errors?.khanutiNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.khanutiNo.message}</p>}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_KHASRA_NO_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -572,7 +680,9 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_HADBAST_NO_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_HADBAST_NO_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -580,7 +690,6 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue=""
                 rules={{
                   required: t("REQUIRED_FIELD"),
-
                   maxLength: {
                     value: 200,
                     message: t("MAX_200_CHARACTERS_ALLOWED"),
@@ -602,9 +711,11 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* Vasika Number */}
+          {/* Vasika Information */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_VASIKA_NUMBER_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_VASIKA_NUMBER_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -633,9 +744,10 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* Vasika Date */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_VASIKA_DATE_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_VASIKA_DATE_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -661,8 +773,13 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
+          {/* Road & Site Information */}
+          <CardSectionHeader>Road & Site Information</CardSectionHeader>
+
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_TYPE_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_ROAD_TYPE_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               {!isRoadTypeLoading && (
                 <Controller
@@ -685,7 +802,9 @@ const LayoutSiteDetails = (_props) => {
 
           {/* Is Area Under Master Plan - Yes/No Dropdown */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <Controller
               control={control}
               name={"isAreaUnderMasterPlan"}
@@ -693,25 +812,22 @@ const LayoutSiteDetails = (_props) => {
                 required: t("REQUIRED_FIELD"),
               }}
               render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={props.onChange}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                  t={t}
-                />
+                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={options} optionKey="i18nKey" t={t} />
               )}
             />
           </LabelFieldPair>
-          {errors?.isAreaUnderMasterPlan && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>}
+          {errors?.isAreaUnderMasterPlan && (
+            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>
+          )}
 
           {/* SECTION: Area Calculation (A-B=C) */}
           <CardSectionHeader>{t("BPA_AREA_CALCULATION_LABEL")}</CardSectionHeader>
 
           {/* <CHANGE> Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_PLOT_AREA_LABEL_A")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_TOTAL_PLOT_AREA_LABEL_A")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -750,7 +866,9 @@ const LayoutSiteDetails = (_props) => {
 
           {/* <CHANGE> Add Net Plot Area After Widening field (B) */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_AREA_ROAD_WIDENING_LABEL_B")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_TOTAL_AREA_ROAD_WIDENING_LABEL_B")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -789,7 +907,7 @@ const LayoutSiteDetails = (_props) => {
 
           {/* <CHANGE> Add Net Total Area field (A+B) - disabled/readonly */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL_A-B")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL_A-B (Balance)")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -831,7 +949,9 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -862,7 +982,9 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_BUILDING_STATUS_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               {!isBuildingTypeLoading && (
                 <Controller
@@ -891,7 +1013,9 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_BUILDING_CATEGORY_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
                 <Controller
@@ -994,7 +1118,7 @@ const LayoutSiteDetails = (_props) => {
                         onBlur={(e) => {
                           props.onBlur(e);
                         }}
-                        disable="true"
+                        readOnly={true}
                       />
                     )}
                   />
@@ -1078,7 +1202,7 @@ const LayoutSiteDetails = (_props) => {
                         onBlur={(e) => {
                           props.onBlur(e);
                         }}
-                        disable="true"
+                        readOnly={true}
                       />
                     )}
                   />
@@ -1100,8 +1224,7 @@ const LayoutSiteDetails = (_props) => {
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL")}`}
                   {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) &&
-                    <span className="requiredField">*</span>}
+                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
                 </CardLabel>
                 <div className="field">
                   <Controller
@@ -1150,8 +1273,7 @@ const LayoutSiteDetails = (_props) => {
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL")}`}
                   {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
-                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) &&
-                    <span className="requiredField">*</span>}
+                    selectedBuildingCategory?.name?.toLowerCase().includes("warehouse")) && <span className="requiredField">*</span>}
                 </CardLabel>
                 <div className="field">
                   <Controller
@@ -1189,7 +1311,7 @@ const LayoutSiteDetails = (_props) => {
                         onBlur={(e) => {
                           props.onBlur(e);
                         }}
-                        disable="true"
+                        readOnly={true}
                       />
                     )}
                   />
@@ -1203,7 +1325,9 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_TYPE_OF_SCHEME_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_TYPE_OF_SCHEME_LABEL")}`} <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               {!mdmsLoading && (
                 <Controller
@@ -1227,7 +1351,7 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {buildingStatus?.code === "BUILTUP" && (
+          {/* {buildingStatus?.code === "BUILTUP" && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_IS_BASEMENT_AREA_PRESENT_LABEL")}`} <span className="requiredField">*</span></CardLabel>
               <Controller
@@ -1254,11 +1378,13 @@ const LayoutSiteDetails = (_props) => {
           )}
           {errors?.isBasementAreaAvailable && (
             <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isBasementAreaAvailable.message}</p>
-          )}
+          )} */}
 
           {buildingStatus?.code === "BUILTUP" && isBasementAreaAvailable?.code === "YES" && (
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_BASEMENT_AREA_LABEL")}`} <span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_BASEMENT_AREA_LABEL")}`} <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -1298,7 +1424,9 @@ const LayoutSiteDetails = (_props) => {
           {buildingStatus?.code === "BUILTUP" &&
             areaFields.map((field, index) => (
               <div key={field.id} style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
-                <CardLabel className="card-label-smaller">{index === 0 ? "Ground" : `${index}`} Floor Area <span className="requiredField">*</span></CardLabel>
+                <CardLabel className="card-label-smaller">
+                  {index === 0 ? "Ground" : `${index}`} Floor Area <span className="requiredField">*</span>
+                </CardLabel>
                 <div className="field" style={{ display: "flex", gap: "10px" }}>
                   <Controller
                     control={control}
@@ -1317,10 +1445,23 @@ const LayoutSiteDetails = (_props) => {
                       validate: (value) => {
                         const floorValue = parseFloat(value) || 0;
                         const balanceArea = parseFloat(netArea) || 0;
-                        // Check if any single floor exceeds balance area
+                        const floorName = index === 0 ? "Ground" : `${index}`;
+                        
+                        // Validate individual floor doesn't exceed balance area
                         if (floorValue > balanceArea) {
-                          const floorName = index === 0 ? "Ground" : `${index}`;
-                          return `${floorName} floor area cannot exceed balance area (${balanceArea.toFixed(2)} Sq M)`;
+                          return `${floorName} floor area (${floorValue.toFixed(2)} Sq M) cannot exceed balance area (${balanceArea.toFixed(2)} Sq M)`;
+                        }
+                        
+                        // Validate sum of all floors doesn't exceed balance area
+                        const totalFloors = floorAreaValues?.reduce((acc, item) => {
+                          return acc + (parseFloat(item?.value) || 0);
+                        }, 0) || 0;
+                        
+                        const numericBasementArea = isNaN(basementAreaValues) ? 0 : parseFloat(basementAreaValues) || 0;
+                        const totalWithBasement = (totalFloors + numericBasementArea).toFixed(2);
+                        
+                        if (parseFloat(totalWithBasement) > balanceArea) {
+                          return `Total floor + basement area (${totalWithBasement} Sq M) cannot exceed balance area (${balanceArea.toFixed(2)} Sq M)`;
                         }
                         return true;
                       },
@@ -1347,7 +1488,7 @@ const LayoutSiteDetails = (_props) => {
                     type="button"
                     onClick={() => removeFloor(index)}
                     style={{
-                     
+                      marginTop: "-12px",
                       cursor: "pointer",
                     }}
                   >
@@ -1414,198 +1555,12 @@ const LayoutSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="wardNo"
-                defaultValue=""
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-
-              {errors?.wardNo && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.wardNo.message}</p>}
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"district"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    select={(e) => {
-                      setSelectedCity(e);
-                      props.onChange(e);
-                    }}
-                    selected={props.value}
-                    option={cities.sort((a, b) => a.name.localeCompare(b.name))}
-                    optionKey="name"
-                    disable="true"
-                    t={t}
-                  />
-                )}
-              />
-              {errors?.district && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.district.message}</p>}
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"zone"}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                }}
-                render={(props) => (
-                  <Dropdown 
-                    className="form-field" 
-                    select={props.onChange} 
-                    selected={props.value} 
-                    option={localities} 
-                    optionKey="code" 
-                    t={t} 
-                  />
-                )}
-              />
-              {errors?.zone && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.zone.message}</p>}
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="totalAreaUnderLayout"
-                defaultValue=""
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  validate: (value) => {
-                    if (!value) return false;
-                    const regex = /^\d+(\.\d{1,2})?$/;
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-
-              {errors?.totalAreaUnderLayout && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.totalAreaUnderLayout.message}</p>
-              )}
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="areaUnderRoadWidening"
-                defaultValue=""
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  validate: (value) => {
-                    if (!value) return false;
-                    const regex = /^\d+(\.\d{1,2})?$/;
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-
-              {errors?.areaUnderRoadWidening && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderRoadWidening.message}</p>
-              )}
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="netSiteArea"
-                defaultValue=""
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  validate: (value) => {
-                    if (!value) return false;
-                    const regex = /^\d+(\.\d{1,2})?$/;
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-
-              {errors?.netSiteArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netSiteArea.message}</p>}
-            </div>
-          </LabelFieldPair>
-
           {/* SECTION: Area Distribution across 9 Categories */}
           <CardSectionHeader>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardSectionHeader>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL")}`}</CardLabel>
-            <div className="field">
+            <div style={{position:"relative", width:"100%"}} className="field">
               <Controller
                 control={control}
                 name="areaUnderEWSInSqM"
@@ -1662,42 +1617,10 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disable="true"
+                    readOnly={true}
                   />
                 )}
               />
-            </div>
-          </LabelFieldPair>
-
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`} <span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="balanceAreaInSqM"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  validate: (value) => {
-                    if (!value) return false;
-                    const regex = /^\d+(\.\d{1,2})?$/;
-                    return regex.test(value) || t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                  />
-                )}
-              />
-
-              {errors?.balanceAreaInSqM && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.balanceAreaInSqM.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -1764,7 +1687,7 @@ const LayoutSiteDetails = (_props) => {
                         onBlur={(e) => {
                           props.onBlur(e);
                         }}
-                        disable="true"
+                        readOnly={true}
                       />
                     )}
                   />
@@ -1838,7 +1761,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disable="true"
+                    readOnly={true}
                   />
                 )}
               />
@@ -1910,7 +1833,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disable="true"
+                    readOnly={true}
                   />
                 )}
               />
@@ -1982,7 +1905,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disable="true"
+                    readOnly={true}
                   />
                 )}
               />
@@ -2054,7 +1977,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disable="true"
+                    readOnly={true}
                   />
                 )}
               />
@@ -2062,6 +1985,24 @@ const LayoutSiteDetails = (_props) => {
               {errors?.areaUnderOtherAmenitiesInPct && (
                 <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaUnderOtherAmenitiesInPct.message}</p>
               )}
+            </div>
+          </LabelFieldPair>
+
+
+          {/* {areaMismatchError && <CardLabelError>{areaMismatchError}</CardLabelError>}
+
+          {totalAreaPercentage !== "100.00" && <CardLabelError>Total area percentage must be 100%. Current: {totalAreaPercentage}%</CardLabelError>} */}
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`}
+            </CardLabel>
+            <div className="field">
+              <TextInput
+                className="form-field"
+                value={parseFloat(netArea).toFixed(2) || "0.00"}
+                disable="true"
+              />
             </div>
           </LabelFieldPair>
         </div>

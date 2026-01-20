@@ -45,7 +45,7 @@ const LayoutCLUDetails = (_props) => {
 
   return (
     <React.Fragment>
-      <CardSectionHeader>{t("BPA_CLU_DETAILS")}</CardSectionHeader>
+      <CardSectionHeader className="card-section-header">{t("BPA_SITE_DETAILS")}</CardSectionHeader>
 
       <div style={{marginBottom:"16px"}}>
         

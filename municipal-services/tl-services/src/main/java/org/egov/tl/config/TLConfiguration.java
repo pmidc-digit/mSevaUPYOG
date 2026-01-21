@@ -52,6 +52,9 @@ public class TLConfiguration {
 
     @Value("${egov.user.search.path}")
     private String userSearchEndpoint;
+    
+    @Value("${egov.user.search.paths}")
+    private String userSearchEndpoints;
 
     @Value("${egov.user.update.path}")
     private String userUpdateEndpoint;

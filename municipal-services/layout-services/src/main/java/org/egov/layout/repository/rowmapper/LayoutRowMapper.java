@@ -3,6 +3,8 @@ package org.egov.layout.repository.rowmapper;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,6 +52,10 @@ public class LayoutRowMapper implements ResultSetExtractor<List<Layout>> {
 //                layout.setSource(rs.getString("source"));
 //                layout.getNocDetails().getAdditionalDetails().setSourceRefId(rs.getString("sourceRefId"));
                 noc.setAccountId(rs.getString("AccountId"));
+				noc.setVasikaNumber(rs.getString("vasikaNumber"));
+				String vasikaDate = rs.getString("vasikaDate");
+				if(!StringUtils.isEmpty(vasikaDate))
+					noc.setVasikaDate(LocalDate.parse(vasikaDate, DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
 //                Object additionalDetails = new Gson().fromJson(rs.getString("additionalDetails").equals("{}")
 //						|| rs.getString("additionalDetails").equals("null") ? null : rs.getString("additionalDetails"),

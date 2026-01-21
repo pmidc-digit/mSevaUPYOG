@@ -90,6 +90,8 @@ public class CalculationService {
 			BigDecimal builtUpArea = new BigDecimal(0);
 			BigDecimal basementArea = new BigDecimal(0);
 			String category = "";
+			String landType = "";
+			String isCLUApproved = "";
 			String finYear = "";
 			String roadTypeVal = "";
 
@@ -113,7 +115,13 @@ public class CalculationService {
 				if(siteDetails.get("buildingCategory") != null) {
 					LinkedHashMap<String, Object> buildingCategory = (LinkedHashMap<String, Object>) siteDetails.get("buildingCategory");
 					category = (String) buildingCategory.get("name");
-
+				}
+				if(siteDetails.get("typeOfApplication") != null) {
+					landType = siteDetails.getOrDefault("typeOfApplication", "PROPOSED").toString();
+				}
+				if(siteDetails.get("cluIsApproved") != null) {
+					LinkedHashMap<String, Object> cluIsApprovedObj = (LinkedHashMap<String, Object>) siteDetails.get("cluIsApproved");
+					isCLUApproved = (String) cluIsApprovedObj.get("code");
 				}
 				
 				LocalDate today = LocalDate.now();
@@ -124,13 +132,9 @@ public class CalculationService {
 				
 			}
 			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, LAYOUTConstants.MDMS_CHARGES_TYPE_CODE, category, finYear,criteria.getFeeType());
-			String feeApplicationType = (String)
-					((Map<String, Object>) criteria.getLayout()
-							.getLayoutDetails()
-							.getAdditionalDetails())
-							.getOrDefault("feeApplicationType", "PROPOSED");
+			
 			if(estimates.isEmpty())
-				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal,feeApplicationType);
+				estimates = calculateFee(calculationReq.getRequestInfo(), mdmsData, plotArea, builtUpArea, basementArea,roadTypeVal,landType);
 
 			if(estimates.isEmpty())
 				throw new CustomException("NO_FEE_CONFIGURED","No fee configured for the application");	
@@ -180,7 +184,7 @@ public class CalculationService {
 	 * @param finYear Current financial year
 	 * @return List of TaxHeadEstimate for the Demand creation
 	 */
-	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea,String roadType,String applicationType) {
+	private List<TaxHeadEstimate> calculateFee (RequestInfo requestInfo, Object mdmsData, BigDecimal plotArea, BigDecimal builtUpArea, BigDecimal basementArea,String roadType,String landType) {
 		List<TaxHeadEstimate> estimates = new LinkedList<>();
 		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, LAYOUTConstants.MDMS_CHARGES_TYPE_PATH);
 		
@@ -208,7 +212,7 @@ public class CalculationService {
 				List<Map<String, Object>> slabs = (List<Map<String, Object>>) chargesType.get("slabs");
 
 				Map<String, Object> matchedSlab = slabs.stream()
-						.filter(slab -> ((String) slab.get("applicationType")).equalsIgnoreCase(applicationType))
+						.filter(slab -> ((String) slab.get("applicationType")).equalsIgnoreCase(landType))
 						.findFirst()
 						.orElse(Collections.EMPTY_MAP);
 

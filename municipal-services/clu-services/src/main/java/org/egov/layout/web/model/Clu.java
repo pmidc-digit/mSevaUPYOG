@@ -1,7 +1,9 @@
 package org.egov.layout.web.model;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -65,6 +67,17 @@ public class Clu {
   @JsonIgnore
   @JsonProperty("accountId")
   private String accountId = null;
+
+  @SafeHtml
+  @NotNull(message = "Vasika Number is required")
+  @Size(min = 1, max = 15)
+  @JsonProperty("vasikaNumber")
+  private String vasikaNumber = null;
+
+  @NotNull(message = "Vasika Date is required in dd-MM-yyyy format")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+  @JsonProperty("vasikaDate")
+  private LocalDate vasikaDate = null;
 
 //  @SafeHtml
 //

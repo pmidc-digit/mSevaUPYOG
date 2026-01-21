@@ -944,9 +944,7 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         </StatusTable>
       </Card>
 
-      {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" &&
-        (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
-          <Card>
+                <Card>
             <div id="fieldInspection"></div>
           <InspectionReport
             isCitizen={true}
@@ -955,16 +953,14 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
           </Card>
-        )}
-        {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
-        applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
-          <Card>
+        
+                 <Card>
           <div id="fieldInspection"></div>
           <InspectionReportDisplay
             fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
           />
           </Card>
-        )}
+        
        {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
         (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
           <Card>

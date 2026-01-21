@@ -1249,7 +1249,7 @@ public class DemandService {
 					if(lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
+								.findFirst().orElse(-1);
 						//Increased one index to generate the next quarter demand
 						generateDemandFromIndex++;
 					}
@@ -1483,7 +1483,7 @@ public class DemandService {
 					if(lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
+								.findFirst().orElse(-1);
 						//Increased one index to generate the next quarter demand
 						generateDemandFromIndex++;
 					}

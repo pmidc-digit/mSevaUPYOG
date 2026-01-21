@@ -1,7 +1,0 @@
-#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
-#Sun Jul 20 00:21:42 IST 2025
-batik-all-1.0.jar>nexus=
-batik-all-1.0.jar>repo.egovernments.org=
-batik-all-1.0.pom>repo.egovernments.org=
-batik-all-1.0-sources.jar>JSPRESSO=
-batik-all-1.0.pom>nexus=

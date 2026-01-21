@@ -171,7 +171,7 @@ const CitizenApplicationOverview = () => {
 
     const site = Property?.nocDetails?.additionalDetails?.siteDetails;
     const ulbType = site?.ulbType;
-    const ulbName = site?.ulbName?.city?.name;
+    const ulbName = site?.ulbName?.city?.name ||site?.ulbName;
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
 

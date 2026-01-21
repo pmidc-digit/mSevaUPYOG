@@ -971,11 +971,12 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         </StatusTable>
       </Card>
 
-      <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}   
-        tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
-      </Card>
+        <Card>
+          <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+          <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}
+          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
+        </Card>
+      
 
       <Card>
         <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>

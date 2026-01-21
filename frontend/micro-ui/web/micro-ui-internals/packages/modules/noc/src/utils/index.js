@@ -287,15 +287,36 @@ export const convertToDDMMYYYY = (dateString) => {
      return dateString;
    };
 
-// Helper to convert dd-mm-yyyy (backend) to yyyy-mm-dd (for date input display), only if not already yyyy-mm-dd
+
 export const formatDateForInput = (dateString) => {
   if (!dateString) return "";
-  // If already yyyy-mm-dd, return as is
+
+  // Already in yyyy-mm-dd
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
-  // Otherwise, convert from dd-mm-yyyy
-  const [day, month, year] = dateString.split("-");
-  return `${year}-${month}-${day}`;
+
+  // Handle dd-mm-yyyy
+  if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+    const [day, month, year] = dateString.split("-");
+    const date = new Date(`${year}-${month}-${day}`);
+    if (isNaN(date)) return "";
+    return date.toISOString().split("T")[0];
+  }
+
+  // Handle mm/dd/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+    const [month, day, year] = dateString.split("/");
+    const date = new Date(`${year}-${month}-${day}`);
+    if (isNaN(date)) return "";
+    return date.toISOString().split("T")[0];
+  }
+
+  // Fallback for other formats
+  const date = new Date(dateString);
+  if (isNaN(date)) return "";
+  return date.toISOString().split("T")[0];
 };
+
+
 
 
 

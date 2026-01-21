@@ -24,7 +24,8 @@ import { getPattern } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import NOCCustomUploadFile from "./NOCCustomUploadFile";
 import { PropertySearchModal } from "./PropertySearchModal";
-
+import { UPDATE_NOCNewApplication_FORM} from "../redux/action/NOCNewApplicationActions";
+import { formatDateForInput } from "../utils";
 const ownerTypeOptions = [
   { i18nKey: "NOC_OWNER_TYPE_INDIVIDUAL", code: "Individual", value: "Individual" },
   { i18nKey: "NOC_OWNER_TYPE_FIRM", code: "Firm", value: "Firm" },
@@ -198,6 +199,8 @@ const NOCApplicantDetails = (_props) => {
     dateOfBirth: "",
     address: "",
     ownerType: null,
+    propertyVasikaNo: "",
+    propertyVasikaDate: ""
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -225,7 +228,8 @@ const NOCApplicantDetails = (_props) => {
             PropertyOwnerMobileNumber: o.PropertyOwnerMobileNumber || "",
             PropertyOwnerAddress: o.PropertyOwnerAddress || "",
             PropertyOwnerPlotArea: o.PropertyOwnerPlotArea || null,
-
+            propertyVasikaNo: o.propertyVasikaNo || null,
+            propertyVasikaDate: o.propertyVasikaDate || null,
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
@@ -293,6 +297,29 @@ const NOCApplicantDetails = (_props) => {
       setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].propertyVasikaNo`,  property?.additionalDetails?.vasikaNo || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaNo || null, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaDate || null, { shouldValidate: true, shouldDirty: true });
+      dispatch(
+        UPDATE_NOCNewApplication_FORM("applicationDetails", {
+          ...currentStepData?.applicationDetails,
+          owners: currentStepData?.applicationDetails?.owners?.map((o, i) =>
+            i === currentIndex
+              ? {
+                  ...o,
+                  propertyId: property.propertyId,
+                  PropertyOwnerName: ownerNames,
+                  PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
+                  PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
+                  PropertyOwnerPlotArea: property?.landArea,
+                  propertyVasikaNo: property?.additionalDetails?.vasikaNo,
+                  propertyVasikaDate: property?.additionalDetails?.vasikaDate,
+                }
+              : o
+          ),
+        })
+      );
+
+
     }
   };
 
@@ -361,10 +388,10 @@ const NOCApplicantDetails = (_props) => {
                       />
                     )}
                   />
-                
-                 {errors?.owners?.[index]?.ownerType  && (
-                  <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message }</p>
-                )}
+
+                  {errors?.owners?.[index]?.ownerType && (
+                    <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
+                  )}
                 </div>
               </LabelFieldPair>
             )}
@@ -558,132 +585,143 @@ const NOCApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            {index === 0 &&(
+            {index === 0 && (
               <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}</CardLabel>
-              <div className="field">
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                 
-                  {watch(`owners[${index}].propertyId`) && (
-                    <StatusTable style={{ marginBottom: "1rem" }}>
-                      <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
-                      <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
-                      <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
-                      <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={watch(`owners[${index}].PropertyOwnerAddress`)} />{" "}
-                      <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`)} />
-                    </StatusTable>
-                  )}
-
-                  <Controller
-                    control={control}
-                    name={`owners[${index}].propertyId`}
-                    rules={{
-                      maxLength: {
-                        value: 100,
-                        message: t("MAX_100_CHARACTERS_ALLOWED"),
-                      },
-                    }}
-                    render={(props) => (
-                      <>
-                        <TextInput
-                          style={{ display: "none" }}
-                          value={props.value}
-                          onChange={(e) => props.onChange(e.target.value)}
-                          onBlur={(e) => props.onBlur(e)}
-                          t={t}
-                        />
-                        <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
-                      </>
+                <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}</CardLabel>
+                <div className="field">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {watch(`owners[${index}].propertyId`) && (
+                      <StatusTable style={{ marginBottom: "1rem" }}>
+                        <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
+                        <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
+                        <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
+                        <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={watch(`owners[${index}].PropertyOwnerAddress`)} />{" "}
+                        <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`)} />
+                        <Row label={t("Vasika Number")} text={watch(`owners[${index}].propertyVasikaNo`)} />
+                        <Row label={t("Vasika Date")} text={watch(`owners[${index}].propertyVasikaDate`)} />
+                      </StatusTable>
                     )}
-                  />
 
-                   <button
-                    type="button"
-                    className="submit-bar"
-                    style={{ marginBottom: "1rem", width: "100%" }}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setShowModal(true);
-                    }}
-                  >
-                    {t("PT_SEARCH_PROPERTY")}
-                  </button>
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].propertyId`}
+                      rules={{
+                        maxLength: {
+                          value: 100,
+                          message: t("MAX_100_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                      render={(props) => (
+                        <>
+                          <TextInput
+                            style={{ display: "none" }}
+                            value={props.value}
+                            onChange={(e) => props.onChange(e.target.value)}
+                            onBlur={(e) => props.onBlur(e)}
+                            t={t}
+                          />
+                          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
+                        </>
+                      )}
+                    />
 
+                    <button
+                      type="button"
+                      className="submit-bar"
+                      style={{ marginBottom: "1rem", width: "100%" }}
+                      onClick={() => {
+                        setCurrentIndex(index);
+                        setShowModal(true);
+                      }}
+                    >
+                      {t("PT_SEARCH_PROPERTY")}
+                    </button>
 
-                  {/* Property Owner Name */}
-                  <Controller
-                    control={control}
-                    name={`owners[${index}].PropertyOwnerName`}
-                    rules={{
-                      maxLength: {
-                        value: 100,
-                        message: t("MAX_100_CHARACTERS_ALLOWED"),
-                      },
-                    }}
-                  />
-                  {errors?.owners?.[index]?.PropertyOwnerName && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerName.message}</p>
-                  )}
+                    {/* Property Owner Name */}
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerName`}
+                      rules={{
+                        maxLength: {
+                          value: 100,
+                          message: t("MAX_100_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                    />
+                    {errors?.owners?.[index]?.PropertyOwnerName && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerName.message}</p>
+                    )}
 
-                  {/* Property Owner Mobile Number */}
-                  <Controller
-                    control={control}
-                    name={`owners[${index}].PropertyOwnerMobileNumber`}
-                    rules={{
-                      pattern: {
-                        value: /^[6-9]\d{9}$/,
-                        message: t("INVALID_MOBILE_NUMBER"),
-                      },
-                    }}
-                    
-                  />
-                  {errors?.owners?.[index]?.PropertyOwnerMobileNumber && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerMobileNumber.message}</p>
-                  )}
+                    {/* Property Owner Mobile Number */}
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerMobileNumber`}
+                      rules={{
+                        pattern: {
+                          value: /^[6-9]\d{9}$/,
+                          message: t("INVALID_MOBILE_NUMBER"),
+                        },
+                      }}
+                    />
+                    {errors?.owners?.[index]?.PropertyOwnerMobileNumber && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerMobileNumber.message}</p>
+                    )}
 
-                  {/* Property Owner Address */}
-                  <Controller
-                    control={control}
-                    name={`owners[${index}].PropertyOwnerAddress`}
-                    rules={{
-                      // minLength: {
-                      //   value: 4,
-                      //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                      // },
-                      maxLength: {
-                        value: 500,
-                        message: t("MAX_500_CHARACTERS_ALLOWED"),
-                      },
-                    }}
-                    
-                  />
+                    {/* Property Owner Address */}
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerAddress`}
+                      rules={{
+                        // minLength: {
+                        //   value: 4,
+                        //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                        // },
+                        maxLength: {
+                          value: 500,
+                          message: t("MAX_500_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                    />
 
-                  {errors?.owners?.[index]?.PropertyOwnerAddress && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerAddress.message}</p>
-                  )}
+                    {errors?.owners?.[index]?.PropertyOwnerAddress && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerAddress.message}</p>
+                    )}
 
-                  {/* Property Owner Plot Area */}
-                  <Controller
-                    control={control}
-                    name={`owners[${index}].PropertyOwnerPlotArea`}
-                    rules={{
-                      pattern: {
-                        value: /^[0-9]*\.?[0-9]+$/,
-                        message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                      },
-                      maxLength: {
-                        value: 100,
-                        message: t("MAX_100_CHARACTERS_ALLOWED"),
-                      },
-                    }}
-                    
-                  />
-                  {errors?.owners?.[index]?.PropertyOwnerPlotArea && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerPlotArea.message}</p>
-                )}
+                    {/* Property Owner Plot Area */}
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerPlotArea`}
+                      rules={{
+                        pattern: {
+                          value: /^[0-9]*\.?[0-9]+$/,
+                          message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                        },
+                        maxLength: {
+                          value: 100,
+                          message: t("MAX_100_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                    />
+                    {errors?.owners?.[index]?.PropertyOwnerPlotArea && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerPlotArea.message}</p>
+                    )}
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].propertyVasikaNo`}
+                     />
+                    {errors?.owners?.[index]?.propertyVasikaNo && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyVasikaNo.message}</p>
+                    )}
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].propertyVasikaDate`}
+                    />
+                    {errors?.owners?.[index]?.propertyVasikaDate && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyVasikaDate.message}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </LabelFieldPair>
+              </LabelFieldPair>
             )}
 
             <LabelFieldPair>

@@ -18,6 +18,7 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
+  CheckBox
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,11 +28,13 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
+import { convertToDDMMYYYY,formatDuration } from "../../../utils/index";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -96,6 +99,9 @@ const CitizenApplicationOverview = () => {
 
   const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
+  const [timeObj , setTimeObj] = useState(null);
+  
+  console.log('applicationD', applicationDetails)
  const [approverComment , setApproverComment] = useState(null);
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
@@ -135,6 +141,14 @@ const CitizenApplicationOverview = () => {
       };
 
       setDisplayData(finalDisplayData);
+
+      const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = nocObject?.auditDetails?.lastModifiedTime;
+      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = formatDuration(totalTime)
+      
+      setTimeObj(time);
     }
   }, [applicationDetails?.Noc]);
 
@@ -157,11 +171,11 @@ const CitizenApplicationOverview = () => {
 
     const site = Property?.nocDetails?.additionalDetails?.siteDetails;
     const ulbType = site?.ulbType;
-    const ulbName = site?.ulbName?.city?.name;
+    const ulbName = site?.ulbName?.city?.name ||site?.ulbName;
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
 
-    Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
   };
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -186,7 +200,7 @@ const CitizenApplicationOverview = () => {
   let EmpData = EmployeeData(tenantId, id);
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
+      label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
 
@@ -323,13 +337,16 @@ const CitizenApplicationOverview = () => {
     // setSelectedAction(null);
     const payloadData = applicationDetails?.Noc?.[0] || {};
 
-    // console.log("data ==>", data);
-
+   const vasikaNumber =  payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+   const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
+      
     const updatedApplicant = {
       ...payloadData,
+      vasikaNumber, // add vasikaNumber
+      vasikaDate, // add vasikaDate
       workflow: {},
     };
-
+    console.log('updatedApplicant', updatedApplicant)
     const filtData = data?.Licenses?.[0];
     //console.log("filtData", filtData);
 
@@ -395,6 +412,12 @@ const CitizenApplicationOverview = () => {
             (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
           );
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+
+const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const combinedOwnersName = ownersList?.join(", ");
+  console.log("combinerOwnersName", combinedOwnersName);
 
 
   
@@ -415,13 +438,10 @@ const CitizenApplicationOverview = () => {
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView
-          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-        />
-      </Card>
+      <NOCImageView
+        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+      />
 
       {id.length > 0 && (
         <React.Fragment>
@@ -441,6 +461,7 @@ const CitizenApplicationOverview = () => {
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
+                {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
@@ -448,12 +469,6 @@ const CitizenApplicationOverview = () => {
                 <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
                 <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
                 <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
-                <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.propertyId || "N/A"} />
-                <Row label={t("PROPERTY_OWNER_NAME")} text={detail?.PropertyOwnerName || "N/A"}/>
-                <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={detail?.PropertyOwnerMobileNumber || "N/A"}/>
-                <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={detail?.PropertyOwnerAddress || "N/A"}/>    
-                <Row label={t("PROPERTY_PLOT_AREA")} text={detail?.PropertyOwnerPlotArea || "N/A"}/>                
-            
               </StatusTable>
             </div>
           </Card>
@@ -478,6 +493,19 @@ const CitizenApplicationOverview = () => {
             </Card>
           </React.Fragment>
         ))}
+
+      {primaryOwner && propertyId && (
+        <Card>
+          <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
+            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
+            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
+            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
+            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
+          </StatusTable>
+        </Card>
+      )}
 
       <Card>
         <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
@@ -518,6 +546,7 @@ const CitizenApplicationOverview = () => {
 
               <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
               <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
+              <Row label={t("NOC_VASIKA_DATE")} text={detail?.vasikaDate || "N/A"} />
               <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
             </StatusTable>
           </div>
@@ -588,12 +617,14 @@ const CitizenApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable style={{
+        <StatusTable
+          style={{
             display: "flex",
-            gap: "20px", 
-            flexWrap: "wrap", 
-            justifyContent : "space-between"
-          }}>
+            gap: "20px",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
           {sitePhotos?.length > 0 &&
             sitePhotos?.map((doc) => (
               <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
@@ -623,23 +654,33 @@ const CitizenApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+        <StatusTable>
+          {remainingDocs?.length > 0 && (
+            <NOCDocumentChecklist documents={remainingDocs} applicationNo={id} tenantId={tenantId} onRemarksChange={() => {}} readOnly={true} />
+          )}
+        </StatusTable>
       </Card>
-      {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && ( <Card>
-        <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
-        {applicationDetails?.Noc?.[0]?.nocDetails && (
-          <NOCFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || [],
-            }}
-            disable={true}
-          />
-        )}
-      </Card>)}
-     
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
+        <Card>
+          <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
+          {applicationDetails?.Noc?.[0]?.nocDetails && (
+            <NOCFeeEstimationDetails
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.applicationDetails },
+                siteDetails: { ...applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails },
+                calculations: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations || [],
+              }}
+              disable={true}
+            />
+          )}
+        </Card>
+      )}
+
+      <CheckBox
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      />
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>
@@ -662,7 +703,7 @@ const CitizenApplicationOverview = () => {
       )} */}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
 
       {actions && actions.length > 0 && (

@@ -33,8 +33,8 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  //console.log("data for documents here", data)
-  //console.log("formData here =====", formData);
+  console.log("data for documents here", data)
+  console.log("formData here =====", formData);
 
   const coordinates = useSelector(function (state) {
       return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
@@ -52,11 +52,34 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   const currentStepData= useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData)|| {};
 
+const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
+  const code = owner?.ownerType?.code ?? owner?.ownerType;
+
+  return String(code).toLowerCase() === "firm";
+});
   const isVacant=currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
   //console.log("isVacant", isVacant);
 
-  const filteredDocuments= isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
-  //console.log("filteredDocuments", filteredDocuments);
+  let filteredDocuments = isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+  if (isFirm) {
+    filteredDocuments = filteredDocuments?.map(doc => doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc);
+  }
+  console.log("filteredDocuments", filteredDocuments);
+
+  useEffect(() => {
+    setDocuments((prev) => {
+      const arr = Array.isArray(prev) ? prev : [];
+      const hasAuth = arr.some((d) => d.documentType === "OWNER.AUTHORIZATIONLETTER");
+      if (isFirm && !hasAuth) {
+        return [...arr, { documentType: "OWNER.AUTHORIZATIONLETTER", filestoreId: "", documentUid: "", documentAttachment: "" }];
+      } else if (!isFirm && hasAuth) {
+        return arr.filter((d) => d.documentType !== "OWNER.AUTHORIZATIONLETTER");
+      }
+
+      return arr;
+    });
+  }, [isFirm]);
+
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -74,6 +97,8 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
       doc.hasDropdown = true;
 
       let isRequired = false;
+
+      console.log('documents in pet', documents)
       documents?.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
@@ -329,7 +354,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }
 
   function extractGeoLocation(file) {
-      //console.log("file", file);
+      console.log("file", file);
   
       return new Promise((resolve) => {
         try {

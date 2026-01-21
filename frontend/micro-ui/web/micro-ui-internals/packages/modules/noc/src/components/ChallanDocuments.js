@@ -121,7 +121,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     const fileType = file.type.toLowerCase();
 
     // ✅ Case 1: Handle image files with EXIF
-    if (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png")) {
+    if (fileType && (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png"))) {
       const reader = new FileReader();
       reader.onload = function () {
         const img = new Image();
@@ -155,9 +155,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     }
     // ✅ Case 2: Handle PDFs or other file types
     else {
-      console.log("📄 Non-image file uploaded, skipping EXIF read");
-      setFile(file);
-      updateDocument(selectedDocument, {}); // no lat/long
+      alert("Please upload a photo with location details.");
     }
   }
 
@@ -325,7 +323,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
+            accept="image/*" 
             buttonType="button"
             error={!uploadedFile}
             uploadedFile={uploadedFile}

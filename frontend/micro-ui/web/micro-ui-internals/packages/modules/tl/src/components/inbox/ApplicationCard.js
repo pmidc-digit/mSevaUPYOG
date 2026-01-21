@@ -21,6 +21,9 @@ export const ApplicationCard = ({
   sortParams,
   linkPrefix,
   removeParam,
+  filterComponent,
+  localities,
+  statuses,
 }) => {
   const [type, setType] = useState(isSearch ? "SEARCH" : "");
   const [popup, setPopup] = useState(isSearch ? true : false);
@@ -128,6 +131,8 @@ export const ApplicationCard = ({
                   type="mobile"
                   searchParams={params}
                   removeParam={removeParam}
+                  localities={localities}
+                  statuses={statuses}
                 />
               }
             </div>

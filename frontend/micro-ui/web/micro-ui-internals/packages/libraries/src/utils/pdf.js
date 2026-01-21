@@ -1,6 +1,7 @@
 import { Fonts } from "./fonts";
 import React, { ReactDOM } from "react";
 import QRCode from "qrcode";
+import EXIF from "exif-js";
 const pdfMake = require("pdfmake/build/pdfmake.js");
 // const pdfFonts = require("pdfmake/build/vfs_fonts.js");
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -262,6 +263,79 @@ background: [
       if (currentPage === pageCount) {
         return {
           text: "- Note: This is a system generated acknowledgement and does not require any signature",
+          font: "Hind",
+          fontSize: 11,
+          color: "#6f777c",
+          margin: [80, -30, 10, 40]
+        };
+      }
+      return null; // no footer on other pages
+    },    
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+  };
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+};
+
+const jsPdfGeneratorFormattedNOC = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  t = (text) => text,
+  imageURL,
+  ulbType,
+  ulbName
+}) => {
+  console.log("ulbType",ulbType)
+  const baseUrl = window.location.origin;
+  let finalUrl;
+
+  if (imageURL?.includes("filestore")) {
+    const splitURL = imageURL.split("filestore")?.[1];
+    finalUrl = `${baseUrl}/filestore${splitURL}`;
+  } else {
+    // external URL, just use it directly
+    finalUrl = imageURL;
+  }
+
+  const base64Image = imageURL
+    ? await getBase64FromUrl(finalUrl)
+    : baseUrl;
+
+  const contentFormatted = await createContentFormatted( details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit );
+  const dd = {
+    
+background: [
+      {
+        image: AcknowledgmentPage,
+        width: 595,
+        height: 842,
+      },
+    ],
+    margin: [0, 0, 0, 0],
+
+    header: {},
+    content: [
+      ...createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName),
+      ...contentFormatted
+    ],
+    footer: function (currentPage, pageCount) {
+      if (currentPage === pageCount) {
+        return {
+          text: "**- Note: This is a system generated acknowledgement and does not require any signature**",
           font: "Hind",
           fontSize: 11,
           color: "#6f777c",
@@ -1049,7 +1123,8 @@ export default {
   generateModifyPdf: jsPdfGeneratorForModifyPDF,
   generateBillAmendPDF,
   generateTimelinePDF,
-  generateFormatted: jsPdfGeneratorFormatted
+  generateFormatted: jsPdfGeneratorFormatted,
+  generateFormattedNOC: jsPdfGeneratorFormattedNOC
 };
 
 const createBodyContentBillAmend = (table, t) => {
@@ -1802,11 +1877,60 @@ function createHeader(headerDetails, logo, tenantId) {
   return headerData;
 }
 
+async function normalizeImageByExif(url, orientation = 1) {
+  const img = await loadImage(url);
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  if (orientation === 6 || orientation === 8) {
+    canvas.width = h;
+    canvas.height = w;
+  } else {
+    canvas.width = w;
+    canvas.height = h;
+  }
+
+  ctx.save();
+
+  switch (orientation) {
+    case 3: // 180°
+      ctx.translate(canvas.width, canvas.height);
+      ctx.rotate(Math.PI);
+      break;
+    case 6: // 90° CW
+      ctx.translate(canvas.width, 0);
+      ctx.rotate(Math.PI / 2);
+      break;
+    case 8: // 90° CCW
+      ctx.translate(0, canvas.height);
+      ctx.rotate(-Math.PI / 2);
+      break;
+    default:
+      break;
+  }
+
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+
+  return canvas.toDataURL("image/jpeg");
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
 async function buildAttachment(doc) {
   try {
     const baseUrl = window.location.origin;
     let finalUrl;
-
     if (doc?.link?.includes("filestore")) {
       const splitURL = doc.link.split("filestore")?.[1];
       finalUrl = `${baseUrl}/filestore${splitURL}`;
@@ -1814,13 +1938,18 @@ async function buildAttachment(doc) {
       finalUrl = doc.link;
     }
 
-    const base64Image = finalUrl ? await getBase64FromUrl(finalUrl) : null;
-    return base64Image;
+    if (!finalUrl) return null;
+
+    // Normalize orientation before returning base64
+    const uprightBase64 = await normalizeImageByExif(finalUrl, doc?.orientation || 1);
+    return uprightBase64;
   } catch (err) {
     console.error("Error converting attachment:", err);
     return null;
   }
 }
+
+
 
 
 
@@ -1850,9 +1979,11 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
       let valueRows;
 
       if (detail?.isAttachments) {
+        console.log(detail ,"detail rn")
         valueRows = [];
         for (let i = 0; i < detail.values.length; i++) {
           const doc = detail.values[i];
+          console.log("doc passed to buildattachment",doc)
           const isLast = i === detail.values.length - 1;
 
           const base64Image = await buildAttachment(doc);
@@ -1871,7 +2002,8 @@ async function createContentFormatted(details, applicationNumber, logo, tenantId
                 width: 100,
                 height: 100,
                 margin: [0, 2, 0, 2],
-                border: isLast ? [false, false, true, true] : [false, false, true, false]
+                border: isLast ? [false, false, true, true] : [false, false, true, false],
+                rotation: doc?.orientation === 6 ? 90 : doc?.orientation === 3 ? 180 : doc?.orientation === 8 ? -90 : 0
               }
             ]);
           } else {
@@ -1997,6 +2129,107 @@ function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email,
           },
 
           // Right: QR code (if available)
+          qrCodeDataUrl
+            ? {
+                image: qrCodeDataUrl,
+                width: 70,
+                margin: [30, 15 , 2, 10],
+                alignment: "right",
+              }
+            : {},
+        ],
+      ],
+    },
+  });
+
+  //   headerData.push({
+  //     style : 'tableExample',
+  //     layout: "noBorders",
+  //     margin: [420, -135, 0, 20],
+  //     table:{
+  //       widths: ['40%', '*', '20%'],
+  //       body:[
+  //         [
+  //           {
+  //             image: logo|| getBase64Image(tenantId) || defaultLogo,
+  //             width: 65,
+  //             margin: [10, 10],
+  //             // fit:[50,50]
+  //           },
+
+  //       ]
+  //       ]
+  //     }
+  // })
+  // headerData.push({
+  //   style : 'tableExample',
+  //   layout: "noBorders",
+  //   margin:[0,-20,7,0],
+
+  //   table:{
+  //     widths:['100%'],
+  //     body:[
+  //       [
+  //         {
+
+  //           text: `Application Number: ${applicationNumber}`,
+  //           alignment:"right",
+  //           fontSize: 9,
+  //           //bold: true
+  //         },
+  //       ]
+  //     ]
+  //   }
+  // })
+
+  return headerData;
+}
+
+function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName) {
+  const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
+  let headerData = [];
+  headerData.push({
+    style: "tableExample",
+    layout: "noBorders",
+    margin: [0, 0, 0, 0],
+    table: {
+      widths: ["90%" , "10%"], // center, right
+      body: [
+        [
+          // Left: Logo
+          // {
+          //   image: logo || getBase64Image(tenantId) || localGovLogo,
+          //   width: 78,
+          //   margin: [10, 10],
+          //   alignment: "left",
+          // },
+
+          // Center: Heading + Name stacked
+          {
+            stack: [
+              {
+                text: heading,
+                bold: true,
+                fontSize: 19,
+                alignment: "center",
+                decoration: "underline",
+                margin: [0, 15, 0, 4],
+              },
+              {
+                text: ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`,
+                fontSize: 11,
+                alignment: "center",
+              },
+              {
+                text: name ? name :"No Dues Certificate",
+                fontSize: 11,
+                alignment: "center",
+              },
+            ],
+            alignment: "center",
+          },
+
+          // Right: QR code (if available
           qrCodeDataUrl
             ? {
                 image: qrCodeDataUrl,

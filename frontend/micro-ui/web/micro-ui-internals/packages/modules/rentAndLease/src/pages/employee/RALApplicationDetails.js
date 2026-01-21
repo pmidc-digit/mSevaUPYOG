@@ -99,6 +99,9 @@ const RALApplicationDetails = () => {
   }
 
   actions = actions?.filter((action) => {
+    if (action.action === "CYCLE_Bill_GENERATED") {
+      return false;
+    }
     if (action.action === "PAY_SETTLEMENT_AMOUNT") {
       return (
         applicationData?.amountToBeDeducted > 0 &&
@@ -431,8 +434,8 @@ const RALApplicationDetails = () => {
                   // style={MenuStyle}
                 />
               ) : null}
-              <div style={{textAlign:"right"}}>
-              <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+              <div style={{ textAlign: "right" }}>
+                <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
               </div>
             </div>
           </ActionBar>

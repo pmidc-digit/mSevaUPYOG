@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -12,7 +12,7 @@ import {
   CardLabelError,
   UploadFile,
 } from "@mseva/digit-ui-react-components";
-
+import { formatDateForInput } from "../utils";
 const NOCSiteDetails = (_props) => {
   let tenantId;
   if (window.location.pathname.includes("employee")) {
@@ -25,7 +25,7 @@ const NOCSiteDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
-
+  console.log('currentStepData herrrrre', currentStepData)
   //logic for Net Plot Area After Widening (A-B)
   const [netPlotArea, setNetPlotArea] = useState("0.00");
   const NetTotalArea = watch("netTotalArea");
@@ -43,7 +43,6 @@ const NOCSiteDetails = (_props) => {
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("");
-
   const { fields: areaFields, append: addFloor, remove: removeFloor } = useFieldArray({
     control,
     name: "floorArea",
@@ -74,22 +73,14 @@ const NOCSiteDetails = (_props) => {
   const [buildingStatus, setBuildingStatus] = useState(currentStepData?.siteDetails?.buildingStatus || null);
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
-  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
+  let { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
-  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
+  console.log('roadType', roadType)
 
-  const ulbListOptions = ulbList?.map((city) => ({
-    ...city,
-    displayName: t(city.i18nKey),
-  }));
-
-  useEffect(() => {
-    if (ulbName) {
-      const ulbTypeFormatted = ulbName?.city?.ulbType;
-      setUlbType(ulbTypeFormatted);
-      setValue("ulbType", ulbTypeFormatted);
-    }
-  }, [ulbName, setValue]);
+const sortedRoadType = useMemo(
+  () => roadType?.slice().sort((a, b) => a.name.localeCompare(b.name)),
+  [roadType]
+);
 
   /**Start - District and Zone caculation logic */
   const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
@@ -105,9 +96,9 @@ const NOCSiteDetails = (_props) => {
     },
   ];
 
-  const allCities = Digit.Hooks.noc.useTenants();
+  const  allCities = Digit.Hooks.noc.useTenants();
+
   console.log('allcities', allCities)
-  const [cities, setcitiesopetions] = useState(allCities);
   
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
@@ -134,19 +125,27 @@ const NOCSiteDetails = (_props) => {
   // }
   // }, [fetchedLocalities]);\
 
-  //logic for default selection of district
+  //logic for default selection of district , ulbname and type
   useEffect(() => {
     if (tenantId && allCities?.length > 0) {
-      const defaultCity = allCities.find((city) => city.code === tenantId)?.city?.districtName;
-
-      console.log('defaultCity', defaultCity)
-      if (defaultCity) {
-        setSelectedCity(defaultCity);
-        setValue("district", defaultCity); // sets default in react-hook-form
+      const cityobj = allCities.find((city) => city.code === tenantId)
+      const defaultDistrict  = cityobj?.city?.districtName || "";
+      const defaultUlbName = cityobj?.city?.name || "";
+      const defaultUlbType = cityobj?.city?.ulbType || "";
+      console.log('defaultCity', defaultDistrict)
+      if (defaultDistrict) {
+        setSelectedCity(defaultDistrict);
+        setUlbName(defaultUlbName);
+        setUlbName(defaultUlbName);
+        setUlbType(defaultUlbType);
+        setValue("district", defaultDistrict);
+        setValue("ulbName", defaultUlbName); // sets default in react-hook-form
+        setValue("ulbType", defaultUlbType);
       }
     }
   }, [tenantId, allCities]);
 
+  
   useEffect(() => {
     //console.log("currentStepData3", currentStepData);
     const formattedData = currentStepData?.siteDetails;
@@ -257,27 +256,25 @@ const NOCSiteDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-              {!isUlbListLoading && (
-                <Controller
-                  control={control}
-                  name={"ulbName"}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      // select={props.onChange}
-                      select={(e) => {
-                        setUlbName(e);
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={ulbListOptions}
-                      optionKey="displayName"
-                      t={t}
-                    />
-                  )}
-                />
-              )}
+              <Controller
+                control={control}
+                name={"ulbName"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={ulbName || props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disable="true"
+                  />
+                )}
+              />
+
               <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
@@ -291,9 +288,10 @@ const NOCSiteDetails = (_props) => {
               <Controller
                 control={control}
                 name="ulbType"
+                rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
                   <TextInput
-                    // value={props.value}
+                    className="form-field"
                     value={ulbType || props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -305,6 +303,7 @@ const NOCSiteDetails = (_props) => {
                   />
                 )}
               />
+              {errors?.ulbType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbType.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -398,7 +397,7 @@ const NOCSiteDetails = (_props) => {
                     required: t("REQUIRED_FIELD"),
                   }}
                   render={(props) => (
-                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={roadType} optionKey="name" t={t} />
+                    <Dropdown className="form-field" select={props.onChange} selected={props.value} option={sortedRoadType} optionKey="name" t={t} />
                   )}
                 />
               )}
@@ -928,9 +927,9 @@ const NOCSiteDetails = (_props) => {
                   //   value: 4,
                   //   message: t("MIN_4_CHARACTERS_REQUIRED"),
                   // },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  validate: (value) => {
+                    const sanitized = value.replace(/\//g, ""); // remove all "/"
+                    return sanitized.length <= 15 || t("MAX_15_CHARACTERS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -946,6 +945,45 @@ const NOCSiteDetails = (_props) => {
                 )}
               />
               {errors?.vasikaNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.vasikaNumber.message}</p>}
+            </div>
+          </LabelFieldPair>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("NOC_VASIKA_DATE")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="vasikaDate"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  validate: (value) => {
+                    // const today = new Date();
+                    // const dob = new Date(value);
+                    // const age = today.getFullYear() - dob.getFullYear();
+                    // const m = today.getMonth() - dob.getMonth();
+                    // const d = today.getDate() - dob.getDate();
+                    // const is18OrOlder = age >= 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+                    // return is18OrOlder || t("DOB_MUST_BE_18_YEARS_OLD");
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    type="date"
+                    value={formatDateForInput(props.value)}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    min="1900-01-01"
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+                )}
+              />
+              {errors?.vasikaDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors?.vasikaDate?.message}</p>}
             </div>
           </LabelFieldPair>
 

@@ -57,6 +57,7 @@ const HRMSEMPMAPDetails = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [obpsRoleMap, setObpsRoleMap] = useState({});
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const stateId = Digit.ULBService.getStateId();
 
   useEffect(() => {
@@ -78,6 +79,12 @@ const HRMSEMPMAPDetails = () => {
       return;
     }
     
+    // Safety check: Ensure data and obpsRoleMap are loaded before fetching
+    if (!data?.Employees?.[0] || !obpsRoleMap || Object.keys(obpsRoleMap).length === 0) {
+      console.warn("Data or OBPS roles not yet loaded, skipping fetch");
+      return;
+    }
+    
     try {
       setMappingLoading(true);
       
@@ -88,16 +95,16 @@ const HRMSEMPMAPDetails = () => {
       });
       
       if (response?.Employees) {
+        // Get employee's OBPS roles from main data object (calculated once for all mappings)
+        let roleNames = "No OBPS Roles";
+        if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
+          const empRoles = data.Employees[0].user.roles
+            .filter(role => obpsRoleMap[role.code])
+            .map(role => obpsRoleMap[role.code]);
+          roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
+        }
+        
         const transformedData = response.Employees.map((emp, index) => {
-          // Get employee's OBPS roles from main data object
-          let roleNames = "No OBPS Roles";
-          if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
-            const empRoles = data.Employees[0].user.roles
-              .filter(role => obpsRoleMap[role.code])
-              .map(role => obpsRoleMap[role.code]);
-            roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
-          }
-          
           return {
             id: emp.uuid || emp.id,
             displayId: String(pageOffset + index + 1),
@@ -107,7 +114,7 @@ const HRMSEMPMAPDetails = () => {
             subCategory: emp.subcategory || "N/A",
             ward: emp.assignedTenantId || "N/A",
             zone: emp.zone || "N/A",
-            roles: roleNames,
+            roles: roleNames, // Same roles for all mappings since it's per employee
           };
         });
         setMappingData(transformedData);
@@ -135,7 +142,7 @@ const HRMSEMPMAPDetails = () => {
     if (data && Object.keys(obpsRoleMap).length > 0) {
       fetchMappingData();
     }
-  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap]);
+  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, refreshCounter]);
 
   function onActionSelect(action) {
     setSelectedAction(action);
@@ -188,8 +195,8 @@ const HRMSEMPMAPDetails = () => {
         const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
         
         if (response?.ResponseInfo?.status === "successful") {
-          // Refresh data from server
-          await fetchMappingData();
+          // Trigger refresh through useEffect to ensure proper data flow
+          setRefreshCounter(prev => prev + 1);
           setShowToast({ key: true, label: "All mappings deleted successfully!" });
         } else {
           setShowToast({ key: true, label: "Failed to delete mappings", error: true });
@@ -226,8 +233,8 @@ const HRMSEMPMAPDetails = () => {
         const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
         
         if (response?.ResponseInfo?.status === "successful") {
-          // Refresh data from server
-          await fetchMappingData();
+          // Trigger refresh through useEffect to ensure proper data flow
+          setRefreshCounter(prev => prev + 1);
           setShowToast({ key: true, label: "Mapping deleted successfully!" });
         } else {
           setShowToast({ key: true, label: "Failed to delete mapping", error: true });

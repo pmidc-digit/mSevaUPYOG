@@ -10,6 +10,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 );
 
 function PTRDocument({ petdetail = {} }) {
+  const isMobile = window.Digit.Utils.browser.isMobile();
   const { t } = useTranslation();
   const documents = petdetail?.documents || [];
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePetDocumentSearch({ petdetail });
@@ -35,11 +36,15 @@ function PTRDocument({ petdetail = {} }) {
                 >
                   <div className="document-card">
                     <div className="document-icon-wrapper">
-                      <PDFSvg width={80} height={100} />
-                    </div>
-                    <p className="document-name">
-                      {t(`${document?.documentType.replace(".", "_")}`)}
-                    </p>
+                    <PDFSvg width={isMobile ? 50 : 80} height={isMobile ? 60 : 100} />
+                  </div>
+                   <p className="document-name" title={t(document?.documentType)}>
+                    {(() => {
+                      const text = t(document?.documentType);
+                      const maxLength = isMobile ? 8 : 12;
+                      return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+                    })()}
+                  </p>
                     <div className="document-action-label">
                       View
                     </div>

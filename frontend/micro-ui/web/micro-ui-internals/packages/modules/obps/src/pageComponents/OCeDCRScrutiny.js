@@ -52,7 +52,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
             .then((result, err) => {
                 if (result?.BPA?.length > 0) {
                     const edcrNumber = result?.BPA?.[0]?.edcrNumber;
-                    const tenantIdForEdcr = result?.BPA?.[0]?.tenantId;
+                    const tenantIdForEdcr = stateId;
                     if (permitDate === convertEpochToDate(result?.BPA?.[0]?.approvalDate)) {
                         Digit.OBPSService.scrutinyDetails(tenantIdForEdcr, { edcrNumber: edcrNumber }).then((response) => {
                             Digit.WorkflowService.getAllApplication(tenantIdForEdcr, { businessIds: result?.BPA?.[0]?.applicationNo, history: true })

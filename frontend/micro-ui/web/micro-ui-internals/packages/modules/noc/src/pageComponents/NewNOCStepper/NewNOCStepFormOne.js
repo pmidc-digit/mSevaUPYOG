@@ -8,7 +8,7 @@ import NOCProfessionalDetails from "../NOCProfessionalDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
-
+import { formatDateForInput } from "../../utils";
 const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -66,6 +66,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           PropertyOwnerMobileNumber: "",
           PropertyOwnerAddress: "",
           PropertyOwnerPlotArea: null,
+          ownerType:"",
+          propertyVasikaDate: "",
+          propertyVasikaNo:""
         },
       ],
     },
@@ -122,6 +125,13 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     dispatch(UPDATE_NOC_OwnerIds("ownerIdList",ownerIdList));
     dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList",ownerPhotoList));
+    dispatch(
+       UPDATE_NOCNewApplication_FORM("siteDetails", {
+        ...currentStepData?.siteDetails,
+        vasikaNumber : currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaNo,
+        vasikaDate: formatDateForInput (currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaDate)
+      })
+    );
     onGoNext();
   }
 

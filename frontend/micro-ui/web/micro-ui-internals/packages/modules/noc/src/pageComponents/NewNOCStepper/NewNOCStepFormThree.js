@@ -59,10 +59,21 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       const isVacant= completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
       //console.log("isVacant Here==>", isVacant);
 
-      const nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+      let nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
 
       const documentsData = documents?.documents?.documents || [];
 
+      const isFirm = completeData?.applicationDetails?.owners?.some((owner) => {
+      const code = owner?.ownerType?.code ?? owner?.ownerType;
+      return String(code).toLowerCase() === "firm";
+    });
+
+    if (isFirm) {
+      nocDocumentsType = nocDocumentsType.map((doc) =>
+        doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc
+      );
+    }
+      
       // Step 1: Extract required document codes from nocDocumentsType
       const requiredDocs = nocDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
 

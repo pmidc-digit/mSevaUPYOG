@@ -95,6 +95,31 @@ export const pdfDocumentName = (documentLink = "", index = 0) => {
   return documentName;
 };
 
+export const amountToWords =(num) =>{
+  if (num == null || num === "") return "Zero Rupees";
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+                "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
+                "Seventeen","Eighteen","Nineteen"],
+        tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"],
+        units = ["","Thousand","Lakh","Crore"];
+
+  const chunk = n => n < 20 ? ones[n] :
+                 n < 100 ? tens[Math.floor(n/10)] + (n%10? " " + ones[n%10]:"") :
+                 ones[Math.floor(n/100)] + " Hundred" + (n%100? " " + chunk(n%100):"");
+
+  const toWords = n => {
+    if (!n) return "";
+    let parts = [n%1000], res = "";
+    n = Math.floor(n/1000);
+    while(n){ parts.push(n%100); n=Math.floor(n/100); }
+    for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";
+    return res.trim();
+  };
+
+  let [r,p] = num.toString().split(".").map(x=>+x||0);
+  return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
+}
+
 export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
   let downloadLink = documents[fileStoreId] || "";
   let differentFormats = downloadLink?.split(",") || [];
@@ -181,7 +206,10 @@ export const pdfDownloadLinkUpdated = (documents = {}, fileStoreId = "") => {
 };
 
 
-export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {
+export function buildFeeHistoryByTax(
+  calculations = [],
+  { newestFirst = true, limit = null } = {}
+) {
   const map = {};
   if (!Array.isArray(calculations)) return map;
 
@@ -191,13 +219,20 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
 
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
+
       map[th.taxHeadCode] = map[th.taxHeadCode] || [];
-      map[th.taxHeadCode].push({
-        who,
-        estimateAmount: th?.estimateAmount ?? null,
-        remarks: th?.remarks ?? null,
-        isLatest: calc?.isLatest ?? false,
-      });
+
+      const lastEntry = map[th.taxHeadCode][map[th.taxHeadCode].length - 1];
+
+      // Only add if estimateAmount differs from last entry
+      if (!lastEntry || lastEntry.estimateAmount !== th?.estimateAmount) {
+        map[th.taxHeadCode].push({
+          who,
+          estimateAmount: th?.estimateAmount ?? null,
+          remarks: th?.remarks ?? null, // still stored, but not part of uniqueness check
+          isLatest: calc?.isLatest ?? false,
+        });
+      }
     });
   });
 
@@ -213,6 +248,7 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
   return map;
 }
 
+
 export function formatDuration(totalTimeMs) {
   const totalSeconds = Math.floor(totalTimeMs / 1000);
 
@@ -223,6 +259,64 @@ export function formatDuration(totalTimeMs) {
 
   return { days, hours, minutes, seconds };
 }
+
+export const convertToDDMMYYYY = (dateString) => {
+     if (!dateString) return "";
+
+     const parts = dateString.split("-");
+     if (parts.length !== 3) return dateString; // fallback
+
+     const [a, b, c] = parts;
+
+     // Case 1: already dd-mm-yyyy
+     if (a.length === 2 && c.length === 4) {
+       return dateString;
+     }
+
+     // Case 2: yyyy-mm-dd → dd-mm-yyyy
+     if (a.length === 4) {
+       return `${c}-${b}-${a}`;
+     }
+
+     // Case 3: mm-dd-yyyy → dd-mm-yyyy
+     if (c.length === 4 && a.length === 2 && b.length === 2) {
+       return `${b}-${a}-${c}`;
+     }
+
+     // Fallback: return original
+     return dateString;
+   };
+
+
+export const formatDateForInput = (dateString) => {
+  if (!dateString) return "";
+
+  // Already in yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+
+  // Handle dd-mm-yyyy
+  if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+    const [day, month, year] = dateString.split("-");
+    const date = new Date(`${year}-${month}-${day}`);
+    if (isNaN(date)) return "";
+    return date.toISOString().split("T")[0];
+  }
+
+  // Handle mm/dd/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+    const [month, day, year] = dateString.split("/");
+    const date = new Date(`${year}-${month}-${day}`);
+    if (isNaN(date)) return "";
+    return date.toISOString().split("T")[0];
+  }
+
+  // Fallback for other formats
+  const date = new Date(dateString);
+  if (isNaN(date)) return "";
+  return date.toISOString().split("T")[0];
+};
+
+
 
 
 

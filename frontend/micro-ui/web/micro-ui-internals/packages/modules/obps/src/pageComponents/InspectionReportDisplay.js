@@ -7,6 +7,30 @@ import { useLocation } from "react-router-dom";
 
 const InspectionReportDisplay = ({fiReport}) => {
     const { t } = useTranslation();
+
+    const report = useMemo(() => {
+      if (fiReport && fiReport.length > 0) {
+        return fiReport[0]; // Display the first report for now
+      }
+      return null;
+    }, [fiReport]);
+
+    const tableData = useMemo(() => {
+      if (report?.questionList?.length > 0) {
+        return [...report.questionList]
+          .sort((a, b) => {
+            const getIndex = (q) =>
+              Number(q?.question?.split("_").pop()) || 0;
+
+            return getIndex(a) - getIndex(b);
+          })
+          .map((item, idx) => ({
+            question: t(item?.question),
+            remarks: report?.["Remarks_" + idx] || "-"
+          }));
+      }
+      return [];
+    }, [report, t]);
   
     if (!fiReport || fiReport.length === 0) {
       return <div>{t("NO_INSPECTION_REPORTS_AVAILABLE")}</div>;
@@ -15,8 +39,8 @@ const InspectionReportDisplay = ({fiReport}) => {
   
     return (
       <div>
-        {fiReport.map((report, index) => (
-          <div key={index}>
+        {/* {fiReport.map((report, index) => ( */}
+          {/* <div key={index}> */}
             <CardSectionHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
             {/* {<LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")}: `}</CardLabel>
@@ -51,37 +75,30 @@ const InspectionReportDisplay = ({fiReport}) => {
                         <Table
                             className="customTable table-border-style"
                             t={t}
-                            data={report.questionList.map((item, idx) => ({
-                                question: t(item?.question),
-                                answer: t(report?.["question_" + idx]?.i18nKey),
-                                remarks: report?.["Remarks_" + idx] || "-"
-                            }))}
+                            data={tableData}
                             columns={[
                                 {
                                     Header: t("BPA_CHECK_LIST_DETAILS"),
                                     accessor: "question"
-                                },
-                                {
-                                    Header: t("ACTION_TEST_RESPONSE"),
-                                    accessor: "answer"
-                                },
+                                },                                
                                 {
                                     Header: t("BPA_REMARKS"),
                                     accessor: "remarks"
                                 }
                             ]}
                             getCellProps={() => ({ style: {} })}
-                            disableSort={false}
-                            autoSort={true}
+                            disableSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
+                            pageSizeLimit={tableData.length}
                         />
               ) : (
                 <div>{t("NA")}</div>
               )}
             </div>
-          </div>
-        ))}
+          {/* </div> */}
+        {/* ))} */}
       </div>
     );
   };

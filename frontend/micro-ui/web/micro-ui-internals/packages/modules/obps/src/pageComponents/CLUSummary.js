@@ -41,19 +41,21 @@ function CLUSummary({ currentStepData: formData, t }) {
   return (
     <div className="employee-main-application-details">
       
-      <Card>
+    
       <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
       <StatusTable>
         <CLUImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
       </StatusTable>
-      </Card>
+   
 
       {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
         return (
-        <Card>
+          <div>
+
          <CardSubHeader>
            {index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`}
          </CardSubHeader>
+        
 
          <StatusTable>
          <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"}/>
@@ -64,14 +66,14 @@ function CLUSummary({ currentStepData: formData, t }) {
          <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"}/>
          <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"}/> 
          </StatusTable>
-
-        </Card>
+</div>
+    
         )
       })}
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-          <Card>
+        
           <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
           <StatusTable>
            <Row label={t("BPA_PROFESSIONAL_NAME_LABEL")} text={formData?.applicationDetails?.professionalName || "N/A"}/>
@@ -81,11 +83,11 @@ function CLUSummary({ currentStepData: formData, t }) {
            <Row label={t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")} text={formData?.applicationDetails?.professionalMobileNumber || "N/A"}/>
            <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={formData?.applicationDetails?.professionalAddress|| "N/A"}/> 
           </StatusTable>
-          </Card>
+       
         </React.Fragment>
       )}
       
-      <Card>
+ 
       <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
       <StatusTable>
 
@@ -111,9 +113,9 @@ function CLUSummary({ currentStepData: formData, t }) {
         <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={formData?.siteDetails?.localityTransferredSchemeType?.name || "N/A"}/>
 
       </StatusTable>
-      </Card>
+  
      
-      <Card>
+
       <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
       <StatusTable>
 
@@ -139,6 +141,7 @@ function CLUSummary({ currentStepData: formData, t }) {
         <Row label={t("BPA_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/> 
 
         <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"}/>
+        <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(formData?.siteDetails?.vasikaDate) || "N/A"}/>
         <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"}/>
         <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={formData?.siteDetails?.ownershipInPct || "N/A"}/> 
         <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.proposedRoadWidthAfterWidening || "N/A"}/> 
@@ -152,14 +155,14 @@ function CLUSummary({ currentStepData: formData, t }) {
 
         {/* <Row label={t("BPA_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.buildingCategory?.name || "N/A"}/> */}
       </StatusTable>
-      </Card>
+  
       
-      <Card>
+  
       <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
       <StatusTable>
         <Row label={t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")} text={formData?.siteDetails?.specificationPlotArea || "N/A"}/>
       </StatusTable>
-      </Card>
+   
 
       {/* <Card>
       <CardSubHeader>{t("BPA_SITE_COORDINATES_LABEL")}</CardSubHeader>
@@ -171,33 +174,33 @@ function CLUSummary({ currentStepData: formData, t }) {
       </StatusTable>
       </Card> */}
 
-      <Card>
+ 
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
-        {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />)}
+        {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
       </StatusTable>
-      </Card>
+ 
       
-      <Card>
+
       <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
       <StatusTable>
         {ownerIds?.ownerIdList?.length > 0 && <CLUDocumentTableView documents={ownerIds?.ownerIdList} />}
       </StatusTable>
-      </Card>
+
      
-      <Card>
+
       <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
       <StatusTable>
         {remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}
       </StatusTable>
-      </Card>
+
      
-     <Card>
+
       <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
       <StatusTable>
         {formData && <CLUFeeEstimationDetails formData={formData} feeType="PAY1"/>}
       </StatusTable>
-      </Card>
+ 
 
     </div>
   );

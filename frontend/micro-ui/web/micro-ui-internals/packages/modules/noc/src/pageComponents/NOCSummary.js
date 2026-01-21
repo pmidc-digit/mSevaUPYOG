@@ -63,107 +63,125 @@ function NOCSummary({ currentStepData: formData, t }) {
             (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
           );
   const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+const primaryOwner = formData?.applicationDetails?.owners?.[0];
+const propertyId =formData?.applicationDetails?.owners?.[0]?.propertyId;
 
+console.log('primaryOwner and propertyId here in summary', primaryOwner, propertyId)
 
   return (
     <div className="employee-main-application-details">
-
-       <Card>
-         <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <StatusTable>
-           <NOCImageView ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId} ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName} />
+       <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
+     
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <StatusTable style ={{border : "none"}}>
+          <NOCImageView
+            ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
+            ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
+          />
         </StatusTable>
-        </Card>
       
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index)=>{
-        return (
-        <Card>
-         <CardSubHeader>
-           {index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}
-         </CardSubHeader>
-         <StatusTable>
-         <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"}/>
-         <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"}/>
-         <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"}/>
-         <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"}/>
-         <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={owner?.propertyId || "N/A"}/>
-         <Row label={t("PROPERTY_OWNER_NAME")} text={owner?.PropertyOwnerName || "N/A"}/>
-         <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={owner?.PropertyOwnerMobileNumber || "N/A"}/>
-         <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={owner?.PropertyOwnerAddress || "N/A"}/>
-         <Row label={t("PROPERTY_PLOT_AREA")} text={owner?.PropertyOwnerPlotArea || "N/A"}/>
 
-         <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(owner?.dateOfBirth) || "N/A"}/>   
-         <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"}/>
-         <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"}/>    
-         </StatusTable>
-        </Card>
-        )
+      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
+        return (
+          <Card>
+            <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>
+            <StatusTable>
+                {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
+              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
+              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
+              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
+              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"} />
+              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(owner?.dateOfBirth) || "N/A"} />
+              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"} />
+              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"} />
+            </StatusTable>
+          </Card>
+        );
       })}
+
+      {primaryOwner && propertyId && (
+        <Card>
+          <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
+            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
+            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
+            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
+            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
+          </StatusTable>
+        </Card>
+      )}
 
       {formData?.applicationDetails?.professionalName && (
         <React.Fragment>
-        <Card>
-        <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
+          <Card>
+            <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
+            <StatusTable>
+              <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={formData?.applicationDetails?.professionalName || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={formData?.applicationDetails?.professionalEmailId || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={formData?.applicationDetails?.professionalRegId || "N/A"} />
+              <Row
+                label={t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
+                text={formData?.applicationDetails?.professionalRegIdValidity || "N/A"}
+              />
+              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={formData?.applicationDetails?.professionalMobileNumber || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={formData?.applicationDetails?.professionalAddress || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+
+      <Card>
+        <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
         <StatusTable>
-         <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={formData?.applicationDetails?.professionalName || "N/A"}/>
-         <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={formData?.applicationDetails?.professionalEmailId || "N/A"}/>
-         <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={formData?.applicationDetails?.professionalRegId || "N/A"}/>
-         <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} text={formData?.applicationDetails?.professionalRegIdValidity || "N/A"}/>
-         <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={formData?.applicationDetails?.professionalMobileNumber || "N/A"}/>
-         <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={formData?.applicationDetails?.professionalAddress|| "N/A"}/>   
+          <Row label={t("NOC_PLOT_NO_LABEL")} text={formData?.siteDetails?.plotNo || "N/A"} />
+          <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"} />
+          <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || "N/A"} />
+          <Row label={t("NOC_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"} />
+          <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
+          <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
+          <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"} />
+          <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={formData?.siteDetails?.areaLeftForRoadWidening || "N/A"} />
+          <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.netPlotAreaAfterWidening || "N/A"} />
+          <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={formData?.siteDetails?.netTotalArea || "N/A"} />
+          <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={formData?.siteDetails?.roadWidthAtSite || "N/A"} />
+          <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={formData?.siteDetails?.buildingStatus?.name || "N/A"} />
+
+          {formData?.siteDetails?.isBasementAreaAvailable && (
+            <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={formData?.siteDetails?.isBasementAreaAvailable?.code || "N/A"} />
+          )}
+
+          {formData?.siteDetails?.basementArea && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={formData?.siteDetails?.basementArea || "N/A"} />}
+
+          {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" &&
+            formData?.siteDetails?.floorArea?.map((floor, index) => <Row label={getFloorLabel(index)} text={floor?.value || "N/A"} />)}
+
+          {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && (
+            <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={formData?.siteDetails?.totalFloorArea || "N/A"} />
+          )}
+
+          <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
+          <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"} />
+          <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"} />
+          <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"} />
+          <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={formData?.siteDetails?.colonyName || "N/A"} />
+          <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"} />
+          <Row label={t("NOC_VASIKA_DATE")} text={formData?.siteDetails?.vasikaDate || "N/A"} />
+          <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={formData?.siteDetails?.khewatAndKhatuniNo || "N/A"} />
         </StatusTable>
-        </Card>
-         </React.Fragment>
-        )}
-        
-      <Card>
-      <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
-      <StatusTable>
-        <Row label={t("NOC_PLOT_NO_LABEL")} text={formData?.siteDetails?.plotNo || "N/A"}/>
-        <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"}/>
-        <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || "N/A"}/>
-        <Row label={t("NOC_ULB_TYPE_LABEL")} text={ formData?.siteDetails?.ulbType || "N/A"}/>
-        <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"}/>
-        <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"}/>   
-         <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"}/>
-         <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={formData?.siteDetails?.areaLeftForRoadWidening || "N/A"}/>
-         <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.netPlotAreaAfterWidening || "N/A"}/>
-         <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={ formData?.siteDetails?.netTotalArea || "N/A"}/>
-         <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={formData?.siteDetails?.roadWidthAtSite || "N/A"}/>
-         <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={formData?.siteDetails?.buildingStatus?.name || "N/A"}/>   
-
-        {formData?.siteDetails?.isBasementAreaAvailable &&  <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={formData?.siteDetails?.isBasementAreaAvailable?.code || "N/A"}/>}
-
-        {formData?.siteDetails?.basementArea && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={formData?.siteDetails?.basementArea || "N/A"}/>}
-
-        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && formData?.siteDetails?.floorArea?.map((floor, index) =>
-           <Row label={getFloorLabel(index)} text={floor?.value || "N/A"}/>
-        )}
-
-        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={formData?.siteDetails?.totalFloorArea || "N/A"}/>}
-
-        <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"}/>
-        <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/>
-        <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"}/>
-        <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={ formData?.siteDetails?.villageName || "N/A"}/>
-        <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={formData?.siteDetails?.colonyName || "N/A"}/>
-        <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"}/>   
-        <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={formData?.siteDetails?.khewatAndKhatuniNo || "N/A"}/>
-
-      </StatusTable>
       </Card>
-     
+
       <Card>
-      <CardSubHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSubHeader>
-      <StatusTable>
-        <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={formData?.siteDetails?.specificationPlotArea || "N/A"}/>
-        <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || "N/A"}/>
-        <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || "N/A"}/>
-        <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || "N/A"}/>
-        <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A"}/>
-      </StatusTable>
+        <CardSubHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSubHeader>
+        <StatusTable>
+          <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={formData?.siteDetails?.specificationPlotArea || "N/A"} />
+          <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || "N/A"} />
+          <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || "N/A"} />
+          <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || "N/A"} />
+          <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
+        </StatusTable>
       </Card>
-      
+
       {/* <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
         <StatusTable>
@@ -174,7 +192,7 @@ function NOCSummary({ currentStepData: formData, t }) {
         </StatusTable>
 
         {/* Render site photographs dynamically in same style */}
-        {/* {formData?.documents?.documents?.documents
+      {/* {formData?.documents?.documents?.documents
           ?.filter((doc) => doc.documentType?.startsWith("OWNER.SITEPHOTOGRAPH"))
           .map((photo, idx) => (
             <div key={photo.uuid} style={{ marginTop: "16px" }}>
@@ -184,21 +202,24 @@ function NOCSummary({ currentStepData: formData, t }) {
               />
             </div>
           ))} */}
-      {/* </Card> */} 
+      {/* </Card> */}
 
       <Card>
-      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-      <StatusTable style={{
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable
+          style={{
             display: "flex",
-            gap: "20px", 
-            flexWrap: "wrap", 
-            justifyContent : "space-between"
-          }}>
-        {sitePhotos?.length > 0 && sitePhotos?.map((doc)=> <NocSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />)}
-      </StatusTable>
+            gap: "20px",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {sitePhotos?.length > 0 &&
+            sitePhotos?.map((doc) => (
+              <NocSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />
+            ))}
+        </StatusTable>
       </Card>
-
-
 
       {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
@@ -212,19 +233,14 @@ function NOCSummary({ currentStepData: formData, t }) {
       </div> */}
 
       <Card>
-      <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
-      <StatusTable>
-        {ownerIds?.ownerIdList?.length > 0 && <NOCDocumentTableView documents={ownerIds?.ownerIdList} />}
-      </StatusTable>
+        <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
+        <StatusTable>{ownerIds?.ownerIdList?.length > 0 && <NOCDocumentTableView documents={ownerIds?.ownerIdList} />}</StatusTable>
       </Card>
 
       <Card>
-      <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-      <StatusTable>
-        {remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs}/>}
-      </StatusTable>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
       </Card>
-
     </div>
   );
 }

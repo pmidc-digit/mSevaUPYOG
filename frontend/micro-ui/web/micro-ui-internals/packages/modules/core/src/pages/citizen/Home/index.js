@@ -171,7 +171,7 @@ const Home = () => {
             {
               name: t(citizenServicesObj?.props?.[7]?.label),
               Icon: <ComplaintIcon />,
-              onClick: () => history.push(citizenServicesObj?.props?.[7]?.navigationUrl),
+              onClick: () => toDigitUrl(citizenServicesObj?.props?.[7]?.navigationUrl),
             },
           ]
         : citizenServicesObj?.props
@@ -179,7 +179,7 @@ const Home = () => {
             ?.map((item) => ({
               name: t(item.label),
               Icon: getIconForService(item.code),
-              onClick: () => history.push(item.navigationUrl),
+              onClick: () => toDigitUrl(item.navigationUrl),
             })) || [];
 
     const filtered = allServices.filter((service) => service.name.toLowerCase().includes(query));

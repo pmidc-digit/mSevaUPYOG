@@ -6,6 +6,7 @@ import { useState, useRef } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
 import NOCSummary from "../NOCSummary";
+import { convertToDDMMYYYY } from "../../utils";
 
 const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -170,6 +171,8 @@ console.log('calculatorData', calculatorData)
 
     const updatedApplication = {
       ...nocFormData?.apiData?.Noc?.[0],
+      vasikaNumber: nocFormData?.siteDetails?.vasikaNumber || "", 
+      vasikaDate: nocFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.vasikaDate) : "",
       workflow: {
         action: selectedAction?.action || "",
         // assignes:selectedAction?.action || "",
@@ -177,7 +180,7 @@ console.log('calculatorData', calculatorData)
       },
       nocDetails: {
         ...nocFormData?.apiData?.Noc?.[0]?.nocDetails,
-        //update data with redux as we can not use old data for update api
+                //update data with redux as we can not use old data for update api
         additionalDetails: {
           ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
           applicationDetails: {
@@ -186,12 +189,13 @@ console.log('calculatorData', calculatorData)
           },
           siteDetails: {
             ...nocFormData?.siteDetails,
-            ulbName: nocFormData?.siteDetails?.ulbName?.name || "",
+            ulbName: nocFormData?.siteDetails?.ulbName?.name || nocFormData?.siteDetails?.ulbName || "",
             roadType: nocFormData?.siteDetails?.roadType?.name || "",
             buildingStatus: nocFormData?.siteDetails?.buildingStatus?.name || "",
             isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
             district: nocFormData?.siteDetails?.district || "",
             zone: nocFormData?.siteDetails?.zone?.name || "",
+            vasikaDate: nocFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.vasikaDate) : "",
 
             specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",
             specificationNocType: nocFormData?.siteDetails?.specificationNocType?.name || "",
@@ -297,18 +301,21 @@ console.log('calculatorData', calculatorData)
   }
   if (nocCalculatorLoading) return <Loader />;
 
+  const ownersList= currentStepData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const combinedOwnersName = ownersList?.join(", ");
+
   return (
     <React.Fragment>
       {nocCalculatorLoading && <Loader />}
       <NOCSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I/We am/are submitting this application on behalf of the applicant (${
-          currentStepData?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "NA"
-        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
-        onChange={(e) => handleCheckBox(e)}
-        value={selectedCheckBox}
-        checked={selectedCheckBox}
+              label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
+                combinedOwnersName
+              }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+              onChange={(e) => handleCheckBox(e)}
+              value={selectedCheckBox}
+              checked={selectedCheckBox}
       />
 
       {actions && (

@@ -1,6 +1,7 @@
 import React from "react";
 import {pdfDownloadLink, pdfDocumentName} from "./index"
 import {Loader} from "@mseva/digit-ui-react-components";
+import EXIF from "exif-js";
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
@@ -79,6 +80,10 @@ const getApplicantDetails = (appData, t) => {
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
     values: [
+      owner?.ownerType?.code && { 
+        title: t("NOC_OWNER_TYPE_LABEL"), 
+        value: owner?.ownerType?.code 
+      },
       {
         title: t("NOC_FIRM_OWNER_NAME_LABEL"),
         value: owner?.ownerOrFirmName || "NA",
@@ -97,9 +102,7 @@ const getApplicantDetails = (appData, t) => {
       },
       {
         title: t("NOC_APPLICANT_DOB_LABEL"),
-        value: owner?.dateOfBirth
-          ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
-          : "NA",
+        value: owner?.dateOfBirth ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB") : "NA",
       },
       {
         title: t("NOC_APPLICANT_GENDER_LABEL"),
@@ -109,11 +112,23 @@ const getApplicantDetails = (appData, t) => {
         title: t("NOC_APPLICANT_ADDRESS_LABEL"),
         value: owner?.address || "NA",
       },
-      {
-        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
-        value: owner?.propertyId || "NA",
+      owner?.propertyId && { 
+        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"), 
+        value: owner.propertyId 
       },
-    ],
+      owner?.PropertyOwnerName && { 
+        title: t("PROPERTY_OWNER_NAME"),
+         value: owner.PropertyOwnerName 
+      },
+      owner?.PropertyOwnerMobileNumber && { 
+        title: t("PROPERTY_OWNER_MOBILE_NUMBER"), 
+        value: owner.PropertyOwnerMobileNumber 
+      },
+      owner?.PropertyOwnerPlotArea && { 
+        title: t("PROPERTY_PLOT_AREA"), 
+        value: owner.PropertyOwnerPlotArea 
+      }
+    ].filter(Boolean),
   }));
 
   return ownerDetailsArray;
@@ -192,6 +207,10 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("NOC_SITE_VASIKA_NO_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
+    },
+    {
+      title: t("NOC_VASIKA_DATE"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
     },
     {
       title: t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"),
@@ -275,7 +294,18 @@ const getSpecificationDetails = (appData, t) => {
   };
 };
 
-
+async function getExifDataFromUrl (fileUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = function () {
+      EXIF.getData(img, function () {
+        resolve(EXIF.getAllTags(this));
+      });
+    };
+    img.onerror = (err) => reject(err);
+    img.src = fileUrl;
+  });
+};
 
 const getDocuments = async (appData, t) => {
   const filteredDocs = appData?.documents?.filter(
@@ -296,7 +326,7 @@ const getDocuments = async (appData, t) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
             return {
               title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,              value: " ",
-              link: documentLink || "",
+              link: documentLink || ""
             };
           })
         : [
@@ -309,7 +339,7 @@ const getDocuments = async (appData, t) => {
 };
 
 
-const getSitePhotographs = async (appData, t) => {
+const getSitePhotographs = async (appData, t, stateCode) => {
   const sitePhotoDocs = appData?.documents?.filter(
     (doc) =>
       doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
@@ -327,33 +357,44 @@ const getSitePhotographs = async (appData, t) => {
 
   const coords = appData?.nocDetails?.additionalDetails?.coordinates || {};
 
-  const values =
-    sitePhotoDocs?.length > 0
-      ? sitePhotoDocs.map((doc) => {
-          const documentLink = pdfDownloadLink(res?.data, doc?.uuid);
+  let values = [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
 
-          // Decide which lat/long to use based on type
-          let lat = "N/A";
-          let long = "N/A";
-          if (doc.documentType === "OWNER.SITEPHOTOGRAPHONE") {
-            lat = coords?.Latitude1 || "N/A";
-            long = coords?.Longitude1 || "N/A";
-          }
-          if (doc.documentType === "OWNER.SITEPHOTOGRAPHTWO") {
-            lat = coords?.Latitude2 || "N/A";
-            long = coords?.Longitude2 || "N/A";
-          }
+  if (sitePhotoDocs?.length > 0) {
+    values = await Promise.all(
+      sitePhotoDocs.map(async (doc) => {
+        const documentLink = pdfDownloadLink(res?.data, doc?.uuid);
+        const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${doc?.documentAttachment}&tenantId=${stateCode}`;
 
-          return {
-            // Title includes photo label + coordinates
-            title:
-              (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) +
-              ` (Lat: ${lat}, Long: ${long})`,
-            value: " ",
-            link: documentLink || ""
-          };
-        })
-      : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
+        // Use your exif function here
+        const exifData = await getExifDataFromUrl(exiflink);
+        console.log("exifData in sitephotos", exifData);
+        if ([3, 6, 8].includes(exifData?.Orientation)) {
+           exifData.Orientation = 1;  
+        }
+        // Decide which lat/long to use based on type
+        let lat = "N/A";
+        let long = "N/A";
+        if (doc.documentType === "OWNER.SITEPHOTOGRAPHONE") {
+          lat = coords?.Latitude1 || "N/A";
+          long = coords?.Longitude1 || "N/A";
+        }
+        if (doc.documentType === "OWNER.SITEPHOTOGRAPHTWO") {
+          lat = coords?.Latitude2 || "N/A";
+          long = coords?.Longitude2 || "N/A";
+        }
+
+        return {
+          title:
+            (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) +
+            ` (Lat: ${lat}, Long: ${long})`,
+          value: " ",
+          link: documentLink || "",
+          exiflink: exiflink || "",
+          orientation: exifData?.Orientation || 1
+        };
+      })
+    );
+  }
 
   return {
     title: t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW"),
@@ -361,6 +402,7 @@ const getSitePhotographs = async (appData, t) => {
     values
   };
 };
+
 
 
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,ulbType, ulbName, t) => {
@@ -381,7 +423,7 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,u
   return {
     t: t,
     tenantId: tenantInfo?.code,
-    name: t("Noc Application"),
+    name: "NOC Application",
     // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
@@ -395,7 +437,7 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,u
         getSiteDetails(appData, t), 
         getSpecificationDetails(appData, t),
         await getDocuments(appData,t),
-        await getSitePhotographs(appData,t)
+        await getSitePhotographs(appData,t, stateCode)
     ],
     imageURL,
     ulbType,

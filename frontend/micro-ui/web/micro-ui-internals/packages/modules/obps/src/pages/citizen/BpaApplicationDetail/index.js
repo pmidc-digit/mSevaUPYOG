@@ -39,7 +39,8 @@ import {
   getOrderDocuments,
   getDocsFromFileUrls,
   scrutinyDetailsData,
-  amountToWords
+  amountToWords,
+  getBase64Img
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -748,6 +749,10 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     }
     if (stakeholderAddress && requestData && requestData?.additionalDetails) {
       requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+    }
+    if(requestData && requestData?.additionalDetails?.signature?.signURL){
+      const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+      requestData.additionalDetails.signature = {...requestData.additionalDetails.signature, base64Signature: result};
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {

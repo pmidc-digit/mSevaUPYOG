@@ -56,19 +56,6 @@ const NOCSiteDetails = (_props) => {
       const numericValue = parseFloat(item?.value);
       return acc + (isNaN(numericValue) ? 0 : numericValue);
     }, 0);
-    if (currentStepData){
-      const ownerObj = currentStepData?.applicationDetails?.owners?.[0]
-      const ptVasikaNo = ownerObj?.propertyVasikaNo || "";
-      const ptVasikaDate = ownerObj?.propertyVasikaDate || "";
-      setValue(`vasikaNumber`, currentStepData?.siteDetails?.vasikaNumber || ownerObj?.propertyVasikaNo || ptVasikaNo || "", { shouldValidate: true, shouldDirty: true });
-      setValue(`vasikaDate`, formatDateForInput(currentStepData?.siteDetails?.vasikaDate) || formatDateForInput(ptVasikaDate) || "", { shouldValidate: true, shouldDirty: true });
-      console.log('ptVasikaNo, ptVasikaDate', ptVasikaNo, ptVasikaDate)
-    }
-
-
-      
-
-    
 
     const numericBasementArea = isNaN(basementAreaValues) ? 0 : basementAreaValues;
     const finalSum = (sum + parseFloat(numericBasementArea)).toFixed(2);

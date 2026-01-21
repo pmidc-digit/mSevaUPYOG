@@ -64,7 +64,9 @@ function NOCSummary({ currentStepData: formData, t }) {
           );
   const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 const primaryOwner = formData?.applicationDetails?.owners?.[0];
-const propertyId =formData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+const propertyId =formData?.applicationDetails?.owners?.[0]?.propertyId;
+
+console.log('primaryOwner and propertyId here in summary', primaryOwner, propertyId)
 
   return (
     <div className="employee-main-application-details">

@@ -115,8 +115,9 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
             
         {isRegisteredStakeHolder ? (
             <React.Fragment>
+                <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
              <LayoutApplicantDetails ref={applicantDetailsRef} onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-             <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+           
             </React.Fragment>
           ): (
             <React.Fragment>

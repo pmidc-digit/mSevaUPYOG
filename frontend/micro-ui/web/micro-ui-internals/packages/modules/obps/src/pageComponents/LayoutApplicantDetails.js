@@ -49,17 +49,13 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
   ]);
   const [documentUploadedFiles, setDocumentUploadedFiles] = useState({});
   const [photoUploadedFiles, setPhotoUploadedFiles] = useState({});
+  const [panUploadedFiles, setPanUploadedFiles] = useState({});
   const [applicantErrors, setApplicantErrors] = useState({});
   const [loader, setLoader] = useState(false);
   const [isDataRestored, setIsDataRestored] = useState(false);
   // State for additional owner mobile search
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
-
-  // Expose validation method via ref
-  useImperativeHandle(ref, () => ({
-    validateAdditionalApplicants: validateAdditionalApplicants,
-  }));
 
   const closeToast = () => setShowToast(null);
 
@@ -154,6 +150,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
       const docFiles = {};
       const photoFiles = {};
+      const panFiles = {};
 
       // Map documents for all owners from their additionalDetails
       ownersFromApi.forEach((owner, ownerIndex) => {
@@ -163,16 +160,23 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
         if (owner?.additionalDetails?.ownerPhoto) {
           photoFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.ownerPhoto, fileName: "Photo" };
         }
+        if (owner?.additionalDetails?.panDocument) {
+          panFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.panDocument, fileName: "PAN Document" };
+        }
       });
 
       console.log("[v0] Mapped document files:", docFiles);
       console.log("[v0] Mapped photo files:", photoFiles);
+      console.log("[v0] Mapped PAN files:", panFiles);
 
       if (Object.keys(docFiles).length > 0) {
         setDocumentUploadedFiles(docFiles);
       }
       if (Object.keys(photoFiles).length > 0) {
         setPhotoUploadedFiles(photoFiles);
+      }
+      if (Object.keys(panFiles).length > 0) {
+        setPanUploadedFiles(panFiles);
       }
     }
 
@@ -315,8 +319,10 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
         if (key === "permanentAddress") {
           setValue("applicantAddress", value, { shouldValidate: true });
-          // Also set professional address if available
-          if (value) setValue("professionalAddress", value, { shouldValidate: true });
+        }
+
+        if (key === "address") {
+          setValue("applicantAddress", value, { shouldValidate: true });
         }
 
         if (key === "gender") {
@@ -336,12 +342,18 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
   // Save applicants data to Redux
   useEffect(() => {
-    if (applicants?.length > 0 || Object.keys(documentUploadedFiles)?.length > 0 || Object.keys(photoUploadedFiles)?.length > 0) {
+    if (
+      applicants?.length > 0 ||
+      Object.keys(documentUploadedFiles)?.length > 0 ||
+      Object.keys(photoUploadedFiles)?.length > 0 ||
+      Object.keys(panUploadedFiles)?.length > 0
+    ) {
       dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants));
       dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles));
       dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles));
+      dispatch(UPDATE_LayoutNewApplication_FORM("panUploadedFiles", panUploadedFiles));
     }
-  }, [applicants, documentUploadedFiles, photoUploadedFiles, dispatch]);
+  }, [applicants, documentUploadedFiles, photoUploadedFiles, panUploadedFiles, dispatch]);
 
   // Sync document files with react-hook-form for validation
   useEffect(() => {
@@ -358,17 +370,24 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     } else {
       setValue("primaryOwnerDocument", "", { shouldValidate: false });
     }
-  }, [photoUploadedFiles, documentUploadedFiles, setValue]);
+    // Set primary owner PAN validation
+    if (panUploadedFiles[0]?.fileStoreId) {
+      setValue("primaryOwnerPan", panUploadedFiles[0].fileStoreId, { shouldValidate: true });
+    } else {
+      setValue("primaryOwnerPan", "", { shouldValidate: false });
+    }
+  }, [photoUploadedFiles, documentUploadedFiles, panUploadedFiles, setValue]);
 
   const handleAddApplicant = () => {
     const newApplicant = {
-       mobileNumber: "",
+      mobileNumber: "",
       name: "",
       fatherOrHusbandName: "",
       emailId: "",
       address: "",
       dob: "",
       gender: "",
+      panNumber: "",
     };
     setApplicants([...applicants, newApplicant]);
   };
@@ -380,11 +399,13 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     // Remove associated files
     const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
+    const newPanFiles = { ...panUploadedFiles };
     delete newDocFiles[index];
     delete newPhotoFiles[index];
+    delete newPanFiles[index];
     setDocumentUploadedFiles(newDocFiles);
     setPhotoUploadedFiles(newPhotoFiles);
-
+    setPanUploadedFiles(newPanFiles);
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
     delete newErrors[index];
@@ -443,6 +464,35 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     }
   };
 
+  const selectPANFile = (index) => async (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
+      return;
+    }
+    try {
+      setLoader(true);
+      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      setLoader(false);
+      if (response?.data?.files?.length > 0) {
+        const fileId = response.data.files[0].fileStoreId;
+        setPanUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }));
+        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], pan: "" } }));
+      } else {
+        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+      }
+    } catch (err) {
+      setLoader(false);
+      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+    }
+  };
+
+  const deletePan = (index) => {
+    const newPanFiles = { ...panUploadedFiles };
+    delete newPanFiles[index];
+    setPanUploadedFiles(newPanFiles);
+  };
+
   const deleteDocument = (index) => {
     const newDocFiles = { ...documentUploadedFiles };
     delete newDocFiles[index];
@@ -457,82 +507,119 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
   const isEdit = window.location.pathname.includes("edit");
 
-  // Validate additional applicants
-  const validateAdditionalApplicants = () => {
-    if (applicants.length === 1) return true; // No additional applicants
-
+  // Validate all applicants and documents before proceeding
+  const handleGoNext = (data) => {
     let isValid = true;
     const errors = {};
 
-    applicants.forEach((applicant, index) => {
-      if (index === 0) return; // Skip primary applicant
+    // Validate primary owner documents - THIS MUST PASS FIRST
+    const primaryOwnerErrors = {};
+    if (!photoUploadedFiles[0]?.fileStoreId) {
+      primaryOwnerErrors.photo = t("BPA_PASSPORT_PHOTO_REQUIRED");
+      isValid = false;
+    }
+    if (!documentUploadedFiles[0]?.fileStoreId) {
+      primaryOwnerErrors.document = t("BPA_ID_PROOF_REQUIRED");
+      isValid = false;
+    }
+    if (!panUploadedFiles[0]?.fileStoreId) {
+      primaryOwnerErrors.pan = t("BPA_PAN_REQUIRED");
+      isValid = false;
+    }
 
-      const applicantErrors = {};
-
-      // Validate each field
-      if (!applicant.name?.trim()) {
-        applicantErrors.name = t("REQUIRED_FIELD");
-        isValid = false;
-      }
-
-      if (!applicant.mobileNumber?.trim()) {
-        applicantErrors.mobileNumber = t("REQUIRED_FIELD");
-        isValid = false;
-      } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
-        applicantErrors.mobileNumber = t("INVALID_MOBILE_NUMBER");
-        isValid = false;
-      }
-
-      if (!applicant.emailId?.trim()) {
-        applicantErrors.emailId = t("REQUIRED_FIELD");
-        isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicant.emailId)) {
-        applicantErrors.emailId = t("INVALID_EMAIL_FORMAT");
-        isValid = false;
-      }
-
-      if (!applicant.address?.trim()) {
-        applicantErrors.address = t("REQUIRED_FIELD");
-        isValid = false;
-      }
-
-      if (!applicant.dob?.trim()) {
-        applicantErrors.dob = t("REQUIRED_FIELD");
-        isValid = false;
-      }
-
-      if (!applicant.gender || (typeof applicant.gender === "object" && !applicant.gender.code)) {
-        applicantErrors.gender = t("REQUIRED_FIELD");
-        isValid = false;
-      }
-
-      // Make photo mandatory
-      if (!photoUploadedFiles[index]?.fileStoreId) {
-        applicantErrors.photo = t("BPA_PASSPORT_PHOTO_REQUIRED");
-        isValid = false;
-      }
-
-      // Make document mandatory
-      if (!documentUploadedFiles[index]?.fileStoreId) {
-        applicantErrors.document = t("BPA_ID_PROOF_REQUIRED");
-        isValid = false;
-      }
-
-      if (Object.keys(applicantErrors).length > 0) {
-        errors[index] = applicantErrors;
-      }
-    });
-
-    setApplicantErrors(errors);
-    return isValid;
-  };
-
-  // Wrapper function to validate additional applicants before proceeding
-  const handleGoNext = (data) => {
-    if (!validateAdditionalApplicants()) {
-      console.log("Additional applicants validation failed");
+    if (Object.keys(primaryOwnerErrors).length > 0) {
+      errors[0] = primaryOwnerErrors;
+      setApplicantErrors(errors);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: t("BPA_PLEASE_UPLOAD_ALL_DOCUMENTS"),
+      });
+      setTimeout(() => setShowToast(null), 3000);
       return;
     }
+
+    // Validate additional applicants
+    if (applicants.length > 1) {
+      applicants.forEach((applicant, index) => {
+        if (index === 0) return;
+
+        const applicantErrors = {};
+        let hasError = false;
+
+        if (!applicant.name?.trim()) {
+          applicantErrors.name = t("REQUIRED_FIELD");
+          hasError = true;
+        }
+        if (!applicant.mobileNumber?.trim()) {
+          applicantErrors.mobileNumber = t("REQUIRED_FIELD");
+          hasError = true;
+        } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
+          applicantErrors.mobileNumber = t("INVALID_MOBILE_NUMBER");
+          hasError = true;
+        }
+        if (!applicant.emailId?.trim()) {
+          applicantErrors.emailId = t("REQUIRED_FIELD");
+          hasError = true;
+        } else if (!/^\S+@\S+\.\S+$/.test(applicant.emailId)) {
+          applicantErrors.emailId = t("INVALID_EMAIL_FORMAT");
+          hasError = true;
+        }
+        if (!applicant.address?.trim()) {
+          applicantErrors.address = t("REQUIRED_FIELD");
+          hasError = true;
+        }
+        if (!applicant.dob?.trim()) {
+          applicantErrors.dob = t("REQUIRED_FIELD");
+          hasError = true;
+        }
+        if (!applicant.gender || (typeof applicant.gender === "object" && !applicant.gender.code)) {
+          applicantErrors.gender = t("REQUIRED_FIELD");
+          hasError = true;
+        }
+
+        // Validate PAN number format
+        if (!applicant.panNumber?.trim()) {
+          applicantErrors.panNumber = t("REQUIRED_FIELD");
+          hasError = true;
+        } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(applicant.panNumber)) {
+          applicantErrors.panNumber = "PAN must be in format: 5 uppercase letters + 4 digits + 1 uppercase letter";
+          hasError = true;
+        }
+
+        // Documents must be uploaded
+        if (!photoUploadedFiles[index]?.fileStoreId) {
+          applicantErrors.photo = t("BPA_PASSPORT_PHOTO_REQUIRED");
+          hasError = true;
+        }
+        if (!documentUploadedFiles[index]?.fileStoreId) {
+          applicantErrors.document = t("BPA_ID_PROOF_REQUIRED");
+          hasError = true;
+        }
+        if (!panUploadedFiles[index]?.fileStoreId) {
+          applicantErrors.pan = t("BPA_PAN_REQUIRED");
+          hasError = true;
+        }
+
+        if (hasError) {
+          errors[index] = applicantErrors;
+          isValid = false;
+        }
+      });
+    }
+
+    if (!isValid) {
+      setApplicantErrors(errors);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: t("BPA_PLEASE_FILL_ALL_REQUIRED_FIELDS"),
+      });
+      setTimeout(() => setShowToast(null), 3000);
+      return;
+    }
+
+    // All validations passed
     goNext(data);
   };
 
@@ -586,10 +673,9 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                 )}
               />
               {isLoadingMobile ? (
-                <div style={{marginTop:"-20px"}}>
-                    <Loader />
-                  </div>
-              
+                <div style={{ marginTop: "-20px" }}>
+                  <Loader />
+                </div>
               ) : (
                 <div style={{ marginTop: "17px", marginLeft: "10px" }} className="search-icon">
                   <div onClick={isEdit ? null : getOwnerDetails} style={{ cursor: isEdit ? "not-allowed" : "pointer" }}>
@@ -789,6 +875,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                 uploadMessage=""
                 accept="image/*"
                 required
+                
               />
             </div>
           </LabelFieldPair>
@@ -819,12 +906,64 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
 
-          {/* Hidden Controllers for document validation */}
-          <div style={{ display: "none" }}>
-            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("BPA_PASSPORT_PHOTO_REQUIRED") }} render={() => null} />
-            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("BPA_ID_PROOF_REQUIRED") }} render={() => null} />
-          </div>
 
+ <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+            <CardLabel className="card-label-smaller">
+              {t("BPA_APPLICANT_PAN_DOCUMENT")}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field" style={{ width: "100%" }}>
+              <CustomUploadFile
+                id="pan-document-primary"
+                onUpload={selectPANFile(0)}
+                onDelete={() => {
+                  deletePan(0);
+                  setPanUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], pan: "PAN document is required" } }));
+                }}
+                uploadedFile={panUploadedFiles[0]?.fileStoreId}
+                message={panUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                error={applicantErrors[0]?.pan}
+                uploadMessage=""
+                accept=".pdf"
+                required
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.primaryOwnerPan?.message || ""}</CardLabelError>
+
+          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_PAN_NUMBER")}`}  <span className="requiredField">*</span></CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="applicantPanNumber"
+                rules={{
+                   required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
+                    message: "PAN must be in format: 5 uppercase letters + 4 digits + 1 uppercase letter (e.g., AAABP5055K)",
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value.toUpperCase());
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    placeholder="AAAAA0000A"
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.applicantPanNumber?.message || ""}</CardLabelError>
+
+         
           {/* Additional Applicants Section */}
           {applicants.length > 1 && (
             <React.Fragment>
@@ -863,7 +1002,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                         </span>
                       </div>
 
-                             {/* Mobile Number */}
+                      {/* Mobile Number */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
                           {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
@@ -876,12 +1015,17 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                             className="search-icon"
                             onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
                           >
-                            {additionalOwnerSearchLoading[index] ? <div style={{marginTop:"-20px"}}><Loader /></div> : <SearchIcon />}
+                            {additionalOwnerSearchLoading[index] ? (
+                              <div style={{ marginTop: "-20px" }}>
+                                <Loader />
+                              </div>
+                            ) : (
+                              <SearchIcon />
+                            )}
                           </div>
                         </div>
                       </LabelFieldPair>
                       {applicantErrors[index]?.mobileNumber && <CardLabelError>{applicantErrors[index].mobileNumber}</CardLabelError>}
-
 
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
@@ -907,7 +1051,6 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                         </div>
                       </LabelFieldPair>
 
-               
                       {/* Email ID */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
@@ -1018,6 +1161,47 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                           />
                         </div>
                       </LabelFieldPair>
+
+                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
+                        <CardLabel className="card-label-smaller">
+                          {t("BPA_APPLICANT_PAN_DOCUMENT")}
+                          <span className="requiredField">*</span>
+                        </CardLabel>
+                        <div className="field" style={{ width: "100%" }}>
+                          <CustomUploadFile
+                            id={`pan-proof-${index}`}
+                            onUpload={selectPANFile(index)}
+                            onDelete={() => {
+                              deletePan(index);
+                              setPanUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], pan: "PAN document is required" } }));
+                            }}
+                            uploadedFile={panUploadedFiles[index]?.fileStoreId}
+                            message={panUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                            error={applicantErrors[index]?.pan}
+                            uploadMessage=""
+                            accept=".pdf"
+                          />
+                        </div>
+                      </LabelFieldPair>
+
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                        <CardLabel className="card-label-smaller">
+                          {`${t("BPA_APPLICANT_PAN_NUMBER")}`} <span className="requiredField">*</span>
+                        </CardLabel>
+                        <div className="field">
+                          <TextInput 
+                            value={applicant.panNumber} 
+                            onChange={(e) => updateApplicant(index, "panNumber", e.target.value.toUpperCase())} 
+                            placeholder="AAAAA0000A"
+                            t={t} 
+                            required
+                          />
+                        </div>
+                      </LabelFieldPair>
+                      {applicantErrors[index]?.panNumber && <CardLabelError>{applicantErrors[index].panNumber}</CardLabelError>}
+
+                     
                     </div>
                   )
               )}
@@ -1034,7 +1218,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                     display: "inline-block",
                   }}
                 >
-                  + Add Applicant
+                  {!isEdit && `+ Add Owner`}
                 </div>
               </div>
             </React.Fragment>
@@ -1053,7 +1237,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                   display: "inline-block",
                 }}
               >
-                + Add Applicant
+               {!isEdit && `+ Add Owner`}
               </div>
             </div>
           )}

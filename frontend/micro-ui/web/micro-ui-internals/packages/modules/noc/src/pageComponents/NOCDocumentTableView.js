@@ -11,9 +11,9 @@ const NOCDocumentTableView = ({documents}) => {
 
  const documentsColumns = [
         {
-          Header: t("SR_NO"),   // <-- New column header
+          Header: t("SR_NO"),   
           accessor: "srNo",
-          Cell: ({ row }) => row.index + 1,  // Display row index + 1
+          Cell: ({ row }) => row.index + 1,  
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),
@@ -81,8 +81,8 @@ const NOCDocumentTableView = ({documents}) => {
           data={documentsData}
           columns={documentsColumns}
           getCellProps={() => ({ style: {} })}
-          disableSort={false}
-          autoSort={true}
+          disableSort={true}
+          autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
         />

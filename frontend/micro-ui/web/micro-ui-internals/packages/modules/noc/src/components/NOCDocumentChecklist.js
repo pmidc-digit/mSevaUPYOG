@@ -16,7 +16,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   useEffect(() => {
     if (searchChecklistData?.checkList?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
-      searchChecklistData.checkList.forEach(c => { initial[c.documentuid] = c.remarks || ""; });
+      searchChecklistData.checkList.forEach(c => { initial[c.documentUid || c.documentuid]  = c.remarks || ""; });
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }

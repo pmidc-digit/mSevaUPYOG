@@ -40,7 +40,8 @@ import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import { convertToDDMMYYYY, formatDuration } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
-import InspectionReport from "../../../../../obps/src/pageComponents/InspectionReport";
+import InspectionReport from "../../../pageComponents/InsectionReport";
+import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -528,12 +529,23 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
+  const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
+
   const submitAction = async (data) => {
-    
+
     const payloadData = applicationDetails?.Noc?.[0] || {};
     console.log('payloadData', payloadData)
     const vasikaNumber =  payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
+
+    // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
+    if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
+      const allRemarksFilled = fieldInspectionPending.every(item => item.remarks && item.remarks.trim() !== "");
+      if (!allRemarksFilled) {
+        setShowToast({ key: "true", error: true, message: "Please fill in all comments before submitting." });
+        return;
+      }
+    }
     
     if (!isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);   
@@ -649,7 +661,7 @@ const NOCEmployeeApplicationOverview = () => {
       };
 
       // Call checklist API before NOCUpdate
-      if (checklistPayload?.checkList?.length > 0) {
+      if (!isDocPending && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
           await Digit.NOCService.NOCCheckListUpdate({
             details: checklistPayload,
@@ -940,6 +952,7 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
             isCitizen={true}
             fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
             onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
+            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
           </Card>
         )}
@@ -1004,7 +1017,7 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         <Card>
           <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
           <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}
-          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
+          tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly={!isDocPending} />}</StatusTable>
         </Card>
       
 

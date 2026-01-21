@@ -31,7 +31,7 @@ import EditApplication from "./pageComponents/EditApplication/EditApplication";
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
 import CitizenSearchApplication from "./pageComponents/SearchApplication/index"
-
+import InspectionReport from "./pageComponents/InsectionReport"
 
 export const NOCLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
@@ -108,6 +108,7 @@ const componentsToRegister = {
   NOCEmployeeApplicationOverview,
   NewNOCEditApplication: EditApplication,
   NOCCitizenSearchApplication: CitizenSearchApplication,
+  InspectionReport
 };
 
 export const initNOCComponents = () => {

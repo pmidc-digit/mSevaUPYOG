@@ -975,7 +975,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
       )
     }
     if (action === "SAVE_AS_DRAFT") {
-      getBPAFormData(data?.applicationData, mdmsData, history, t)
+      getBPAFormData(data?.applicationData, mdmsData, history, t, path)
     }
     if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY"){
       if(!validateDataForAction(action)){

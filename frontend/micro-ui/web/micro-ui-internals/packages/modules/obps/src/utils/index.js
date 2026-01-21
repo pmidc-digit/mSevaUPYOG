@@ -275,7 +275,7 @@ export const getBPAFormDataNewEDCR = async (data, edcrNumber, history, t) => {
   }
 };
 
-export const getBPAFormData = async (data, mdmsData, history, t) => {
+export const getBPAFormData = async (data, mdmsData, history, t, path) => {
   console.log(data, "PPPP");
   const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: data?.edcrNumber });
   const APIScrutinyDetails = edcrResponse?.edcrDetail[0];
@@ -363,9 +363,10 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
 
   if (data?.businessService.includes("OC")) {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
-    history.push(
-      `/digit-ui/citizen/obps/ocbpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`
-    );
+    // history.push(
+    //   `/digit-ui/citizen/obps/ocbpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`
+    // );
+    history.push(`/digit-ui/citizen/obps/ocbpa/building_plan_scrutiny/new_construction/docs-required`);
   } else {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
     history.push(`/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`);

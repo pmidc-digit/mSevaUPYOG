@@ -24,7 +24,8 @@ public class MigrationConsumer {
     private ObjectMapper mapper;
 
 
-    @KafkaListener(topics = { "${pgr.kafka.migration.topic}"})
+    @KafkaListener(topics = { "${pgr.kafka.migration.topic}"},
+    		concurrency = "${kafka.config.consumer.concurrency.count}")
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         try {

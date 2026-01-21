@@ -6,7 +6,7 @@ const HRBanner = ({ t, config }) => {
       {config?.texts?.nosideText!==true && <CardLabel className="card-label-smaller" style={{ color: "white" }}>
         .
       </CardLabel>}
-      <span className="form-field" style={config?.texts?.nosideText!==true ? { color: "gray" }:{ color: "gray" ,  width:"100%" ,marginTop: "-20px"}}>
+      <span className="form-field" style={config?.texts?.nosideText!==true ? { color: "gray" }:{ color: "gray" ,  width:"100%" ,marginTop: "9px"}}>
         {t(config?.texts?.header)}
       </span>
     </LabelFieldPair>

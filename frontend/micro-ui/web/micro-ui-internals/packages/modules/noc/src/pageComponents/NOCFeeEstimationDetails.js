@@ -47,7 +47,7 @@ const getOriginals = (taxHeadCode) => {
 
         return isReverted
           ? { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark }
-          : { ...item, adjustedAmount: normalizedValue, edited: true, remark: "" };
+          : { ...item, adjustedAmount: normalizedValue, edited: true, remark: item.remark ?? originalRemark };
       })
     );
   };

@@ -7,7 +7,7 @@ import AdsApplication from "./ads-application";
 // Simplified ADSMyApplications: NO search fields, behaves like PTR module and lists all user bookings.
 export const ADSMyApplications = () => {
   const { t } = useTranslation();
-  const tenantId = "pb.testing";
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const user = Digit.UserService.getUser().info;
 
   const [filters, setFilters] = useState(null);

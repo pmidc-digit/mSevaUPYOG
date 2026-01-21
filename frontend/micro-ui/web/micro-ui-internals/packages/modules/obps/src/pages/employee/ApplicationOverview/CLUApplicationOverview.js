@@ -360,7 +360,7 @@ const CLUEmployeeApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {      
-      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -374,21 +374,27 @@ const CLUEmployeeApplicationDetails = () => {
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
     // console.log("data ==>", data);
-    console.log("feeAdjustments==>", feeAdjustments);
+    //console.log("feeAdjustments==>", feeAdjustments);
+
+    //const vasikaNumber =  payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+    //const vasikaDate = convertToDDMMYYYY(payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
 
     if (!isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
+    console.log("hasNonZeroFee==>",hasNonZeroFee);
+    console.log("allRemarksFilled==>", allRemarksFilled);
+
     if (!hasNonZeroFee) {
       setTimeout(()=>{setShowToast(null);},3000);
-      setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission" });
+      setShowToast({ key: "true", error: true, message: "BPA_ENTER_FEE_ADD_LABEL" });
       return;
     }
 
     if (!allRemarksFilled) {
       setTimeout(()=>{setShowToast(null);},3000);
-      setShowToast({ key: "true", error: true, message: "Remarks are mandatory for updating fees" });
+      setShowToast({ key: "true", error: true, message: "BPA_REMARKS_MANDATORY_LABEL" });
       return;
     }
    }
@@ -411,6 +417,8 @@ const CLUEmployeeApplicationDetails = () => {
 
     const updatedApplicant = {
       ...payloadData,
+      //vasikaNumber,
+      //vasikaDate, 
       cluDetails: {
         ...payloadData.cluDetails,
         additionalDetails: {
@@ -492,12 +500,12 @@ const CLUEmployeeApplicationDetails = () => {
   console.log("displayData here", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  console.log("coordinates==>", coordinates);
+  //console.log("coordinates==>", coordinates);
   const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
-  console.log("sitePhotoGrahphs==>", sitePhotographs);
-  console.log("remainingDocs==>", remainingDocs);
+  //console.log("sitePhotoGrahphs==>", sitePhotographs);
+  //console.log("remainingDocs==>", remainingDocs);
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
@@ -616,7 +624,7 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
 
               <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={detail?.vasikaDate || "N/A"} />
+              <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
               <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
               <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />

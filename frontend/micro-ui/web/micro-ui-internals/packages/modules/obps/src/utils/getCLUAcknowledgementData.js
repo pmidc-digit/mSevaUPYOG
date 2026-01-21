@@ -234,7 +234,10 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("BPA_SITE_VASIKA_DATE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate
+          ? new Date(appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate).toLocaleDateString("en-GB")
+          : "NA"
+      //value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
     },
     {
       title: t("NOC_SITE_VILLAGE_NAME_LABEL"),

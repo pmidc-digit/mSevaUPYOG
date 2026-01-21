@@ -33,6 +33,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
+import { convertToDDMMYYYY } from "../../../utils/index";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -320,8 +321,13 @@ const CLUApplicationDetails = () => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
     // console.log("data ==>", data);
 
+   // const vasikaNumber =  payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+   // const vasikaDate = convertToDDMMYYYY(payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
+
     const updatedApplicant = {
       ...payloadData,
+     // vasikaNumber,
+      //vasikaDate,
       workflow: {},
     };
 
@@ -509,7 +515,7 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
 
               <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={detail?.vasikaDate || "N/A"} />
+              <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
               <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
               <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />

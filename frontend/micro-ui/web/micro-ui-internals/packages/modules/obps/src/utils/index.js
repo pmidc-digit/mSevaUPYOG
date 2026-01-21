@@ -1349,3 +1349,45 @@ export const convertToDDMMYYYY = (dateString) => {
      // Fallback: return original
      return dateString;
 };
+
+export function buildFeeHistoryByTax(
+  calculations = [],
+  { newestFirst = true, limit = null } = {}
+) {
+  const map = {};
+  if (!Array.isArray(calculations)) return map;
+
+  calculations.forEach((calc) => {
+    const who = calc?.updatedBy || null;
+    const estimates = calc?.taxHeadEstimates || [];
+
+    estimates.forEach((th) => {
+      if (!th?.taxHeadCode) return;
+
+      map[th.taxHeadCode] = map[th.taxHeadCode] || [];
+
+      const lastEntry = map[th.taxHeadCode][map[th.taxHeadCode].length - 1];
+
+      // Only add if estimateAmount differs from last entry
+      if (!lastEntry || lastEntry.estimateAmount !== th?.estimateAmount) {
+        map[th.taxHeadCode].push({
+          who,
+          estimateAmount: th?.estimateAmount ?? null,
+          remarks: th?.remarks ?? null, // still stored, but not part of uniqueness check
+          isLatest: calc?.isLatest ?? false,
+        });
+      }
+    });
+  });
+
+  Object.keys(map).forEach((k) => {
+    if (newestFirst) {
+      map[k].sort((a, b) => (b.when || 0) - (a.when || 0));
+    }
+    if (limit && typeof limit === "number") {
+      map[k] = map[k].slice(0, limit);
+    }
+  });
+
+  return map;
+}

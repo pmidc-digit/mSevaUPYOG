@@ -161,6 +161,8 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         // Final payload
         const payload = {
           Clu: {
+              vasikaDate: convertToDDMMYYYY (cluFormData?.siteDetails?.vasikaDate),
+              vasikaNumber : cluFormData?.siteDetails?.vasikaNumber,
               applicationType: "NEW",
               documents: [],
               cluType : "CLU",

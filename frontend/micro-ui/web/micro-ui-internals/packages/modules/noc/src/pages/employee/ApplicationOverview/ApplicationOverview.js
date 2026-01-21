@@ -40,6 +40,7 @@ import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import { convertToDDMMYYYY, formatDuration } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
+import InspectionReport from "../../../../../obps/src/pageComponents/InspectionReport";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -121,6 +122,7 @@ const NOCEmployeeApplicationOverview = () => {
   
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
+  const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   
 
   console.log("applicationDetails here==>", applicationDetails);
@@ -443,6 +445,7 @@ const NOCEmployeeApplicationOverview = () => {
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
 
@@ -590,7 +593,8 @@ const NOCEmployeeApplicationOverview = () => {
         additionalDetails: { 
           ...payloadData.nocDetails.additionalDetails, 
           calculations: [...oldCalculations, newCalculation],
-          siteImages: siteImages?.documents || []
+          siteImages: siteImages?.documents || [],
+          fieldinspection_pending: fieldInspectionPending,
          },
       },
     };
@@ -721,6 +725,11 @@ const NOCEmployeeApplicationOverview = () => {
 
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
+
+  const onChangeReport = (key, value) => {
+    console.log("key,value", key, value);
+    setFieldInspectionPending(value);
+  }
 
   if (loading) {
     return <Loader />;
@@ -907,7 +916,7 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
       </Card>
 
       <Card>
-        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
           style={{
             display: "flex",
@@ -922,6 +931,27 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
             ))}
         </StatusTable>
       </Card>
+
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" &&
+        (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
+          <Card>
+            <div id="fieldInspection"></div>
+          <InspectionReport
+            isCitizen={true}
+            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
+            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
+          />
+          </Card>
+        )}
+        {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+          <Card>
+          <div id="fieldInspection"></div>
+          <InspectionReportDisplay
+            fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+          />
+          </Card>
+        )}
        {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
         (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
           <Card>

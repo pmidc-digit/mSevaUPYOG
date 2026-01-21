@@ -58,7 +58,7 @@ public enum OccupancyType {
 	OCCUPANCY_C("Nursing Home/Hospital"), OCCUPANCY_C1("Medical IP"), OCCUPANCY_C2("Medical OP"), OCCUPANCY_C3("Medical Admin"), 
 	OCCUPANCY_D("Assembly"), OCCUPANCY_D1("Assembly Worship"), OCCUPANCY_D2("Bus Terminal"), 
 	OCCUPANCY_E("Office/Business"), 
-	OCCUPANCY_F("Mercantile / Commercial"), 
+	OCCUPANCY_F("Commercial"), 
 	//OCCUPANCY_F1("Commercial Parking Plaza"), OCCUPANCY_F2("Commercial Parking Appurtenant"), OCCUPANCY_F3("Hotels"), OCCUPANCY_F4("Kiosk"),
 	OCCUPANCY_F1("Commercial"),
 	OCCUPANCY_F2("Restaurants/ Banquet Halls"),

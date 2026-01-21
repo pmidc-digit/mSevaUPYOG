@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -325,25 +326,40 @@ public class PlanService {
                 || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
 
             plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
-        }
-        
-        if(plan.getPlanInformation().getUlbType()!=null) {
-        	String ulbType = "";
-        	try {
-        	    Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(new RequestInfo(),plan.getEdcrRequest());
-        	    ulbType = BpaMdmsUtil
-        	            .extractMdmsValue(mdmsData, MdmsFilter.ULB_TYPE_FILTER, String.class)
-        	            .orElse("");
-        	    if (ulbType.isEmpty()) {
-        	        LOG.warn("ULB Type not found in MDMS response for the logged in ULB : " + plan.getEdcrRequest().getTenantId());
-        	    }
-        	} catch (Exception e) {
-        	    LOG.error("Error while fetching ULB Type from MDMS", e);
-        	}
-        	plan.getPlanInformation().setUlbType(ulbType);
-        	LOG.info("ULB Type  : {}", ulbType);
+        }        
+       
+        String ulbType = "";
+        String districtName = "";
+        try {
+            Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(
+                    new RequestInfo(), plan.getEdcrRequest()
+            );
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> cityInfo =
+                    (Map<String, Object>) BpaMdmsUtil
+                            .extractMdmsValue(mdmsData,
+                                    MdmsFilter.ULB_TYPE_AND_DISTRICT_FILTER,
+                                    Map.class)
+                            .orElse(Collections.emptyMap());
+
+            ulbType = String.valueOf(cityInfo.getOrDefault("ulbType", ""));
+            districtName = String.valueOf(cityInfo.getOrDefault("districtName", ""));
+
+            if (ulbType.isEmpty()) {
+                LOG.warn("ULB Type not found in MDMS response for tenant : {}",
+                        plan.getEdcrRequest().getTenantId());
+            }
+
+        } catch (Exception e) {
+            LOG.error("Error while fetching ULB Type and District from MDMS", e);
         }
 
+        plan.getPlanInformation().setUlbType(ulbType);
+        plan.getPlanInformation().setDistrict(districtName);
+
+        LOG.info("ULB Type value from MDMS : {}", ulbType);
+        LOG.info("District value from MDMS : {}", districtName);
         
         LOG.info("Setting mdms master data");
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());

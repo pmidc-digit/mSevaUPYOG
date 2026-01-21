@@ -2,7 +2,7 @@ package org.egov.commons.edcr.mdms.filter;
 
 public class MdmsFilter {
 	//public static final String FAR_PATH = "$.MdmsRes.EDCR.MasterPlan[*].FAR[*]";
-	public static final String ULB_TYPE_FILTER = "$.MdmsRes.tenant.tenants[0]";
+	public static final String ULB_TYPE_AND_DISTRICT_FILTER = "$.MdmsRes.tenant.tenants[0]";
 	
 	public static final String FAR_PATH = "$.MdmsRes.EDCR.MasterPlan[*]";
 	
@@ -15,6 +15,8 @@ public class MdmsFilter {
     public static final String  ROLE_FILTER = "$.MdmsRes.EDCR-ROLES.roles[?(@.code=='%s')]";
     
     public static final String SITE_COVERAGE_PATH = "$[0].MasterPlan[0].siteCoverage";
+    
+    public static final String LIST_FAR_PATH = "$[0].MasterPlan[0].NormalFAR";
     
     public static final String MIN_PLOT_AREA = "$[0].MasterPlan[0].minPlotArea";
 

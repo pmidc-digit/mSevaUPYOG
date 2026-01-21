@@ -813,7 +813,7 @@
 					<font size="8"/>
 					<paragraph leftIndent="3"/>
 				</textElement>
-				<textFieldExpression><![CDATA["BUILDING CATEGORY"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["BUILDING (CATEGORY/SUB-CATEGORY)"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement x="12" y="165" width="16" height="21" uuid="99933eb8-9eb0-46a9-ac0c-5131dc5845d1"/>

@@ -1,5 +1,5 @@
 
--- Update Shops / Showrooms / Commercial Complexes
+-- Update Residential occupany name
 UPDATE egbpa_sub_occupancy
 SET name='Residential - Plotted',
     description='Residential - Plotted',

@@ -327,7 +327,7 @@ public class BpaMdmsUtil {
 	public List<ModuleDetail> getUlbTypeRequest(String loggedInUlb) {
 
 		List<MasterDetail> bpaMasterDtls = new ArrayList<>();
-		String filterBuilder = new String("$.[?(@.code == '%s')].city.ulbType");
+		String filterBuilder = new String("$.[?(@.code == '%s')].city['ulbType','districtName']");
 		filterBuilder = filterBuilder.format(filterBuilder, loggedInUlb);
 		
 		MasterDetail masterDetailAppType = new MasterDetail();

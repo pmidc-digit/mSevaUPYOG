@@ -656,10 +656,24 @@ public class PlanReportService {
 //                if (occ.getType() != null)
 //                    occupancies.add(occ.getType().getName());
 //            });
-            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
-                if (occ.getSubtype() != null)
-                    occupancies.add(occ.getSubtype().getName());
+//            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
+//                if (occ.getSubtype() != null)
+//                    occupancies.add(occ.getSubtype().getName());
+//            });
+            plan.getVirtualBuilding()
+            .getOccupancyTypes()
+            .forEach(occ -> {
+
+                String occType = occ.getType() != null ? occ.getType().getName() : "";
+                String subOccType = occ.getSubtype() != null ? occ.getSubtype().getName() : "";
+
+                if (!occType.isEmpty() && !subOccType.isEmpty()) {
+                    occupancies.add(occType + " (" + subOccType + ")");
+                } else if (!occType.isEmpty()) {
+                    occupancies.add(occType);
+                }
             });
+
             Set<String> distinctOccupancies = new HashSet<>(occupancies);
             plan.getPlanInformation()
                     .setOccupancy(distinctOccupancies.stream().map(String::new).collect(Collectors.joining(",")));

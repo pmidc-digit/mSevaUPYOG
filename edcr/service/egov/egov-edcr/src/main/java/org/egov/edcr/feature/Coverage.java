@@ -262,15 +262,14 @@ public class Coverage extends FeatureProcess {
 				|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode()))
 		) {
 
-			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
-					|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
-				//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
+			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
+				permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
 				
-				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-			        permissibleCoverageValue = scOpt.get();
-				}
+//				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+//					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
+//			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
+//			        permissibleCoverageValue = scOpt.get();
+//				}
 			}else {
 				// getting permissible value from mdms
 //				Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
@@ -332,7 +331,7 @@ public class Coverage extends FeatureProcess {
 			//if (occupancyList != null && occupancyList.size() > 1) {
 //				processCoverage(pl,mostRestrictiveOccupancy.getType().getName(), totalCoverage, 
 //						permissibleCoverageValue,coverageArea,plotArea);
-			processCoverage(pl,mostRestrictiveOccupancy, totalCoverage, 
+			processCoverage(pl,mostRestrictiveOccupancy, totalCoverageArea, 
 					permissibleCoverageValue,coverageArea,plotArea);
 //			processCoverage(pl,mostRestrictiveOccupancy, totalCoverageArea, 
 //					permissibleCoverageValue,coverageArea,plotArea);
@@ -538,105 +537,162 @@ public class Coverage extends FeatureProcess {
 
 		return permissibleCoverage;
 	}
-
+	
 	private void processCoverage(Plan pl, OccupancyTypeHelper occupancyTypeHelper, BigDecimal coverage, BigDecimal upperLimit,
-		BigDecimal coverageArea, BigDecimal plotArea) {
-		LOG.info("inside processCoverage()");
-		String occupancy = null;
-		
-		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
-		scrutinyDetail.setKey("Common_Coverage");
-		scrutinyDetail.setHeading("Ground Coverage");
-		scrutinyDetail.addColumnHeading(1, RULE_NO);
-	   // scrutinyDetail.addColumnHeading(2, DEVELOPMENT_ZONE);
-		scrutinyDetail.addColumnHeading(2, OCCUPANCY);
-		scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
-		scrutinyDetail.addColumnHeading(4, PROVIDED);
-		scrutinyDetail.addColumnHeading(5, STATUS);
-		
-
-		String desc = getLocaleMessage(RULE_DESCRIPTION_KEY, upperLimit.toString());
-//		String actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString() +" %");
-		
-//		BigDecimal totalExpectedPlotArea = plotArea.setScale(2, RoundingMode.HALF_UP)
-//		        .multiply(upperLimit.divide(BigDecimal.valueOf(100)))
-//		        .setScale(2, RoundingMode.HALF_UP);
-//		String expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");
+			BigDecimal coverageArea, BigDecimal plotArea) {
+			LOG.info("inside processCoverage()");
+			String occupancy = null;
 			
-		String actualResult = null;
-		String expectedResult = null;
-		
-		if(occupancyTypeHelper!=null && occupancyTypeHelper.getType().getName()!=null) {
-			occupancy = occupancyTypeHelper.getType().getName();
-//			if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
-//					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
-//					|| F.equalsIgnoreCase(occupancyTypeHelper.getType().getCode())
-//					) {
-//				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + " m²";
-//				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
-//			}else {
-				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverageArea.setScale(2, RoundingMode.HALF_UP).toString() +" %");
-				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");
-			//}
-		}
-		
-		if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial")
-				|| (occupancy.equalsIgnoreCase("Industrial")))) {
-			scrutinyDetail.addColumnHeading(6, DESCRIPTION);
-			//scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
-		}
-		
-		Boolean validateCoverage = false;
-		
-		if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_COVERAGE)) {
-			validateCoverage = true;
-		}else {
-			if (coverage.compareTo(BigDecimal.ZERO) > 0 
-			        && coverage.compareTo(upperLimit) <= 0) {
-			    validateCoverage = true;
-			} else {
-			    validateCoverage = false;
+			ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+			scrutinyDetail.setKey("Common_Coverage");
+			scrutinyDetail.setHeading("Ground Coverage");
+			scrutinyDetail.addColumnHeading(1, RULE_NO);
+			scrutinyDetail.addColumnHeading(2, OCCUPANCY);
+			scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
+			scrutinyDetail.addColumnHeading(4, PROVIDED);
+			scrutinyDetail.addColumnHeading(5, STATUS);
+				
+			String actualResult = null;
+			String expectedResult = null;
+			BigDecimal coverageAreaValue = BigDecimal.ZERO;
+			
+			if(occupancyTypeHelper!=null && occupancyTypeHelper.getType().getName()!=null) {
+				occupancy = occupancyTypeHelper.getType().getName();
+				if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())) {
+					actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + " m²";
+					expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
+					coverageAreaValue = coverage;
+				}else{
+					actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverageArea.setScale(2, RoundingMode.HALF_UP).toString() +" %");
+					expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");	
+					coverageAreaValue = coverageArea;
+				}
+			}
+			
+			
+			Boolean validateCoverage = false;
+			
+			if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_COVERAGE)) {
+				validateCoverage = true;
+			}else {
+				if (coverageAreaValue.compareTo(BigDecimal.ZERO) > 0 
+				        && coverageAreaValue.compareTo(upperLimit) <= 0) {
+				    validateCoverage = true;
+				} else {
+				    validateCoverage = false;
+				}
+
 			}
 
-		}
-		
-		if (validateCoverage 
-				&& (occupancy.equalsIgnoreCase("Residential")
-				|| occupancy.equalsIgnoreCase("Mercantile / Commercial"))
-				|| (occupancy.equalsIgnoreCase("Industrial"))) {
 			Map<String, String> details = new HashMap<>();
 			details.put(RULE_NO, RULE);
-			//details.put(DEVELOPMENT_ZONE, developmentZone);
 			details.put(OCCUPANCY, occupancy);
 			details.put(PERMISSIBLE, expectedResult);
 			details.put(PROVIDED, actualResult);
-			details.put(STATUS, Result.Accepted.getResultVal());
-
-			if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
-				details.put(DESCRIPTION, desc);
-				//details.put(PERMISSIBLE, expectedResult);
-			}
+			details.put(STATUS,(validateCoverage?Result.Accepted.getResultVal():Result.Not_Accepted.getResultVal()));
 			scrutinyDetail.getDetail().add(details);
-			pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+			pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);			
 
-		} else {
-			Map<String, String> details = new HashMap<>();
-			details.put(RULE_NO, RULE);
-			//details.put(DEVELOPMENT_ZONE, developmentZone);
-			details.put(OCCUPANCY, occupancy);
-			details.put(PERMISSIBLE, expectedResult);
-			details.put(PROVIDED, actualResult);
-			details.put(STATUS, Result.Not_Accepted.getResultVal());
-
-			if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
-				details.put(DESCRIPTION, desc);
-				//details.put(PERMISSIBLE, expectedResult);
-			}
-			scrutinyDetail.getDetail().add(details);
-			pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 		}
 
-	}
+//	private void processCoverage(Plan pl, OccupancyTypeHelper occupancyTypeHelper, BigDecimal coverage, BigDecimal upperLimit,
+//		BigDecimal coverageArea, BigDecimal plotArea) {
+//		LOG.info("inside processCoverage()");
+//		String occupancy = null;
+//		
+//		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+//		scrutinyDetail.setKey("Common_Coverage");
+//		scrutinyDetail.setHeading("Ground Coverage");
+//		scrutinyDetail.addColumnHeading(1, RULE_NO);
+//	   // scrutinyDetail.addColumnHeading(2, DEVELOPMENT_ZONE);
+//		scrutinyDetail.addColumnHeading(2, OCCUPANCY);
+//		scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
+//		scrutinyDetail.addColumnHeading(4, PROVIDED);
+//		scrutinyDetail.addColumnHeading(5, STATUS);
+//		
+//
+//		String desc = getLocaleMessage(RULE_DESCRIPTION_KEY, upperLimit.toString());
+////		String actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString() +" %");
+//		
+////		BigDecimal totalExpectedPlotArea = plotArea.setScale(2, RoundingMode.HALF_UP)
+////		        .multiply(upperLimit.divide(BigDecimal.valueOf(100)))
+////		        .setScale(2, RoundingMode.HALF_UP);
+////		String expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");
+//			
+//		String actualResult = null;
+//		String expectedResult = null;
+//		
+//		if(occupancyTypeHelper!=null && occupancyTypeHelper.getType().getName()!=null) {
+//			occupancy = occupancyTypeHelper.getType().getName();
+////			if(A_AIF.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
+////					|| A_R.equalsIgnoreCase(occupancyTypeHelper.getSubtype().getCode())
+////					|| F.equalsIgnoreCase(occupancyTypeHelper.getType().getCode())
+////					) {
+////				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString()) + " m²";
+////				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString()) + "m²";
+////			}else {
+//				actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverageArea.setScale(2, RoundingMode.HALF_UP).toString() +" %");
+//				expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");
+//			//}
+//		}
+//		
+//		if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial")
+//				|| (occupancy.equalsIgnoreCase("Industrial")))) {
+//			scrutinyDetail.addColumnHeading(6, DESCRIPTION);
+//			//scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
+//		}
+//		
+//		Boolean validateCoverage = false;
+//		
+//		if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_COVERAGE)) {
+//			validateCoverage = true;
+//		}else {
+//			if (coverage.compareTo(BigDecimal.ZERO) > 0 
+//			        && coverage.compareTo(upperLimit) <= 0) {
+//			    validateCoverage = true;
+//			} else {
+//			    validateCoverage = false;
+//			}
+//
+//		}
+//		
+//		if (validateCoverage 
+//				&& (occupancy.equalsIgnoreCase("Residential")
+//				|| occupancy.equalsIgnoreCase("Mercantile / Commercial"))
+//				|| (occupancy.equalsIgnoreCase("Industrial"))) {
+//			Map<String, String> details = new HashMap<>();
+//			details.put(RULE_NO, RULE);
+//			//details.put(DEVELOPMENT_ZONE, developmentZone);
+//			details.put(OCCUPANCY, occupancy);
+//			details.put(PERMISSIBLE, expectedResult);
+//			details.put(PROVIDED, actualResult);
+//			details.put(STATUS, Result.Accepted.getResultVal());
+//
+//			if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
+//				details.put(DESCRIPTION, desc);
+//				//details.put(PERMISSIBLE, expectedResult);
+//			}
+//			scrutinyDetail.getDetail().add(details);
+//			pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//
+//		} else {
+//			Map<String, String> details = new HashMap<>();
+//			details.put(RULE_NO, RULE);
+//			//details.put(DEVELOPMENT_ZONE, developmentZone);
+//			details.put(OCCUPANCY, occupancy);
+//			details.put(PERMISSIBLE, expectedResult);
+//			details.put(PROVIDED, actualResult);
+//			details.put(STATUS, Result.Not_Accepted.getResultVal());
+//
+//			if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
+//				details.put(DESCRIPTION, desc);
+//				//details.put(PERMISSIBLE, expectedResult);
+//			}
+//			scrutinyDetail.getDetail().add(details);
+//			pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//		}
+//
+//	}
 
 	protected OccupancyType getMostRestrictiveCoverage(EnumSet<OccupancyType> distinctOccupancyTypes) {
 

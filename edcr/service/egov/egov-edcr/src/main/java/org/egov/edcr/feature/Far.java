@@ -2265,10 +2265,16 @@ public class Far extends FeatureProcess {
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-	        // --- 1. Fetch & Initialize FAR values ---
-	        Double regularPermissibleFar = BpaMdmsUtil.extractMdmsValue(
-	                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class)
-	                .orElse(0.0);
+	    	// --- 1. Fetch & Initialize FAR values ---
+	    	Double regularPermissibleFar = 0.0;
+	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
+	    		BigDecimal farValue = calculateFarProgressively(plotArea, pl);
+	    		regularPermissibleFar = farValue.setScale(2, RoundingMode.HALF_UP).doubleValue();	    		
+	    	}else {	    		
+		        regularPermissibleFar = BpaMdmsUtil.extractMdmsValue(
+		                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class)
+		                .orElse(0.0);
+	    	}
 
 	        Double purchasablePermissibleFar = BpaMdmsUtil.extractMdmsValue(
 	                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.PURCHASABLE_FAR, Double.class)
@@ -2339,4 +2345,97 @@ public class Far extends FeatureProcess {
 	    }
 	    return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
 	}	
+	
+	public static BigDecimal calculateFarProgressively(BigDecimal plotArea, Plan pl) {
+
+	    LOG.info("=== FAR Progressive Calculation Started ===");
+
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	        LOG.warn("Invalid Plot Area. FAR = 0");
+	        return BigDecimal.ZERO;
+	    }
+
+	    // ------------------ LOAD FAR SLABS FROM MDMS ------------------
+	    Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	            pl.getMdmsMasterData().get("masterMdmsData"),
+	            MdmsFilter.LIST_FAR_PATH,
+	            List.class
+	    );
+
+	    if (!fullListOpt.isPresent()) {
+	        LOG.error("No FAR data found in MDMS!");
+	        pl.addError("No FAR data found in MDMS", "No FAR data found in MDMS");
+	        return BigDecimal.ZERO;
+	    }
+
+	    @SuppressWarnings("unchecked")
+	    List<Map<String, Object>> slabList = (List<Map<String, Object>>) fullListOpt.get();
+
+	    if (slabList.isEmpty()) {
+	        LOG.error("FAR slab list is EMPTY in MDMS!");
+	        return BigDecimal.ZERO;
+	    }
+
+	    // ------------------ SORT SLABS BY 'upto' ------------------
+	    slabList.sort((a, b) -> {
+	        BigDecimal ua = new BigDecimal(a.get("upto").toString());
+	        BigDecimal ub = new BigDecimal(b.get("upto").toString());
+	        if (ua.compareTo(BigDecimal.ZERO) < 0) return 1;   // -1 goes last
+	        if (ub.compareTo(BigDecimal.ZERO) < 0) return -1;
+	        return ua.compareTo(ub);
+	    });
+
+	    LOG.info("Sorted FAR Slabs: {}", slabList);
+
+	    // ------------------ FAR CALCULATION ------------------
+	    BigDecimal remaining = plotArea;
+	    BigDecimal totalBuiltUpArea = BigDecimal.ZERO;
+	    BigDecimal previousUpto = BigDecimal.ZERO;
+
+	    for (int i = 0; i < slabList.size(); i++) {
+
+	        if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+	            break;
+	        }
+
+	        Map<String, Object> slab = slabList.get(i);
+
+	        BigDecimal upto = new BigDecimal(slab.get("upto").toString());
+	        BigDecimal far = new BigDecimal(slab.get("far").toString());
+
+	        boolean isRemainingSlab = upto.compareTo(BigDecimal.ZERO) < 0;
+
+	        BigDecimal slabArea;
+	        if (isRemainingSlab) {
+	            slabArea = remaining;
+	        } else {
+	            slabArea = upto.subtract(previousUpto).min(remaining);
+	        }
+
+	        BigDecimal slabBuiltUp = slabArea.multiply(far);
+
+	        LOG.info(
+	            "Slab {} → PlotArea: {}, FAR: {}, BuiltUp: {}",
+	            i + 1, slabArea, far, slabBuiltUp
+	        );
+
+	        totalBuiltUpArea = totalBuiltUpArea.add(slabBuiltUp);
+	        remaining = remaining.subtract(slabArea);
+	        previousUpto = isRemainingSlab ? previousUpto : upto;
+	    }
+
+	    // ------------------ EFFECTIVE FAR ------------------
+	    BigDecimal effectiveFar = totalBuiltUpArea.divide(
+	            plotArea, 4, RoundingMode.HALF_UP
+	    );
+
+	    LOG.info("Total Permissible Built-up Area: {}", totalBuiltUpArea);
+	    LOG.info("Effective FAR (Ratio): {}", effectiveFar);
+	    LOG.info("=== FAR Progressive Calculation Completed ===");
+
+	    return effectiveFar.setScale(2, RoundingMode.HALF_UP);
+	}
+
+
+	
 }

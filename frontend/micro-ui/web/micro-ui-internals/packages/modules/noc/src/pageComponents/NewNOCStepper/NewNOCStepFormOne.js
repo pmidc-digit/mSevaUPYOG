@@ -125,13 +125,6 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     dispatch(UPDATE_NOC_OwnerIds("ownerIdList",ownerIdList));
     dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList",ownerPhotoList));
-    dispatch(
-       UPDATE_NOCNewApplication_FORM("siteDetails", {
-        ...currentStepData?.siteDetails,
-        vasikaNumber : currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaNo,
-        vasikaDate: formatDateForInput (currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaDate)
-      })
-    );
     onGoNext();
   }
 

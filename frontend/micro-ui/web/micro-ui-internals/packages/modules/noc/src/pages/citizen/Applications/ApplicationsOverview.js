@@ -652,14 +652,6 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
         </div>
       </Card> */}
 
-      <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>
-          {remainingDocs?.length > 0 && (
-            <NOCDocumentChecklist documents={remainingDocs} applicationNo={id} tenantId={tenantId} onRemarksChange={() => {}} readOnly={true} />
-          )}
-        </StatusTable>
-      </Card>
       {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
         <Card>
           <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>

@@ -137,7 +137,10 @@ public class GcQueryBuilder {
 				query.append("(");
 			query.append(" connectionholder.userid in (").append(createQuery(criteria.getUserIds())).append(" )");
 			addToPreparedStatement(preparedStatement, criteria.getUserIds());
-			// Don't close here - will close later if needed
+			// Close parenthesis if we opened it
+			if(!propertyIdsPresent) {
+				query.append(")");
+			}
 		}
 		Set<String> uuids = null;
 		if(!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getOwnerName())

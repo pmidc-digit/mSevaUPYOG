@@ -189,7 +189,7 @@ console.log('calculatorData', calculatorData)
           },
           siteDetails: {
             ...nocFormData?.siteDetails,
-            ulbName: nocFormData?.siteDetails?.ulbName?.name || "",
+            ulbName: nocFormData?.siteDetails?.ulbName?.name || nocFormData?.siteDetails?.ulbName || "",
             roadType: nocFormData?.siteDetails?.roadType?.name || "",
             buildingStatus: nocFormData?.siteDetails?.buildingStatus?.name || "",
             isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",

@@ -25,7 +25,7 @@ const NOCSiteDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
-
+  console.log('currentStepData herrrrre', currentStepData)
   //logic for Net Plot Area After Widening (A-B)
   const [netPlotArea, setNetPlotArea] = useState("0.00");
   const NetTotalArea = watch("netTotalArea");
@@ -43,7 +43,6 @@ const NOCSiteDetails = (_props) => {
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("");
-
   const { fields: areaFields, append: addFloor, remove: removeFloor } = useFieldArray({
     control,
     name: "floorArea",
@@ -57,6 +56,19 @@ const NOCSiteDetails = (_props) => {
       const numericValue = parseFloat(item?.value);
       return acc + (isNaN(numericValue) ? 0 : numericValue);
     }, 0);
+    if (currentStepData){
+      const ownerObj = currentStepData?.applicationDetails?.owners?.[0]
+      const ptVasikaNo = ownerObj?.propertyVasikaNo || "";
+      const ptVasikaDate = ownerObj?.propertyVasikaDate || "";
+      setValue(`vasikaNumber`, currentStepData?.siteDetails?.vasikaNumber || ownerObj?.propertyVasikaNo || ptVasikaNo || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`vasikaDate`, formatDateForInput(currentStepData?.siteDetails?.vasikaDate) || formatDateForInput(ptVasikaDate) || "", { shouldValidate: true, shouldDirty: true });
+      console.log('ptVasikaNo, ptVasikaDate', ptVasikaNo, ptVasikaDate)
+    }
+
+
+      
+
+    
 
     const numericBasementArea = isNaN(basementAreaValues) ? 0 : basementAreaValues;
     const finalSum = (sum + parseFloat(numericBasementArea)).toFixed(2);
@@ -77,25 +89,11 @@ const NOCSiteDetails = (_props) => {
   let { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
   console.log('roadType', roadType)
-  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
-
-  const ulbListOptions = ulbList?.map((city) => ({
-    ...city,
-    displayName: t(city.i18nKey),
-  }));
 
 const sortedRoadType = useMemo(
   () => roadType?.slice().sort((a, b) => a.name.localeCompare(b.name)),
   [roadType]
 );
-
-  useEffect(() => {
-    if (ulbName) {
-      const ulbTypeFormatted = ulbName?.city?.ulbType;
-      setUlbType(ulbTypeFormatted);
-      setValue("ulbType", ulbTypeFormatted);
-    }
-  }, [ulbName, setValue]);
 
   /**Start - District and Zone caculation logic */
   const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
@@ -111,9 +109,9 @@ const sortedRoadType = useMemo(
     },
   ];
 
-  const allCities = Digit.Hooks.noc.useTenants();
+  const  allCities = Digit.Hooks.noc.useTenants();
+
   console.log('allcities', allCities)
-  const [cities, setcitiesopetions] = useState(allCities);
   
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
@@ -140,15 +138,22 @@ const sortedRoadType = useMemo(
   // }
   // }, [fetchedLocalities]);\
 
-  //logic for default selection of district
+  //logic for default selection of district , ulbname and type
   useEffect(() => {
     if (tenantId && allCities?.length > 0) {
-      const defaultCity = allCities.find((city) => city.code === tenantId)?.city?.districtName;
-
-      console.log('defaultCity', defaultCity)
-      if (defaultCity) {
-        setSelectedCity(defaultCity);
-        setValue("district", defaultCity); // sets default in react-hook-form
+      const cityobj = allCities.find((city) => city.code === tenantId)
+      const defaultDistrict  = cityobj?.city?.districtName || "";
+      const defaultUlbName = cityobj?.city?.name || "";
+      const defaultUlbType = cityobj?.city?.ulbType || "";
+      console.log('defaultCity', defaultDistrict)
+      if (defaultDistrict) {
+        setSelectedCity(defaultDistrict);
+        setUlbName(defaultUlbName);
+        setUlbName(defaultUlbName);
+        setUlbType(defaultUlbType);
+        setValue("district", defaultDistrict);
+        setValue("ulbName", defaultUlbName); // sets default in react-hook-form
+        setValue("ulbType", defaultUlbType);
       }
     }
   }, [tenantId, allCities]);
@@ -264,27 +269,25 @@ const sortedRoadType = useMemo(
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-              {!isUlbListLoading && (
-                <Controller
-                  control={control}
-                  name={"ulbName"}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      // select={props.onChange}
-                      select={(e) => {
-                        setUlbName(e);
-                        props.onChange(e);
-                      }}
-                      selected={props.value}
-                      option={ulbListOptions}
-                      optionKey="displayName"
-                      t={t}
-                    />
-                  )}
-                />
-              )}
+              <Controller
+                control={control}
+                name={"ulbName"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={ulbName || props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disable="true"
+                  />
+                )}
+              />
+
               <CardLabelError style={{ fontSize: "12px", marginTop: "4px" }}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
             </div>
           </LabelFieldPair>
@@ -298,9 +301,10 @@ const sortedRoadType = useMemo(
               <Controller
                 control={control}
                 name="ulbType"
+                rules={{ required: t("REQUIRED_FIELD") }}
                 render={(props) => (
                   <TextInput
-                    // value={props.value}
+                    className="form-field"
                     value={ulbType || props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -312,6 +316,7 @@ const sortedRoadType = useMemo(
                   />
                 )}
               />
+              {errors?.ulbType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.ulbType.message}</p>}
             </div>
           </LabelFieldPair>
 
@@ -935,9 +940,9 @@ const sortedRoadType = useMemo(
                   //   value: 4,
                   //   message: t("MIN_4_CHARACTERS_REQUIRED"),
                   // },
-                  maxLength: {
-                    value: 15,
-                    message: t("MAX_15_CHARACTERS_ALLOWED"),
+                  validate: (value) => {
+                    const sanitized = value.replace(/\//g, ""); // remove all "/"
+                    return sanitized.length <= 15 || t("MAX_15_CHARACTERS_ALLOWED");
                   },
                 }}
                 render={(props) => (
@@ -979,7 +984,7 @@ const sortedRoadType = useMemo(
                 render={(props) => (
                   <TextInput
                     type="date"
-                    value={formatDateForInput(props.value)} 
+                    value={formatDateForInput(props.value)}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}

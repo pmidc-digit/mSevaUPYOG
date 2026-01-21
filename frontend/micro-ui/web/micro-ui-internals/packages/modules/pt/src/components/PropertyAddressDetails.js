@@ -30,10 +30,7 @@ const PropertyAddressDetails = ({ goNext }) => {
   const [getLocality, setLocality] = useState([]);
   const [getYearCreation, setYearCreation] = useState([]);
 
-  const { data: mdmsPetData, isLoading } = Digit.Hooks.ptr.usePTRPetMDMS(tenantId);
-  const { data: CreationYearData = [], isLoading: CreationYearLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egf-master", [
-    { name: "FinancialYear" },
-  ]);
+  const { data: CreationYearData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egf-master", [{ name: "FinancialYear" }]);
 
   const {
     control,
@@ -240,7 +237,7 @@ const PropertyAddressDetails = ({ goNext }) => {
       <ActionBar>
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
-      {(isLoading || CreationYearLoading) && <Loader page={true} />}
+      {isLoading && <Loader page={true} />}
     </form>
   );
 };

@@ -141,7 +141,7 @@ import { TableConfig } from "./config/inbox-table-config";
 // import PTSummaryEmployee from "./pageComponents/PTSummaryEmployee";
 // import { GISComponent } from "./pageComponents/GISComponent";
 // import { PTNewFormStepZeroCitizen } from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepZeroCitizen";
-// import { GISIntegration } from "./pages/citizen/GISIntegration";
+import { GISIntegration } from "./pages/citizen/GISIntegration";
 // import { GISIntegration as GISIntegrationEmployee } from "./pages/employee/GISIntegration";
 
 // new stepper form
@@ -290,7 +290,7 @@ const componentsToRegister = {
   // PTSummaryEmployee,
   // GISComponent,
   // PTNewFormStepZeroCitizen,
-  // GISIntegration,
+  GISIntegration,
   // GISIntegrationEmployee,
 
   NewPTStepperForm,

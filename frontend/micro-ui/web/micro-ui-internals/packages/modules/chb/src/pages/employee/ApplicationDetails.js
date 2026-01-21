@@ -237,36 +237,6 @@ const CHBApplicationDetails = () => {
     }
   }
 
-  const handleCancel = async () => {
-    console.log("displayData?.applicantData", data?.hallsBookingApplication);
-    // return
-    setLoader(true);
-    // ✅ Final payload
-    const finalPayload = {
-      hallsBookingApplication: {
-        ...application,
-        workflow: {
-          action: "CANCEL",
-        },
-      },
-    };
-    try {
-      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
-
-      workflowDetails.revalidate();
-
-      // ✅ Delay navigation so toast shows
-      setTimeout(() => {
-        history.push("/digit-ui/employee/chb/inbox");
-        window.location.reload();
-      }, 2000);
-      setLoader(false);
-    } catch (err) {
-      setLoader(false);
-      return err;
-    }
-  };
-
   const fetchBillData = async () => {
     setLoading(true);
     const result = await Digit.PaymentService.fetchBill(tenantId, { businessService: "chb-services", consumerCode: acknowledgementIds });

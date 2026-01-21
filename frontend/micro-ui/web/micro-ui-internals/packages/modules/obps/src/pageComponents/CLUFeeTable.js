@@ -1,7 +1,8 @@
-import React from "react";
+import React,{useState, Fragment} from "react";
 import {
   TextInput,
   CardSubHeader,
+  CardSectionSubText,
 } from "@mseva/digit-ui-react-components";
 //import NOCCustomUploadFile from "./NOCCustomUploadFile";
 import CustomUploadFile from "../components/CustomUploadFile";
@@ -17,9 +18,16 @@ export const CLUFeeTable = ({
   routeTo,
   t,
   handleRemarkChange,
-  onAdjustedAmountBlur
+  onAdjustedAmountBlur,
+  feeHistory
 }) => {
-  console.log('feeDataWithTotal in fee table==>', feeDataWithTotal)
+  //console.log('feeDataWithTotal in fee table==>', feeDataWithTotal)
+  const [showHistory, setShowHistory] = useState(false);
+  const lastUpdatedBy = feeHistory?.CLU_CLU_FEE?.[0]?.who || "";
+
+  // console.log("feeHistroy here  ==>", feeHistory);
+  // console.log("lastUpdatedBy ==>", lastUpdatedBy);
+
   return (
     <div className="noc-table-container">
       <table className="customTable table-border-style">
@@ -98,6 +106,76 @@ export const CLUFeeTable = ({
           )}
         </tbody>
       </table>
+
+      {feeHistory && Object.keys(feeHistory).length > 0 && (
+        <div style={{ marginTop: "16px" }}>
+          <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
+            <CardSubHeader>
+              {t("FEE_HISTORY")} {showHistory ? "▲" : "▼"}
+            </CardSubHeader>
+          </div>
+
+          {showHistory && (
+            <>
+              <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
+                <thead>
+                  <tr>
+                    {Object.keys(feeHistory).map((taxHeadCode) => (
+                      <th key={taxHeadCode}>{t(taxHeadCode)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
+                    // compute descending index
+                    const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
+                    const descIdx = maxLen - 1 - rowIdx;
+
+                    return (
+                      <tr key={rowIdx}>
+                        {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                          const h = historyRows[descIdx]; // use reversed index
+                          return (
+                            <td key={taxHeadCode}>
+                              {h ? (
+                                <table className="customTable table-border-style">
+                                  <tbody>
+                                    <tr>
+                                      <td>
+                                        <strong>{t("Fee")}</strong>
+                                      </td>
+                                      <td>{h?.estimateAmount}</td>
+                                    </tr>
+                                    <tr>
+                                      <td>
+                                        <strong>{t("Remarks")}</strong>
+                                      </td>
+                                      <td>{h?.remarks || t("CS_NA")}</td>
+                                    </tr>
+                                    {/* <tr>
+                                      <td>
+                                        <strong>{t("Last Updated By")}</strong>
+                                      </td>
+                                      <td>{h?.who || t("UNKNOWN")}</td>
+                                    </tr> */}
+                                  </tbody>
+                                </table>
+                              ) : (
+                                t("CS_NA")
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <span>Last Updated By : {lastUpdatedBy}</span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -141,6 +141,7 @@ function CLUSummary({ currentStepData: formData, t }) {
         <Row label={t("BPA_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/> 
 
         <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"}/>
+        <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(formData?.siteDetails?.vasikaDate) || "N/A"}/>
         <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"}/>
         <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={formData?.siteDetails?.ownershipInPct || "N/A"}/> 
         <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.proposedRoadWidthAfterWidening || "N/A"}/> 
@@ -176,7 +177,7 @@ function CLUSummary({ currentStepData: formData, t }) {
  
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
-        {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />)}
+        {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
       </StatusTable>
  
       

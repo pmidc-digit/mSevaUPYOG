@@ -3,6 +3,7 @@ import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { CLUFeeTable } from "./CLUFeeTable";
+import { buildFeeHistoryByTax } from "../utils";
 
 const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable }) => {
   const { t } = useTranslation();
@@ -105,6 +106,21 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
     }
   );
 
+  const feeHistory = useMemo(() => {
+    const allCalcs = formData?.calculations || [];
+  
+    // Discard any calculation where every taxHeadEstimate has estimateAmount = 0
+    // const filteredCalcs = allCalcs.filter(calc =>
+    //   (calc?.taxHeadEstimates || []).some(tax => tax?.estimateAmount > 0)
+    // );
+
+    const filteredCalcs= allCalcs?.filter((calc)=> calc?.isLatest === true);
+
+    console.log("Filtered Calcs==>", filteredCalcs);
+  
+    return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
+  }, [formData?.calculations]);
+
   const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
   useEffect(() => {
@@ -170,6 +186,9 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
   ];
   }, [data, t, feeAdjustments]);
 
+  const lastUpdatedBy= formData?.calculations?.filter((calc)=> calc?.isLatest === true)?.updatedBy || "";
+  console.log("lastUpdatedBy==>", lastUpdatedBy);
+
 
   if (cluCalculatorLoading) return <Loader />;
 
@@ -178,6 +197,7 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
       {cluCalculatorLoading ? (
         <Loader />
       ) : (
+        <div>
           <CLUFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}
@@ -190,7 +210,10 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
             routeTo={routeTo}
             t={t}
             onAdjustedAmountBlur={onAdjustedAmountBlur}
+            feeHistory={feeHistory}
           />
+          
+          </div>
       )}
       {showToast && ( <Toast error={showToast?.error} warning={showToast?.warning} success={showToast?.success} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} /> )}
     </div>

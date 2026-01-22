@@ -1052,3 +1052,9 @@ config:
       - work-dir: "utilities/ticketing-module"
         image-name: "ticketing-module"
         dockerfile: 'build/maven/Dockerfile'
+
+  - name: "builds/upyog/utilities/search-api"
+    build:
+      - work-dir: "utilities/search-api"
+        image-name: "search-api"
+        dockerfile: 'build/maven/Dockerfile'

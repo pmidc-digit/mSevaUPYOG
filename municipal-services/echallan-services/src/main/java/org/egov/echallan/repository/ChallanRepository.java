@@ -82,7 +82,7 @@ public class ChallanRepository {
      */
     public void save(ChallanRequest challanRequest) {
     	
-        producer.push(config.getSaveChallanTopic(), challanRequest);
+        producer.push(config.getSaveChallanTopic(),challanRequest.getChallan().getId(), challanRequest);
     }
     
     /**
@@ -92,7 +92,7 @@ public class ChallanRepository {
      */
     public void update(ChallanRequest challanRequest) {
     	
-        producer.push(config.getUpdateChallanTopic(), challanRequest);
+        producer.push(config.getUpdateChallanTopic(),challanRequest.getChallan().getId(), challanRequest);
     }
     
     

@@ -23,7 +23,8 @@ public class ReceiptConsumer {
         this.paymentUpdateService = paymentUpdateService;
     }
 
-    @KafkaListener(topics = {"${kafka.topics.receipt.create}"})
+    @KafkaListener(topics = {"${kafka.topics.receipt.create}"},
+    		concurrency = "${spring.kafka.consumer.concurrency.count}")
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
         paymentUpdateService.process(record);

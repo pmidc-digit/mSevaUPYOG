@@ -321,7 +321,7 @@ public class NotificationUtil {
 			if (CollectionUtils.isEmpty(emailRequestList))
 				log.debug("Messages from localization couldn't be fetched!");
 			for (EmailRequest emailRequest : emailRequestList) {
-				producer.push(config.getEmailNotifTopic(), emailRequest);
+				producer.push(config.getEmailNotifTopic(),emailRequest.getEmail().getEmailTo().toString(), emailRequest);
 				log.debug("Email Request -> "+emailRequest.getEmail().toString());
 				log.debug("EMAIL notification sent!");
 			}
@@ -339,7 +339,7 @@ public class NotificationUtil {
 			if (CollectionUtils.isEmpty(smsRequestList))
 				log.debug("Messages from localization couldn't be fetched!");
 			for (SMSRequest smsRequest : smsRequestList) {
-				producer.push(config.getSmsNotifTopic(), smsRequest);
+				producer.push(config.getSmsNotifTopic(),smsRequest.getMobileNumber(), smsRequest);
 				log.debug("MobileNumber: " + smsRequest.getMobileNumber() + " Messages: " + smsRequest.getMessage());
 			}
 		}
@@ -347,7 +347,7 @@ public class NotificationUtil {
 
 
 	public void sendEventNotification(EventRequest request) {
-		producer.push(config.getSaveUserEventsTopic(), request);
+		producer.push(config.getSaveUserEventsTopic(),request.getEvents().get(0).getId(), request);
 	}
 
 

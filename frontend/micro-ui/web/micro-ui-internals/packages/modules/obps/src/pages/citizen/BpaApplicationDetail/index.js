@@ -104,6 +104,7 @@ const BpaApplicationDetail = () => {
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
   const applicationType = data?.edcrDetails?.appliactionType
+  const isOCApplication = applicationType === "BUILDING_OC_PLAN_SCRUTINY";
 
 
 
@@ -111,7 +112,7 @@ const BpaApplicationDetail = () => {
   // const { data: datafromAPI, isLoadingScrutiny, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, data?.applicationData?.edcrNumber, {
   //   enabled: data?.applicationData?.edcrNumber && tenantId ? true : false,
   // });
-console.log('cities', cities)
+console.log('cities', cities, isOCApplication)
 let ulbType,districtCode,ulbCode, subjectLine = "";
 const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.name;
 console.log('loginCity', loginCity)
@@ -936,7 +937,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     // }
     const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
     console.log("SelectedAction", action, isCitizenConsentIncluded, isUserCitizen)
-    if (isCitizenConsentIncluded) {
+    if (isCitizenConsentIncluded && !isOCApplication) {
       if (!agree) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1009,7 +1010,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         return true
       }
     }
-    else if(action === "APPROVE_AND_PAY"){
+    else if(action === "APPROVE_AND_PAY" && !isOCApplication){
       if (!isTocAccepted) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1285,7 +1286,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
 
     let updatedDocuments
     let additionalDetails
-    if (isCitizenConsentIncluded) {
+    if (isCitizenConsentIncluded && !isOCApplication) {
       if (!agree) {
         setIsEnableLoader(false);
         setShowToast({
@@ -2290,7 +2291,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
           />
         </Card>}
 
-        {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && (
+        {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && !isOCApplication && (
           <div>
             <Card>
               <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>

@@ -361,7 +361,8 @@ export const getBPAFormData = async (data, mdmsData, history, t, path) => {
     serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
   };
 
-  if (data?.businessService.includes("OC")) {
+  // if (data?.businessService?.includes("OC")) {
+  if (data?.uiFlow?.applicationType === "BUILDING_OC_PLAN_SCRUTINY") {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
     // history.push(
     //   `/digit-ui/citizen/obps/ocbpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`

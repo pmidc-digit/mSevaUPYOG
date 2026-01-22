@@ -40,7 +40,7 @@ import org.egov.user.repository.builder.RoleQueryBuilder;
 import org.egov.user.repository.builder.UserTypeQueryBuilder;
 import org.egov.user.repository.rowmapper.UserResultSetExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+//import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -491,7 +491,7 @@ public class UserRepository {
      * @param tenantId  tenant id of the roles
      * @return enriched roles
      */
-	@Cacheable(value = "cRolesByCode", key = "roleCodes", sync = true)
+//	@Cacheable(value = "cRolesByCode", key = "roleCodes", sync = true)
     private Set<Role> fetchRolesByCode(Set<String> roleCodes, String tenantId) {
 
 

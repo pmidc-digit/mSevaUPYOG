@@ -26,7 +26,7 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
       mobileNumber: requestor,
       onlyLatestApplication: true
     },
-    { cacheTime: 0 },
+    // { cacheTime: 0 },
   )
 
   useEffect(() => {
@@ -126,13 +126,13 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
     sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
   };
 
-  useEffect(()=>{
-    if(tenantId)
-    Digit.LocalizationService.getLocale({modules: [`rainmaker-bpareg`], locale: Digit.StoreData.getCurrentLanguage(), tenantId: `${tenantId}`});
-  },[tenantId])
+  // useEffect(()=>{
+  //   if(tenantId)
+  //   Digit.LocalizationService.getLocale({modules: [`rainmaker-bpareg`], locale: Digit.StoreData.getCurrentLanguage(), tenantId: `${tenantId}`});
+  // },[tenantId])
   
 
-  if (isLoading) {
+  if (isLoading || BPAREGLoading) {
     return (
       <Loader />
     )

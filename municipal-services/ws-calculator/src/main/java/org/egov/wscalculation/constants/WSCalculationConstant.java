@@ -92,6 +92,9 @@ public class WSCalculationConstant {
 	
 	public static final String WS_TIME_REBATE="WS_TIME_REBATE";
 
+	
+	public static final String WS_BREAKDOWN_PENALTY="WS_BREAKDOWN_PENALTY";
+
 	/**
 	 * data fields
 	 */
@@ -331,6 +334,9 @@ public class WSCalculationConstant {
 	public static final String NO_METER = "No-meter";
 	
 	public static final String BREAKDOWN= "Breakdown";
+	
+	public static final String REPLACEMENT= "Replacement";
+
 
 	public static final String CHANNEL_LIST = "channelList";
 	

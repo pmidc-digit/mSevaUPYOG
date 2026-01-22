@@ -728,7 +728,11 @@ public class TradeLicenseService {
 							log.error("Error While Auto Expiry Application : " + license.getApplicationNumber());
 							e.printStackTrace();
 						}finally {
-		        			kafkaTemplate.send(config.getUpdateTopic(), tradeLicenseRequest);
+							String key = (license.getLicenseNumber() != null)
+	                                ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+	                                : UUID.randomUUID().toString();
+							
+		        			kafkaTemplate.send(config.getUpdateTopic(),key, tradeLicenseRequest);
 						}
 		                
 		            });

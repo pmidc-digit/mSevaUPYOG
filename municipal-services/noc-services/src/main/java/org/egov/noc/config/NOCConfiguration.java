@@ -101,6 +101,12 @@ public class NOCConfiguration {
 	@Value("${persister.save.noc.topic}")
 	private String saveTopic;
 
+	@Value("${persister.save.checkList.topic}")
+	private String saveCheckListTopic;
+
+	@Value("${persister.update.checkList.topic}")
+	private String updateCheckListTopic;
+
 	@Value("${egov.billingservice.host}")
 	private String billingServiceHost;
 
@@ -135,5 +141,12 @@ public class NOCConfiguration {
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String kafkaGroupId;
+
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
 
 }

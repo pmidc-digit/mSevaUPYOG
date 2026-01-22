@@ -66,6 +66,8 @@ public class PGRService {
         enrichmentService.enrichCreateRequest(request);
         workflowService.updateWorkflowStatus(request);
         producer.push(config.getCreateTopic(),request);
+        producer.push(config.getSaveForDgrTopic(),request);
+
         return request;
     }
 
@@ -123,7 +125,7 @@ public class PGRService {
         Object mdmsData = mdmsUtils.mDMSCall(request);
         validator.validateUpdate(request, mdmsData);
         enrichmentService.enrichUpdateRequest(request);
-        workflowService.updateWorkflowStatus(request);
+        //workflowService.updateWorkflowStatus(request);
         producer.push(config.getUpdateTopic(),request);
         return request;
     }

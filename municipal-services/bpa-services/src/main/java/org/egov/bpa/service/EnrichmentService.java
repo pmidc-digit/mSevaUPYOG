@@ -123,7 +123,7 @@ public class EnrichmentService {
 				bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_MODULE_CODE);
 
 		} else {
-			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_OC_MODULE_CODE);
+//			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_OC_MODULE_CODE);
 			bpaRequest.getBPA().setLandId(values.get("landId"));
 		}
 		if (bpaRequest.getBPA().getLandInfo() != null) {
@@ -330,7 +330,7 @@ public class EnrichmentService {
 				|| (!bpa.getBusinessService().equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
 						&& ((!bpa.getRiskType().toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)
 								&& state.equalsIgnoreCase(BPAConstants.APPROVED_STATE))
-								|| (state.equalsIgnoreCase(BPAConstants.SANC_FEE_STATE) && bpa.getRiskType()
+								|| (state.equalsIgnoreCase(BPAConstants.APPROVED_STATE) && bpa.getRiskType()
 										.toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE))))) {
 			int vailidityInMonths = config.getValidityInMonths();
 			Calendar calendar = Calendar.getInstance();
@@ -380,6 +380,8 @@ public class EnrichmentService {
 					log.warn("No approval conditions found for the application " + bpa.getApplicationNo());
 				}
 			}
+			
+			additionalDetail.put("isSanctionLetterGenerated", Boolean.TRUE);
 		}
 	}
 

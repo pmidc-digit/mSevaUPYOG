@@ -176,6 +176,12 @@ public class InboxService {
     @Autowired
     private CHBInboxFilterService chbInboxFilterService;
 
+    @Autowired
+    private GarbageInboxFilterService garbageInboxFilterService;
+
+    @Autowired
+    private RLInboxFilterService rlInboxFilterService;
+
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
@@ -240,6 +246,14 @@ public class InboxService {
         }
         List<String> statusIds = new ArrayList<>(statusIdNameMap.keySet());
         
+        // Fetch full status count map for UI (before applying any filters)
+        // This ensures status map shows all statuses regardless of current filter
+        ProcessInstanceSearchCriteria statusCountCriteria = new ProcessInstanceSearchCriteria();
+        statusCountCriteria.setTenantId(criteria.getTenantId());
+        statusCountCriteria.setBusinessService(businessServiceName);
+        statusCountCriteria.setModuleName(moduleName);
+        List<HashMap<String, Object>> fullStatusCountMap = workflowService.getProcessStatusCount(requestInfo, statusCountCriteria);
+        
         Map<String, Object> updatedMap =
                 handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
                         moduleSearchCriteria, businessKeys);
@@ -247,7 +261,7 @@ public class InboxService {
         if (CollectionUtils.isEmpty(businessKeys)) {
         	response.setTotalCount(0);
             response.setItems(new ArrayList<>());
-            response.setStatusMap(new ArrayList<>());
+            response.setStatusMap(fullStatusCountMap);
             response.setNearingSlaCount(0);
             return response;
         }     
@@ -298,24 +312,9 @@ public class InboxService {
                 StreamSupport.stream(businessObjects.spliterator(), false)
                         .collect(Collectors.toMap(s -> ((JSONObject) s).get(businessIdParam).toString(), s -> s));
 
-        
-        Map<String, List<ProcessInstance>> groupedByStatus =
-                processInstanceMap.values().stream()
-                        .collect(Collectors.groupingBy(pi -> pi.getState().getUuid()));
+        // Use full status count map (not filtered) so UI shows all statuses
+        List<HashMap<String, Object>> statusMap = fullStatusCountMap;
 
-        List<HashMap<String, Object>> statusMap = new ArrayList<>();
-
-        groupedByStatus.forEach((statusId, list) -> {
-            ProcessInstance pi = list.get(0);
-
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("count", list.size());
-            map.put("applicationstatus", pi.getState().getApplicationStatus());
-            map.put("businessservice", pi.getBusinessService());
-            map.put("statusid", statusId);
-
-            statusMap.add(map);
-        });
 
         // Populate Inbox Items
         if (businessObjects != null && businessObjects.length() > 0 && !processInstances.isEmpty()) {
@@ -459,6 +458,20 @@ public class InboxService {
 
             case "clu-service":
                 applicationNumbers = cluInboxFilterService.fetchApplicationNumbersFromSearcher(
+                        criteria, statusIdNameStringMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put("applicationNumber", applicationNumbers);
+                break;
+
+            case "gc-services":
+                applicationNumbers = garbageInboxFilterService.fetchApplicationNumbersFromSearcher(
+                        criteria, statusIdNameStringMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put("applicationNumber", applicationNumbers);
+                break;
+
+            case "rl-services":
+                applicationNumbers = rlInboxFilterService.fetchApplicationNumbersFromSearcher(
                         criteria, statusIdNameStringMap, requestInfo);
                 if (!CollectionUtils.isEmpty(applicationNumbers))
                     moduleSearchCriteria.put("applicationNumber", applicationNumbers);

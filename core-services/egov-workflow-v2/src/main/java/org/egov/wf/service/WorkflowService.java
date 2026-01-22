@@ -1,6 +1,8 @@
 package org.egov.wf.service;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
+import org.egov.common.contract.request.User;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.BusinessServiceRepository;
 import org.egov.wf.repository.WorKflowRepository;
@@ -13,14 +15,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.egov.tracer.model.CustomException;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 import static java.util.Objects.isNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
 public class WorkflowService {
+
+    private final WorkflowConstants workflowConstants;
 
     private WorkflowConfig config;
 
@@ -39,6 +48,9 @@ public class WorkflowService {
     private BusinessServiceRepository businessServiceRepository;
     
     @Autowired
+    private UserService userService;
+    
+    @Autowired
     private MDMSService mdmsService;
 
     @Autowired
@@ -49,7 +61,7 @@ public class WorkflowService {
     public WorkflowService(WorkflowConfig config, TransitionService transitionService,
                            EnrichmentService enrichmentService, WorkflowValidator workflowValidator,
                            StatusUpdateService statusUpdateService, WorKflowRepository workflowRepository,
-                           WorkflowUtil util,BusinessServiceRepository businessServiceRepository) {
+                           WorkflowUtil util,BusinessServiceRepository businessServiceRepository, WorkflowConstants workflowConstants) {
         this.config = config;
         this.transitionService = transitionService;
         this.enrichmentService = enrichmentService;
@@ -58,6 +70,7 @@ public class WorkflowService {
         this.workflowRepository = workflowRepository;
         this.util = util;
         this.businessServiceRepository = businessServiceRepository;
+        this.workflowConstants = workflowConstants;
     }
 
 
@@ -73,6 +86,23 @@ public class WorkflowService {
         enrichmentService.enrichProcessRequest(requestInfo,processStateAndActions);
         workflowValidator.validateRequest(requestInfo,processStateAndActions);
         statusUpdateService.updateStatus(requestInfo,processStateAndActions);
+        
+        if(!CollectionUtils.isEmpty(request.getProcessInstances()) ) {
+        	String moduleName = request.getProcessInstances().get(0).getModuleName();
+        	String businessServiceName = request.getProcessInstances().get(0).getBusinessService();
+        	List<Map<String, Object>> autoSkipStepsMdmsDataList = mdmsService.getAutoSkipStatesMDMS(moduleName, businessServiceName);
+        	
+        	if(!autoSkipStepsMdmsDataList.isEmpty()) {
+        		Map<String, Object> autoSkipStepsMdmsData = autoSkipStepsMdmsDataList.get(0);
+        		try {
+        			autoSkipTransition(request, autoSkipStepsMdmsData);
+				} catch (Exception ex) {
+					log.error("Enable to Skip State : " + request.getProcessInstances().get(0).getState().getState());
+				}
+        	}
+        	
+        }
+        
         return request.getProcessInstances();
     }
 
@@ -289,5 +319,85 @@ public class WorkflowService {
     	
         return workflowRepository.getAutoEscalationEligibleApplications(criteria);
     }
-
+    
+    /**
+     * Skip the processInstanceFromRequest
+     * @param request The incoming request for workflow transition
+     * @return The list of processInstanceFromRequest objects after taking action
+     */
+    public List<ProcessInstance> autoSkipTransition(ProcessInstanceRequest request, Map<String, Object> autoSkipStepsMdmsData){
+        RequestInfo requestInfo = request.getRequestInfo();
+        RequestInfo systemRequestInfo = RequestInfo.builder().userInfo(userService.searchSystemUser()).build();
+        
+    	//Uncomment below line if you are working on local
+    	systemRequestInfo.setAuthToken(requestInfo.getAuthToken());
+        
+    	request.setRequestInfo(systemRequestInfo);
+    	
+        String comment = autoSkipStepsMdmsData.get("comment").toString();
+        List<String> terminateActionRoles = (List<String>)autoSkipStepsMdmsData.get("terminateActionRoles");
+        
+        List<User> nextActionUsers = getNextActionUsers(request);
+        boolean isterminateActionRolesContains = checkNextActonRoles(request, terminateActionRoles);
+        while(nextActionUsers.isEmpty() && !isterminateActionRolesContains) {
+        	Role systemRole = util.getSystemRole();
+        	String nextAction = request.getProcessInstances().get(0).getState()
+        			.getActions()
+            		.stream().filter(action -> action.getRoles().contains(systemRole.getCode()))
+            		.map(Action::getAction).findFirst().orElse("");
+        	
+        	if(StringUtils.isEmpty(nextAction))
+        		break;
+        	
+        	requestInfo.getUserInfo().getRoles().add(systemRole);
+        	request.getProcessInstances().get(0).setAction(nextAction);
+        	request.getProcessInstances().get(0).setComment(comment);
+        	
+        	List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActions(request.getProcessInstances(),true);
+            enrichmentService.enrichProcessRequest(systemRequestInfo,processStateAndActions);
+            workflowValidator.validateRequest(systemRequestInfo,processStateAndActions);
+            statusUpdateService.updateStatus(systemRequestInfo,processStateAndActions);
+            
+            nextActionUsers = getNextActionUsers(request);
+            isterminateActionRolesContains = checkNextActonRoles(request, terminateActionRoles);
+        }
+        
+        return request.getProcessInstances();
+    }
+    
+    private List<User> getNextActionUsers(ProcessInstanceRequest request){
+    	RequestInfo requestInfo = request.getRequestInfo();
+        String tenantId = request.getProcessInstances().get(0).getTenantId();
+        Role systemRole = util.getSystemRole();
+        
+        List<String> nextActionRoles = request.getProcessInstances().get(0).getState()
+        		.getActions()
+        		.stream()
+        		.map(action -> action.getRoles()).flatMap(List::stream).distinct()
+        		.filter(role -> !systemRole.getCode().equalsIgnoreCase(role))
+        		.collect(Collectors.toList());
+        
+        if(CollectionUtils.isEmpty(nextActionRoles))
+        	return Collections.EMPTY_LIST;
+        
+        return userService.getNextActionUsers(requestInfo, nextActionRoles, tenantId);
+    }
+    
+    private boolean checkNextActonRoles(ProcessInstanceRequest request, List<String> terminateActionRoles) {
+    	boolean isterminateActionRolesContains = false;
+    	List<String> nextActionRoles = request.getProcessInstances().get(0).getState()
+    			.getActions()
+        		.stream()
+        		.map(action -> action.getRoles()).flatMap(List::stream).distinct()
+        		.collect(Collectors.toList());
+    	for(String terminateActionRole : terminateActionRoles) {
+    		if(nextActionRoles.contains(terminateActionRole)) {
+    			isterminateActionRolesContains = true;
+    			break;
+    		}
+    	}
+    	
+    	return isterminateActionRolesContains;
+    }
+    
 }

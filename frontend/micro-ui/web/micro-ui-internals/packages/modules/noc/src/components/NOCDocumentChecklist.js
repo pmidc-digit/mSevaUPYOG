@@ -16,7 +16,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   useEffect(() => {
     if (searchChecklistData?.checkList?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
-      searchChecklistData.checkList.forEach(c => { initial[c.documentuid] = c.remarks || ""; });
+      searchChecklistData.checkList.forEach(c => { initial[c.documentUid || c.documentuid]  = c.remarks || ""; });
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }
@@ -33,7 +33,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
       <table className="customTable table-border-style">
         <thead>
           <tr>
-            <th>{t("SR_NO")}</th>
+            <th style={{ width: "60px", textAlign: "center" }}>{t("SR_NO")}</th>
             <th>{t("BPA_DOCUMENT_NAME")}</th>
             <th>{t("BPA_DOCUMENT_FILE")}</th>
             <th>{t("BPA_DOCUMENT_REMARK")}</th>
@@ -44,7 +44,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td>{i + 1}</td>
+                 <td style={{ width: "60px", textAlign: "center" }}>{i + 1}</td>
                 <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
                 <td>
                   {url ? (

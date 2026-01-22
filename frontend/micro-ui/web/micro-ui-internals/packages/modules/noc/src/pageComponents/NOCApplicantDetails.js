@@ -322,8 +322,13 @@ const NOCApplicantDetails = (_props) => {
           ),
         })
       );
-
-
+      dispatch(
+       UPDATE_NOCNewApplication_FORM("siteDetails", {
+        ...currentStepData?.siteDetails,
+        vasikaNumber : property?.additionalDetails?.vasikaNo,
+        vasikaDate: formatDateForInput (property?.additionalDetails?.vasikaDate)
+      })
+    );
     }
   };
 

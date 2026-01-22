@@ -70,7 +70,8 @@ public class CommunityHallBookingRepositoryImpl implements CommunityHallBookingR
 		log.info("Saving community hall booking request data for booking no : "
 				+ bookingRequest.getHallsBookingApplication().getBookingNo());
         System.out.println(bookingRequest);
-		producer.push(bookingConfiguration.getCommunityHallBookingSaveTopic(), bookingRequest);
+		producer.push(bookingConfiguration.getCommunityHallBookingSaveTopic(), 
+				bookingRequest.getHallsBookingApplication().getBookingNo(), bookingRequest);
 
 	}
 
@@ -90,7 +91,8 @@ public class CommunityHallBookingRepositoryImpl implements CommunityHallBookingR
 				.lastModifiedDate(CommunityHallBookingUtil.getCurrentTimestamp()).build();
 		CommunityHallBookingInitDetail bookingPersiter = CommunityHallBookingInitDetail.builder()
 				.hallsBookingApplication(testPersist).build();
-		producer.push(bookingConfiguration.getCommunityHallBookingInitSaveTopic(), bookingPersiter);
+		producer.push(bookingConfiguration.getCommunityHallBookingInitSaveTopic(), 
+				bookingDetail.getBookingId(), bookingPersiter);
 
 	}
 
@@ -162,7 +164,8 @@ public class CommunityHallBookingRepositoryImpl implements CommunityHallBookingR
 	public void updateBooking(@Valid CommunityHallBookingRequest communityHallsBookingRequest) {
 		log.info("Updating community hall booking request data for booking no : "
 				+ communityHallsBookingRequest.getHallsBookingApplication().getBookingNo());
-		producer.push(bookingConfiguration.getCommunityHallBookingUpdateTopic(), communityHallsBookingRequest);
+		producer.push(bookingConfiguration.getCommunityHallBookingUpdateTopic(), 
+				communityHallsBookingRequest.getHallsBookingApplication().getBookingNo(), communityHallsBookingRequest);
 	}
 
 	@Override

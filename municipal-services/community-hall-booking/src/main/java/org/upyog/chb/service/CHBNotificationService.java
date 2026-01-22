@@ -49,15 +49,33 @@ public class CHBNotificationService {
 	@Autowired
 	private CHBEncryptionService chbEncryptionService;
 
+	/**
+	 * Process notification where action and notification status are the same
+	 * @param bookingRequest
+	 * @param status - used for both channel fetching and message template
+	 */
 	public void process(CommunityHallBookingRequest bookingRequest, String status) {
+		// Use same status for action and notification
+		process(bookingRequest, status, status);
+	}
+	
+	/**
+	 * Process notification with separate action and notification status
+	 * This is useful when workflow action differs from notification type
+	 * e.g., action=PAY but notification=PAYMENT_CONFIRMATION
+	 * 
+	 * @param bookingRequest
+	 * @param action - used to fetch configured channels from MDMS
+	 * @param notificationStatus - used to get the message template
+	 */
+	public void process(CommunityHallBookingRequest bookingRequest, String action, String notificationStatus) {
 		CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
 		// Decrypt applicant detail it will be used in notification
 		bookingDetail = chbEncryptionService.decryptObject(bookingDetail, bookingRequest.getRequestInfo());
 
-		log.info("Processing notification for booking no : " + bookingDetail.getBookingNo() + " with status : "
-				+ status);
+		log.info("Processing notification for booking no : " + bookingDetail.getBookingNo() 
+				+ " with action : " + action + " and notificationStatus : " + notificationStatus);
 		String tenantId = bookingRequest.getHallsBookingApplication().getTenantId();
-		String action = status;
 
 		List<String> configuredChannelNames = fetchChannelList(new RequestInfo(), tenantId.split("\\.")[0],
 				config.getModuleName(), action);
@@ -67,11 +85,11 @@ public class CHBNotificationService {
 		String localizationMessages = util.getLocalizationMessages(tenantId, bookingRequest.getRequestInfo());
 
 		if (configuredChannelNames.contains(CommunityHallBookingConstants.CHANNEL_NAME_SMS)) {
-			sendEventNotification(localizationMessages, bookingRequest, status);
+			sendEventNotification(localizationMessages, bookingRequest, notificationStatus);
 		}
 
 		if (configuredChannelNames.contains(CommunityHallBookingConstants.CHANNEL_NAME_EVENT)) {
-			sendMessageNotification(localizationMessages, bookingRequest, status);
+			sendMessageNotification(localizationMessages, bookingRequest, notificationStatus);
 		}
 	}
 	

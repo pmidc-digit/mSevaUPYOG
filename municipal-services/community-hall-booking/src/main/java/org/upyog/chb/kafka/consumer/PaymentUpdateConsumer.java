@@ -26,7 +26,7 @@ public class PaymentUpdateConsumer {
 	private PaymentNotificationService paymentNotificationService;
 	
 
-	@KafkaListener(topics = { "${kafka.topics.receipt.create}" })
+	@KafkaListener(topics = { "${kafka.topics.receipt.create}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void paymentSuccess(final HashMap<String, Object> record,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
@@ -40,7 +40,7 @@ public class PaymentUpdateConsumer {
 		}
 	}
 	
-	@KafkaListener(topics = { "${kafka.topics.update.pg.txns}" })
+	@KafkaListener(topics = { "${kafka.topics.update.pg.txns}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void paymentUpdate(final HashMap<String, Object> record,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 

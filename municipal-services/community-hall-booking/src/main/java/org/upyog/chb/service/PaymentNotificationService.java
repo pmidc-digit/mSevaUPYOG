@@ -55,6 +55,9 @@ public class PaymentNotificationService {
 	@Autowired
 	private CommunityHallBookingRepository bookingRepository;
 	
+	@Autowired
+	private CHBNotificationService chbNotificationService;
+	
 	/**
 	 *
 	 * @param record
@@ -93,6 +96,33 @@ public class PaymentNotificationService {
 				//deleting booking timer
 				bookingService.updateBookingSynchronously(bookingRequest, paymentRequest.getPayment().getPaymentDetails().get(0), BookingStatusEnum.BOOKED,
 						true);
+				
+				// Fetch complete booking details after update for notification
+				CommunityHallBookingSearchCriteria searchCriteria = CommunityHallBookingSearchCriteria.builder()
+						.bookingNo(bookingNo).build();
+				List<CommunityHallBookingDetail> bookingDetails = bookingRepository.getBookingDetails(searchCriteria);
+				if (!bookingDetails.isEmpty()) {
+					CommunityHallBookingDetail updatedBookingDetail = bookingDetails.get(0);
+					// Set payment date from payment request
+					updatedBookingDetail.setPaymentDate(paymentRequest.getPayment().getPaymentDetails().get(0).getReceiptDate());
+					
+					CommunityHallBookingRequest notificationRequest = CommunityHallBookingRequest.builder()
+							.requestInfo(paymentRequest.getRequestInfo())
+							.hallsBookingApplication(updatedBookingDetail)
+							.build();
+					
+					// 1. Send PAYMENT_CONFIRMATION notification first - confirms payment received
+					// Action = PAY (for channel config in MDMS), NotificationStatus = PAYMENT_CONFIRMATION (for message template)
+					log.info("Sending PAYMENT_CONFIRMATION notification for booking no : " + bookingNo);
+					chbNotificationService.process(notificationRequest, "PAY", 
+							BookingStatusEnum.PAYMENT_CONFIRMATION.toString());
+					
+					// 2. Send BOOKED notification - confirms booking with permission letter link
+					// Action = PAY (for channel config in MDMS), NotificationStatus = BOOKED (for message template)
+					log.info("Sending BOOKED notification for booking no : " + bookingNo);
+					chbNotificationService.process(notificationRequest, "PAY", 
+							BookingStatusEnum.BOOKED.toString());
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			log.error("Illegal argument exception occured while sending notification CHB : " + e.getMessage());
@@ -187,6 +217,10 @@ public class PaymentNotificationService {
 			
 			if(BookingStatusEnum.PAYMENT_FAILED.equals(status)) {
 				bookingService.updateBookingSynchronously(bookingRequest, null, status, true);
+				
+				// Send PAYMENT_FAILED notification to user
+				log.info("Sending PAYMENT_FAILED notification for booking no : " + bookingNo);
+				chbNotificationService.process(bookingRequest, BookingStatusEnum.PAYMENT_FAILED.toString());
 			} else {
 				bookingService.updateBookingSynchronously(bookingRequest, null, BookingStatusEnum.PENDING_PAYMENT, false);
 				bookingRepository.updateBookingTimer(bookingDetail.getBookingId());

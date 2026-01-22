@@ -27,7 +27,7 @@ public class NotificationConsumer {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@KafkaListener(topics = { "${persister.save.communityhall.booking.topic}", "${persister.update.communityhall.booking.topic}" })
+	@KafkaListener(topics = { "${persister.save.communityhall.booking.topic}", "${persister.update.communityhall.booking.topic}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		CommunityHallBookingRequest bookingRequest = new CommunityHallBookingRequest();
@@ -47,15 +47,19 @@ public class NotificationConsumer {
 		//Send notification to user except PENDING_FOR_PAYMENT status
 		if (!BookingStatusEnum.PENDING_PAYMENT.toString().equals(bookingStatus)) {
 			CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
-			if (bookingDetail.getWorkflow() == null || bookingDetail.getWorkflow().getAction() == null) {
-				bookingStatus = bookingDetail.getBookingStatus();
-			} else {
-				bookingStatus = bookingDetail.getWorkflow().getAction();
+			
+			// Action is used to fetch channels from MDMS
+			// Booking status is used to get localization messages
+			String action = bookingStatus;
+			String notificationStatus = bookingStatus;
+			
+			if (bookingDetail.getWorkflow() != null && bookingDetail.getWorkflow().getAction() != null) {
+				action = bookingDetail.getWorkflow().getAction();
 			}
 
-			log.info(" booking status bookingDetail.getWorkflow() : " + bookingDetail.getWorkflow());
+			log.info("Processing notification with action : " + action + " and notificationStatus : " + notificationStatus);
 
-			notificationService.process(bookingRequest, bookingStatus);
+			notificationService.process(bookingRequest, action, notificationStatus);
 		}
 	}
 

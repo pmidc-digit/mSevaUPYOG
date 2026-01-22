@@ -1,6 +1,8 @@
 package org.upyog.chb.util;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -39,12 +41,19 @@ public class NotificationUtil {
 
 	private final String URL = "url";
 	private static final String PAYMENT_LINK = "PAYMENT_LINK";
-
 	private static final String PERMISSION_LETTER_LINK = "PERMISSION_LETTER_LINK";
-
 	
 	public static final String MESSAGE_TEXT = "MESSAGE_TEXT";
 	public static final String ACTION_LINK = "ACTION_LINK";
+	
+	// New placeholder constants matching BSNL DLT templates
+	private static final String AMOUNT = "{AMOUNT}";
+	private static final String PORTAL_LINK = "{PORTAL_LINK}";
+	private static final String OFFICE_NAME = "{OFFICE_NAME}";
+	private static final String PERMISSION_LETTER_LINK_PLACEHOLDER = "{PERMISSION_LETTER_LINK}";
+	private static final String REASON = "{REASON}";
+	private static final String DATE = "{DATE}";
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
 
 	@Autowired
 	public NotificationUtil(ServiceRequestRepository serviceRequestRepository, CommunityHallBookingConfiguration config,
@@ -141,7 +150,7 @@ public class NotificationUtil {
 		if (CollectionUtils.isEmpty(smsRequestList))
 			log.info("Messages fobject is empty in send sms!");
 		for (SMSRequest smsRequest : smsRequestList) {
-			producer.push(config.getSmsNotifTopic(), smsRequest);
+			producer.push(config.getSmsNotifTopic(), smsRequest.getMobileNumber(), smsRequest);
 			log.debug("SMS request object : " + smsRequest);
 			log.info("Sending SMS notification to MobileNumber: " + smsRequest.getMobileNumber() + " Messages: " + smsRequest.getMessage());
 		}
@@ -154,7 +163,9 @@ public class NotificationUtil {
 	 */
 	public void sendEventNotification(EventRequest request) {
 		log.info("EVENT notification sent!");
-		producer.push(config.getSaveUserEventsTopic(), request);
+		String key = request.getEvents() != null && !request.getEvents().isEmpty() 
+				? request.getEvents().get(0).getTenantId() : null;
+		producer.push(config.getSaveUserEventsTopic(), key, request);
 	}
 
 	/**
@@ -165,6 +176,7 @@ public class NotificationUtil {
 	 * @param bookingDetail
 	 * @param localizationMessage
 	 * @param actionStatus
+	 * @param eventType
 	 * @return
 	 */
 	public Map<String, String> getCustomizedMsg(CommunityHallBookingDetail bookingDetail, String localizationMessage, String actionStatus, String eventType) {
@@ -179,42 +191,59 @@ public class NotificationUtil {
 		switch (notificationType) {
 
 		case BOOKING_CREATED:
-			//Fetch message template from localization message for localization code
+			// Fetch message template from localization for pending payment notification
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-			
-			link = getActionLink(bookingDetail, actionStatus);
-			//Update placeholder in messages
-		//	message = populateDynamicValues(bookingDetail, messageTemplate);
-			//Shorten URL part of notification message
-		//	String shortUrl = getActionLink(bookingDetail, actionStatus);
-			//Update payment link placeholder in message
-		//	message = message.replace(CommunityHallBookingConstants.CHB_PAYMENT_LINK, shortUrl);
+			link = getActionLink(bookingDetail, PAYMENT_LINK);
+			// Populate dynamic values
+			messageTemplate = populateDynamicValues(bookingDetail, messageTemplate);
+			// Replace portal link placeholder
+			if (link != null && messageTemplate.contains(PORTAL_LINK)) {
+				messageTemplate = messageTemplate.replace(PORTAL_LINK, link);
+			}
 			break;
 
 		case BOOKED:
+			// Fetch message template for booking confirmed notification
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-			link = getActionLink(bookingDetail, actionStatus);
-			
-		//	message = populateDynamicValues(bookingDetail, messageTemplate);
-		//	String permissionLetterShortUrl = getActionLink(bookingDetail, actionStatus);
-		//	message = message.replace(CommunityHallBookingConstants.CHB_PERMISSION_LETTER_LINK, permissionLetterShortUrl);
+			link = getActionLink(bookingDetail, PERMISSION_LETTER_LINK);
+			// Populate dynamic values
+			messageTemplate = populateDynamicValues(bookingDetail, messageTemplate);
+			// Replace permission letter link placeholder
+			if (link != null && messageTemplate.contains(PERMISSION_LETTER_LINK_PLACEHOLDER)) {
+				messageTemplate = messageTemplate.replace(PERMISSION_LETTER_LINK_PLACEHOLDER, link);
+			}
 			break;
 
 		case CANCELLED:
-			// TODO: Implement
+			// Fetch message template for cancellation notification
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-		//	message = populateDynamicValues(bookingDetail, messageTemplate);
+			link = getActionLink(bookingDetail, PAYMENT_LINK);
+			// Populate dynamic values including cancellation reason from workflow comments
+			messageTemplate = populateDynamicValues(bookingDetail, messageTemplate);
+			// Replace portal link placeholder
+			if (link != null && messageTemplate.contains(PORTAL_LINK)) {
+				messageTemplate = messageTemplate.replace(PORTAL_LINK, link);
+			}
 			break;
 			
 		case PAYMENT_FAILED:
+			// Fetch message template for payment failed notification
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-			link = getActionLink(bookingDetail, actionStatus);
+			link = getActionLink(bookingDetail, PAYMENT_LINK);
+			// Populate dynamic values
+			messageTemplate = populateDynamicValues(bookingDetail, messageTemplate);
+			break;
+			
+		case PAYMENT_CONFIRMATION:
+			// Fetch message template for payment confirmation notification
+			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
+			// Populate dynamic values including payment date
+			messageTemplate = populateDynamicValues(bookingDetail, messageTemplate);
 			break;
 			
 		default:
-			messageTemplate = "Localization message not available for  status : " + actionStatus;
+			messageTemplate = "Localization message not available for status : " + actionStatus;
 			break;
-			
 		}
 		
 		Map<String, String> messageMap = new HashMap<String, String>();
@@ -223,6 +252,71 @@ public class NotificationUtil {
 		
 		log.info("getCustomizedMsg messageTemplate : " + messageTemplate);
 		return messageMap;
+	}
+	
+	/**
+	 * Populates dynamic values in message template
+	 * 
+	 * @param bookingDetail
+	 * @param messageTemplate
+	 * @return
+	 */
+	private String populateDynamicValues(CommunityHallBookingDetail bookingDetail, String messageTemplate) {
+		if (messageTemplate == null) {
+			return "";
+		}
+		
+		String message = messageTemplate;
+		
+		// Replace applicant name
+		if (bookingDetail.getApplicantDetail() != null && bookingDetail.getApplicantDetail().getApplicantName() != null) {
+			message = message.replace(CommunityHallBookingConstants.APPLICANT_NAME, bookingDetail.getApplicantDetail().getApplicantName());
+		}
+		
+		// Replace booking number
+		if (bookingDetail.getBookingNo() != null) {
+			message = message.replace(CommunityHallBookingConstants.BOOKING_NO, bookingDetail.getBookingNo());
+		}
+		
+		// Replace community hall name
+		if (bookingDetail.getCommunityHallName() != null) {
+			message = message.replace(CommunityHallBookingConstants.COMMUNITY_HALL_NAME, bookingDetail.getCommunityHallName());
+		}
+		
+		// Replace amount - this will be calculated from demand, for now using placeholder
+		if (message.contains(AMOUNT)) {
+			// TODO: Get actual amount from billing/demand service
+			message = message.replace(AMOUNT, "Rs. [Amount]");
+		}
+		
+		// Replace office name
+		if (message.contains(OFFICE_NAME)) {
+			message = message.replace(OFFICE_NAME, "PMIDC Office");
+		}
+		
+		// Replace cancellation reason from workflow comments
+		if (message.contains(REASON)) {
+			String reason = "User Cancellation";
+			if (bookingDetail.getWorkflow() != null && !StringUtils.isEmpty(bookingDetail.getWorkflow().getComments())) {
+				reason = bookingDetail.getWorkflow().getComments();
+			}
+			message = message.replace(REASON, reason);
+		}
+		
+		// Replace payment date
+		if (message.contains(DATE)) {
+			String dateStr = "[Date]";
+			if (bookingDetail.getPaymentDate() != null && bookingDetail.getPaymentDate() > 0) {
+				try {
+					dateStr = DATE_FORMAT.format(new Date(bookingDetail.getPaymentDate()));
+				} catch (Exception e) {
+					log.error("Error formatting payment date", e);
+				}
+			}
+			message = message.replace(DATE, dateStr);
+		}
+		
+		return message;
 	}
 	
 	public String getActionLink(CommunityHallBookingDetail bookingDetail, String action) {

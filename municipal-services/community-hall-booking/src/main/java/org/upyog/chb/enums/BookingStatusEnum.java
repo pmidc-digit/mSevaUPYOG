@@ -10,6 +10,7 @@ public enum BookingStatusEnum {
 	CITIZEN_ACTION_REQUIRED,    // "CITIZEN_ACTION_REQUIRED" in workflow
 	PENDING_PAYMENT,            // "PENDING_PAYMENT" in workflow
 	PAYMENT_DONE,               // "PAYMENT_DONE" in workflow
+	PAYMENT_CONFIRMATION,       // Payment confirmation notification
 	VENUE_INSPECTION,           // "VENUE_INSPECTION" in workflow
 	REFUND_COMPLETED,           // "REFUND_COMPLETED" (terminate state)
 

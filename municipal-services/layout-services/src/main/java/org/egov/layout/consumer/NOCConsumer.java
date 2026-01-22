@@ -21,7 +21,10 @@ public class NOCConsumer {
 	private NOCNotificationService notificationService;
 	
 	@KafkaListener(topics = { "${persister.save.layout.topic}", "${persister.update.layout.topic}",
-			"${persister.update.layout.workflow.topic}" })
+			"${persister.update.layout.workflow.topic}" },
+			concurrency = "${kafka.consumer.config.concurrency.count}"
+	)
+
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		ObjectMapper mapper = new ObjectMapper();
 		LayoutRequest nocRequest = new LayoutRequest();

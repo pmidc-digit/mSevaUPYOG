@@ -328,7 +328,7 @@ public class PlanReportService {
             frb.addGlobalFooterVariable(builtUpArea, DJCalculation.SUM, reportService.getTotalNumberStyle());
             
             AbstractColumn builtUpDeductionArea = ColumnBuilder.getNew().setColumnProperty("builtUpDeductionArea", BigDecimal.class.getName())
-                    .setTitle("Deduction").setWidth(120).setStyle(reportService.getNumberStyle()).build();
+                    .setTitle("Deduction Area in m²").setWidth(120).setStyle(reportService.getNumberStyle()).build();
             frb.addGlobalFooterVariable(builtUpDeductionArea, DJCalculation.SUM, reportService.getTotalNumberStyle());
 
 

@@ -243,6 +243,8 @@ public class ExtractService {
 					String errorFeatureKey = "Error in "+ str +" extraction";
 					planDetail.addError(errorFeatureKey,
 							"The plan is failing while extracting data from plan in the "+ str);
+					// FULL STACKTRACE logged
+                    LOG.error("Exception while processing feature: {}", str, e);
 				}
 			} else
 				LOG.error("Extract Api is not defined for " + ruleClass.getRuleClass());

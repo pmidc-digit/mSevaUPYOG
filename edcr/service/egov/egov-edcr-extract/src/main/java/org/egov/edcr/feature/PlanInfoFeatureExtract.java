@@ -117,6 +117,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 					setBack.setBuildingFootPrint(footPrint);
 					block.getSetBacks().add(setBack);
 					pl.getBlocks().add(block);
+					pl.getPlot().setBuildingFootPrint(footPrint);
 				} else {
 					Block block = pl.getBlockByName(s.split("_")[1]);
 					block.setName(s.split("_")[1]);
@@ -128,6 +129,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 					footPrint.setPresentInDxf(true);
 					setBack.setBuildingFootPrint(footPrint);
 					block.getSetBacks().add(setBack);
+					pl.getPlot().setBuildingFootPrint(footPrint);
 
 				}
 

@@ -6,6 +6,7 @@ import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WOAT
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,12 +26,14 @@ import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
+import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.PrintUtil;
 import org.egov.edcr.utility.Util;
 import org.egov.edcr.utility.math.Polygon;
 import org.egov.edcr.utility.math.Ray;
 import org.kabeja.dxf.DXFDocument;
 import org.kabeja.dxf.DXFLWPolyline;
+import org.kabeja.dxf.DXFLine;
 import org.kabeja.dxf.DXFVertex;
 import org.kabeja.dxf.helpers.Point;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,8 +155,26 @@ public class ParkingExtract extends FeatureExtract {
         }
 
         //
-        Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_OPEN_PARKING")).forEach(
-                openParking -> pl.getParkingDetails().getOpenCars().add(new MeasurementDetail(openParking, true)));
+//        Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_OPEN_PARKING")).forEach(
+//                openParking -> pl.getParkingDetails().getOpenCars().add(new MeasurementDetail(openParking, true)));
+        List<DXFLWPolyline> openParkingPloyLine = Util.getPolyLinesByLayer(pl.getDoc(), 
+        		layerNames.getLayerName("LAYER_NAME_OPEN_PARKING"));
+        
+        if(openParkingPloyLine!=null && !openParkingPloyLine.isEmpty()) {        	
+        	pl.getParkingDetails().getOpenCars().add(new MeasurementDetail(openParkingPloyLine.get(0),true));
+        	List<DXFLWPolyline> buildingFootPrintPolyLinesByLayer;
+            String buildingFootPrint = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "\\d+_"
+    				+ layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + "\\d+_"
+    				+ layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT");
+    		List<String> layerNames1 = Util.getLayerNamesLike(pl.getDoc(), buildingFootPrint);
+    		for (String s : layerNames1) {
+    			buildingFootPrintPolyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), s);
+    			// Checking for the overlapping Building foot print
+    			isYardOutsideOrTouchingBuildingOnly(openParkingPloyLine.get(0), buildingFootPrintPolyLinesByLayer.get(0), 
+    	        		"open Parking", pl, layerNames);    			
+    		}
+        }
+        
         Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_MECHANICAL_LIFT")).forEach(
                 mechLift -> pl.getParkingDetails().getMechParking().add(new MeasurementDetail(mechLift, true)));
         Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_VISITOR_PARKING")).forEach(
@@ -324,4 +345,92 @@ public class ParkingExtract extends FeatureExtract {
             pl.addError("Duplicate", "Duplicate/Overlaying of items found in  Parking");
         }
     }
+    
+    public static boolean isYardOutsideOrTouchingBuildingOnly(
+            DXFLWPolyline openParkingPloyLine,
+            DXFLWPolyline buildingFootprint,
+            String openParking,
+            PlanDetail pl,
+            LayerNames layerNames) {
+    	Boolean finalStatus = true;
+
+        if (openParkingPloyLine == null || buildingFootprint == null) 
+        	finalStatus = true;
+
+        List<DXFLine> yardLines = getLinesOfPolyline(openParkingPloyLine);
+
+        for (DXFLine yLine : yardLines) {
+            Point y1 = yLine.getStartPoint();
+            Point y2 = yLine.getEndPoint();
+
+            // ---- 1. Check Start Vertex ----
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y1)) {
+                pl.getErrors().put(
+                    "OPEN_PARKING_POINTS_NOT_ON_PLOT_BOUNDARY - " + openParking,
+                    "Points of " + openParking + " not properly on " + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+                finalStatus = false;
+            }
+
+            // ---- 2. Check End Vertex ----
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y2)) {
+                try {
+                	pl.getErrors().put("Open Parking calculation error for boundary" + openParking,
+                            "Points of " + openParking + " not properly on " 
+                	+ layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                finalStatus = false;
+            }
+
+            // ---- 3. Check Midpoint ----
+            Point mid = new Point();
+            mid.setX((y1.getX() + y2.getX()) / 2.0);
+            mid.setY((y1.getY() + y2.getY()) / 2.0);
+
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, mid)) {
+                pl.getErrors().put(
+                    "OPEN_PARKING_POINTS_NOT_ON_PLOT_BOUNDARY - " + openParking,
+                    "Points of " + openParking + " not properly on PLOT_BOUNDARY"
+                );
+                // Keep your DXF debugging line
+                PrintUtil.printForDXf(y1, y2, openParking + "_EDGE_INSIDE", pl);
+                finalStatus = false;
+            }
+        }
+
+        return true;
+    }
+    
+    private static List<DXFLine> getLinesOfPolyline(DXFLWPolyline yard) {
+        List<DXFLine> lines = new ArrayList<>();
+        Iterator vertexIterator = yard.getVertexIterator();
+        DXFVertex next = null;
+        DXFVertex first = null;
+
+        while (vertexIterator.hasNext()) {
+            DXFVertex point1 = (DXFVertex) vertexIterator.next();
+            if (next != null) {
+                DXFLine line = new DXFLine();
+                line.setStartPoint(next.getPoint());
+                line.setEndPoint(point1.getPoint());
+                lines.add(line);
+            } else
+                first = point1;
+            next = point1;
+
+        }
+        if (next != null && first != null && !Util.pointsEquals(first.getPoint(), next.getPoint())) {
+            // if (next!=null && first!=null) {
+            DXFLine line = new DXFLine();
+            line.setStartPoint(next.getPoint());
+            line.setEndPoint(first.getPoint());
+            lines.add(line);
+        }
+        PrintUtil.printLine(lines, yard.getLayerName());
+
+        return lines;
+    }
+    
 }

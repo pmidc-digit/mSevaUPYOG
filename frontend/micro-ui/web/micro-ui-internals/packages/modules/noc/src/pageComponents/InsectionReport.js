@@ -437,16 +437,15 @@ const InspectionReportForm = (_props) => {
                                             <Controller
                                                 control={control}
                                                 name={`Remarks_${ind}`}
-                                                defaultValue={unit?.uomValue}
+                                                defaultValue={unit[`Remarks_${ind}`]}
                                                 rules={applicationStatus === "INSPECTION_REPORT_PENDING" ? { required: t("REQUIRED_FIELD") } : {}}
                                                 render={(props) => (
                                                     <TextInput
-                                                        value={getValues(`Remarks_${ind}`)}
-                                                        onChange={(e) => {
-                                                            props.onChange(e);
-                                                        }}
+                                                        value={props.value}
+                                                        onChange={props.onChange}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
+                                                        disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
                                                     />
                                                 )}
                                             />

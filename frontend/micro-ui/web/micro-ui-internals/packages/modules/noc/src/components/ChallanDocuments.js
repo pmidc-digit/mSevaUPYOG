@@ -39,7 +39,7 @@ const ChallanDocuments = ({
 
   useEffect(() => {
     let count = 0;
-    data?.Challan?.Documents?.map((doc) => {
+    data?.FieldInspection?.Documents?.map((doc) => {
       doc.hasDropdown = true;
 
       let isRequired = false;
@@ -60,7 +60,7 @@ const ChallanDocuments = ({
     <div>
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+        <FormStep t={t} config={config} onSelect={handleSubmit} {...(data?.FieldInspection ? {} : { onSkip })} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.FieldInspection?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument

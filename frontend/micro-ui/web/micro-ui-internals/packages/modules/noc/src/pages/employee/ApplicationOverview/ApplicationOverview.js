@@ -42,6 +42,7 @@ import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -119,12 +120,11 @@ const NOCEmployeeApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
   } : {})
-    const [timeObj , setTimeObj] = useState(null);
-  
+    const [timeObj, setTimeObj] = useState(null);
+    
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
-  
 
   console.log("applicationDetails here==>", applicationDetails);
 
@@ -380,6 +380,9 @@ const NOCEmployeeApplicationOverview = () => {
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
 
+  const hasRole = user?.info?.roles?.some(
+  role => role?.code === "OBPAS_NOC_JE" || role?.code === "OBPAS_NOC_BI"
+);
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -539,12 +542,33 @@ const NOCEmployeeApplicationOverview = () => {
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
 
     // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
-    if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
-      const allRemarksFilled = fieldInspectionPending.every(item => item.remarks && item.remarks.trim() !== "");
+    // Check if remarks are mandatory when status is DOCUMENTVERIFY
+    if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
+      const allRemarksFilled = Object.values(checklistRemarks).every(remark => remark && remark.trim() !== "");
       if (!allRemarksFilled) {
-        setShowToast({ key: "true", error: true, message: "Please fill in all comments before submitting." });
+        setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
         return;
       }
+    }
+
+    if(applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
+      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending)
+      if(fieldInspectionPending?.length === 0){
+        closeModal();
+        setShowToast({key: "true" , error: true, message: "Please fill in the Field Inspection Report before submitting"})
+        return;
+      }else if(fieldInspectionPending?.[0]?.questionLength === 0){
+        closeModal();
+        setShowToast({key: "true" , error: true, message: "Please fill in the Field Inspection Report before submitting"})
+        return;
+      }else{
+        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_"+index]);
+        if(isQuestionEmpty){
+          closeModal();
+          setShowToast({key: "true" , error: true, message: "Please fill in all the questions in Field Inspection Report before submitting"})
+          return;
+        }
+      }      
     }
     
     if (!isFeeDisabled) {
@@ -661,7 +685,7 @@ const NOCEmployeeApplicationOverview = () => {
       };
 
       // Call checklist API before NOCUpdate
-      if (!isDocPending && checklistPayload?.checkList?.length > 0) {
+      if (isDocPending && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
           await Digit.NOCService.NOCCheckListUpdate({
             details: checklistPayload,
@@ -767,8 +791,8 @@ const NOCEmployeeApplicationOverview = () => {
 
   const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
-const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+  const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+  const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className={"employee-main-application-details"}>
@@ -786,10 +810,10 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         )}
       </div>
 
-        <NOCImageView
-          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-        />
+      <NOCImageView
+        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+      />
 
       {id.length > 0 && (
         <React.Fragment>
@@ -944,30 +968,31 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         </StatusTable>
       </Card>
 
-                <Card>
-            <div id="fieldInspection"></div>
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
+        <Card>
+          <div id="fieldInspection"></div>
           <InspectionReport
             isCitizen={true}
             fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
             onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
-          </Card>
-        
-                 <Card>
-          <div id="fieldInspection"></div>
-          <InspectionReportDisplay
-            fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
-          />
-          </Card>
-        
-       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
-        (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
+        </Card>
+      )}
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
             <div id="fieldInspection"></div>
-            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} />
           </Card>
-        )}
+      )}
+
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
+        <Card>
+          <div id="fieldInspection"></div>
+          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+        </Card>
+      )}
       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
@@ -1010,12 +1035,20 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         </StatusTable>
       </Card>
 
-        <Card>
-          <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}
-          tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly={!isDocPending} />}</StatusTable>
-        </Card>
-      
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>
+          {remainingDocs?.length > 0 && (
+            <NOCDocumentChecklist
+              documents={remainingDocs}
+              applicationNo={id}
+              tenantId={tenantId}
+              onRemarksChange={setChecklistRemarks}
+              readOnly={!isDocPending}
+            />
+          )}
+        </StatusTable>
+      </Card>
 
       <Card>
         <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
@@ -1038,8 +1071,6 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
-
-     
 
       <div id="timeline">
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />

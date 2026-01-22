@@ -13,7 +13,8 @@ const NOCDocumentTableView = ({documents}) => {
         {
           Header: t("SR_NO"),   
           accessor: "srNo",
-          Cell: ({ row }) => row.index + 1,  
+          Cell: ({ row }) => row.index + 1,
+          style: { width: "60px", textAlign: "center" },  
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),
@@ -74,21 +75,22 @@ const NOCDocumentTableView = ({documents}) => {
 
   return (
     <div>
-      {documentsData && 
+      {documentsData && (
         <Table
           className="customTable table-border-style"
           t={t}
           data={documentsData}
           columns={documentsColumns}
-          getCellProps={() => ({ style: {} })}
+          getCellProps={(cellInfo) => (cellInfo.column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
+          getHeaderProps={(column) => (column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
           disableSort={true}
           autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
         />
-      }
+      )}
     </div>
-  )
+  );
 }
 
 export default NOCDocumentTableView

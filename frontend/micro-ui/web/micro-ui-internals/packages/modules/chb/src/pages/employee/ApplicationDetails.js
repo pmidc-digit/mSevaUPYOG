@@ -229,43 +229,13 @@ const CHBApplicationDetails = () => {
       history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
-    } else if (action?.action == "CANCEL") {
-      handleCancel();
-    } else {
+    }
+    else {
       setShowModal(true);
       setSelectedAction(action);
     }
   }
 
-  const handleCancel = async () => {
-    console.log("displayData?.applicantData", data?.hallsBookingApplication);
-    // return
-    setLoader(true);
-    // ✅ Final payload
-    const finalPayload = {
-      hallsBookingApplication: {
-        ...application,
-        workflow: {
-          action: "CANCEL",
-        },
-      },
-    };
-    try {
-      const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
-
-      workflowDetails.revalidate();
-
-      // ✅ Delay navigation so toast shows
-      setTimeout(() => {
-        history.push("/digit-ui/employee/chb/inbox");
-        window.location.reload();
-      }, 2000);
-      setLoader(false);
-    } catch (err) {
-      setLoader(false);
-      return err;
-    }
-  };
 
   const fetchBillData = async () => {
     setLoading(true);
@@ -469,7 +439,8 @@ const CHBApplicationDetails = () => {
       filtData.action !== "REJECT" &&
       filtData.action !== "SENDBACK" &&
       filtData.action !== "NOT_VERIFIED" &&
-      filtData.action !== "VERIFIED"
+      filtData.action !== "VERIFIED" &&
+      filtData.action !== "CANCEL"
     ) {
       setErrorOne("Assignee is Mandatory");
       setShowErrorToastt(true);

@@ -299,10 +299,14 @@ const NOCApplicantDetails = (_props) => {
       setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${currentIndex}].propertyVasikaNo`,  property?.additionalDetails?.vasikaNo || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaNo || null, { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaDate || null, { shouldValidate: true, shouldDirty: true });
+
+      // Get current form values to preserve user-filled data
+      const currentOwners = watch('owners');
+
       dispatch(
         UPDATE_NOCNewApplication_FORM("applicationDetails", {
           ...currentStepData?.applicationDetails,
-          owners: currentStepData?.applicationDetails?.owners?.map((o, i) =>
+          owners: currentOwners?.map((o, i) =>
             i === currentIndex
               ? {
                   ...o,

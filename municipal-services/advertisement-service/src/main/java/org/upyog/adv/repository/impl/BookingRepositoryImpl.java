@@ -75,7 +75,8 @@ public class BookingRepositoryImpl implements BookingRepository {
 	public void saveBooking(BookingRequest bookingRequest) {
 		log.info("Saving Advertisement booking request data for booking no : "
 				+ bookingRequest.getBookingApplication().getBookingNo());
-		producer.push(bookingConfiguration.getAdvertisementBookingSaveTopic(), bookingRequest);
+		String key = bookingRequest.getBookingApplication().getBookingNo();
+		producer.push(bookingConfiguration.getAdvertisementBookingSaveTopic(), key, bookingRequest);
 
 	}
 
@@ -473,7 +474,8 @@ public class BookingRepositoryImpl implements BookingRepository {
 	public void updateBooking(@Valid BookingRequest advertisementBookingRequest) {
 		log.info("Updating advertisement booking request data for booking no : "
 				+ advertisementBookingRequest.getBookingApplication().getBookingNo());
-		producer.push(bookingConfiguration.getAdvertisementBookingUpdateTopic(), advertisementBookingRequest);
+		String key = advertisementBookingRequest.getBookingApplication().getBookingNo();
+		producer.push(bookingConfiguration.getAdvertisementBookingUpdateTopic(), key, advertisementBookingRequest);
 	}
 
 	@Transactional
@@ -624,7 +626,8 @@ public class BookingRepositoryImpl implements BookingRepository {
 		AdvertisementDraftDetail advertisementDraftDetail = convertToDraftDetailsObject(bookingRequest);
 		PersisterWrapper<AdvertisementDraftDetail> persisterWrapper = new PersisterWrapper<AdvertisementDraftDetail>(
 				advertisementDraftDetail);
-		producer.push(bookingConfiguration.getAdvertisementDraftApplicationSaveTopic(), persisterWrapper);
+		String key = advertisementDraftDetail.getDraftId();
+		producer.push(bookingConfiguration.getAdvertisementDraftApplicationSaveTopic(), key, persisterWrapper);
 	}
 
 	@Override
@@ -645,7 +648,8 @@ public class BookingRepositoryImpl implements BookingRepository {
 		AdvertisementDraftDetail advertisementDraftDetail = convertToDraftDetailsObject(bookingRequest);
 		PersisterWrapper<AdvertisementDraftDetail> persisterWrapper = new PersisterWrapper<AdvertisementDraftDetail>(
 				advertisementDraftDetail);
-		producer.push(bookingConfiguration.getAdvertisementDraftApplicationUpdateTopic(), persisterWrapper);
+		String key = advertisementDraftDetail.getDraftId();
+		producer.push(bookingConfiguration.getAdvertisementDraftApplicationUpdateTopic(), key, persisterWrapper);
 	}
 
 	public void deleteDraftApplication(String draftId) {
@@ -653,7 +657,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
 		PersisterWrapper<AdvertisementDraftDetail> persisterWrapper = new PersisterWrapper<AdvertisementDraftDetail>(
 				advertisementDraftDetail);
-		producer.push(bookingConfiguration.getAdvertisementDraftApplicationDeleteTopic(), persisterWrapper);
+		producer.push(bookingConfiguration.getAdvertisementDraftApplicationDeleteTopic(), draftId, persisterWrapper);
 
 	}
 

@@ -29,7 +29,7 @@ public class PaymentUpdateConsumer {
 	private PaymentService paymentService;
 
 
-	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}", concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listenPayments(final String rawRecord,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		log.info("ADV Appplication Received to update workflow after PAY for topic : " + topic);
@@ -43,7 +43,7 @@ public class PaymentUpdateConsumer {
 
 	}
 	
-	@KafkaListener(topics = { "${kafka.topics.update.pg.txns}" })
+	@KafkaListener(topics = { "${kafka.topics.update.pg.txns}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void paymentUpdate(final HashMap<String, Object> record,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
@@ -55,7 +55,7 @@ public class PaymentUpdateConsumer {
 	}
 	
 	
-	@KafkaListener(topics = { "${kafka.topics.save.pg.txns}" })
+	@KafkaListener(topics = { "${kafka.topics.save.pg.txns}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void paymentStarted(final HashMap<String, Object> record,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 

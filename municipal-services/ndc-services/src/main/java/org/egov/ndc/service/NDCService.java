@@ -242,22 +242,41 @@ public class NDCService {
 			throw new CustomException("EG_NDC_TENANT_ID_NULL", "Tenant ID must not be null");
 		}
 
-		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
-
+		boolean isSpecificLookup = !CollectionUtils.isEmpty(criteria.getApplicationNo())
+				|| !CollectionUtils.isEmpty(criteria.getUuid()) || criteria.getMobileNumber()!=null || criteria.getName()!=null;
+		if (!isSpecificLookup) {
+			criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+			criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
+		}
+		List<Application> whenMobileNumberGiven=new ArrayList<>();
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
-			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-			if (userDetailResponse.getUser().isEmpty()) {
-				return Collections.emptyList();
-			}
-			else {
-				criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
-			}
+			whenMobileNumberGiven = getApplicationsWhenMobileNumberGiven(criteria, requestInfo);
+//			if (whenMobileNumberGiven != null) return whenMobileNumberGiven;
 		}
 		List<Application> applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
+		// Use a LinkedHashSet to preserve insertion order
+//		Set<Application> mergedSet = new LinkedHashSet<>();
+//		if(whenMobileNumberGiven!=null)
+//			mergedSet.addAll(whenMobileNumberGiven);
+//		mergedSet.addAll(applications);
+
+//		List<Application> mergedList = new ArrayList<>(mergedSet);
+
 		SearchCriteria searchCriteria = new SearchCriteria();
 		searchCriteria.setTenantId(criteria.getTenantId());
 		enrichmentService.enrichProcessInstance(applications, searchCriteria, requestInfo);
 		return applications;
+	}
+
+	private List<Application> getApplicationsWhenMobileNumberGiven(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
+		UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+		if (userDetailResponse.getUser().isEmpty()) {
+			return Collections.emptyList();
+		}
+		else {
+			criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
+		}
+		return null;
 	}
 
 	public List<Application> getApplicationsWithOwnerInfo(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
@@ -265,8 +284,12 @@ public class NDCService {
 		if (CollectionUtils.isEmpty(applications))
 			return Collections.emptyList();
 		enrichmentService.enrichApplicationCriteriaWithOwnerids(criteria, applications);
-		UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-		enrichmentService.enrichOwner(userDetailResponse, applications);
+		UserResponse userDetailResponse = null;
+		if (!CollectionUtils.isEmpty(criteria.getOwnerIds())) {
+			userDetailResponse = userService.getUser(criteria, requestInfo);
+			enrichmentService.enrichOwner(userDetailResponse, applications);
+		}
+
 		return applications;
 	}
 

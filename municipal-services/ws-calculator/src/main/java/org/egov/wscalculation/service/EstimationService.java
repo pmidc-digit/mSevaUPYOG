@@ -262,26 +262,84 @@ public class EstimationService {
 	            applicableSlab = filteredSlabs.get(0);
 	        }
 	    }
+	    
+	    
 
+//	    PI-20289 Metered Breakdown penalty enable and working new logic
+	    
+	    
 	    if (applicableBillSlab != null && applicableSlab != null) {
-	        if (isRangeCalculation(calculationAttribute)) {
-	            if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
-	                Double meterReading = totalUOM;
-	                String meterStatus = criteria.getMeterStatus().toString();
+	    	 if (isRangeCalculation(calculationAttribute)) {
 
-	                if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
-	                        || WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
+	    	        /* =======================
+	    	         * METERED CONNECTION
+	    	         * ======================= */
+	    	        if (WSCalculationConstant.meteredConnectionType
+	    	                .equalsIgnoreCase(waterConnection.getConnectionType())) {
 
-	                    meterReading = (Double) additionalDetail.getOrDefault(
-	                            WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
-	                }
+	    	            Double meterReading = totalUOM;
+	    	            String meterStatus = criteria.getMeterStatus().toString();
 
-	                waterCharge = BigDecimal.valueOf(meterReading * applicableSlab.getCharge());
+	    	            if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
+	    	                    || WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
 
-	                if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
-	                        || waterCharge.doubleValue() < applicableBillSlab.getMinimumCharge()) {
-	                    waterCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
-	                }
+//	    	                meterReading = (Double) additionalDetail.getOrDefault(
+//	    	                        WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
+	    	            	
+	    	            	
+	    	            	Object avgObj = additionalDetail.get(WSCalculationConstant.AVARAGEMETERREADING);
+
+	    	            	if (avgObj instanceof Number) {
+	    	            	    meterReading = ((Number) avgObj).doubleValue();
+	    	            	} else {
+	    	            	    meterReading = totalUOM;
+	    	            	}
+	    	            }
+
+	    	            BigDecimal remainingConsumption = BigDecimal.valueOf(meterReading);
+	    	            BigDecimal totalAmount = BigDecimal.ZERO;
+
+	    	            // sort slabs by range
+	    	            List<Slab> slabs = applicableBillSlab.getSlabs().stream()
+	    	                    .filter(s -> s.getEffectiveFrom() <= System.currentTimeMillis()
+	    	                            && s.getEffectiveTo() >= System.currentTimeMillis())
+	    	                    .sorted(Comparator.comparing(Slab::getFrom))
+	    	                    .collect(Collectors.toList());
+
+	    	            for (Slab slab : slabs) {
+
+	    	                if (remainingConsumption.compareTo(BigDecimal.ZERO) <= 0) {
+	    	                    break;
+	    	                }
+
+	    	                double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
+	    	                double slabTo   = slab.getTo();
+
+	    	                BigDecimal slabRange = BigDecimal.valueOf(
+	    	                        slabTo - slabFrom + 1
+	    	                );
+
+	    	                BigDecimal billableUnits = remainingConsumption.min(slabRange);
+
+	    	                BigDecimal slabAmount = billableUnits
+	    	                        .multiply(BigDecimal.valueOf(slab.getCharge()));
+
+	    	                totalAmount = totalAmount.add(slabAmount);
+	    	                remainingConsumption = remainingConsumption.subtract(billableUnits);
+	    	            }
+
+	    	            BigDecimal minimumCharge =
+	    	                    BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+
+	    	            if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
+	    	                    || totalAmount.compareTo(minimumCharge) < 0) {
+
+	    	                totalAmount = minimumCharge;
+	    	            }
+
+	    	            waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+//	    	    	    PI-20289 Metered Breakdown penalty enable and working new logic
+
 
 	            } else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());

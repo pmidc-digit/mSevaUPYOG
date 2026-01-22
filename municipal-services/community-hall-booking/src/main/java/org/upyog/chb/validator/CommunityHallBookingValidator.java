@@ -66,9 +66,9 @@ public class CommunityHallBookingValidator {
 	private boolean validateBookingDate(List<BookingSlotDetail> bookingSlotDetails) {
 		LocalDate currentDate = CommunityHallBookingUtil.getCurrentDate();
 
-		// Validate that booking date is in the future
+		// Validate that booking date is today or in the future
 		boolean isBookingDateValid = bookingSlotDetails.stream()
-				.anyMatch(slotDetail -> currentDate.isBefore(slotDetail.getBookingDate()));
+				.anyMatch(slotDetail -> !slotDetail.getBookingDate().isBefore(currentDate));
 
 		// Validate that bookingEndDate is not before bookingDate (if provided)
 		boolean isEndDateValid = bookingSlotDetails.stream().allMatch(slotDetail -> {

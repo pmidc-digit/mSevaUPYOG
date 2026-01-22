@@ -80,6 +80,7 @@ public class EnrichmentService {
 
 	public void enrichApplicationCriteriaWithOwnerids(NdcApplicationSearchCriteria criteria, List<Application> applications){
 		Set<String> ownerids = new HashSet<>();
+		criteria.setMobileNumber(null);
 		for(Application application : applications){
 			if(application.getOwners()!=null){
 			for(OwnerInfo ownerInfo : application.getOwners()){
@@ -101,6 +102,8 @@ public class EnrichmentService {
 				for (OwnerInfo owner : application.getOwners()) {
 					OwnerInfo userDetail = userIdToOwnerMap.get(owner.getUuid());
 					if(userDetail!=null) {
+						userDetail.setIsPrimaryOwner(owner.getIsPrimaryOwner());
+						userDetail.setOwnerShipPercentage(owner.getOwnerShipPercentage());
 						owner.addUserDetail(userDetail);
 						enrichedOwners.add(userDetail);
 					}

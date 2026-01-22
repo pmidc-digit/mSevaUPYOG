@@ -73,7 +73,8 @@ public class BPACalculationService {
                 calculationReq.getCalulationCriteria(), mdmsData);
         demandService.generateDemand(calculationReq.getRequestInfo(), calculations, mdmsData, businessService_BPA);
         CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
-        producer.push(config.getSaveTopic(), calculationRes);
+        String key = UUID.randomUUID().toString(); // ✅ UNIQUE KEY
+        producer.push(config.getSaveTopic(),key, calculationRes);
         return calculations;
     }
 

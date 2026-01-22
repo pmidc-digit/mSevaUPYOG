@@ -972,3 +972,40 @@ config:
         dockerfile: 'build/maven/Dockerfile'
       - work-dir: "municipal-services/pgr-ai-services/src/main/resources/db"
         image-name: "pgr-ai-services-db"
+
+  - name: 'builds/upyog/municipal-services/layout-services'
+    build:
+      - work-dir: 'municipal-services/layout-services'
+        image-name: 'layout-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/layout-services/src/main/resources/db"
+        image-name: "layout-services-db"
+
+  - name: "builds/upyog/municipal-services/layout-calculator"
+    build:
+      - work-dir: "municipal-services/layout-calculator"
+        image-name: "layout-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/layout-calculator/migration"
+   #     image-name: "layout-calculator-db"
+
+  - name: 'builds/upyog/municipal-services/clu-services'
+    build:
+      - work-dir: 'municipal-services/clu-services'
+        image-name: 'clu-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/clu-services/src/main/resources/db"
+        image-name: "clu-services-db"
+
+  - name: "builds/upyog/municipal-services/clu-calculator"
+    build:
+      - work-dir: "municipal-services/clu-calculator"
+        image-name: "clu-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/clu-calculator/migration"
+    #    image-name: "clu-calculator-db"
+  - name: "builds/upyog/utilities/ticketing-module"
+    build:
+      - work-dir: "utilities/ticketing-module"
+        image-name: "ticketing-module"
+        dockerfile: 'build/maven/maven2/Dockerfile'

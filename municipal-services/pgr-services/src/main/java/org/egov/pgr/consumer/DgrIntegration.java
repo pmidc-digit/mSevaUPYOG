@@ -9,6 +9,7 @@ import org.egov.common.contract.request.User;
 
 import org.egov.pgr.web.models.Boundary;
 import org.egov.pgr.web.models.ServiceRequest;
+import org.egov.pgr.producer.Producer;
 import org.egov.pgr.service.PGRService;
 import org.egov.pgr.util.PGRConstants;
 import org.egov.pgr.util.MDMSUtils;
@@ -42,6 +43,12 @@ public class DgrIntegration {
     // URLs
     @Value("${dgr.token.url}")
     public String TOKEN_URL;
+    
+    @Value("${kafka.topic.store.dgr.complaint.id}")
+    public String drgPgrId;
+
+    @Value("${kafka.topic.store.failed.topic}")
+    public String failedDgrTopic;
 
     @Value("${dgr.create.grievance.url}")
     public String CREATE_GRIEVANCE_URL;
@@ -74,6 +81,9 @@ public class DgrIntegration {
 
     @Autowired
     private PGRConstants constants;
+    
+    @Autowired
+    private Producer producer;
 
     /* =========================
        Kafka Listener
@@ -160,8 +170,14 @@ public class DgrIntegration {
                     tenantIds,
                     "pb"
             );
-            String districtName = JsonPath.read(msevaDistrictByTenantid, "$.MdmsRes.tenant.tenants[0].city.districtName");
+          //  String districtName = JsonPath.read(msevaDistrictByTenantid, "$.MdmsRes.tenant.tenants[0].city.districtName");
+         // 1. Get district from tenant MDMS (KEEP THIS)
+            String districtName = JsonPath.read(
+                msevaDistrictByTenantid,
+                "$.MdmsRes.tenant.tenants[0].city.districtName"
+            );
 
+         
             Object thirdyPartyDistrictName = reportUtils.getDisrict(
                     serviceReqRequest.getRequestInfo(),
                     PGRConstants.MDMS_THIRD_PART_MASTERS_MASTER_NAME,
@@ -186,15 +202,66 @@ public class DgrIntegration {
             headers.set("Accept", "application/json, text/plain, */*");
             headers.set("Accept-Language", "en-US,en;q=0.9");
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            HttpEntity<Map<String, Object>> entity =
+                    new HttpEntity<>(requestBody, headers);
 
-            log.info("CreateGrievance Response Body: {}", response.getBody());
-            return response.getBody();
+            String responseBody;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error calling CreateGrievance API: " + e.getMessage();
+            try {
+                ResponseEntity<String> response =
+                        restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+                responseBody = response.getBody();
+
+            } catch (Exception ex) {
+
+                log.error("Error calling CreateGrievance API", ex);
+
+                Map<String, Object> failedPayload = new HashMap<>();
+                failedPayload.put("serviceRequest", serviceReqRequest);
+                failedPayload.put("error", ex.getMessage());
+                failedPayload.put("status", "FAILED");
+                failedPayload.put("DgrCreate", requestBody);
+
+                producer.push(failedDgrTopic,serviceReqRequest.getService().getServiceRequestId(), failedPayload);
+
+                return "Error calling CreateGrievance API: " + ex.getMessage();
+            }
+
+            String grievanceId = null;
+            try {
+                grievanceId = JsonPath.read(responseBody, "$.data[0].Grievance_id");
+            } catch (Exception e) {
+                log.error("Grievance_id not found in response");
+            }
+
+            if (grievanceId != null && !grievanceId.trim().isEmpty()) {
+
+                log.info("DGR Grievance ID: {}", grievanceId);
+
+                serviceReqRequest.getService().setDgrPgrId(grievanceId);
+
+
+                producer.push(drgPgrId,grievanceId,  serviceReqRequest);
+
+            } else {
+
+                log.error("DGR Grievance ID missing. Response: {}", responseBody);
+
+                Map<String, Object> failedPayload = new HashMap<>();
+                failedPayload.put("serviceRequest", serviceReqRequest);
+                failedPayload.put("dgrResponse", responseBody);
+                failedPayload.put("DgrCreate", requestBody);
+
+                failedPayload.put("error", "DGR_GRIEVANCE_ID_MISSING");
+                failedPayload.put("status", "FAILED");
+
+                producer.push(failedDgrTopic,serviceReqRequest.getService().getServiceRequestId(),  failedPayload);
+            }
+		
+            return responseBody;
+        }
+        finally {
+            log.info("CreateGrievance API call completed");
         }
     }
 
@@ -251,7 +318,7 @@ public class DgrIntegration {
         // District mapping
         List<Map<String, Object>> districts = JsonPath.read(
                 thirdPartyDistrictName,
-                "$.MdmsRes.tenant.thirdpartydistrictmapping[0].thirdpartydistrictmapping.districts"
+                "$.MdmsRes.tenant.thirdpartydistrictmapping[0].districts"
         );
 
         String dgrName = districts.stream()
@@ -310,12 +377,23 @@ public class DgrIntegration {
         String municipalityName = safeString(selectedMunicipality.get("Municipality_Name"));
         String municipalityNameLocal = safeString(selectedMunicipality.get("Municipality_Name_Local_Lang"));
 
-        // User info
-        User userInfo = serviceReqRequest.getRequestInfo() != null ? serviceReqRequest.getRequestInfo().getUserInfo() : null;
 
-        String citizenName = safeValue(userInfo != null ? userInfo.getName() : null, constants.DEFAULT_CITIZEN_NAME);
-        String citizenEmail = safeValue(userInfo != null ? userInfo.getEmailId() : null, constants.DEFAULT_CITIZEN_EMAIL);
-        String citizenMobile = safeValue(userInfo != null ? userInfo.getMobileNumber() : null, constants.DEFAULT_CITIZEN_MOBILE);
+        org.egov.pgr.web.models.User userInfo =
+                serviceReqRequest.getService().getCitizen();
+
+
+       // User userInfo = serviceReqRequest.getRequestInfo() != null ? serviceReqRequest.getRequestInfo().getUserInfo() : null;
+        String citizenName =
+        	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+        	              userInfo != null ? userInfo.getName() : null);
+
+        	String citizenEmail =
+        	    safeValue(constants.DEFAULT_CITIZEN_EMAIL,
+        	              userInfo != null ? userInfo.getEmailId() : null);
+
+        	String citizenMobile =
+        	    safeValue(constants.DEFAULT_CITIZEN_MOBILE,
+        	              userInfo != null ? userInfo.getMobileNumber() : null);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("Referrence_ID", serviceReqRequest.getService().getServiceRequestId());
@@ -327,6 +405,7 @@ public class DgrIntegration {
         requestBody.put("Citizen_District_ID", districtId);
         requestBody.put("Citizen_Tehsil_ID", tehsilId);
         requestBody.put("Citizen_Village_ID", 0);
+        requestBody.put("Referrence_ID", serviceReqRequest.getService().getServiceRequestId());
         requestBody.put("Citizen_Municipality_ID", municipalityId);
         requestBody.put("Citizen_District", districtNameGgr);
         requestBody.put("Citizen_Tehsil", tehsilName);
@@ -334,16 +413,29 @@ public class DgrIntegration {
         requestBody.put("Citizen_Municipality", municipalityName);
         requestBody.put("Citizen_State", constants.STATE_NAME);
         requestBody.put("Citizen_State_ID", stateId);
-        requestBody.put("Application_Department", constants.DEPARTMENT_ID);
+        requestBody.put("Application_Department",  Optional.ofNullable(catSubCat.get("Department_ID"))
+                .filter(s -> !s.trim().isEmpty())
+                .orElse("0"));
         requestBody.put("locationtype", "2");
         requestBody.put("Application_District", districtId);
         requestBody.put("Application_District_Name", districtNameGgr);
         requestBody.put("Category_ID", catSubCat.getOrDefault("Category_ID", "0"));
         requestBody.put("Sub_Category_ID", catSubCat.getOrDefault("Sub_Category_ID", "0"));
-        requestBody.put("Application_Title", safeValue(serviceReqRequest.getService().getDescription(), constants.DEFAULT_CITIZEN_NAME));
-        requestBody.put("Application_Description", safeValue(serviceReqRequest.getService().getDescription(), constants.DEFAULT_CITIZEN_NAME));
-        requestBody.put("Application_Department_Name", constants.DEPARTMENT_NAME);
-        requestBody.put("reopen", true);
+        requestBody.put(
+        	    "Application_Title",
+        	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+        	              serviceReqRequest.getService().getDescription())
+        	);
+
+        	requestBody.put(
+        	    "Application_Description",
+        	    safeValue(constants.DEFAULT_CITIZEN_NAME,
+        	              serviceReqRequest.getService().getDescription())
+        	);
+         	requestBody.put("Application_Department_Name",   Optional.ofNullable(catSubCat.get("Department_Name"))
+                    .filter(s -> !s.trim().isEmpty())
+                    .orElse("Department of Local Government"));
+         	requestBody.put("reopen", true);
         requestBody.put("Citizen_Type", constants.CITIZEN_TYPE);
         requestBody.put("Citizen_Company_Name", "");
         requestBody.put("Citizen_Company_Designation_Name", "");
@@ -363,7 +455,9 @@ public class DgrIntegration {
         requestBody.put("Citizen_Tehsil_Local_Lang", tehsilNameLocal);
         requestBody.put("Citizen_Village_Local_Lang", villageNameLocal);
         requestBody.put("Citizen_Town_Local_Lang", "");
-        requestBody.put("Application_Department_Local_Lang", constants.DEPARTMENT_LOCAL_LANG);
+        requestBody.put("Application_Department_Local_Lang",  Optional.ofNullable(catSubCat.get("Department_Name_Local"))
+                .filter(s -> !s.trim().isEmpty())
+                .orElse(" ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ"));
         requestBody.put("Application_District_Local_Lang", districtNameGgr);
 
         log.info("District ID: {}", districtId);
@@ -385,8 +479,15 @@ public class DgrIntegration {
     }
 
     // Helper method for safe value
-    private String safeValue(String value, String defaultVal) {
-        return (value == null || value.trim().isEmpty()) ? defaultVal : value;
+    private String safeValue(String defaultVal, String... values) {
+        if (values != null) {
+            for (String v : values) {
+                if (v != null && !v.trim().isEmpty()) {
+                    return v;
+                }
+            }
+        }
+        return defaultVal;
     }
 
     /* =========================
@@ -417,28 +518,46 @@ public class DgrIntegration {
         }
     }
 
-    public Map<String, String> mapServiceCodeToCategory(String serviceCode, Object categoryList) {
+    public Map<String, String> mapServiceCodeToCategory(String serviceCode, Object mdmsResponse) {
         Map<String, String> result = new HashMap<>();
         String normalizedCode = serviceCode.replaceAll("\\s+", "").toLowerCase();
 
-        List<Map<String, Object>> categories = JsonPath.read(
-                categoryList, "$.MdmsRes.tenant.dgrIntegration[0].categories"
-        );
+        try {
+            // Read categories array from MDMS response
+            List<Map<String, Object>> categories = JsonPath.read(
+                    mdmsResponse, "$.MdmsRes.tenant.dgrIntegration[0].categories"
+            );
 
-        for (Map<String, Object> category : categories) {
-            List<Map<String, Object>> subcategories = (List<Map<String, Object>>) category.get("subcategories");
-            for (Map<String, Object> sub : subcategories) {
-                String label = String.valueOf(sub.get("label")).replaceAll("\\s+", "").toLowerCase();
-                if (label.equals(normalizedCode)) {
-                    result.put("Category_ID", String.valueOf(category.get("Category_ID")));
-                    result.put("Sub_Category_ID", String.valueOf(sub.get("id")));
-                    return result;
+            for (Map<String, Object> category : categories) {
+                List<Map<String, Object>> subcategories = (List<Map<String, Object>>) category.get("subcategories");
+                for (Map<String, Object> sub : subcategories) {
+                    String label = String.valueOf(sub.get("msevaServiceCode")).replaceAll("\\s+", "").toLowerCase();
+                    if (label.equals(normalizedCode)) {
+                        result.put("Category_ID", String.valueOf(category.get("Category_ID")));
+                        result.put("Sub_Category_ID", String.valueOf(sub.get("id")));
+                        result.put("Department_ID", String.valueOf(category.get("departmentId")));
+                        result.put("Department_Name", String.valueOf(category.get("departmentName"))); // Original English
+                        result.put("Department_Name_Local", String.valueOf(category.get("departmentNameLocal"))); // Punjabi/Local
+                        return result;
+                    }
                 }
             }
+
+            // Default if not found
+            result.put("Category_ID", "0");
+            result.put("Sub_Category_ID", "0");
+            result.put("Department_ID", "0");
+            result.put("Department_Name", "Department of Local Government");
+            result.put("Department_Name_Local", "");
+        } catch (Exception e) {
+            // In case JSON path fails or structure is invalid
+            result.put("Category_ID", "0");
+            result.put("Sub_Category_ID", "0");
+            result.put("Department_ID", "0");
+            result.put("Department_Name", "Department of Local Government");
+            result.put("Department_Name_Local", "ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ");
         }
-        // default if not found
-        result.put("Category_ID", "0");
-        result.put("Sub_Category_ID", "0");
+
         return result;
     }
 }

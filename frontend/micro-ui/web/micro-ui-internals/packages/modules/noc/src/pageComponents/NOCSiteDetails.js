@@ -30,8 +30,7 @@ const NOCSiteDetails = (_props) => {
   const [netPlotArea, setNetPlotArea] = useState("0.00");
   const NetTotalArea = watch("netTotalArea");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening");
-
-  useEffect(() => {
+    useEffect(() => {
     const a = parseFloat(NetTotalArea);
     const b = parseFloat(AreaLeftForRoadWidening);
 

@@ -197,6 +197,38 @@ export const OBPSService = {
       data: details,
       params:filters
    }),
+
+  CLUCheckListCreate: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.cluCheckListCreate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+  CLUCheckListUpdate: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.cluCheckListUpdate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+  CLUCheckListSearch: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.obps.cluCheckListSearch,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
+
   LayoutCalculator: ({ filters, details }) => 
     Request({
       url: Urls.obps.layoutCalculator,

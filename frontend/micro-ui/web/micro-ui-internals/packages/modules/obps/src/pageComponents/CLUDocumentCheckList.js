@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextInput, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
+const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
@@ -11,12 +11,12 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
     { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
     { enabled: documents?.length > 0 }
   );
-  const { data: searchChecklistData } = Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo }, tenantId);
+  const { data: searchChecklistData } = Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo }, tenantId);
 
   useEffect(() => {
     if (searchChecklistData?.checkList?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
-      searchChecklistData.checkList.forEach(c => { initial[c.documentUid || c.documentuid]  = c.remarks || ""; });
+      searchChecklistData.checkList.forEach(c => { initial[c.documentuid] = c.remarks || ""; });
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }
@@ -33,10 +33,10 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
       <table className="customTable table-border-style">
         <thead>
           <tr>
-            <th style={{ width: "60px", textAlign: "center" }}>{t("SR_NO")}</th>
+            <th>{t("BPA_SR_NO_LABEL")}</th>
             <th>{t("BPA_DOCUMENT_NAME")}</th>
             <th>{t("BPA_DOCUMENT_FILE")}</th>
-            <th>{t("BPA_DOCUMENT_REMARK")}</th>
+            <th>{t("BPA_REMARKS_LABEL")}</th>
           </tr>
         </thead>
         <tbody>
@@ -44,7 +44,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td style={{ width: "60px", textAlign: "center" }}>{i + 1}</td>
+                 <td>{i + 1}</td>
                 <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
                 <td>
                   {url ? (
@@ -71,4 +71,4 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   );
 };
 
-export default NOCDocumentChecklist;
+export default CLUDocumentChecklist;

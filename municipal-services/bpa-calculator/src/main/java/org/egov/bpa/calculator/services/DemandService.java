@@ -195,7 +195,7 @@ public class DemandService {
     	String feeType = calculation.getFeeType();
         String uri = utils.getDemandSearchURL();
         uri = uri.replace("{1}",tenantId);
-        uri = uri.replace("{2}",(utils.getBillingBusinessService(calculation.getBpa().getBusinessService(), feeType)));
+        uri = uri.replace("{2}",(utils.getBillingBusinessService(calculation.getBpa().getBusinessService(), feeType, calculation.getBpa().getApplicationType())));
         uri = uri.replace("{3}",StringUtils.join(consumerCodes, ','));
         uri = uri.replace("{4}", isPaymentCompleted);
 
@@ -294,7 +294,7 @@ public class DemandService {
                     .taxPeriodFrom((Long)taxPeriod.get(BPACalculatorConstants.MDMS_STARTDATE))
                     .taxPeriodTo((Long)taxPeriod.get(BPACalculatorConstants.MDMS_ENDDATE))
                     .consumerType("BPA-" + BPACalculatorConstants.MDMS_CHARGES_TYPE_CODE)
-                    .businessService(utils.getBillingBusinessService(bpa.getBusinessService(),calculation.getFeeType()))
+                    .businessService(utils.getBillingBusinessService(bpa.getBusinessService(),calculation.getFeeType(), bpa.getApplicationType()))
                     .build());
         }
         return demandRepository.saveDemand(requestInfo,demands);

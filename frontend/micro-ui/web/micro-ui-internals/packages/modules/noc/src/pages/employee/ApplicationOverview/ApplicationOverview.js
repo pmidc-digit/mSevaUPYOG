@@ -962,31 +962,20 @@ const NOCEmployeeApplicationOverview = () => {
           }}
         >
           {sitePhotos?.length > 0 &&
-            sitePhotos?.map((doc) => (
-              <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
-            ))}
+            [...sitePhotos]
+              .reverse()
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
         </StatusTable>
       </Card>
 
-      {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
-        <Card>
-          <div id="fieldInspection"></div>
-          <InspectionReport
-            isCitizen={true}
-            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
-            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
-            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
-          />
-        </Card>
-      )}
-      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
-        applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
-          <Card>
-            <div id="fieldInspection"></div>
-            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} />
-          </Card>
-      )}
-
+      
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
         <Card>
           <div id="fieldInspection"></div>
@@ -1025,6 +1014,25 @@ const NOCEmployeeApplicationOverview = () => {
           )}
         </Card>
       )}
+
+{applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
+        <Card>
+          <div id="fieldInspection"></div>
+          <InspectionReport
+            isCitizen={true}
+            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
+            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
+            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
+          />
+        </Card>
+      )}
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+          <Card>
+            <div id="fieldInspection"></div>
+            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} />
+          </Card>
+        )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>

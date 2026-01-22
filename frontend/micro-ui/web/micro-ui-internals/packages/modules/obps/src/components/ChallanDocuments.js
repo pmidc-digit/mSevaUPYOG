@@ -343,7 +343,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const onCapture = (file, meta) => {
     console.log("Captured file:", file, meta);
     setFile(file);
-    updateDocument(selectedDocument, { latitude: Number(meta.latitude), longitude: Number(meta.longitude) });
+    updateDocument(selectedDocument, { latitude: Number(meta.latitude), longitude: Number(meta.longitude), timestamp: meta.timestamp });
     setShowCameraModal(false);
   };
 

@@ -49,7 +49,7 @@ public class BPARepository {
 	 *            The bpa create request
 	 */
 	public void save(BPARequest bpaRequest) {
-		producer.push(config.getSaveTopic(), bpaRequest);
+		producer.push(config.getSaveTopic(),bpaRequest.getBPA().getApplicationNo(), bpaRequest);
 	}
 
 	/**
@@ -71,10 +71,10 @@ public class BPARepository {
 			bpaForStatusUpdate = bpa;
 		}
 		if (bpaForUpdate != null)
-			producer.push(config.getUpdateTopic(), new BPARequest(requestInfo, bpaForUpdate));
+			producer.push(config.getUpdateTopic(),bpaRequest.getBPA().getApplicationNo(), new BPARequest(requestInfo, bpaForUpdate));
 
 		if (bpaForStatusUpdate != null)
-			producer.push(config.getUpdateWorkflowTopic(), new BPARequest(requestInfo, bpaForStatusUpdate));
+			producer.push(config.getUpdateWorkflowTopic(),bpaRequest.getBPA().getApplicationNo(), new BPARequest(requestInfo, bpaForStatusUpdate));
 
 	}
 
@@ -120,11 +120,11 @@ public class BPARepository {
         }
         
         public void saveDocumentCheckList(CheckListRequest checkListRequest) {
-        	producer.push(config.getSaveCheckListTopic(), checkListRequest);
+        	producer.push(config.getSaveCheckListTopic(),checkListRequest.getCheckList().get(0).getApplicationNo(), checkListRequest);
     	}
         
         public void updateDocumentCheckList(CheckListRequest checkListRequest) {
-        	producer.push(config.getUpdateCheckListTopic(), checkListRequest);
+        	producer.push(config.getUpdateCheckListTopic(),checkListRequest.getCheckList().get(0).getApplicationNo(), checkListRequest);
     	}
 
 }

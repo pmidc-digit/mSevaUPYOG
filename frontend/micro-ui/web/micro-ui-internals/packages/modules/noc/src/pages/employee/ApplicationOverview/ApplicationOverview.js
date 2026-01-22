@@ -1030,7 +1030,7 @@ const NOCEmployeeApplicationOverview = () => {
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>
           {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
-            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
+            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])]} />
           )}
         </StatusTable>
       </Card>

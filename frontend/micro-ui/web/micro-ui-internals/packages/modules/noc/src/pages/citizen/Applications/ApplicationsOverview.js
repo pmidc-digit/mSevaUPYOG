@@ -412,7 +412,8 @@ const CitizenApplicationOverview = () => {
             (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
           );
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
-const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+console.log('remainingDocs', remainingDocs)
+  const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
 const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
 const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
@@ -636,10 +637,15 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>
           {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
-            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
+            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])]} />
           )}
         </StatusTable>
       </Card>
+
+      <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+              <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+            
+      
 
       {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>

@@ -385,7 +385,7 @@ public class UserService{
      */
     public UserDetailResponse getUser(TradeLicenseSearchCriteria criteria,RequestInfo requestInfo){
         UserSearchRequest userSearchRequest = getUserSearchRequest(criteria,requestInfo);
-        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoints());
         UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
         return userDetailResponse;
     }

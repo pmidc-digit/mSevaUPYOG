@@ -3,7 +3,9 @@ package org.egov.layout.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -12,6 +14,7 @@ import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.*;
 import org.egov.tracer.model.CustomException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -135,6 +138,43 @@ public class UserService {
 			});
 		}
 	}
+
+	public List<String> getAssigneeFromCLU(Clu clu, List<String> userRoles, RequestInfo requestInfo) {
+		Map<String, String> additionalDetails = (Map<String, String>)clu.getNocDetails().getAdditionalDetails();
+		String roles = userRoles.stream().collect(Collectors.joining(","));
+		StringBuilder uri = getEmployeeSearchURL(clu.getTenantId(), roles, additionalDetails, false);
+
+		JSONObject hrmsRequest = new JSONObject();
+		UserSearchRequest userSearchRequest = new UserSearchRequest();
+		userSearchRequest.setRequestInfo(requestInfo);
+		hrmsRequest.put("RequestInfo", requestInfo);
+		Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+
+		List<String> assignees = JsonPath.read(response, "$.Employees.*.user.uuid");
+		assignees = assignees.stream().distinct().collect(Collectors.toList());
+		return CollectionUtils.isEmpty(assignees) ? null :assignees;
+	}
+
+	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, String> additionalDetails, boolean isAllAssignees) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone.code");
+
+		StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
+		uri.append("?tenantId=").append(tenantId)
+				.append("&isActive=true");
+
+		if(!org.springframework.util.StringUtils.isEmpty(roles))
+			uri.append("&roles=").append(roles);
+
+		if(!isAllAssignees) {
+			uri.append("&assignedtenattids=").append(tenantId);
+			if(!org.springframework.util.StringUtils.isEmpty(zones))
+				uri.append("&zones=").append(zones);
+
+		}
+
+		return uri;
+	}
+
 
 	/**
 	 * Converts date to long

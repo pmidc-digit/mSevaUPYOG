@@ -48,6 +48,8 @@ public class BPACustomIndexMessageListener implements MessageListener<String, St
      * index 5. Core indexing
      */
     public void onMessage(ConsumerRecord<String, String> data) {
+    	log.info("Topic from BPACustomIndexMessageListener: " + data.topic());
+    	
         ObjectMapper mapper = indexerUtils.getObjectMapperWithNull();
         try {
             if(data.topic().equalsIgnoreCase(bpaCreateTopic)){

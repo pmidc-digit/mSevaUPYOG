@@ -136,7 +136,7 @@ public class PropertyService {
 		// PTConstants.PROPERTY_MODEL, Property.class, request.getRequestInfo());
 		// return request.getProperty();
 
-		producer.push(config.getSavePropertyTopic(), request);
+		producer.push(config.getSavePropertyTopic(), producerKey(request), request);
 		request.getProperty().setWorkflow(null);
 		return request.getProperty();
 	}
@@ -249,7 +249,7 @@ public class PropertyService {
 	    util.mergeAdditionalDetails(request, propertyFromSearch);
 
 	    // 3.  Push to the same topic you already use
-	    producer.push(config.getUpdatePropertyTopic(), request);
+	    producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 	}
 	
 	
@@ -309,7 +309,7 @@ public class PropertyService {
 
 		enrichmentService.enrichUpdateRequest(request, propertyFromSearch,true);
 		util.mergeAdditionalDetails(request, propertyFromSearch);
-		producer.push(config.getUpdatePropertyTopic(), request);
+		producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 	}
 
 	/**
@@ -350,9 +350,9 @@ public class PropertyService {
 					&& !propertyFromSearch.getStatus().equals(Status.INWORKFLOW)) {
 				propertyFromSearch.setStatus(Status.INACTIVE);
 
-				producer.push(config.getUpdatePropertyTopic(), OldPropertyRequest);
+				producer.push(config.getUpdatePropertyTopic(), producerKey(request), OldPropertyRequest);
 				util.saveOldUuidToRequest(request, propertyFromSearch.getId());
-				producer.push(config.getSavePropertyTopic(), request);
+				producer.push(config.getSavePropertyTopic(), producerKey(request), request);
 
 			}
 
@@ -364,7 +364,7 @@ public class PropertyService {
 				/*
 				 * If property is In Workflow then continue
 				 */
-				producer.push(config.getUpdatePropertyTopic(), request);
+				producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 			}
 
 		} else {
@@ -372,7 +372,7 @@ public class PropertyService {
 			/*
 			 * If no workflow then update property directly with mutation information
 			 */
-			producer.push(config.getUpdatePropertyTopic(), request);
+			producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 		}
 	}
 
@@ -427,11 +427,11 @@ public class PropertyService {
 					&& !propertyFromSearch.getStatus().equals(Status.INWORKFLOW)) {
 
 				propertyFromSearch.setStatus(Status.INACTIVE);
-				producer.push(config.getUpdatePropertyTopic(), oldPropertyRequest);
+				producer.push(config.getUpdatePropertyTopic(), producerKey(request), oldPropertyRequest);
 
 				util.saveOldUuidToRequest(request, propertyFromSearch.getId());
 				/* save new record */
-				producer.push(config.getSavePropertyTopic(), request);
+				producer.push(config.getSavePropertyTopic(), producerKey(request), request);
 
 			} else if (state.getIsTerminateState()
 					&& !state.getApplicationStatus().equalsIgnoreCase(Status.ACTIVE.toString())) {
@@ -441,7 +441,7 @@ public class PropertyService {
 				/*
 				 * If property is In Workflow then continue
 				 */
-				producer.push(config.getUpdatePropertyTopic(), request);
+				producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 			}
 
 		} else {
@@ -449,14 +449,14 @@ public class PropertyService {
 			/*
 			 * If no workflow then update property directly with mutation information
 			 */
-			producer.push(config.getUpdatePropertyTopic(), request);
+			producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 		}
 	}
 
 	private void terminateWorkflowAndReInstatePreviousRecord(PropertyRequest request, Property propertyFromSearch) {
 
 		/* current record being rejected */
-		producer.push(config.getUpdatePropertyTopic(), request);
+		producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 
 		/* Previous record set to ACTIVE */
 		@SuppressWarnings("unchecked")
@@ -477,7 +477,7 @@ public class PropertyService {
 		previousPropertyToBeReInstated.setStatus(Status.ACTIVE);
 		request.setProperty(previousPropertyToBeReInstated);
 
-		producer.push(config.getUpdatePropertyTopic(), request);
+		producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 	}
 
 	public List<Property> enrichProperty(List<Property> properties, RequestInfo requestInfo) {
@@ -755,7 +755,7 @@ public class PropertyService {
 		// enrichmentService.enrichUpdateRequest(request, propertyFromSearch);
 		util.mergeAdditionalDetails(request, propertyFromSearch);
 
-		producer.push(config.getUpdatePropertyTopic(), request);
+		producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
 
 		request.getProperty().setWorkflow(null);
 
@@ -767,5 +767,8 @@ public class PropertyService {
 		Integer count = repository.getCount(propertyCriteria, requestInfo);
 		return count;
 	}
-
+	
+	public String producerKey(PropertyRequest request) {
+		return request.getProperty().getPropertyId();	
+	}
 }

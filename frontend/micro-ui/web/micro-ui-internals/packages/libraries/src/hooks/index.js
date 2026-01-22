@@ -417,7 +417,7 @@ import useGCInbox from "./gc/useInbox";
 
 //CLU
 import useCLUFeeCalculator from "./obps/useCLUFeeCalculator";
-import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile } from "./obps/useCLUSearchApplication";
+import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchApplicationByIdOrMobile, useCLUCheckListSearch } from "./obps/useCLUSearchApplication";
 import useCLUInbox from "./obps/useCLUInbox";
 import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
 import useBathindaPropertySearch from "./pt/useBathindaPropertySearch";
@@ -655,6 +655,7 @@ const obps = {
   useCLUSearchApplication,
   useCLUCitizenSearchApplication,
   useCLUSearchApplicationByIdOrMobile,
+  useCLUCheckListSearch,
   useLayoutSearchApplicationByIdOrMobile,
   useCLUInbox,
   useLayoutBuildingCategory,

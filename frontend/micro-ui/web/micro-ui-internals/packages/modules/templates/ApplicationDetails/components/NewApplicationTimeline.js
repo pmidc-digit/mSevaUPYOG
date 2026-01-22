@@ -40,28 +40,21 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   );
 });
 
-export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj  }) {
-  
-  console.log('timeObj in timeline', timeObj)
+export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj }) {
   const { isLoading, data: docData } = Digit.Hooks.ads.useADSDocumentSearch(
-  { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
-  { value: workflowDetails?.data?.timeline?.flatMap(item => item?.wfDocuments) || [] },
-  null,
-  0
-);
+    { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
+    { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
+    null,
+    0
+  );
 
-const handleDownloadPDF = React.useCallback(() => {
-  if (!isLoading) {
-    const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
-    const acknowledgementData = getTimelineAcknowledgementData(
-      workflowDetails,
-      tenantInfo,
-      docData?.pdfFiles || {},
-      t
-    );
-    Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
-  }
-}, [workflowDetails, docData, t, isLoading]);
+  const handleDownloadPDF = React.useCallback(() => {
+    if (!isLoading) {
+      const tenantInfo = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") || {};
+      const acknowledgementData = getTimelineAcknowledgementData(workflowDetails, tenantInfo, docData?.pdfFiles || {}, t);
+      Digit.Utils.pdf.generateTimelinePDF(acknowledgementData);
+    }
+  }, [workflowDetails, docData, t, isLoading]);
 
   const parseActionDateTime = (auditDetails) => {
     if (!auditDetails?.created || !auditDetails?.timing) return null;
@@ -127,25 +120,18 @@ const handleDownloadPDF = React.useCallback(() => {
   // Assuming data is latest first, we don't reverse.
   const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
 
-  const codesArray = sortedData
-  .map((item) => item?.assigner?.userName)
-  .filter(Boolean);
+  const codesArray = sortedData.map((item) => item?.assigner?.userName).filter(Boolean);
 
   const uniqueCodes = [...new Set(codesArray)].join(",");
 
-  const employeeData = Digit.Hooks.useEmployeeSearch(
-    tenantId,
-    { codes: uniqueCodes, isActive: true },
-    { enabled: !!uniqueCodes }
-  );
+  const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: uniqueCodes, isActive: true }, { enabled: !!uniqueCodes });
 
   const deptMap = {};
   employeeData?.data?.Employees?.forEach((emp) => {
     const assignment = emp?.assignments?.[0];
-    const translationKey = `COMMON_MASTERS_DESIGNATION_${assignment?.designation}`; 
+    const translationKey = `COMMON_MASTERS_DESIGNATION_${assignment?.designation}`;
     deptMap[emp?.code] = translationKey;
   });
-  
 
   if (isLoading) return <Loader />;
   return (
@@ -197,9 +183,9 @@ const handleDownloadPDF = React.useCallback(() => {
                 {/* Right side: content card */}
                 <div className="custom-content-card">
                   <div className="custom-card-top">
-                    <div className="custom-card-left">
+                    {/* Column 1: Action taken by */}
+                    <div className="custom-card-column">
                       <h3 className="custom-action-title">{t("Action taken by")}</h3>
-
                       {item?.assigner && (
                         <div className="custom-officer-info">
                           <div className="custom-officer-name">{item?.assigner?.name || t("CS_COMMON_NA")}</div>
@@ -212,31 +198,38 @@ const handleDownloadPDF = React.useCallback(() => {
                         </div>
                       )}
                     </div>
-                    {item?.sla && (
-                      <div className="custom-card-left">
-                        <h3 className="custom-action-title">{t("Time Taken")}</h3>
-                        <div className="custom-officer-email">
-                          <span className="custom-email-label">{item?.sla}</span>
-                        </div>
-                      </div>
-                    )}
 
-                    <div className="custom-card-right">
+                    {/* Column 2: Time Taken (Centered/Balanced) */}
+                    <div className="custom-card-column custom-card-column-mid">
+                      {item?.sla && (
+                        <React.Fragment>
+                          <h3 className="custom-action-title">{t("Time Taken")}</h3>
+                          <div className="custom-officer-email">
+                            <span className="custom-email-label">{item?.sla}</span>
+                          </div>
+                        </React.Fragment>
+                      )}
+                    </div>
+
+                    {/* Column 3: Action (Right Aligned) */}
+                    <div className="custom-card-column custom-card-column-right">
                       <h3 className="custom-action-title">{t("Action")}</h3>
                       <div className="custom-status-text">{t(item?.performedAction || "CS_COMMON_NA")}</div>
                     </div>
                   </div>
 
                   {item?.wfComment && item?.wfComment?.length > 0 && item?.wfComment?.some((c) => c?.trim()) && (
-                    <div className="custom-comments-section">
-                      <div className="custom-comment-text">
+                    <div className="custom-comments-section container-full-width">
+                      <div className="custom-comments-content">
                         <h4 className="custom-comments-title">{t("Officer Comments")}</h4>
-                        {item?.wfComment?.map((comment, idx) => (
-                          <p key={idx}>{comment}</p>
-                        ))}
+                        <div className="custom-comment-text">
+                          {item?.wfComment?.map((comment, idx) => (
+                            <p key={idx}>{comment}</p>
+                          ))}
+                        </div>
                       </div>
                       {item?.assignes?.length > 0 && (
-                        <div>
+                        <div className="custom-assigned-to-footer">
                           <h3 className="custom-comments-title">{t("Assigned To")}</h3>
                           <div className="custom-officer-info">
                             <div className="custom-officer-name">{item.assignes[0]?.name}</div>

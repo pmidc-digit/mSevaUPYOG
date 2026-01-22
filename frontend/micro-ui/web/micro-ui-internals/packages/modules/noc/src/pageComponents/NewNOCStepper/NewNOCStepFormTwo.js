@@ -86,8 +86,9 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
 
-    const netPlotArea= parseFloat(data?.specificationPlotArea);;
+    const netPlotAreaAfterWidening= parseFloat(data?.netPlotAreaAfterWidening);;
     const floorAreas = data?.floorArea?.map(f => parseFloat(f?.value) || 0) || [];
+    const basementArea = parseFloat(data?.basementArea) || 0;
 
     if(!isEqual){
         setTimeout(()=>{setShowToast(null);},3000);
@@ -97,18 +98,26 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     else if (
       isBuiltUp &&
       floorAreas.some((area, i) => {
-        if (area > netPlotArea) {
+        if (area > netPlotAreaAfterWidening) {
           setTimeout(() => setShowToast(null), 3000);
           setShowToast({
             key: "true",
             error: true,
             message: `NOC_GROUND_FLOOR_AREA_VALIDATION_LABEL`,
           });
-          return true; 
+          return true;
         }
         return false;
       })
     ) {
+      return false;
+    } else if (isBuiltUp && basementArea > netPlotAreaAfterWidening) {
+      setTimeout(() => setShowToast(null), 3000);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: `NOC_GROUND_FLOOR_AREA_VALIDATION_LABEL`,
+      });
       return false;
     } else {
       return true;
@@ -166,7 +175,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         },
         siteDetails: {
           ...formData?.siteDetails,
-          ulbName: formData?.siteDetails?.ulbName?.name || "",
+          ulbName: formData?.siteDetails?.ulbName || "",
           roadType: formData?.siteDetails?.roadType?.name || "",
           buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
           isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",

@@ -1,46 +1,63 @@
-import React, { useEffect, useState } from "react";
-import { ImageViewer, Card, CardSubHeader } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useMemo } from "react";
+import { ImageViewer, Card, CardSubHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const CLUSitePhotographs = ({ filestoreId, documentType, coordinates }) => {
-  const stateCode = Digit.ULBService.getStateId();
+const CLUSitePhotographs = ({ documents, coordinates }) => {
   const { t } = useTranslation();
-  const [imageCitizenZoom, setImageCitizenZoom] = useState(null);
-  const [imageZoom, setImageZoom] = useState(null);
 
-  const onCloseImageZoom = () => {
-    setImageZoom(null);
+  const documentObj = {
+    value: {
+      workflowDocs: documents?.map((doc) => ({
+        documentType: doc?.documentType || "",
+        filestoreId: doc?.filestoreId || "",
+        documentUid: doc?.documentUid || "",
+        documentAttachment: doc?.documentAttachment || "",
+      })),
+    },
   };
 
-  useEffect(() => {
-    (async () => {
-      if (filestoreId) {
-        const result = await Digit.UploadServices.Filefetch([filestoreId], stateCode);
-        if (result?.data?.fileStoreIds) {
-          setImageCitizenZoom(result.data.fileStoreIds[0]?.url);
-        }
-      }
-    })();
-  }, [filestoreId]);
+  const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
+    enabled: documents?.length > 0 ? true : false,
+  });
+
+  const mappedDocuments = documents?.map((doc) => {
+    const { documentUid, documentType } = doc;
+    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
+    return {
+      documentUid,
+      documentType,
+      url,
+    };
+  });
+
+  const documentsData = useMemo(() => {
+    return mappedDocuments?.map((doc, index) => ({
+      id: index,
+      documentType: doc?.documentType,
+      title: t(doc?.documentType?.replaceAll(".", "_")) || t(doc?.documentType) || t("CS_NA"),
+      fileUrl: doc.url,
+    }));
+  }, [mappedDocuments]);
 
   return (
-    <div style={{ padding: "20px 0px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", padding: "0px 20px" }}>
-        <div>
-          <span>{t(documentType?.replaceAll(".", "_"))}</span>
+    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly" }}>
+      {documentsData?.map((item, index) => (
+        <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", height: "200px", alignItems: "center" }}>
+          <CardSectionHeader>{t(item?.documentType?.replaceAll(".", "_"))}</CardSectionHeader>
+
+          <div style={{ margin: "5px" }}>
+            <img
+              src={item.fileUrl}
+              alt={item.title}
+              style={{ width: "120px", height: "120px", objectFit: "fill", borderRadius: "10%", cursor: "pointer" }}
+              onClick={() => window.open(item.fileUrl, "_blank")}
+            />
+          </div>
+
+          <div>Latitude - {item.documentType === "OWNER.SITEPHOTOGRAPHONE" ? coordinates?.Latitude1 : coordinates?.Latitude2}</div>
+          <div>Longitude - {item.documentType === "OWNER.SITEPHOTOGRAPHONE" ? coordinates?.Longitude1 : coordinates?.Longitude2}</div>
         </div>
-        <div style={{ textAlign: "start" }}>
-          <img
-            src={imageCitizenZoom}
-            alt={t(documentType?.replaceAll(".", "_"))}
-            style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
-            onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
-          />
-          <div>Latitude - {documentType === "OWNER.SITEPHOTOGRAPHONE" ? coordinates?.Latitude1 : coordinates?.Latitude2}</div>
-          <div>Longitude - {documentType === "OWNER.SITEPHOTOGRAPHONE" ? coordinates?.Longitude1 : coordinates?.Longitude2}</div>
-        </div>
-      </div>
-      {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}
+      ))}
     </div>
   );
 };

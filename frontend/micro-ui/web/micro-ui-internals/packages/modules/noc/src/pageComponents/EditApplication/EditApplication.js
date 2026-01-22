@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
-
+import { formatDateForInput } from "../../utils";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper"
 import { stepperConfig } from "../../config/Create/stepperConfig";
 import { SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM, 
@@ -94,6 +94,7 @@ const EditApplication = () => {
   console.log("applicationDetails here==>", applicationDetails);
   
   const nocObject = applicationDetails?.Noc?.[0] || {};
+  console.log('vasikadate in edit', formatDateForInput(nocObject?.vasikaDate))
   const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
   const documents = nocObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
@@ -186,6 +187,11 @@ const EditApplication = () => {
         const updatedApplicantDetails=
         {
           ...applicantDetails,
+            owners: applicantDetails.owners?.map(owner => ({
+              ...owner,
+              propertyVasikaNo: nocObject?.vasikaNumber,
+              propertyVasikaDate : formatDateForInput(nocObject?.vasikaDate)
+            })) || [],
           //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
@@ -197,7 +203,8 @@ const EditApplication = () => {
           roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
           buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
           isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
-        
+          vasikaNumber: nocObject?.vasikaNumber,
+          vasikaDate : formatDateForInput(nocObject?.vasikaDate),
 
           zone: zoneOptions?.find((obj)=> (obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone)),
 

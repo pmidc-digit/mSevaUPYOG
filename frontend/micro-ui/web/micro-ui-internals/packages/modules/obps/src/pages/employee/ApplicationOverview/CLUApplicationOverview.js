@@ -37,7 +37,9 @@ import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
-
+import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
+import InspectionReport from "../../../pageComponents/InspectionReport";
+import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -110,7 +112,8 @@ const CLUEmployeeApplicationDetails = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
-
+  const [checklistRemarks, setChecklistRemarks] = useState({});
+ // console.log("checkListRemarks==>", checklistRemarks);
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
@@ -141,6 +144,9 @@ const CLUEmployeeApplicationDetails = () => {
   });
 
   console.log("workflowDetails here=>", workflowDetails);
+
+  const { data: searchChecklistData } =  Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo: id }, tenantId);
+  const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
 
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -287,6 +293,8 @@ const CLUEmployeeApplicationDetails = () => {
       const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+
+      setFieldInspectionPending(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending);
     }
   }, [applicationDetails?.Clu]);
 
@@ -360,7 +368,7 @@ const CLUEmployeeApplicationDetails = () => {
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {      
-      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -369,26 +377,105 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }
 
+  const onChangeReport = (key, value) => {
+    //console.log("key,value", key, value);
+    setFieldInspectionPending(value);
+  }
+  //console.log("fieldInspectionPending state==>", fieldInspectionPending)
+
   const isFeeDisabled = applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
+
+  
+  function getRemarkEntries(record) {
+   return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+  }
+
+ function areAllRemarksFilled(record) {
+  const remarkEntries = getRemarkEntries(record);
+  //console.log("remarksEntries==>", remarkEntries);
+  return (
+    remarkEntries.length > 0 &&
+    remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
+  );
+  }
+
+  function areAllRemarksFilledForDocumentCheckList(record){
+    const entries = Object.entries(record);
+    //console.log("entries==>", entries);
+    
+    // Rule 1: Must have exact entries equal to remainingDocs
+    if (entries.length !== remainingDocs?.length) return false;
+
+   // Rule 2: Every value must be a non-empty string (trimmed)
+    return entries.every(([, value]) => typeof value === 'string' && value.trim().length > 0);
+
+  }
+
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
     // console.log("data ==>", data);
-    console.log("feeAdjustments==>", feeAdjustments);
+    //console.log("feeAdjustments==>", feeAdjustments);
 
+    //Validation For Site CheckList AT JE/BI Label
+    if(applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
+     
+      if(fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0){
+        closeModal();
+        setTimeout(()=>{setShowToast(null);},3000);
+        setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENIDNG_VALIDATION_LABEL" });
+        return;
+      }
+      else{
+
+        const record = fieldInspectionPending?.[0] ?? {};
+        const allRemarksFilled = areAllRemarksFilled(record);
+        //console.log("allRemarsFilled", allRemarksFilled);
+
+        if(!allRemarksFilled){
+         closeModal();
+         setTimeout(()=>{setShowToast(null);},3000);
+         setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENDING_QUESTION_VALIDATION_LABEL" });
+         return;
+        }
+      }      
+    }
+
+   // console.log("fieldInspectionPending",fieldInspectionPending)
+
+    //Validation for Document CheckList At DM Level
+    if(applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
+      const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
+      console.log("allRemarks at DM Level", allRemarksFilled);
+
+        if(!allRemarksFilled){
+         closeModal();
+         setTimeout(()=>{setShowToast(null);},3000);
+         setShowToast({ key: "true", error: true, message: "BPA_DOCUMENT_VERIFICATION_VALIDATION_LABEL" });
+         return;
+        }
+
+    }
+   
+    //Validation For Updating Fee At Any Level
     if (!isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
+    //console.log("hasNonZeroFee==>",hasNonZeroFee);
+    //console.log("allRemarksFilled==>", allRemarksFilled);
+
     if (!hasNonZeroFee) {
+      closeModal();
       setTimeout(()=>{setShowToast(null);},3000);
-      setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission" });
+      setShowToast({ key: "true", error: true, message: "BPA_ENTER_FEE_ADD_LABEL" });
       return;
     }
 
     if (!allRemarksFilled) {
+      closeModal();
       setTimeout(()=>{setShowToast(null);},3000);
-      setShowToast({ key: "true", error: true, message: "Remarks are mandatory for updating fees" });
+      setShowToast({ key: "true", error: true, message: "BPA_REMARKS_MANDATORY_LABEL" });
       return;
     }
    }
@@ -417,6 +504,7 @@ const CLUEmployeeApplicationDetails = () => {
           ...payloadData.cluDetails?.additionalDetails,
           siteImages: siteImages?.documents || [],
           calculations: [...oldCalculations, newCalculation],
+          fieldinspection_pending: fieldInspectionPending,
         }
       },
       workflow: {},
@@ -437,6 +525,37 @@ const CLUEmployeeApplicationDetails = () => {
     };
 
     try {
+
+      // Build document checklist payload from remarks state
+      const checklistPayload = {
+        checkList: (remainingDocs || []).map((doc) => {
+          const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.documentUid);
+          return {
+            id: existing?.id, // include if updating
+            documentuid: doc?.documentUid,
+            applicationNo: id,
+            tenantId,
+            action: existing ? "update" : "INITIATE",
+            remarks: checklistRemarks[doc?.documentUid] || "",
+          };
+        }),
+      };
+
+      // Call checklist API before CLUUpdate but only incase of application status = "DOC_VERIFICATION_PENDING"
+      if (applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0 && checklistPayload?.checkList?.length > 0) {
+        if (searchChecklistData?.checkList?.length > 0) {
+          await Digit.OBPSService.CLUCheckListUpdate({
+            details: checklistPayload,
+            filters: { tenantId },
+          });
+        } else {
+          await Digit.OBPSService.CLUCheckListCreate({
+            details: checklistPayload,
+            filters: {},
+          });
+        }
+      }
+
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
       if(response?.ResponseInfo?.status === "successful"){
@@ -492,12 +611,12 @@ const CLUEmployeeApplicationDetails = () => {
   console.log("displayData here", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  console.log("coordinates==>", coordinates);
+  //console.log("coordinates==>", coordinates);
   const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
-  console.log("sitePhotoGrahphs==>", sitePhotographs);
-  console.log("remainingDocs==>", remainingDocs);
+  //console.log("sitePhotoGrahphs==>", sitePhotographs);
+  //console.log("remainingDocs==>", remainingDocs);
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
@@ -616,6 +735,7 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
 
               <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
+              <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
               <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
               <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
@@ -663,7 +783,7 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
-        {sitePhotographs?.length > 0 && sitePhotographs?.map((doc)=> <CLUSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />)}
+        {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
       </StatusTable>
       </Card>
 
@@ -672,10 +792,43 @@ const CLUEmployeeApplicationDetails = () => {
         <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0  && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
+      </Card> */}
+
+      {/*Document CheckList At DM Level */}
+     {
+      applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0)  ? 
+      <Card>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
+          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
+      </Card> 
+      : 
+      <Card>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
+          tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly="true" />}</StatusTable>
       </Card>
+     }
+
+      {
+        applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 ?
+        <Card>
+            <InspectionReport
+              isCitizen={true}
+              fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending}
+              onSelect={onChangeReport}
+            />
+        </Card>
+        :
+         <Card>
+            <InspectionReportDisplay
+              fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending}                                
+            />
+         </Card>
+      }
 
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>

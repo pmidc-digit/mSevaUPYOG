@@ -8,7 +8,7 @@ import NOCProfessionalDetails from "../NOCProfessionalDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
-
+import { formatDateForInput } from "../../utils";
 const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -66,7 +66,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           PropertyOwnerMobileNumber: "",
           PropertyOwnerAddress: "",
           PropertyOwnerPlotArea: null,
-          ownerType:""
+          ownerType:"",
+          propertyVasikaDate: "",
+          propertyVasikaNo:""
         },
       ],
     },

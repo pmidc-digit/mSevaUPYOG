@@ -1309,3 +1309,87 @@ export const businessServiceListLayout = (isCode= false) => {
 
     return newAvailableBusinessServices;
 }
+ //Convert date from YYYY-MM-DD to DD/MM/YYYY
+export const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+ };
+
+export const formatDateForInput = (dateString) => {
+  if (!dateString) return "";
+  // If already yyyy-mm-dd, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+  // Otherwise, convert from dd-mm-yyyy
+  const [day, month, year] = dateString.split("-");
+  return `${year}-${month}-${day}`;
+};
+
+export const convertToDDMMYYYY = (dateString) => {
+     if (!dateString) return "";
+
+     const parts = dateString.split("-");
+     if (parts.length !== 3) return dateString; // fallback
+
+     const [a, b, c] = parts;
+
+     // Case 1: already dd-mm-yyyy
+     if (a.length === 2 && c.length === 4) {
+       return dateString;
+     }
+
+     // Case 2: yyyy-mm-dd → dd-mm-yyyy
+     if (a.length === 4) {
+       return `${c}-${b}-${a}`;
+     }
+
+     // Case 3: mm-dd-yyyy → dd-mm-yyyy
+     if (c.length === 4 && a.length === 2 && b.length === 2) {
+       return `${b}-${a}-${c}`;
+     }
+
+     // Fallback: return original
+     return dateString;
+};
+
+export function buildFeeHistoryByTax(
+  calculations = [],
+  { newestFirst = true, limit = null } = {}
+) {
+  const map = {};
+  if (!Array.isArray(calculations)) return map;
+
+  calculations.forEach((calc) => {
+    const who = calc?.updatedBy || null;
+    const estimates = calc?.taxHeadEstimates || [];
+
+    estimates.forEach((th) => {
+      if (!th?.taxHeadCode) return;
+
+      map[th.taxHeadCode] = map[th.taxHeadCode] || [];
+
+      const lastEntry = map[th.taxHeadCode][map[th.taxHeadCode].length - 1];
+
+      // Only add if estimateAmount differs from last entry
+      if (!lastEntry || lastEntry.estimateAmount !== th?.estimateAmount) {
+        map[th.taxHeadCode].push({
+          who,
+          estimateAmount: th?.estimateAmount ?? null,
+          remarks: th?.remarks ?? null, // still stored, but not part of uniqueness check
+          isLatest: calc?.isLatest ?? false,
+        });
+      }
+    });
+  });
+
+  Object.keys(map).forEach((k) => {
+    if (newestFirst) {
+      map[k].sort((a, b) => (b.when || 0) - (a.when || 0));
+    }
+    if (limit && typeof limit === "number") {
+      map[k] = map[k].slice(0, limit);
+    }
+  });
+
+  return map;
+}

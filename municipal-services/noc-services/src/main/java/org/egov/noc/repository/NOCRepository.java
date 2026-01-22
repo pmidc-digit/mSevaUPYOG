@@ -45,7 +45,7 @@ public class NOCRepository {
 	 * @param nocRequest
 	 */
 	public void save(NocRequest nocRequest) {
-		producer.push(config.getSaveTopic(), nocRequest);
+		producer.push(config.getSaveTopic(), nocRequest.getNoc().getApplicationNo(),nocRequest);
 	}
 	
 	/**
@@ -56,9 +56,9 @@ public class NOCRepository {
 	public void update(NocRequest nocRequest, boolean isStateUpdatable) {
 		log.info("Pushing NOC record with application status - "+nocRequest.getNoc().getApplicationStatus());
 		if (isStateUpdatable) {
-			producer.push(config.getUpdateTopic(), nocRequest);
+			producer.push(config.getUpdateTopic(),nocRequest.getNoc().getApplicationNo(), nocRequest);
 		} else {
-		    producer.push(config.getUpdateWorkflowTopic(), nocRequest);
+		    producer.push(config.getUpdateWorkflowTopic(),nocRequest.getNoc().getApplicationNo(), nocRequest);
 		}
 	}
 	/**
@@ -81,11 +81,11 @@ public class NOCRepository {
 	}
 
 	public void saveDocumentCheckList(CheckListRequest checkListRequest) {
-		producer.push(config.getSaveCheckListTopic(), checkListRequest);
+		producer.push(config.getSaveCheckListTopic(), checkListRequest.getCheckList().get(0).getApplicationNo(),checkListRequest);
 	}
 
 	public void updateDocumentCheckList(CheckListRequest checkListRequest) {
-		producer.push(config.getUpdateCheckListTopic(), checkListRequest);
+		producer.push(config.getUpdateCheckListTopic(), checkListRequest.getCheckList().get(0).getApplicationNo(),checkListRequest);
 	}
 	public List<String> getOwnerUserIdsByNocId(String clu) {
 		List<Object> preparedStmtList = new ArrayList<>();

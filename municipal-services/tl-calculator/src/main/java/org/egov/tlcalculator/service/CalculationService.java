@@ -75,6 +75,7 @@ public class CalculationService {
        CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
        if(!isEstimate){
            demandService.generateDemand(calculationReq.getRequestInfo(),calculations,mdmsData,businessService_TL);
+           String key = UUID.randomUUID().toString(); // ✅ UNIQUE KEY
            producer.push(config.getSaveTopic(),calculationRes);
        }
        return calculations;

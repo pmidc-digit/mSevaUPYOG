@@ -359,7 +359,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		    }
 		}
 
-		log.info("FINAL FLAG | isBreakdownAvgEnabled={}", isBreakdownAvgEnabled);
+//		log.info("FINAL FLAG | isBreakdownAvgEnabled={}", isBreakdownAvgEnabled);
 		
 
 		if (WSCalculationConstant.meteredConnectionType
@@ -367,30 +367,51 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		        && MeterReading.MeterStatusEnum.BREAKDOWN.equals(criteria.getMeterStatus())
 		        && isBreakdownAvgEnabled) {
 
-				    log.info("BREAKDOWN triggered for connection {}", criteria.getConnectionNo());
+		    log.info("BREAKDOWN triggered for connection {}", criteria.getConnectionNo());
 
-				    // Fetch previous meter reading
-				    MeterReading previousReading = meterService.searchMeterReadings(
-				            MeterReadingSearchCriteria.builder()
-				                    .tenantId(criteria.getTenantId())
-				                    .connectionNos(Collections.singleton(criteria.getConnectionNo()))
-				                    .build(),
-				            requestInfo
-				    ).stream()
-				     .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
-				     .findFirst()
-				     .orElse(null);
+		    Long currentFrom = criteria.getFrom();
+		    Long currentTo   = criteria.getTo();
 
-				    if (previousReading != null && MeterReading.MeterStatusEnum.BREAKDOWN.equals(previousReading.getMeterStatus())) {
-				        // Consecutive BREAKDOWN → use previous charge + penalty
-				        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
-				        penalty = waterCharge.multiply(BigDecimal.valueOf(2)).setScale(2, RoundingMode.HALF_UP);
-				        log.info("Consecutive BREAKDOWN: charge={} penalty={}", waterCharge, penalty);
-				    } else {
-				        // First BREAKDOWN → take last 3 demands average (min 1)
-				        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
-				        log.info("First BREAKDOWN: charge={}", waterCharge);
-				    }
+		    MeterReading previousReading = meterService.searchMeterReadings(
+		            MeterReadingSearchCriteria.builder()
+		                    .tenantId(criteria.getTenantId())
+		                    .connectionNos(Collections.singleton(criteria.getConnectionNo()))
+		                    .build(),
+		            requestInfo
+		    ).stream()
+		    // ❌ skip same billing period
+		    .filter(r ->
+		            !(Objects.equals(r.getLastReadingDate(), currentFrom)
+		           && Objects.equals(r.getCurrentReadingDate(), currentTo))
+		    )
+		    // ✅ only earlier periods
+		    .filter(r -> r.getLastReadingDate() != null
+		              && r.getLastReadingDate() < currentFrom)
+		    // ✅ closest previous period
+		    .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
+		    .findFirst()
+		    .orElse(null);
+
+		    if (previousReading != null
+		            && MeterReading.MeterStatusEnum.BREAKDOWN
+		                    .equals(previousReading.getMeterStatus())) {
+
+		        // 🔥 Consecutive BREAKDOWN → penalty
+		        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
+		        penalty = waterCharge.multiply(BigDecimal.valueOf(2))
+		                .setScale(2, RoundingMode.HALF_UP);
+
+//		        log.info("Consecutive BREAKDOWN | prevFrom={} charge={} penalty={}",
+//		                previousReading.getLastReadingDate(), waterCharge, penalty);
+
+		    } else {
+		        // ✅ First BREAKDOWN
+		        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
+		        penalty = BigDecimal.ZERO;
+
+		        log.info("First BREAKDOWN | avgCharge={}", waterCharge);
+		    }
+		
 
 				    // Add WS_CHARGE estimate
 				    estimates.removeIf(e -> TaxHeadCategory.CHARGES.equals(e.getCategory()));

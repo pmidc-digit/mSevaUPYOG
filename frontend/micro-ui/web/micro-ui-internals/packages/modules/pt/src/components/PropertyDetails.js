@@ -9,7 +9,7 @@ import {
   LabelFieldPair,
   CardSectionHeader,
 } from "@mseva/digit-ui-react-components";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 import { Loader } from "../components/Loader";
@@ -26,12 +26,26 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+  const [getPropertyTypeData, setPropertyTypeData] = useState([]);
 
   const { data: UsageCategoryData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "UsageCategory" }]);
 
   const { data: PropertyTypeData = [], isLoading: PropertyTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "PropertyType" },
   ]);
+
+  useEffect(() => {
+    if (PropertyTypeData) {
+      // {
+      //   "name": "Built Up",
+      //   "code": "BUILTUP",
+      //   "active": true
+      // },
+      const checkPropertyTypeData = PropertyTypeData?.PropertyTax?.PropertyType?.filter((item) => item?.code != "BUILTUP");
+      console.log("checkPropertyTypeData", checkPropertyTypeData);
+      setPropertyTypeData(checkPropertyTypeData);
+    }
+  }, [PropertyTypeData]);
 
   useEffect(() => {
     console.log("apiDataCheck", apiDataCheck);
@@ -52,7 +66,26 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     watch,
     formState: { errors },
     trigger,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      unitDetails: [
+        {
+          unitUsageType: "",
+          occupancy: null,
+        },
+      ],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "unitDetails",
+  });
+
+  const occupancyOptions = [
+    { name: "Self Occupied", code: "SELFOCCUPIED" },
+    { name: "Rented", code: "RENTED" },
+  ];
 
   const onSubmit = async (data) => {
     console.log("data", data);
@@ -92,9 +125,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             control={control}
             name="propertyType"
             rules={{ required: t("Property Type is required") }}
-            render={(props) => (
-              <Dropdown select={props.onChange} selected={props.value} option={PropertyTypeData?.PropertyTax?.PropertyType} optionKey="name" t={t} />
-            )}
+            render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getPropertyTypeData} optionKey="name" t={t} />}
           />
           {errors.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType?.message}</p>}
         </div>
@@ -170,6 +201,138 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
           {t("Height of property more than 36 feet?")}
         </label>
       </div>
+
+      <CardSectionHeader>{t("Unit Details")}</CardSectionHeader>
+
+      {fields.map((item, index) => (
+        <div
+          key={item.id}
+          style={{
+            border: "1px solid #e0e0e0",
+            padding: "16px",
+            marginBottom: "16px",
+            borderRadius: "4px",
+          }}
+        >
+          {/* Unit Usage Type */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`unitDetails.${index}.unitUsageType`}
+                rules={{ required: t("Unit Usage Type is required") }}
+                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
+              />
+              {errors?.unitDetails?.[index]?.unitUsageType && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          {/* sub usage type */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`unitDetails.${index}.subUsageType`}
+                rules={{ required: t("Sub Usage Type is required") }}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={occupancyOptions} optionKey="name" t={t} />}
+              />
+              {errors?.unitDetails?.[index]?.subUsageType && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          {/* Occupancy */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Occupancy")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`unitDetails.${index}.occupancy`}
+                rules={{ required: t("Occupancy is required") }}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={occupancyOptions} optionKey="name" t={t} />}
+              />
+              {errors?.unitDetails?.[index]?.occupancy && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].occupancy.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          {/* Built up area */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`unitDetails.${index}.area`}
+                rules={{ required: t("Area is required") }}
+                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
+              />
+              {errors?.unitDetails?.[index]?.area && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].area.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          {/* Select Floor */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`unitDetails.${index}.floor`}
+                rules={{ required: t("Floor is required") }}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={occupancyOptions} optionKey="name" t={t} />}
+              />
+              {errors?.unitDetails?.[index]?.floor && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          {/* Remove button */}
+          {fields.length > 1 && (
+            <div style={{ textAlign: "right" }}>
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#d32f2f",
+                  cursor: "pointer",
+                }}
+              >
+                {t("Remove")}
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Add more */}
+      <button
+        type="button"
+        onClick={() =>
+          append({
+            unitUsageType: "",
+            occupancy: null,
+          })
+        }
+        style={{
+          background: "none",
+          border: "none",
+          color: "#00bcd1",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        + {t("Add another unit")}
+      </button>
 
       <ActionBar>
         <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />

@@ -40,18 +40,6 @@ const EmployeeApp = ({ path, url, userType }) => {
       <AppContainer>
         <React.Fragment>
           <div className="ground-container">
-            {!isRes ? (
-              <div
-                style={
-                  isNewRegistration
-                    ? { marginLeft: "12px", display: "flex", alignItems: "center" }
-                    : { marginLeft: "-4px", display: "flex", alignItems: "center" }
-                }
-              >
-                <BackButton location={location} />
-                {/* <CHBBreadCrumbs location={location} /> */}
-              </div>
-            ) : null}
             {/* <PrivateRoute exact path={`${path}/`} component={() => <CHBLinks matchPath={path} userType={userType} />} /> */}
             <PrivateRoute
               path={`${path}/inbox`}

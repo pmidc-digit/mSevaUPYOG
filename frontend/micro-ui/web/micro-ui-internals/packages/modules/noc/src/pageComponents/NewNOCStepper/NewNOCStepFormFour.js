@@ -303,6 +303,7 @@ console.log('calculatorData', calculatorData)
 
   const ownersList= currentStepData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
+  console.log('combinedOwnersName here', combinedOwnersName)
 
   return (
     <React.Fragment>

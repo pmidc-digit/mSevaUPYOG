@@ -8,6 +8,8 @@ import EXIF from "exif-js";
 import BharatMap from "./BharatMap";
 import CustomLocationSearch from "../components/CustomLocationSearch";
 
+const imageSize = process.env.IMAGE_UPLOAD_SIZE || 2097152;
+
 
 const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepData, addNewOwner, isShowToast, onGoBack }) => {
   let propertyData = JSON.parse(sessionStorage.getItem("Digit_OBPS_PT"));
@@ -467,8 +469,13 @@ async function selectfiles(e) {
   setIsUploading(true)
 
   try {
-  
-    const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+    let newFile;
+    if (file?.size > imageSize) {
+      newFile = await Digit.Utils.compressImage(file);
+    }else{
+      newFile = file;
+    }
+    const response = await Digit.UploadServices.Filestorage("PT", newFile, Digit.ULBService.getStateId());
 if (response?.data?.files?.length > 0) {
   const fileStoreId = response.data.files[0].fileStoreId;
   setUploadedFile(fileStoreId);

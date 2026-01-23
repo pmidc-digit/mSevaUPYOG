@@ -11,10 +11,10 @@ const NOCDocumentTableView = ({documents}) => {
 
  const documentsColumns = [
         {
-          Header: t("SR_NO"),   
+          Header: t("SR_NO"),
           accessor: "srNo",
-          Cell: ({ row }) => row.index + 1,
-          style: { width: "60px", textAlign: "center" },  
+          width:"20px",
+          Cell: ({ row }) => <div style={{width: "20px"}}>{row.index + 1}</div>,
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),

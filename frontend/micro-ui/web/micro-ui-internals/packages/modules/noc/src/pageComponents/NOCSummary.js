@@ -70,23 +70,22 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
 
   return (
     <div className="employee-main-application-details">
-       <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
-     
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <StatusTable style ={{border : "none"}}>
-          <NOCImageView
-            ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
-            ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
-          />
-        </StatusTable>
-      
+      <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
+
+      <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+      <StatusTable style={{ border: "none" }}>
+        <NOCImageView
+          ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
+        />
+      </StatusTable>
 
       {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
         return (
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>
             <StatusTable>
-                {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
+              {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
               <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
@@ -136,7 +135,7 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
         <StatusTable>
           <Row label={t("NOC_PLOT_NO_LABEL")} text={formData?.siteDetails?.plotNo || "N/A"} />
           <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"} />
-          <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || "N/A"} />
+          <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || formData?.siteDetails?.ulbName || "N/A"} />
           <Row label={t("NOC_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"} />
           <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
           <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
@@ -215,9 +214,15 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           }}
         >
           {sitePhotos?.length > 0 &&
-            sitePhotos?.map((doc) => (
-              <NocSitePhotographs filestoreId={doc?.filestoreId} documentType={doc?.documentType} coordinates={coordinates} />
-            ))}
+            [...sitePhotos]
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
         </StatusTable>
       </Card>
 

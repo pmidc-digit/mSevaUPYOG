@@ -42,7 +42,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [apiLoading, setApiLoading] = useState(false);
 
-  console.log(subOccupancy, data, "OCCUPANCY");
+  console.log("OCCUPANCY", formData);
 
   useEffect(() => {
     window.scrollTo({
@@ -311,50 +311,50 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     const userInfo = Digit.UserService.getUser();
     const accountId = userInfo?.info?.uuid;
     const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
-    if (checkingFlow === "OCBPA") {
-      if (!formData?.id) {
-        let payload = {};
-        payload.edcrNumber = formData?.edcrNumber?.edcrNumber ? formData?.edcrNumber?.edcrNumber : formData?.data?.scrutinyNumber?.edcrNumber;
-        payload.riskType = formData?.data?.riskType;
-        payload.applicationType = formData?.data?.applicationType;
-        payload.serviceType = formData?.data?.serviceType;
+    // if (checkingFlow === "OCBPA") {
+    //   if (!formData?.id) {
+    //     let payload = {};
+    //     payload.edcrNumber = formData?.edcrNumber?.edcrNumber ? formData?.edcrNumber?.edcrNumber : formData?.data?.scrutinyNumber?.edcrNumber;
+    //     payload.riskType = formData?.data?.riskType;
+    //     payload.applicationType = formData?.data?.applicationType;
+    //     payload.serviceType = formData?.data?.serviceType;
 
-        const userInfo = Digit.UserService.getUser();
-        const accountId = userInfo?.info?.uuid;
-        payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId;
-        payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
-        payload.accountId = accountId;
-        payload.documents = null;
+    //     const userInfo = Digit.UserService.getUser();
+    //     const accountId = userInfo?.info?.uuid;
+    //     payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId;
+    //     payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
+    //     payload.accountId = accountId;
+    //     payload.documents = null;
 
-        // Additonal details
-        payload.additionalDetails = {};
-        if (formData?.data?.holdingNumber) payload.additionalDetails.holdingNo = formData?.data?.holdingNumber;
-        if (formData?.data?.registrationDetails) payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails;
-        if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType;
-        if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType;
+    //     // Additonal details
+    //     payload.additionalDetails = {};
+    //     if (formData?.data?.holdingNumber) payload.additionalDetails.holdingNo = formData?.data?.holdingNumber;
+    //     if (formData?.data?.registrationDetails) payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails;
+    //     if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType;
+    //     if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType;
 
-        //For LandInfo
-        payload.landInfo = formData?.data?.bpaData?.bpaApprovalResponse?.[0].landInfo || {};
+    //     //For LandInfo
+    //     payload.landInfo = formData?.data?.bpaData?.bpaApprovalResponse?.[0].landInfo || {};
 
-        let nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME");
-        let parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT";
-        payload.additionalDetails.typeOfArchitect = parsedArchitectName;
-        // create BPA call
-        Digit.OBPSService.create({ BPA: payload }, tenantId)
-          .then((result, err) => {
-            if (result?.BPA?.length > 0) {
-              result.BPA[0].data = formData.data;
-              result.BPA[0].uiFlow = formData?.uiFlow;
-              onSelect("", result.BPA[0], "", true);
-            }
-          })
-          .catch((e) => {
-            setShowToast({ key: "true", message: e?.response?.data?.Errors[0]?.message || null });
-          });
-      } else {
-        onSelect("", formData, "", true);
-      }
-    } else {
+    //     let nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME");
+    //     let parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT";
+    //     payload.additionalDetails.typeOfArchitect = parsedArchitectName;
+    //     // create BPA call
+    //     Digit.OBPSService.create({ BPA: payload }, tenantId)
+    //       .then((result, err) => {
+    //         if (result?.BPA?.length > 0) {
+    //           result.BPA[0].data = formData.data;
+    //           result.BPA[0].uiFlow = formData?.uiFlow;
+    //           onSelect("", result.BPA[0], "", true);
+    //         }
+    //       })
+    //       .catch((e) => {
+    //         setShowToast({ key: "true", message: e?.response?.data?.Errors[0]?.message || null });
+    //       });
+    //   } else {
+    //     onSelect("", formData, "", true);
+    //   }
+    // } else {
       const unit = getUnitsForAPI(subOccupancyObject);
       const landInfo =
         currentStepData?.createdResponse?.landInfo === null
@@ -408,7 +408,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
       }
 
       // onSelect(config.key, subOccupancyObject);
-    }
+    // }
   };
 
   function getusageCategoryAPI(arr) {

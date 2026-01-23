@@ -1,9 +1,14 @@
 import { TENANT_IDS } from "../../../../constants/constants";
 
 export const onSubmit = (data, tenantId, setShowToast, history) => {
-  console.log(`In onSubmit: \n tenantId: ${tenantId}`, "\n data:", data);
-  //
-  console.log("onSubmit create employee: ", data);
+
+  
+  // Safety check for Jurisdictions
+  if (!data.Jurisdictions || !Array.isArray(data.Jurisdictions) || data.Jurisdictions.length === 0) {
+    setShowToast({ key: true, label: "ERR_NO_JURISDICTIONS" });
+    return;
+  }
+  
   const hasNoAccess = (tenantId !== TENANT_IDS.PUNJAB) && data.Jurisdictions.filter((juris) => juris.tenantId == tenantId).length == 0;
   if (hasNoAccess) {
     setShowToast({ key: true, label: "ERR_BASE_TENANT_MANDATORY" });
@@ -24,15 +29,17 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
   }
   let roles = data?.Jurisdictions?.map((ele) => {
     return ele.roles?.map((item) => {
-      item["tenantId"] = ele.boundary;
+      item["tenantId"] = ele.tenantId;
       return item;
     });
   });
 
   const mappedroles = [].concat.apply([], roles);
+  const employeeTenantId = data?.Jurisdictions?.[0]?.tenantId || tenantId;
+
   let Employees = [
     {
-      tenantId: tenantId,
+      tenantId: employeeTenantId,
       employeeStatus: data?.SelectEmploymentStatus?.code,
       assignments: data?.Assignments,
       code: data?.SelectEmployeeId?.code ? data?.SelectEmployeeId?.code : undefined,
@@ -48,7 +55,7 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
         gender: data?.SelectEmployeeGender?.gender.code,
         dob: new Date(data?.SelectDateofBirthEmployment?.dob).getTime(),
         roles: mappedroles,
-        tenantId: tenantId,
+        tenantId: employeeTenantId,
       },
       serviceHistory: [],
       education: [],

@@ -6,6 +6,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 //import NOCCustomUploadFile from "./NOCCustomUploadFile";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { amountToWords } from "../utils";
 
 export const CLUFeeTable = ({
   feeDataWithTotal,
@@ -35,8 +36,8 @@ export const CLUFeeTable = ({
           <tr>
             <th>{t("BPA_TAXHEAD_CODE")}</th>
             <th>{t("BPA_AMOUNT")}</th>
-            <th>{t("BPA_ADJUSTED_AMOUNT")}</th>
-            <th>{t("BPA_FILE_UPLOAD")}</th>
+            {/* <th>{t("BPA_ADJUSTED_AMOUNT")}</th> */}
+            {/* <th>{t("BPA_FILE_UPLOAD")}</th> */}
             <th>{t("BPA_REMARKS")}</th>
           </tr>
         </thead>
@@ -46,7 +47,7 @@ export const CLUFeeTable = ({
               (
                 <tr key={row.index || i}>
                   <td>{t(row.title) || t("CS_NA")}</td>
-                  <td>{row.amount !== null && row.amount !== undefined ? `₹ ${row.amount.toLocaleString()}` : t("CS_NA")}</td>
+                  {/* <td>{row.amount !== null && row.amount !== undefined ? `₹ ${row.amount.toLocaleString()}` : t("CS_NA")}</td> */}
                   <td>
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                       ""
@@ -55,8 +56,19 @@ export const CLUFeeTable = ({
                         t={t}
                         type="number"
                         isMandatory={false}
-                        value={feeData[row.index]?.adjustedAmount ?? ""}
-                        onChange={(e) => handleAdjustedAmountChange(row.index, e.target.value, row.amount)}
+                        value={
+                          feeData[row.index]?.adjustedAmount === 0
+                          ? ""  : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                        }
+                       onChange={(e) => {
+                         let val = e.target.value;
+
+                        if (val.length > 1 && val.startsWith("0")) {
+                         val = val.replace(/^0+/, "");
+                        }
+
+                        handleAdjustedAmountChange(row.index, val);
+                        }}
                         //  no onBlur here for CLU
                         disable={disable}
                         step={1}
@@ -64,7 +76,7 @@ export const CLUFeeTable = ({
                       />
                     )}
                   </td>
-                  <td>
+                  {/* <td>
                     {row?.taxHeadCode === "CLU_TOTAL" ? null : (
                       <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                         <CustomUploadFile
@@ -78,11 +90,14 @@ export const CLUFeeTable = ({
                         />
                       </div>
                     )}
-                  </td>
+                  </td> */}
 
                   <td>
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
-                      ""
+                    <div>
+                      <strong>{row.grandTotal.toLocaleString("en-IN")}</strong>
+                      <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                   </div>
                     ) : (
                       <TextInput
                         t={t}
@@ -111,7 +126,7 @@ export const CLUFeeTable = ({
         <div style={{ marginTop: "16px" }}>
           <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
             <CardSubHeader>
-              {t("FEE_HISTORY")} {showHistory ? "▲" : "▼"}
+              {t("BPA_FEE_HISTORY_LABEL")} {showHistory ? "▲" : "▼"}
             </CardSubHeader>
           </div>
 
@@ -144,20 +159,20 @@ export const CLUFeeTable = ({
                                       <td>
                                         <strong>{t("Fee")}</strong>
                                       </td>
-                                      <td>{h?.estimateAmount}</td>
+                                      <td>{h.estimateAmount}</td>
                                     </tr>
                                     <tr>
                                       <td>
                                         <strong>{t("Remarks")}</strong>
                                       </td>
-                                      <td>{h?.remarks || t("CS_NA")}</td>
+                                      <td>{h.remarks || t("CS_NA")}</td>
                                     </tr>
-                                    {/* <tr>
+                                    <tr>
                                       <td>
-                                        <strong>{t("Last Updated By")}</strong>
+                                        <strong>{t("Updated By")}</strong>
                                       </td>
-                                      <td>{h?.who || t("UNKNOWN")}</td>
-                                    </tr> */}
+                                      <td>{h.who || t("UNKNOWN")}</td>
+                                    </tr>
                                   </tbody>
                                 </table>
                               ) : (
@@ -171,7 +186,7 @@ export const CLUFeeTable = ({
                   })}
                 </tbody>
               </table>
-              <span>Last Updated By : {lastUpdatedBy}</span>
+              {/* <span>Last Updated By : {lastUpdatedBy}</span> */}
             </>
           )}
         </div>

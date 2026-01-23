@@ -197,62 +197,118 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   function selectfile(e) {
     //console.log("e here==>", e);
     //console.log("e.target.files[0] here==>", e.target.files[0]);
-    
+
     const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    // setFile(e.target.files[0]);
     console.log("selectedFile here", selectedFile);
 
-   if (selectedFile && selectedFile.type === "image/jpeg") {
-    extractGeoLocation(selectedFile).then((location) => {
-      console.log("Latitude:", location.latitude);
-      console.log("Longitude:", location.longitude);
+    if (!selectedFile) return;
 
-      if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-        if (location.latitude !== null && location.longitude !== null) {
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1",location.latitude));
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1",location.longitude));
-          setGeoCoordinates((prev)=>{
-          return {
-            ...prev,
-            Latitude1:location.latitude,
-            Longitude1:location.longitude
-          }
-          })
-        } else {
-          if(window.location.pathname.includes("edit")){
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1",""));
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1",""));
+    const fileType = selectedFile.type.toLowerCase();
+
+    // For site photos, check for GPS data and prevent upload if missing
+    if ((doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") && (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png"))) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          EXIF.getData(img, function () {
+            const lat = EXIF.getTag(this, "GPSLatitude");
+            const lon = EXIF.getTag(this, "GPSLongitude");
+            const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
+            const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
+
+            let latitude = null;
+            let longitude = null;
+
+            if (lat && lon) {
+              latitude = convertToDecimal(lat).toFixed(6);
+              longitude = convertToDecimal(lon).toFixed(6);
+              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
+
+              // Set file and update coordinates
+              setFile(selectedFile);
+              if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1", latitude));
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1", longitude));
+                setGeoCoordinates((prev) => ({
+                  ...prev,
+                  Latitude1: latitude,
+                  Longitude1: longitude
+                }));
+              } else if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2", latitude));
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2", longitude));
+                setGeoCoordinates((prev) => ({
+                  ...prev,
+                  Latitude2: latitude,
+                  Longitude2: longitude
+                }));
+              }
+            } else {
+              alert("⚠️ No GPS data found in image. Please upload a photo with location details.");
+              // Do not set file, preventing upload
+              if (window.location.pathname.includes("edit")) {
+                if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+                  dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1", ""));
+                  dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1", ""));
+                } else if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
+                  dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2", ""));
+                  dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2", ""));
+                }
+              }
+              return;
+            }
+          });
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(selectedFile);
+    } else {
+      // For other documents or non-image files, proceed as before
+      setFile(selectedFile);
+      if (selectedFile && selectedFile.type === "image/jpeg") {
+        extractGeoLocation(selectedFile).then((location) => {
+          console.log("Latitude:", location.latitude);
+          console.log("Longitude:", location.longitude);
+
+          if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+            if (location.latitude !== null && location.longitude !== null) {
+              dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1", location.latitude));
+              dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1", location.longitude));
+              setGeoCoordinates((prev) => ({
+                ...prev,
+                Latitude1: location.latitude,
+                Longitude1: location.longitude
+              }));
+            } else {
+              if (window.location.pathname.includes("edit")) {
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1", ""));
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1", ""));
+              }
+              alert("Please upload a photo with location details.");
+            }
           }
 
-          alert("Please upload a photo with location details.");
-        }
+          if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
+            if (location.latitude !== null && location.longitude !== null) {
+              dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2", location.latitude));
+              dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2", location.longitude));
+              setGeoCoordinates((prev) => ({
+                ...prev,
+                Latitude2: location.latitude,
+                Longitude2: location.longitude
+              }));
+            } else {
+              if (window.location.pathname.includes("edit")) {
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2", ""));
+                dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2", ""));
+              }
+              alert("Please upload a photo with location details.");
+            }
+          }
+        });
       }
-
-      if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
-        if (location.latitude !== null && location.longitude !== null) {
-          
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2",location.latitude));
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2",location.longitude));
-          setGeoCoordinates((prev)=>{
-          return {
-            ...prev,
-            Latitude2:location.latitude,
-            Longitude2:location.longitude
-          }
-          })
-        } else {
-          if(window.location.pathname.includes("edit")){
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2",""));
-          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2",""));
-          }
-          
-          alert("Please upload a photo with location details.");
-        }
-      }
-    });
-  }
-
+    }
   }
   const { dropdownData } = doc;
 

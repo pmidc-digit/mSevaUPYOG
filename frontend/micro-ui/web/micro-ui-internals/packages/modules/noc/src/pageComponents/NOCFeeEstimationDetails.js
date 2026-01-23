@@ -30,38 +30,47 @@ const getOriginals = (taxHeadCode) => {
   };
 };
 
-  const handleAdjustedAmountChange = (index, value) => {
-    const normalizedValue = value === "" ? null : Number(value);
+  
+
+
+const handleAdjustedAmountChange = (index, value) => {
+  const normalizedValue = value === "" ? null : Number(value);
+  const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
+  const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
+  if (normalizedValue !== null && normalizedValue < 0) {
+    setShowToast({ error: true, message: "Adjusted_Amount_More_Than_Ammount" });
+    return;
+  }
+  setFeeAdjustments((prev) =>
+    (prev || []).map((item, i) => {
+      if (i !== index) return item;
+      const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
+      const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
+      if (isReverted) {
+        return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
+      }
+      const adjustedDiffers = normalizedValue !== originalEstimate;
+      const remarkEmpty = !currentRemark || currentRemark.trim() === "";
+      return {
+        ...item,
+        adjustedAmount: normalizedValue,
+        remark: currentRemark,
+        edited: adjustedDiffers && remarkEmpty,
+      };
+    })
+  );
+};
+  const handleRemarkChange = (index, value) => {
     const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
-    const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
-
-    if (normalizedValue !== null && normalizedValue < 0) {
-      setShowToast({ error: true, message: "Adjusted_Amount_More_Than_Ammount" });
-      return;
-    }
-
+    const { originalEstimate } = getOriginals(taxHeadCode);
+    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount ?? 0;
+    const adjustedDiffers = currentAdjusted !== originalEstimate;
+    const remarkEmpty = (value ?? "").trim() === "";
     setFeeAdjustments((prev) =>
-      prev.map((item, i) => {
-        if (i !== index) return item;
-        const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
-
-        return isReverted
-          ? { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark }
-          : { ...item, adjustedAmount: normalizedValue, edited: true, remark: item.remark ?? originalRemark };
-      })
+      (prev || []).map((item, i) => (i === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item))
     );
   };
 
-  const handleRemarkChange = (index, value) => {
-    const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
-    const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
-    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount ?? 0;
-
-    const adjustedDiffers = currentAdjusted !== originalEstimate;
-    const remarkDiffers = (value ?? "").trim() !== (originalRemark ?? "").trim();
-
-    setFeeAdjustments((prev) => prev.map((item, i) => (i === index ? { ...item, remark: value, edited: adjustedDiffers || remarkDiffers } : item)));
-  };
 
 
 

@@ -1220,7 +1220,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </div>
                 </div>
                             
-                <div className="bpa-stepper-form-section">
+                {currentStepData?.createdResponse?.applicationType !== "BUILDING_OC_PLAN_SCRUTINY" && <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
                     <div className="data-table">
                         <div className="row border-none">
@@ -1382,7 +1382,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned}</div>
                         </div>
                     </div>
-                </div>
+                </div>}
 
                 {ecbcDocumentsData?.length > 0 && <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>

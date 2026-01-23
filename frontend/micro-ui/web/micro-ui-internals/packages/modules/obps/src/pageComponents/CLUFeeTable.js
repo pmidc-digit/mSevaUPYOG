@@ -157,19 +157,19 @@ export const CLUFeeTable = ({
                                   <tbody>
                                     <tr>
                                       <td>
-                                        <strong>{t("Fee")}</strong>
+                                        <strong>{t("BPA_FEE2_LABEL")}</strong>
                                       </td>
                                       <td>{h.estimateAmount}</td>
                                     </tr>
                                     <tr>
                                       <td>
-                                        <strong>{t("Remarks")}</strong>
+                                        <strong>{t("BPA_REMARK_LABEL")}</strong>
                                       </td>
                                       <td>{h.remarks || t("CS_NA")}</td>
                                     </tr>
                                     <tr>
                                       <td>
-                                        <strong>{t("Updated By")}</strong>
+                                        <strong>{t("BPA_UPDATED_BY_LABEL")}</strong>
                                       </td>
                                       <td>{h.who || t("UNKNOWN")}</td>
                                     </tr>

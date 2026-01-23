@@ -48,7 +48,7 @@ const GetSlaCell = (value) => {
   const serviceRequestIdKey = (original) => {return `${searchParams?.tenantId}/${original?.[t("HR_EMP_ID_LABEL")]}`};
 
   return (
-    <div style={{ padding: 0 }}>
+    <div className="p-0">
       <div className="inbox-container">
         <div className="filters-container">
           {/* {!isSearch && <ApplicationLinks linkPrefix={parentRoute} allLinks={allLinks} isMobile={true} />} */}

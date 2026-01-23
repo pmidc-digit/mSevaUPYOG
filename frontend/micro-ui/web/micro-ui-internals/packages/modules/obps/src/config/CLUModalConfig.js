@@ -1,5 +1,6 @@
 import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
 import React from "react";
+import { getPattern } from "../utils";
 
 export const CLUModalConfig = ({
   t,
@@ -49,7 +50,28 @@ export const CLUModalConfig = ({
             populators: {
               name: "comments",
             },
+            validation: { 
+              pattern: getPattern("Comments"), 
+              required: true, 
+              title: t("WF_COMMON_COMMENTS_ERROR") 
+            },
           },
+
+          action?.action === "APPROVE"
+          && {
+                label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+                type: "textarea",
+                populators: {
+                  name: "conditionalComments",
+                },
+                validation: {
+                  pattern: getPattern("Comments"),
+                  required: false, // not mandatory
+                  title: t("WF_COMMON_COMMENTS_ERROR"),
+                },
+          },
+            
+
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (

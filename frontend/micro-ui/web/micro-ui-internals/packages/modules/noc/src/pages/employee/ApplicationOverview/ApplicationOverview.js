@@ -616,8 +616,7 @@ const NOCEmployeeApplicationOverview = () => {
 
 
 
-    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || [])
-    .map(c => ({ ...c, isLatest: false }));
+    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || []).map(c => ({ ...c, isLatest: false }));
 
     const updatedApplicant = {
       ...payloadData,

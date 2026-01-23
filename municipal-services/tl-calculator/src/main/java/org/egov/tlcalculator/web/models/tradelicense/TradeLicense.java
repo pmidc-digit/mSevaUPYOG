@@ -70,7 +70,9 @@ public class  TradeLicense   {
     public enum ApplicationTypeEnum {
         TEMPORARY(TLCalculatorConstants.APPLICATION_TYPE_NEW),
 
-        PERMANENT(TLCalculatorConstants.APPLICATION_TYPE_RENEWAL);
+        PERMANENT(TLCalculatorConstants.APPLICATION_TYPE_RENEWAL),
+        
+        UPGRADE(TLCalculatorConstants.APPLICATION_TYPE_UPGRADE);
 
         private String value;
 

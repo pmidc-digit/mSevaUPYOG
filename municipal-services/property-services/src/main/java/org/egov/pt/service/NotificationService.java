@@ -15,6 +15,7 @@ import org.egov.mdms.model.ModuleDetail;
 import org.egov.pt.config.PropertyConfiguration;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.enums.CreationReason;
+import org.egov.pt.models.enums.Source;
 import org.egov.pt.models.enums.Status;
 import org.egov.pt.models.event.Event;
 import org.egov.pt.models.event.EventRequest;
@@ -120,6 +121,13 @@ public class NotificationService {
 		String state = getStateFromWf(wf, configs.getIsWorkflowEnabled());
 		String completeMsgs = notifUtil.getLocalizationMessages(property.getTenantId(), propertyRequest.getRequestInfo());
 		String localisedState = getLocalisedState(wf, completeMsgs);
+		Source source = propertyRequest.getProperty().getSource();
+
+		if (source != null && source == Source.WATER_CHARGES) {
+		    log.info("Skipping notification for WC source");
+		    return;
+		}
+
 		switch (state) {
 
 		case WF_NO_WORKFLOW:

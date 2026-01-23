@@ -40,6 +40,7 @@ const BillGenie = () => {
     defaultValues,
   });
 
+  
   const onSubmit = async (data) => {
     const hasAtLeastOneField = data?.locality || data?.billNo?.trim() || data?.mobileNumber?.trim();
     if (!hasAtLeastOneField) {
@@ -84,6 +85,7 @@ const BillGenie = () => {
     }
   };
 
+
   useEffect(() => {
     handleApiData();
   }, []);
@@ -109,7 +111,7 @@ const BillGenie = () => {
       Cell: ({ row }) => {
         return (
           <div>
-            <SubmitBar label="Download" onSubmit={() => console.log("here")} />
+            <SubmitBar label="Download" onSubmit={() => getRecieptSearch({ tenantId, bills: getBills })} />
           </div>
         );
       },
@@ -122,6 +124,28 @@ const BillGenie = () => {
       createdtime: bills?.billDate,
       status: t(bills.status),
     })) || [];
+
+    const getRecieptSearch = async ({ tenantId, bills }) => {
+      try {
+        setLoader(true);
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Bills: [...bills] }, 
+          "garbage-bill"
+        );
+
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+          fileStoreIds: response.filestoreIds[0],
+        });
+
+        window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      } catch (error) {
+        console.error("Receipt generation failed", error);
+      }finally{
+        setLoader(false);
+      }
+    };
+
 
   return (
     <React.Fragment>

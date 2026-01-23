@@ -37,7 +37,7 @@ public class EditWorkFlowNotificationConsumer {
 	 * @param record Received Topic Record
 	 * @param topic Name of the Topic
 	 */
-	@KafkaListener(topics = { "${gc.editnotification.topic}"})
+	@KafkaListener(topics = { "${gc.editnotification.topic}"}, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			GarbageConnectionRequest garbageConnectionRequest = mapper.convertValue(record, GarbageConnectionRequest.class);

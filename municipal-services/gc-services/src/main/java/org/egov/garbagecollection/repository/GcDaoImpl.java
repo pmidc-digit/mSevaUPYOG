@@ -67,7 +67,8 @@ public class GcDaoImpl implements GcDao {
 
 	@Override
 	public void saveGarbageConnection(GarbageConnectionRequest garbageConnectionRequest) {
-		gcProducer.push(createWaterConnection, garbageConnectionRequest);
+		String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+		gcProducer.push(createWaterConnection, applicationNo, garbageConnectionRequest);
 	}
 
 	@Override
@@ -132,16 +133,20 @@ public class GcDaoImpl implements GcDao {
 			else if(garbageConnectionRequest.getGarbageConnection().isIsworkflowdisabled())
 			{
 			// For meter number and rest details addition before payment (02-08-2024)
-				gcProducer.push(updateWaterConnection, garbageConnectionRequest);
+				String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+				gcProducer.push(updateWaterConnection, applicationNo, garbageConnectionRequest);
 
 			}
-			else
-				gcProducer.push(updateWaterConnection, garbageConnectionRequest);
+			else {
+				String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+				gcProducer.push(updateWaterConnection, applicationNo, garbageConnectionRequest);
+			}
 		}
 
 
 		else {
-			gcProducer.push(gcConfiguration.getWorkFlowUpdateTopic(), garbageConnectionRequest);
+			String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+			gcProducer.push(gcConfiguration.getWorkFlowUpdateTopic(), applicationNo, garbageConnectionRequest);
 		}
 	}
 	
@@ -163,7 +168,8 @@ public class GcDaoImpl implements GcDao {
 	public void pushForEditNotification(GarbageConnectionRequest garbageConnectionRequest, boolean isStateUpdatable) {
 		if (!GCConstants.EDIT_NOTIFICATION_STATE
 				.contains(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
-			gcProducer.push(gcConfiguration.getEditNotificationTopic(), garbageConnectionRequest);
+			String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+			gcProducer.push(gcConfiguration.getEditNotificationTopic(), applicationNo, garbageConnectionRequest);
 		}
 	}
 	
@@ -173,7 +179,8 @@ public class GcDaoImpl implements GcDao {
 	 * @param garbageConnectionRequest
 	 */
 	public void enrichFileStoreIds(GarbageConnectionRequest garbageConnectionRequest) {
-		gcProducer.push(gcConfiguration.getFileStoreIdsTopic(), garbageConnectionRequest);
+		String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+		gcProducer.push(gcConfiguration.getFileStoreIdsTopic(), applicationNo, garbageConnectionRequest);
 	}
 	
 	/**
@@ -182,7 +189,8 @@ public class GcDaoImpl implements GcDao {
 	 * @param garbageConnectionRequest
 	 */
 	public void saveFileStoreIds(GarbageConnectionRequest garbageConnectionRequest) {
-		gcProducer.push(gcConfiguration.getSaveFileStoreIdsTopic(), garbageConnectionRequest);
+		String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+		gcProducer.push(gcConfiguration.getSaveFileStoreIdsTopic(), applicationNo, garbageConnectionRequest);
 	}
 
 	public Boolean isSearchOpen(User userInfo) {
@@ -265,7 +273,8 @@ public class GcDaoImpl implements GcDao {
 	/* Method to push the encrypted data to the 'update' topic  */
 		@Override
 	public void updateOldGarbageConnections(GarbageConnectionRequest garbageConnectionRequest) {
-		gcProducer.push(updateOldDataEncTopic, garbageConnectionRequest);
+            String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();
+		gcProducer.push(updateOldDataEncTopic,applicationNo, garbageConnectionRequest);
 	}
 
 	/* Method to find the total count of applications present in dB */
@@ -282,7 +291,8 @@ public class GcDaoImpl implements GcDao {
 	/* Method to push the old data encryption status to the 'ws-enc-audit' topic  */
 	@Override
 	public void updateEncryptionStatus(EncryptionCount encryptionCount) {
-		gcProducer.push(encryptionStatusTopic, encryptionCount);
+
+		gcProducer.push(encryptionStatusTopic,encryptionCount.getId(), encryptionCount);
 	}
 	@Override
 	public List<GarbageConnection> getPlainGarbageConnectionSearch(SearchCriteria criteria) {

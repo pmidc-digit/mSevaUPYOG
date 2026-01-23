@@ -408,6 +408,10 @@ public class BPAService {
 		if (bpa.getId() == null) {
 			throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Application Not found in the System" + bpa);
 		}
+		Object additionalDetailsData = bpaRequest.getBPA().getAdditionalDetails();
+		Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
+		String addDetailApplicationType = (String) additionalDetailsMap.get("applicationType");
+		bpaRequest.getBPA().setApplicationType(addDetailApplicationType);
 
 		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);

@@ -82,7 +82,7 @@ public class CalculationService {
 		CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
 		if(calculationReq.getCalulationCriteria() != null && calculationReq.getCalulationCriteria().size() > 0 && !calculationReq.getCalulationCriteria().get(0).isOnlyEstimates()) {
 			demandService.generateDemand(calculationReq.getRequestInfo(),calculations, mdmsData);
-			producer.push(config.getSaveTopic(), calculationRes);
+			producer.push(config.getSaveTopic(),calculationRes.getCalculations().get(0).getApplicationNumber(), calculationRes);
 		}
 		return calculations;
 	}

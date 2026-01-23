@@ -1057,4 +1057,4 @@ config:
     build:
       - work-dir: "utilities/search-api"
         image-name: "search-api"
-        dockerfile: 'build/maven/maven2/Dockerfile'
+        dockerfile: 'build/Dockerfile'

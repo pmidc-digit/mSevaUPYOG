@@ -50,6 +50,7 @@ const MyApplications = ({ view }) => {
       )}
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
+        console.log('filteredApplication', filteredApplication)
         //console.log("filtered Applications here==>", filteredApplication);
         //console.log("application?.Applications?.applicationNo", application);
         const applicationStatus=application?.Applications?.applicationStatus || "";

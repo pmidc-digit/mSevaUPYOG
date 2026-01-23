@@ -396,11 +396,11 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
                 <SubmitBar
                   label={t("CAPTURE_IMAGE")}
                   onSubmit={() => {
-                    // if(mobile){
+                    if(mobile){
                     setShowCameraModal(true);
-                    // }else{
-                    //   setError(t("CS_MOBILE_CAMERA_ERROR"));
-                    // }                    
+                    }else{
+                      setError(t("CS_MOBILE_CAMERA_ERROR"));
+                    }                    
                   }}
                 />
               </div>

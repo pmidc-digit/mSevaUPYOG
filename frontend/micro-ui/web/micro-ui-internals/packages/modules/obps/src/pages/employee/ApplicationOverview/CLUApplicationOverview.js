@@ -132,10 +132,10 @@ const CLUEmployeeApplicationDetails = () => {
   console.log("applicationDetails here===>", applicationDetails);
   const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
-  } : {})
+  } : []);
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
-  console.log("businessService here", businessServiceCode, siteImages);
+  //console.log("businessService here", businessServiceCode, siteImages);
   
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -162,7 +162,11 @@ const CLUEmployeeApplicationDetails = () => {
   const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
     title: value?.documentType,
     fileStoreId: value?.filestoreId,
-  })), [siteImages])
+    latitude: value?.latitude,
+    longitude: value?.longitude,
+  })), [siteImages]);
+
+  //console.log("documentData here==>", documentData);
 
   const documentsColumnsSiteImage = [
     {
@@ -201,7 +205,7 @@ const CLUEmployeeApplicationDetails = () => {
       try{
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
-        console.log("wf=>", wf);
+        //console.log("wf=>", wf);
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
       }catch(e){
@@ -214,11 +218,39 @@ const CLUEmployeeApplicationDetails = () => {
   }, [tenantId, businessServiceCode, isLoading]);
 
   useEffect(() => {
-    const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c?.isLatest);
-    if (latestCalc?.taxHeadEstimates) {
-      setFeeAdjustments(latestCalc.taxHeadEstimates);
-    }
-  }, [applicationDetails]);
+
+  const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
+  const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
+  if (apiEstimates.length === 0) return;
+
+  setFeeAdjustments((prev = []) => {
+    // build prev map
+    const prevByTax = (prev || []).reduce((acc, it) => {
+      if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+      return acc;
+    }, {});
+
+    // build merged but keep prev edited rows
+    const merged = apiEstimates.map((tax) => {
+      const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
+      const prevItem = prevByTax[tax.taxHeadCode] || {};
+      const isEdited = !!prevItem.edited;
+
+      return {
+        taxHeadCode: tax.taxHeadCode,
+        category: tax.category,
+        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
+        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
+        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
+        onDocumentLoading: false,
+        documentError: null,
+        edited: prevItem.edited ?? false,
+      };
+    });
+
+    return merged;
+  });
+  }, [applicationDetails, data]);
 
 
  // console.log("getWorkflowService =>", getWorkflowService);
@@ -487,7 +519,7 @@ const CLUEmployeeApplicationDetails = () => {
         .filter((row) => row.taxHeadCode !== "CLU_TOTAL") // exclude UI-only total row
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: (row.amount || 0) + (row.adjustedAmount ?? 0), // baseline + delta
+          estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
           category: row.category,
           remarks: row.remark || null,
           filestoreId: row.filestoreId || null,
@@ -898,7 +930,7 @@ const CLUEmployeeApplicationDetails = () => {
           <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
         </Card>
       }
-      {
+      {/* {
           applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
             <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
             <Table
@@ -919,7 +951,23 @@ const CLUEmployeeApplicationDetails = () => {
                 </React.Fragment>
             }
           </Card>
-        }
+      } */}
+      {
+        applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 &&
+        <Card>
+          <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
+          <StatusTable>
+          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={siteImages.documents} />}
+          {/* <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} /> */}
+          </StatusTable>
+          {   geoLocations?.length > 0 &&
+              <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CustomLocationSearch position={geoLocations}/>
+              </React.Fragment>
+          }
+        </Card>
+      }
 
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 

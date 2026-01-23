@@ -89,4 +89,28 @@ export const useCLUSearchApplicationByIdOrMobile = (params, tenantId, config = {
   return { ...result, revalidate: () => client.invalidateQueries(["CLU_SEARCH_APPLICATION", params]) };
 };
 
+const useCLUCheckListSearchFn = (params, tenantId) => {
+  return async () => {
+    return await Digit.OBPSService.CLUCheckListSearch({ tenantId, filters: params, });
+  };
+};
+
+export const useCLUCheckListSearch = (params, tenantId, config = {}) => {
+  const client = useQueryClient();
+
+  const result = useQuery(
+    ["CLU_CHECKLIST_SEARCH", params],
+    useCLUCheckListSearchFn(params, tenantId),
+    {
+      staleTime: Infinity,
+      ...config,
+    }
+  );
+
+  return {
+    ...result,
+    revalidate: () => client.invalidateQueries(["CLU_CHECKLIST_SEARCH", params]),
+  };
+};
+
 

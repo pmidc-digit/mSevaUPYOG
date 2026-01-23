@@ -20,7 +20,8 @@ export const ModalConfig = ({
     action?.action == "APPROVE" ||
     action?.action == "NOT_VERIFIED" ||
     action?.action == "SENDBACK" ||
-    action?.action == "VERIFIED"
+    action?.action == "VERIFIED" ||
+    action?.action == "CANCEL"
   )
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;

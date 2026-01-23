@@ -25,6 +25,7 @@ import Inbox from "../employee/Inbox";
 import LayoutResponseCitizen from "./Applications/LayoutResponseCitizen";
 import LayoutApplicantDetails from "../../pageComponents/LayoutApplicantDetails";
 import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
+import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
 
 
 
@@ -100,8 +101,9 @@ const App = ({ path }) => {
   const LayoutApplicationSummary = Digit.ComponentRegistryService.getComponent("LayoutApplicationSummary");
   const NewLayoutEditLayoutApplication = Digit.ComponentRegistryService.getComponent("NewLayoutEditLayoutApplication");
   const LayoutSearchApplication = Digit?.ComponentRegistryService?.getComponent("LayoutSearchApplication");
-  const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications");
-  const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse");
+  const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications"); 
+  const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
+  const OCStepperForm = Digit?.ComponentRegistryService?.getComponent("OCStepperForm")
 
   const getBackPageNumber = () => {
     let goBacktoFromProperty = -1;
@@ -165,6 +167,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><OCSendBackToCitizen {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/response`} component={(props) => <AppContainer><OBPSResponse {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/self-certification/response/:id`} component={(props) => <AppContainer><SelfCertificationResponse {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType/stepper`} component={(props) => <AppContainer><OCStepperForm {...props} /></AppContainer>} />
       </Switch>
     </span>
   );

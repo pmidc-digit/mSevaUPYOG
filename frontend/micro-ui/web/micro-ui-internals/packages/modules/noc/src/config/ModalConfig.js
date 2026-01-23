@@ -14,7 +14,7 @@ export const ModalConfig = ({
   businessService,
 }) => {
   let checkCondtions = true;
-  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SENDBACK")
+  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "APPROVE" || action?.action == "REJECT" || action?.action == "SENDBACK" || action?.action == "SEND_FOR_INSPECTION_REPORT")
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 

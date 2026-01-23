@@ -4,7 +4,6 @@ import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
-import OBPSDocumentsEmp from "./OBPSDocumentsEmp";
 
 
 const createUnitDetails = () => ({
@@ -15,7 +14,7 @@ const createUnitDetails = () => ({
     key: Date.now(),
 });
 
-const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport }) => {
+const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus }) => {
     const { t } = useTranslation();
     const { pathname } = useLocation();
     const fieldInspectionFieldReports = fiReport ? fiReport : JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"));
@@ -107,7 +106,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         documentList,
         props,
         stateId,
-        fiReport
+        fiReport,
+        applicationStatus
     };
 
     console.log("FieldReports", FieldReports)
@@ -167,7 +167,8 @@ const InspectionReportForm = (_props) => {
         documentList,
         props,
         stateId,
-        fiReport
+        fiReport,
+        applicationStatus
     } = _props;
 
     const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
@@ -436,15 +437,15 @@ const InspectionReportForm = (_props) => {
                                             <Controller
                                                 control={control}
                                                 name={`Remarks_${ind}`}
-                                                defaultValue={unit?.uomValue}
+                                                defaultValue={unit[`Remarks_${ind}`]}
+                                                rules={applicationStatus === "INSPECTION_REPORT_PENDING" ? { required: t("REQUIRED_FIELD") } : {}}
                                                 render={(props) => (
                                                     <TextInput
-                                                        value={getValues(`Remarks_${ind}`)}
-                                                        onChange={(e) => {
-                                                            props.onChange(e);
-                                                        }}
+                                                        value={props.value}
+                                                        onChange={props.onChange}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
+                                                        disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
                                                     />
                                                 )}
                                             />

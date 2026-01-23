@@ -28,6 +28,7 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
+import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
 import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
@@ -170,7 +171,7 @@ const CitizenApplicationOverview = () => {
 
     const site = Property?.nocDetails?.additionalDetails?.siteDetails;
     const ulbType = site?.ulbType;
-    const ulbName = site?.ulbName?.city?.name;
+    const ulbName = site?.ulbName?.city?.name ||site?.ulbName;
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
 
@@ -437,13 +438,10 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView
-          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-        />
-      </Card>
+      <NOCImageView
+        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+      />
 
       {id.length > 0 && (
         <React.Fragment>
@@ -654,10 +652,6 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
         </div>
       </Card> */}
 
-      <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
-      </Card>
       {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
         <Card>
           <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
@@ -701,7 +695,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
       )} */}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj= {timeObj} />
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />
       </div>
 
       {actions && actions.length > 0 && (

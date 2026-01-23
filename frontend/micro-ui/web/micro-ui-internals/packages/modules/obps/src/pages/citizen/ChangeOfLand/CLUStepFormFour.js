@@ -5,6 +5,7 @@ import { UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSAc
 import { useState, useRef } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
+import { convertToDDMMYYYY } from "../../../utils";
 
 const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -154,6 +155,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       },
       cluDetails: {
         ...cluFormData?.apiData?.Clu?.[0]?.cluDetails,
+        vasikaNumber: cluFormData?.siteDetails?.vasikaNumber || "", 
+        vasikaDate: cluFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(cluFormData?.siteDetails?.vasikaDate) : "",
+
         //update data with redux as we can not use old data for update api
         additionalDetails: {
           ...cluFormData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails,
@@ -279,8 +283,10 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //console.log("selectedAction here", action);
   }
 
-  const ownersList= currentStepData?.apiData?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList= currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  console.log("ownersList===>", ownersList);
   const combinedOwnersName = ownersList?.join(", ");
+  console.log("combinedOwnersName==>", combinedOwnersName);
 
   const CLUSummary = Digit?.ComponentRegistryService?.getComponent("CLUSummary");
 

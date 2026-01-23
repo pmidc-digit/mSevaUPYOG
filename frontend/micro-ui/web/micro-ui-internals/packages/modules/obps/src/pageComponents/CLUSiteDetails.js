@@ -12,6 +12,7 @@ import {
   CardLabelError,
   UploadFile,
 } from "@mseva/digit-ui-react-components";
+import { formatDate, formatDateForInput } from "../utils";
 
 const CLUSiteDetails = (_props) => {
   let tenantId;
@@ -440,6 +441,38 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_VASIKA_DATE_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="vasikaDate"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                }}
+                render={(props) => (
+                  <TextInput
+                    type="date"
+                    value={formatDateForInput(props.value)} 
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    min="1900-01-01"
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.vasikaDate?.message || ""}</CardLabelError>
+
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>

@@ -1,14 +1,25 @@
 import { ActionBar, ApplyFilterBar, CloseSvg, Dropdown, RadioButtons, RemoveableTag, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getCityThatUserhasAccess } from "./Utils";
 
 const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props }) => {
   const [filters, onSelectFilterRoles] = useState(searchParams?.filters?.role || { role: [] });
   const [_searchParams, setSearchParams] = useState(() => searchParams);
   const [selectedRoles, onSelectFilterRolessetSelectedRole] = useState(null);
   const { t } = useTranslation();
-  const tenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
+  
+  // Fetch all tenants from API
+  const storedTenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
+  const { data: tenantsData, isLoading: tenantsLoading } = Digit.Hooks.useTenants();
+  const cityChange = Digit.SessionStorage.get("Employee.tenantId");
+  
+  // Use fetched tenants or fallback to stored ones
+  const tenantIds = React.useMemo(() => {
+    if (tenantsData && tenantsData.length > 0) {
+      return tenantsData;
+    }
+    return storedTenantIds || [];
+  }, [tenantsData, storedTenantIds]);
 
   function onSelectRoles(value, type) {
     if (!ifExists(filters.role, value)) {
@@ -30,12 +41,41 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
       onSelectFilterRolessetSelectedRole(filters.role[0]);
     }
   }, [filters.role]);
+  
   const [tenantId, settenantId] = useState(() => {
-    return tenantIds.filter(
-      (ele) =>
-        ele.code == (searchParams?.tenantId != undefined ? { code: searchParams?.tenantId } : { code: Digit.ULBService.getCurrentTenantId() })?.code
-    )[0];
+    const currentTenantId = searchParams?.tenantId || Digit.ULBService.getCurrentTenantId();
+    if (!tenantIds || tenantIds.length === 0) {
+      return { code: currentTenantId, name: currentTenantId };
+    }
+    let targetCode = currentTenantId;
+    // Handle Punjab as special case - default to Amritsar
+    if (currentTenantId === "pb.punjab") {
+      targetCode = Digit.SessionStorage.get("punjab-tenantId") || "pb.amritsar";
+      Digit.SessionStorage.set("punjab-tenantId", targetCode);
+    }
+    return tenantIds.find(ele => ele.code === targetCode) || tenantIds[0];
   });
+  
+  // Update tenantId when tenantIds are loaded or cityChange occurs
+  useEffect(() => {
+    if (tenantIds && tenantIds.length > 0) {
+      const currentTenantId = Digit.ULBService.getCurrentTenantId();
+      const changeCity = cityChange || currentTenantId;
+      
+      let targetCode = changeCity;
+      // Handle Punjab as special case - default to Amritsar
+      if (changeCity === "pb.punjab") {
+        targetCode = Digit.SessionStorage.get("punjab-tenantId") || "pb.amritsar";
+        Digit.SessionStorage.set("punjab-tenantId", targetCode);
+      }
+      
+      const matchingTenant = tenantIds.find(ele => ele.code === targetCode);
+      if (matchingTenant && matchingTenant.code !== tenantId?.code) {
+        settenantId(matchingTenant);
+      }
+    }
+  }, [tenantIds, cityChange]);
+  
   const { isLoading, isError, errors, data: data, ...rest } = Digit.Hooks.hrms.useHrmsMDMS(
     tenantId ? tenantId.code : searchParams?.tenantId,
     "egov-hrms",
@@ -99,12 +139,20 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   }, [isActive]);
   const clearAll = () => {
     onFilterChange({ delete: Object.keys(searchParams) });
-    settenantId(tenantIds.filter((ele) => ele.code == Digit.ULBService.getCurrentTenantId())[0]);
     setDepartments(null);
     setRoles(null);
     setIsactive(null);
     props?.onClose?.();
     onSelectFilterRoles({ role: [] });
+    // Keep tenantId as is, don't reset it
+  };
+
+  // Handle tenant selection
+  const onSelectTenants = (value) => {
+    if (value) {
+      Digit.SessionStorage.set("punjab-tenantId", value.code);
+      settenantId(value);
+    }
   };
 
   const GetSelectOptions = (lable, options, selected, select, optionKey, onRemove, key) => {
@@ -122,6 +170,20 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
       </div>
     );
   };
+  
+  // Show loading state while fetching tenants
+  if (tenantsLoading) {
+    return (
+      <div className="filter">
+        <div className="filter-card">
+          <div className="heading">
+            <div className="filter-label">{t("LOADING")}...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <React.Fragment>
       <div className="filter">
@@ -159,13 +221,25 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
           </div>
           <div>
             <div>
-              <div className="filter-label">{t("HR_ULB_LABEL")}</div>
+              <div className="filter-label">{t("HR_CITY_LABEL") || t("HR_ULB_LABEL")}</div>
               <Dropdown
-                option={[...getCityThatUserhasAccess(tenantIds)?.sort((x, y) => x?.name?.localeCompare(y?.name)).map(city => { return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) } })]}
+                option={(() => {
+                  // Show all tenants without filtering by user permissions
+                  // Backend will handle permission-based filtering of results
+                  const sortedCities = tenantIds?.sort((x, y) => x?.name?.localeCompare(y?.name));
+                  
+                  const mappedOptions = sortedCities?.map(city => ({ 
+                    ...city, 
+                    i18text: Digit.Utils.locale.getCityLocale(city.code) || city.name || city.code 
+                  }));
+                  
+                  return (tenantIds && tenantIds.length > 0) ? mappedOptions : [];
+                })()}
                 selected={tenantId}
-                select={settenantId}
+                select={onSelectTenants}
                 optionKey={"i18text"}
                 t={t}
+                disable={false}
               />
             </div>
             <div>

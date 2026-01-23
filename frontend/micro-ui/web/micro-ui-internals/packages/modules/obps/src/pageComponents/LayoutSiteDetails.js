@@ -929,7 +929,18 @@ const LayoutSiteDetails = (_props) => {
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}</CardLabel>
             <div className="field">
-              <TextInput value={ulbType} disabled={true} />
+              <Controller
+                control={control}
+                name="ulbType"
+                defaultValue=""
+                render={(props) => (
+                  <TextInput 
+                    value={props.value} 
+                    disabled={true}
+                    onChange={(e) => props.onChange(e.target.value)}
+                  />
+                )}
+              />
             </div>
           </LabelFieldPair>
 
@@ -1020,11 +1031,9 @@ const LayoutSiteDetails = (_props) => {
             <CardLabel className="card-label-smaller">
               Area Under EWS <span className="requiredField">*</span>
             </CardLabel>
-            <div style={{ width: "100%" }}>
+          
               {/* EWS Area Input */}
-              <div style={{ marginBottom: "12px" }}>
-                <CardLabel className="card-label-smaller">Area (Sq M)</CardLabel>
-                <div className="field">
+      <div className="field">
                   <Controller
                     control={control}
                     name="areaUnderEWS"
@@ -1063,11 +1072,18 @@ const LayoutSiteDetails = (_props) => {
                   />
                   {errors?.areaUnderEWS && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaUnderEWS.message}</p>}
                 </div>
-              </div>
 
-              {/* EWS Area Percentage */}
-              <div>
-                <CardLabel className="card-label-smaller">Percentage (%)</CardLabel>
+            
+          
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_TOTAL_AREA_PERCENTAGE_LABEL_C (EWS)")}`} <span className="requiredField">*</span>
+            </CardLabel>
+             
+            
+               
                 <div className="field">
                   <TextInput
                     className="form-field"
@@ -1080,8 +1096,7 @@ const LayoutSiteDetails = (_props) => {
                     placeholder="%"
                   />
                 </div>
-              </div>
-            </div>
+              
           </LabelFieldPair>
 
           {/* <CHANGE> Add Net Total Area field (A-B-C) - disabled/readonly */}
@@ -1247,7 +1262,7 @@ const LayoutSiteDetails = (_props) => {
                       select={props.onChange}
                       selected={props.value}
                       option={[
-                        { code: "PLOTED", name: "Residential Ploted" },
+                        { code: "RESIDENTIAL_PLOTTED", name: "Residential Ploted" },
                         { code: "AFFORDABLE", name: "Affordable Housing" },
                         { code: "EWS", name: "EWS Housing" },
                       ]}
@@ -2019,6 +2034,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     readOnly={true}
+                    
                   />
                 )}
               />

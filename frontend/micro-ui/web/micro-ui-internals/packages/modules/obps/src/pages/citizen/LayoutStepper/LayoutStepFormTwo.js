@@ -51,8 +51,18 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const onSubmit = (data) => {
     trigger()
 
-    // Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
-    const isEqual = data?.netTotalArea === data?.specificationPlotArea || false
+    // Validation for Jamabandi Area Must Be Equal To Total Plot Area (areaLeftForRoadWidening)
+    // Helper function to normalize numeric values for comparison
+    const normalizeValue = (val) => {
+      if (val === null || val === undefined) return NaN;
+      const num = Number(val);
+      return Number.isNaN(num) ? NaN : num;
+    };
+
+    const jamabandi = normalizeValue(data?.specificationPlotArea);
+    const totalPlotArea = normalizeValue(data?.areaLeftForRoadWidening);
+
+    const isEqual = !Number.isNaN(jamabandi) && !Number.isNaN(totalPlotArea) && jamabandi === totalPlotArea;
 
     if (!isEqual) {
       setShowToast({ key: "true", error: true, message: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)" })
@@ -76,9 +86,25 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     console.log("  Form data for CREATE API:", formData);
 
+    // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
+    const convertDateToDDMMYYYY = (dateString) => {
+      if (!dateString) return null;
+      try {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      } catch (error) {
+        console.warn("Error converting date:", error);
+        return dateString; // Return original if conversion fails
+      }
+    };
+
     const transformedSiteDetails = {
       ...formData?.siteDetails,
       ulbName: formData?.siteDetails?.ulbName?.name || "",
+      ulbType: formData?.siteDetails?.ulbType || "",
       roadType: formData?.siteDetails?.roadType || "",
       buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
       isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
@@ -153,6 +179,8 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           tenantId: tenantId,
         },
         owners: applicants,  // ← Top-level owners array for backend
+        vasikaDate: convertDateToDDMMYYYY(formData?.siteDetails?.vasikaDate),  // ← Top-level vasika date
+        vasikaNumber: formData?.siteDetails?.vasikaNumber || "",  // ← Top-level vasika number
       },
     };
 

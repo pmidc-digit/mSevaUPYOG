@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   LabelFieldPair,
   TextInput,
@@ -26,7 +26,7 @@ import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewAppl
 
 const LayoutApplicantDetails = forwardRef((_props, ref) => {
   const dispatch = useDispatch();
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, reset, errors, errorStyle, trigger } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -79,9 +79,30 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
-      Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
+      // Map applicants to proper format
+      const applicantsData = formattedData.applicants || [{
+        name: "",
+        fatherOrHusbandName: "",
+        mobileNumber: "",
+        emailId: "",
+        address: "",
+        dob: "",
+        gender: "",
+      }];
+
+      // Reset entire form at once (like CLUApplicantDetails does)
+      reset({
+        applicantMobileNumber: formattedData.applicantMobileNumber || "",
+        applicantOwnerOrFirmName: formattedData.applicantOwnerOrFirmName || "",
+        applicantEmailId: formattedData.applicantEmailId || "",
+        applicantFatherHusbandName: formattedData.applicantFatherHusbandName || "",
+        applicantAddress: formattedData.applicantAddress || "",
+        applicantDateOfBirth: formattedData.applicantDateOfBirth || "",
+        applicantGender: formattedData.applicantGender || "",
+        applicantPanNumber: formattedData.applicantPanNumber || "",
       });
+
+      setApplicants(applicantsData);
     }
 
     // Restore additional applicants from currentStepData (if already in Redux from previous step navigation)
@@ -309,29 +330,34 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
   useEffect(() => {
     if (userInfo) {
       Object.entries(userInfo).forEach(([key, value]) => {
-        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true });
+        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true, shouldDirty: true });
 
-        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true });
+        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true, shouldDirty: true });
 
-        if (key === "dob") setValue("applicantDateOfBirth", value, { shouldValidate: true });
+        if (key === "dob") {
+          // Normalize DOB to YYYY-MM-DD format for <input type="date">
+          const dobStr = typeof value === "string" ? value : "";
+          const yyyyMmDd = dobStr ? dobStr.slice(0, 10) : "";
+          setValue("applicantDateOfBirth", yyyyMmDd, { shouldValidate: true, shouldDirty: true });
+        }
 
-        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value);
+        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value, { shouldValidate: true, shouldDirty: true });
 
         if (key === "permanentAddress") {
-          setValue("applicantAddress", value, { shouldValidate: true });
+          setValue("applicantAddress", value, { shouldValidate: true, shouldDirty: true });
         }
 
         if (key === "address") {
-          setValue("applicantAddress", value, { shouldValidate: true });
+          setValue("applicantAddress", value, { shouldValidate: true, shouldDirty: true });
         }
 
         if (key === "gender") {
           const genderObj = menu.find((obj) => obj.code === value);
-          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true });
+          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
         }
       });
     }
-  }, [userInfo]);
+  }, [userInfo, menu, setValue]);
 
   // Sync applicantErrors to Redux so parent can check before proceeding
   useEffect(() => {
@@ -430,8 +456,15 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setDocumentUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }));
+        const updatedDocs = { ...documentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
+        setDocumentUploadedFiles(updatedDocs);
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "" } }));
+        // Save to Redux immediately
+        dispatch(UPDATE_LayoutNewApplication_FORM({
+          documentUploadedFiles: updatedDocs,
+          photoUploadedFiles,
+          panUploadedFiles,
+        }));
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -453,8 +486,15 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setPhotoUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }));
+        const updatedPhotos = { ...photoUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
+        setPhotoUploadedFiles(updatedPhotos);
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "" } }));
+        // Save to Redux immediately
+        dispatch(UPDATE_LayoutNewApplication_FORM({
+          documentUploadedFiles,
+          photoUploadedFiles: updatedPhotos,
+          panUploadedFiles,
+        }));
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -476,8 +516,15 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        setPanUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }));
+        const updatedPans = { ...panUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
+        setPanUploadedFiles(updatedPans);
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], pan: "" } }));
+        // Save to Redux immediately
+        dispatch(UPDATE_LayoutNewApplication_FORM({
+          documentUploadedFiles,
+          photoUploadedFiles,
+          panUploadedFiles: updatedPans,
+        }));
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -507,6 +554,20 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
   const isEdit = window.location.pathname.includes("edit");
 
+  // Expose methods for parent component to validate and save documents
+  useImperativeHandle(ref, () => ({
+    validateAdditionalApplicants: handleGoNext,
+    saveDocumentsToRedux: () => {
+      // Save document states to Redux for persistence
+      dispatch(UPDATE_LayoutNewApplication_FORM({
+        documentUploadedFiles,
+        photoUploadedFiles,
+        panUploadedFiles,
+        applicants
+      }));
+    }
+  }));
+
   // Validate all applicants and documents before proceeding
   const handleGoNext = (data) => {
     let isValid = true;
@@ -533,10 +594,11 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setShowToast({
         key: "true",
         error: true,
-        message: t("BPA_PLEASE_UPLOAD_ALL_DOCUMENTS"),
+        message: t("Please upload required documents."),
       });
-      setTimeout(() => setShowToast(null), 3000);
-      return;
+      setTimeout(() => setShowToast(null), 5000);
+      // Prevent form submission
+      return false;
     }
 
     // Validate additional applicants
@@ -613,13 +675,17 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setShowToast({
         key: "true",
         error: true,
-        message: t("BPA_PLEASE_FILL_ALL_REQUIRED_FIELDS"),
+        message: t("BPA_PLEASE_FILL_ALL_REQUIRED_FIELDS_AND_UPLOAD_DOCUMENTS"),
       });
-      setTimeout(() => setShowToast(null), 3000);
-      return;
+      setTimeout(() => setShowToast(null), 5000);
+      // Scroll to first error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Prevent form submission
+      return false;
     }
 
     // All validations passed
+    console.log("[v0] All validations passed, proceeding to next step");
     goNext(data);
   };
 

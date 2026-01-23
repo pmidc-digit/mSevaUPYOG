@@ -157,6 +157,21 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("[v0] layoutFormData.documents.documents", layoutFormData?.documents?.documents)
   console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
   
+  // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
+  const convertDateToDDMMYYYY = (dateString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      console.warn("Error converting date:", error);
+      return dateString; // Return original if conversion fails
+    }
+  };
+  
   // Check if we're in EDIT mode or NEW mode
   // In NEW mode: data is at layoutFormData.apiData.Layout[0]
   // In EDIT mode (from edit application page): data is at layoutFormData.apiData directly
@@ -235,6 +250,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           businessService: layoutFormData?.apiData?.Layout?.[0]?.layoutDetails.additionalDetails?.siteDetails?.businessService,
           ...layoutFormData?.siteDetails,
           ulbName: layoutFormData?.siteDetails?.ulbName?.name || "",
+          ulbType: layoutFormData?.siteDetails?.ulbType || "",
           roadType: layoutFormData?.siteDetails?.roadType|| "",
           buildingStatus: layoutFormData?.siteDetails?.buildingStatus?.name || "",
           isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
@@ -247,6 +263,8 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // Initialize empty documents array - will be populated below
     documents: [],
     owners: owners,  // ← Top-level owners array (preserved from API response)
+    vasikaDate: convertDateToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate),  // ← Top-level vasika date
+    vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber || "",  // ← Top-level vasika number
   };
 
     // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========

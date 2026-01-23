@@ -12,30 +12,30 @@ const LayoutSpecificationDetails = (_props) => {
         setValue(key, value)
       })
 
-      if (formattedData.netTotalArea) {
-        setValue("specificationPlotArea", formattedData.netTotalArea, { shouldValidate: true })
+      if (formattedData.areaLeftForRoadWidening) {
+        setValue("specificationPlotArea", formattedData.areaLeftForRoadWidening, { shouldValidate: true })
       }
     }
   }, [currentStepData, setValue])
 
   const specificationPlotAreaValue = watch ? watch("specificationPlotArea") : ""
-  const netTotalArea = currentStepData?.siteDetails?.netTotalArea
+  const areaLeftForRoadWidening = watch("areaLeftForRoadWidening")
 
   useEffect(() => {
-    if (specificationPlotAreaValue && netTotalArea) {
+    if (specificationPlotAreaValue && areaLeftForRoadWidening) {
       const plotArea = Number.parseFloat(specificationPlotAreaValue)
-      const totalArea = Number.parseFloat(netTotalArea)
+      const totalArea = Number.parseFloat(areaLeftForRoadWidening)
 
       if (!isNaN(plotArea) && !isNaN(totalArea) && plotArea !== totalArea) {
         setShowToast({
           error: true,
-          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)",
+          label: "Plot area as per jamabandi must be equal to Total Area in Square Meter",
         })
       } else {
         setShowToast(null)
       }
     }
-  }, [specificationPlotAreaValue, netTotalArea])
+  }, [specificationPlotAreaValue, areaLeftForRoadWidening])
 
   return (
     <React.Fragment>
@@ -55,11 +55,14 @@ const LayoutSpecificationDetails = (_props) => {
                   message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
                 },
                 validate: (value) => {
-                  if (!netTotalArea) return true
+                  if (!areaLeftForRoadWidening) return true
                   const plotArea = Number.parseFloat(value)
-                  const totalArea = Number.parseFloat(netTotalArea)
+                  const totalArea = Number.parseFloat(areaLeftForRoadWidening)
                   if (isNaN(plotArea) || isNaN(totalArea)) return true
-                  return plotArea === totalArea || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)")
+                  // Normalize values by removing unnecessary trailing zeros
+                  const normalizedPlotArea = parseFloat(plotArea.toString())
+                  const normalizedTotalArea = parseFloat(totalArea.toString())
+                  return normalizedPlotArea === normalizedTotalArea || t("Plot area as per jamabandi must be equal to Total Area in Square Meter")
                 },
               }}
               render={(props) => (

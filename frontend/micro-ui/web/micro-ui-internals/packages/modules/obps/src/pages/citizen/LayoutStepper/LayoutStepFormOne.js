@@ -27,11 +27,12 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
     trigger,
   } = useForm();
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle};
+  const commonProps = { Controller, control, setValue, reset, errors, trigger, errorStyle};
 
   const onSubmit = (data) => {
     //console.log("data in first step", data);

@@ -47,7 +47,7 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
               </div>
             </LabelFieldPair>
              {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern("Name")) && (
-                  <CardLabelError style={{ width: "100%", marginTop: "-15px", fontSize: "16px", marginBottom: "12px" }}>
+                  <CardLabelError className="w-full -mt-3.5 text-base mb-3">
                     {t("CORE_COMMON_APPLICANT_NAME_INVALID")}
                   </CardLabelError>
                 )}

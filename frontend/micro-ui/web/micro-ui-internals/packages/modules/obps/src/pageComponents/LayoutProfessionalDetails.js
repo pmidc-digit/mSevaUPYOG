@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   LabelFieldPair,
   TextInput,
@@ -12,9 +13,11 @@ import {
   CardSectionHeader,
   CardLabelError,
 } from "@mseva/digit-ui-react-components";
+import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 
 const LayoutProfessionalDetails = (_props) => {
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, watch } = _props;
+  const dispatch = useDispatch();
 
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
@@ -27,6 +30,14 @@ const LayoutProfessionalDetails = (_props) => {
   console.log("userInfo here", userInfo);
   const [userPhoto, setUserPhoto] = useState(null);
   const [documents, setDocuments] = useState({});
+
+  // Watch all professional fields to capture them for Redux
+  const professionalName = watch?.("professionalName");
+  const professionalEmailId = watch?.("professionalEmailId");
+  const professionalRegId = watch?.("professionalRegId");
+  const professionalMobileNumber = watch?.("professionalMobileNumber");
+  const professionalAddress = watch?.("professionalAddress");
+  const professionalRegistrationValidity = watch?.("professionalRegistrationValidity");
 
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
   const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(
@@ -92,6 +103,24 @@ const LayoutProfessionalDetails = (_props) => {
       setValue("professionalRegistrationValidity", licenseValidity, { shouldValidate: true, shouldDirty: false });
     }
   }, [address, regId, setValue, licenseValidity]);
+
+  // Dispatch professional details to Redux whenever they change
+  useEffect(() => {
+    const professionalDetails = {
+      professionalName,
+      professionalEmailId,
+      professionalRegId,
+      professionalMobileNumber,
+      professionalAddress,
+      professionalRegistrationValidity,
+    };
+    
+    // Only dispatch if at least one field has a value
+    if (Object.values(professionalDetails).some(val => val)) {
+      dispatch(UPDATE_LayoutNewApplication_FORM("professionalDetails", professionalDetails));
+    }
+  }, [professionalName, professionalEmailId, professionalRegId, professionalMobileNumber, professionalAddress, professionalRegistrationValidity, dispatch]);
+
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
@@ -328,8 +357,8 @@ const LayoutProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
-                disabled="true"
-                disable="true"
+                // disabled="true"
+                // disable="true"
               />
             )}
           />

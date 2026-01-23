@@ -158,19 +158,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
   
   // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
-  const convertDateToDDMMYYYY = (dateString) => {
-    if (!dateString) return null;
-    try {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
-    } catch (error) {
-      console.warn("Error converting date:", error);
-      return dateString; // Return original if conversion fails
-    }
-  };
+
   
   // Check if we're in EDIT mode or NEW mode
   // In NEW mode: data is at layoutFormData.apiData.Layout[0]
@@ -202,6 +190,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         // Get document files for this applicant
         const docFiles = layoutFormData?.documentUploadedFiles || {};
         const photoFiles = layoutFormData?.photoUploadedFiles || {};
+        const panFiles = layoutFormData?.panUploadedFiles || {};
         const applicantIndex = applicantsFromRedux.indexOf(applicant);
         
         // For new applicants, don't send uuid - let backend create/assign it
@@ -214,9 +203,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           permanentAddress: applicant.address,
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
           gender: applicant.gender?.code || applicant.gender,
+          panNumber: applicant.panNumber || "",
           additionalDetails: {
             ownerPhoto: photoFiles[applicantIndex]?.fileStoreId || null,
             documentFile: docFiles[applicantIndex]?.fileStoreId || null,
+            panFile: panFiles[applicantIndex]?.fileStoreId || null,
           },
         };
         
@@ -232,6 +223,22 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
     console.log("[v0] final merged owners:", owners);
 
+  // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
+  const convertDateToDDMMYYYY = (dateString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      console.warn("Error converting date:", error);
+      return dateString;
+    }
+  };
+
+  // Following CLU pattern: Put entire formData in additionalDetails
   const updatedApplication = {
     ...layoutData,
    
@@ -239,26 +246,8 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       action: selectedAction?.action || "",
     },
     layoutDetails: {
-      ...layoutData?.layoutDetails,  // <CHANGE> Use layoutData
-      additionalDetails: {
-        ...layoutData?.layoutDetails?.additionalDetails,  // <CHANGE> Use layoutData
-        applicationDetails: {
-          ...layoutFormData?.applicationDetails,
-          applicantGender: layoutFormData?.applicationDetails?.applicantGender,  // Keep full object
-        },
-        siteDetails: {
-          businessService: layoutFormData?.apiData?.Layout?.[0]?.layoutDetails.additionalDetails?.siteDetails?.businessService,
-          ...layoutFormData?.siteDetails,
-          ulbName: layoutFormData?.siteDetails?.ulbName?.name || "",
-          ulbType: layoutFormData?.siteDetails?.ulbType || "",
-          roadType: layoutFormData?.siteDetails?.roadType|| "",
-          buildingStatus: layoutFormData?.siteDetails?.buildingStatus?.name || "",
-          isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
-          district: layoutFormData?.siteDetails?.district?.name || "",
-          zone: layoutFormData?.siteDetails?.zone?.name || "",
-        },
-        coordinates: { ...coordinates },
-      },
+      ...layoutData?.layoutDetails,
+      additionalDetails: layoutFormData,  // ← Include ENTIRE formData like CLU does
     },
     // Initialize empty documents array - will be populated below
     documents: [],

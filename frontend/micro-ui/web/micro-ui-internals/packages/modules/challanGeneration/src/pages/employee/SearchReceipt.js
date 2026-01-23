@@ -171,51 +171,8 @@ const SearchReceipt = () => {
 
   return (
     <React.Fragment>
-      <style>
-        {`
-          .formWrapperNDC {
-            // padding: 20px;
-            // background: #fff;
-            // border-radius: 10px;
-            max-width: 1200px;
-            // margin: auto;
-            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          }
 
-          .ndcFormCard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-
-          .surveydetailsform-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-          }
-          .surveydetailsform-wrapper p {
-            color: red;
-            font-size: 14px;
-          }
-
-         .citizen-card-input{
-            margin-bottom: 0 !important;
-         }
-
-          @media (max-width: 1024px) {
-            .ndcFormCard {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-
-          @media (max-width: 768px) {
-            .ndcFormCard {
-              grid-template-columns: 1fr;
-            }
-          }
-        `}
-      </style>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-application-details"} >
         <Header>Search Receipts</Header>
       </div>
 
@@ -234,11 +191,11 @@ const SearchReceipt = () => {
                     },
                   })}
                 />
-                {errors.receiptNumbers && <p style={{ color: "red" }}>{errors.receiptNumbers.message}</p>}
+                {errors.receiptNumbers && <p  className="requiredField">{errors.receiptNumbers.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
-                  Service Type <span style={{ color: "red" }}>*</span>
+                  Service Type <span  className="requiredField">*</span>
                 </label>
                 <Controller
                   control={control}
@@ -257,7 +214,7 @@ const SearchReceipt = () => {
                     />
                   )}
                 />
-                {errors.businessServices && <p style={{ color: "red" }}>{errors.businessServices.message}</p>}
+                {errors.businessServices && <p  className="requiredField">{errors.businessServices.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
@@ -270,7 +227,7 @@ const SearchReceipt = () => {
                     },
                   })}
                 />
-                {errors.consumerCodes && <p style={{ color: "red" }}>{errors.consumerCodes.message}</p>}
+                {errors.consumerCodes && <p  className="requiredField">{errors.consumerCodes.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
@@ -296,7 +253,7 @@ const SearchReceipt = () => {
                       },
                     })}
                   />
-                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+                  {errors.mobileNumber && <p  className="requiredField">{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>

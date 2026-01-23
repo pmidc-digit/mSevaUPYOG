@@ -39,6 +39,11 @@ const LayoutResponseCitizen = (props) => {
     history.push(`/digit-ui/citizen/obps/layout/search-application`)
   }
 
+  const handlePayment = () => {
+    const code = layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "LAYOUT.PAY1" : "LAYOUT.PAY2";
+    history.push(`/digit-ui/citizen/payment/collect/${code}/${applicationNo}/${tenantId}?tenantId=${tenantId}`);
+  };
+
   const handleDownloadPdf = async () => {
     try{
       setDownloading(true);
@@ -71,8 +76,9 @@ const LayoutResponseCitizen = (props) => {
         />
         {downloading && <Loader />}
         {layoutData?.applicationStatus !== "REJECTED" ? (
-          <div>
+          <div style={{display:"flex", justifyContent:"space-evenly"}}>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+            {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
             {pdfError && <div style={{ color: "red", padding: "10px", marginTop: "10px" }}>{pdfError}</div>}
           </div>
         ) : null}

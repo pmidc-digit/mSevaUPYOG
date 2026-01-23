@@ -432,7 +432,7 @@ const ApplicationOverview = () => {
           const isRed = detail.dueAmount > 0;
 
           return (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="ndc-emp-app-overview" >
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
@@ -513,10 +513,8 @@ const ApplicationOverview = () => {
                 )}
               </StatusTable>
               {canRaiseFlag && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                  }}
+                <div className="mychallan-custom"
+                 
                 >
                   <CardLabel className="card-label-smaller ndc_card_labels">
                     <b> Pending Dues</b>

@@ -101,21 +101,6 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       }
     };
 
-    const transformedSiteDetails = {
-      ...formData?.siteDetails,
-      ulbName: formData?.siteDetails?.ulbName?.name || "",
-      ulbType: formData?.siteDetails?.ulbType || "",
-      roadType: formData?.siteDetails?.roadType || "",
-      buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
-      isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
-      district: formData?.siteDetails?.district?.name || "",
-      zone: formData?.siteDetails?.zone?.name || "",
-      specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
-      specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
-      specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
-      specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
-    };
-
     // Build applicants array: Primary applicant from form fields + additional applicants
     const applicants = [];
     
@@ -132,6 +117,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       additionalDetails: {
         documentFile: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || null,
         ownerPhoto: formData?.photoUploadedFiles?.[0]?.fileStoreId || formData?.photoUploadedFiles?.[0] || null,
+        panFile: formData?.panUploadedFiles?.[0]?.fileStoreId || formData?.panUploadedFiles?.[0] || null,
       },
     });
 
@@ -147,20 +133,18 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           dob: applicant?.dob ? Digit.Utils.pt.convertDateToEpoch(applicant?.dob) : null,
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
           permanentAddress: applicant?.address || "",
+          panNumber: applicant?.panNumber || "",
           additionalDetails: {
             documentFile: formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,
             ownerPhoto: formData?.photoUploadedFiles?.[index + 1]?.fileStoreId || formData?.photoUploadedFiles?.[index + 1] || null,
+            panFile: formData?.panUploadedFiles?.[index + 1]?.fileStoreId || formData?.panUploadedFiles?.[index + 1] || null,
           },
         });
       });
     }
 
-    // Build transformedApplicationDetails (owners NOT here - only at top level)
-    const transformedApplicationDetails = {
-      ...formData?.applicationDetails,
-      applicantGender: formData?.applicationDetails?.applicantGender,  // Keep full object
-    };
-
+    // Following CLU pattern: Put entire formData in additionalDetails
+    // This ensures all form data (applicant, professional, site, documents, files, etc.) reaches backend
     const payload = {
       Layout: {
         applicationType: "NEW",
@@ -172,10 +156,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           action: "INITIATE",
         },
         layoutDetails: {
-          additionalDetails: {
-            applicationDetails: transformedApplicationDetails,
-            siteDetails: transformedSiteDetails,
-          },
+          additionalDetails: formData,  // ← Include ENTIRE formData like CLU does
           tenantId: tenantId,
         },
         owners: applicants,  // ← Top-level owners array for backend

@@ -392,7 +392,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           /> */}
           <div className={`upload-file upload-file-max-width`}>
             <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", flexWrap: "wrap", margin: "0px", padding: "0px" }}>
-              <div style={{ height: "auto", minHeight: "40px", width: "43%", maxHeight: "40px", margin: "5px", padding: "0px", }}>
+              <div style={{ height: "auto", minHeight: "40px", width: "43%", maxHeight: "40px", margin: "5px", padding: "0px", }}> 
                 <SubmitBar
                   label={t("CAPTURE_IMAGE")}
                   onSubmit={() => {

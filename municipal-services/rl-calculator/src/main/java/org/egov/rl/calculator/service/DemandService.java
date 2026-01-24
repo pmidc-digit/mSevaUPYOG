@@ -124,7 +124,7 @@ public class DemandService {
 
 					amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 							BigDecimal::add);
-					amountPayable = calculationService.calculatePaybleAmount(startDay, endDay, amountPayable, cycle);
+//					amountPayable = calculationService.calculatePaybleAmount(startDay, endDay, amountPayable, cycle);
 
 					Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
 							.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)

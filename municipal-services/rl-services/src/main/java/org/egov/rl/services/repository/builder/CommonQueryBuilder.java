@@ -63,13 +63,14 @@ public class CommonQueryBuilder {
 			subQueryParams.add(criteria.getIsExpaireFlag());
 		}
 
-		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
-			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
-			addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
-		}
+//		if (!CollectionUtils.isEmpty(criteria.getAllotmentIds())) {
+//			addClauseIfRequired(subQuery, subQueryParams);
+//			subQuery.append(" al.id IN (").append(createQuery(criteria.getAllotmentIds())).append(" ) ");
+//			addToPreparedStatement(subQueryParams, criteria.getAllotmentIds());
+//		}
 
 		if (!ObjectUtils.isEmpty(criteria.getStatus())) {
+			System.out.println("criteria.getStatus()---"+criteria.getStatus());
 			addClauseIfRequired(subQuery, subQueryParams);
 			String inSql = String.join(",", Collections.nCopies(criteria.getStatus().size(), "?"));
 			subQuery.append(" al.status IN (").append(inSql).append(" ) ");

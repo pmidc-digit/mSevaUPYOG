@@ -6,7 +6,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.rl.services.models.Address;
@@ -51,9 +51,11 @@ public class SearchPropertyService {
 //		allotmentCriteria.setFromDate(1764547200000l);
 //		allotmentCriteria.setToDate(1825094400000l);
 
+		String allotmentIds=propertyReportSearchRequest.getSearchProperty().getAllotmentId();
 		Set<String> allotmentId = new HashSet<>();
-		allotmentId.add(propertyReportSearchRequest.getSearchProperty().getAllotmentId());
-		allotmentCriteria.setAllotmentIds(allotmentId);
+		allotmentId.add(allotmentIds);
+		
+		allotmentCriteria.setAllotmentIds((allotmentIds==null)?null:allotmentId);
 		Set<Status> status = new HashSet<>();
 		status.add(Status.PENDING_FOR_PAYMENT);
 		status.add(Status.APPROVED);
@@ -61,15 +63,25 @@ public class SearchPropertyService {
 		allotmentCriteria.setStatus(status);
 		allotmentCriteria.setTenantId(propertyReportSearchRequest.getSearchProperty().getTenantId());
 		allotmentCriteria.setIsExpaireFlag(false);
-		allotmentCriteria.setCurrentDate(RLConstants.CURRENT_DATE);
+//		allotmentCriteria.setCurrentDate(RLConstants.CURRENT_DATE);
 	
-		List<AllotmentDetails> runningApplication = allotmentRepository.getAllotmentSearch(allotmentCriteria).stream().map(d->{
+		List<AllotmentDetails> runningApplication = allotmentRepository.getAllotmentSearch(allotmentCriteria)
+				.stream().map(d->{
 			AllotmentDetails al1=d;
 			al1.setOwnerInfo(userList(d, propertyReportSearchRequest.getSearchProperty().getTenantId()));
 			return al1;
-		}).collect(Collectors.toList());
+		}).filter(d -> d.getPropertyId() != null)
+				    .collect(Collectors.collectingAndThen(
+				        Collectors.toCollection(() ->
+				            new TreeSet<>(Comparator.comparing(AllotmentDetails::getPropertyId))
+				        ),
+				        ArrayList::new
+				    ));
+
+//				.collect(Collectors.groupingBy(AllotmentDetails::PropertyId(),Collectors.counting());
+
 		
-		System.out.println("--RL--"+runningApplication.size());
+		System.out.println("--runningApplication--"+runningApplication.size());
 		
 		List<String> runingPropertyIdList = runningApplication.stream().map(d -> d.getPropertyId()).distinct()
 				.collect(Collectors.toList());

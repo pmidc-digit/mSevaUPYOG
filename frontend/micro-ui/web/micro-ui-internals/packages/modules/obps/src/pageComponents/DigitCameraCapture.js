@@ -150,17 +150,20 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         ref={videoRef}
         autoPlay
         playsInline
-        style={{
-          width: "100%",
-          borderRadius: "8px",
-          background: "#000"
-        }}
+        className="video-preview"
+        // style={{
+        //   width: "100%",
+        //   borderRadius: "8px",
+        //   background: "#000"
+        // }}
       />
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
       {error && (
-        <div style={{ color: "red", marginTop: "8px" }}>
+        <div className="requiredField "
+        // style={{ color: "red", marginTop: "8px" }}
+        >
           {t(error)}
         </div>
       )}

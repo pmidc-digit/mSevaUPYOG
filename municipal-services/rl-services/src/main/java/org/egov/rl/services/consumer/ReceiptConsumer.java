@@ -24,7 +24,7 @@ public class ReceiptConsumer {
 	@org.springframework.beans.factory.annotation.Value("${kafka.topics.receipt.create}")
 	private String receiptTopic;
 
-	@KafkaListener(topics = { "${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	@KafkaListener(topics = { "${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}",concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final String rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		if (rawRecord == null || rawRecord.isEmpty()) {

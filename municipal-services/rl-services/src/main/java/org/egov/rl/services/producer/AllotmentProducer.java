@@ -2,6 +2,7 @@
 package org.egov.rl.services.producer;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.egov.rl.services.models.AllotmentDetails;
 import org.egov.rl.services.models.AllotmentRequest;
@@ -22,13 +23,19 @@ public class AllotmentProducer {
 
 	@Autowired
 	private EncryptionDecryptionUtil encryptionDecryptionUtil;
-	
+
 	public void push(String topic, Object value) {
-		kafkaTemplate.send(topic, value);
+		addedKeyPush(topic, value);
+	}
+
+	public void addedKeyPush(String topic, Object value) {
+		String key = UUID.randomUUID().toString();
+		kafkaTemplate.send(topic, key, value);
 	}
 
 	public void pushAfterEncrytpion(String topic, AllotmentRequest request) {
-		request.setAllotment(Arrays.asList(encryptionDecryptionUtil.encryptObject(request.getAllotment().get(0), RLConstants.RL_ALLOTMENT_MODEL, AllotmentDetails.class)));
+		request.setAllotment(Arrays.asList(encryptionDecryptionUtil.encryptObject(request.getAllotment().get(0),
+				RLConstants.RL_ALLOTMENT_MODEL, AllotmentDetails.class)));
 		push(topic, request);
 	}
 }

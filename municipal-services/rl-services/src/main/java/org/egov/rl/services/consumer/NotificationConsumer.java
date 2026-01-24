@@ -24,7 +24,7 @@ public class NotificationConsumer {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@KafkaListener(topics = { "${save.rl.allotment}", "${update.rl.allotment}" })
+	@KafkaListener(topics = { "${save.rl.allotment}", "${update.rl.allotment}" },concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final String record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		AllotmentRequest allotmentRequest = new AllotmentRequest();

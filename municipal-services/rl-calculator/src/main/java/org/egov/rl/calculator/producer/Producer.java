@@ -1,6 +1,9 @@
 package org.egov.rl.calculator.producer;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
+
 import org.egov.tracer.kafka.CustomKafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +16,12 @@ public class Producer {
 	private CustomKafkaTemplate<String, Object> kafkaTemplate;
 
 	public void push(String topic, Object value) {
-		kafkaTemplate.send(topic, value);
+		addedKeyPush(topic, value);
+	}
+	
+	public void addedKeyPush(String topic, Object value) {
+		String key=UUID.randomUUID().toString();
+		kafkaTemplate.send(topic,key, value);
 	}
 
 }

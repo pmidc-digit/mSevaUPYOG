@@ -4,9 +4,12 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.*;
+import lombok.Builder.Default;
+
 import org.egov.common.contract.request.Role;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
@@ -79,6 +82,8 @@ public class OwnerInfo extends User  {
         @JsonProperty("relationship")
         private RelationshipEnum relationship;
 
+        @JsonProperty("isRoleUpdatable")
+        private Boolean isRoleUpdatable = false;
 
 
         @Builder
@@ -91,10 +96,11 @@ public class OwnerInfo extends User  {
                          List<Role> roles, String fatherOrHusbandName, String bloodGroup,
                          String identificationMark, String photo, String createdBy, Long createdDate,
                          String lastModifiedBy, Long lastModifiedDate, String otpReference, String tenantId,
+                         String permanentState, String correspondenceState,String permanentDistrict, String correspondenceDistrict,
                          Boolean isPrimaryOwner, Double ownerShipPercentage, String ownerType,
                          String institutionId,List<Document> documents,RelationshipEnum relationship,
                          Boolean userActive) {
-                super(id,uuid, userName, password, salutation, name, gender, mobileNumber, emailId, altContactNumber, pan, aadhaarNumber, permanentAddress, permanentCity, permanentPincode, correspondenceCity, correspondencePincode, correspondenceAddress, active, dob, pwdExpiryDate, locale, type, signature, accountLocked, roles, fatherOrHusbandName, bloodGroup, identificationMark, photo, createdBy, createdDate, lastModifiedBy, lastModifiedDate, otpReference, tenantId);
+                super(id,uuid, userName, password, salutation, name, gender, mobileNumber, emailId, altContactNumber, pan, aadhaarNumber, permanentAddress, permanentCity, permanentPincode, correspondenceCity, correspondencePincode, correspondenceAddress, active, dob, pwdExpiryDate, locale, type, signature, accountLocked, roles, fatherOrHusbandName, bloodGroup, identificationMark, photo, createdBy, createdDate, lastModifiedBy, lastModifiedDate, otpReference, tenantId, permanentState, correspondenceState, permanentDistrict, correspondenceDistrict);
                 this.isPrimaryOwner = isPrimaryOwner;
                 this.ownerShipPercentage = ownerShipPercentage;
                 this.ownerType = ownerType;
@@ -150,7 +156,12 @@ public class OwnerInfo extends User  {
                 this.setBloodGroup(user.getBloodGroup());
                 this.setIdentificationMark(user.getIdentificationMark());
                 this.setPhoto(user.getPhoto());
+                this.setSignature(user.getSignature());
                 this.setTenantId(user.getTenantId());
+                this.setPermanentDistrict(user.getPermanentDistrict());
+                this.setPermanentState(user.getPermanentState());
+                this.setCorrespondenceDistrict(user.getCorrespondenceDistrict());
+                this.setCorrespondenceState(user.getCorrespondenceState());
         }
 
         public OwnerInfo(org.egov.common.contract.request.User user){
@@ -224,6 +235,10 @@ public class OwnerInfo extends User  {
                 this.setIdentificationMark(user.getIdentificationMark());
                 this.setPhoto(user.getPhoto());
                 this.setTenantId(user.getTenantId());
+                this.setPermanentDistrict(user.getPermanentDistrict());
+                this.setPermanentState(user.getPermanentState());
+                this.setCorrespondenceDistrict(user.getCorrespondenceDistrict());
+                this.setCorrespondenceState(user.getCorrespondenceState());
         }
 
 

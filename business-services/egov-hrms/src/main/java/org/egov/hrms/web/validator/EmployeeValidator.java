@@ -19,6 +19,7 @@ import org.egov.hrms.service.UserService;
 import org.egov.hrms.utils.ErrorConstants;
 import org.egov.hrms.utils.HRMSConstants;
 import org.egov.hrms.web.contract.EmployeeRequest;
+import org.egov.hrms.web.contract.ObpasEmployeeRequest;
 import org.egov.hrms.web.contract.EmployeeResponse;
 import org.egov.hrms.web.contract.EmployeeSearchCriteria;
 import org.egov.hrms.web.contract.UserResponse;
@@ -68,6 +69,48 @@ public class EmployeeValidator {
 		if(!CollectionUtils.isEmpty(errorMap.keySet()))
 			throw new CustomException(errorMap);
 	}
+	
+	public void validateRequest(ObpasEmployeeRequest obpasrequest) {
+        if (obpasrequest == null) {
+            throw new IllegalArgumentException("ObpasEmployeeRequest cannot be null");
+        }
+
+        RequestInfo requestInfo = obpasrequest.getRequestInfo();
+        if (requestInfo == null) {
+            throw new IllegalArgumentException("RequestInfo cannot be null");
+        }
+
+        List<ObpasEmployee> employees = obpasrequest.getEmployees();
+        if (employees == null || employees.isEmpty()) {
+            throw new IllegalArgumentException("Employees list cannot be null or empty");
+        }
+
+        for (ObpasEmployee emp : employees) {
+            validateEmployee(emp);
+        }
+    }
+
+	private void validateEmployee(ObpasEmployee emp) {
+	    if (emp == null) {
+	        throw new IllegalArgumentException("Employee object cannot be null");
+	    }
+	    if (StringUtils.isBlank(emp.getTenantId())) {
+	        throw new IllegalArgumentException("TenantId is mandatory for employee");
+	    }
+	    if (StringUtils.isBlank(emp.getUserUUID())) {
+	        throw new IllegalArgumentException("UserUUID is mandatory for employee");
+	    }
+	    if (emp.getCategory() == null || emp.getCategory().isEmpty()) {
+	        throw new IllegalArgumentException("At least one Category is mandatory for employee");
+	    }
+	    if (emp.getSubcategory() == null || emp.getSubcategory().isEmpty()) {
+	        throw new IllegalArgumentException("At least one Subcategory is mandatory for employee");
+	    }
+	    if (StringUtils.isBlank(emp.getZone())) {
+	        throw new IllegalArgumentException("Zone is mandatory for employee");
+	    }
+	}
+
 
 	public Map<String, List<String>> getBoundaryList(RequestInfo requestInfo,Employee employee){
 		List<String> boundarytList = new ArrayList<>();
@@ -149,6 +192,8 @@ public class EmployeeValidator {
 			throw new CustomException(errorMap);
 	}
 
+	
+	
 	
 	
 	

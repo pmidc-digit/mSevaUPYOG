@@ -106,7 +106,7 @@ public class WorkflowIntegrator {
 					});
 				}
 				obj.put(BUSINESSIDKEY, license.getApplicationNumber());
-				obj.put(TENANTIDKEY, wfTenantId);
+				obj.put(TENANTIDKEY, license.getTenantId());
 				switch(businessServiceFromMDMS)
 				{
 				//TLR Changes
@@ -116,10 +116,17 @@ public class WorkflowIntegrator {
 						break;
 
 					case businessService_BPA:
-						String tradeType = tradeLicenseRequest.getLicenses().get(0).getTradeLicenseDetail().getTradeUnits().get(0).getTradeType();
+						String tradeType = license.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType();
 						if(pickWFServiceNameFromTradeTypeOnly)
 						{
 							tradeType=tradeType.split("\\.")[0];
+							String applicationType = license.getApplicationType() != null ? license.getApplicationType().toString() : "";
+							if(TLConstants.APPLICATION_TYPE_UPGRADE.equalsIgnoreCase(applicationType)) {
+		                    	if(tradeType.equalsIgnoreCase("ARCHITECT"))
+		                    		tradeType = tradeType + "_" + TLConstants.APPLICATION_TYPE_UPGRADE;
+		                    	else
+		                    		tradeType = businessService_BPA + "_" + TLConstants.APPLICATION_TYPE_UPGRADE;
+		                    }
 						}
 						obj.put(BUSINESSSERVICEKEY, tradeType);
 						obj.put(MODULENAMEKEY, BPAMODULENAMEVALUE);

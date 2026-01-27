@@ -387,19 +387,24 @@ public class GeneralStair extends FeatureProcess {
                                 ? currentFloor.getNumber().intValue()
                                 : -1;
 
-                        //zero-based floor index
-                        boolean isLastFloor = currentFloorNo == (noOfFloors - 1);
+                        int lastFloorNo = noOfFloors - 1;
+
+                        boolean isRiserProvided =
+                                riserHeight != null && riserHeight.compareTo(BigDecimal.ZERO) > 0;
+
+                        boolean isRiserHeightWithinLimit =
+                                riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
 
                         boolean isRiserHeightValid;
 
-                        if (isLastFloor && riserHeight.compareTo(BigDecimal.ZERO) == 0) {
-                            // Last floor → riser optional
-                            isRiserHeightValid = true;
-                            LOG.info("Last floor detected ({}). Riser height optional.", currentFloorNo);
+                        if (currentFloorNo < lastFloorNo) {
+                            // Mandatory floors (0 to N-2)
+                            isRiserHeightValid =
+                                    isRiserProvided && isRiserHeightWithinLimit;
                         } else {
-                            // Mandatory for all other floors
-                            isRiserHeightValid = riserHeight.compareTo(BigDecimal.ZERO) > 0
-                                    && riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
+                            // Last floor (optional)
+                            isRiserHeightValid =
+                                    !isRiserProvided || isRiserHeightWithinLimit;
                         }
 
                         setReportOutputDetailsFloorStairWise(

@@ -1,5 +1,7 @@
 package org.egov.ptr.producer;
 
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 import org.egov.tracer.kafka.CustomKafkaTemplate;
 import org.egov.tracer.model.CustomException;
@@ -15,6 +17,11 @@ public class Producer {
 	private CustomKafkaTemplate<String, Object> kafkaTemplate;
 
 	public void push(String topic, Object value) {
-		kafkaTemplate.send(topic, value);
+			addedKeyPush(topic, value);
+	}
+
+	public void addedKeyPush(String topic, Object value) {
+		String key = UUID.randomUUID().toString();
+		kafkaTemplate.send(topic, key, value);
 	}
 }

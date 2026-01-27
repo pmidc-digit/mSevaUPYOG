@@ -22,8 +22,7 @@ public class CancelReceiptConsumer {
 	@Autowired
 	private ChallanConfiguration config;
 	
-	@KafkaListener(topics = {"${kafka.topics.receipt.cancel.name}"},
-			concurrency = "${spring.kafka.consumer.concurrency.count}")
+	@KafkaListener(topics = {"${kafka.topics.receipt.cancel.name}"})
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			if (config.getReceiptCancelTopic().equalsIgnoreCase(topic)) {

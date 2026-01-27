@@ -71,7 +71,7 @@ public class PaymentUpdateService {
 					}
 					challans.get(0).setAuditDetails(auditDetails);
 					ChallanRequest request = ChallanRequest.builder().requestInfo(requestInfo).challan(challans.get(0)).build();
-					producer.push(config.getUpdateChallanTopic(),request.getChallan().getId(), request);
+					producer.push(config.getUpdateChallanTopic(), request);
 				}
 			}
 		} catch (Exception e) {

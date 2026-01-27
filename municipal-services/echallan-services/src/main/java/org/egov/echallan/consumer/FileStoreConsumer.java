@@ -28,8 +28,7 @@ public class FileStoreConsumer {
     @Autowired
     private ChallanRepository challanRepository;
 
-    @KafkaListener(topics = { "${kafka.topics.filestore}" },
-    		concurrency = "${spring.kafka.consumer.concurrency.count}")
+    @KafkaListener(topics = { "${kafka.topics.filestore}" })
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
     	try {
         List<Map<String,Object>> jobMaps = (List<Map<String,Object>>)record.get(KEY_PDF_JOBS);

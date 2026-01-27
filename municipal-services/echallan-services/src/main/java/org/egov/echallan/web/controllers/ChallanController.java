@@ -90,7 +90,7 @@ public class ChallanController {
 
 	@PostMapping("/_test")
 	public ResponseEntity test( @RequestBody ChallanRequest challanRequest){
-		producer.push("update-challan",challanRequest.getChallan().getId(),challanRequest);
+		producer.push("update-challan",challanRequest);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 }

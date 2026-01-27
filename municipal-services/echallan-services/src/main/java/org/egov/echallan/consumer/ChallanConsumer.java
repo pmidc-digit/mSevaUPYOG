@@ -29,8 +29,7 @@ public class ChallanConsumer {
         this.config = config;
     }
 
-    @KafkaListener(topics = {"${persister.save.challan.topic}","${persister.update.challan.topic}"},
-    		concurrency = "${spring.kafka.consumer.concurrency.count}")
+    @KafkaListener(topics = {"${persister.save.challan.topic}","${persister.update.challan.topic}"})
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
         ObjectMapper mapper = new ObjectMapper();

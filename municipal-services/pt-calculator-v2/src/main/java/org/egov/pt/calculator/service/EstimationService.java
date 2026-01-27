@@ -2092,7 +2092,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			tax_payable = Math.round(tax_payable * 100) / 100.0;
 			double tax_payable_roundoff = Math.round(tax_payable);
 			double round_off = Math.round((tax_payable_roundoff - tax_payable) * 100.0) / 100.0;
-
+			FireCess=Math.round(FireCess * 100) / 100.0;
 			double totalTax = tax_payable_roundoff;
 
 			taxHeadEstimates.add(buildTaxHead("PT_TAX", PT_TAX));
@@ -2117,8 +2117,12 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 
 
 			ArrayNode billingSlabIds = mapper.createArrayNode();
-			billingSlabIds.add(id + "|" + floorNo);
-			calculation.set("billingSlabIds", billingSlabIds);
+			if(isVacant){
+				calculation.set("billingSlabIds", mapper.createArrayNode());
+			}else {
+				billingSlabIds.add(id + "|" + floorNo);
+				calculation.set("billingSlabIds", billingSlabIds);
+			}
 
 			calculation.put("serviceNumber", properties.path("acknowldgementNumber").asText(null));
 			calculation.put("fromDate", 1364774400); // epoch for 1-apr-2013 "AC-2025-10-01-2900664"

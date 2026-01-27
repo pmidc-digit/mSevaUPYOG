@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,18 +37,23 @@ public class NocQueryBuilder {
 
 	private static final String QUERY =
 			"SELECT noc.*, " +
-					"json_build_object(" +
+					"jsonb_build_object(" +
 					"'id', details.id, " +
 					"'nocid', details.nocid, " +
 					"'additionalDetails', details.additionalDetails" +
 					") AS nocDetails, " +
-					"json_agg(json_build_object(" +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', nocdoc.uuid, " +
 					"'documentType', nocdoc.documenttype, " +
-					"'documentAttachment', nocdoc.documentAttachment)) AS documents " +
+					"'documentAttachment', nocdoc.documentAttachment)) AS documents, " +
+					"jsonb_agg(DISTINCT jsonb_build_object(" +
+					"'additionalDetails', nocowner.additionalDetails, " +
+					"'uuid', nocowner.uuid " +
+					")) AS owners " +
 					"FROM eg_noc noc " +
 					"LEFT JOIN eg_noc_details details ON details.nocid = noc.id " +
 					"LEFT JOIN eg_noc_document nocdoc ON nocdoc.nocid = noc.id " +
+					"LEFT JOIN eg_noc_owner nocowner ON nocowner.nocid = noc.id " +
 					"WHERE 1=1";
 
 
@@ -88,10 +94,28 @@ public class NocQueryBuilder {
 //			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
 
 
+	private final String DOCUMENT_CHECK_LIST_QUERY = "SELECT * from eg_noc_document_check_list where applicationno = ? AND tenantId = ?";
+
 	private final String paginationWrapper = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY lastModifiedTime DESC) FROM " + "({})"
 			+ " result) ranked_result";
 
+
+	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT uuid FROM eg_noc_owner WHERE nocid = ?");
+
+		preparedStmtList.add(layoutId);
+		return sb.toString();
+	}
+
+	public String getNOCDocumantsCheckListQuery(String applicationNo, String tenantId, List<Object> params) {
+
+		params.add(applicationNo);
+		params.add(tenantId);
+
+		return DOCUMENT_CHECK_LIST_QUERY;
+	}
 
 //	private final String paginationWrapper = "SELECT * FROM "
 //			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) offset_ FROM " + "({})"
@@ -120,6 +144,19 @@ public class NocQueryBuilder {
 		}
 
 
+		if ( !StringUtils.isEmpty(criteria.getVasikaNumber()) ) {
+	        addClauseIfRequired(builder);
+	        builder.append(" noc.vasikaNumber=? ");
+	        preparedStmtList.add(criteria.getVasikaNumber());
+			log.info(criteria.getVasikaNumber());
+		}
+		
+		if ( !StringUtils.isEmpty(criteria.getVasikaDate()) ) {
+	        addClauseIfRequired(builder);
+	        builder.append(" noc.vasikaDate=? ");
+	        preparedStmtList.add(criteria.getVasikaDate());
+			log.info(criteria.getVasikaDate());
+		}
 
 
 		List<String> ids = criteria.getIds();

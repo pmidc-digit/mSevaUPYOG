@@ -1,6 +1,8 @@
 package org.egov.tl.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
@@ -117,7 +119,10 @@ public class UserService{
                         List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
                      // Update the professional role
                         updateProfessionalUserRoles(tradeLicense, user, licenseeTyperRole);
-                        user.setIsRoleUpdatable(true);
+                        ObjectNode additionalDetails = (ObjectNode)tradeLicense.getTradeLicenseDetail().getAdditionalDetail();
+                        String inactiveType = additionalDetails.get("inactiveType") == null ? "" : additionalDetails.get("inactiveType").asText("");
+                        if(!APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(inactiveType))
+                        	user.setIsRoleUpdatable(true);
                    }
                     userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);
                     switch (businessService)
@@ -380,7 +385,7 @@ public class UserService{
      */
     public UserDetailResponse getUser(TradeLicenseSearchCriteria criteria,RequestInfo requestInfo){
         UserSearchRequest userSearchRequest = getUserSearchRequest(criteria,requestInfo);
-        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+        StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoints());
         UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
         return userDetailResponse;
     }
@@ -539,8 +544,9 @@ public class UserService{
 							Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
 			}
 			
-			//Inactive the previous application in case of Upgrade
-			if (TLConstants.APPLICATION_TYPE_UPGRADE.equalsIgnoreCase(applicationType)
+			//Inactive the previous application in case of Upgrade and Renewal
+			if ((TLConstants.APPLICATION_TYPE_UPGRADE.equalsIgnoreCase(applicationType) || 
+					TLConstants.APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(applicationType))
 					&& TLConstants.ACTION_APPROVE.equalsIgnoreCase(action)) {
 				licenseService.inactivepreviousApplications(tradeLicense);
 			}

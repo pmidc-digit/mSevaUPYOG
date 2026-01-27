@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -15,6 +16,7 @@ import org.egov.bpa.web.model.BPASearchCriteria;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.collection.PaymentDetail;
 import org.egov.bpa.web.model.collection.PaymentRequest;
+import org.egov.bpa.web.model.workflow.Action;
 import org.egov.bpa.web.model.workflow.BusinessService;
 import org.egov.bpa.web.model.workflow.State;
 import org.egov.bpa.workflow.WorkflowIntegrator;
@@ -47,6 +49,7 @@ public class PaymentUpdateService {
 	private WorkflowService workflowService;
 	
 	private UserService userService;
+	
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
@@ -117,13 +120,14 @@ public class PaymentUpdateService {
 						State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), busSer);
 						String nextStateId = currentState.getActions().stream()
 								.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
-								.findFirst().get().getNextState();
+								.findFirst().orElse(new Action()).getNextState();
 						State nextState = busSer.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 						
 						String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
 						
 						if (nextState != null 
-								&& nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE)
+								&& (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) 
+										|| nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
 								&& BPAConstants.ACTION_PAY.equalsIgnoreCase(action)) {
 							List<String> roles = new ArrayList<>();
 							nextState.getActions().forEach(stateAction -> {
@@ -131,6 +135,7 @@ public class PaymentUpdateService {
 							});
 							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
 							bpa.getWorkflow().setAssignes(assignee);
+							
 						}
 					});
 					
@@ -145,7 +150,7 @@ public class PaymentUpdateService {
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */
 					enrichmentService.postStatusEnrichment(updateRequest);
-
+					
 					repository.update(updateRequest, true);
 
 				}

@@ -476,5 +476,6 @@ public class TLConstants {
 	        {"SUPERVISOR", "BD"}
 	    }).collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
 
+	public static final String SIGNATURE_DOC_TYPE = "APPL.BPAREG_SCANNED_SIGNATURE";
 
 }

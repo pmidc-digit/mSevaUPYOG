@@ -1,6 +1,7 @@
 package org.egov.ndc.repository.rowmapper;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.web.model.AuditDetails;
 import org.egov.ndc.web.model.OwnerInfo;
+import org.egov.ndc.web.model.bpa.Relationship;
 import org.egov.ndc.web.model.ndc.*;
 import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;
@@ -104,6 +106,8 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 			if (!alreadyPresent) {
 				OwnerInfo ownerInfo = OwnerInfo.builder()
 						.uuid(ownerUuid)
+						.isPrimaryOwner(rs.getBoolean("owner_isprimaryowner"))
+						.ownerShipPercentage(rs.getBigDecimal("owner_ownershippercentage"))
 						.build();
 				application.addOwner(ownerInfo);
 			}

@@ -91,6 +91,8 @@ public class FuzzySearchQueryBuilder {
             JsonNode mustNode = null;
             JsonNode tenantClauseNode = null;
             JsonNode localityClauseNode = null;
+            JsonNode statusClauseNode = null;
+
             if(criteria.getTenantId() != null){
                 tenantClauseNode = getInnerNode(criteria.getTenantId(),"Data.tenantId.keyword","",false);
             }
@@ -98,7 +100,6 @@ public class FuzzySearchQueryBuilder {
             if(criteria.getName() != null){
                 fuzzyClauses.add(getInnerNode(criteria.getName(),"Data.ownerNames",config.getNameFuziness(),true));
                 innerFuzzyClauses.add(getInnerNode(criteria.getName(),"Data.ownerNames",config.getNameFuziness(),true));
-
             }
 
             if(criteria.getDoorNo() != null){
@@ -114,12 +115,20 @@ public class FuzzySearchQueryBuilder {
             if(criteria.getLocality() != null){
                 localityClauseNode = getInnerNode(criteria.getLocality(),"Data.locality.keyword","",false);
             }
+
+            // Add status filter for ACTIVE and INWORKFLOW using terms clause
+            List<String> statusValues = new LinkedList<>();
+            statusValues.add("ACTIVE");
+            statusValues.add("INWORKFLOW");
+            JsonNode statusArrayNode = mapper.convertValue(statusValues, JsonNode.class);
+            JsonNode statusTermsNode = mapper.convertValue(new HashMap<String, JsonNode>(){{put("Data.status.keyword", statusArrayNode);}}, JsonNode.class);
+            statusClauseNode = mapper.convertValue(new HashMap<String, JsonNode>(){{put("terms", statusTermsNode);}}, JsonNode.class);
+
             if((criteria.getLocality() != null && criteria.getDoorNo() != null && criteria.getName() != null) || (criteria.getDoorNo() != null && criteria.getName() != null)){
                 JsonNode innerShouldNode = mapper.convertValue(new HashMap<String, List<JsonNode>>(){{put("should",innerFuzzyClauses);}}, JsonNode.class);
                 JsonNode innerNode = mapper.convertValue(new HashMap<String, JsonNode>(){{put("bool",innerShouldNode);}}, JsonNode.class);
                 innerList.add(innerNode);
                 mustNode = mapper.convertValue(new HashMap<String, List<JsonNode>>(){{put("must",innerList);}}, JsonNode.class);
-
             }
             else{
                 mustNode = mapper.convertValue(new HashMap<String, List<JsonNode>>(){{put("must",fuzzyClauses);}}, JsonNode.class);
@@ -131,6 +140,13 @@ public class FuzzySearchQueryBuilder {
                 JsonNode localityObject = mapper.convertValue(localityClauseNode, JsonNode.class);
                 outerMustArray.add(localityObject);
             }
+
+            // Add status clause to outer must array
+            if(statusClauseNode != null){
+                JsonNode statusObject = mapper.convertValue(statusClauseNode, JsonNode.class);
+                outerMustArray.add(statusObject);
+            }
+
             mustNode = mapper.convertValue(new HashMap<String, List<JsonNode>>(){{put("must",outerMustArray);}}, JsonNode.class);
             insideMatch.put("bool",mustNode);
             ObjectNode boolNode = (ObjectNode)insideMatch.get("bool");
@@ -152,7 +168,6 @@ public class FuzzySearchQueryBuilder {
         }
 
         return finalQuery;
-
     }
 
 

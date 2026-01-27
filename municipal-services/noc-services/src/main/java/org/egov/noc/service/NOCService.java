@@ -2,14 +2,7 @@ package org.egov.noc.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -28,9 +21,11 @@ import org.egov.noc.web.model.calculator.CalculationReq;
 import org.egov.noc.web.model.calculator.CalculationRes;
 import org.egov.noc.web.model.enums.ApplicationType;
 import org.egov.noc.web.model.enums.Status;
+import org.egov.noc.web.model.workflow.Action;
 import org.egov.noc.web.model.workflow.BusinessService;
 import org.egov.noc.web.model.workflow.ProcessInstance;
 import org.egov.noc.web.model.workflow.ProcessInstanceResponse;
+import org.egov.noc.web.model.workflow.State;
 import org.egov.noc.workflow.WorkflowIntegrator;
 import org.egov.noc.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
@@ -41,6 +36,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,7 +91,8 @@ public class NOCService {
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-			wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
+			String businessService = JsonPath.read(nocRequest.getNoc().getNocDetails().getAdditionalDetails(), "$.businessService");
+			wfIntegrator.callWorkFlow(nocRequest, businessService);
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
@@ -110,6 +107,31 @@ public class NOCService {
 		return Arrays.asList(nocRequest.getNoc());
 	}
 
+	public List<DocumentCheckList> saveDocumentCheckLists(CheckListRequest checkListRequest){
+		Long currentTime = System.currentTimeMillis();
+		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+
+		checkListRequest.getCheckList().forEach(document -> {
+			document.setId(UUID.randomUUID().toString());
+			document.setCreatedtime(currentTime);
+			document.setLastmodifiedtime(currentTime);
+			document.setCreatedby(userUUID);
+			document.setLastmodifiedby(userUUID);
+		});
+		nocRepository.saveDocumentCheckList(checkListRequest);
+		return checkListRequest.getCheckList();
+	}
+	public List<DocumentCheckList> updateDocumentCheckLists(CheckListRequest checkListRequest){
+		Long currentTime = System.currentTimeMillis();
+		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+
+		checkListRequest.getCheckList().forEach(document -> {
+			document.setLastmodifiedtime(currentTime);
+			document.setLastmodifiedby(userUUID);
+		});
+		nocRepository.updateDocumentCheckList(checkListRequest);
+		return checkListRequest.getCheckList();
+	}
 	public void getCalculation(NocRequest request){
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
@@ -133,6 +155,12 @@ public class NOCService {
 	}
 
 
+	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
+		if(net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(applicatioinNo))
+			throw new CustomException(NOCConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
+		return nocRepository.getDocumentCheckList(applicatioinNo, tenantId);
+	}
+
 
 	/**
 	 * entry point from controller, takes care of next level logic from controller to update NOC application
@@ -143,12 +171,19 @@ public class NOCService {
 	public List<Noc> update(NocRequest nocRequest) {
 		String tenantId = nocRequest.getNoc().getTenantId().split("\\.")[0];
 		Object mdmsData = nocUtil.mDMSCall(nocRequest.getRequestInfo(), tenantId);
+
+		Noc noc = nocRequest.getNoc();
+
+
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getNoc().getNocDetails().getAdditionalDetails();
 		} else {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
+		String businessServiceName = JsonPath.read(additionalDetails, "$.businessService");
+		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getNoc(),
+				nocRequest.getRequestInfo(), businessServiceName);
 		Noc searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
 		if (owners != null) {
@@ -159,12 +194,33 @@ public class NOCService {
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getNoc().getApplicationNo());
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
+
+			State currentState = workflowService.getCurrentState(noc.getApplicationStatus(), businessServicename);
+			String nextStateId = currentState.getActions().stream()
+					.filter(act -> act.getAction().equalsIgnoreCase(noc.getWorkflow().getAction()))
+					.findFirst().orElse(new Action()).getNextState();
+			State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+			String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
+
+			if (nextState != null && nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
+					&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(action) || NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+				List<String> roles = new ArrayList<>();
+				nextState.getActions().forEach(stateAction -> {
+					roles.addAll(stateAction.getRoles());
+				});
+				List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo());
+				noc.getWorkflow().setAssignes(assignee);
+			}
+
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
-				wfIntegrator.callWorkFlow(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
-				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
+
+
+				wfIntegrator.callWorkFlow(nocRequest, businessServiceName);
+				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
+						nocRequest.getRequestInfo(), businessServiceName);
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
 				else
@@ -193,11 +249,29 @@ public class NOCService {
 							.getAdditionalDetails()).put("approvedOn", LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 					getCalculation(nocRequest);
 				}
-				
-				wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
-				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
+				State currentState = workflowService.getCurrentState(noc.getApplicationStatus(), businessServicename);
+				String nextStateId = currentState.getActions().stream()
+						.filter(act -> act.getAction().equalsIgnoreCase(noc.getWorkflow().getAction()))
+						.findFirst().orElse(new Action()).getNextState();
+				State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+
+				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
+
+				if (nextState != null && nextState.getState().equalsIgnoreCase(NOCConstants.FI_STATUS)
+						&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(action) || NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+					List<String> roles = new ArrayList<>();
+					nextState.getActions().forEach(stateAction -> {
+						roles.addAll(stateAction.getRoles());
+					});
+					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo());
+					noc.getWorkflow().setAssignes(assignee);
+				}
+
+
+				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);
+				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
+						nocRequest.getRequestInfo(), businessServiceName);
 
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
@@ -328,11 +402,35 @@ public class NOCService {
 						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
 
-				List<String> accountid = new ArrayList<>();
-				accountid.add(noc.getAccountId());
+				List<String> accountid = nocRepository.getOwnerUserIdsByNocId(noc.getId());
 				criteria.setAccountId(accountid);
 				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				noc.setOwners(userDetailResponse.getUser());
+				List<OwnerInfo> owner = userDetailResponse.getUser();
+
+				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
+						.orElse(Collections.emptyList())
+						.stream()
+						.filter(oi -> oi.getUuid() != null && oi.getAdditionalDetails() != null)
+						.collect(Collectors.toMap(
+								OwnerInfo::getUuid,
+								OwnerInfo::getAdditionalDetails,
+								(a, b) -> a // keep first on duplicate uuid
+						));
+
+
+// Merge by uuid
+				for (OwnerInfo oi : owner) {
+					String uuid = oi.getUuid(); // ensure this getter exists
+					if (uuid != null) {
+						Object ad = adByUuid.get(uuid);
+						if (ad != null) {
+							oi.setAdditionalDetails(ad);
+						}
+					}
+				}
+
+
+				noc.setOwners(owner);
 
 				// BPA CALL
 				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())

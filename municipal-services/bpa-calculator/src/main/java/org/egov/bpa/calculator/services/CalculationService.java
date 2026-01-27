@@ -82,7 +82,7 @@ public class CalculationService {
 		CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
 		if(calculationReq.getCalulationCriteria() != null && calculationReq.getCalulationCriteria().size() > 0 && !calculationReq.getCalulationCriteria().get(0).isOnlyEstimates()) {
 			demandService.generateDemand(calculationReq.getRequestInfo(),calculations, mdmsData);
-			producer.push(config.getSaveTopic(), calculationRes);
+			producer.push(config.getSaveTopic(),calculationRes.getCalculations().get(0).getApplicationNumber(), calculationRes);
 		}
 		return calculations;
 	}
@@ -172,7 +172,11 @@ public class CalculationService {
 			if(!node.containsKey("builtUpArea"))
 				throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "builtUpArea should not be null!!");
 
-			List<Map<String,Object>> applicationFees = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_APPLIOCATION_FEES_PATH);
+			String categorie = node.getOrDefault("categories", "");
+	    	String subcategorie = node.getOrDefault("subcategories", "");
+	    	String proposedSite = node.getOrDefault("proposedSite", "").toUpperCase();
+			
+			List<Map<String,Object>> applicationFees = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_APPLIOCATION_FEES_PATH.replace("{0}", categorie).replace("{1}", subcategorie).replace("{2}", proposedSite));
 			
 			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")).multiply(BigDecimal.valueOf(3.2808)); //In Running Feet
 			BigDecimal area=new BigDecimal(node.get("builtUpArea")).multiply(BigDecimal.valueOf(10.7639)); //In Sq Feet
@@ -202,7 +206,7 @@ public class CalculationService {
 		}
 		
 		else if (calulationCriteria.getFeeType().equalsIgnoreCase(BPACalculatorConstants.MDMS_CALCULATIONTYPE_SANC_FEETYPE) 
-				&& ( calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA) 
+				&& ( calulationCriteria.getBpa().getBusinessService().startsWith(BPACalculatorConstants.MDMS_BPA) 
 						|| calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW) ) )
 		{
 			
@@ -344,8 +348,8 @@ public class CalculationService {
 			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Plot area should not be null");
 		if(!node.containsKey("builtUpArea"))
 			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "builtUpArea should not be null!!");
-		if(!node.containsKey("usage"))
-			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Usage should not be null!!");
+		if(!node.containsKey("categories"))
+			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Categories should not be null!!");
 		
 //		Map<String,Object> fee = node.containsKey("selfCertificationCharges") ? (Map<String, Object>)node.get("selfCertificationCharges") : new HashMap<>();
 		
@@ -357,7 +361,7 @@ public class CalculationService {
 		BigDecimal builtUpArea = new BigDecimal((String)node.get("builtUpArea")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD); //In Sq Yard
 		BigDecimal plotArea = new BigDecimal((String)node.get("area")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD);  //In Sq Yard
 		BigDecimal basementArea = BigDecimal.ZERO;
-		String category = (String)node.get("usage");
+		String category = StringUtils.isEmpty(node.get("categories")) ? null : node.get("categories").toString();
 		String approvedColony = (String)node.getOrDefault("approvedColony", "NO");
 //		String buildingStatus  = (String)node.getOrDefault("buildingStatus", "");
 		Map<String, Object> farDetails  = (Map<String, Object>)node.getOrDefault("farDetails", new HashMap<>());
@@ -450,6 +454,7 @@ public class CalculationService {
 			estimate.setTaxHeadCode(taxhead);
 			estimate.setAdjustedAmount(new BigDecimal(adjustedAmount.getOrDefault("adjustedAmount", "0").toString()));
 			estimate.setFilestoreId((String)adjustedAmount.getOrDefault("filestoreId", null));
+			estimate.setRemark((String)adjustedAmount.getOrDefault("remark", null));
 			estimates.add(estimate);
 			
 		});

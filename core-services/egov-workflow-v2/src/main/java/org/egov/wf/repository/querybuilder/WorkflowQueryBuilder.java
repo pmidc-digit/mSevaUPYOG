@@ -304,11 +304,8 @@ public class WorkflowQueryBuilder {
 
     public String getInboxIdQuery(ProcessInstanceSearchCriteria criteria, List<Object> preparedStmtList, Boolean isPaginationRequired){
 
-        String with_query = WITH_CLAUSE + " pi_outer.lastmodifiedTime = (" +
-                "SELECT max(lastmodifiedTime) from eg_wf_processinstance_v2 as pi_inner where pi_inner.businessid = pi_outer.businessid and tenantid = ? " +
-                ") ";
+        String with_query = WITH_CLAUSE +" latest=true ";
 
-        preparedStmtList.add(criteria.getTenantId());
         List<String> statuses = criteria.getStatus();
         List<String> tenantSpecificStatus = criteria.getTenantSpecifiStatus();
         StringBuilder with_query_builder = new StringBuilder(with_query);
@@ -356,10 +353,6 @@ public class WorkflowQueryBuilder {
             with_query_builder.append(" AND pi_outer.businessservice =? ");
             preparedStmtList.add(criteria.getBusinessService());
         }
-        if(!StringUtils.isEmpty(criteria.getModuleName())){
-            with_query_builder.append(" AND pi_outer.modulename =? ");
-            preparedStmtList.add(criteria.getModuleName());
-        }
         
         if(!ObjectUtils.isEmpty(criteria.getIsNearingSlaCount()) && criteria.getIsNearingSlaCount()){
             with_query_builder.append(" AND ((select extract(epoch from current_timestamp)) * 1000 - pi_outer.lastmodifiedTime) BETWEEN ? AND ? ");
@@ -367,7 +360,6 @@ public class WorkflowQueryBuilder {
             preparedStmtList.add(criteria.getSlotPercentageSlaLimit());
         }
         
-
         with_query_builder.append(" ORDER BY pi_outer.lastModifiedTime DESC ");
 
         if(isPaginationRequired)

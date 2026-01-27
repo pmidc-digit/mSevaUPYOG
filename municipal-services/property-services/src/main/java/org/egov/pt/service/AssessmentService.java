@@ -84,7 +84,8 @@ public class AssessmentService {
 		else {
 			calculationService.calculateTax(request, property);
 		}
-		producer.push(props.getCreateAssessmentTopic(), request);
+		String key = property.getPropertyId();
+		producer.push(props.getCreateAssessmentTopic(), key, request);
 
 		return request.getAssessment();
 	}
@@ -132,7 +133,8 @@ public class AssessmentService {
 			if(assessment.getWorkflow().getState().getState().equalsIgnoreCase(config.getDemandTriggerState()))
 				calculationService.calculateTax(request, property);
 
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 
 
 			/*
@@ -154,7 +156,8 @@ public class AssessmentService {
 		}
 		else if(!config.getIsAssessmentWorkflowEnabled()){
 			calculationService.calculateTax(request, property);
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 		}
 		return request.getAssessment();
 	}
@@ -196,7 +199,8 @@ public class AssessmentService {
 			if(assessment.getWorkflow().getState().getState().equalsIgnoreCase(config.getDemandTriggerState()))
 				calculationService.calculateTax(request, property);
 
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 
 
 			/*
@@ -218,7 +222,8 @@ public class AssessmentService {
 		}
 		else if(!config.getIsAssessmentWorkflowEnabled()){
 			calculationService.calculateTaxForCancel(request, property);
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 		}
 		return request.getAssessment();
 	}

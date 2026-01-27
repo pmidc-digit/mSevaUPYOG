@@ -3,6 +3,7 @@ package org.egov.infra.indexer.consumer.config;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -100,18 +101,15 @@ public class CoreIndexConsumerConfig implements ApplicationRunner {
     }
     
     public String setTopics(){
-    	String[] excludeArray = {pgrCreateTopic, pgrUpdateTopic, ptCreateTopic, ptUpdateTopic, pgrServicesCreateTopic, pgrServicesBatchCreateTopic,bpaCreateTopic,bpaUpdateTopic,bpaUpdateWorkflowTopic};
-    	int noOfExculdedTopics = 0;
+    	List<String> excludeList = Arrays.asList(pgrCreateTopic, pgrUpdateTopic, ptCreateTopic, ptUpdateTopic, pgrServicesCreateTopic, pgrServicesBatchCreateTopic,bpaCreateTopic,bpaUpdateTopic,bpaUpdateWorkflowTopic);
     	List<String> topicsList = runner.getTopicMaps().get(ConfigKeyEnum.INDEX.toString());
-    	for(String excludeTopic: excludeArray) {
-    		if(topicsList.contains(excludeTopic)) noOfExculdedTopics++;
-    	}
-    	String[] topicsArray = new String[topicsList.size() - noOfExculdedTopics];
-    	int i = 0;
-    	for(String topic : topicsList){
-    		if(Arrays.asList(excludeArray).contains(topic)) continue;
-    		topicsArray[i] = topic; i++;
-    	}
+    	
+    	List<String> finalTopicsList = new LinkedList<>(topicsList);
+    	
+    	finalTopicsList.removeAll(excludeList);
+    	
+    	String[] topicsArray = finalTopicsList.toArray(new String[0]);
+    	
     	this.topics = topicsArray;  
     	
     	log.info("Core: Topics intialized..");

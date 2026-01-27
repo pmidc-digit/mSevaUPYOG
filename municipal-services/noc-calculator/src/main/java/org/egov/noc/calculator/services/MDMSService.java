@@ -82,7 +82,8 @@ public class MDMSService {
         
         List<MasterDetail> sanctionFeeChargesDetails = new ArrayList<>();
         Long currentTime = System.currentTimeMillis();
-        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.Category == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+//        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.Category == '" + category + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
+        final String filterCodeForCharges = "$.[?(@.active==true && @.code=='" + code + "' && @.fromFY == '" + fromFY + "' && @.startingDate <= "+ currentTime +" && @.endingDate >= "+ currentTime +" )]";
         sanctionFeeChargesDetails.add(MasterDetail.builder().name(NOCConstants.MDMS_CHARGES_TYPE).filter(filterCodeForCharges).build());
         ModuleDetail fyModuleDtls = ModuleDetail.builder().masterDetails(sanctionFeeChargesDetails)
                 .moduleName(NOCConstants.NOC_MODULE.toLowerCase()).build();

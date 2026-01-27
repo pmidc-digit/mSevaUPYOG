@@ -64,7 +64,8 @@ public class PropertyConfiguration {
     @Value("${persister.migration.batch.count.topic}")
     private String migartionBatchCountTopic;
 
-
+    @Value("${kafka.topics.assessment.success.topic}")
+    private String assessmentPerisiterTopic;
 
     @Value("${pmidc.auth.host}")
     private String pmidcAuthHost;

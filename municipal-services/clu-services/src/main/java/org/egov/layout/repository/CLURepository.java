@@ -45,7 +45,7 @@ public class CLURepository {
 	 * @param nocRequest
 	 */
 	public void save(CluRequest nocRequest) {
-		producer.push(config.getSaveTopic(), nocRequest);
+		producer.push(config.getSaveTopic(),nocRequest.getLayout().getApplicationNo(), nocRequest);
 	}
 	
 	/**
@@ -56,9 +56,9 @@ public class CLURepository {
 	public void update(CluRequest nocRequest, boolean isStateUpdatable) {
 		log.info("Pushing NOC record with application status - "+nocRequest.getLayout().getApplicationStatus());
 		if (isStateUpdatable) {
-			producer.push(config.getUpdateTopic(), nocRequest);
+			producer.push(config.getUpdateTopic(),nocRequest.getLayout().getApplicationNo(), nocRequest);
 		} else {
-		    producer.push(config.getUpdateWorkflowTopic(), nocRequest);
+		    producer.push(config.getUpdateWorkflowTopic(),nocRequest.getLayout().getApplicationNo(), nocRequest);
 		}
 	}
 	/**
@@ -113,11 +113,11 @@ public class CLURepository {
 	}
 
 	public void saveDocumentCheckList(CheckListRequest checkListRequest) {
-		producer.push(config.getSaveCheckListTopic(), checkListRequest);
+		producer.push(config.getSaveCheckListTopic(),checkListRequest.getCheckList().get(0).getApplicationNo(), checkListRequest);
 	}
 
 	public void updateDocumentCheckList(CheckListRequest checkListRequest) {
-		producer.push(config.getUpdateCheckListTopic(), checkListRequest);
+		producer.push(config.getUpdateCheckListTopic(),checkListRequest.getCheckList().get(0).getApplicationNo(), checkListRequest);
 	}
 
 }

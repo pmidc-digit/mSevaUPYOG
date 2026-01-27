@@ -21,7 +21,7 @@ public class CLUConsumer {
 	private NOCNotificationService notificationService;
 	
 	@KafkaListener(topics = { "${persister.save.clu.topic}", "${persister.update.clu.topic}",
-			"${persister.update.clu.workflow.topic}" })
+			"${persister.update.clu.workflow.topic}" },concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		ObjectMapper mapper = new ObjectMapper();
 		CluRequest nocRequest = new CluRequest();

@@ -51,8 +51,18 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const onSubmit = (data) => {
     trigger()
 
-    // Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
-    const isEqual = data?.netTotalArea === data?.specificationPlotArea || false
+    // Validation for Jamabandi Area Must Be Equal To Total Plot Area (areaLeftForRoadWidening)
+    // Helper function to normalize numeric values for comparison
+    const normalizeValue = (val) => {
+      if (val === null || val === undefined) return NaN;
+      const num = Number(val);
+      return Number.isNaN(num) ? NaN : num;
+    };
+
+    const jamabandi = normalizeValue(data?.specificationPlotArea);
+    const totalPlotArea = normalizeValue(data?.areaLeftForRoadWidening);
+
+    const isEqual = !Number.isNaN(jamabandi) && !Number.isNaN(totalPlotArea) && jamabandi === totalPlotArea;
 
     if (!isEqual) {
       setShowToast({ key: "true", error: true, message: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)" })
@@ -76,18 +86,19 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     console.log("  Form data for CREATE API:", formData);
 
-    const transformedSiteDetails = {
-      ...formData?.siteDetails,
-      ulbName: formData?.siteDetails?.ulbName?.name || "",
-      roadType: formData?.siteDetails?.roadType || "",
-      buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
-      isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
-      district: formData?.siteDetails?.district?.name || "",
-      zone: formData?.siteDetails?.zone?.name || "",
-      specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
-      specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
-      specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
-      specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
+    // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
+    const convertDateToDDMMYYYY = (dateString) => {
+      if (!dateString) return null;
+      try {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      } catch (error) {
+        console.warn("Error converting date:", error);
+        return dateString; // Return original if conversion fails
+      }
     };
 
     // Build applicants array: Primary applicant from form fields + additional applicants
@@ -106,6 +117,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       additionalDetails: {
         documentFile: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || null,
         ownerPhoto: formData?.photoUploadedFiles?.[0]?.fileStoreId || formData?.photoUploadedFiles?.[0] || null,
+        panFile: formData?.panUploadedFiles?.[0]?.fileStoreId || formData?.panUploadedFiles?.[0] || null,
       },
     });
 
@@ -121,20 +133,18 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           dob: applicant?.dob ? Digit.Utils.pt.convertDateToEpoch(applicant?.dob) : null,
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
           permanentAddress: applicant?.address || "",
+          panNumber: applicant?.panNumber || "",
           additionalDetails: {
             documentFile: formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,
             ownerPhoto: formData?.photoUploadedFiles?.[index + 1]?.fileStoreId || formData?.photoUploadedFiles?.[index + 1] || null,
+            panFile: formData?.panUploadedFiles?.[index + 1]?.fileStoreId || formData?.panUploadedFiles?.[index + 1] || null,
           },
         });
       });
     }
 
-    // Build transformedApplicationDetails (owners NOT here - only at top level)
-    const transformedApplicationDetails = {
-      ...formData?.applicationDetails,
-      applicantGender: formData?.applicationDetails?.applicantGender,  // Keep full object
-    };
-
+    // Following CLU pattern: Put entire formData in additionalDetails
+    // This ensures all form data (applicant, professional, site, documents, files, etc.) reaches backend
     const payload = {
       Layout: {
         applicationType: "NEW",
@@ -146,13 +156,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           action: "INITIATE",
         },
         layoutDetails: {
-          additionalDetails: {
-            applicationDetails: transformedApplicationDetails,
-            siteDetails: transformedSiteDetails,
-          },
+          additionalDetails: formData,  // ← Include ENTIRE formData like CLU does
           tenantId: tenantId,
         },
         owners: applicants,  // ← Top-level owners array for backend
+        vasikaDate: convertDateToDDMMYYYY(formData?.siteDetails?.vasikaDate),  // ← Top-level vasika date
+        vasikaNumber: formData?.siteDetails?.vasikaNumber || "",  // ← Top-level vasika number
       },
     };
 
@@ -200,10 +209,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-          <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+           <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+           <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+           <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          
           <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+         
         </div>
         <ActionBar>
           <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />

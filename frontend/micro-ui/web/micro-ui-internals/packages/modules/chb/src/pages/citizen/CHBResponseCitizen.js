@@ -49,8 +49,8 @@ const CHBResponseCitizen = (props) => {
           applicationNumber={ndcCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`CHB_APPROVAL_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
-          style={{ padding: "10px" }}
-          headerStyles={{ fontSize: "clamp(20px, 4vw, 32px)", wordBreak: "break-word" }}
+          className="stepper"
+          headerStyles={{ className: "chb-banner-header" }}
 
         />
         {/* {nocData?.applicationStatus !== "REJECTED" ? (
@@ -58,7 +58,7 @@ const CHBResponseCitizen = (props) => {
             {t(`NDC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
           </CardText>
         ) : null} */}
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
+        <ActionBar className="chb-action-bar-response">
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_CHB")} onSubmit={onGoToCHB} />
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} />

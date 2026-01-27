@@ -493,12 +493,14 @@ export const CreateComplaint = ({ parentUrl }) => {
     }
   }, [propertyId]);
   return (
+    <div className="card">
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}
       onSubmit={wrapperSubmit}
       isDisabled={!canSubmit && !submitted}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
-    />
+      />
+    </div>
   );
 };

@@ -205,17 +205,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           {/* SELECT_HALL_NAME */}
           <div className="label-field-pair">
             <CardLabel>
-              {t("SELECT_HALL_NAME")} <span style={{ color: "red" }}>*</span>
+              {t("SELECT_HALL_NAME")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field w-fullwidth">
               <Controller
                 control={control}
                 name={"siteId"}
                 rules={{ required: t("HALL_NAME_REQ") }}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0 }}
-                    className="form-field"
+                    className="form-field chb-form-field-margin"
                     select={(e) => {
                       props.onChange(e);
                       fiterHalls(e);
@@ -232,25 +231,24 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.siteId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.siteId.message}</p>}
+              {errors.siteId && <p className="chb-error-text">{errors.siteId.message}</p>}
             </div>
           </div>
 
           {/* SELECT_DATE */}
-          <div className="label-field-pair" style={{ marginTop: "20px" }}>
+          <div className="label-field-pair chb-margin-top-20">
             <CardLabel>
-              {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
+              {t("SELECT_DATE")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field w-fullwidth">
               <Controller
                 control={control}
                 name={"startDate"}
                 rules={{ required: t("START_DATE_REQ") }}
                 render={(props) => (
                   <TextInput
-                    style={{ marginBottom: 0 }}
                     type={"date"}
-                    className="form-field"
+                    className="form-field chb-form-field-margin"
                     value={props.value}
                     min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
@@ -264,16 +262,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.startDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.startDate.message}</p>}
+              {errors.startDate && <p className="chb-error-text">{errors.startDate.message}</p>}
             </div>
           </div>
 
           {/* SELECT End DATE */}
-          <div className="label-field-pair" style={{ marginTop: "20px" }}>
+          <div className="label-field-pair chb-margin-top-20">
             <CardLabel>
-              {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
+              {t("SELECT_END_DATE")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field w-fullwidth">
               <Controller
                 control={control}
                 name={"endDate"}
@@ -296,9 +294,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 }}
                 render={(props) => (
                   <TextInput
-                    style={{ marginBottom: 0 }}
                     type={"date"}
-                    className="form-field"
+                    className="form-field chb-form-field-margin"
                     value={props.value}
                     // min={
                     //   startDate
@@ -318,24 +315,23 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.endDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.endDate.message}</p>}
+              {errors.endDate && <p className="chb-error-text">{errors.endDate.message}</p>}
             </div>
           </div>
 
           {/* HALL_CODE */}
-          <div className="label-field-pair" style={{ marginTop: "20px" }}>
+          <div className="label-field-pair chb-margin-top-20">
             <CardLabel>
-              {t("HALL_CODE")} <span style={{ color: "red" }}>*</span>
+              {t("HALL_CODE")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
+            <div className="form-field w-fullwidth">
               <Controller
                 control={control}
                 name={"hallCode"}
                 rules={{ required: t("HALL_CODE_REQ") }}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0 }}
-                    className="form-field"
+                    className="form-field chb-form-field-margin"
                     select={(e) => {
                       props.onChange(e);
                       slotsSearch(e);
@@ -347,17 +343,17 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.hallCode && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.hallCode.message}</p>}
+              {errors.hallCode && <p className="chb-error-text">{errors.hallCode.message}</p>}
             </div>
           </div>
 
           {/* AVAILABLE_SLOTS */}
           {getSlots?.length > 0 && (
-            <div className="label-field-pair" style={{ marginTop: "20px", marginBottom: "20px" }}>
+            <div className="label-field-pair chb-margin-top-20 chb-margin-bottom-20">
               <CardLabel>
-                {t("AVAILABLE_SLOTS")} <span style={{ color: "red" }}>*</span>
+                {t("AVAILABLE_SLOTS")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="form-field" style={{ width: "100%" }}>
+              <div className="form-field w-fullwidth">
                 <Controller
                   control={control}
                   name="slots"
@@ -371,12 +367,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   }}
                   render={(field) => (
                     <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                        gap: "16px",
-                        width: "100%",
-                      }}
+                      className="chb-slot-grid"
                     >
                       {getSlots?.map((slot, idx) => {
                         const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
@@ -390,20 +381,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         const isAvailable = slot.slotStaus?.toLowerCase() === "available";
 
                         return (
-                          <label
-                            key={slotKey}
-                            style={{
-                              border: "1px solid #ccc",
-                              borderRadius: "8px",
-                              padding: "12px",
-                              backgroundColor: isAvailable ? "#e6ffed" : "#ffe6e6",
-                              cursor: isAvailable ? "pointer" : "not-allowed",
-                              opacity: isAvailable ? 1 : 0.6,
-                              // display: "flex",
-                              flexDirection: "column",
-                              gap: "6px",
-                            }}
-                          >
+                          <label key={slotKey} className={`chb-slot-card ${!isAvailable ? 'chb-slot-card--unavailable' : ''}`}>
                             {/* <input
                             type="checkbox"
                             checked={isChecked}
@@ -481,14 +459,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                                 }
                               }}
                             />
-                            <span style={{ marginLeft: "10px" }}>
+                            <span className="chb-slot-text">
                               {slot.bookingDate} ({slot.hallCode}) –{" "}
-                              <span
-                                style={{
-                                  color: slot.slotStaus === "AVAILABLE" ? "green" : "red",
-                                  fontWeight: "bold",
-                                }}
-                              >
+                                <span className={`chb-slot-status ${slot.slotStaus !== "AVAILABLE" ? 'chb-slot-status--unavailable' : ''}`}>
                                 {slot.slotStaus ? slot.slotStaus.charAt(0).toUpperCase() + slot.slotStaus.slice(1).toLowerCase() : ""}
                               </span>
                             </span>
@@ -498,18 +471,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     </div>
                   )}
                 />
-                {errors.slots && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.slots.message}</p>}
+                {errors.slots && <p className="chb-error-text">{errors.slots.message}</p>}
               </div>
             </div>
           )}
 
           <div style={{ display: showInfo ? "block" : "none" }}>
             {/* CHB_PURPOSE */}
-            <div className="label-field-pair" style={{ marginTop: "20px" }}>
+            <div className="label-field-pair chb-margin-top-20">
               <CardLabel>
-                {t("CHB_PURPOSE")} <span style={{ color: "red" }}>*</span>
+                {t("CHB_PURPOSE")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="form-field" style={{ width: "100%" }}>
+              <div className="form-field w-fullwidth">
                 <Controller
                   control={control}
                   name={"purpose"}
@@ -517,8 +490,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   rules={{ required: t("CHB_PURPOSE_REQUIRED") }}
                   render={(props) => (
                     <Dropdown
-                      style={{ marginBottom: 0 }}
-                      className="form-field"
+                      className="form-field chb-form-field-margin"
                       select={props.onChange}
                       selected={props.value}
                       option={CHBPurpose?.CHB?.Purpose}
@@ -526,16 +498,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.purpose && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purpose.message}</p>}
+                {errors.purpose && <p className="chb-error-text">{errors.purpose.message}</p>}
               </div>
             </div>
 
             {/* CHB_SPECIAL_CATEGORY */}
-            <div className="label-field-pair" style={{ marginTop: "20px" }}>
+            <div className="label-field-pair chb-margin-top-20">
               <CardLabel>
-                {t("CHB_SPECIAL_CATEGORY")} <span style={{ color: "red" }}>*</span>
+                {t("CHB_SPECIAL_CATEGORY")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="form-field" style={{ width: "100%" }}>
+              <div className="form-field w-fullwidth">
                 <Controller
                   control={control}
                   name={"specialCategory"}
@@ -543,8 +515,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   rules={{ required: t("CHB_SPECIAL_CATEGORY_REQUIRED") }}
                   render={(props) => (
                     <Dropdown
-                      style={{ marginBottom: 0 }}
-                      className="form-field"
+                      className="form-field chb-form-field-margin"
                       select={props.onChange}
                       selected={props.value}
                       option={SpecialCategory?.CHB?.SpecialCategory}
@@ -552,16 +523,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.specialCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specialCategory.message}</p>}
+                {errors.specialCategory && <p className="chb-error-text">{errors.specialCategory.message}</p>}
               </div>
             </div>
 
             {/* CHB_PURPOSE_DESCRIPTION */}
-            <div className="label-field-pair" style={{ marginTop: "20px" }}>
+            <div className="label-field-pair chb-margin-top-20">
               <CardLabel>
-                {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
+                {t("CHB_PURPOSE_DESCRIPTION")} <span className="mandatory-asterisk">*</span>
               </CardLabel>
-              <div className="form-field" style={{ width: "100%" }}>
+              <div className="form-field w-fullwidth">
                 <Controller
                   control={control}
                   name={"purposeDescription"}
@@ -572,7 +543,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   }}
                   render={(props) => (
                     <TextArea
-                      style={{ marginBottom: 0, marginTop: 0 }}
+                      className="chb-form-field-margin"
                       type={"textarea"}
                       value={props.value}
                       onChange={(e) => {
@@ -585,7 +556,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   )}
                 />
                 {errors.purposeDescription && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purposeDescription.message}</p>
+                  <p className="chb-error-text">{errors.purposeDescription.message}</p>
                 )}
               </div>
             </div>
@@ -593,7 +564,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             {!isCitizen && (
               <React.Fragment>
                 {/* Discount Amount */}
-                <div className="label-field-pair" style={{ marginTop: "20px" }}>
+                <div className="label-field-pair chb-margin-top-20">
                   <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
                   <Controller
                     control={control}
@@ -601,7 +572,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     render={(props) => (
                       <TextInput
                         type="number"
-                        style={{ marginBottom: 0, width: "100%" }}
+                        className="chb-form-field-margin w-fullwidth"
                         value={props.value}
                         error={errors?.name?.message}
                         onChange={(e) => {
@@ -617,7 +588,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
 
                 {/* Discount Reason */}
-                <div className="label-field-pair" style={{ marginTop: "20px" }}>
+                <div className="label-field-pair chb-margin-top-20">
                   <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
                     control={control}
@@ -625,7 +596,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     render={(props) => (
                       <TextInput
                         type="text"
-                        style={{ marginBottom: 0, width: "100%" }}
+                        className="chb-form-field-margin w-fullwidth"
                         value={props.value}
                         error={errors?.name?.message}
                         onChange={(e) => {

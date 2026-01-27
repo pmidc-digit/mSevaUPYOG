@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
 import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
+  const applicantDetailsRef = useRef(null);
 
   const currentStepData = useSelector(function (state) {
     return state.obps.LayoutNewApplicationFormReducer.formData;
@@ -26,11 +27,12 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
     trigger,
   } = useForm();
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle};
+  const commonProps = { Controller, control, setValue, reset, errors, trigger, errorStyle};
 
   const onSubmit = (data) => {
     //console.log("data in first step", data);
@@ -40,6 +42,16 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
       console.log("Plz fill mandatory fields in Step1");
       return;
     }
+
+    // Validate additional applicants
+    if (applicantDetailsRef.current && applicantDetailsRef.current.validateAdditionalApplicants) {
+      const isValid = applicantDetailsRef.current.validateAdditionalApplicants();
+      if (!isValid) {
+        console.log("Additional applicants validation failed");
+        return;
+      }
+    }
+
     goNext(data);
   };
 
@@ -104,12 +116,13 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
             
         {isRegisteredStakeHolder ? (
             <React.Fragment>
-             <LayoutApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-             <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+                <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+             <LayoutApplicantDetails ref={applicantDetailsRef} onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+           
             </React.Fragment>
           ): (
             <React.Fragment>
-             <LayoutApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+             <LayoutApplicantDetails ref={applicantDetailsRef} onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           )
         }   

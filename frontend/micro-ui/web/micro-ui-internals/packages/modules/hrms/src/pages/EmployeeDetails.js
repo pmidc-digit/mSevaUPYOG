@@ -64,7 +64,7 @@ const Details = () => {
 
   return (
     <React.Fragment>
-      <div className="hrms-header-wrapper" style={{ fontFamily: "calibri", color: "#FF0000" }}>
+      <div className="hrms-header-wrapper hrms-header-wrapper--error">
         <Header>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</Header>
       </div>
       {!isLoading && data?.Employees.length > 0 ? (
@@ -126,7 +126,7 @@ const Details = () => {
               </StatusTable>
             ) : null}
 
-            {data?.Employees?.[0]?.documents ? <StatusTable className="hrms-mb-xl" style={{ marginBottom: "40px" }}>
+            {data?.Employees?.[0]?.documents ? <StatusTable className="hrms-mb-xl hrms-spacing--documents">
               <Row label={t("TL_APPROVAL_UPLOAD_HEAD")} text={""} />
               <div className="hrms-flex hrms-flex-wrap">
                 {data?.Employees?.[0]?.documents?.map((document, index) => {

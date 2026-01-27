@@ -1,16 +1,8 @@
 import React from "react";
+import { getBadgeClassName } from "../../utils/styleUtils";
 
-const BadgeCell = ({ value, style }) => (
-  <span
-    style={{
-      display: "inline-block",
-      padding: "4px 12px",
-      borderRadius: "12px",
-      fontSize: "13px",
-      fontWeight: "500",
-      ...style,
-    }}
-  >
+const BadgeCell = ({ value, type }) => (
+  <span className={getBadgeClassName(type)}>
     {value || "N/A"}
   </span>
 );

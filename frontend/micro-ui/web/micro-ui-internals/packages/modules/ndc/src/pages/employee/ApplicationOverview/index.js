@@ -11,6 +11,7 @@ import {
   RadioButtons,
   CardLabel,
   TextInput,
+  LinkButton
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -20,7 +21,7 @@ import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { Loader } from "../../../components/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-
+import getAcknowledgementData from "../../../getAcknowlegment";
 const availableOptions = [
   { code: "yes", name: "Yes" },
   { code: "no", name: "No" },
@@ -50,6 +51,7 @@ const ApplicationOverview = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
+  const [approver, setApprover] = useState(null);
 
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
@@ -142,6 +144,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isCemp = user?.info?.roles.filter(role => role.code === "CEMP")
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -217,6 +220,31 @@ const ApplicationOverview = () => {
     }
   }, [applicationDetails]);
 
+  const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const Property = applicationDetails;
+      const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+      const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+
+      Property.propertyOwnerNames = propertyOwnerNames;
+
+      console.log("propertyOwnerNames", propertyOwnerNames);
+      const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
+      console.log("tenantInfo", tenantInfo);
+      const ulbType = tenantInfo?.city?.ulbType;
+      const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
+
+      console.log("acknowledgementData", acknowledgementData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateNDC(acknowledgementData);
+        setLoader(false);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+      setLoader(false);
+    }
+  };
   function onActionSelect(action) {
     console.log("action====???", action?.state?.actions);
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
@@ -234,7 +262,7 @@ const ApplicationOverview = () => {
     console.log("action test", action?.action);
 
     const checkactionApp = action?.action == "APPROVE";
-    ("");
+    
 
     console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
 
@@ -360,6 +388,19 @@ const ApplicationOverview = () => {
     setShowModal(false);
   };
 
+
+  useEffect(() => {
+      if (workflowDetails) {
+        console.log("workflowDetails here", workflowDetails);
+        const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
+  
+        const name = approveInstance?.assigner?.name || "NA";
+  
+        setApprover(name);
+      }
+    }, [workflowDetails]);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   useEffect(() => {
     if (displayData) {
       const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
@@ -379,6 +420,7 @@ const ApplicationOverview = () => {
 
   console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
 
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (toastRef.current && !toastRef.current.contains(event.target)) {
@@ -394,12 +436,36 @@ const ApplicationOverview = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showToast]);
+  let address, formattedAddress;
+  
+    if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
+      address = propertyDetailsFetch.Properties[0].address;
+      formattedAddress = [
+        address?.doorNo,
+        address?.buildingName, // colony/building
+        address?.street,
+        address?.locality?.name, // locality name
+        address?.city,
+      ]
+        .filter(Boolean)
+        .join(", ");
+    }
+
+    if (isLoading || isDetailsLoading) {
+      return <Loader />;
+    }
 
   return (
     <div className={"employee-main-application-details"}>
       {/* <div>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
+      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
+
+        {isCemp && (
+          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
+        )}
+      </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>

@@ -1,8 +1,11 @@
 import React, { use, useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Loader } from "./Loader";
 import EXIF from "exif-js";
-import NOCCustomUploadFile from "../pageComponents/NOCCustomUploadFile";
+import ImageCaptureModal from "../pageComponents/ImageCaptureModal";
+
+const maxImageSize = process.env.IMAGE_MAX_UPLOAD_SIZE || 11534336;
+const imageSize = process.env.IMAGE_UPLOAD_SIZE || 2097152;
 
 const ChallanDocuments = ({
   t,
@@ -20,9 +23,6 @@ const ChallanDocuments = ({
   customOpen
 }) => {
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
-
-  console.log('documents for field insepecttion in challan', documents)
-  console.log('data for challandocs', data)
   // const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -38,18 +38,18 @@ const ChallanDocuments = ({
   function onAdd() {}
 
   useEffect(() => {
-      let count = 0;
-      data?.FieldInspection?.Documents?.map((doc) => {
-        doc.hasDropdown = true;
-        let isRequired = false;
-        documents?.map((data) => {
-          if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
-        });
-        if (!isRequired && doc.required) count = count + 1;
+    let count = 0;
+    data?.FieldInspection?.Documents?.map((doc) => {
+      doc.hasDropdown = true;
+
+      let isRequired = false;
+      documents?.map((data) => {
+        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
-      if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
-      else setEnableSubmit(true);
-    
+      if (!isRequired && doc.required) count = count + 1;
+    });
+    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
+    else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
   useEffect(() => {
@@ -90,6 +90,52 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const mobile = window?.Digit?.Utils?.browser?.isMobile();
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const onClose = () => {
+    setShowCameraModal(false);
+  }
+  function routeTo(filestoreId) {
+    if (customOpen) {
+      customOpen(filestoreId);
+    } else {
+      getUrlForDocumentView(filestoreId);
+    }
+  }
+
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    setLoading(true);
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], Digit.ULBService.getStateId());
+      setLoading(false);
+      if (result?.data) {
+        const fileUrl = result.data[filestoreId];
+        if (fileUrl) {
+          window.open(fileUrl, "_blank");
+        } else {
+          if (setError) {
+            setError(t("CS_FILE_FETCH_ERROR"));
+          } else {
+            console.error(t("CS_FILE_FETCH_ERROR"));
+          }
+        }
+      } else {
+        if (setError) {
+          setError(t("CS_FILE_FETCH_ERROR"));
+        } else {
+          console.error(t("CS_FILE_FETCH_ERROR"));
+        }
+      }
+    } catch (e) {
+      setLoading(false);
+      if (setError) {
+        setError(t("CS_FILE_FETCH_ERROR"));
+      } else {
+        console.error(t("CS_FILE_FETCH_ERROR"));
+      }
+    }
+  };
   // const [selectedDocument, setSelectedDocument] = useState(
   //   filteredDocument
   //     ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
@@ -121,7 +167,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     const fileType = file.type.toLowerCase();
 
     // ✅ Case 1: Handle image files with EXIF
-    if (fileType && (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png"))) {
+    if (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png")) {
       const reader = new FileReader();
       reader.onload = function () {
         const img = new Image();
@@ -155,7 +201,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     }
     // ✅ Case 2: Handle PDFs or other file types
     else {
-      alert("Please upload a photo with location details.");
+      console.log("📄 Non-image file uploaded, skipping EXIF read");
+      setFile(file);
+      updateDocument(selectedDocument, {}); // no lat/long
     }
   }
 
@@ -263,21 +311,26 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     (async () => {
       setError(null);
       if (file) {
+        let newFile;
         setLoading(true);
-        
-          try {
-              setUploadedFile(null);
-              const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
-              setLoading(false);
-              if (response?.data?.files?.length > 0) {
-                  setUploadedFile(response?.data?.files[0]?.fileStoreId);
-              } else {
-                  setError(t("CS_FILE_UPLOAD_ERROR"));
-              }
-          } catch (err) {
-              setLoading(false);
-              setError(t("CS_FILE_UPLOAD_ERROR"));
+        if (file.size > imageSize) {
+          newFile = await Digit.Utils.compressImage(file);
+        } else {
+          newFile = file;
+        }
+        try {
+          setUploadedFile(null);
+          const response = await Digit.UploadServices.Filestorage("PTR", newFile, Digit.ULBService.getStateId());
+          setLoading(false);
+          if (response?.data?.files?.length > 0) {
+            setUploadedFile(response?.data?.files[0]?.fileStoreId);
+          } else {
+            setError(t("CS_FILE_UPLOAD_ERROR"));
           }
+        } catch (err) {
+          setLoading(false);
+          setError(t("CS_FILE_UPLOAD_ERROR"));
+        }
       }
     })();
   }, [file]);
@@ -285,6 +338,13 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   useEffect(() => {
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
+
+  const onCapture = (file, meta) => {
+    console.log("Captured file:", file, meta);
+    setFile(file);
+    updateDocument(selectedDocument, { latitude: Number(meta.latitude), longitude: Number(meta.longitude), timestamp: meta.timestamp });
+    setShowCameraModal(false);
+  };
 
   return (
     <div style={{ marginBottom: "24px" }}>
@@ -314,7 +374,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field" style={{ width: "100%" }}>
-          <NOCCustomUploadFile
+          {/* <CustomUploadFile
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
@@ -323,15 +383,42 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept="image/*" 
+            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
             uploadedFile={uploadedFile}
             customOpen={customOpen}
-          />
+          /> */}
+          <div className={`upload-file upload-file-max-width`}>
+            <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", flexWrap: "wrap", margin: "0px", padding: "0px" }}>
+              <div style={{ height: "auto", minHeight: "40px", width: "43%", maxHeight: "40px", margin: "5px", padding: "0px", }}>
+                <SubmitBar
+                  label={t("CAPTURE_IMAGE")}
+                  onSubmit={() => {
+                    // if(mobile){
+                    setShowCameraModal(true);
+                    // }else{
+                    //   setError(t("CS_MOBILE_CAMERA_ERROR"));
+                    // }                    
+                  }}
+                />
+              </div>
+              {uploadedFile &&
+                <div style={!mobile ? { margin: "0px", display: "flex", justifyContent: "center", padding: "0px", width: "46%" } : { width: "80%", display: "flex", marginBottom: "10px", justifyContent: "center" }}>
+                  <SubmitBar
+                    onSubmit={() => {
+                      routeTo(uploadedFile);
+                    }}
+                    label={t("CS_VIEW_DOCUMENT")}
+                  />
+                </div>}
+            </div>
+          </div>
+
         </div>
       </LabelFieldPair>
       {getLoading && <Loader page={true} />}
+      {showCameraModal && <ImageCaptureModal onCapture={onCapture} onClose={onClose} />}
     </div>
   );
 }

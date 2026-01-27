@@ -206,45 +206,45 @@ export const pdfDownloadLinkUpdated = (documents = {}, fileStoreId = "") => {
 };
 
 
-export function buildFeeHistoryByTax(
-  calculations = [],
-  { newestFirst = true, limit = null } = {}
-) {
+
+export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {
   const map = {};
   if (!Array.isArray(calculations)) return map;
-
-  calculations.forEach((calc) => {
-    const who = calc?.updatedBy || null;
+  const calcs = [...calculations];
+  calcs.sort((a, b) => (a.when || 0) - (b.when || 0));
+  const prevEstimates = {};
+  calcs.forEach((calc) => {
     const estimates = calc?.taxHeadEstimates || [];
-
+    let anyChanged = false;
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
-
+      const prev = prevEstimates[th.taxHeadCode];
+      const curr = th?.estimateAmount ?? null;
+      if (prev !== curr) anyChanged = true;
+    });
+    estimates.forEach((th) => {
+      if (!th?.taxHeadCode) return;
+      prevEstimates[th.taxHeadCode] = th?.estimateAmount ?? null;
+    });
+    if (!anyChanged) return;
+    estimates.forEach((th) => {
+      if (!th?.taxHeadCode) return;
       map[th.taxHeadCode] = map[th.taxHeadCode] || [];
-
-      const lastEntry = map[th.taxHeadCode][map[th.taxHeadCode].length - 1];
-
-      // Only add if estimateAmount differs from last entry
-      if (!lastEntry || lastEntry.estimateAmount !== th?.estimateAmount) {
-        map[th.taxHeadCode].push({
-          who,
-          estimateAmount: th?.estimateAmount ?? null,
-          remarks: th?.remarks ?? null, // still stored, but not part of uniqueness check
-          isLatest: calc?.isLatest ?? false,
-        });
-      }
+      map[th.taxHeadCode].push({
+        who: calc?.updatedBy ?? null,
+        estimateAmount: th?.estimateAmount ?? null,
+        remarks: th?.remarks ?? null,
+        isLatest: calc?.isLatest ?? false,
+        when: calc?.when ?? null,
+      });
     });
   });
-
   Object.keys(map).forEach((k) => {
-    if (newestFirst) {
-      map[k].sort((a, b) => (b.when || 0) - (a.when || 0));
-    }
+    map[k].sort((a, b) => (newestFirst ? (b.when || 0) - (a.when || 0) : (a.when || 0) - (b.when || 0)));
     if (limit && typeof limit === "number") {
       map[k] = map[k].slice(0, limit);
     }
   });
-
   return map;
 }
 

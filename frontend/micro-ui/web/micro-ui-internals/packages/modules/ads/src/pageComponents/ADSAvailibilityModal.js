@@ -38,13 +38,9 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
 
   // Already in cart for this ad
   const existingForAd =
-  cartSlots?.find(
-    (item) =>
-      item?.ad?.id === ad?.id &&
-      item?.ad?.bookingStartDate === dateRange?.startDate &&
-      item?.ad?.bookingEndDate === dateRange?.endDate
-  )?.slots || [];
-
+    cartSlots?.find(
+      (item) => item?.ad?.id === ad?.id && item?.ad?.bookingStartDate === dateRange?.startDate && item?.ad?.bookingEndDate === dateRange?.endDate
+    )?.slots || [];
 
   // Header note: all booked
   const allBooked = slots?.length > 0 && slots?.every((s) => s?.slotStaus !== "AVAILABLE");
@@ -67,28 +63,32 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       setSelectedSlots([]);
     }
   };
-// Commit changes to parent
+  // Commit changes to parent
   const handleAddToCart = () => {
-  if (selectedSlots?.length > 0) {
-// Add or update slots
-    onSelectSlot(selectedSlots, {
-      ...ad,
-      faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
-      location: ad?.name,
-      addType: ad?.adType,
-      amount: ad?.amount,
-      bookingDate: dateRange?.startDate,
-      nightLight: ad?.light === "With Light",
-      bookingStartDate: dateRange?.startDate,
-      bookingEndDate: dateRange?.endDate,
-    }, dateRange); // 👈 pass dateRange explicitly
-  } else if (existingForAd?.length > 0) {
-    onRemoveSlot(ad, dateRange); // 👈 pass dateRange explicitly
-  }
+    if (selectedSlots?.length > 0) {
+      // Add or update slots
+      onSelectSlot(
+        selectedSlots,
+        {
+          ...ad,
+          faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
+          location: ad?.name,
+          addType: ad?.adType,
+          amount: ad?.amount,
+          bookingDate: dateRange?.startDate,
+          nightLight: ad?.light === "With Light",
+          bookingStartDate: dateRange?.startDate,
+          bookingEndDate: dateRange?.endDate,
+        },
+        dateRange
+      ); // 👈 pass dateRange explicitly
+    } else if (existingForAd?.length > 0) {
+      onRemoveSlot(ad, dateRange); // 👈 pass dateRange explicitly
+    }
     setSelectedSlots([]);
     setSelectAll(false);
     onClose();
-};
+  };
 
   // When modal opens, seed selectAll from allInCart
   useEffect(() => {
@@ -100,15 +100,14 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   const hasChanges = !areSlotsEqual(selectedSlots, existingForAd);
 
   useEffect(() => {
-  if (ad?.id && existingForAd?.length > 0) {
-    setSelectAll(true);
-    setSelectedSlots(existingForAd);
-  } else {
-    setSelectAll(false);
-    setSelectedSlots([]);
-  }
-}, [ad, dateRange]);
-
+    if (ad?.id && existingForAd?.length > 0) {
+      setSelectAll(true);
+      setSelectedSlots(existingForAd);
+    } else {
+      setSelectAll(false);
+      setSelectedSlots([]);
+    }
+  }, [ad, dateRange]);
 
   // Table columns
   const columns = [
@@ -155,15 +154,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       Cell: ({ row }) => {
         const status = row?.original?.slotStaus;
         const isAvailable = status === "AVAILABLE";
-        return (
-          <span
-            className={`ads-status ${
-      isAvailable ? "ads-status--available" : "ads-status--unavailable"
-    }`}
-          >
-            {status}
-          </span>
-        );
+        return <span className={`ads-status ${isAvailable ? "ads-status--available" : "ads-status--unavailable"}`}>{status}</span>;
       },
     },
   ];
@@ -173,7 +164,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       <div className="ads-cart-modal">
         {/* Header */}
         <div className="ads-cart-header">
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>
+          <h2 className="ads-availibility-for-title">
             {t("ADS_AVAILIBILITY_FOR")} {ad?.name} {allBooked && <span className="ads-header-note">{t("ADS_ALL_SLOTS_BOOKED")}</span>}
           </h2>
           <button onClick={onClose} className="ads-cart-close">
@@ -201,20 +192,11 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         </div>
 
         {/* Footer */}
-        <div
-          className="ads-modal-footer"
-        >
-          <button
-            onClick={onClose}
-            className="ads-btn-cancel"
-          >
+        <div className="ads-modal-footer">
+          <button onClick={onClose} className="ads-btn-cancel">
             {t ? t("Cancel") : "Cancel"}
           </button>
-          <button
-            onClick={handleAddToCart}
-            disabled={!hasChanges}
-            className={`ads-btn-cart ${!hasChanges ? "ads-btn-cart--disabled" : ""}`}
-          >
+          <button onClick={handleAddToCart} disabled={!hasChanges} className={`ads-btn-cart ${!hasChanges ? "ads-btn-cart--disabled" : ""}`}>
             🛒 {existingForAd?.length > 0 ? t("COMMON_REMOVE_LABEL") : t("ADS_ADD_TO_CART")}
           </button>
         </div>

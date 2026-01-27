@@ -68,9 +68,8 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
     return <Loader />;
   }
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-    <div style={{ paddingBottom: "16px" }}>
+    <div>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_NEW_NDC_APPLICATION_NDC_REASON")} * `}</CardLabel>
         <Controller
@@ -94,7 +93,7 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
           )}
         />
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
+      <CardLabelError className="ndc-card-label-error">{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
     </div>
   );
 }

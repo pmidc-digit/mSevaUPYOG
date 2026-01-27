@@ -40,6 +40,9 @@ import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import { convertToDDMMYYYY, formatDuration } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
+import InspectionReport from "../../../pageComponents/InsectionReport";
+import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -117,11 +120,11 @@ const NOCEmployeeApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
   } : {})
-    const [timeObj , setTimeObj] = useState(null);
-  
+    const [timeObj, setTimeObj] = useState(null);
+    
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
-  
+  const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
 
   console.log("applicationDetails here==>", applicationDetails);
 
@@ -377,6 +380,9 @@ const NOCEmployeeApplicationOverview = () => {
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
 
+  const hasRole = user?.info?.roles?.some(
+  role => role?.code === "OBPAS_NOC_JE" || role?.code === "OBPAS_NOC_BI"
+);
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -443,6 +449,7 @@ const NOCEmployeeApplicationOverview = () => {
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
 
@@ -505,17 +512,25 @@ const NOCEmployeeApplicationOverview = () => {
 
     if (action?.action == "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_NOT_EDITABLE_HERE_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000);
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
       //cant be edited here
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000);
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {      
-      if (applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4)) {
+    } else {
+      if (
+        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+        action?.action == "SEND_FOR_INSPECTION_REPORT" &&
+        (!siteImages?.documents || siteImages?.documents?.length < 4)
+      ) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -525,60 +540,88 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
+  const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
+
   const submitAction = async (data) => {
-    
     const payloadData = applicationDetails?.Noc?.[0] || {};
-    console.log('payloadData', payloadData)
-    const vasikaNumber =  payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
-    const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
-    
+    console.log("payloadData", payloadData);
+    const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+    const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
+
+    // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
+    // Check if remarks are mandatory when status is DOCUMENTVERIFY
+    if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
+      const allRemarksFilled = Object.values(checklistRemarks).every((remark) => remark && remark.trim() !== "");
+      if (!allRemarksFilled) {
+        setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
+        return;
+      }
+    }
+
+    if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
+      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
+      if (fieldInspectionPending?.length === 0) {
+        closeModal();
+        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
+        return;
+      } else if (fieldInspectionPending?.[0]?.questionLength === 0) {
+        closeModal();
+        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
+        return;
+      } else {
+        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_" + index]);
+        if (isQuestionEmpty) {
+          closeModal();
+          setShowToast({ key: "true", error: true, message: "Please fill in all the questions in Field Inspection Report before submitting" });
+          return;
+        }
+      }
+    }
+
     if (!isFeeDisabled) {
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);   
+      const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);
 
-    const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || [])
-  .find((c) => c.isLatest);
-    const allRemarksFilled = (feeAdjustments || []).every((row) => {
-      if (!row.edited) return true;
+      const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || []).find((c) => c.isLatest);
+      const allRemarksFilled = (feeAdjustments || []).every((row) => {
+        if (!row.edited) return true;
 
-      // Find the original estimate for this taxHeadCode
-      const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
+        // Find the original estimate for this taxHeadCode
+        const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
 
-      console.log("originalRemark", originalRemark);
+        console.log("originalRemark", originalRemark);
 
-      const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
-      console.log("isremarksSame", isremarksSame);
-      // Require remark to be non-empty AND different from the original
-      return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
-    });
-    if (!hasNonZeroFee) {
-      setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
-      return;
+        const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+        console.log("isremarksSame", isremarksSame);
+        // Require remark to be non-empty AND different from the original
+        return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+      });
+      if (!hasNonZeroFee) {
+        setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
+        return;
+      }
+
+      if (!allRemarksFilled) {
+        setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
+        return;
+      }
     }
-
-    if (!allRemarksFilled) {
-      setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
-      return;
-    }
-  }
     // console.log("data ==>", data);
 
     const newCalculation = {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
       taxHeadEstimates: feeAdjustments
-        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") 
+        .filter((row) => row.taxHeadCode !== "NOC_TOTAL")
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: row.adjustedAmount ?? 0,          category: row.category,
+          estimateAmount: row.adjustedAmount ?? 0,
+          category: row.category,
           remarks: row.remark || null,
           filestoreId: row.filestoreId || null,
         })),
     };
 
-
-
-    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || [])
-    .map(c => ({ ...c, isLatest: false }));
+    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || []).map((c) => ({ ...c, isLatest: false }));
 
     const updatedApplicant = {
       ...payloadData,
@@ -587,14 +630,15 @@ const NOCEmployeeApplicationOverview = () => {
       workflow: {},
       nocDetails: {
         ...payloadData.nocDetails,
-        additionalDetails: { 
-          ...payloadData.nocDetails.additionalDetails, 
+        additionalDetails: {
+          ...payloadData.nocDetails.additionalDetails,
           calculations: [...oldCalculations, newCalculation],
-          siteImages: siteImages?.documents || []
-         },
+          siteImages: siteImages?.documents || [],
+          fieldinspection_pending: fieldInspectionPending,
+        },
       },
     };
-    console.log('updatedApplicant', updatedApplicant)
+    console.log("updatedApplicant", updatedApplicant);
 
     const filtData = data?.Licenses?.[0];
     //console.log("filtData", filtData);
@@ -625,7 +669,7 @@ const NOCEmployeeApplicationOverview = () => {
 
         if (!proceed) {
           setSelectedAction(null);
-          return; 
+          return;
         }
       }
 
@@ -645,7 +689,7 @@ const NOCEmployeeApplicationOverview = () => {
       };
 
       // Call checklist API before NOCUpdate
-      if (checklistPayload?.checkList?.length > 0) {
+      if (isDocPending && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
           await Digit.NOCService.NOCCheckListUpdate({
             details: checklistPayload,
@@ -722,6 +766,11 @@ const NOCEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
+  const onChangeReport = (key, value) => {
+    console.log("key,value", key, value);
+    setFieldInspectionPending(value);
+  }
+
   if (loading) {
     return <Loader />;
   }
@@ -740,18 +789,20 @@ const NOCEmployeeApplicationOverview = () => {
   };
   console.log("displayData here", displayData);
   const sitePhotos = displayData?.Documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  );
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+  );
 
-  const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
-const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+  const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
+  const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
+      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
@@ -765,10 +816,10 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         )}
       </div>
 
-        <NOCImageView
-          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-        />
+      <NOCImageView
+        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+      />
 
       {id.length > 0 && (
         <React.Fragment>
@@ -907,7 +958,7 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
       </Card>
 
       <Card>
-        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
         <StatusTable
           style={{
             display: "flex",
@@ -917,18 +968,26 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
           }}
         >
           {sitePhotos?.length > 0 &&
-            sitePhotos?.map((doc) => (
-              <NocSitePhotographs filestoreId={doc?.filestoreId || doc?.uuid} documentType={doc?.documentType} coordinates={coordinates} />
-            ))}
+            [...sitePhotos]
+              .reverse()
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
         </StatusTable>
       </Card>
-       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
-        (user?.info?.roles.filter((role) => role.code === "OBPAS_NOC_JE" || role.code === "OBPAS_NOC_BI")).length > 0 && (
-          <Card>
-            <div id="fieldInspection"></div>
-            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-          </Card>
-        )}
+
+      
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
+        <Card>
+          <div id="fieldInspection"></div>
+          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+        </Card>
+      )}
       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
@@ -962,21 +1021,48 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         </Card>
       )}
 
+{applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
+        <Card>
+          <div id="fieldInspection"></div>
+          <InspectionReport
+            isCitizen={true}
+            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
+            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
+            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
+          />
+        </Card>
+      )}
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+          <Card>
+            <div id="fieldInspection"></div>
+            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} />
+          </Card>
+        )}
+
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>
           {applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds?.length > 0 && (
-            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])].reverse()} />
+            <NOCDocumentTableView documents={[...(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ownerIds || [])]} />
           )}
         </StatusTable>
       </Card>
 
-        <Card>
-          <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentChecklist documents={remainingDocs} applicationNo={id}
-          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
-        </Card>
-      
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>
+          {remainingDocs?.length > 0 && (
+            <NOCDocumentChecklist
+              documents={remainingDocs}
+              applicationNo={id}
+              tenantId={tenantId}
+              onRemarksChange={setChecklistRemarks}
+              readOnly={!isDocPending}
+            />
+          )}
+        </StatusTable>
+      </Card>
 
       <Card>
         <CardSubHeader>{t("NOC_FEE_DETAILS_LABEL")}</CardSubHeader>
@@ -999,8 +1085,6 @@ const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
-
-     
 
       <div id="timeline">
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} />

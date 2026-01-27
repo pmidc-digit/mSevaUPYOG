@@ -190,7 +190,7 @@ const EditApplication = () => {
             owners: applicantDetails.owners?.map(owner => ({
               ...owner,
               propertyVasikaNo: nocObject?.vasikaNumber,
-              propertyVasikaDate : formatDateForInput(nocObject?.vasikaDate)
+              propertyVasikaDate : formatDateForInput(nocObject?.vasikaDate),
             })) || [],
           //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
@@ -203,7 +203,7 @@ const EditApplication = () => {
           roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
           buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
           isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
-          vasikaNumber: nocObject?.vasikNo,
+          vasikaNumber: nocObject?.vasikaNumber,
           vasikaDate : formatDateForInput(nocObject?.vasikaDate),
 
           zone: zoneOptions?.find((obj)=> (obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone)),

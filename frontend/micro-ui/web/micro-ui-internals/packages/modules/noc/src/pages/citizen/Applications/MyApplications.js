@@ -50,6 +50,7 @@ const MyApplications = ({ view }) => {
       )}
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
+        console.log('filteredApplication', filteredApplication)
         //console.log("filtered Applications here==>", filteredApplication);
         //console.log("application?.Applications?.applicationNo", application);
         const applicationStatus=application?.Applications?.applicationStatus || "";
@@ -58,19 +59,22 @@ const MyApplications = ({ view }) => {
             <Card>
               {Object.keys(filteredApplication)
                 .filter((key) => filteredApplication[key] !== null)
-                .map((item) => (
-                  <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
+                .map((item, idx) => (
+                  <KeyNote
+                    key={item}
+                    keyValue={t(item)}
+                    note={idx === 1 ? <span style={{ color: "#ae0000",  fontWeight:"normal"}}>{t(filteredApplication[item])}</span> : t(filteredApplication[item])}
+                  />
                 ))}
 
               <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`}>
-                <SubmitBar 
-                  //  label={applicationStatus === "APPROVED" ? t(labels[2]) : applicationStatus === "REJECTED" || applicationStatus === "CITIZENACTIONREQUIRED" ? t(labels[0]) : t(labels[1])} 
-                  label ={t(labels[2])}
+                <SubmitBar
+                  //  label={applicationStatus === "APPROVED" ? t(labels[2]) : applicationStatus === "REJECTED" || applicationStatus === "CITIZENACTIONREQUIRED" ? t(labels[0]) : t(labels[1])}
+                  label={t(labels[2])}
                 />
               </Link>
-                
-              
-               {/* {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
+
+              {/* {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
                 <Link
                   to={{
                     pathname: `/digit-ui/citizen/payment/collect/obpas_noc/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`,
@@ -81,7 +85,6 @@ const MyApplications = ({ view }) => {
                   </div>
                 </Link>
                )} */}
-             
             </Card>
           </div>
         );

@@ -168,7 +168,6 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
         )}
 
         {getPropertiesData?.map((property, index) => {
-          console.log("property", property);
           return (
             <Card key={index}>
               {property?.registrationNumber && <KeyNote keyValue={t("RAL_REGISTRATION_NUMBER")} note={property?.registrationNumber || t("CS_NA")} />}

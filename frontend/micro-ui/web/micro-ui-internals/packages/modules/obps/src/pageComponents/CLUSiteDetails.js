@@ -444,7 +444,7 @@ const CLUSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_VASIKA_DATE_LABEL")}`}
+              {`${t("BPA_SITE_VASIKA_DATE_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">

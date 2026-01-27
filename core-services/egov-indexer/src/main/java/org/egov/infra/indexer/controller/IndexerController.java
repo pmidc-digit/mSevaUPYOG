@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/index-operations")
@@ -47,7 +48,7 @@ public class IndexerController {
 	public ResponseEntity<?> produceIndexJson(@PathVariable("key") String topic,
 			@RequestBody Object indexJson) {
 		try {
-			indexerProducer.producer(topic, indexJson);
+			indexerProducer.producer(topic,UUID.randomUUID().toString(), indexJson);
 		} catch (Exception e) {
 			logger.error("Error while pushing record to topic: " + e.getMessage());
 			return new ResponseEntity<>(indexJson, HttpStatus.INTERNAL_SERVER_ERROR);

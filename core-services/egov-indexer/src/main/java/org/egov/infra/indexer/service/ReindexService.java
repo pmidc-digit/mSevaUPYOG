@@ -113,8 +113,8 @@ public class ReindexService {
 		reindexRequest.setTotalRecords(total);
 		IndexJobWrapper wrapper = IndexJobWrapper.builder().requestInfo(reindexRequest.getRequestInfo()).job(job)
 				.build();
-		indexerProducer.producer(reindexTopic, reindexRequest);
-		indexerProducer.producer(persisterCreate, wrapper);
+		indexerProducer.producer(reindexTopic,reindexRequest.getJobId(), reindexRequest);
+		indexerProducer.producer(persisterCreate,reindexRequest.getJobId(), wrapper);
 		reindexResponse.setJobId(job.getJobId());
 
 		return reindexResponse;
@@ -183,7 +183,7 @@ public class ReindexService {
 									.jobStatus(StatusEnum.FAILED).build();
 							IndexJobWrapper wrapper = IndexJobWrapper.builder()
 									.requestInfo(reindexRequest.getRequestInfo()).job(job).build();
-							indexerProducer.producer(persisterUpdate, wrapper);
+							indexerProducer.producer(persisterUpdate,reindexRequest.getJobId(), wrapper);
 							threadRun = false;
 							log.info("Porcess failed! for data from: " + from + "and size: " + size);
 							break;
@@ -195,7 +195,7 @@ public class ReindexService {
 								.jobStatus(StatusEnum.INPROGRESS).totalRecordsIndexed(from).build();
 						IndexJobWrapper wrapper = IndexJobWrapper.builder().requestInfo(reindexRequest.getRequestInfo())
 								.job(job).build();
-						indexerProducer.producer(persisterUpdate, wrapper);
+						indexerProducer.producer(persisterUpdate,reindexRequest.getJobId()+reindexRequest.getStartTime(), wrapper);
 
 						from += size;
 					}
@@ -208,7 +208,7 @@ public class ReindexService {
 								.jobStatus(StatusEnum.COMPLETED).build();
 						IndexJobWrapper wrapper = IndexJobWrapper.builder().requestInfo(reindexRequest.getRequestInfo())
 								.job(job).build();
-						indexerProducer.producer(persisterUpdate, wrapper);
+						indexerProducer.producer(persisterUpdate,reindexRequest.getJobId(), wrapper);
 					}
 				}
 				threadRun = false;
@@ -234,7 +234,7 @@ public class ReindexService {
 			public void run() {
 				if (threadRun) {
 					try {
-						indexerProducer.producer(reindexRequest.getReindexTopic(), requestToReindex);
+						indexerProducer.producer(reindexRequest.getReindexTopic(),reindexRequest.getJobId(), requestToReindex);
 						recordsIndexed += resultSize;
 						log.info("Records indexed: " + recordsIndexed);
 					} catch (Exception e) {

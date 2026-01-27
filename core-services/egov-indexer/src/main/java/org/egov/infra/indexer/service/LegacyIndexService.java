@@ -125,7 +125,7 @@ public class LegacyIndexService {
                 .build();
 //		indexerProducer.producer(legacyIndexTopic, legacyindexRequest);
         beginLegacyIndex(legacyindexRequest);
-        indexerProducer.producer(persisterCreate, wrapper);
+        indexerProducer.producer(persisterCreate,legacyindexRequest.getJobId(), wrapper);
 
         legacyindexResponse.setJobId(job.getJobId());
 
@@ -201,7 +201,7 @@ public class LegacyIndexService {
                                         .jobStatus(StatusEnum.FAILED).build();
                                 IndexJobWrapper wrapper = IndexJobWrapper.builder()
                                         .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-                                indexerProducer.producer(persisterUpdate, wrapper);
+                                indexerProducer.producer(persisterUpdate,legacyIndexRequest.getJobId(), wrapper);
                                 threadRun = false;
                                 break;
                             } else {
@@ -237,7 +237,7 @@ public class LegacyIndexService {
                                     .jobStatus(StatusEnum.FAILED).build();
                             IndexJobWrapper wrapper = IndexJobWrapper.builder()
                                     .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-                            indexerProducer.producer(persisterUpdate, wrapper);
+                            indexerProducer.producer(persisterUpdate,legacyIndexRequest.getJobId(), wrapper);
                             threadRun = false;
                             break;
                         }
@@ -249,7 +249,7 @@ public class LegacyIndexService {
                                 .jobStatus(StatusEnum.INPROGRESS).totalRecordsIndexed(count).build();
                         IndexJobWrapper wrapper = IndexJobWrapper.builder()
                                 .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-                        indexerProducer.producer(persisterUpdate, wrapper);
+                        indexerProducer.producer(persisterUpdate,legacyIndexRequest.getJobId(), wrapper);
 
                         offset += size;
                     }
@@ -262,7 +262,7 @@ public class LegacyIndexService {
                                 .jobStatus(StatusEnum.COMPLETED).build();
                         IndexJobWrapper wrapper = IndexJobWrapper.builder()
                                 .requestInfo(legacyIndexRequest.getRequestInfo()).job(job).build();
-                        indexerProducer.producer(persisterUpdate, wrapper);
+                        indexerProducer.producer(persisterUpdate,legacyIndexRequest.getJobId(), wrapper);
                     }
 
                 }
@@ -290,14 +290,14 @@ public class LegacyIndexService {
                         ServiceResponse.class);
                 //PGRIndexObject indexObject = pgrCustomDecorator.dataTransformationForPGR(serviceResponse);
                 //log.info("childThreadExecutor + indexObject----"+mapper.writeValueAsString(indexObject));
-                indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(), serviceResponse);
+                indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(),legacyIndexRequest.getJobId(), serviceResponse);
             } else {
                 if (legacyIndexRequest.getLegacyIndexTopic().equals(ptLegacyTopic)) {
                     PropertyResponse propertyResponse = mapper.readValue(mapper.writeValueAsString(response), PropertyResponse.class);
                     propertyResponse.setProperties(ptCustomDecorator.transformData(propertyResponse.getProperties()));
-                    indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(), propertyResponse);
+                    indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(),legacyIndexRequest.getJobId(), propertyResponse);
                 } else {
-                    indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(), response);
+                    indexerProducer.producer(legacyIndexRequest.getLegacyIndexTopic(),legacyIndexRequest.getJobId(), response);
                 }
             }
         } catch (Exception e) {

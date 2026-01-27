@@ -68,6 +68,7 @@ public interface WSCalculationDao {
 	
 	public List<BillSearchs> getBillss (String tenantId, String demandid);
 
+    String getPreviousMeterStatus(String tenantId, String connectionNo);
 
 	
 	public Boolean getexpiryBill(List billSearch);

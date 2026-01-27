@@ -85,19 +85,21 @@ public class CalculationUtils {
     /**
      * identify the billingBusinessService matching to the calculation FeeType
      */
-	public String getBillingBusinessService(String businessService, String feeType) {
+	public String getBillingBusinessService(String businessService, String feeType, String applicationType) {
 
 		String billingBusinessService;
 		switch (feeType) {
 		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_APL_FEETYPE:
-			if (businessService.startsWith(BPACalculatorConstants.MDMS_BPA) || businessService.equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW)) {
+			if ((businessService.startsWith(BPACalculatorConstants.MDMS_BPA) || businessService.equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW))
+					&& "BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
 				billingBusinessService = config.getApplFeeBusinessService();
 			}else {
 				billingBusinessService = config.getOCApplBusinessservice();
 			}
 			break;
 		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_SANC_FEETYPE:
-			if (businessService.startsWith(BPACalculatorConstants.MDMS_BPA) || businessService.equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW)) {
+			if ((businessService.startsWith(BPACalculatorConstants.MDMS_BPA) || businessService.equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW))
+					&& "BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
 				billingBusinessService = config.getSanclFeeBusinessService();
 			} else {
 				billingBusinessService = config.getOCSancBusinessservice();

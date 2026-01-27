@@ -152,6 +152,26 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		log.debug("Prepared Statement" + preparedStatement.toString());
 		return jdbcTemplate.query(query, preparedStatement.toArray(), currentMeterReadingRowMapper);
 	}
+	
+//    PI-20289 Metered Breakdown penalty enable and working new logic
+
+	// DAO method to get previous meter status (second latest)
+	public String getPreviousMeterStatus(String tenantId, String connectionNo) {
+	    List<Object> preparedStatement = new ArrayList<>();
+	    StringBuilder query = new StringBuilder();
+	    query.append("SELECT meterstatus FROM eg_ws_meterreading ")
+	         .append("WHERE tenantid = ? AND connectionno = ? ")
+	         .append("ORDER BY currentreadingdate DESC");
+
+	    preparedStatement.add(tenantId);
+	    preparedStatement.add(connectionNo);
+
+	    List<String> statuses = jdbcTemplate.query(query.toString(), preparedStatement.toArray(),
+	            (rs, rowNum) -> rs.getString("meterstatus"));
+
+	    // Return second latest meter status (previous)
+	    return (statuses.size() > 1) ? statuses.get(1) : null;
+	}
 
 	@Override
 	public String searchLastMeterId(String connectionNo, Long lastReadingDate, Long currentDate, String tenantId) {

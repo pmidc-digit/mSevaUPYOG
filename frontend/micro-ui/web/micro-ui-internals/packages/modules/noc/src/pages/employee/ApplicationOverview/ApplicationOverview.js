@@ -512,17 +512,25 @@ const NOCEmployeeApplicationOverview = () => {
 
     if (action?.action == "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_NOT_EDITABLE_HERE_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000);
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
       //cant be edited here
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000);
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {      
-      if (applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && action?.action == "SEND_FOR_INSPECTION_REPORT" && (!siteImages?.documents || siteImages?.documents?.length < 4)) {
+    } else {
+      if (
+        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+        action?.action == "SEND_FOR_INSPECTION_REPORT" &&
+        (!siteImages?.documents || siteImages?.documents?.length < 4)
+      ) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -535,88 +543,85 @@ const NOCEmployeeApplicationOverview = () => {
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
 
   const submitAction = async (data) => {
-
     const payloadData = applicationDetails?.Noc?.[0] || {};
-    console.log('payloadData', payloadData)
-    const vasikaNumber =  payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
-    const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
+    console.log("payloadData", payloadData);
+    const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+    const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
 
     // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
     // Check if remarks are mandatory when status is DOCUMENTVERIFY
     if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
-      const allRemarksFilled = Object.values(checklistRemarks).every(remark => remark && remark.trim() !== "");
+      const allRemarksFilled = Object.values(checklistRemarks).every((remark) => remark && remark.trim() !== "");
       if (!allRemarksFilled) {
         setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
         return;
       }
     }
 
-    if(applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
-      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending)
-      if(fieldInspectionPending?.length === 0){
+    if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
+      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
+      if (fieldInspectionPending?.length === 0) {
         closeModal();
-        setShowToast({key: "true" , error: true, message: "Please fill in the Field Inspection Report before submitting"})
+        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
         return;
-      }else if(fieldInspectionPending?.[0]?.questionLength === 0){
+      } else if (fieldInspectionPending?.[0]?.questionLength === 0) {
         closeModal();
-        setShowToast({key: "true" , error: true, message: "Please fill in the Field Inspection Report before submitting"})
+        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
         return;
-      }else{
-        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_"+index]);
-        if(isQuestionEmpty){
+      } else {
+        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_" + index]);
+        if (isQuestionEmpty) {
           closeModal();
-          setShowToast({key: "true" , error: true, message: "Please fill in all the questions in Field Inspection Report before submitting"})
+          setShowToast({ key: "true", error: true, message: "Please fill in all the questions in Field Inspection Report before submitting" });
           return;
         }
-      }      
+      }
     }
-    
+
     if (!isFeeDisabled) {
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);   
+      const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);
 
-    const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || [])
-  .find((c) => c.isLatest);
-    const allRemarksFilled = (feeAdjustments || []).every((row) => {
-      if (!row.edited) return true;
+      const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || []).find((c) => c.isLatest);
+      const allRemarksFilled = (feeAdjustments || []).every((row) => {
+        if (!row.edited) return true;
 
-      // Find the original estimate for this taxHeadCode
-      const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
+        // Find the original estimate for this taxHeadCode
+        const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
 
-      console.log("originalRemark", originalRemark);
+        console.log("originalRemark", originalRemark);
 
-      const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
-      console.log("isremarksSame", isremarksSame);
-      // Require remark to be non-empty AND different from the original
-      return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
-    });
-    if (!hasNonZeroFee) {
-      setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
-      return;
+        const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+        console.log("isremarksSame", isremarksSame);
+        // Require remark to be non-empty AND different from the original
+        return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+      });
+      if (!hasNonZeroFee) {
+        setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
+        return;
+      }
+
+      if (!allRemarksFilled) {
+        setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
+        return;
+      }
     }
-
-    if (!allRemarksFilled) {
-      setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
-      return;
-    }
-  }
     // console.log("data ==>", data);
 
     const newCalculation = {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
       taxHeadEstimates: feeAdjustments
-        .filter((row) => row.taxHeadCode !== "NOC_TOTAL") 
+        .filter((row) => row.taxHeadCode !== "NOC_TOTAL")
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: row.adjustedAmount ?? 0,          category: row.category,
+          estimateAmount: row.adjustedAmount ?? 0,
+          category: row.category,
           remarks: row.remark || null,
           filestoreId: row.filestoreId || null,
         })),
     };
 
-
-
-    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || []).map(c => ({ ...c, isLatest: false }));
+    const oldCalculations = (payloadData?.nocDetails?.additionalDetails?.calculations || []).map((c) => ({ ...c, isLatest: false }));
 
     const updatedApplicant = {
       ...payloadData,
@@ -625,15 +630,15 @@ const NOCEmployeeApplicationOverview = () => {
       workflow: {},
       nocDetails: {
         ...payloadData.nocDetails,
-        additionalDetails: { 
-          ...payloadData.nocDetails.additionalDetails, 
+        additionalDetails: {
+          ...payloadData.nocDetails.additionalDetails,
           calculations: [...oldCalculations, newCalculation],
           siteImages: siteImages?.documents || [],
           fieldinspection_pending: fieldInspectionPending,
-         },
+        },
       },
     };
-    console.log('updatedApplicant', updatedApplicant)
+    console.log("updatedApplicant", updatedApplicant);
 
     const filtData = data?.Licenses?.[0];
     //console.log("filtData", filtData);
@@ -664,7 +669,7 @@ const NOCEmployeeApplicationOverview = () => {
 
         if (!proceed) {
           setSelectedAction(null);
-          return; 
+          return;
         }
       }
 
@@ -784,18 +789,20 @@ const NOCEmployeeApplicationOverview = () => {
   };
   console.log("displayData here", displayData);
   const sitePhotos = displayData?.Documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  );
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+  );
 
-  const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
-  const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+  const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
+      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}

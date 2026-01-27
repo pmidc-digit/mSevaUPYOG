@@ -433,7 +433,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   return (
-    <>
+    <div className="card">
     {/* {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
     <FormComposer
      key={location.pathname} 
@@ -443,6 +443,6 @@ export const CreateComplaint = ({ parentUrl }) => {
       isDisabled={!canSubmit && !submitted}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
       />
-    </>
+    </div>
   );
 };

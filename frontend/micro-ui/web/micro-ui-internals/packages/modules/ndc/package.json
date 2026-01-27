@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-ndc",
-  "version": "1.0.64",
+  "version": "1.0.65",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",

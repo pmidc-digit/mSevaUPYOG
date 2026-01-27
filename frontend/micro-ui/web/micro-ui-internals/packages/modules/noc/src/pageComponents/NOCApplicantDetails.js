@@ -32,6 +32,7 @@ const ownerTypeOptions = [
   { i18nKey: "NOC_OWNER_TYPE_FIRM", code: "Firm", value: "Firm" },
 ];
 
+
 const NOCApplicantDetails = (_props) => {
   const {
     t,
@@ -313,6 +314,19 @@ const NOCApplicantDetails = (_props) => {
       setValue(`owners[${currentIndex}].propertyVasikaNo`,  property?.additionalDetails?.vasikaNo || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaNo || null, { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaDate || null, { shouldValidate: true, shouldDirty: true });
 
+      // Override applicant details with property owner details if present
+      if (currentIndex === 0) {
+        if (property?.owners?.[0]?.name) {
+          setValue(`owners[${currentIndex}].ownerOrFirmName`, property.owners[0].name, { shouldValidate: true, shouldDirty: true });
+        }
+        if (property?.owners?.[0]?.mobileNumber) {
+          setValue(`owners[${currentIndex}].mobileNumber`, property.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
+        }
+        if (property?.owners?.[0]?.permanentAddress) {
+          setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
+        }
+      }
+
       // Get current form values to preserve user-filled data
       const currentOwners = watch('owners');
 
@@ -330,6 +344,11 @@ const NOCApplicantDetails = (_props) => {
                   PropertyOwnerPlotArea: property?.landArea,
                   propertyVasikaNo: property?.additionalDetails?.vasikaNo,
                   propertyVasikaDate: property?.additionalDetails?.vasikaDate,
+                  ...(currentIndex === 0 && {
+                    ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
+                    mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
+                    address: property?.owners?.[0]?.permanentAddress || o.address,
+                  }),
                 }
               : o
           ),
@@ -616,7 +635,7 @@ const NOCApplicantDetails = (_props) => {
                 <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}</CardLabel>
                 <div className="field">
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {watch(`owners[${index}].propertyId`) && (
+                    {watch(`owners[${index}].PropertyOwnerName`) && (
                       <StatusTable style={{ marginBottom: "1rem" }}>
                         <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
                         <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}

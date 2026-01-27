@@ -19,12 +19,25 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewPTStepFormOne",
-    key: "propertyAddress",
+    key: "documents",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
+  // {
+  //   head: "DOCUMENT DETAILS",
+  //   stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
+  //   stepNumber: 1,
+  //   isStepEnabled: true,
+  //   type: "component",
+  //   component: "NewPTStepFormOne",
+  //   key: "documents",
+  //   withoutLabel: true,
+  //   texts: {
+  //     submitBarLabel: "CS_COMMON_NEXT",
+  //   },
+  // },
   {
     head: "PROPERTY DETAILS",
     stepLabel: "PT_DETAILS",
@@ -44,7 +57,7 @@ const createEmployeeConfig = [
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
-    component: "NewPTStepFormTwo",
+    component: "NewPTStepFormThree",
     key: "petDetails",
     withoutLabel: true,
     texts: {
@@ -57,7 +70,7 @@ const createEmployeeConfig = [
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
-    component: "NewPTStepFormThree",
+    component: "NewPTStepFormFour",
     key: "documents",
     withoutLabel: true,
     texts: {
@@ -70,7 +83,7 @@ const createEmployeeConfig = [
     stepNumber: 5,
     isStepEnabled: true,
     type: "component",
-    component: "NewPTStepFormFour",
+    component: "NewPTStepFormFive",
     key: "summary",
     withoutLabel: true,
     texts: {

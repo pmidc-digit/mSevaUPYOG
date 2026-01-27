@@ -14,7 +14,7 @@ const NewPTStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.ptr.PTRNewApplicationFormReducer.formData;
+    return state.pt.PTNewApplicationFormReducer.formData;
   });
 
   function goNext(data) {

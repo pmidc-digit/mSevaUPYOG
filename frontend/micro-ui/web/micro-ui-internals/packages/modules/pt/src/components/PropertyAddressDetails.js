@@ -42,7 +42,6 @@ const PropertyAddressDetails = ({ goNext }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    console.log("data", data);
     goNext(data);
   };
 
@@ -73,15 +72,15 @@ const PropertyAddressDetails = ({ goNext }) => {
 
   useEffect(() => {
     if (CreationYearData?.["egf-master"]?.FinancialYear) {
-      const filteredData = CreationYearData?.["egf-master"]?.FinancialYear?.filter((item) => item?.module == "PT");
+      const filteredData = CreationYearData?.["egf-master"]?.FinancialYear?.filter((item) => item?.module == "PT").sort(
+        (a, b) => a.startingDate - b.startingDate
+      ); // 🔥 ASC order;
       setYearCreation(filteredData);
     }
   }, [CreationYearData]);
 
   const onGISMapClickScenarioTwo = () => {
     const surveyId = watch("surveyId");
-    console.log("surveyId", surveyId);
-    // console.log("onGISMapClick called with formData: ", formData);
     if (surveyId) {
       const url = `https://onemap.punjab.gov.in/map.aspx?surveyid=${surveyId}&usertype=${userType}`;
       window.location.href = url;

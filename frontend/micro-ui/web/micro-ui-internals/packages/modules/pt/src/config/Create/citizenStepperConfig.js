@@ -1,17 +1,15 @@
 export const citizenConfig = [
   {
-    head: "PROPERTY_ADDRESS",
+    head: "",
     stepNumber: 1,
     body: [
       {
-        route: "owners",
-        component: "PTRCitizenDetails",
+        route: "documents",
+        component: "PTRCitizenPetTest",
         withoutLabel: true,
-        key: "ownerss",
+        key: "documents",
         type: "component",
-        nextStep: "pet-details",
-        hideInEmployee: true,
-        isMandatory: true,
+        nextStep: null,
       },
     ],
   },
@@ -53,7 +51,7 @@ export const citizenConfig = [
     body: [
       {
         route: "documents",
-        component: "PTSelectProofIdentity",
+        component: "PropertySelectDocs",
         withoutLabel: true,
         key: "documents",
         type: "component",

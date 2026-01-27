@@ -150,7 +150,8 @@ import NewPTStepFormOne from "./pageComponents/NewPTStepper/NewPTStepFormOne";
 import NewPTStepFormTwo from "./pageComponents/NewPTStepper/NewPTStepFormTwo";
 import NewPTStepFormThree from "./pageComponents/NewPTStepper/NewPTStepFormThree";
 import NewPTStepFormFour from "./pageComponents/NewPTStepper/NewPTStepFormFour";
-import PTSelectProofIdentity from "./components/PTSelectProofIdentity";
+import NewPTStepFormFive from "./pageComponents/NewPTStepper/NewPTStepFormFive";
+import PropertySelectDocs from "./components/PropertySelectDocs";
 import PTSummary from "../src/pageComponents/PTSummary";
 import getRootReducer from "./redux/reducer";
 
@@ -298,7 +299,8 @@ const componentsToRegister = {
   NewPTStepFormTwo,
   NewPTStepFormThree,
   NewPTStepFormFour,
-  PTSelectProofIdentity,
+  NewPTStepFormFive,
+  PropertySelectDocs,
 };
 
 const addComponentsToRegistry = () => {

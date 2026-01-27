@@ -15,6 +15,22 @@ import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationAc
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
+const months = [
+  { code: "1", name: "1" },
+  { code: "2", name: "2" },
+  { code: "3", name: "3" },
+  { code: "4", name: "4" },
+  { code: "5", name: "5" },
+  { code: "6", name: "6" },
+  { code: "7", name: "7" },
+  { code: "8", name: "8" },
+  { code: "9", name: "9" },
+];
+const usageMonths = [
+  { code: "UNOCCUPIED", name: "Un-Occupied" },
+  { code: "SELFOCCUPIED", name: "Self Occupied" },
+];
+
 const PropertyDetails = ({ goNext, onGoBack }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -27,37 +43,42 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const [getPropertyTypeData, setPropertyTypeData] = useState([]);
+  const [getUsageData, setUsageData] = useState([]);
+  const [getSubUsageData, setSubUsageData] = useState([]);
 
-  const { data: UsageCategoryData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "UsageCategory" }]);
+  const { data: UsageCategoryData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "UsageCategoryMinor" }]);
+
+  const { data: UsageCategoryDataMajor = [], isLoadingUsageCategoryMajor } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
+    { name: "UsageCategoryMajor" },
+  ]);
 
   const { data: PropertyTypeData = [], isLoading: PropertyTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "PropertyType" },
   ]);
 
+  const { data: OccupancyTypeData = [], isLoading: OccupancyTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
+    { name: "OccupancyType" },
+  ]);
+
+  const { data: FloorData = [], isLoading: FloorLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "Floor" }]);
+
+  const { data: UsageCategoryNewData = [], isLoading: UsageCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
+    { name: "UsageCategory" },
+  ]);
+
   useEffect(() => {
     if (PropertyTypeData) {
-      // {
-      //   "name": "Built Up",
-      //   "code": "BUILTUP",
-      //   "active": true
-      // },
       const checkPropertyTypeData = PropertyTypeData?.PropertyTax?.PropertyType?.filter((item) => item?.code != "BUILTUP");
-      console.log("checkPropertyTypeData", checkPropertyTypeData);
       setPropertyTypeData(checkPropertyTypeData);
     }
   }, [PropertyTypeData]);
 
   useEffect(() => {
-    console.log("apiDataCheck", apiDataCheck);
-    const UsageCategoryDataFin = UsageCategoryData?.PropertyTax?.UsageCategory;
-    console.log("UsageCategoryDataFin", UsageCategoryDataFin);
-    console.log("apiDataCheck?.propertyAddress?.yearOfCreation?.code", apiDataCheck?.propertyAddress?.yearOfCreation?.code);
-
-    if (apiDataCheck?.propertyAddress) {
-      const checkUsageData = UsageCategoryDataFin?.filter((item) => item?.fromFY == apiDataCheck?.propertyAddress?.yearOfCreation?.code);
-      console.log("checkUsageData", checkUsageData);
-    }
-  }, [UsageCategoryData, apiDataCheck]);
+    const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
+    const minor = UsageCategoryDataMajor?.PropertyTax?.UsageCategoryMinor || [];
+    const combinedData = [...minor, ...major]?.filter((item) => item?.code != "NONRESIDENTIAL");
+    setUsageData(combinedData);
+  }, [UsageCategoryData, UsageCategoryDataMajor]);
 
   const {
     control,
@@ -88,10 +109,12 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   ];
 
   const onSubmit = async (data) => {
-    console.log("data", data);
     goNext(data);
-    return;
+    // return;
   };
+
+  const selectedPropertyType = watch("propertyType")?.code;
+  const selectedpropertyUsageType = watch("propertyUsageType")?.code;
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -105,9 +128,13 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             rules={{ required: t("Property Usage Type is Required") }}
             render={(props) => (
               <Dropdown
-                select={props.onChange}
+                select={(e) => {
+                  props.onChange(e);
+                  const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter((item) => item?.usageCategoryMinor == e?.code);
+                  setSubUsageData(checkData);
+                }}
                 selected={props.value}
-                option={UsageCategoryData?.PropertyTax?.UsageCategory}
+                option={getUsageData}
                 optionKey="name"
                 t={t}
               />
@@ -202,143 +229,267 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
         </label>
       </div>
 
-      <CardSectionHeader>{t("Unit Details")}</CardSectionHeader>
+      {selectedPropertyType && selectedpropertyUsageType && <CardSectionHeader style={{ marginTop: "50px" }}>{t("Unit Details")}</CardSectionHeader>}
 
-      {fields.map((item, index) => (
-        <div
-          key={item.id}
-          style={{
-            border: "1px solid #e0e0e0",
-            padding: "16px",
-            marginBottom: "16px",
-            borderRadius: "4px",
-          }}
-        >
-          {/* Unit Usage Type */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={`unitDetails.${index}.unitUsageType`}
-                rules={{ required: t("Unit Usage Type is required") }}
-                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
-              />
-              {errors?.unitDetails?.[index]?.unitUsageType && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
+      {selectedPropertyType &&
+        selectedpropertyUsageType &&
+        fields.map((item, index) => (
+          <div
+            key={item.id}
+            style={{
+              border: "1px solid #e0e0e0",
+              padding: "16px",
+              marginBottom: "16px",
+              borderRadius: "4px",
+            }}
+          >
+            {/* Unit Usage Type */}
+            {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && (
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.unitUsageType`}
+                    rules={{ required: t("Unit Usage Type is required") }}
+                    defaultValue={watch("propertyUsageType")?.name}
+                    render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} disabled={true} />}
+                  />
+                  {errors?.unitDetails?.[index]?.unitUsageType && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
+
+            {/* sub usage type */}
+            {selectedPropertyType != "VACANT" &&
+              selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" &&
+              selectedpropertyUsageType != "RESIDENTIAL" &&
+              selectedpropertyUsageType != "MIXED" && (
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
+                  <div className="form-field">
+                    <Controller
+                      control={control}
+                      name={`unitDetails.${index}.subUsageType`}
+                      rules={{ required: t("Sub Usage Type is required") }}
+                      render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getSubUsageData} optionKey="name" t={t} />}
+                    />
+                    {errors?.unitDetails?.[index]?.subUsageType && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>
+                    )}
+                  </div>
+                </LabelFieldPair>
               )}
-            </div>
-          </LabelFieldPair>
 
-          {/* sub usage type */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={`unitDetails.${index}.subUsageType`}
-                rules={{ required: t("Sub Usage Type is required") }}
-                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={occupancyOptions} optionKey="name" t={t} />}
-              />
-              {errors?.unitDetails?.[index]?.subUsageType && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>
-              )}
-            </div>
-          </LabelFieldPair>
+            {/* Occupancy */}
+            {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && (
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("Occupancy")}*</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.occupancy`}
+                    rules={{ required: t("Occupancy is required") }}
+                    render={(props) => (
+                      <Dropdown
+                        select={props.onChange}
+                        selected={props.value}
+                        option={FloorData?.PropertyTax?.OccupancyType}
+                        optionKey="name"
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.unitDetails?.[index]?.occupancy && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].occupancy.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
 
-          {/* Occupancy */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Occupancy")}*</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={`unitDetails.${index}.occupancy`}
-                rules={{ required: t("Occupancy is required") }}
-                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={occupancyOptions} optionKey="name" t={t} />}
-              />
-              {errors?.unitDetails?.[index]?.occupancy && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].occupancy.message}</p>
-              )}
-            </div>
-          </LabelFieldPair>
+            {/* Built up area */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={`unitDetails.${index}.area`}
+                  rules={{ required: t("Area is required") }}
+                  render={(props) => (
+                    <TextInput
+                      type={"number"}
+                      value={props.value}
+                      onWheel={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        props.onBlur(e);
+                      }}
+                    />
+                  )}
+                />
+                {errors?.unitDetails?.[index]?.area && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].area.message}</p>
+                )}
+              </div>
+            </LabelFieldPair>
 
-          {/* Built up area */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={`unitDetails.${index}.area`}
-                rules={{ required: t("Area is required") }}
-                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
-              />
-              {errors?.unitDetails?.[index]?.area && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].area.message}</p>
-              )}
-            </div>
-          </LabelFieldPair>
+            {/* Select Floor */}
+            {selectedPropertyType != "VACANT" && (
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.floor`}
+                    rules={{ required: t("Floor is required") }}
+                    render={(props) => (
+                      <Dropdown select={props.onChange} selected={props.value} option={FloorData?.PropertyTax?.Floor} optionKey="name" t={t} />
+                    )}
+                  />
+                  {errors?.unitDetails?.[index]?.floor && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
 
-          {/* Select Floor */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={`unitDetails.${index}.floor`}
-                rules={{ required: t("Floor is required") }}
-                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={occupancyOptions} optionKey="name" t={t} />}
-              />
-              {errors?.unitDetails?.[index]?.floor && (
-                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>
-              )}
-            </div>
-          </LabelFieldPair>
+            {/* Total rent collected */}
+            {watch(`unitDetails.${index}.occupancy`)?.code == "PG" && (
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("Total Rent Collected")}*</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.totalRent`}
+                    rules={{ required: t("Total Rent is required") }}
+                    render={(props) => (
+                      <TextInput
+                        type={"number"}
+                        value={props.value}
+                        onWheel={(e) => e.target.blur()}
+                        onKeyDown={(e) => {
+                          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.unitDetails?.[index]?.totalRent && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].totalRent.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
 
-          {/* Remove button */}
-          {fields.length > 1 && (
-            <div style={{ textAlign: "right" }}>
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#d32f2f",
-                  cursor: "pointer",
-                }}
-              >
-                {t("Remove")}
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
+            {/* Months on Rent * */}
+            {watch(`unitDetails.${index}.occupancy`)?.code == "PG" && (
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("Months on Rent")}*</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.rentMonths`}
+                    rules={{ required: t("This field is required") }}
+                    render={(props) => <Dropdown select={props.onChange} selected={props.value} option={months} optionKey="name" t={t} />}
+                  />
+                  {errors?.unitDetails?.[index]?.rentMonths && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].rentMonths.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
+
+            {/* Usage for Pending Months  */}
+            {watch(`unitDetails.${index}.occupancy`)?.code == "PG" && (
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("Usage for Pending Months")}*</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={`unitDetails.${index}.pendingUsageMonths`}
+                    rules={{ required: t("This field is required") }}
+                    render={(props) => <Dropdown select={props.onChange} selected={props.value} option={usageMonths} optionKey="name" t={t} />}
+                  />
+                  {errors?.unitDetails?.[index]?.pendingUsageMonths && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].pendingUsageMonths.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
+
+            {/* Remove button */}
+            {fields.length > 1 && (
+              <div style={{ textAlign: "right" }}>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#d32f2f",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("Remove")}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
 
       {/* Add more */}
-      <button
-        type="button"
-        onClick={() =>
-          append({
-            unitUsageType: "",
-            occupancy: null,
-          })
-        }
-        style={{
-          background: "none",
-          border: "none",
-          color: "#00bcd1",
-          cursor: "pointer",
-          marginBottom: "20px",
-        }}
-      >
-        + {t("Add another unit")}
-      </button>
+      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" && (
+        <button
+          type="button"
+          onClick={() =>
+            append({
+              unitUsageType: "",
+              occupancy: null,
+            })
+          }
+          style={{
+            background: "none",
+            border: "none",
+            color: "#00bcd1",
+            cursor: "pointer",
+            marginBottom: "20px",
+          }}
+        >
+          + {t("Add another unit")}
+        </button>
+      )}
 
       <ActionBar>
         <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
         <SubmitBar label={t("Next")} submit="submit" />
       </ActionBar>
-      {(loader || PropertyTypeLoading || isLoading) && <Loader page={true} />}
+      {(UsageCategoryLoading ||
+        loader ||
+        PropertyTypeLoading ||
+        isLoading ||
+        isLoadingUsageCategoryMajor ||
+        FloorLoading ||
+        OccupancyTypeLoading) && <Loader page={true} />}
     </form>
   );
 };

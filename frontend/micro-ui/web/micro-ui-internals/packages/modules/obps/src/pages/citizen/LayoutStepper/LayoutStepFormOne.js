@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
-import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
+import { UPDATE_LayoutNewApplication_FORM, UPDATE_LayoutNewApplication_OwnerIds, UPDATE_LayoutNewApplication_OwnerPhotos } from "../../../redux/actions/LayoutNewApplicationActions";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -56,7 +56,31 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function goNext(data) {
-    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data));
+    // Get data from currentStepData (from Redux, previously saved by child components via setValue)
+    const previousApplicationDetails = currentStepData?.applicationDetails || {};
+    
+    // Get additional data from Redux
+    const applicantsFromRedux = currentStepData?.applicants || [];
+    const documentUploadedFilesFromRedux = currentStepData?.documentUploadedFiles || {};
+    const photoUploadedFilesFromRedux = currentStepData?.photoUploadedFiles || {};
+    const panUploadedFilesFromRedux = currentStepData?.panUploadedFiles || {};
+
+    // Merge: previous applicationDetails (has applicant* fields from child components) + applicants array + files
+    const completeApplicationDetails = {
+      ...previousApplicationDetails,  // Contains all applicant* fields saved via setValue in child components
+      applicants: applicantsFromRedux,
+      documentUploadedFiles: documentUploadedFilesFromRedux,
+      photoUploadedFiles: photoUploadedFilesFromRedux,
+      panUploadedFiles: panUploadedFilesFromRedux,
+    };
+
+    // Save complete data to Redux with applicationDetails key
+    dispatch(UPDATE_LayoutNewApplication_FORM(config.key, completeApplicationDetails));
+
+    // Also save file uploads separately for file management like CLU does
+    dispatch(UPDATE_LayoutNewApplication_OwnerIds("ownerIdList", documentUploadedFilesFromRedux || {}));
+    dispatch(UPDATE_LayoutNewApplication_OwnerPhotos("ownerPhotoList", photoUploadedFilesFromRedux || {}));
+
     onGoNext();
   }
 

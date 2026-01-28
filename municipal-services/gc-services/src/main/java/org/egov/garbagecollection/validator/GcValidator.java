@@ -233,55 +233,83 @@ public class GcValidator {
      * 2. Property doesn't exceed max 3 connections
      */
     private void validateConnectionsPerProperty(GarbageConnectionRequest request) {
+        if (request == null || request.getGarbageConnection() == null) {
+            throw new CustomException("INVALID_REQUEST", "Garbage connection request or connection details cannot be null");
+        }
+        
         String propertyId = request.getGarbageConnection().getPropertyId();
         String unitId = request.getGarbageConnection().getUnitId();
         String tenantId = request.getGarbageConnection().getTenantId();
 
-        // Search for existing connections for this property and unit
-        SearchCriteria criteriaForUnit = SearchCriteria.builder()
-                .propertyId(propertyId)
-                .unitId(unitId)
-                .tenantId(tenantId)
-                .build();
-
-        // Search for all connections on the property to check max limit
-        SearchCriteria criteriaForProperty = SearchCriteria.builder()
-                .propertyId(propertyId)
-                .tenantId(tenantId)
-                .build();
-
-        // Check if unit already has a connection
-        List<GarbageConnection> unitConnections = gcService.search(criteriaForUnit, request.getRequestInfo());
-        
-        if (unitConnections != null && !unitConnections.isEmpty()) {
-            // Filter active connections only for this unit
-            boolean unitHasActiveConnection = unitConnections.stream()
-                    .anyMatch(conn -> conn.getStatus() == StatusEnum.ACTIVE);
-            
-            if (unitHasActiveConnection) {
-                throw new CustomException("UNIT_ALREADY_HAS_CONNECTION",
-                        "Unit " + unitId + " already has an active garbage connection. " +
-                                "Only one connection is allowed per unit.");
-            }
+        // Validate required fields
+        if (StringUtils.isEmpty(propertyId)) {
+            throw new CustomException("INVALID_PROPERTY_ID", "Property ID is required for creating a garbage connection");
+        }
+        if (StringUtils.isEmpty(tenantId)) {
+            throw new CustomException("INVALID_TENANT_ID", "Tenant ID is required for creating a garbage connection");
+        }
+        if (StringUtils.isEmpty(unitId)) {
+            throw new CustomException("INVALID_UNIT_ID", "Unit ID is required for creating a garbage connection");
+        }
+        if (request.getRequestInfo() == null) {
+            throw new CustomException("INVALID_REQUEST_INFO", "Request info cannot be null");
         }
 
-        // Check max 3 connections per property
-        List<GarbageConnection> propertyConnections = gcService.search(criteriaForProperty, request.getRequestInfo());
-        
-        if (propertyConnections != null && !propertyConnections.isEmpty()) {
-            // Filter active connections only
-            List<GarbageConnection> activeConnections = propertyConnections.stream()
-                    .filter(conn -> conn.getStatus() == StatusEnum.ACTIVE)
-                    .collect(Collectors.toList());
+        try {
+            // Search for existing connections for this property and unit
+            SearchCriteria criteriaForUnit = SearchCriteria.builder()
+                    .propertyId(propertyId)
+                    .unitId(unitId)
+                    .tenantId(tenantId)
+                    .build();
+
+            // Search for all connections on the property to check max limit
+            SearchCriteria criteriaForProperty = SearchCriteria.builder()
+                    .propertyId(propertyId)
+                    .tenantId(tenantId)
+                    .build();
+
+            // Check if unit already has a connection
+            List<GarbageConnection> unitConnections = gcService.search(criteriaForUnit, request.getRequestInfo());
             
-            if (activeConnections.size() >= 3) {
-                throw new CustomException("MAX_CONNECTIONS_EXCEEDED",
-                        "Property " + propertyId + " already has 3 active connections. " +
-                                "Maximum 3 garbage connections are allowed per property.");
+            if (unitConnections != null && !unitConnections.isEmpty()) {
+                // Filter active connections only for this unit
+                boolean unitHasActiveConnection = unitConnections.stream()
+                        .filter(conn -> conn != null && conn.getStatus() != null)
+                        .anyMatch(conn -> conn.getStatus() == StatusEnum.ACTIVE);
+                
+                if (unitHasActiveConnection) {
+                    throw new CustomException("UNIT_ALREADY_HAS_CONNECTION",
+                            "Unit " + unitId + " already has an active garbage connection. " +
+                                    "Only one connection is allowed per unit.");
+                }
             }
+
+            // Check max 3 connections per property
+            List<GarbageConnection> propertyConnections = gcService.search(criteriaForProperty, request.getRequestInfo());
             
-            log.info("Validation passed: Property {} has {} active connections, adding connection for unit {}",
-                    propertyId, activeConnections.size(), unitId);
+            if (propertyConnections != null && !propertyConnections.isEmpty()) {
+                // Filter active connections only
+                List<GarbageConnection> activeConnections = propertyConnections.stream()
+                        .filter(conn -> conn != null && conn.getStatus() != null && conn.getStatus() == StatusEnum.ACTIVE)
+                        .collect(Collectors.toList());
+                
+                if (activeConnections.size() >= 3) {
+                    throw new CustomException("MAX_CONNECTIONS_EXCEEDED",
+                            "Property " + propertyId + " already has 3 active connections. " +
+                                    "Maximum 3 garbage connections are allowed per property.");
+                }
+                
+                log.info("Validation passed: Property {} has {} active connections, adding connection for unit {}",
+                        propertyId, activeConnections.size(), unitId);
+            }
+        } catch (CustomException e) {
+            throw e; // Re-throw CustomException as-is
+        } catch (Exception e) {
+            log.error("Error while validating connections per property for propertyId: {}, unitId: {}", propertyId, unitId, e);
+            throw new CustomException("CONNECTION_VALIDATION_ERROR", 
+                    "An error occurred while validating connections for property: " + propertyId + 
+                    ". Error: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 }

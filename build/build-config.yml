@@ -1016,3 +1016,11 @@ config:
       - work-dir: "utilities/search-api"
         image-name: "search-api"
         dockerfile: 'build/Dockerfile'
+
+  - name: "builds/upyog/core-services/egov-property-rate-search"
+    build:
+      - work-dir: "core-services/egov-property-rate-search"
+        image-name: "egov-property-rate-search"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-property-rate-search/src/main/resources/db"
+        image-name: "egov-property-rate-search-db"

@@ -120,17 +120,6 @@ public class LAYOUTConfiguration {
 	@Value("${egov.employee.search.endpoint}")
 	private String employeeSearchEndpoint;
 
-	@Value("${egov.property.service.host}")
-	private String propertyHost;
-
-	@Value("${egov.property.service.context.path}")
-	private String propertyContextPath;
-
-	@Value("${egov.property.searchendpoint}")
-	private String propertySearchEndpoint;
-
-	@Value("${egov.property.createendpoint}")
-	private String propertyCreateEndpoint;
 
 	@Value("${persister.update.layout.workflow.topic}")
 	private String updateWorkflowTopic;

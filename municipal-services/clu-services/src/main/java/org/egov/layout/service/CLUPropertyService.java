@@ -12,7 +12,6 @@ import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.bpa.Address;
-import org.egov.layout.web.model.bpa.GeoLocation;
 import org.egov.layout.web.model.property.Property;
 import org.egov.layout.web.model.property.PropertyCriteria;
 import org.egov.layout.web.model.property.PropertyRequest;
@@ -86,21 +85,32 @@ public class CLUPropertyService {
 			throw new CustomException("PARSING_ERROR", "The property json cannot be parsed");
 		}
 	}
+	private Address buildAddressFromSiteDetails(Map<String, Object> siteDetails) {
+
+		Address address = new Address();
+
+		address.setPlotNo((String) siteDetails.get("plotNo"));
+		address.setDistrict((String) siteDetails.get("district"));
+		address.setAdditionDetails((String) siteDetails.get("proposedSiteAddress"));
+
+		Map<String, Object> ulb = (Map<String, Object>) siteDetails.get("ulbName");
+		if (ulb != null) {
+			address.setTenantId((String) ulb.get("code"));
+
+			Map<String, Object> city = (Map<String, Object>) ulb.get("city");
+			if (city != null) {
+				address.setCity((String) city.get("name"));
+			}
+		}
+
+		return address;
+	}
 
 	private Property createPropertFromCLU(Clu clu) {
 		
 		Map<String,Object> additionalDetails = (Map<String, Object>)clu.getNocDetails().getAdditionalDetails();
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetails.get("siteDetails");
-		Address address = Address.builder()
-				.tenantId(clu.getTenantId())
-				.plotNo(siteDetails.getOrDefault("plotNo",
-						"").toString())
-				.district(siteDetails.getOrDefault("district",
-						"").toString())
-				.city(siteDetails.get("ulbName") != null
-						? ((Map<String, Object>) siteDetails.get("ulbName")).getOrDefault("name", "").toString()
-						: "")
-				.build();
+		Address address = buildAddressFromSiteDetails(siteDetails);
 		address.setId("");
 		address.setAuditDetails(null);
 		

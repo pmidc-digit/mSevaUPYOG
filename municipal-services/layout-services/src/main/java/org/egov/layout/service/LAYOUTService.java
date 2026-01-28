@@ -72,9 +72,6 @@ public class LAYOUTService {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@Autowired
-	private LayoutPropertyService layoutPropertyService;
-
 	/**
 	 * entry point from controller, takes care of next level logic from controller to create NOC application
 	 * @param nocRequest
@@ -94,9 +91,9 @@ public class LAYOUTService {
 		String ulbType = (String) siteDetails.get("ulbType");
 		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
 		String buildingCategoryType = (String) buildingCategory.get("code");
-		if(buildingCategoryType.equals("RESIDENTIAL")){
+		if(buildingCategoryType.equals("RESIDENTIAL_PLOTTED")){
 			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");
-		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE")){
+		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE_BUILDING")){
 			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
 		}
 		else{
@@ -209,16 +206,6 @@ public class LAYOUTService {
 		if (owners != null) {
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
 		}
-		Object additionalDetailsData = nocRequest.getLayout().getNocDetails().getAdditionalDetails();
-		Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
-		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
-
-		Boolean propertyCheck = (Boolean) siteDetails.get("isPropertyAvailable");
-		Boolean isPropertyAvailable = propertyCheck==null ? false:propertyCheck;
-
-		String propertyId = (String) siteDetails.get("propertyuid");;
-		if(!isPropertyAvailable && net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(propertyId))
-			layoutPropertyService.createProperty(nocRequest);
 
 		State currentState = workflowService.getCurrentState(layout.getApplicationStatus(), businessServicename);
 		String nextStateId = currentState.getActions().stream()

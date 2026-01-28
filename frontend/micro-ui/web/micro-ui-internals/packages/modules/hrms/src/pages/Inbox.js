@@ -121,7 +121,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
       );
     } else {
       return (
-        <div style={{ overflowX: "auto" }}>
+        <div className="hrms-overflow--x-auto">
           {isInbox && <Header>{t("HR_HOME_SEARCH_RESULTS_HEADING")}</Header>}
           <DesktopInbox
             businessService={businessService}

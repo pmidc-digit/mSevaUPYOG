@@ -133,10 +133,9 @@ const CreateEmployee = () => {
   }
 
   const config = mdmsData?.config ? mdmsData.config : newConfig;
-  console.log("Checking config in create employee:", mdmsData?.config ? true : false);
   return (
     <div>
-      <div className="hrms-header-wrapper" style={{ fontFamily: "calibri", color: "#FF0000" }}>
+      <div className="hrms-header-wrapper hrms-header-wrapper--error">
         <Header>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</Header>
       </div>
       <FormComposer

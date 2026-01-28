@@ -34,7 +34,7 @@ const ReasonModal = ({ closeModal, t, cancelModal }) => {
 
   const onSubmit = (data) => {
     console.log("data===", data);
-    cancelModal();
+    cancelModal(data);
   };
 
   return (
@@ -49,9 +49,9 @@ const ReasonModal = ({ closeModal, t, cancelModal }) => {
       >
         <div className="label-field-pair" style={{ marginTop: " 20px", height: "150px", padding: " 0 30px" }}>
           <CardLabel>
-            {`${t("CHB_DISCOUNT_REASON")}`} <span style={{ color: "red" }}>*</span>
+            {`${t("CHB_DISCOUNT_REASON")}`} <span className="mandatory-asterisk">*</span>
           </CardLabel>
-          <div className="form-field" style={{ width: "100%" }}>
+          <div className="form-field w-fullwidth">
             <Controller
               control={control}
               name="reason"
@@ -73,7 +73,7 @@ const ReasonModal = ({ closeModal, t, cancelModal }) => {
                 />
               )}
             />
-            {errors?.reason && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.reason.message}</p>}
+            {errors?.reason && <p className="chb-error-text">{errors.reason.message}</p>}
           </div>
         </div>
         <ActionBar style={{ position: "relative" }}>

@@ -8,9 +8,9 @@ import Stepper from "../../../../../react-components/src/customComponents/Steppe
 import { layoutStepperConfig } from "../../config/layoutStepperConfig";
 import {
   SET_LayoutNewApplication_STEP,
-  RESET_LAYOUT_NEW_APPLICATION_FORM,
   UPDATE_LayoutNewApplication_FORM,
   UPDATE_LayoutNewApplication_CoOrdinates,
+  RESET_LayoutNewApplication_FORM,
 } from "../../redux/actions/LayoutNewApplicationActions";
 
 import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
@@ -331,7 +331,7 @@ const EditLayoutApplication = () => {
   useEffect(() => {
     // Reset form only once when component mounts
     if (!hasResetForm.current) {
-      dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
+      dispatch(RESET_LayoutNewApplication_FORM());
       hasResetForm.current = true;
     }
     

@@ -3,7 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll} from "../../utils";
-import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
+// import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
 
 const NOCResponseCitizen = (props) => {
   const location=useLocation();
@@ -23,6 +23,9 @@ const NOCResponseCitizen = (props) => {
   const onSubmit = () => {
     history.push(`/digit-ui/citizen`);
   };
+  const onViewApplication = () => {
+    history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+  };
 
   const onGoToNOC = () => {
     history.push(`/digit-ui/citizen/noc-home`);
@@ -33,20 +36,20 @@ const NOCResponseCitizen = (props) => {
   };
 
 
-  const handleDownloadPdf = async () => {
-    try{
-    const Property = nocData;
-    //console.log("tenants in NOC", tenants);
-    const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-    const ulbType = site?.ulbType;
-    const ulbName = site?.ulbName?.city?.name || site?.ulbName;
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
-    }catch(error){
-      console.log("Eroor Occurred !!!", error);
-    }
-  };
+  // const handleDownloadPdf = async () => {
+  //   try{
+  //   const Property = nocData;
+  //   //console.log("tenants in NOC", tenants);
+  //   const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+  //   const ulbType = site?.ulbType;
+  //   const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+  //   const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+  //   const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+  //   Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+  //   }catch(error){
+  //     console.log("Eroor Occurred !!!", error);
+  //   }
+  // };
 
 
   return (
@@ -62,17 +65,18 @@ const NOCResponseCitizen = (props) => {
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
-        {nocData?.applicationStatus !== "REJECTED" ? (
+        {/* {nocData?.applicationStatus !== "REJECTED" ? (
           <div>
           {/* <CardText>
             {t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
           </CardText> */}
-          <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+          {/* <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
           </div>
-        ) : null}
+        ) : null} */} 
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
+          <SubmitBar label={t("View Application")} onSubmit={onViewApplication} />
           {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>

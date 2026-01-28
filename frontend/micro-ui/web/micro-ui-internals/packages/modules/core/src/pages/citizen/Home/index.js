@@ -203,7 +203,14 @@ const Home = () => {
   }, [UserType]);
 
   const toDigitUrl = (url) => {
+    console.log("url", url);
+
     if (!url) return url;
+
+    if (url.includes("property-tax")) {
+      history.push("/digit-ui/citizen/pt-home");
+      return;
+    }
 
     // Case 1: React SPA route → stay inside React Router
     if (url.startsWith("/digit-ui")) {

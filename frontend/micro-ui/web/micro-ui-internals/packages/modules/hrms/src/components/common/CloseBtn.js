@@ -7,7 +7,7 @@ const Close = () => (
 );
 
 const CloseBtn = ({ onClick }) => (
-  <div className="icon-bg-secondary" onClick={onClick} style={{ backgroundColor: "#FFFFFF", cursor: "pointer" }}>
+  <div className="icon-bg-secondary hrms-close-btn" onClick={onClick}>
     <Close />
   </div>
 );

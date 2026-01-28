@@ -35,6 +35,7 @@ export const GCService = {
       params: {},
       auth: true,
     }),
+
   validateConnection: ({ tenantId, filters, auth }) =>
     Request({
       url: Urls.gc.validateConnection,
@@ -43,6 +44,30 @@ export const GCService = {
       auth: auth === false ? auth : true,
       userService: auth === false ? auth : true,
       params: { tenantId, ...filters },
+    }),
+
+  schedulerCreate: (details, tenantId) =>
+    Request({
+      url: Urls.gc.scheduler,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: {},
+      auth: true,
+    }),
+
+  billGenieSearch: (details, tenantId) =>
+    Request({
+      url: Urls.gc.billGenie,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: {},
+      auth: true,
     }),
 
   location: ({ tenantId, filters, auth }) =>

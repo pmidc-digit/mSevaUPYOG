@@ -19,6 +19,24 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tableColumnConfig = useMemo(() => {
     return [
       {
+        Header: t("CHB_APPLICANT_NAME"),
+        Cell: ({ row }) => {
+          console.log("row", row);
+          return (
+            <div>
+              <span className="link">{row?.original?.owner}</span>
+            </div>
+          );
+        },
+        // accessor: (row) =>
+        //   row?.Applicant?.firstname
+        //     ? row?.Applicant?.firstname
+        //     : "" + " " + row?.original?.Applicant?.lastname
+        //     ? row?.original?.Applicant?.lastname
+        //     : "",
+        disableSortBy: true,
+      },
+      {
         Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "uuid",
         disableSortBy: true,

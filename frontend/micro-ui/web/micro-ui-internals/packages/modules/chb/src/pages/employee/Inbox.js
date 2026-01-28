@@ -132,6 +132,7 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (data) {
+      console.log("yes data", data);
       setStatuses(data?.statuses || []);
       setTable(data?.table || []);
       setTotalCount(data?.totalCount || 0);

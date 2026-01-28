@@ -194,7 +194,6 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const LayoutLocalityInfo = Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo");
   const LayoutSiteDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails");
   const LayoutSpecificationDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSpecificationDetails");
-  const LayoutCLUDetails = Digit?.ComponentRegistryService?.getComponent("LayoutCLUDetails");
 
   return (
     <React.Fragment>
@@ -203,17 +202,14 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
           <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
           <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
         </div>
         <ActionBar>
-          <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="go-back-footer-button" label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
 
-      {showToast && (
-        <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />
-      )}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
   );
 };

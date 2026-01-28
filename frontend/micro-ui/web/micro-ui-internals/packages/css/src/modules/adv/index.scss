@@ -272,7 +272,6 @@
   cursor: not-allowed;
 }
 
-
 .ads-cart-table-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -391,9 +390,9 @@
 
 .ads-summary-edit {
   cursor: pointer;
-  color: #2e86de;
+  color: #2e86de !important;
   font-weight: 600;
-  font-size: 0.9rem;
+  text-align: end !important;
 }
 
 .ads-summary-row {
@@ -517,14 +516,14 @@
   font-size: 16px;
 }
 .ads-btn-back {
-  background: #fff;          
-  color: #2947a3;           
-  border: 1px solid #2947a3; 
+  background: #fff;
+  color: #2947a3;
+  border: 1px solid #2947a3;
 }
 .ads-heading-large {
   font-size: 28px;
   font-weight: 500;
-  color: #1C1D1F;
+  color: #1c1d1f;
 }
 .ads-search-container {
   width: auto;
@@ -550,4 +549,95 @@
 .ads-search-submit-wrapper {
   max-width: unset;
   margin-left: unset;
+}
+
+/* ADS AdCard Refactored Styles */
+.ads-ad-card-image-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ads-ad-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #444;
+}
+
+.ads-ad-card-info-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ads-ad-card-info-row--bold {
+  font-weight: 600;
+}
+
+.ads-ad-card-amount {
+  color: #222;
+}
+
+.ads-ad-card-light {
+  color: green;
+  font-weight: 600;
+}
+
+.ads-ad-card-date-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.ads-ad-card-date-field {
+  flex: 1;
+}
+
+.ads-ad-card-date-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.ads-ad-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ads-ad-card-cart-icon {
+  color: black;
+}
+
+.ads-availibility-for-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* ADS Cart Modal Refactored Styles */
+.ads-cart-modal-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ads-cart-empty-text {
+  padding: 12px;
+  color: #666;
+}
+
+.ads-cart-item-header-info {
+  cursor: pointer;
+  flex: 1;
+}
+
+.ads-cart-item-toggle-modal {
+  font-size: 18px;
+  margin-left: 8px;
+}
+
+.ads-reservation-wrapper {
+  display: flex;
+  justify-content: flex-end;
 }

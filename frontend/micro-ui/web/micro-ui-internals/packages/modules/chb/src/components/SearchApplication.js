@@ -152,26 +152,13 @@
                       />
                       {isMenuOpen && (
                         <div
-                          style={{
-                            position: 'absolute',
-                            backgroundColor: 'white',
-                            border: '1px solid #ccc',
-                            borderRadius: '4px',
-                            padding: '8px',
-                            zIndex: 1000,
-                          }}
+                          className="chb-dropdown-menu"
                         >
                           {/* Action for Cancel */}
                           {application?.bookingStatus === "BOOKED" && (
                             <div
                               onClick={handleCancel}
-                              style={{
-                                display: 'block',
-                                padding: '8px',
-                                textDecoration: 'none',
-                                color: 'black',
-                                cursor: 'pointer',
-                              }}
+                              className="chb-menu-item"
                             >
                               {t("CHB_CANCEL")}
                             </div>
@@ -181,13 +168,7 @@
                           {application?.bookingStatus !== "BOOKED" && (
                             <div
                               onClick={() => handleNavigate(`/digit-ui/employee/payment/collect/chb-services/${row?.original?.bookingNo}`)}
-                              style={{
-                                display: 'block',
-                                padding: '8px',
-                                textDecoration: 'none',
-                                color: 'black',
-                                cursor: 'pointer',
-                              }}
+                              className="chb-menu-item"
                             >
                               {t("CHB_COLLECT_PAYMENT")}
                             </div>
@@ -226,167 +207,172 @@
       }
       let validation={}
 
-      return <React.Fragment>
-                  
-                  <div>
-                  <Header>{t("CHB_SEARCH_BOOKINGS")}</Header>
-                  < Card className={"card-search-heading"}>
-                      <span style={{color:"#505A5F"}}>{t("Provide at least one parameter to search for an application")}</span>
-                  </Card>
-                  <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
-                  <SearchField>
-                      <label>{t("CHB_BOOKING_NO")}</label>
-                      <TextInput name="bookingNo" inputRef={register({})} />
-                  </SearchField>
-                  <SearchField>
-                      <label>{t("CHB_COMMUNITY_HALL_NAME")}</label>
-                      <Controller
-                              control={control}
-                              name="communityHallCode"
-                              render={(props) => (
-
-                                  <Dropdown
-                                  selected={props.value}
-                                  select={props.onChange}
-                                  onBlur={props.onBlur}
-                                  option={menu}
-                                  optionKey="i18nKey"
-                                  t={t}
-                                  disable={false}
-                                  />
-                                  
-                              )}
-                              />
-                  </SearchField>
-                  <SearchField>
-                      <label>{t("PT_COMMON_TABLE_COL_STATUS_LABEL")}</label>
-                      <Controller
-                              control={control}
-                              name="status"
-                              render={(props) => (
-                                  <Dropdown
-                                  selected={props.value}
-                                  select={props.onChange}
-                                  onBlur={props.onBlur}
-                                  option={statusOptions}
-                                  optionKey="i18nKey"
-                                  t={t}
-                                  disable={false}
-                                  />
-                                  
-                              )}
-                              />
-                  </SearchField>
-                  <SearchField>
-                  <label>{t("CHB_MOBILE_NUMBER")}</label>
-                  <MobileNumber
-                      name="mobileNumber"
-                      inputRef={register({
-                      minLength: {
-                          value: 10,
-                          message: t("CORE_COMMON_MOBILE_ERROR"),
-                      },
-                      maxLength: {
-                          value: 10,
-                          message: t("CORE_COMMON_MOBILE_ERROR"),
-                      },
-                      pattern: {
+      return (
+        <React.Fragment>
+          <div>
+            <Header>{t("CHB_SEARCH_BOOKINGS")}</Header>
+            <Card className={"card-search-heading"}>
+              <span className="cell-text">{t("Provide at least one parameter to search for an application")}</span>
+            </Card>
+            <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
+              <SearchField>
+                <label>{t("CHB_BOOKING_NO")}</label>
+                <TextInput name="bookingNo" inputRef={register({})} />
+              </SearchField>
+              <SearchField>
+                <label>{t("CHB_COMMUNITY_HALL_NAME")}</label>
+                <Controller
+                  control={control}
+                  name="communityHallCode"
+                  render={(props) => (
+                    <Dropdown
+                      selected={props.value}
+                      select={props.onChange}
+                      onBlur={props.onBlur}
+                      option={menu}
+                      optionKey="i18nKey"
+                      t={t}
+                      disable={false}
+                    />
+                  )}
+                />
+              </SearchField>
+              <SearchField>
+                <label>{t("PT_COMMON_TABLE_COL_STATUS_LABEL")}</label>
+                <Controller
+                  control={control}
+                  name="status"
+                  render={(props) => (
+                    <Dropdown
+                      selected={props.value}
+                      select={props.onChange}
+                      onBlur={props.onBlur}
+                      option={statusOptions}
+                      optionKey="i18nKey"
+                      t={t}
+                      disable={false}
+                    />
+                  )}
+                />
+              </SearchField>
+              <SearchField>
+                <label>{t("CHB_MOBILE_NUMBER")}</label>
+                <MobileNumber
+                  name="mobileNumber"
+                  inputRef={register({
+                    minLength: {
+                      value: 10,
+                      message: t("CORE_COMMON_MOBILE_ERROR"),
+                    },
+                    maxLength: {
+                      value: 10,
+                      message: t("CORE_COMMON_MOBILE_ERROR"),
+                    },
+                    pattern: {
                       value: /[6789][0-9]{9}/,
                       //type: "tel",
                       message: t("CORE_COMMON_MOBILE_ERROR"),
-                      },
+                    },
                   })}
                   type="number"
                   componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
                   //maxlength={10}
-                  />
-                  <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
-                  </SearchField> 
-                  <SearchField>
-                      <label>{t("FROM_DATE")}</label>
-                      <Controller
-                          render={(props) => <DatePicker date={props.value} disabled={false} onChange={props.onChange}  max={new Date().toISOString().split('T')[0]}/>}
-                          name="fromDate"
-                          control={control}
-                          />
-                  </SearchField>
-                  <SearchField>
-                      <label>{t("TO_DATE")}</label>
-                      <Controller
-                          render={(props) => <DatePicker date={props.value} disabled={false} onChange={props.onChange} />}
-                          name="toDate"
-                          control={control}
-                          />
-                  </SearchField>
-                  <SearchField></SearchField>
-                  <SearchField className="submit">
-                      <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
-                      <p style={{marginTop:"10px"}}
-                      onClick={() => {
-                          reset({ 
-                              bookingNo: "", 
-                              communityHallCode: "",
-                              fromDate: "", 
-                              toDate: "",
-                              mobileNumber:"",
-                              status: "",
-                              offset: 0,
-                              limit: 10,
-                              sortBy: "commencementDate",
-                              sortOrder: "DESC"
-                          });
-                          setShowToast(null);
-                          previousPage();
-                      }}>{t(`ES_COMMON_CLEAR_ALL`)}</p>
-                  </SearchField>
-              </SearchForm>
-              {!isLoading && data?.display ? <Card style={{ marginTop: 20 }}>
-                  {
-                  t(data.display)
-                      .split("\\n")
-                      .map((text, index) => (
-                      <p key={index} style={{ textAlign: "center" }}>
-                          {text}
-                      </p>
-                      ))
-                  }
-              </Card>
-              :(!isLoading && data !== ""? <Table
-                  t={t}
-                  data={data}
-                  totalRecords={count}
-                  columns={columns}
-                  getCellProps={(cellInfo) => {
-                  return {
-                      style: {
-                      minWidth: cellInfo.column.Header === t("CHB_INBOX_APPLICATION_NO") ? "240px" : "",
-                      padding: "20px 18px",
-                      fontSize: "16px"
-                    },
-                  };
+                />
+                <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
+              </SearchField>
+              <SearchField>
+                <label>{t("FROM_DATE")}</label>
+                <Controller
+                  render={(props) => (
+                    <DatePicker date={props.value} disabled={false} onChange={props.onChange} max={new Date().toISOString().split("T")[0]} />
+                  )}
+                  name="fromDate"
+                  control={control}
+                />
+              </SearchField>
+              <SearchField>
+                <label>{t("TO_DATE")}</label>
+                <Controller
+                  render={(props) => <DatePicker date={props.value} disabled={false} onChange={props.onChange} />}
+                  name="toDate"
+                  control={control}
+                />
+              </SearchField>
+              <SearchField></SearchField>
+              <SearchField className="submit">
+                <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
+                <p
+                  className="link-button-margin"
+                  onClick={() => {
+                    reset({
+                      bookingNo: "",
+                      communityHallCode: "",
+                      fromDate: "",
+                      toDate: "",
+                      mobileNumber: "",
+                      status: "",
+                      offset: 0,
+                      limit: 10,
+                      sortBy: "commencementDate",
+                      sortOrder: "DESC",
+                    });
+                    setShowToast(null);
+                    previousPage();
                   }}
-                  onPageSizeChange={onPageSizeChange}
-                  currentPage={getValues("offset")/getValues("limit")}
-                  onNextPage={nextPage}
-                  onPrevPage={previousPage}
-                  pageSizeLimit={getValues("limit")}
-                  onSort={onSort}
-                  disableSort={false}
-                  sortParams={[{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}]}
-              />: data !== "" || isLoading && <Loader/>)}
-              </div>
-              {showModal && <CHBCancelBooking 
-                t={t}
-                //surveyTitle={surveyData.title}
-                closeModal={() => setShowModal(false)}
-                actionCancelLabel={"BACK"}
-                actionCancelOnSubmit={() => setShowModal(false)}
-                actionSaveLabel={"CHB_CANCEL"}
-                actionSaveOnSubmit={handleCancelBooking}   
-                onSubmit={handleCancelBooking} 
                 >
-            </CHBCancelBooking> }
-          </React.Fragment>
+                  {t(`ES_COMMON_CLEAR_ALL`)}
+                </p>
+              </SearchField>
+            </SearchForm>
+            {!isLoading && data?.display ? (
+              <Card className="chb-margin-top-20">
+                {t(data.display)
+                  .split("\\n")
+                  .map((text, index) => (
+                    <p key={index} className="text-align-center">
+                      {text}
+                    </p>
+                  ))}
+              </Card>
+            ) : !isLoading && data !== "" ? (
+              <Table
+                t={t}
+                data={data}
+                totalRecords={count}
+                columns={columns}
+                getCellProps={(cellInfo) => {
+                  return {
+                    style: { minWidth: cellInfo.column.Header === t("CHB_INBOX_APPLICATION_NO") ? "240px" : "" },
+                    className: "ads-default-cell",
+                  };
+                }}
+                onPageSizeChange={onPageSizeChange}
+                currentPage={getValues("offset") / getValues("limit")}
+                onNextPage={nextPage}
+                onPrevPage={previousPage}
+                pageSizeLimit={getValues("limit")}
+                onSort={onSort}
+                disableSort={false}
+                sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+              />
+            ) : (
+              data !== "" || (isLoading && <Loader />)
+            )}
+          </div>
+          {showModal && (
+            <CHBCancelBooking
+              t={t}
+              //surveyTitle={surveyData.title}
+              closeModal={() => setShowModal(false)}
+              actionCancelLabel={"BACK"}
+              actionCancelOnSubmit={() => setShowModal(false)}
+              actionSaveLabel={"CHB_CANCEL"}
+              actionSaveOnSubmit={handleCancelBooking}
+              onSubmit={handleCancelBooking}
+            ></CHBCancelBooking>
+          )}
+        </React.Fragment>
+      );
   }
 
   export default CHBSearchApplication

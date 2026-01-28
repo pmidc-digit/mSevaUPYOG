@@ -203,7 +203,7 @@ const CitizenApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
+      <div className="ndc-application-overview" >
         {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
@@ -251,7 +251,7 @@ const CitizenApplicationOverview = () => {
         {displayData?.NdcDetails?.map((detail, index) => {
           const isRed = detail.dueAmount > 0;
           return (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div className="ndc-application-overview-table" key={index} >
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}

@@ -1,6 +1,5 @@
 import QRCode from "qrcode";
 const getAcknowledgement = async (application, t) => {
-  console.log('application', application)
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",

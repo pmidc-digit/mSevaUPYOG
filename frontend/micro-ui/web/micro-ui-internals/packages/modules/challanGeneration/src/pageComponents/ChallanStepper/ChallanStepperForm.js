@@ -136,36 +136,22 @@ const ChallanStepperForm = () => {
   };
 
   return (
-    <div
-      className="card"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh", // full viewport height
-        background: "#f9f9f9", // optional light background
-      }}
+    <div 
+      className="card custom-challan-card"
+     
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "600px", // limits form width
-          background: "#fff",
-          padding: "30px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-        }}
+      <div className="challan-stepper-parent-component"
+       
       >
-        <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        <CardHeader divider={true}>
           {t("CREATE_CHALLAN")}
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardLabel style={{ fontWeight: "bold", paddingBottom: "30px", fontSize: "25px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
+          <CardLabel>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
           <div style={{ width: "100%" }}>
             <div>
               <CardLabel>
-                {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
+                {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span className="requiredField">*</span>
               </CardLabel>
               <Controller
                 control={control}
@@ -195,12 +181,12 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+              {errors?.mobileNumber && <p className="requiredField">{errors.mobileNumber.message}</p>}
             </div>
 
-            <div style={{ marginBottom: "20px" }}>
+            <div>
               <CardLabel>
-                {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
+                {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span className="requiredField">*</span>
               </CardLabel>
               <Controller
                 control={control}
@@ -211,7 +197,7 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <TextInput
-                    style={{ marginBottom: 0 }}
+                  
                     value={props.value}
                     error={errors?.name?.message}
                     onChange={(e) => {
@@ -224,13 +210,13 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
+              {errors?.name && <p className="requiredField">{errors.name.message}</p>}
             </div>
 
             {/* address field yes */}
-            <div style={{ marginBottom: "20px" }}>
+            <div>
               <CardLabel>
-                {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
+                {`${t("PT_COMMON_COL_ADDRESS")}`} <span className="requiredField">*</span>
               </CardLabel>
               <Controller
                 control={control}
@@ -241,7 +227,7 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <TextArea
-                    style={{ marginBottom: 0 }}
+                   
                     name="address"
                     value={props.value}
                     onChange={(e) => {
@@ -254,13 +240,13 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
+              {errors?.address && <p className="requiredField">{errors.address.message}</p>}
             </div>
 
             {/* Offence Category */}
-            <LabelFieldPair style={{ marginTop: "20px" }}>
+            <LabelFieldPair>
               <CardLabel>
-                {t("CHALLAN_OFFENCE_CATEGORY")} <span style={{ color: "red" }}>*</span>
+                {t("CHALLAN_OFFENCE_CATEGORY")} <span className="requiredField">*</span>
               </CardLabel>
               <Controller
                 control={control}
@@ -269,7 +255,7 @@ const ChallanStepperForm = () => {
                 rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0, width: "100%" }}
+                  
                     className="form-field"
                     select={props.onChange}
                     selected={props.value}
@@ -279,13 +265,13 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors.offenceCategory && <p style={{ color: "red" }}>{errors.offenceCategory.message}</p>}
+              {errors.offenceCategory && <p className="requiredField">{errors.offenceCategory.message}</p>}
             </LabelFieldPair>
 
             {/* Offence Subcategory */}
-            <LabelFieldPair style={{ marginTop: "20px" }}>
+            <LabelFieldPair  >
               <CardLabel>
-                {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span style={{ color: "red" }}>*</span>
+                {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span className="requiredField">*</span>
               </CardLabel>
               <Controller
                 control={control}
@@ -294,7 +280,7 @@ const ChallanStepperForm = () => {
                 rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0, width: "100%" }}
+                    
                     className="form-field"
                     select={(e) => {
                       props.onChange(e);
@@ -306,13 +292,13 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
+              {errors.offenceSubCategory && <p className="requiredField">{errors.offenceSubCategory.message}</p>}
             </LabelFieldPair>
 
             {/* offence type */}
-            <LabelFieldPair style={{ marginTop: "20px" }}>
+            <LabelFieldPair  >
               <CardLabel>
-                {t("CHALLAN_TYPE_OFFENCE")} <span style={{ color: "red" }}>*</span>
+                {t("CHALLAN_TYPE_OFFENCE")} <span className="requiredField">*</span>
               </CardLabel>
               <Controller
                 control={control}
@@ -321,7 +307,7 @@ const ChallanStepperForm = () => {
                 rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
-                    style={{ marginBottom: 0, width: "100%" }}
+                    
                     className="form-field"
                     // select={props.onChange}
                     select={(e) => {
@@ -335,11 +321,11 @@ const ChallanStepperForm = () => {
                   />
                 )}
               />
-              {errors.offenceType && <p style={{ color: "red" }}>{errors.offenceType.message}</p>}
+              {errors.offenceType && <p className="requiredField">{errors.offenceType.message}</p>}
             </LabelFieldPair>
 
             {/* Challan Amount Default */}
-            <LabelFieldPair style={{ marginTop: "20px" }}>
+            <LabelFieldPair  >
               <CardLabel>{`${t("DEFAULT_CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
@@ -347,7 +333,7 @@ const ChallanStepperForm = () => {
                 render={(props) => (
                   <TextInput
                     type="number"
-                    style={{ marginBottom: 0, width: "100%" }}
+                    
                     value={props.value}
                     error={errors?.name?.message}
                     disable={true}
@@ -364,7 +350,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* Challan Amount */}
-            {/* <LabelFieldPair style={{ marginTop: "20px" }}>
+            {/* <LabelFieldPair  >
               <CardLabel>{`${t("CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
@@ -373,7 +359,7 @@ const ChallanStepperForm = () => {
                   <input
                     className="employee-card-input focus-visible"
                     type="number"
-                    style={{ marginBottom: 0, width: "100%" }}
+                    
                     value={props.value}
                     error={errors?.name?.message}
                     onWheel={(e) => e.target.blur()}
@@ -396,10 +382,10 @@ const ChallanStepperForm = () => {
             </LabelFieldPair> */}
           </div>
 
-          <CardLabel style={{ fontWeight: "bold", paddingTop: "30px", fontSize: "25px" }}>
-            {t("CHALLAN_DOCUMENTS")} <span style={{ color: "red" }}>*</span>
+          <CardLabel>
+            {t("CHALLAN_DOCUMENTS")} <span className="requiredField">*</span>
           </CardLabel>
-          <div style={{ marginTop: "20px" }}>
+          <div  >
             <SelectNDCDocuments
               t={t}
               config={{ key: "documents" }}

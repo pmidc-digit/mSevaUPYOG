@@ -202,10 +202,11 @@ public class CLUService {
 
 		Boolean propertyCheck = (Boolean) siteDetails.get("isPropertyAvailable");
 		Boolean isPropertyAvailable = propertyCheck==null ? false:propertyCheck;
-
-		String propertyId = (String) siteDetails.get("propertyuid");;
-		if(!isPropertyAvailable && net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(propertyId))
-			cluPropertyService.createProperty(nocRequest);
+		
+		// Create Property if Property not available
+//		String propertyId = (String) siteDetails.get("propertyuid");
+//		if(!isPropertyAvailable && StringUtils.isEmpty(propertyId))
+//			cluPropertyService.createProperty(nocRequest, mdmsData);
 
 		State currentState = workflowService.getCurrentState(clu.getApplicationStatus(), businessServicename);
 		String nextStateId = currentState.getActions().stream()

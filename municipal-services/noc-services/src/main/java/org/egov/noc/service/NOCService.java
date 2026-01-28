@@ -196,12 +196,10 @@ public class NOCService {
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
 
-		Boolean propertyCheck = (Boolean) siteDetails.get("isPropertyAvailable");
-		Boolean isPropertyAvailable = propertyCheck==null ? false:propertyCheck;
-
-		String propertyId = (String) siteDetails.get("propertyuid");;
-		if(!isPropertyAvailable && net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(propertyId))
-			nocPropertyService.createProperty(nocRequest);
+		// Create Property if Property not available
+//		String propertyId = (String) siteDetails.getOrDefault("propertyuid", "");
+//		if(StringUtils.isEmpty(propertyId))
+//			nocPropertyService.createProperty(nocRequest, mdmsData);
 
 		if(nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE) || nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY)){
 			searchResult = new Noc();

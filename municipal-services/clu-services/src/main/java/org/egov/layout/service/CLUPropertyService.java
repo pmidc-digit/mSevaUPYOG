@@ -12,6 +12,8 @@ import org.egov.layout.repository.ServiceRequestRepository;
 import org.egov.layout.web.model.Clu;
 import org.egov.layout.web.model.CluRequest;
 import org.egov.layout.web.model.bpa.Address;
+import org.egov.layout.web.model.bpa.Boundary;
+import org.egov.layout.web.model.bpa.GeoLocation;
 import org.egov.layout.web.model.property.Property;
 import org.egov.layout.web.model.property.PropertyCriteria;
 import org.egov.layout.web.model.property.PropertyRequest;
@@ -47,9 +49,9 @@ public class CLUPropertyService {
 
 
 
-	public void createProperty(CluRequest cluRequest) {
+	public void createProperty(CluRequest cluRequest, Object mdmsData) {
 		Clu clu = cluRequest.getLayout();
-		Property property = createPropertFromCLU(clu);
+		Property property = createPropertFromCLU(clu, mdmsData);
 
 		PropertyRequest propertyRequest = PropertyRequest.builder().property(property)
 				.requestInfo(cluRequest.getRequestInfo()).build();
@@ -85,34 +87,31 @@ public class CLUPropertyService {
 			throw new CustomException("PARSING_ERROR", "The property json cannot be parsed");
 		}
 	}
-	private Address buildAddressFromSiteDetails(Map<String, Object> siteDetails) {
 
-		Address address = new Address();
-
-		address.setPlotNo((String) siteDetails.get("plotNo"));
-		address.setDistrict((String) siteDetails.get("district"));
-		address.setAdditionDetails((String) siteDetails.get("proposedSiteAddress"));
-
-		Map<String, Object> ulb = (Map<String, Object>) siteDetails.get("ulbName");
-		if (ulb != null) {
-			address.setTenantId((String) ulb.get("code"));
-
-			Map<String, Object> city = (Map<String, Object>) ulb.get("city");
-			if (city != null) {
-				address.setCity((String) city.get("name"));
-			}
-		}
-
-		return address;
-	}
-
-	private Property createPropertFromCLU(Clu clu) {
+	private Property createPropertFromCLU(Clu clu, Object mdmsData) {
 		
 		Map<String,Object> additionalDetails = (Map<String, Object>)clu.getNocDetails().getAdditionalDetails();
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetails.get("siteDetails");
-		Address address = buildAddressFromSiteDetails(siteDetails);
-		address.setId("");
-		address.setAuditDetails(null);
+		Map<String, String> coordinates = (Map<String, String>) additionalDetails.get("coordinates");
+		String buildingStatus = JsonPath.read(siteDetails, "$.buildingStatus.code");
+		String buildingCategory = JsonPath.read(siteDetails, "$.buildingCategory.code");
+		
+		List<String> propertyUsageList = JsonPath.read(mdmsData, "$.MdmsRes.CLU.BuildingCategory.[?(@.code == '" + buildingCategory + "')].propertyUsage");
+
+		if(CollectionUtils.isEmpty(propertyUsageList))
+			throw new CustomException("UPDATE ERROR", "Property Usage not found for the Building Category : " + buildingCategory);
+		
+		Address address = Address.builder()
+				.tenantId(clu.getTenantId())
+				.plotNo(siteDetails.getOrDefault("plotNo", "").toString())
+				.district(siteDetails.getOrDefault("district", "").toString())
+				.city(siteDetails.getOrDefault("ulbName", "").toString())
+				.geoLocation(GeoLocation.builder()
+						.latitude(coordinates.get("Latitude1") != null ? Double.valueOf(coordinates.get("Latitude1")) : null )
+						.longitude(coordinates.get("Longitude1") != null ? Double.valueOf(coordinates.get("Longitude1")) : null ).build())
+				.locality(Boundary.builder().code("ALOC5").build())
+				.build();
+
 		
 		clu.getOwners().stream().forEach(owner -> {
 			if(owner.getOwnerType() == null)
@@ -122,11 +121,11 @@ public class CLUPropertyService {
 		return Property.builder()
 				.address(address).accountId(clu.getAccountId())
 				.landArea(Double.valueOf(siteDetails.get("netTotalArea").toString()))
-				.usageCategory(null)
-				.ownershipCategory(null)
+				.usageCategory(propertyUsageList.get(0))
+				.ownershipCategory(clu.getOwners().size() == 1 ? "INDIVIDUAL.SINGLEOWNER" : "INDIVIDUAL.MULTIPLEOWNERS" )
 				.owners(clu.getOwners())
 				.tenantId(clu.getTenantId())
-				.propertyType("VACANT")
+				.propertyType(buildingStatus)
 				.build();
 		
 	}

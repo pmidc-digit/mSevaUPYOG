@@ -10,12 +10,15 @@ import org.egov.noc.repository.ServiceRequestRepository;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
 import org.egov.noc.web.model.bpa.Address;
+import org.egov.noc.web.model.bpa.Boundary;
+import org.egov.noc.web.model.bpa.GeoLocation;
 import org.egov.noc.web.model.property.Property;
 import org.egov.noc.web.model.property.PropertyRequest;
 import org.egov.noc.web.model.property.PropertyResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,9 +46,9 @@ public class NOCPropertyService {
 
 
 
-	public void createProperty(NocRequest nocRequest) {
+	public void createProperty(NocRequest nocRequest, Object mdmsData) {
 		Noc noc = nocRequest.getNoc();
-		Property property = createPropertFromNOC(noc);
+		Property property = createPropertFromNOC(noc, mdmsData);
 
 		PropertyRequest propertyRequest = PropertyRequest.builder().property(property)
 				.requestInfo(nocRequest.getRequestInfo()).build();
@@ -81,35 +84,31 @@ public class NOCPropertyService {
 			throw new CustomException("PARSING_ERROR", "The property json cannot be parsed");
 		}
 	}
-	private Address buildAddressFromSiteDetails(Map<String, Object> siteDetails) {
 
-		Address address = new Address();
-
-		address.setPlotNo((String) siteDetails.get("plotNo"));
-		Map<String, Object>  district = (Map<String, Object>) siteDetails.get("district");
-		address.setDistrict((String) district.get("districtName"));
-		address.setAdditionDetails((String) siteDetails.get("proposedSiteAddress"));
-
-		Map<String, Object> ulb = (Map<String, Object>) siteDetails.get("ulbName");
-		if (ulb != null) {
-			address.setTenantId((String) ulb.get("code"));
-
-			Map<String, Object> city = (Map<String, Object>) ulb.get("city");
-			if (city != null) {
-				address.setCity((String) city.get("name"));
-			}
-		}
-
-		return address;
-	}
-
-	private Property createPropertFromNOC(Noc noc) {
+	private Property createPropertFromNOC(Noc noc, Object mdmsData) {
 		
 		Map<String,Object> additionalDetails = (Map<String, Object>)noc.getNocDetails().getAdditionalDetails();
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetails.get("siteDetails");
-		Address address = buildAddressFromSiteDetails(siteDetails);
-		address.setId("");
-		address.setAuditDetails(null);
+		Map<String, String> coordinates = (Map<String, String>) additionalDetails.get("coordinates");		
+		String buildingStatus = siteDetails.getOrDefault("buildingStatus", "").toString();
+		String specificationBuildingCategory = siteDetails.getOrDefault("specificationBuildingCategory", "").toString();
+		
+		List<String> buildingTypeList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingType.[?(@.name == '" + buildingStatus + "')].code");
+		List<String> propertyUsageList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].propertyUsage");
+		
+		if(CollectionUtils.isEmpty(propertyUsageList))
+			throw new CustomException("UPDATE ERROR", "Property Usage not found for the Building Category : " + specificationBuildingCategory);
+		
+		Address address = Address.builder()
+				.tenantId(noc.getTenantId())
+				.plotNo(siteDetails.getOrDefault("plotNo", "").toString())
+				.district(siteDetails.getOrDefault("district", "").toString())
+				.city(siteDetails.getOrDefault("ulbName", "").toString())
+				.geoLocation(GeoLocation.builder()
+						.latitude(coordinates.get("Latitude1") != null ? Double.valueOf(coordinates.get("Latitude1")) : null )
+						.longitude(coordinates.get("Longitude1") != null ? Double.valueOf(coordinates.get("Longitude1")) : null ).build())
+				.locality(Boundary.builder().code("ALOC5").build())
+				.build();
 		
 		noc.getOwners().stream().forEach(owner -> {
 			if(owner.getOwnerType() == null)
@@ -118,12 +117,12 @@ public class NOCPropertyService {
 		
 		return Property.builder()
 				.address(address).accountId(noc.getAccountId())
-				.landArea(Double.valueOf(siteDetails.get("specificationPlotArea").toString()))
-				.usageCategory(null)
-				.ownershipCategory(null)
+				.landArea(Double.valueOf(siteDetails.get("netTotalArea").toString()))
+				.usageCategory(propertyUsageList.get(0))
+				.ownershipCategory(noc.getOwners().size() == 1 ? "INDIVIDUAL.SINGLEOWNER" : "INDIVIDUAL.MULTIPLEOWNERS" )
 				.owners(noc.getOwners())
 				.tenantId(noc.getTenantId())
-				.propertyType("VACANT")
+				.propertyType(buildingTypeList.get(0))
 				.build();
 		
 	}

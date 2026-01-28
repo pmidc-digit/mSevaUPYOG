@@ -489,7 +489,7 @@ export const CreateComplaint = ({ parentUrl }) => {
     }
   }, [propertyId]);
   return (
-    <div className="card">
+    <div className="card pgr-create-complaint-wrapper">
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}

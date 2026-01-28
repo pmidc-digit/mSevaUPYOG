@@ -254,7 +254,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
           </CardLabel>
           <div
             className="field ndc_property_search"
-            style={{ display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            
             ref={myElementRef}
             id="search-property-field"
           >
@@ -269,7 +269,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
             />
 
             {!isSearchClicked && (
-              <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
+              <button className="submit-bar" type="button" onClick={searchProperty}>
                 {`${t("PT_SEARCH")}`}
               </button>
             )}
@@ -278,7 +278,6 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               <button
                 className="submit-bar"
                 type="button"
-                style={{ color: "white", fontSize: "13px", width: "100%", maxWidth: "180px" }}
                 onClick={() => {
                   fetchBill("PT", formData?.cpt?.id);
                 }}
@@ -287,13 +286,12 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
                 {/* Check Status */}
               </button>
             )}
-            {getPayDuesButton && <div style={{ color: "red", width: "100%", maxWidth: "70px" }}>Rs. {formData?.cpt?.dues?.totalAmount} </div>}
+            {getPayDuesButton && <div className="ndc-pay-due-button">Rs. {formData?.cpt?.dues?.totalAmount} </div>}
 
             {getPayDuesButton && (
               <button
                 className="submit-bar"
                 type="button"
-                style={{ color: "white", width: "100%", maxWidth: "115px" }}
                 onClick={() => {
                   redirectToPayBill(formData?.cpt?.dues?.totalAmount);
                   setPayDuesButton(false);
@@ -302,7 +300,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
                 {`${t("PAY_DUES")} `}
               </button>
             )}
-            {getNoDue && <div style={{ color: "green", width: "100%", maxWidth: "75px" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
+            {getNoDue && <div className="ndc-no-due-button">{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
           </div>
         </LabelFieldPair>
 

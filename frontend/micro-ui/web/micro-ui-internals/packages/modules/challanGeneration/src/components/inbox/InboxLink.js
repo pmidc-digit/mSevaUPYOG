@@ -44,20 +44,16 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       <span className="logo">
         <PTIcon />
       </span>{" "}
-      <span style={{ fontSize: "18px", paddingLeft: "0" }} className="text">
+      <span className="text">
         {t("ACTION_TEST_CHALLANGENERATION")}
       </span>
     </div>
   );
 
   return (
-    <Card style={{ paddingRight: 0, marginTop: 0 }} className="employeeCard filter inboxLinks">
+    <Card className="employeeCard filter inboxLinks">
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+       
         className="complaint-links-container"
       >
         {GetLogo()}

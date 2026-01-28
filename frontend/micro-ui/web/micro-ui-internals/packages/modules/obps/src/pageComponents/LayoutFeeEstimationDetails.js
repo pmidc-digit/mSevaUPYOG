@@ -5,28 +5,28 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
 
-const LayoutFeeEstimationDetails = ({ formData }) => {
+const LayoutFeeEstimationDetails = ({ formData, feeType = "PAY1" }) => {
   const { t } = useTranslation()
-console.log(formData, "IIIIIIII");
-    const payload = useMemo(
+  console.log(formData, "IIIIIIII");
+  
+  const payload = useMemo(
     () => ({
       CalculationCriteria: [
         {
-          applicationNumber: formData?.apiData?.Layout?.[0]?.applicationNo,
-          tenantId: formData?.apiData?.Layout?.[0]?.tenantId,
+          applicationNumber: formData?.apiData?.Layout?.[0]?.applicationNo || formData?.apiData?.applicationNo,
+          tenantId: formData?.apiData?.Layout?.[0]?.tenantId || formData?.apiData?.tenantId,
+          feeType: feeType,
           Layout: {
             ...formData?.apiData?.Layout?.[0],
             layoutDetails: {
-              ...formData.apiData?.Layout?.[0]?.layoutDetails,
+              ...formData?.apiData?.Layout?.[0]?.layoutDetails,
               additionalDetails: {
                 ...formData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails,
-                // Spread updated data to preserve full objects (no .code or .name extraction)
+                // Use updated data from redux to fetch fees instead of older data
                 applicationDetails: {
-                 
                   ...formData?.applicationDetails,
                 },
                 siteDetails: {
-                  
                   ...formData?.siteDetails,
                 },
               },
@@ -34,8 +34,13 @@ console.log(formData, "IIIIIIII");
           },
         },
       ],
+      RequestInfo: {
+        apiId: "Rainmaker",
+        authToken: Digit.SessionStorage.get("Digit.AUTH_TOKEN") || "",
+        userInfo: Digit.UserService.getUser()?.info || {},
+      },
     }),
-    [formData],
+    [formData, feeType],
   )
 
   const {
@@ -45,6 +50,7 @@ console.log(formData, "IIIIIIII");
   } = Digit.Hooks.obps.useLayoutFeeCalculator(
     {
       payload,
+      feeType,
     },
     {
       enabled: !!payload,

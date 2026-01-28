@@ -692,6 +692,7 @@ const CLUSiteDetails = (_props) => {
                     option={mdmsData?.CLU?.AppliedCategory}
                     optionKey="name"
                     t={t}
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                   />
                 )}
               />

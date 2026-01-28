@@ -62,37 +62,83 @@ const LayoutDocumentsRequired = ({
   const applicationNo = currentStepData?.apiData?.Layout?.[0]?.applicationNo || ""
   const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false
   
-  // Get CLU approval status from siteDetails
-  const isCluApproved = currentStepData?.siteDetails?.cluIsApproved?.code === "YES" || false
+  // Get CLU approval status from siteDetails - check multiple possible field names
+  const cluApprovalField = currentStepData?.siteDetails?.cluIsApproved || currentStepData?.siteDetails?.isCluRequired
+  const isCluApproved = 
+    cluApprovalField?.code === "YES" || 
+    cluApprovalField === "YES" ||
+    false
+  
+  // Get road type to check if National Highway
+  const roadType = currentStepData?.siteDetails?.roadType?.name || currentStepData?.siteDetails?.roadType || ""
+  const isNationalHighway = roadType?.toLowerCase().includes("national") || roadType?.toLowerCase().includes("nh")
 
-  console.log("CLU Approved Status:", isCluApproved, currentStepData?.siteDetails?.cluIsApproved)
+  // Get building category to check if Institution
+  const buildingCategory = currentStepData?.siteDetails?.buildingCategory?.code || currentStepData?.siteDetails?.buildingCategory || ""
+  const isInstitution = buildingCategory?.toLowerCase().includes("institution") || buildingCategory === "INSTITUTION"
 
-  // Filter documents based on building status and CLU approval
+  console.log("CLU Approval Field Value:", cluApprovalField)
+  console.log("CLU Approved Status:", isCluApproved)
+  console.log("Road Type:", roadType)
+  console.log("Is National Highway:", isNationalHighway)
+  console.log("Building Category:", buildingCategory)
+  console.log("Is Institution:", isInstitution)
+  console.log("Filtered Documents Count:", data?.LAYOUT?.LayoutDocuments?.length)
+
+  // Filter documents based on building status, CLU approval, and road type
   const filteredDocuments = useMemo(() => {
+    console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
     let docs = data?.LAYOUT?.LayoutDocuments || []
     
-    // Filter out building drawing if vacant
-    if (isVacant) {
-      docs = docs.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING")
-    }
+    console.log("=== FILTER DEBUG ===")
+    console.log("Initial docs count:", docs.length)
+    console.log("isCluApproved:", isCluApproved)
+    console.log("isNationalHighway:", isNationalHighway)
+    console.log("isInstitution:", isInstitution)
     
-    // Filter CLU-related documents based on CLU approval status
-    // Documents with cluRequired: true will only show if CLU is approved
-    // Documents with cluRequired: false or undefined will always show
-    docs = docs.filter((doc) => {
-      // If document has cluRequired flag
-      if (doc.cluRequired === true) {
-        return isCluApproved // Only show if CLU is approved
+    // SHOW ALL DOCUMENTS but conditionally make them mandatory based on CLU/RoadType/Category
+    const processedDocs = docs.map((doc) => {
+      let isRequired = false
+      
+      // Site photographs are ALWAYS mandatory (regardless of CLU)
+      if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
+        isRequired = true
       }
-      // If document has cluNotRequired flag (show only when CLU is NOT approved)
-      if (doc.cluNotRequired === true) {
-        return !isCluApproved // Only show if CLU is NOT approved
+      // National Highway NOC is mandatory only when it's a National Highway
+      else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
+        isRequired = isNationalHighway
       }
-      return true // Show all other documents
-    })
+      // Institution document is mandatory only when Building Category is Institution
+      else if (doc.code === "INSTITUTION_DOCUMENT" && isInstitution) {
+        isRequired = true
+      }
+      // When CLU = YES: Only CLU documents (cluRequired: true) are mandatory
+      else if (isCluApproved && doc.cluRequired === true) {
+        isRequired = true
+      }
+      // When CLU = NO: Documents marked as mandatory for non-CLU (mandatoryForNonClu: true) are mandatory
+      else if (!isCluApproved && doc.mandatoryForNonClu === true) {
+        isRequired = true
+      }
+      // All other documents are not mandatory
+      else {
+        isRequired = false
+      }
+      
+      // Filter out building drawing if vacant
+      if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+        return null
+      }
+      
+      return { ...doc, required: isRequired }
+    }).filter(doc => doc !== null)
     
-    return docs
-  }, [data?.LAYOUT?.LayoutDocuments, isVacant, isCluApproved])
+    console.log("Final docs count:", processedDocs.length)
+    console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => d.code))
+    console.log("=== END DEBUG ===")
+    
+    return processedDocs
+  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, data?.LAYOUT?.LayoutDocuments?.length])
 
   const handleSubmit = () => {
     const document = formData.documents

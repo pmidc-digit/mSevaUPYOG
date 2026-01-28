@@ -97,31 +97,32 @@ const EmployeeApp = ({ path }) => {
 
   return (
     <Fragment>
-      {!isFromNoc && !isRes ? <div style={isLocation ? {marginLeft: "10px"} : {}}><OBPSBreadCrumbs location={location} /></div> : null}
-      {isFromNoc ? <BackButton style={{ border: "none", margin: "0", padding: "0" }}>{t("CS_COMMON_BACK")}</BackButton>: null}
-      <Switch>
-         <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
-        <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
-        <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />
-        <PrivateRoute path={`${path}/search/application/editApplication/bpa/:id`} component={BpaApplicationDetail} />
-        <PrivateRoute path={`${path}/search/application/bpa/:id`} component={BpaApplicationDetail} />
-        <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/inbox/editApplication/bpa/:id`} component={BpaApplicationDetail} />
-        <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
-        <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
-        <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
-        <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
+      <div className="ground-container">
+        {!isFromNoc && !isRes ? <OBPSBreadCrumbs location={location} /> : null}
+        <Switch>
+           <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
+          <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
+          <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />
+          <PrivateRoute path={`${path}/search/application/editApplication/bpa/:id`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/search/application/bpa/:id`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/inbox/editApplication/bpa/:id`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
+          <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
 
-        <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
-        <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
-        <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
-      </Switch>
+          <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
+        </Switch>
+      </div>
     </Fragment>
   )
 }

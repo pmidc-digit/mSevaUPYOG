@@ -293,7 +293,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  // const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   // helper: parse the custom age string into { years, months, totalYears }
   const parsePetAge = (raw) => {
@@ -364,7 +364,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petName")}</p>}
+          {errors.petName && <p className= "chb-error-text">{getErrorMessage("petName")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -380,7 +380,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" disable={checkForRenew} />
             )}
           />
-          {errors.petType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petType")}</p>}
+          {errors.petType && <p className= "chb-error-text">{getErrorMessage("petType")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -397,7 +397,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               return <Dropdown select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="name" disable={checkForRenew} />;
             }}
           />
-          {errors.breedType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("breedType")}</p>}
+          {errors.breedType && <p className= "chb-error-text">{getErrorMessage("breedType")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -413,7 +413,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <Dropdown select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" disable={checkForRenew} />
             )}
           />
-          {errors.petGender && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petGender")}</p>}
+          {errors.petGender && <p className= "chb-error-text">{getErrorMessage("petGender")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -440,7 +440,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petColor && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petColor")}</p>}
+          {errors.petColor && <p className= "chb-error-text">{getErrorMessage("petColor")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -511,7 +511,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.petAge && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("petAge")}</p>}
+          {errors.petAge && <p className= "chb-error-text">{getErrorMessage("petAge")}</p>}
 
           <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
 
@@ -545,7 +545,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.lastVaccineDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("lastVaccineDate")}</p>}
+          {errors.lastVaccineDate && <p className= "chb-error-text">{getErrorMessage("lastVaccineDate")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -571,7 +571,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               />
             )}
           />
-          {errors.vaccinationNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("vaccinationNumber")}</p>}
+          {errors.vaccinationNumber && <p className= "chb-error-text">{getErrorMessage("vaccinationNumber")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -592,7 +592,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
             )}
           />
-          {errors.doctorName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("doctorName")}</p>}
+          {errors.doctorName && <p className= "chb-error-text">{getErrorMessage("doctorName")}</p>}
         </div>
       </LabelFieldPair>
 
@@ -608,7 +608,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}
           />
-          {errors.clinicName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{getErrorMessage("clinicName")}</p>}
+          {errors.clinicName && <p className= "chb-error-text">{getErrorMessage("clinicName")}</p>}
         </div>
       </LabelFieldPair>
 

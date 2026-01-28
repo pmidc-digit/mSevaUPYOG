@@ -39,7 +39,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
     setShowModal(true);
   };
 
-  const submitCancel = async () => {
+  const submitCancel = async (data) => {
     setLoader(true);
     setShowModal(false);
     // ✅ Final payload
@@ -48,6 +48,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel, refetch }) => {
         ...application,
         workflow: {
           action: "CANCEL",
+          comment: data?.reason,
         },
       },
     };

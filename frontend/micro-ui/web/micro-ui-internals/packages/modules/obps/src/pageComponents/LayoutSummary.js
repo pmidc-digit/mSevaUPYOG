@@ -448,7 +448,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             <h3 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h3>
           </div>
           <div style={{ padding: "0 1.5rem" }}>
-            {formData && <LayoutFeeEstimationDetails formData={formData}/>}
+            {formData && <LayoutFeeEstimationDetails formData={formData} feeType="PAY1"/>}
           </div>
         </div>
       </Card>

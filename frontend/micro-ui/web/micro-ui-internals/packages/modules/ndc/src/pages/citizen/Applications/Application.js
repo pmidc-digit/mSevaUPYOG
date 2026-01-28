@@ -63,11 +63,11 @@ const MyApplications = ({ view }) => {
         );
       })}
 
-      {!applicationsList.length && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
+      {!applicationsList.length && <p className="ndc-application-list" >{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
 
       {/* Pagination Controls */}
       {applicationsList.length > itemsPerPage && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginTop: "20px" }}>
+        <div className="ndc-application-overview-custom" >
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => prev - 1)}
@@ -90,7 +90,7 @@ const MyApplications = ({ view }) => {
         </div>
       )}
 
-      <p style={{ marginLeft: "16px", marginTop: "16px" }}>
+      <p className="ndc-application-list">
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
         <span className="link" style={{ display: "block" }}>
           <Link to="/digit-ui/citizen/ndc/new-application">{t("NDC_COMMON_CLICK_HERE_TO_REGISTER_NEW_APPLICATION")}</Link>

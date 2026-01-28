@@ -19,6 +19,7 @@ import {
   StatusTable,
   CardLabelError
 } from "@mseva/digit-ui-react-components";
+import { Loader } from "../components/Loader";
 
 import { getPattern } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
@@ -136,7 +137,6 @@ const NOCApplicantDetails = (_props) => {
     try {
       setLoader(true);
       const response = await Digit.UploadServices.Filestorage("NOC", file, stateId);
-      setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         setOwnerPhotoList((prev) => {
@@ -160,12 +160,12 @@ const NOCApplicantDetails = (_props) => {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
     } catch (err) {
-      setLoader(false);
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
     } finally {
       setTimeout(() => {
         setShowToast(null);
       }, 3000);
+      setLoader(false);
     }
   };
 
@@ -242,6 +242,19 @@ const NOCApplicantDetails = (_props) => {
       owners,
     });
   }, [currentStepData, setValue, append, reset]);
+
+  // Clear property-related fields when propertyId is deleted
+  useEffect(() => {
+    const propertyId = watch(`owners[0].propertyId`);
+    if (!propertyId) {
+      setValue(`owners[0].PropertyOwnerName`, "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[0].PropertyOwnerMobileNumber`, "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[0].PropertyOwnerAddress`, "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[0].PropertyOwnerPlotArea`, null, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[0].propertyVasikaNo`, null, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[0].propertyVasikaDate`, null, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [watch(`owners[0].propertyId`), setValue]);
 
   //For fetching user details
   const [showToast, setShowToast] = useState(null);
@@ -326,7 +339,8 @@ const NOCApplicantDetails = (_props) => {
        UPDATE_NOCNewApplication_FORM("siteDetails", {
         ...currentStepData?.siteDetails,
         vasikaNumber : property?.additionalDetails?.vasikaNo,
-        vasikaDate: formatDateForInput (property?.additionalDetails?.vasikaDate)
+        vasikaDate: formatDateForInput (property?.additionalDetails?.vasikaDate),
+        netTotalArea: property?.landArea
       })
     );
     }
@@ -354,10 +368,13 @@ const NOCApplicantDetails = (_props) => {
   console.log("ownerIdList (local)==>", ownerIdList);
   console.log("ownerPhotoList (local)==>", ownerPhotoList);
 
+  
+
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
       <div>
+        {loader && <Loader page={true} />}
         {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px" }}>
             {" "}

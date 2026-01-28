@@ -33,7 +33,7 @@ const InspectionReportDisplay = ({fiReport}) => {
     }, [report, t]);
   
     if (!fiReport || fiReport.length === 0) {
-      return <div>{t("NO_INSPECTION_REPORTS_AVAILABLE")}</div>;
+      return <div>{t("BPA_NO_INSPECTION_REPORTS_AVAILABLE_LABEL")}</div>;
     }
 
   

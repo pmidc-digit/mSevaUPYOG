@@ -244,10 +244,10 @@ console.log("consumerDetail",consumerdetail)
     }
   }, [errors]);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+ 
   return (
     <div  style={isMobile?{}:{marginTop:"-50px"}}>
-      <div style={{ marginBottom: "16px" }}>
+      <div>
         <div>
         <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
       <LabelFieldPair>

@@ -224,3 +224,9 @@ overflow-y: scroll;
 .swach-width-250{
   width: 250px !important;
 }
+
+@media only screen and (min-width: 768px) {
+  .swach-link-card {
+    padding: 0 !important;
+  }
+}

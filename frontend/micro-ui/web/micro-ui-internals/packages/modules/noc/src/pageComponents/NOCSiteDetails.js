@@ -169,6 +169,17 @@ const sortedRoadType = useMemo(
     }
   }, [currentStepData, setValue, addFloor, removeFloor]);
 
+  // Set netTotalArea from property landArea if available
+  useEffect(() => {
+    const landareaObj = currentStepData?.cpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
+
+    const landArea = landareaObj?.owners?.[0]?.landArea ||landareaObj?.landArea;
+    console.log('totland', landArea)
+    if (landArea) {
+      setValue("netTotalArea", landArea, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [currentStepData?.cpt?.details, setValue]);
+
   return (
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>

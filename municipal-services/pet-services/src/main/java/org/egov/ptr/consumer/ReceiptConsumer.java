@@ -28,7 +28,7 @@ public class ReceiptConsumer {
 		log.info("ReceiptConsumer initialized - Listening to topic: {}, group: egov-pet-service", receiptTopic);
 	}
 
-	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}",concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listenPayments(final String rawRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		
 		if (rawRecord == null || rawRecord.isEmpty()) {

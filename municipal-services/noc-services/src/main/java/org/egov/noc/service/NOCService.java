@@ -19,8 +19,6 @@ import org.egov.noc.web.model.bpa.BPASearchCriteria;
 import org.egov.noc.web.model.calculator.CalculationCriteria;
 import org.egov.noc.web.model.calculator.CalculationReq;
 import org.egov.noc.web.model.calculator.CalculationRes;
-import org.egov.noc.web.model.enums.ApplicationType;
-import org.egov.noc.web.model.enums.Status;
 import org.egov.noc.web.model.workflow.Action;
 import org.egov.noc.web.model.workflow.BusinessService;
 import org.egov.noc.web.model.workflow.ProcessInstance;
@@ -77,6 +75,9 @@ public class NOCService {
 
 	@Autowired
 	private ObjectMapper mapper;
+
+	@Autowired
+	private NOCPropertyService nocPropertyService;
 
 	/**
 	 * entry point from controller, takes care of next level logic from controller to create NOC application
@@ -189,6 +190,19 @@ public class NOCService {
 		if (owners != null) {
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 		}
+		Object additionalDetailsData = nocRequest.getNoc().getNocDetails().getAdditionalDetails();
+		Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
+
+		// Get siteDetails as a Map
+		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
+
+		Boolean propertyCheck = (Boolean) siteDetails.get("isPropertyAvailable");
+		Boolean isPropertyAvailable = propertyCheck==null ? false:propertyCheck;
+
+		String propertyId = (String) siteDetails.get("propertyuid");;
+		if(!isPropertyAvailable && net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(propertyId))
+			nocPropertyService.createProperty(nocRequest);
+
 		if(nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE) || nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY)){
 			searchResult = new Noc();
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());

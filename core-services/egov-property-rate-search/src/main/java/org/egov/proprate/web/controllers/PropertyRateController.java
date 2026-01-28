@@ -1,6 +1,10 @@
 package org.egov.proprate.web.controllers;
 
 import org.egov.proprate.service.PropertyRateService;
+import org.egov.proprate.web.models.AddPropertyRate;
+import org.egov.proprate.web.models.PropertyRate;
+import org.egov.proprate.web.models.PropertyRateRequest;
+import org.egov.proprate.web.models.PropertyRateResponse;
 import org.egov.proprate.web.models.RateResponse;
 import org.egov.proprate.web.models.RateSearchRequest;
 import org.egov.proprate.web.models.ResponseFactory;
@@ -14,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/property-rate")
@@ -59,6 +65,19 @@ public class PropertyRateController {
 				? ResponseEntity.ok().body(Collections.emptyList())
 				: ResponseEntity.ok().body(results);
     }
+    
+    @PostMapping("/_create") 
+    public ResponseEntity<PropertyRateResponse> createPropertyRate(
+            @Valid @RequestBody PropertyRateRequest request) { 
+
+        List<AddPropertyRate> savedEntity = service.create(request);
+
+        PropertyRateResponse response = 
+                responseFactory.createCreateResponse(savedEntity, request);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
 
 
 

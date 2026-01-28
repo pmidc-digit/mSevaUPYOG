@@ -1,6 +1,10 @@
 package org.egov.proprate.web.models;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.egov.common.contract.response.ResponseInfo;
+//import org.egov.proprate.web.controllers.PropertyRateRequest;
+//import org.egov.proprate.web.controllers.PropertyRateResponse;
 import org.egov.proprate.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -8,6 +12,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList; // Added
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -138,5 +143,27 @@ public class ResponseFactory {
     private BigDecimal safeDecimal(Object obj) {
         if (obj == null) return BigDecimal.ZERO;
         return new BigDecimal(String.valueOf(obj));
+    }
+    
+public PropertyRateResponse createCreateResponse(List<AddPropertyRate> rates, PropertyRateRequest request) {
+        
+        PropertyRateResponse response = new PropertyRateResponse();
+
+        // No need to wrap in Collections.singletonList anymore
+        response.setPropertyRates(rates); 
+
+        // Set Response Info
+        ResponseInfo responseInfo = ResponseInfo.builder()
+                .apiId(request.getRequestInfo().getApiId())
+                .ver(request.getRequestInfo().getVer())
+                .ts(System.currentTimeMillis())
+                .resMsgId(request.getRequestInfo().getMsgId())
+                .msgId(request.getRequestInfo().getMsgId())
+                .status("SUCCESSFUL")
+                .build();
+
+        response.setResponseInfo(responseInfo);
+
+        return response;
     }
 }

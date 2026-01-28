@@ -1,7 +1,6 @@
-
 CREATE TABLE IF NOT EXISTS public.revenue_property_rate_master
 (
-    rate_id integer NOT NULL DEFAULT nextval('property_rate_master_rate_id_seq'::regclass),
+    rate_id integer NOT NULL,
     segment_list_id integer,
     sub_category_id integer,
     property_rate numeric(15,2) NOT NULL,
@@ -18,5 +17,4 @@ CREATE TABLE IF NOT EXISTS public.revenue_property_rate_master
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )
-
 TABLESPACE pg_default;

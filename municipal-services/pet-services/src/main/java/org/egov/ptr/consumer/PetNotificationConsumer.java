@@ -28,7 +28,7 @@ public class PetNotificationConsumer {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@KafkaListener(topics = { "${ptr.kafka.create.topic}", "${ptr.kafka.update.topic}" })
+	@KafkaListener(topics = { "${ptr.kafka.create.topic}", "${ptr.kafka.update.topic}" },concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		PetRegistrationRequest petRequest = new PetRegistrationRequest();

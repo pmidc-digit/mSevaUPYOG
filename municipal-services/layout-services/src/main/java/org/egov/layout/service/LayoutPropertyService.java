@@ -5,35 +5,32 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
-import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.Role;
-import org.egov.layout.config.CLUConfiguration;
+import org.egov.layout.config.LAYOUTConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
-import org.egov.layout.web.model.Clu;
-import org.egov.layout.web.model.CluRequest;
+
+import org.egov.layout.web.model.Layout;
+import org.egov.layout.web.model.LayoutRequest;
 import org.egov.layout.web.model.bpa.Address;
-import org.egov.layout.web.model.bpa.GeoLocation;
+
 import org.egov.layout.web.model.property.Property;
-import org.egov.layout.web.model.property.PropertyCriteria;
 import org.egov.layout.web.model.property.PropertyRequest;
 import org.egov.layout.web.model.property.PropertyResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
-public class CLUPropertyService {
+public class LayoutPropertyService {
 
 	@Autowired
 	private ObjectMapper objectMapper;
 	
 	@Autowired
-	private CLUConfiguration config;
+	private LAYOUTConfiguration config;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -48,12 +45,12 @@ public class CLUPropertyService {
 
 
 
-	public void createProperty(CluRequest cluRequest) {
-		Clu clu = cluRequest.getLayout();
-		Property property = createPropertFromCLU(clu);
+	public void createProperty(LayoutRequest layoutRequest) {
+		Layout layout = layoutRequest.getLayout();
+		Property property = createPropertFromCLU(layout);
 
 		PropertyRequest propertyRequest = PropertyRequest.builder().property(property)
-				.requestInfo(cluRequest.getRequestInfo()).build();
+				.requestInfo(layoutRequest.getRequestInfo()).build();
 
 		Object result = serviceRequestRepository.fetchResult(getPropertyCreateURL(), propertyRequest);
 		List<Property> propertyList = getPropertyDetails(result);
@@ -62,15 +59,15 @@ public class CLUPropertyService {
 			throw new CustomException("PROPERTY CREATION ERROR", "Property services error");
 
 		}
-		Object object = cluRequest.getLayout().getNocDetails().getAdditionalDetails();
+		Object object = layoutRequest.getLayout().getNocDetails().getAdditionalDetails();
 		if (object instanceof Map) {
 			Map<String, Object> additionalDetails = (Map<String, Object>) object;
 			additionalDetails.put("propertyuid", propertyId);
-			cluRequest.getLayout().getNocDetails().setAdditionalDetails(additionalDetails);
+			layoutRequest.getLayout().getNocDetails().setAdditionalDetails(additionalDetails);
 		} else {
 			Map<String, Object> additionalDetails = new HashMap<>();
 			additionalDetails.put("propertyuid", propertyId);
-			cluRequest.getLayout().getNocDetails().setAdditionalDetails(additionalDetails);
+			layoutRequest.getLayout().getNocDetails().setAdditionalDetails(additionalDetails);
 		}
 
 	}
@@ -87,35 +84,33 @@ public class CLUPropertyService {
 		}
 	}
 
-	private Property createPropertFromCLU(Clu clu) {
+	private Property createPropertFromCLU(Layout layout) {
 		
-		Map<String,Object> additionalDetails = (Map<String, Object>)clu.getNocDetails().getAdditionalDetails();
+		Map<String,Object> additionalDetails = (Map<String, Object>)layout.getNocDetails().getAdditionalDetails();
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetails.get("siteDetails");
 		Address address = Address.builder()
-				.tenantId(clu.getTenantId())
+				.tenantId(layout.getTenantId())
 				.plotNo(siteDetails.getOrDefault("plotNo",
 						"").toString())
 				.district(siteDetails.getOrDefault("district",
 						"").toString())
-				.city(siteDetails.get("ulbName") != null
-						? ((Map<String, Object>) siteDetails.get("ulbName")).getOrDefault("name", "").toString()
-						: "")
+				.city(siteDetails.get("ulbName").toString())
 				.build();
 		address.setId("");
 		address.setAuditDetails(null);
 		
-		clu.getOwners().stream().forEach(owner -> {
+		layout.getOwners().stream().forEach(owner -> {
 			if(owner.getOwnerType() == null)
 				owner.setOwnerType("NONE");
 		});
 		
 		return Property.builder()
-				.address(address).accountId(clu.getAccountId())
+				.address(address).accountId(layout.getAccountId())
 				.landArea(Double.valueOf(siteDetails.get("netTotalArea").toString()))
 				.usageCategory(null)
 				.ownershipCategory(null)
-				.owners(clu.getOwners())
-				.tenantId(clu.getTenantId())
+				.owners(layout.getOwners())
+				.tenantId(layout.getTenantId())
 				.propertyType("VACANT")
 				.build();
 		

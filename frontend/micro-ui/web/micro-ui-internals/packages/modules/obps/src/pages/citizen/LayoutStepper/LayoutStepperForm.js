@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 
 import Stepper from "../../../../../../react-components/src/customComponents/Stepper"
 import {layoutStepperConfig} from "../../../config/layoutStepperConfig";
-import { SET_LayoutNewApplication_STEP, RESET_LAYOUT_NEW_APPLICATION_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
+import { SET_LayoutNewApplication_STEP, RESET_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 //Config for steps
@@ -88,10 +88,15 @@ const LayoutStepperForm = () => {
   };
 
   useEffect(() => {
-    dispatch(RESET_LAYOUT_NEW_APPLICATION_FORM());
+    dispatch(RESET_LayoutNewApplication_FORM());
   }, []);
 
   // console.log("formData",formData);
+
+    useEffect(() => {
+      window.scrollTo(0, 0);
+    }, [step]);
+
 
   const handleSubmit = (dataGet) => {
     console.log("dataGet===", dataGet);
@@ -105,7 +110,6 @@ const LayoutStepperForm = () => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  // console.log("formState: ",formState);
 
   console.log("  LayoutStepperForm - formData:", formData);
 console.log("  LayoutStepperForm - step:", step);

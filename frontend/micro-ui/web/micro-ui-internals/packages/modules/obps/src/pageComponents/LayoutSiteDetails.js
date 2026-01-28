@@ -179,6 +179,8 @@ const LayoutSiteDetails = (_props) => {
   const [localities, setLocalities] = useState([]);
   const [isDistrictInitialized, setIsDistrictInitialized] = useState(false);
 
+ 
+
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
     "revenue",

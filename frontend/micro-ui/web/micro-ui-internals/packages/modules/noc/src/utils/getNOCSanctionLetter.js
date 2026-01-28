@@ -6,6 +6,7 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
     year: "numeric",
   });
 
+  let regularized_label ="";
   const getFloorLabel = (index) => {
       if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
 
@@ -39,8 +40,10 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
       ...f,
       floorNo: getFloorLabel(idx),
     }));
+    regularized_label= t("REGULARIZATION_UNAUTHORIZED")
   } else {
     floorArea = [{ floorNo: "Floor No NA", value: "NA" }];
+    regularized_label= "NA"
   }
 
 
@@ -80,7 +83,8 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
       currentDate,
       sanctionTerms,
       ...EmpData,
-      approverComment
+      approverComment,
+      regularized_label
       },
     ],
   };

@@ -65,7 +65,7 @@ const CreateNDCApplicationStep = () => {
 
   return (
     <div className="card">
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+      <CardHeader className="ndc-emp-step-form" divider={true}>
         No Due Certification Form
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

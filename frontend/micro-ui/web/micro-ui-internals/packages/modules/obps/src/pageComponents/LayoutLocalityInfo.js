@@ -20,15 +20,6 @@ const LayoutLocalityInfo = (_props) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [selectedAreaType, setSelectedAreaType] = useState(currentStepData?.siteDetails?.layoutAreaType || []);
-  const [nonSchemeType, setNonSchemeType]=useState(currentStepData?.siteDetails?.layoutNonSchemeType || []);
-
-
-   const { data: mdmsData } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
-   
-   const areaTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
-   const nonSchemeTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
-
 
   useEffect(() => {
     console.log("currentStepData4", currentStepData);
@@ -41,21 +32,8 @@ const LayoutLocalityInfo = (_props) => {
     }
   }, [currentStepData, setValue]);
 
-
-useEffect(() => {
-  if (selectedAreaType?.code === "NON_SCHEME") {
-    setNonSchemeType(nonSchemeTypeOptions);
-  } else {
-    setNonSchemeType(null);
-    // setValue("layoutNonSchemeType", null);
-  }
-}, [selectedAreaType, nonSchemeTypeOptions]);
-
-
   return (
     <React.Fragment>
-      <CardSectionHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSectionHeader>
-
       <div>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}*</CardLabel>

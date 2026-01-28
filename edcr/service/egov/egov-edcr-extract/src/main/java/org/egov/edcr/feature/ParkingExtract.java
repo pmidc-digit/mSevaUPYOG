@@ -25,6 +25,7 @@ import org.egov.common.entity.edcr.TypicalFloor;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
+import org.egov.edcr.entity.blackbox.PlotDetail;
 import org.egov.edcr.service.LayerNames;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.PrintUtil;
@@ -169,9 +170,19 @@ public class ParkingExtract extends FeatureExtract {
     		List<String> layerNames1 = Util.getLayerNamesLike(pl.getDoc(), buildingFootPrint);
     		for (String s : layerNames1) {
     			buildingFootPrintPolyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), s);
+    			DXFLWPolyline plotBoundaryPolyLine = ((PlotDetail) pl.getPlot()).getPolyLine();
     			// Checking for the overlapping Building foot print
-    			isYardOutsideOrTouchingBuildingOnly(openParkingPloyLine.get(0), buildingFootPrintPolyLinesByLayer.get(0), 
-    	        		"open Parking", pl, layerNames);    			
+//    			isPolyLineOutsideOrTouchingBuildingOnly(openParkingPloyLine.get(0), buildingFootPrintPolyLinesByLayer.get(0), 
+//    	        		"open Parking", pl, layerNames);
+    			isYardOutsideOrTouchingBuildingOnly(
+    			        openParkingPloyLine.get(0),
+    			        buildingFootPrintPolyLinesByLayer.get(0),
+    			        plotBoundaryPolyLine,   // 👈 ADD THIS
+    			        "open Parking",
+    			        pl,
+    			        layerNames
+    			);
+
     		}
         }
         
@@ -346,62 +357,132 @@ public class ParkingExtract extends FeatureExtract {
         }
     }
     
-    public static boolean isYardOutsideOrTouchingBuildingOnly(
+//    public boolean isPolyLineOutsideOrTouchingBuildingOnly(
+//            DXFLWPolyline openParkingPloyLine,
+//            DXFLWPolyline buildingFootprint,
+//            String openParking,
+//            PlanDetail pl,
+//            LayerNames layerNames) {
+//    	Boolean finalStatus = true;
+//
+//        if (openParkingPloyLine == null || buildingFootprint == null) 
+//        	finalStatus = true;
+//
+//        List<DXFLine> yardLines = getLinesOfPolyline(openParkingPloyLine);
+//
+//        for (DXFLine yLine : yardLines) {
+//            Point y1 = yLine.getStartPoint();
+//            Point y2 = yLine.getEndPoint();
+//
+//            // ---- 1. Check Start Vertex ----
+//            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y1)) {
+//                pl.getErrors().put(
+//                    "OPEN_PARKING_POINTS_NOT_ON_PLOT_BOUNDARY - " + openParking,
+//                    "Points of " + openParking + " not properly on " + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+//                finalStatus = false;
+//            }
+//
+//            // ---- 2. Check End Vertex ----
+//            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y2)) {
+//                try {
+//                	pl.getErrors().put("Open Parking calculation error for boundary" + openParking,
+//                            "Points of " + openParking + " not properly on " 
+//                	+ layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+//				} catch (Exception e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//                finalStatus = false;
+//            }
+//
+//            // ---- 3. Check Midpoint ----
+//            Point mid = new Point();
+//            mid.setX((y1.getX() + y2.getX()) / 2.0);
+//            mid.setY((y1.getY() + y2.getY()) / 2.0);
+//
+//            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, mid)) {
+//                pl.getErrors().put(
+//                    "OPEN_PARKING_POINTS_NOT_ON_PLOT_BOUNDARY - " + openParking,
+//                    "Points of " + openParking + " not properly on PLOT_BOUNDARY"
+//                );
+//                // Keep your DXF debugging line
+//                PrintUtil.printForDXf(y1, y2, openParking + "_EDGE_INSIDE", pl);
+//                finalStatus = false;
+//            }
+//        }
+//
+//        return finalStatus;
+//    }
+
+    public boolean isYardOutsideOrTouchingBuildingOnly(
             DXFLWPolyline openParkingPloyLine,
             DXFLWPolyline buildingFootprint,
+            DXFLWPolyline plotBoundary,
             String openParking,
             PlanDetail pl,
             LayerNames layerNames) {
-    	Boolean finalStatus = true;
 
-        if (openParkingPloyLine == null || buildingFootprint == null) 
-        	finalStatus = true;
+        boolean finalStatus = true;
+
+        if (openParkingPloyLine == null || buildingFootprint == null || plotBoundary == null)
+            return true;
 
         List<DXFLine> yardLines = getLinesOfPolyline(openParkingPloyLine);
 
         for (DXFLine yLine : yardLines) {
+
             Point y1 = yLine.getStartPoint();
             Point y2 = yLine.getEndPoint();
 
-            // ---- 1. Check Start Vertex ----
-            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y1)) {
+            // ---------- 1. OPEN PARKING MUST NOT BE INSIDE BUILDING ----------
+            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y1)
+                    || Util.isPointStrictlyInsidePolygon(buildingFootprint, y2)) {
+
                 pl.getErrors().put(
-                    "OPEN_PARKING_POINTS_NOT_ON_PLOT_BOUNDARY - " + openParking,
-                    "Points of " + openParking + " not properly on " + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
+                        "OPEN_PARKING_INSIDE_BUILDING - " + openParking,
+                        "Open parking lies inside building footprint: "
+                                + layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
                 finalStatus = false;
             }
 
-            // ---- 2. Check End Vertex ----
-            if (Util.isPointStrictlyInsidePolygon(buildingFootprint, y2)) {
-                try {
-                	pl.getErrors().put("Open Parking calculation error for boundary" + openParking,
-                            "Points of " + openParking + " not properly on " 
-                	+ layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"));
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                finalStatus = false;
-            }
-
-            // ---- 3. Check Midpoint ----
+            // ---------- 2. CHECK MIDPOINT AGAINST BUILDING ----------
             Point mid = new Point();
             mid.setX((y1.getX() + y2.getX()) / 2.0);
             mid.setY((y1.getY() + y2.getY()) / 2.0);
 
             if (Util.isPointStrictlyInsidePolygon(buildingFootprint, mid)) {
                 pl.getErrors().put(
-                    "OPEN_PARKING_POINTS_NOT_ON_PLOT_BOUNDARY - " + openParking,
-                    "Points of " + openParking + " not properly on PLOT_BOUNDARY"
-                );
-                // Keep your DXF debugging line
-                PrintUtil.printForDXf(y1, y2, openParking + "_EDGE_INSIDE", pl);
+                        "OPEN_PARKING_INSIDE_BUILDING - " + openParking,
+                        "Open parking overlaps building footprint");
+                PrintUtil.printForDXf(y1, y2, openParking + "_INSIDE_BUILDING", pl);
+                finalStatus = false;
+            }
+
+            // ---------- 3. NEW CONDITION: MUST BE INSIDE / TOUCH PLOT ----------
+            if (isPointOutsidePolygon(plotBoundary, y1)
+                    || isPointOutsidePolygon(plotBoundary, y2)
+                    || isPointOutsidePolygon(plotBoundary, mid)) {
+
+                pl.getErrors().put(
+                        "OPEN_PARKING_OUTSIDE_PLOT - " + openParking,
+                        "Open parking lies outside plot boundary: "
+                                + layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY"));
+
+                PrintUtil.printForDXf(y1, y2, openParking + "_OUTSIDE_PLOT", pl);
                 finalStatus = false;
             }
         }
 
-        return true;
+        return finalStatus;
     }
+
+    public static boolean isPointOutsidePolygon(DXFLWPolyline poly, Point p) {
+        // outside = NOT inside AND NOT on boundary
+        return !Util.isPointStrictlyInsidePolygon(poly, p)
+                && !Util.isPointOnPolygonBoundary(poly, p);
+    }
+
+    
     
     private static List<DXFLine> getLinesOfPolyline(DXFLWPolyline yard) {
         List<DXFLine> lines = new ArrayList<>();

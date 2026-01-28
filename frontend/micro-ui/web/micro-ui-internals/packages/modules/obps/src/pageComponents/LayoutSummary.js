@@ -301,6 +301,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
           {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
           {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
+          {renderLabel(t("BPA_PAN_NUMBER_LABEL"), formData?.applicationDetails?.panNumber)}
         </div>
       </Card>
 
@@ -343,6 +344,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h3>
           </div>
+          {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), formData?.vasikaNumber)}
+          {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formData?.vasikaDate)}
           {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}
           {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
           {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -366,6 +369,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             renderLabel(t("BPA_TOTAL_FLOOR_AREA_LABEL"), formData?.siteDetails?.totalFloorArea)}
 
           {renderLabel(t("BPA_SCHEME_TYPE"), formData?.siteDetails?.schemeType?.name)}
+          {renderLabel(t("BPA_APPLICATION_APPLIED_UNDER_LABEL"), formData?.siteDetails?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder)}
           {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), formData?.siteDetails?.totalAreaUnderLayout)}
           {renderLabel(t("BPA_AREA_UNDER_ROAD_WIDENING_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderRoadWidening)}
           {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), formData?.siteDetails?.netSiteArea)}
@@ -410,9 +414,18 @@ function LayoutSummary({ currentStepData: formData, t }) {
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("BPA_CLU_DETAILS")}</h3>
           </div>
+          {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), formData?.siteDetails?.isCluRequired?.code || formData?.siteDetails?.isCluRequired)}
+          {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && (
+            <React.Fragment>
+              {renderLabel(t("BPA_CLU_TYPE_LABEL"), formData?.siteDetails?.cluType?.code || formData?.siteDetails?.cluType)}
+              {(formData?.siteDetails?.cluType?.code === "ONLINE" || formData?.siteDetails?.cluType === "ONLINE") &&
+                renderLabel(t("BPA_CLU_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
+              {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") &&
+                renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
+              {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formData?.siteDetails?.cluApprovalDate)}
+            </React.Fragment>
+          )}
           {renderLabel(t("BPA_IS_CLU_APPROVED_LABEL"), formData?.siteDetails?.cluIsApproved?.code)}
-          {formData?.siteDetails?.cluIsApproved?.code === "YES" &&
-            renderLabel(t("BPA_CLU_APPROVED_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
         </div>
       </Card>
 

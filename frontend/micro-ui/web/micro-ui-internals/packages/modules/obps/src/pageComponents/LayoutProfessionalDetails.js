@@ -141,9 +141,72 @@ const LayoutProfessionalDetails = (_props) => {
     }
   }, [currentStepData?.applicationDetails, setValue]);
   console.log("first page");
+
+  const [userPhoto, setUserPhoto] = useState(null);
+  const [documents, setDocuments] = useState({});
+
+  // Fetch professional photo from license data
+  useEffect(() => {
+    if (data?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.photo) {
+      const photoFileStoreId = data?.Licenses[0]?.tradeLicenseDetail?.owners[0]?.photo;
+      console.log("photoFileStoreId:", photoFileStoreId);
+      Digit.UploadServices.Filefetch([photoFileStoreId], tenantId.split(".")[0]).then((res) => {
+        console.log("Photo fetch response:", res);
+        setDocuments(res?.data);
+        if (res?.data?.[photoFileStoreId]) {
+          const photoUrl = res.data[photoFileStoreId]?.split(",")[0];
+          console.log("Setting photo URL:", photoUrl);
+          setUserPhoto(photoUrl);
+        }
+      }).catch((err) => {
+        console.error("Error fetching photo:", err);
+      });
+    }
+  }, [data, tenantId]);
+
+  console.log(userInfo, "VVVVVVV");
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
+      <div>
+
+  
+      {userPhoto && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "30px", marginTop: "20px" }}>
+          <div style={{ position: "relative", width: "120px" }}>
+            <img
+              src={userPhoto}
+              alt="Professional Photo"
+              style={{
+                width: "120px",
+                height: "120px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #ccc",
+                display: "block",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: "-30px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                fontSize: "14px",
+                fontWeight: "500",
+                width: "150px",
+                textAlign: "center",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {userInfo?.info?.name}
+            </div>
+          </div>
+        </div>
+      )}
+          </div>
 
       <LabelFieldPair>
         <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}*</CardLabel>

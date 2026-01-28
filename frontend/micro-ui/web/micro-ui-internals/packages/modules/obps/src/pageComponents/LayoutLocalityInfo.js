@@ -92,7 +92,7 @@ useEffect(() => {
             <Controller
               control={control}
               name="layoutSchemeName"
-              defaultValue={currentStepData?.siteDetails?.schemeType.name || ""}
+              defaultValue={currentStepData?.siteDetails?.schemeType?.name || ""}
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}

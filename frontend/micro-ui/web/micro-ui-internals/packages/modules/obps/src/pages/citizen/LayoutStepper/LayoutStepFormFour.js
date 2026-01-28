@@ -48,6 +48,25 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     onSubmit(currentStepData, action);
   };
 
+  // Get all applicant names (owners from API + newly added applicants)
+  const getAllApplicantNames = () => {
+    const layoutData = !currentStepData?.apiData?.Layout 
+      ? currentStepData?.apiData 
+      : currentStepData?.apiData?.Layout?.[0];
+    
+    const ownersFromApi = layoutData?.owners || [];
+    const applicantsFromRedux = currentStepData?.applicants || [];
+    const newlyAddedApplicants = applicantsFromRedux.slice(1).filter(app => app?.name);
+    
+    // Get all applicant names
+    const allApplicantNames = [
+      ...ownersFromApi.map(owner => owner.name),
+      ...newlyAddedApplicants.map(app => app.name)
+    ].filter(name => name);
+    
+    return allApplicantNames.length > 0 ? allApplicantNames.join(", ") : "NA";
+  };
+
   const onSubmit = async (data, selectedAction) => {
     console.log("formData inside onSubmit", data);
 
@@ -390,9 +409,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       <LayoutSummary currentStepData={currentStepData} t={t} />
 
       <CheckBox
-        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-          currentStepData?.applicationDetails?.applicantOwnerOrFirmName || "NA"
-        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant(s) (${getAllApplicantNames()}). I along with the applicant(s) have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}
         checked={selectedCheckBox}

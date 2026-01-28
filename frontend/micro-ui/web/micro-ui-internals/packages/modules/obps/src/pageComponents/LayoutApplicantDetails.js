@@ -44,17 +44,20 @@ const LayoutApplicantDetails = (_props) => {
       address: "",
       dob: "",
       gender: "",
+      panNumber: "",
     },
   ])
   const [documentUploadedFiles, setDocumentUploadedFiles] = useState({})
   const [photoUploadedFiles, setPhotoUploadedFiles] = useState({})
-  const [applicantErrors, setApplicantErrors] = useState({})
+  const [panDocumentUploadedFiles, setPanDocumentUploadedFiles] = useState({})
   const [loader, setLoader] = useState(false)
+  const [applicantErrors, setApplicantErrors] = useState({})
   const [isDataRestored, setIsDataRestored] = useState(false)
   // State for additional owner mobile search
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({})
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({})
 
+  console.log("userInfo here", userInfo);
   const closeToast = () => setShowToast(null)
 
   const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"])
@@ -68,6 +71,13 @@ const LayoutApplicantDetails = (_props) => {
         value: `${genderDetails.code}`,
       })
     })
+ const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
+      const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(
+    isUserArchitect ? "pb.punjab" : tenantId,
+    {},
+    { mobileNumber: userInfo?.info?.mobileNumber },
+    { cacheTime: 0 }
+  );
 
   useEffect(() => {
     // Prevent running multiple times
@@ -192,7 +202,7 @@ const LayoutApplicantDetails = (_props) => {
     }
 
     const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {})
-
+    console.log(userResponse, "PHOTO");
     if (!userResponse?.user?.length) {
       setShowToast({
         key: "true",
@@ -424,6 +434,36 @@ const LayoutApplicantDetails = (_props) => {
     setPhotoUploadedFiles(newPhotoFiles)
   }
 
+  // PAN Document Upload Handler
+  const selectPanDocumentFile = (index) => async (e) => {
+    const file = e.target.files[0]
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") })
+      return
+    }
+    try {
+      setLoader(true)
+      const response = await Digit.UploadServices.Filestorage("Layout", file, stateId)
+      setLoader(false)
+      if (response?.data?.files?.length > 0) {
+        const fileId = response.data.files[0].fileStoreId
+        setPanDocumentUploadedFiles((prev) => ({ ...prev, [index]: { fileStoreId: fileId, fileName: file.name } }))
+        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "" } }))
+      } else {
+        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+      }
+    } catch (err) {
+      setLoader(false)
+      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
+    }
+  }
+
+  const deletePanDocument = (index) => {
+    const newPanDocFiles = { ...panDocumentUploadedFiles }
+    delete newPanDocFiles[index]
+    setPanDocumentUploadedFiles(newPanDocFiles)
+  }
+
   const isEdit = window.location.pathname.includes("edit")
 
   const ErrorMessage = ({ message }) => {
@@ -451,6 +491,41 @@ const LayoutApplicantDetails = (_props) => {
           <CardSectionHeader className="card-section-header" style={{ marginTop: "20px", marginBottom: "20px" }}>
             {t("BPA_APPLICANT_DETAILS")} - Primary
           </CardSectionHeader>
+
+                   {/* Mobile Number */}
+          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+            <div style={{ display: "flex" }} className="field">
+              <Controller
+                control={control}
+                name="applicantMobileNumber"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: t("INVALID_MOBILE_NUMBER"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value)
+                      setMobileNo(e.target.value)
+                    }}
+                    onBlur={props.onBlur}
+                    disabled={isEdit}
+                    t={t}
+                  />
+                )}
+              />
+              <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
+                <SearchIcon />
+              </div>
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
+
 
           {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
@@ -502,40 +577,7 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* Mobile Number */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
-            <div style={{ display: "flex" }} className="field">
-              <Controller
-                control={control}
-                name="applicantMobileNumber"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[6-9]\d{9}$/,
-                    message: t("INVALID_MOBILE_NUMBER"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value)
-                      setMobileNo(e.target.value)
-                    }}
-                    onBlur={props.onBlur}
-                    disabled={isEdit}
-                    t={t}
-                  />
-                )}
-              />
-              <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
-                <SearchIcon />
-              </div>
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
-
+ 
           {/* Email ID */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
             <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
@@ -693,6 +735,62 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
 
+
+          {/* PAN Document */}
+          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+            <CardLabel className="card-label-smaller">{t("BPA_PAN_DOCUMENT")}*</CardLabel>
+            <div className="field" style={{ width: "100%" }}>
+              <CustomUploadFile
+                id="pan-document-primary"
+                onUpload={selectPanDocumentFile(0)}
+                onDelete={() => {
+                  deletePanDocument(0)
+                  setPanDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }))
+                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], panDocument: "PAN document is required" } }))
+                }}
+                uploadedFile={panDocumentUploadedFiles[0]?.fileStoreId}
+                message={panDocumentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                error={applicantErrors[0]?.panDocument}
+                uploadMessage=""
+                accept=".pdf"
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.panDocument?.message || ""}</CardLabelError>
+
+
+          {/* PAN Number */}
+          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+            <CardLabel className="card-label-smaller">{`${t("BPA_PAN_NUMBER_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="panNumber"
+                rules={{
+                  maxLength: {
+                    value: 10,
+                    message: "PAN Number should not exceed 10 characters",
+                  },
+                  pattern: {
+                    value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                    message: "Invalid PAN Number format. Format should be like AAAAA1234A",
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value.toUpperCase());
+                    }}
+                    onBlur={props.onBlur}
+                    placeholder="e.g., AAAAA1234A"
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.panNumber?.message || ""}</CardLabelError>
+
           {/* Hidden Controllers for document validation */}
           <div style={{ display: "none" }}>
             <Controller
@@ -749,6 +847,30 @@ const LayoutApplicantDetails = (_props) => {
                         </span>
                       </div>
 
+                        {/* Mobile Number */}
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                        <CardLabel className="card-label-smaller">
+                          {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*
+                        </CardLabel>
+                        <div style={{ display: "flex" }} className="field">
+                          <TextInput
+                            value={applicant.mobileNumber}
+                            onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)}
+                            t={t}
+                          />
+                          <div
+                            style={{ marginTop: "17px", cursor: "pointer" }}
+                            className="search-icon"
+                            onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
+                          >
+                            {additionalOwnerSearchLoading[index] ? <Loader /> : <SearchIcon />}
+                          </div>
+                        </div>
+                      </LabelFieldPair>
+                      {applicantErrors[index]?.mobileNumber && (
+                        <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>
+                      )}
+
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
                         <CardLabel className="card-label-smaller">
@@ -776,29 +898,7 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
 
-                      {/* Mobile Number */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*
-                        </CardLabel>
-                        <div style={{ display: "flex" }} className="field">
-                          <TextInput
-                            value={applicant.mobileNumber}
-                            onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)}
-                            t={t}
-                          />
-                          <div
-                            style={{ marginTop: "17px", cursor: "pointer" }}
-                            className="search-icon"
-                            onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
-                          >
-                            {additionalOwnerSearchLoading[index] ? <Loader /> : <SearchIcon />}
-                          </div>
-                        </div>
-                      </LabelFieldPair>
-                      {applicantErrors[index]?.mobileNumber && (
-                        <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>
-                      )}
+                    
 
                       {/* Email ID */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -904,6 +1004,43 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
+
+                      {/* PAN Number */}
+                    
+                      {/* PAN Document */}
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+                        <CardLabel className="card-label-smaller">{t("BPA_PAN_DOCUMENT")}*</CardLabel>
+                        <div className="field" style={{ width: "100%" }}>
+                          <CustomUploadFile
+                            id={`pan-document-${index}`}
+                            onUpload={selectPanDocumentFile(index)}
+                            onDelete={() => {
+                              deletePanDocument(index)
+                              setPanDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }))
+                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "PAN document is required" } }))
+                            }}
+                            uploadedFile={panDocumentUploadedFiles[index]?.fileStoreId}
+                            message={panDocumentUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                            error={applicantErrors[index]?.panDocument}
+                            uploadMessage=""
+                            accept=".pdf"
+                          />
+                        </div>
+                      </LabelFieldPair>
+
+                        <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                        <CardLabel className="card-label-smaller">{`${t("BPA_PAN_NUMBER_LABEL")}`}*</CardLabel>
+                        <div className="field">
+                          <TextInput
+                            value={applicant.panNumber || ""}
+                            onChange={(e) => updateApplicant(index, "panNumber", e.target.value.toUpperCase())}
+                            placeholder="e.g., AAAAA1234A"
+                            t={t}
+                          />
+                        </div>
+                      </LabelFieldPair>
+                      {applicantErrors[index]?.panNumber && <ErrorMessage>{applicantErrors[index].panNumber}</ErrorMessage>}
+
                     </div>
                   ),
               )}

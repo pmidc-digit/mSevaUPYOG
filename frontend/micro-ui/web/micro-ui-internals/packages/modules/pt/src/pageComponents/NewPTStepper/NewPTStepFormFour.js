@@ -1,25 +1,32 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_GarbageApplication_FORM } from "../../../redux/action/GarbageApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../redux/action/PTNewApplicationActions";
 import { useState } from "react";
-import { Loader } from "../../components/Loader";
 import _ from "lodash";
+import PropertySelectDocs from "../../components/PropertySelectDocs";
 
-const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
+const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  const [loader, setLoader] = useState(false);
-  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
+  const stateId = Digit.ULBService.getStateId();
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+  // Fetch MDMS docs
 
-  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [{ name: "Documents" }]);
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "Documents" }]);
 
-  const checkFormData = useSelector((state) => state.gc.GarbageApplicationFormReducer.formData || {});
+  console.log("docData", docData);
+
+  // const currentStepData = useSelector(function (state) {
+  //   return state.pt.PTNewApplicationFormReducer.formData;
+  // });
 
   const currentStepData = useSelector(function (state) {
-    return state.gc.GarbageApplicationFormReducer.formData && state.gc.GarbageApplicationFormReducer.formData[config?.key]
-      ? state.gc.GarbageApplicationFormReducer.formData[config?.key]
+    return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config?.key]
+      ? state.pt.PTNewApplicationFormReducer.formData[config?.key]
       : {};
   });
 
@@ -36,7 +43,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function validation(formData) {
     if (!isLoading) {
-      const chbDocumentsType = docData?.["gc-services-masters"]?.Documents || [];
+      const chbDocumentsType = docData?.["PropertyTax"]?.Documents || [];
       const uploadedDocs = formData?.documents?.documents || [];
       // Extract required docs
       const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
@@ -60,7 +67,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   const onFormValueChange = (setValue = true, data) => {
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_GarbageApplication_FORM(config.key, data));
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }
   };
 
@@ -80,9 +87,8 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         onBackClick={onGoBack}
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
-      {(loader || isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };
 
-export default NewADSStepFormThree;
+export default NewPTStepFormFour;

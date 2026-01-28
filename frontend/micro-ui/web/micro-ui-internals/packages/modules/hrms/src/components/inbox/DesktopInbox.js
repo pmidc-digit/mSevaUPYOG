@@ -11,7 +11,11 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const tenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
   const GetCell = (value) => <span className="cell-text">{t(value)}</span>;
   const GetSlaCell = (value) => {
-    return value == "INACTIVE" ? <span className="sla-cell-error">{ t(value )|| ""}</span> : <span className="sla-cell-success">{ t(value) || ""}</span>;
+    return value == "INACTIVE" ? (
+      <span className="sla-cell-error">{t(value) || ""}</span>
+    ) : (
+      <span className="sla-cell-success">{t(value) || ""}</span>
+    );
   };
   const data = props?.data?.Employees;
 
@@ -116,9 +120,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         columns={columns}
         getCellProps={(cellInfo) => {
           return {
-            className: `p-5 text-base min-w-[150px] ${
-              cellInfo.column.Header == t("HR_EMP_ID_LABEL") ? "max-w-[150px]" : ""
-            }`,
+            className: `p-5 text-base min-w-[150px] ${cellInfo.column.Header == t("HR_EMP_ID_LABEL") ? "max-w-[150px]" : ""}`,
           };
         }}
         onPageSizeChange={props.onPageSizeChange}
@@ -139,25 +141,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     <div className="inbox-container">
       {!props.isSearch && (
         <div className="filters-container">
-          <InboxLinks
-            parentRoute={props.parentRoute}
-            allLinks={[
-              {
-                text: "HR_COMMON_CREATE_EMPLOYEE_HEADER",
-                link: "/digit-ui/employee/hrms/create",
-                businessService: "hrms",
-                roles: ["HRMS_ADMIN"],
-              },
-              {
-                text: "HR_COMMON_OBPAS_EMP_MAPING",
-                link: "/digit-ui/employee/hrms/empMaping",
-                businessService: "hrms",
-                roles: ["HRMS_ADMIN"],
-              },
-            ]}
-            headerText={"HRMS"}
-            businessService={props.businessService}
-          />
+          <InboxLinks parentRoute={props.parentRoute} allLinks={[]} headerText={"HRMS"} businessService={props.businessService} />
           <div>
             {
               <FilterComponent
@@ -181,9 +165,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
         />
-        <div className={`result flex-1 ${!props?.isSearch ? "ml-6" : ""}`}>
-          {result}
-        </div>
+        <div className={`result flex-1 ${!props?.isSearch ? "ml-6" : ""}`}>{result}</div>
       </div>
     </div>
   );

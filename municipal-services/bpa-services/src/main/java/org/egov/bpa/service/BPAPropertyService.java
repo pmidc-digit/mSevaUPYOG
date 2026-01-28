@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.ServiceRequestRepository;
+import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.RequestInfoWrapper;
@@ -101,11 +102,11 @@ public class BPAPropertyService {
 		return propertyList;
 	}
 
-	public void createProperty(BPARequest bpaRequest) {
+	public void createProperty(BPARequest bpaRequest, Object mdmsData) {
 		BPA bpa = bpaRequest.getBPA();
 		LandInfo landInfo = bpa.getLandInfo();
 
-		Property property = createPropertFromBPA(bpa);
+		Property property = createPropertFromBPA(bpa, mdmsData);
 
 		PropertyRequest propertyRequest = PropertyRequest.builder().property(property)
 				.requestInfo(bpaRequest.getRequestInfo()).build();
@@ -199,9 +200,17 @@ public class BPAPropertyService {
 		return url;
 	}
 	
-	private Property createPropertFromBPA(BPA bpa) {
+	private Property createPropertFromBPA(BPA bpa, Object mdmsData) {
 		
 		Map<String,Object> additionalDetails = (Map<String, Object>)bpa.getAdditionalDetails();
+		String categories = StringUtils.isEmpty(additionalDetails.get("categories")) ? null : additionalDetails.get("categories").toString();
+    	String subcategories = StringUtils.isEmpty(additionalDetails.get("subcategories")) ? null : additionalDetails.get("subcategories").toString();
+    	String filter = "$.MdmsRes.BPA.PropertyUsage.[?(@.active == true && @.OccupancyType == '" + categories +  "' && @.SubOccupancyType contains '" + subcategories +"')].code";
+		List<String> propertUsegeList = JsonPath.read(mdmsData, filter);
+		
+		if(CollectionUtils.isEmpty(propertUsegeList))
+			throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Property Usage not found for the Occupancy Type: " + categories + "and Sub-Occupancy Type: " + subcategories);
+		
 		
 		Address address = objectMapper.convertValue(bpa.getLandInfo().getAddress(), Address.class);
 		address.setId("");
@@ -215,7 +224,7 @@ public class BPAPropertyService {
 		return Property.builder()
 				.address(address).accountId(bpa.getAccountId())
 				.landArea(Double.valueOf(additionalDetails.get("area").toString()))
-				.usageCategory((String)additionalDetails.get("usage").toString().toUpperCase())
+				.usageCategory(propertUsegeList.get(0))
 				.ownershipCategory(bpa.getLandInfo().getOwnershipCategory())
 				.owners(bpa.getLandInfo().getOwners())
 				.tenantId(bpa.getTenantId())

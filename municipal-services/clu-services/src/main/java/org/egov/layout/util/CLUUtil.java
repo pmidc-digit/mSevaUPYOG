@@ -84,6 +84,8 @@ public class CLUUtil {
 
 		nocMasterDtls.add(MasterDetail.builder().name(CLUConstants.CLU_TYPE).filter(nocFilterCode).build());
 		nocMasterDtls.add(MasterDetail.builder().name(CLUConstants.NOC_DOC_TYPE_MAPPING).build());
+		nocMasterDtls.add(MasterDetail.builder().name(CLUConstants.BUILDING_TYPE).build());
+		nocMasterDtls.add(MasterDetail.builder().name(CLUConstants.BUILDING_CATEGORY).build());
 		ModuleDetail nocModuleDtls = ModuleDetail.builder().masterDetails(nocMasterDtls)
 				.moduleName(CLUConstants.CLU_MODULE).build();
 		

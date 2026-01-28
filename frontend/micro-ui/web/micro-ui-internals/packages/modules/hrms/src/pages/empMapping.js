@@ -15,7 +15,6 @@ import CloseBtn from "../components/common/CloseBtn";
 import MappingTable from "../components/empMapping/MappingTable";
 import PaginationControls from "../components/empMapping/PaginationControls";
 import {
-  PRIMARY_COLOR,
   getEmployeeOBPSRoles,
   addSelectAllOption,
   handleSelectAllLogic,
@@ -23,7 +22,6 @@ import {
   createMappingCombinations,
   transformMappingData,
   calculatePagination,
-  LINEAR_BLUE_GRADIENT
 } from "../utils/empMappingUtils";
 
 const EmpMaping = () => {
@@ -380,26 +378,21 @@ const EmpMaping = () => {
 
   return (
     <React.Fragment>
-      <div className="ground-container" style={{ padding: isMobile ? "10px" : "20px" }}>
-        <Header style={{ marginLeft: isMobile ? "1vw" : "15px", color: "#FF0000" }}>
+      <div className="hrms-emp-mapping__container">
+        <Header className="hrms-emp-mapping__header">
           {t("HR_EMPLOYEE_CATEGORY_ZONE_MAPPING")}
         </Header>
 
         {/* Search Filters */}
-        <Card style={{ marginTop: "20px" }}>
-          <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: "600" }}>
+        <Card className="hrms-emp-mapping__search-card">
+          <h3 className="hrms-emp-mapping__search-heading">
             {t("COMMON_SEARCH_FILTERS") || "Search Filters"}
           </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-              gap: "16px",
-            }}
-          >
+          <div className="hrms-emp-mapping__filter-grid">
+
             <div>
               <CardLabel>
-                {t("HR_ULB_LABEL") || "ULB"} <span style={{ color: "red" }}>*</span>
+                {t("HR_ULB_LABEL") || "ULB"} <span className="hrms-emp-mapping__required-asterisk">*</span>
               </CardLabel>
               <Dropdown
                 t={t}
@@ -437,31 +430,12 @@ const EmpMaping = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: "20px",
-              gap: "10px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", gap: "10px" }}>
+          <div className="hrms-emp-mapping__button-container">
+            <div className="hrms-emp-mapping__action-buttons">
               <button
                 onClick={handleSearch}
                 disabled={!filterULB}
-                style={{
-                  background: filterULB ? LINEAR_BLUE_GRADIENT : "#ccc",
-                  color: "white",
-                  border: "none",
-                  padding: "10px 24px",
-                  borderRadius: "4px",
-                  cursor: filterULB ? "pointer" : "not-allowed",
-                  fontWeight: "500",
-                  fontSize: "14px",
-                  opacity: filterULB ? 1 : 0.6,
-                }}
+                className={`hrms-emp-mapping__search-button ${!filterULB ? 'hrms-emp-mapping__search-button--disabled' : ''}`}
               >
                 {t("COMMON_SEARCH")}
               </button>
@@ -469,17 +443,7 @@ const EmpMaping = () => {
               <button
                 onClick={handleClearFilters}
                 disabled={!filterULB && !filterEmployee && !filterCategory}
-                style={{
-                  backgroundColor: "white",
-                  color: LINEAR_BLUE_GRADIENT,
-                  border: `1px solid ${LINEAR_BLUE_GRADIENT}`,
-                  padding: "10px 24px",
-                  borderRadius: "4px",
-                  cursor: !filterULB && !filterEmployee && !filterCategory ? "not-allowed" : "pointer",
-                  fontWeight: "500",
-                  fontSize: "14px",
-                  opacity: !filterULB && !filterEmployee && !filterCategory ? 0.5 : 1,
-                }}
+                className={`hrms-emp-mapping__clear-button ${!filterULB && !filterEmployee && !filterCategory ? 'hrms-emp-mapping__clear-button--disabled' : ''}`}
               >
                 {t("COMMON_CLEAR_FILTERS") || "Clear Filters"}
               </button>
@@ -487,15 +451,7 @@ const EmpMaping = () => {
 
             <button
               onClick={handleAddNew}
-              style={{
-                background: "linear-gradient(135deg, #2563eb, #1e40af)",
-                color: "white",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "500",
-              }}
+              className="hrms-emp-mapping__add-button"
             >
               + {t("HR_ADD_NEW_MAPPING")}
             </button>
@@ -503,21 +459,10 @@ const EmpMaping = () => {
         </Card>
 
         {/* Results Table */}
-        <Card style={{ marginTop: "20px" }}>
-          <div
-            style={{
-              marginBottom: "15px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "10px",
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
-              {t("HR_MAPPING_RESULTS")} ({totalRecords})
-            </h3>
-          </div>
+        <Card className="hrms-emp-mapping__results-card">
+          <h3 className="hrms-emp-mapping__results-heading">
+            {t("HR_MAPPING_RESULTS")} ({totalRecords})
+          </h3>
 
           <MappingTable 
             t={t}
@@ -546,7 +491,7 @@ const EmpMaping = () => {
         {/* Add Mapping Modal */}
         {showAddModal && (
           <Modal
-            headerBarMain={<h2 style={{ fontSize: "20px", fontWeight: "600", margin: 0 }}>{t("HR_ADD_NEW_MAPPING")}</h2>}
+            headerBarMain={<h2 className="hrms-emp-mapping__modal-header">{t("HR_ADD_NEW_MAPPING")}</h2>}
             headerBarEnd={<CloseBtn onClick={closeAddModal} />}
             actionCancelLabel={t("COMMON_CANCEL")}
             actionCancelOnSubmit={closeAddModal}
@@ -555,35 +500,14 @@ const EmpMaping = () => {
             formId="add-mapping-form"
             popupStyles={{ width: "900px", maxHeight: "90vh" }}
           >
-            <div style={{ padding: "20px", maxHeight: "calc(90vh - 150px)", overflowY: "auto" }}>
+            <div className="hrms-emp-mapping__modal-content">
               {/* Modal Toast for Errors */}
               {modalToast && (
-                <div
-                  style={{
-                    background: modalToast.error ? "#ffeaea" : "#eaffea",
-                    color: modalToast.error ? "#d4351c" : "#0d6759",
-                    padding: "12px 16px",
-                    borderRadius: "6px",
-                    marginBottom: "16px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    fontWeight: "500",
-                    fontSize: "14px",
-                  }}
-                >
-                  <span>{modalToast.label}</span>
+                <div className={`hrms-emp-mapping__toast ${modalToast.error ? 'hrms-emp-mapping__toast--error' : 'hrms-emp-mapping__toast--success'}`}>
+                  <span className="hrms-emp-mapping__toast-message">{modalToast.label}</span>
                   <button
                     onClick={() => setModalToast(null)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: modalToast.error ? "#d4351c" : "#0d6759",
-                      cursor: "pointer",
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                      padding: "0 8px",
-                    }}
+                    className="hrms-emp-mapping__toast-close-btn"
                   >
                     ✖
                   </button>
@@ -591,9 +515,9 @@ const EmpMaping = () => {
               )}
 
               {/* ULB Selection */}
-              <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("ULB_CODE")} <span style={{ color: "red" }}>*</span>
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
+                  {t("ULB_CODE")} <span className="hrms-emp-mapping__required-asterisk">*</span>
                 </CardLabel>
                 <Dropdown
                   t={t}
@@ -606,9 +530,9 @@ const EmpMaping = () => {
               </div>
 
               {/* Employee Selection */}
-              <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("HR_EMPLOYEE_CODE")} <span style={{ color: "red" }}>*</span>
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
+                  {t("HR_EMPLOYEE_CODE")} <span className="hrms-emp-mapping__required-asterisk">*</span>
                 </CardLabel>
                 <Dropdown
                   t={t}
@@ -643,29 +567,23 @@ const EmpMaping = () => {
               </div> */}
 
               {/* Role(s) - Read-only */}
-              <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
                   {t("HR_ROLES_LABEL") || "Role(s)"}
                 </CardLabel>
                 <input
                   type="text"
                   value={formData.roleNames || "No OBPS Roles"}
                   readOnly
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    background: "#f9f9f9",
-                    fontSize: "14px",
-                  }}
+                  className="hrms-emp-mapping__input"
+                  disabled
                 />
               </div>
 
               {/* Category Multi-Select */}
-              <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("HR_CATEGORY_LABEL")} <span style={{ color: "red" }}>*</span>
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
+                  {t("HR_CATEGORY_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
                 </CardLabel>
                 <MultiSelectDropdown
                   options={categoriesWithSelectAll}
@@ -679,9 +597,9 @@ const EmpMaping = () => {
               </div>
 
               {/* Sub-Category Multi-Select */}
-              <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("HR_SUB_CATEGORY_LABEL")} <span style={{ color: "red" }}>*</span>
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
+                  {t("HR_SUB_CATEGORY_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
                 </CardLabel>
                 <MultiSelectDropdown
                   options={filteredSubCategoriesWithSelectAll}
@@ -699,9 +617,9 @@ const EmpMaping = () => {
               </div>
 
               {/* Zone Multi-Select */}
-              <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("HR_ZONE_LABEL")} <span style={{ color: "red" }}>*</span>
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
+                  {t("HR_ZONE_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
                 </CardLabel>
                 <MultiSelectDropdown
                   options={modalZonesWithSelectAll}
@@ -715,19 +633,10 @@ const EmpMaping = () => {
               </div>
 
               {/* Add to List Button */}
-              <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+              <div className="hrms-emp-mapping__form-group">
                 <button
                   onClick={handleAddToList}
-                  style={{
-                    padding: "10px 24px",
-                    background: LINEAR_BLUE_GRADIENT,
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontWeight: "600",
-                    fontSize: "14px",
-                  }}
+                  className="hrms-emp-mapping__add-to-list-button"
                 >
                   + {t("HR_ADD_TO_LIST") || "Add to List"}
                 </button>
@@ -735,123 +644,41 @@ const EmpMaping = () => {
 
               {/* Preview Table */}
               {mappingsToCreate.length > 0 && (
-                <div style={{ marginTop: "20px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600" }}>
+                <div className="hrms-emp-mapping__preview-section">
+                  <div className="hrms-emp-mapping__preview-header">
+                    <h3 className="hrms-emp-mapping__preview-heading">
                       {t("HR_MAPPINGS_TO_CREATE") || "Mappings to Create"} ({mappingsToCreate.length})
                     </h3>
                     <button
                       onClick={handleClearList}
-                      style={{
-                        padding: "6px 12px",
-                        backgroundColor: "#f3f3f3",
-                        border: "1px solid #d6d5d5",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                        color: "#505A5F",
-                      }}
+                      className="hrms-emp-mapping__clear-list-button"
                     >
                       {t("COMMON_CLEAR_ALL") || "Clear All"}
                     </button>
                   </div>
 
-                  <div
-                    style={{
-                      maxHeight: "300px",
-                      overflow: "auto",
-                      border: "1px solid #d6d5d5",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead style={{ backgroundColor: "#f3f3f3", position: "sticky", top: 0 }}>
+                  <div className="hrms-emp-mapping__preview-table-wrapper">
+                    <table className="hrms-emp-mapping__preview-table">
+                      <thead>
                         <tr>
-                          <th
-                            style={{
-                              padding: "10px",
-                              textAlign: "left",
-                              borderBottom: "1px solid #d6d5d5",
-                              fontSize: "13px",
-                            }}
-                          >
-                            {t("HR_EMPLOYEE_CODE")}
-                          </th>
-                          <th
-                            style={{
-                              padding: "10px",
-                              textAlign: "left",
-                              borderBottom: "1px solid #d6d5d5",
-                              fontSize: "13px",
-                            }}
-                          >
-                            {t("HR_CATEGORY_LABEL")}
-                          </th>
-                          <th
-                            style={{
-                              padding: "10px",
-                              textAlign: "left",
-                              borderBottom: "1px solid #d6d5d5",
-                              fontSize: "13px",
-                            }}
-                          >
-                            {t("HR_SUB_CATEGORY_LABEL")}
-                          </th>
-                          <th
-                            style={{
-                              padding: "10px",
-                              textAlign: "left",
-                              borderBottom: "1px solid #d6d5d5",
-                              fontSize: "13px",
-                            }}
-                          >
-                            {t("HR_ZONE_LABEL")}
-                          </th>
-                          <th
-                            style={{
-                              padding: "10px",
-                              textAlign: "center",
-                              borderBottom: "1px solid #d6d5d5",
-                              fontSize: "13px",
-                            }}
-                          >
-                            {t("COMMON_ACTION")}
-                          </th>
+                          <th>{t("HR_EMPLOYEE_CODE")}</th>
+                          <th>{t("HR_CATEGORY_LABEL")}</th>
+                          <th>{t("HR_SUB_CATEGORY_LABEL")}</th>
+                          <th>{t("HR_ZONE_LABEL")}</th>
+                          <th>{t("COMMON_ACTION")}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {mappingsToCreate.map((mapping, index) => (
-                          <tr key={mapping.id} style={{ backgroundColor: index % 2 === 0 ? "white" : "#f9f9f9" }}>
-                            <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", fontSize: "13px" }}>
-                              {mapping.employeeCode}
-                            </td>
-                            <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", fontSize: "13px" }}>
-                              {mapping.category.name}
-                            </td>
-                            <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", fontSize: "13px" }}>
-                              {mapping.subCategory.name}
-                            </td>
-                            <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", fontSize: "13px" }}>
-                              {mapping.zone.name}
-                            </td>
-                            <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", textAlign: "center" }}>
+                          <tr key={mapping.id}>
+                            <td>{mapping.employeeCode}</td>
+                            <td>{mapping.category.name}</td>
+                            <td>{mapping.subCategory.name}</td>
+                            <td>{mapping.zone.name}</td>
+                            <td className="hrms-emp-mapping__table-action-cell">
                               <button
                                 onClick={() => handleRemoveFromList(mapping.id)}
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  color: "#D4351C",
-                                  cursor: "pointer",
-                                  fontSize: "13px",
-                                  fontWeight: "500",
-                                }}
+                                className="hrms-btn hrms-btn--delete"
                               >
                                 {t("COMMON_DELETE")}
                               </button>

@@ -36,11 +36,11 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
   let result;
   if (data && data?.length === 0) {
     result = (
-      <Card style={{ marginTop: 20 }}>
+      <Card className="swach-margin-top-16">
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="swach-text-align">
               {text}
             </p>
           ))}
@@ -51,11 +51,11 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
     result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/swach/complaint/details/"} tenantIdsList={tenantIdsList}/>;
   } else {
     result = (
-      <Card style={{ marginTop: 20 }}>
+      <Card className="swach-margin-top-16">
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="swach-text-align">
               {text}
             </p>
           ))}

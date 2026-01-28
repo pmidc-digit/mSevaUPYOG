@@ -439,7 +439,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   return (
-    <div className="card">
+    <div className="card pgr-create-complaint-wrapper">
     {/* {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
     <FormComposer
      key={location.pathname} 

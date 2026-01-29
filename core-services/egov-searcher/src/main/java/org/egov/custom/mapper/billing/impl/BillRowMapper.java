@@ -85,16 +85,27 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>>{
 				}
 				
 				/* Metered reading add for bill PI-19930 */
-				MeterReading meterReading = MeterReading.builder()
-					.connectionno(rs.getString("mr_connectionno"))
-				    .lastReading(rs.getBigDecimal("mr_lastreading"))
-				    .lastReadingDate((Long) rs.getObject("mr_lastreadingdate"))
-				    .currentReading(rs.getBigDecimal("mr_currentreading"))
-				    .currentReadingDate((Long) rs.getObject("mr_currentreadingdate"))
-				    .consumption(rs.getBigDecimal("mr_consumption"))
-				    .meterStatus(rs.getString("mr_meterstatus"))
-				    .billingPeriod(rs.getString("mr_billingperiod"))
-				    .build();
+				MeterReading meterReading = null;
+
+				try {
+				    meterReading = MeterReading.builder()
+				        .connectionno(rs.getString("mr_connectionno"))
+				        .lastReading(rs.getBigDecimal("mr_lastreading"))
+				        .lastReadingDate((Long) rs.getObject("mr_lastreadingdate"))
+				        .currentReading(rs.getBigDecimal("mr_currentreading"))
+				        .currentReadingDate((Long) rs.getObject("mr_currentreadingdate"))
+				        .consumption(rs.getBigDecimal("mr_consumption"))
+				        .meterStatus(rs.getString("mr_meterstatus"))
+				        .billingPeriod(rs.getString("mr_billingperiod"))
+				        .build();
+				} catch (SQLException e) {
+				    log.debug("Meter columns not present (SW connection)");
+				}
+
+				// ensure meterReading is never null
+				if (meterReading == null) {
+				    meterReading = new MeterReading(); // empty object
+				}
 				/* ================================================= */
 				
 				

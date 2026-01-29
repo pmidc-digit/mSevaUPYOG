@@ -1066,3 +1066,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "core-services/egov-property-rate-search/src/main/resources/db"
         image-name: "egov-property-rate-search-db"
+
+  - name: "builds/upyog/core-services/egov-indexer-v2"
+    build:
+      - work-dir: "core-services/egov-indexer-v2"
+        image-name: "egov-indexer"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-indexer-v2/src/main/resources/db"
+        image-name: "egov-indexer-v2-db"

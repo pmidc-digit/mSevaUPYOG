@@ -660,6 +660,7 @@ function onActionSelect(action) {
                 ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
               },
             }}
+            feeType="PAY1"
           />
         </Card>
       )}

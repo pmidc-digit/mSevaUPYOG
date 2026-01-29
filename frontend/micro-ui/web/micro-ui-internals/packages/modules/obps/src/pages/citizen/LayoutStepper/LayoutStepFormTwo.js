@@ -142,9 +142,11 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       dob: formData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(formData?.applicationDetails?.applicantDateOfBirth) : null,
       fatherOrHusbandName: formData?.applicationDetails?.applicantFatherHusbandName || "",
       permanentAddress: formData?.applicationDetails?.applicantAddress || "",
+      pan: formData?.applicationDetails?.panNumber || null,
       additionalDetails: {
         documentFile: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || null,
         ownerPhoto: formData?.photoUploadedFiles?.[0]?.fileStoreId || formData?.photoUploadedFiles?.[0] || null,
+        panDocument: formData?.panDocumentUploadedFiles?.[0]?.fileStoreId || formData?.panDocumentUploadedFiles?.[0] || null,
       },
     });
 
@@ -160,9 +162,11 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           dob: applicant?.dob ? Digit.Utils.pt.convertDateToEpoch(applicant?.dob) : null,
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
           permanentAddress: applicant?.address || "",
+          pan: applicant?.panNumber || null,
           additionalDetails: {
             documentFile: formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,
             ownerPhoto: formData?.photoUploadedFiles?.[index + 1]?.fileStoreId || formData?.photoUploadedFiles?.[index + 1] || null,
+            panDocument: formData?.panDocumentUploadedFiles?.[index + 1]?.fileStoreId || formData?.panDocumentUploadedFiles?.[index + 1] || null,
           },
         });
       });

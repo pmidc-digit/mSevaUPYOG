@@ -18,7 +18,11 @@ const LayoutResponseCitizen = (props) => {
   const layoutData = state?.data?.Layout?.[0]
   console.log("layoutData in response page", layoutData)
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
+  let tenantId;
+  if(window.location.pathname.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  else {
+    tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
@@ -38,6 +42,11 @@ const LayoutResponseCitizen = (props) => {
   const onGoToSearchApplication = () => {
     history.push(`/digit-ui/citizen/obps/layout/search-application`)
   }
+
+  const handlePayment = () => {
+    const code = layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "LAYOUT.PAY1" : "LAYOUT.PAY2";
+    history.push(`/digit-ui/citizen/payment/collect/${code}/${applicationNo}/${tenantId}?tenantId=${tenantId}`);
+  };
 
   const handleDownloadPdf = async () => {
     try{
@@ -71,9 +80,9 @@ const LayoutResponseCitizen = (props) => {
         />
         {downloading && <Loader />}
         {layoutData?.applicationStatus !== "REJECTED" ? (
-          <div>
+          <div style={{display:"flex", justifyContent:"space-evenly"}}>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
-            {pdfError && <div style={{ color: "red", padding: "10px", marginTop: "10px" }}>{pdfError}</div>}
+            {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </div>
         ) : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>

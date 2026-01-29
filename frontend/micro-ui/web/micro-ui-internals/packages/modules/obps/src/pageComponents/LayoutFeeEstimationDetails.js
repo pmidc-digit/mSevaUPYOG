@@ -5,15 +5,17 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
 
-const LayoutFeeEstimationDetails = ({ formData }) => {
+const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
   const { t } = useTranslation()
-console.log(formData, "IIIIIIII");
+  console.log(formData, "IIIIIIII");
+  
     const payload = useMemo(
     () => ({
       CalculationCriteria: [
         {
           applicationNumber: formData?.apiData?.Layout?.[0]?.applicationNo,
           tenantId: formData?.apiData?.Layout?.[0]?.tenantId,
+          feeType: feeType,
           Layout: {
             ...formData?.apiData?.Layout?.[0],
             layoutDetails: {
@@ -45,6 +47,7 @@ console.log(formData, "IIIIIIII");
   } = Digit.Hooks.obps.useLayoutFeeCalculator(
     {
       payload,
+      feeType,
     },
     {
       enabled: !!payload,

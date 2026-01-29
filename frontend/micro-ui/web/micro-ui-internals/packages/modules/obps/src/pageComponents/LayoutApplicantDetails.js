@@ -52,7 +52,6 @@ const LayoutApplicantDetails = (_props) => {
   const [panDocumentUploadedFiles, setPanDocumentUploadedFiles] = useState({})
   const [loader, setLoader] = useState(false)
   const [applicantErrors, setApplicantErrors] = useState({})
-  const [isDataRestored, setIsDataRestored] = useState(false)
   // State for additional owner mobile search
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({})
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({})
@@ -80,10 +79,8 @@ const LayoutApplicantDetails = (_props) => {
   );
 
   useEffect(() => {
-    // Prevent running multiple times
-    if (isDataRestored) return;
-
-    console.log("[v0] LayoutApplicantDetails - Full currentStepData:", currentStepData)
+    // Only restore data on mount, not on every change
+    console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount")
     const formattedData = currentStepData?.applicationDetails
 
     if (formattedData) {
@@ -92,7 +89,7 @@ const LayoutApplicantDetails = (_props) => {
       })
     }
 
-    // Restore additional applicants from currentStepData (if already in Redux from previous step navigation)
+    // Restore additional applicants from currentStepData
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
       console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants)
       setApplicants(currentStepData.applicants)
@@ -158,6 +155,7 @@ const LayoutApplicantDetails = (_props) => {
       
       const docFiles = {}
       const photoFiles = {}
+      const panDocFiles = {}
       
       // Map documents for all owners from their additionalDetails
       ownersFromApi.forEach((owner, ownerIndex) => {
@@ -167,16 +165,23 @@ const LayoutApplicantDetails = (_props) => {
         if (owner?.additionalDetails?.ownerPhoto) {
           photoFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.ownerPhoto, fileName: "Photo" }
         }
+        if (owner?.additionalDetails?.panDocument) {
+          panDocFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.panDocument, fileName: "PAN Document" }
+        }
       })
       
       console.log("[v0] Mapped document files:", docFiles)
       console.log("[v0] Mapped photo files:", photoFiles)
+      console.log("[v0] Mapped PAN document files:", panDocFiles)
       
       if (Object.keys(docFiles).length > 0) {
         setDocumentUploadedFiles(docFiles)
       }
       if (Object.keys(photoFiles).length > 0) {
         setPhotoUploadedFiles(photoFiles)
+      }
+      if (Object.keys(panDocFiles).length > 0) {
+        setPanDocumentUploadedFiles(panDocFiles)
       }
     }
 
@@ -185,11 +190,11 @@ const LayoutApplicantDetails = (_props) => {
       setPhotoUploadedFiles(currentStepData.photoUploadedFiles)
     }
 
-    // Mark as restored to prevent re-running
-    if (currentStepData) {
-      setIsDataRestored(true)
+    // Restore PAN document uploaded files from Redux state
+    if (currentStepData?.panDocumentUploadedFiles && Object.keys(currentStepData.panDocumentUploadedFiles).length > 0) {
+      setPanDocumentUploadedFiles(currentStepData.panDocumentUploadedFiles)
     }
-  }, [currentStepData, isDataRestored, menu])
+  }, [])
 
   const getOwnerDetails = async () => {
     if (mobileNo === "" || mobileNo.length !== 10) {
@@ -315,12 +320,13 @@ const LayoutApplicantDetails = (_props) => {
 
   // Save applicants data to Redux
   useEffect(() => {
-    if (applicants?.length > 0 || Object.keys(documentUploadedFiles)?.length > 0 || Object.keys(photoUploadedFiles)?.length > 0) {
+    if (applicants?.length > 0 || Object.keys(documentUploadedFiles)?.length > 0 || Object.keys(photoUploadedFiles)?.length > 0 || Object.keys(panDocumentUploadedFiles)?.length > 0) {
       dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants))
       dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles))
       dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles))
+      dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", panDocumentUploadedFiles))
     }
-  }, [applicants, documentUploadedFiles, photoUploadedFiles, dispatch])
+  }, [applicants, documentUploadedFiles, photoUploadedFiles, panDocumentUploadedFiles, dispatch])
 
   // Sync document files with react-hook-form for validation
   useEffect(() => {

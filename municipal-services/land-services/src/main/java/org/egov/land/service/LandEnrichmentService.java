@@ -142,7 +142,7 @@ public class LandEnrichmentService {
 		if (criteria.getLimit() == null || !criteria.getLimit().equals(-1)) {
 			enrichBoundary(landInfors);
 		}
-
+		
 		UserDetailResponse userDetailResponse = userService.getUsersForLandInfos(landInfos);
 		enrichOwner(userDetailResponse, landInfos);
 		if(!CollectionUtils.isEmpty(landInfos) && !CollectionUtils.isEmpty(landInfos.get(0).getOwners())){
@@ -161,6 +161,9 @@ public class LandEnrichmentService {
 	private void enrichOwner(UserDetailResponse userDetailResponse, List<LandInfo> landInfos) {
 
 		List<OwnerInfo> users = userDetailResponse.getUser();
+		
+		if(users == null) return;
+		
 		Map<String, OwnerInfo> userIdToOwnerMap = new HashMap<>();
 		users.forEach(user -> userIdToOwnerMap.put(user.getUuid(), user));
 		landInfos.forEach(landInfo -> {

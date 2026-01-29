@@ -69,6 +69,9 @@ public class CLUService {
 	@Autowired
 	private ObjectMapper mapper;
 
+	@Autowired
+	private CLUPropertyService cluPropertyService;
+
 	/**
 	 * entry point from controller, takes care of next level logic from controller to create NOC application
 	 * @param nocRequest
@@ -191,6 +194,20 @@ public class CLUService {
 		if (owners != null) {
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
 		}
+		Object additionalDetailsData = nocRequest.getLayout().getNocDetails().getAdditionalDetails();
+		Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
+
+		// Get siteDetails as a Map
+		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
+
+		Boolean propertyCheck = (Boolean) siteDetails.get("isPropertyAvailable");
+		Boolean isPropertyAvailable = propertyCheck==null ? false:propertyCheck;
+		
+		// Create Property if Property not available
+//		String propertyId = (String) siteDetails.get("propertyuid");
+//		if(!isPropertyAvailable && StringUtils.isEmpty(propertyId))
+//			cluPropertyService.createProperty(nocRequest, mdmsData);
+
 		State currentState = workflowService.getCurrentState(clu.getApplicationStatus(), businessServicename);
 		String nextStateId = currentState.getActions().stream()
 				.filter(act -> act.getAction().equalsIgnoreCase(clu.getWorkflow().getAction()))

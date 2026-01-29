@@ -45,7 +45,7 @@ const useESign = () => {
 
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://es-staging.cdac.in/esignlevel2/2.1/form/signdoc';
+      form.action = 'https://esignservice.cdac.in/esign2.1/2.1/form/signdoc';
       form.style.display = 'none';
 
       const fields = {

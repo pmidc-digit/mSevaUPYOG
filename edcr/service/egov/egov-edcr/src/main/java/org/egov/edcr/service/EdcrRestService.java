@@ -186,7 +186,7 @@ public class EdcrRestService {
     @Transactional
     public EdcrDetail createEdcr(final EdcrRequest edcrRequest, final MultipartFile file,
             Map<String, List<Object>> masterData){
-        EdcrApplication edcrApplication = new EdcrApplication();
+    	EdcrApplication edcrApplication = new EdcrApplication();
         edcrApplication.setMdmsMasterData(masterData);
         
         LOG.info("coeArea : " + edcrRequest.getCoreArea());
@@ -222,7 +222,7 @@ public class EdcrRestService {
         if (edcrRequest.getPermitDate() != null) {
             edcrApplication.setPermitApplicationDate(edcrRequest.getPermitDate());
         }
-       
+        
         edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
         edcrApplication.setDxfFile(file);
 
@@ -259,7 +259,7 @@ public class EdcrRestService {
             LOG.info("ThirdPartyUserTenant : " + tenantId);
             edcrApplication.setThirdPartyUserTenant(tenantId);
         }
-
+       
         edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication,edcrRequest);
         
         //Code to push the data of edcr application to kafka index
@@ -931,6 +931,24 @@ public class EdcrRestService {
     }
 
     public ErrorDetail validateEdcrRequest(final EdcrRequest edcrRequest, final MultipartFile planFile) {
+        if (edcrRequest.getRequestInfo() == null)
+            return new ErrorDetail(BPA_07, REQ_BODY_REQUIRED);
+        else if (edcrRequest.getRequestInfo().getUserInfo() == null
+                || (edcrRequest.getRequestInfo().getUserInfo() != null
+                        && isBlank(edcrRequest.getRequestInfo().getUserInfo().getUuid())))
+            return new ErrorDetail(BPA_07, USER_ID_IS_MANDATORY);
+
+        if (isBlank(edcrRequest.getTransactionNumber()))
+            return new ErrorDetail(BPA_07, "Please enter transaction number");
+        if (isNotBlank(edcrRequest.getTransactionNumber())
+                && edcrApplicationService.findByTransactionNumber(edcrRequest.getTransactionNumber()) != null) {
+            return new ErrorDetail(BPA_01, MSG_UNQ_TRANSACTION_NUMBER);
+        }
+
+        return validatePlanFile(planFile);
+    }
+    
+    public ErrorDetail layoutPlanValidateRequest(final EdcrRequest edcrRequest, final MultipartFile planFile) {
         if (edcrRequest.getRequestInfo() == null)
             return new ErrorDetail(BPA_07, REQ_BODY_REQUIRED);
         else if (edcrRequest.getRequestInfo().getUserInfo() == null

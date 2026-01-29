@@ -253,7 +253,7 @@ public class RestEdcrApplicationController {
             Map<String, List<Object>> masterData = new HashMap<>();
             Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
             if (mdmsEnabled != null && mdmsEnabled) {
-                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), ApplicationThreadLocals.getStateName());
+            	Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), ApplicationThreadLocals.getStateName());
                 HashMap<String, String> data = new HashMap<>();
                 data.put("applicationType", applicationType);
                 data.put("serviceType", serviceType);
@@ -271,9 +271,19 @@ public class RestEdcrApplicationController {
                         errorResponses = Arrays.asList(validateEdcrRequest);
 
                     edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                }else if("LAYOUT_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
+            	    ErrorDetail validateEdcrRequest = edcrRestService.layoutPlanValidateRequest(edcr, planFile);
+            	    if (validateEdcrRequest != null)
+                       errorResponses = Arrays.asList(validateEdcrRequest);
+
+                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                    System.out.println(edcr+"layoutplan scuritny mdms enabled");
+                    
+                    
                 }
 
             } else {
+            	System.out.println("mdms not enabled");
                 if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
                     edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
                     errorResponses = (edcrRestService.validateScrutinizeOcRequest(edcr, planFile));
@@ -283,10 +293,17 @@ public class RestEdcrApplicationController {
                         errorResponses = Arrays.asList(validateEdcrRequest);
                     edcr.setAppliactionType(ApplicationType.PERMIT.toString());
                     //edcr.setAppliactionType(ApplicationType.BUILDING_PLAN_SCRUTINY.toString());
+                }else if("LAYOUT_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
+                	ErrorDetail validateEdcrRequest = edcrRestService.layoutPlanValidateRequest(edcr, planFile);
+                    if (validateEdcrRequest != null)
+                        errorResponses = Arrays.asList(validateEdcrRequest);
+                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());	
                 }
             }
 
             if (!errorResponses.isEmpty())
+            	
+            	
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
                 edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData);

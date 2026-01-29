@@ -190,6 +190,7 @@ public class PlanService {
     
     public Plan process(EdcrApplication dcrApplication, String applicationType,EdcrRequest edcrRequest) {
         Map<String, String> cityDetails = specificRuleService.getCityDetails();
+        System.out.println("cityDetails---------------"+cityDetails);
       
         Date asOnDate = null;
         if (dcrApplication.getPermitApplicationDate() != null) {
@@ -203,7 +204,8 @@ public class PlanService {
         AmendmentService repo = (AmendmentService) specificRuleService.find("amendmentService");
         Amendment amd = repo.getAmendments();
 
-		List<PlanFeature> features = featureService.getFeatures();		
+		List<PlanFeature> features = featureService.getFeatures();	
+		System.out.println("features-----------------"+features.toString());
 
 //		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
 //			// Get scheme name
@@ -344,6 +346,9 @@ public class PlanService {
                || (ApplicationType.BUILDING_PLAN_SCRUTINY.getApplicationTypeVal()
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                         && StringUtils.isBlank(comparisonDcrNumber))
+               || (ApplicationType.LAYOUT_PLAN_SCRUTINY.getApplicationTypeVal()
+                        .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                        && StringUtils.isBlank(comparisonDcrNumber))
                 ) {
             InputStream reportStream = generateReport(plan, amd, dcrApplication);
             saveOutputReport(dcrApplication, reportStream, plan);
@@ -412,6 +417,8 @@ public class PlanService {
             saveOutputReport(dcrApplication, targetStream, plan);
             updateFinalReport(dcrApplication.getEdcrApplicationDetails().get(0).getReportOutputId());
         }
+        System.out.println("plan------------------------"+plan);
+        
         return plan;
     }
 

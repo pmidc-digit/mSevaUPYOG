@@ -1,0 +1,65 @@
+package org.egov.infra.indexer.consumer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.egov.infra.indexer.custom.bpa.BPACustomDecorator;
+import org.egov.infra.indexer.custom.bpa.BPARequest;
+import org.egov.infra.indexer.custom.bpa.EnrichedBPARequest;
+import org.egov.infra.indexer.custom.pt.PTCustomDecorator;
+import org.egov.infra.indexer.custom.pt.PropertyRequest;
+import org.egov.infra.indexer.producer.IndexerProducer;
+import org.egov.infra.indexer.service.IndexerService;
+import org.egov.infra.indexer.util.IndexerUtils;
+import org.egov.infra.indexer.util.DLQHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.listener.MessageListener;
+import org.springframework.stereotype.Service;
+
+@Service
+@Slf4j
+public class BPACustomIndexMessageListener implements MessageListener<String, String> {
+
+    @Autowired
+    private IndexerService indexerService;
+
+    @Autowired
+    private IndexerUtils indexerUtils;
+
+    @Autowired
+    private BPACustomDecorator bpaCustomDecorator;
+
+    @Autowired
+    private IndexerProducer  indexerProducer;
+
+    @Autowired
+    private DLQHandler dlqHandler;
+
+    @Value("${egov.indexer.bpa.create.topic.name}")
+    private String bpaCreateTopic;
+
+
+    @Override
+    /**
+     * Messages listener which acts as consumer. This message listener is injected
+     * inside a kafkaContainer. This consumer is a start point to the following
+     * index jobs: 1. Re-index 2. Legacy Index 3. PGR custom index 4. PT custom
+     * index 5. Core indexing
+     */
+    public void onMessage(ConsumerRecord<String, String> data) {
+    	log.info("Topic from BPACustomIndexMessageListener: " + data.topic());
+    	
+        ObjectMapper mapper = indexerUtils.getObjectMapperWithNull();
+        try {
+            if(data.topic().equalsIgnoreCase(bpaCreateTopic)){
+                Thread.sleep(2000);
+            }
+            BPARequest bpaRequest = mapper.readValue(data.value(), BPARequest.class);
+            EnrichedBPARequest enrichedBPARequest = bpaCustomDecorator.transformData(bpaRequest);
+            indexerService.esIndexer(data.topic(), mapper.writeValueAsString(enrichedBPARequest));
+        } catch (Exception e) {
+            dlqHandler.handleError(data.value(), e, "BPACustomIndexMessageListener", data.topic());
+        }
+    }
+}

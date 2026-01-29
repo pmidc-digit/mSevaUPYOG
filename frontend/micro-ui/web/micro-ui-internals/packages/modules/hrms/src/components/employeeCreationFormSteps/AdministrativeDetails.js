@@ -93,7 +93,7 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
         onFormValueChange={onFormValueChange}
         isDisabled={!canSubmit}
         label={t(`${config.texts.submitBarLabel}`)}
-        currentStep={config.stepNumber}
+        currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
     </React.Fragment>

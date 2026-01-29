@@ -46,6 +46,19 @@ public class NOCConfiguration {
 	@Value("${notification.sms.enabled}")
 	private Boolean isSMSEnabled;
 
+	// Property Service
+	@Value("${egov.property.service.host}")
+	private String propertyHost;
+
+	@Value("${egov.property.service.context.path}")
+	private String propertyContextPath;
+
+	@Value("${egov.property.searchendpoint}")
+	private String propertySearchEndpoint;
+
+	@Value("${egov.property.createendpoint}")
+	private String propertyCreateEndpoint;
+
 	// Localization
 	@Value("${egov.localization.host}")
 	private String localizationHost;

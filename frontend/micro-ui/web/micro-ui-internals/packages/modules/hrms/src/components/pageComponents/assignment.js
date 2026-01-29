@@ -185,7 +185,17 @@ function Assignment({
   }
 
   const onIsHODchange = (value) => {
-    setassignments((pre) => pre.map((item) => (item.key === assignment.key ? { ...item, isHOD: value } : item)));
+    setassignments((pre) => 
+      pre.map((item) => 
+        item.key === assignment.key 
+          ? { 
+              ...item, 
+              isHOD: value,
+              reportingTo: value ? "" : item.reportingTo
+            } 
+          : item
+      )
+    );
   };
 
   const ValidateDatePickers = (value) => {
@@ -286,19 +296,17 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>{`${t("HR_REP_TO_LABEL")}`}</CardLabel>
+          <CardLabel className={assignment?.isHOD ? "card-label-smaller disabled" : "card-label-smaller"}>          
+            {t("HR_REP_TO_LABEL")}
+            {assignment?.isHOD ? "" : " * "}
+          </CardLabel>
           <div className="field">
             <TextInput
-          // key={input.name}
-          value={assignment?.reportingTo}
-          onChange={(e) => handleReportingToChange(e.target.value)}
-          // disable={false}
-          // defaultValue={undefined}
-          // {...input.validation}
-          />
+              value={assignment?.reportingTo}
+              onChange={(e) => handleReportingToChange(e.target.value)}
+              disable={assignment?.isHOD}
+            />
           </div>
-
-          
         </LabelFieldPair>
 
         <LabelFieldPair>

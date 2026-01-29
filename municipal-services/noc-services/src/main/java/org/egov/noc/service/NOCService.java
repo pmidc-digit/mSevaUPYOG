@@ -188,6 +188,10 @@ public class NOCService {
 		Noc searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
 		if (owners != null) {
+			owners.forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 		}
 		Object additionalDetailsData = nocRequest.getNoc().getNocDetails().getAdditionalDetails();
@@ -415,9 +419,13 @@ public class NOCService {
 						: new HashMap<String, String>();
 
 				List<String> accountid = nocRepository.getOwnerUserIdsByNocId(noc.getId());
-				criteria.setAccountId(accountid);
-				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				List<OwnerInfo> owner = userDetailResponse.getUser();
+				List<OwnerInfo> owner = new ArrayList<>();
+				
+				if(!CollectionUtils.isEmpty(accountid)) {
+					criteria.setAccountId(accountid);
+					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+					owner = userDetailResponse.getUser();
+				}
 
 				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
 						.orElse(Collections.emptyList())
@@ -433,6 +441,7 @@ public class NOCService {
 // Merge by uuid
 				for (OwnerInfo oi : owner) {
 					String uuid = oi.getUuid(); // ensure this getter exists
+					oi.setStatus(true);
 					if (uuid != null) {
 						Object ad = adByUuid.get(uuid);
 						if (ad != null) {

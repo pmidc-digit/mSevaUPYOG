@@ -1993,7 +1993,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			//	double floorNo = Double.parseDouble(String.valueOf(units.get("floorNo")));
 			String floorNo = "0";
 			ArrayNode updatedUnits = mapper.createArrayNode();
-
+			boolean landValueUsedInAnyUnit = false;
 			if (units != null && units.isArray()) {
 				for (JsonNode unit : units) {
 
@@ -2024,8 +2024,10 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 					} else {
 						double constructionCost = unitAreaSqFt * 500;
 						double netConst = constructionCost - constructionCost * 10 / 100;
-						double annualValue = (netConst + landValue) * 5 / 100;
-
+						//double annualValue = (netConst + landValue) * 5 / 100;
+						double unitLandValue = landValueUsedInAnyUnit ? 0 : landValue;
+						landValueUsedInAnyUnit = true;
+						double annualValue = (netConst + unitLandValue) * 5 / 100;
 						if (usage.equalsIgnoreCase("RESIDENTIAL")) {
 							if (landArea <= 500) unitTax = annualValue * 0.5 / 100;
 							else unitTax = annualValue * 1 / 100;

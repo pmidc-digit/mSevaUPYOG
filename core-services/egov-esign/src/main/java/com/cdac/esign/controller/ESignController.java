@@ -36,7 +36,7 @@ public class ESignController {
 
         try {
             // 2. UPDATED: Passing the dynamic 'signerName' instead of null
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId);
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName);
             
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);

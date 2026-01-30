@@ -1,6 +1,6 @@
 package com.cdac.esign.service;
 
-import java.io.BufferedInputStream; // Added missing import
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -38,6 +38,7 @@ import com.cdac.esign.encryptor.RSAKeyUtil;
 import com.cdac.esign.form.FormXmlDataAsp;
 import com.cdac.esign.form.RequestXmlForm;
 import com.cdac.esign.xmlparser.AspXmlGenerator;
+import com.cdac.esign.xmlparser.XmlSigning;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -63,73 +64,65 @@ public class ESignService {
     private Environment env;
 
     /**
-     * PHASE 1: Prepare PDF (Stamp Name MUST be passed here)
+     * PHASE 1: Prepare the PDF, Create Blank Signature Field, Calculate Hash, Upload Temp File.
      */
-    public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId, String signerName) throws Exception {
+    public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId) throws Exception {
 
-        logger.info("Processing Phase 1 for tenant: {}, signer: {}", tenantId, signerName);
+        logger.info("Processing document upload (Phase 1) for tenantId: {}", tenantId);
 
-        // 1. If Controller sends null, fallback to Generic Title
-        if (signerName == null || signerName.trim().isEmpty()) {
-            signerName = "Authorized Signatory"; 
-        }
-
-        // 2. Get Original PDF
+        // 1. Get Original PDF from FileStore
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);
         byte[] originalPdfBytes = downloadPdfFromUrlAsBytes(pdfUrl);
 
-        // 3. PREPARE THE PDF (Text Only)
+        // 2. PREPARE THE PDF
         ByteArrayOutputStream preparedPdfStream = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new ByteArrayInputStream(originalPdfBytes));
+        
+        // StampingProperties is used to create a new revision/modification
         PdfSigner signer = new PdfSigner(reader, preparedPdfStream, new StampingProperties());
 
+        // A. Set Visual Appearance
         PdfSignatureAppearance appearance = signer.getSignatureAppearance();
-        appearance.setPageRect(new Rectangle(400, 50, 250, 75)); 
+        appearance.setPageRect(new Rectangle(400, 50, 200, 50)); 
         appearance.setPageNumber(1);
+        appearance.setReason("Digitally Signed via eSign");
+        appearance.setLocation("India");
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("IST"));
-        
-        // --- STAMP TEXT ---
-        // We MUST write the name NOW. We cannot wait for Phase 2.
-        String layer2Text = "Digitally Signed by " + signerName + "\n" +
-                            "Date: " + dateFormat.format(new Date()) + "\n" +
-                            "Reason: mSeva eSign\n" + 
-                            "Location: India"; 
-                            
-        appearance.setLayer2Text(layer2Text);
-        appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION); // Text Only
-
+        // B. Set Field Name (Must match Phase 2)
         signer.setFieldName("Signature1");
 
-        // 4. Capture Hash
+        // C. Use our helper container to Capture the Hash of the Prepared PDF
         HashCapturingContainer hashContainer = new HashCapturingContainer(PdfName.Adobe_PPKLite, PdfName.Adbe_pkcs7_detached);
+        
+        // D. "Sign" it (This creates the blank field, calculates hash, and closes the stream)
         signer.signExternalContainer(hashContainer, 16384); 
 
+        // E. Extract the Hash required for e-Nigam
         String fileHash = hashContainer.getHashAsHex();
+        logger.info("Generated Hash from Prepared PDF: {}", fileHash);
 
-        // 5. Upload Prepared PDF
+        // 3. CRITICAL: Upload the PREPARED PDF to FileStore
+        // We must use THIS specific file in Phase 2, because the hash matches this file, NOT the original.
         byte[] preparedPdfBytes = preparedPdfStream.toByteArray();
         String tempFileResponse = uploadPdfToFilestore(preparedPdfBytes, tenantId);
-        String rawFileStoreId = extractFileStoreIdFromResponse(tempFileResponse);
+        String tempFileStoreId = extractFileStoreIdFromResponse(tempFileResponse);
+        
+        logger.info("Uploaded Prepared PDF. Temp ID: {}", tempFileStoreId);
 
-        // --- CUSTOM TXN ID: "pb.nabha-UUID" ---
-        String customTxnId = tenantId + "-" + rawFileStoreId; 
-        logger.info("Generated Custom TXN ID: {}", customTxnId);
-
-        // 6. Generate XML
+        // 4. Generate XML Request
         String pemKey = env.getProperty("esign.private.key");
+        if (pemKey == null) logger.warn("No esign.private.key found");
         PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
 
         Date now = new Date();
-        DateFormat xmlDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        xmlDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
 
         FormXmlDataAsp formXmlDataAsp = new FormXmlDataAsp();
         formXmlDataAsp.setVer(env.getProperty("esign.version"));
         formXmlDataAsp.setSc(env.getProperty("esign.sc"));
-        formXmlDataAsp.setTs(xmlDateFormat.format(now));
-        formXmlDataAsp.setTxn(customTxnId); 
+        formXmlDataAsp.setTs(dateFormat.format(now));
+        formXmlDataAsp.setTxn(tempFileStoreId); // Use TEMP ID as TXN to track the correct file
         formXmlDataAsp.setEkycId("");
         formXmlDataAsp.setEkycIdType(env.getProperty("esign.ekyc.id.type"));
         formXmlDataAsp.setAspId(env.getProperty("esign.asp.id"));
@@ -139,14 +132,16 @@ public class ESignService {
         formXmlDataAsp.setId("1");
         formXmlDataAsp.setHashAlgorithm(env.getProperty("esign.hash.algorithm"));
         formXmlDataAsp.setDocInfo(env.getProperty("esign.doc.info"));
-        formXmlDataAsp.setDocHashHex(fileHash); 
+        formXmlDataAsp.setDocHashHex(fileHash); // Use the NEW Hash
 
         String strToEncrypt = aspXmlGenerator.generateAspXml(formXmlDataAsp);
         String xmlData = new com.cdac.esign.xmlparser.XmlSigning().signXmlStringNew(strToEncrypt, privateKey);
 
+        // 5. Return Response
         RequestXmlForm responseForm = new RequestXmlForm();
-        responseForm.setId(fileStoreId); 
-        responseForm.setAspTxnID(customTxnId); 
+        responseForm.setId(fileStoreId); // Original ID for reference
+        // IMPORTANT: Sending the TEMP ID to frontend so it comes back in Phase 2
+        responseForm.setAspTxnID(tempFileStoreId); 
         responseForm.seteSignRequest(xmlData);
         responseForm.setContentType("application/xml");
 
@@ -154,11 +149,12 @@ public class ESignService {
     }
 
     /**
-     * PHASE 2: Complete Signing (Extract Tenant ID)
+     * PHASE 2: Process Response, Download Prepared PDF, Inject Signature.
      */
-    public String processDocumentCompletion(String eSignResponseXml, String customTxnId, HttpServletRequest request) throws Exception {
-        logger.info("Processing Phase 2 for Custom ID: {}", customTxnId);
+    public String processDocumentCompletion(String eSignResponseXml, String tempFileStoreId, HttpServletRequest request) throws Exception {
+        logger.info("Processing Document Completion (Phase 2) for TempID: {}", tempFileStoreId);
 
+        // 1. XML Parsing (With XXE Security Fixes)
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         dbFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         dbFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
@@ -172,57 +168,53 @@ public class ESignService {
             throw new RuntimeException("eSign failed: " + xmlDoc.getDocumentElement().getAttribute("errMsg"));
         }
 
+        // 2. Extract Signature from Response
         NodeList sigNodes = xmlDoc.getElementsByTagName("DocSignature");
         if (sigNodes.getLength() == 0) throw new RuntimeException("DocSignature tag missing");
+        
         String cleanedPkcs7 = sigNodes.item(0).getTextContent().replaceAll("\\s+", ""); 
         final byte[] encodedSig = Base64.getDecoder().decode(cleanedPkcs7);
 
-        // --- EXTRACT TENANT & FILE ID ---
-        String extractedTenantId = env.getProperty("default.tenant.id", "pb");
-        String originalFileStoreId = customTxnId;
+        // 3. Download the PREPARED PDF (Not the Original)
+        // We use the ID passed back from the frontend (which originated from Phase 1)
+        String tenantId = env.getProperty("default.tenant.id", "pb");
+        byte[] preparedPdfBytes = downloadPdfFromUrlAsBytes(getPdfUrlFromFilestore(tempFileStoreId, tenantId));
 
-        if (customTxnId.contains("-")) {
-            String[] parts = customTxnId.split("-", 2);
-            if (parts.length > 1) {
-                extractedTenantId = parts[0];   // "pb.nabha"
-                originalFileStoreId = parts[1]; // "UUID"
-            }
-        }
-        
-        logger.info("Extracted -> Tenant: {}, FileID: {}", extractedTenantId, originalFileStoreId);
-
-        // Download using EXTRACTED tenant ID
-        byte[] preparedPdfBytes = downloadPdfFromUrlAsBytes(getPdfUrlFromFilestore(originalFileStoreId, extractedTenantId));
-
+        // 4. Inject Signature using DEFERRED SIGNING
         ByteArrayOutputStream signedBaos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new ByteArrayInputStream(preparedPdfBytes));
+        
+        // Note: No StampingProperties used here, we are filling an existing field
         PdfSigner signer = new PdfSigner(reader, signedBaos, new StampingProperties());
 
         IExternalSignatureContainer external = new IExternalSignatureContainer() {
             @Override
             public byte[] sign(InputStream is) {
-                return encodedSig; 
+                return encodedSig; // Inject the signature bytes from CDAC
             }
 
             @Override
             public void modifySigningDictionary(PdfDictionary signDic) {
+                // Ensure types match PAdES requirements
                 signDic.put(PdfName.Filter, PdfName.Adobe_PPKLite);
                 signDic.put(PdfName.SubFilter, PdfName.Adbe_pkcs7_detached);
             }
         };
 
-        // Note: The visual stamp from Phase 1 is preserved here.
+        // CRITICAL: Fill the "Signature1" field created in Phase 1
+        // This injects the bytes without shifting the rest of the file, preserving the hash.
         PdfSigner.signDeferred(signer.getDocument(), "Signature1", signedBaos, external);
 
-        // Upload using EXTRACTED tenant ID
-        String fileStoreResponse = uploadPdfToFilestore(signedBaos.toByteArray(), extractedTenantId);
+        // 5. Upload Final Signed PDF
+        String fileStoreResponse = uploadPdfToFilestore(signedBaos.toByteArray(), tenantId);
         String finalFileStoreId = extractFileStoreIdFromResponse(fileStoreResponse);
         
-        return getPdfUrlFromFilestore(finalFileStoreId, extractedTenantId);
+        return getPdfUrlFromFilestore(finalFileStoreId, tenantId);
     }
 
-    // --- HELPERS (With Fixed SHA-256) ---
-
+    // ==========================================
+    // INNER CLASS: Hash Capturing Container
+    // ==========================================
     private static class HashCapturingContainer implements IExternalSignatureContainer {
         private final PdfName filter;
         private final PdfName subFilter;
@@ -236,19 +228,20 @@ public class ESignService {
         @Override
         public byte[] sign(InputStream data) throws GeneralSecurityException {
             try {
+                // 1. Read the full stream into a byte array (Java 8 compatible)
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                 int nRead;
-                byte[] temp = new byte[16384]; 
+                byte[] temp = new byte[16384]; // 16KB buffer
                 while ((nRead = data.read(temp, 0, temp.length)) != -1) {
                     buffer.write(temp, 0, nRead);
                 }
                 byte[] pdfBytes = buffer.toByteArray();
 
-                // CORRECTED: "SHA-256" (with hyphen)
+                // 2. Calculate SHA-256 Hash of the PDF byte range
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 this.docHash = digest.digest(pdfBytes);
                 
-                return new byte[0]; 
+                return new byte[0]; // Return empty, we are only capturing the hash here
             } catch (Exception e) {
                 throw new GeneralSecurityException(e);
             }
@@ -272,17 +265,23 @@ public class ESignService {
         }
     }
 
-    // --- OTHER HELPERS (Same as before) ---
+    // ==========================================
+    // HELPER METHODS (FileStore / Utils)
+    // ==========================================
+
     private String getPdfUrlFromFilestore(String fileStoreId, String tenantId) throws Exception {
         try {
             RestTemplate restTemplate = new RestTemplate();
             String baseUrl = env.getProperty("filestore.base.url", "http://localhost:1001");
             String filesUrl = env.getProperty("filestore.files.url", "/filestore/v1/files/url");
             String url = baseUrl + filesUrl + "?tenantId=" + tenantId + "&fileStoreIds=" + fileStoreId;
+            
             HttpHeaders headers = new HttpHeaders();
             headers.set("accept", env.getProperty("http.header.accept", "application/json, text/plain, */*"));
             HttpEntity<String> entity = new HttpEntity<>(headers);
+
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
             if (response.getStatusCode().is2xxSuccessful()) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
@@ -306,11 +305,19 @@ public class ESignService {
     private byte[] downloadPdfFromUrlAsBytes(String pdfUrl) throws Exception {
         try {
             String baseUrl = env.getProperty("filestore.base.url", "http://localhost:1001");
+            
+            // LOGIC: Find "/filestore", cut everything before it, and attach baseUrl
             int splitIndex = pdfUrl.indexOf("/filestore");
+            
             if (splitIndex != -1) {
+                // Extract part starting from /filestore...
                 String relativePath = pdfUrl.substring(splitIndex);
+                // Attach base URL: http://localhost:1001 + /filestore/v1/files...
                 pdfUrl = baseUrl + relativePath;
             } 
+            
+            logger.info("Downloading PDF from Modified URL: " + pdfUrl);
+            
             URL url = new URL(pdfUrl);
             try (BufferedInputStream in = new BufferedInputStream(url.openStream());
                  ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -326,7 +333,6 @@ public class ESignService {
             throw new RuntimeException("Failed to download PDF", e);
         }
     }
-
     public String uploadPdfToFilestore(byte[] pdfBytes, String tenantId) throws Exception {
         String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
         String baseUrl = env.getProperty("filestore.base.url", "http://localhost:1001");
@@ -360,7 +366,7 @@ public class ESignService {
         InputStream responseStream = (responseCode == 201) ? conn.getInputStream() : conn.getErrorStream();
         return readStream(responseStream);
     }
-    
+
     private static String readStream(InputStream inputStream) throws IOException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];

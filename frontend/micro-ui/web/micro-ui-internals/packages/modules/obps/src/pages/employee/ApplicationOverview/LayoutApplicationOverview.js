@@ -1,4 +1,5 @@
 import {
+  CardSectionHeader,
   Header,
   Row,
   StatusTable,
@@ -13,12 +14,16 @@ import {
   CheckPoint,
   MultiLink,
   LinkButton,
+  CheckBox,
 } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import LayoutModal from "../../../pageComponents/LayoutModal";
+import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
+import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentTableView";
+import LayoutSitePhotographs from "../../../components/LayoutSitePhotographs";
 import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
@@ -100,6 +105,11 @@ const LayoutEmployeeApplicationOverview = () => {
   const [calculationData, setCalculationData] = useState(null);
   const [billData, setBillData] = useState(null);
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+
+  // States for site inspection images
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [siteImages, setSiteImages] = useState({});
 
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
@@ -198,6 +208,15 @@ useEffect(() => {
       setDisplayData(finalDisplayData);
     }
   }, [applicationDetails?.Layout]);
+
+  // Filter site photographs and remaining documents
+  const coordinates = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.coordinates;
+  const sitePhotographs = displayData?.Documents?.filter(
+    (doc) => doc.documentType === "SITE.PHOTOGRAPHONE" || doc.documentType === "SITE.PHOTOGRAPHTWO"
+  );
+  const remainingDocs = displayData?.Documents?.filter((doc) =>
+    !(doc?.documentType === "SITE.PHOTOGRAPHONE" || doc?.documentType === "SITE.PHOTOGRAPHTWO")
+  );
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -691,39 +710,72 @@ function onActionSelect(action) {
         </Card>
       )}
 
-      {/* 2️⃣ DOCUMENTS CARD */}
-      {displayData?.Documents && displayData.Documents.length > 0 && (
-        <Card>
-          <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
-          <StatusTable>
-            <LayoutDocumentView documents={displayData.Documents} />
-          </StatusTable>
-        </Card>
-      )}
+      <Card>
+        <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable>
+          {sitePhotographs?.length > 0 && <LayoutSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
+        </StatusTable>
+      </Card>
 
-      {/* 3️⃣ FEE DETAILS CARD */}
-      {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.applicationDetails) && (
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+      <Card>
+        <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
+        <StatusTable>{applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0 && <LayoutDocumentTableView documents={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners} />}</StatusTable>
+      </Card>
 
-          <LayoutFeeEstimationDetailsTable
+      {/* Documents Uploaded */}
+      <Card>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0  && <LayoutDocumentView documents={remainingDocs} />}</StatusTable>
+      </Card>
+
+      {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
+      <Card>
+        <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <LayoutFeeEstimationDetails
             formData={{
-              apiData: applicationDetails?.Layout?.[0] || applicationDetails?.Layout,
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.calculations || []
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || []
             }}
             feeType="PAY1"
+          />
+        )}
+      </Card>
+
+      {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
+      <Card>
+        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <LayoutFeeEstimationDetailsTable
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || []
+            }}
+            feeType="PAY2"
             feeAdjustments={[]}
             setFeeAdjustments={() => {}}
             disable={false}
           />
+        )}
+      </Card>
+
+      {siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
+          <StatusTable>
+            {sitePhotographs?.length > 0 && <LayoutSitePhotographs documents={siteImages.documents} />}
+          </StatusTable>
         </Card>
       )}
+
+      <CheckBox
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant. I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        checked="true"
+      />
 
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 

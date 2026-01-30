@@ -11,6 +11,12 @@ const LayoutDocumentTableView = ({documents}) => {
 
  const documentsColumns = [
         {
+          Header: t("SR_NO"),
+          accessor: "srNo",
+          width: "20px",
+          Cell: ({ row }) => <div style={{ width: "20px" }}>{row.index + 1}</div>,
+        },
+        {
           Header: t("BPA_DOCUMENT_NAME"),
           accessor: "title",
           Cell: ({ value }) => t(value) || t("CS_NA"),
@@ -41,7 +47,7 @@ const LayoutDocumentTableView = ({documents}) => {
    }
   };
 
- const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(
+ const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.obps.useLayoutDocumentSearch(
     documentObj,
     {
       enabled: documents?.length > 0 ? true : false
@@ -61,27 +67,28 @@ const LayoutDocumentTableView = ({documents}) => {
   const documentsData = useMemo(() => {
      return (mappedDocuments)?.map((doc, index) => ({
       id: index,
-      title: t(doc?.documentType?.replaceAll(".", "_")) ||  t(doc?.documentType) || t("CS_NA"),
+      srNo: index + 1,
+      title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
       fileUrl: doc.url,
      }));
     }, [mappedDocuments]);
 
   return (
     <div>
-      {documentsData && 
+      {documentsData && (
         <Table
           className="customTable table-border-style"
           t={t}
           data={documentsData}
           columns={documentsColumns}
-          getCellProps={() => ({ style: {} })}
-          disableSort={false}
-          autoSort={true}
+          getCellProps={(cellInfo) => (cellInfo.column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
+          getHeaderProps={(column) => (column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
+          disableSort={true}
+          autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
-          pageSizeLimit = {documentsData?.length || 10}
         />
-      }
+      )}
     </div>
   )
 }

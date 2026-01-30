@@ -1,0 +1,68 @@
+import React, { useEffect, useState, useMemo } from "react";
+import { ImageViewer, CardSectionHeader } from "@mseva/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+
+const LayoutSitePhotographs = ({ documents, coordinates = {} }) => {
+  const { t } = useTranslation();
+
+  const documentObj = {
+    value: {
+      workflowDocs: documents?.map((doc) => ({
+        documentType: doc?.documentType || "",
+        filestoreId: doc?.filestoreId || doc?.fileStoreId || "",
+        documentUid: doc?.documentUid || doc?.fileStoreId || "",
+        documentAttachment: doc?.documentAttachment || "",
+      })),
+    },
+  };
+
+  const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
+    enabled: documents?.length > 0 ? true : false,
+  });
+
+  const mappedDocuments = documents?.map((doc) => {
+    const { documentUid, documentType, title, latitude, longitude } = doc;
+    const url = urlsList?.pdfFiles?.[documentUid];
+    return {
+      documentUid,
+      documentType,
+      url,
+      title,
+      latitude,
+      longitude
+    };
+  });
+
+  const documentsData = useMemo(() => {
+    return mappedDocuments?.map((doc, index) => ({
+      id: index,
+      documentType: doc?.documentType,
+      title: doc?.documentType !== "" ? t(doc?.documentType?.replaceAll(".", "_")) : doc?.title !== "" ? doc?.title : t("CS_NA"),
+      fileUrl: doc.url,
+      latitude: doc.latitude,
+      longitude: doc.longitude
+    }));
+  }, [mappedDocuments]);
+
+  return (
+    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly", flexWrap: "wrap", gap: "20px" }}>
+      {documentsData?.map((item, index) => (
+        <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", alignItems: "center" }}>
+          <CardSectionHeader>{item?.title}</CardSectionHeader>
+          <div style={{ margin: "5px" }}>
+            <img
+              src={item.fileUrl}
+              alt={item.title}
+              style={{ width: "120px", height: "120px", objectFit: "fill", borderRadius: "10%", cursor: "pointer" }}
+              onClick={() => window.open(item.fileUrl, "_blank")}
+            />
+          </div>
+          {item?.latitude && <div>Lat: {item.latitude}</div>}
+          {item?.longitude && <div>Long: {item.longitude}</div>}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default LayoutSitePhotographs;

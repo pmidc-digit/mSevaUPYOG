@@ -243,6 +243,9 @@ public class ESignService {
     }
 
     // --- STANDARD HELPERS (No Changes) ---
+ // ==========================================
+    // HELPER: Hash Capturing Container
+    // ==========================================
     private static class HashCapturingContainer implements IExternalSignatureContainer {
         private final PdfName filter;
         private final PdfName subFilter;
@@ -264,7 +267,8 @@ public class ESignService {
                 }
                 byte[] pdfBytes = buffer.toByteArray();
 
-                MessageDigest digest = MessageDigest.getInstance("SHA256");
+                // FIX: Use "SHA-256" (with hyphen), not "SHA256"
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 this.docHash = digest.digest(pdfBytes);
                 
                 return new byte[0]; 

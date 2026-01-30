@@ -54,7 +54,7 @@ public class ESignController {
         logger.info("Received upload request for file: {}, authType: {}", fileStoreId,tenantId);
 
         try {
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId,tenantId);
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId,tenantId,null);
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);
         } catch (IllegalArgumentException e) {

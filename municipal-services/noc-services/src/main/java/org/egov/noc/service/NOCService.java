@@ -208,9 +208,11 @@ public class NOCService {
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
 
 		// Create Property if Property not available
-//		String propertyId = (String) siteDetails.getOrDefault("propertyuid", "");
-//		if(StringUtils.isEmpty(propertyId))
-//			nocPropertyService.createProperty(nocRequest, mdmsData);
+		List<String> propertyId = JsonPath.read(additionalDetailsData, "$.applicationDetails.owners.*.propertyId");
+		propertyId = propertyId.stream().filter(id -> !StringUtils.isEmpty(id)).collect(Collectors.toList());
+		Boolean isPropertyAvailable = JsonPath.read(additionalDetailsData, "$.applicationDetails.isPropertyAvailable.value");
+		if(CollectionUtils.isEmpty(propertyId) && !isPropertyAvailable && noc.getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY))
+			nocPropertyService.createProperty(nocRequest, mdmsData);
 
 		if(nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE) || nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY)){
 			searchResult = new Noc();

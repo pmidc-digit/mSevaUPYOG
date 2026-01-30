@@ -1,63 +1,51 @@
 package com.cdac.esign.encryptor;
 
-import java.io.StringReader;
-import java.security.KeyPair;
+import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.Security;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 
 public class RSAKeyUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(RSAKeyUtil.class);
-
-    // Register BouncyCastle Provider once
-    static {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
-
     public static PrivateKey loadPrivateKey(String pemKey) throws Exception {
         if (pemKey == null || pemKey.isEmpty()) {
-            throw new IllegalArgumentException("Private key is empty or null");
+            throw new IllegalArgumentException("Private key not found in application.properties");
         }
 
-        // 1. Fix formatting: Ensure real newlines are present
-        // If the key comes from application.properties as a single line with "\n"
-        if (pemKey.contains("\\n")) {
-            pemKey = pemKey.replace("\\n", "\n");
-        }
+        // Restore newlines from \n
+        pemKey = pemKey.replace("\\n", "\n");
 
-        // 2. Use Bouncy Castle PEMParser
-        // This automatically handles "BEGIN RSA PRIVATE KEY" (PKCS#1) 
-        // AND "BEGIN PRIVATE KEY" (PKCS#8) transparently.
-        try (StringReader reader = new StringReader(pemKey);
-             PEMParser pemParser = new PEMParser(reader)) {
+        // Remove header/footer
+        String privateKeyPEM = pemKey
+                .replace("-----BEGIN RSA PRIVATE KEY-----", "")
+                .replace("-----END RSA PRIVATE KEY-----", "")
+                .replaceAll("\\s+", "");
 
-            Object object = pemParser.readObject();
+        // Decode PKCS#1
+        byte[] pkcs1Bytes = Base64.getDecoder().decode(privateKeyPEM);
 
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+        // Wrap PKCS#1 into PKCS#8
+        byte[] pkcs8Header = new byte[]{
+                0x30, (byte) 0x82,
+                (byte) ((pkcs1Bytes.length + 22) >> 8),
+                (byte) (pkcs1Bytes.length + 22),
+                0x02, 0x01, 0x00,
+                0x30, 0x0d, 0x06, 0x09,
+                0x2a, (byte) 0x86, 0x48, (byte) 0x86,
+                (byte) 0xf7, 0x0d, 0x01, 0x01, 0x01,
+                0x05, 0x00,
+                0x04, (byte) 0x82,
+                (byte) (pkcs1Bytes.length >> 8),
+                (byte) (pkcs1Bytes.length)
+        };
 
-            if (object instanceof PEMKeyPair) {
-                // PKCS#1 Key (Traditional "BEGIN RSA PRIVATE KEY")
-                PEMKeyPair pemKeyPair = (PEMKeyPair) object;
-                KeyPair keyPair = converter.getKeyPair(pemKeyPair);
-                return keyPair.getPrivate();
-            } else if (object instanceof org.bouncycastle.asn1.pkcs.PrivateKeyInfo) {
-                // PKCS#8 Key (Modern "BEGIN PRIVATE KEY")
-                return converter.getPrivateKey((org.bouncycastle.asn1.pkcs.PrivateKeyInfo) object);
-            } else {
-                throw new IllegalArgumentException("Unknown Private Key format: " + object.getClass().getName());
-            }
-        } catch (Exception e) {
-            logger.error("Failed to parse Private Key", e);
-            throw new RuntimeException("Could not load Private Key. Ensure it is a valid PEM string.", e);
-        }
+        byte[] pkcs8Bytes = new byte[pkcs8Header.length + pkcs1Bytes.length];
+        System.arraycopy(pkcs8Header, 0, pkcs8Bytes, 0, pkcs8Header.length);
+        System.arraycopy(pkcs1Bytes, 0, pkcs8Bytes, pkcs8Header.length, pkcs1Bytes.length);
+
+        // Build PrivateKey
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(pkcs8Bytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(keySpec);
     }
 }

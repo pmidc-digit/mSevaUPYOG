@@ -1,5 +1,4 @@
 package com.cdac.esign.xmlparser;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,14 +8,14 @@ import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -24,140 +23,256 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 import com.cdac.esign.form.FormXmlDataAsp;
-
+/*
+<Esign ver ="" sc ="" ts="" txn="" ekycId="" ekycIdType="" aspId=""
+AuthMode="" responseSigType="" responseUrl="">
+<Docs>
+<InputHash id=""
+hashAlgorithm="" docInfo="">Document
+Hash in Hex</InputHash>
+</Docs>
+<Signature>Digital signature of ASP</Signature>
+</Esign>
+*/
 @Component
 public class AspXmlGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(AspXmlGenerator.class);
+	public String finalGenerateAspXml(FormXmlDataAsp aspXmlDetais, HttpServletRequest request) {
+		try {
+			String xmlData = "";
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-    // 1. Generates the raw XML (To be signed by ASP)
-    public String generateAspXml(FormXmlDataAsp aspXmlDetais) {
-        try {
-            Document doc = buildBaseDocument(aspXmlDetais);
-            return convertDocumentToString(doc);
-        } catch (Exception e) {
-            logger.error("Error generating ASP XML", e);
-            return "";
-        }
-    }
+			// root elements
+			Document doc = docBuilder.newDocument();
+			Element esign = doc.createElement("Esign");
+			doc.appendChild(esign);
 
-    // 2. Generates the Final XML (Includes the <Signature> tag)
-    public String finalGenerateAspXml(FormXmlDataAsp aspXmlDetais, HttpServletRequest request) {
-        try {
-            Document doc = buildBaseDocument(aspXmlDetais);
+			// set attribute to esign Esign
+			Attr attr = doc.createAttribute("ver");
+			attr.setValue(aspXmlDetais.getVer());
+			esign.setAttributeNode(attr);
 
-            // Append the ASP Signature element
-            Element esign = (Element) doc.getFirstChild();
-            Element signature = doc.createElement("Signature");
-            signature.appendChild(doc.createTextNode(aspXmlDetais.getDigSigAsp()));
-            esign.appendChild(signature);
+			attr = doc.createAttribute("sc");
+			attr.setValue(aspXmlDetais.getSc());
+			esign.setAttributeNode(attr);
 
-            // Convert to String
-            String xmlData = convertDocumentToString(doc);
+			attr = doc.createAttribute("ts");
+			attr.setValue(aspXmlDetais.getTs());
+			esign.setAttributeNode(attr);
 
-            // Optional: Write to file for debugging
-            saveXmlToTempFile(xmlData, "Testing.xml");
+			attr = doc.createAttribute("txn");
+			attr.setValue(aspXmlDetais.getTxn());
+			esign.setAttributeNode(attr);
 
-            return xmlData;
-        } catch (Exception e) {
-            logger.error("Error generating Final ASP XML", e);
-            return "";
-        }
-    }
+			attr = doc.createAttribute("ekycId");
+			attr.setValue(aspXmlDetais.getEkycId());
+			esign.setAttributeNode(attr);
 
-    // --- Helper Methods to remove Code Duplication ---
+			attr = doc.createAttribute("ekycIdType");
+			attr.setValue(aspXmlDetais.getEkycIdType());
+			esign.setAttributeNode(attr);
 
-    private Document buildBaseDocument(FormXmlDataAsp details) throws Exception {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-        Document doc = docBuilder.newDocument();
+			attr = doc.createAttribute("aspId");
+			attr.setValue(aspXmlDetais.getAspId());
+			esign.setAttributeNode(attr);
 
-        // Root <Esign>
-        Element esign = doc.createElement("Esign");
-        doc.appendChild(esign);
+			attr = doc.createAttribute("AuthMode");
+			attr.setValue(aspXmlDetais.getAuthMode());
+			esign.setAttributeNode(attr);
 
-        // Attributes
-        setAttr(doc, esign, "ver", details.getVer());
-        setAttr(doc, esign, "sc", details.getSc());
-        setAttr(doc, esign, "ts", details.getTs());
-        setAttr(doc, esign, "txn", details.getTxn());
-        setAttr(doc, esign, "ekycId", details.getEkycId());
-        setAttr(doc, esign, "ekycIdType", details.getEkycIdType());
-        setAttr(doc, esign, "aspId", details.getAspId());
-        setAttr(doc, esign, "AuthMode", details.getAuthMode());
-        setAttr(doc, esign, "responseSigType", details.getResponseSigType());
-        setAttr(doc, esign, "responseUrl", details.getResponseUrl());
+			attr = doc.createAttribute("responseSigType");
+			attr.setValue(aspXmlDetais.getResponseSigType());
+			esign.setAttributeNode(attr);
 
-        // <Docs>
-        Element docs = doc.createElement("Docs");
-        esign.appendChild(docs);
+			attr = doc.createAttribute("responseUrl");
+			attr.setValue(aspXmlDetais.getResponseUrl());
+			esign.setAttributeNode(attr);
 
-        // <InputHash>
-        Element inputHash = doc.createElement("InputHash");
-        setAttr(doc, inputHash, "id", details.getId());
-        setAttr(doc, inputHash, "hashAlgorithm", details.getHashAlgorithm());
-        setAttr(doc, inputHash, "docInfo", details.getDocInfo());
-        
-        // CRITICAL: This Hash must be from the Prepared (Blank Field) PDF
-        inputHash.appendChild(doc.createTextNode(details.getDocHashHex()));
-        docs.appendChild(inputHash);
+			// Docs elements
+			Element docs = doc.createElement("Docs");
+			esign.appendChild(docs);
 
-        return doc;
-    }
+			// InputHash elements
+			Element inputHash = doc.createElement("InputHash");
 
-    private void setAttr(Document doc, Element el, String name, String value) {
-        if (value == null) value = "";
-        Attr attr = doc.createAttribute(name);
-        attr.setValue(value);
-        el.setAttributeNode(attr);
-    }
+			// set attribute to staff element
+			attr = doc.createAttribute("id");
+			attr.setValue(aspXmlDetais.getId());
+			inputHash.setAttributeNode(attr);
 
-    private String convertDocumentToString(Document doc) throws Exception {
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // formatted
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes"); // usually required for C-DAC
-        
-        DOMSource source = new DOMSource(doc);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        transformer.transform(source, result);
-        return writer.toString();
-    }
+			attr = doc.createAttribute("hashAlgorithm");
+			attr.setValue(aspXmlDetais.getHashAlgorithm());
+			inputHash.setAttributeNode(attr);
 
-    private void saveXmlToTempFile(String xmlData, String fileName) {
-        try {
-            String uploadRootPath = System.getProperty("java.io.tmpdir") + File.separator + "esign" + File.separator + "uploads";
-            File uploadRootDir = new File(uploadRootPath);
-            if (!uploadRootDir.exists()) {
-                uploadRootDir.mkdirs();
+			attr = doc.createAttribute("docInfo");
+			attr.setValue(aspXmlDetais.getDocInfo());
+			inputHash.setAttributeNode(attr);
+
+			inputHash.appendChild(doc.createTextNode(aspXmlDetais.getDocHashHex()));
+			docs.appendChild(inputHash);
+
+			// Signature elements
+			Element signature = doc.createElement("Signature");
+			signature.appendChild(doc.createTextNode(aspXmlDetais.getDigSigAsp()));
+			esign.appendChild(signature);
+
+			// write the content into xml file
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			DOMSource source = new DOMSource(doc);
+
+			// Root Directory.
+		    String uploadRootPath = System.getProperty("java.io.tmpdir") + "/esign/uploads";
+		    File uploadRootDir = new File(uploadRootPath);
+		    if (!uploadRootDir.exists()) {
+		       uploadRootDir.mkdirs();
+		    }
+
+		    try {
+               File serverFile = new File(uploadRootDir.getAbsolutePath() + File.separator + "Testing.xml");
+		       StringWriter writer = new StringWriter();
+		       StreamResult result = new StreamResult(writer);
+		       TransformerFactory tf = TransformerFactory.newInstance();
+		       Transformer transformerTemp = tf.newTransformer();
+		       transformerTemp.transform(source, result);
+
+               BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+               stream.write(writer.toString().getBytes());
+               xmlData = writer.toString();
+               stream.close();
+
+               return xmlData;
+            } catch (Exception e) {
+        		return "";
             }
-            File serverFile = new File(uploadRootDir.getAbsolutePath() + File.separator + fileName);
-            try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile))) {
-                stream.write(xmlData.getBytes());
-            }
-        } catch (Exception e) {
-            logger.warn("Could not save debug XML file: " + e.getMessage());
-        }
-    }
 
-    // Secured XML Writer
-    public void writeToXmlFile(String xmlIn, String fileName) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // XXE Protection
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            
-            Document doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xmlIn)));
-            String safeXml = convertDocumentToString(doc);
-            
-            try (FileOutputStream fos = new FileOutputStream(new File(fileName))) {
-                fos.write(safeXml.getBytes());
-            }
+		  } catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+			return "";
+		  } catch (TransformerException tfe) {
+			tfe.printStackTrace();
+			return "";
+		  }
+	}
+
+	public String generateAspXml(FormXmlDataAsp aspXmlDetais) {
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+			// root elements
+			Document doc = docBuilder.newDocument();
+			Element esign = doc.createElement("Esign");
+			doc.appendChild(esign);
+
+			// set attribute to esign Esign
+			Attr attr = doc.createAttribute("ver");
+			attr.setValue(aspXmlDetais.getVer());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("sc");
+			attr.setValue(aspXmlDetais.getSc());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("ts");
+			attr.setValue(aspXmlDetais.getTs());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("txn");
+			attr.setValue(aspXmlDetais.getTxn());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("ekycId");
+			attr.setValue(aspXmlDetais.getEkycId());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("ekycIdType");
+			attr.setValue(aspXmlDetais.getEkycIdType());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("aspId");
+			attr.setValue(aspXmlDetais.getAspId());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("AuthMode");
+			attr.setValue(aspXmlDetais.getAuthMode());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("responseSigType");
+			attr.setValue(aspXmlDetais.getResponseSigType());
+			esign.setAttributeNode(attr);
+
+			attr = doc.createAttribute("responseUrl");
+			attr.setValue(aspXmlDetais.getResponseUrl());
+			esign.setAttributeNode(attr);
+
+			// Docs elements
+			Element docs = doc.createElement("Docs");
+			esign.appendChild(docs);
+
+			// InputHash elements
+			Element inputHash = doc.createElement("InputHash");
+
+			attr = doc.createAttribute("id");
+			attr.setValue(aspXmlDetais.getId());
+			inputHash.setAttributeNode(attr);
+
+			attr = doc.createAttribute("hashAlgorithm");
+			attr.setValue(aspXmlDetais.getHashAlgorithm());
+			inputHash.setAttributeNode(attr);
+
+			attr = doc.createAttribute("docInfo");
+			attr.setValue(aspXmlDetais.getDocInfo());
+			inputHash.setAttributeNode(attr);
+
+			inputHash.appendChild(doc.createTextNode(aspXmlDetais.getDocHashHex()));
+			docs.appendChild(inputHash);
+
+			// Convert document to XML string without writing to file
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			DOMSource source = new DOMSource(doc);
+
+		    StringWriter writer = new StringWriter();
+		    StreamResult result = new StreamResult(writer);
+		    transformer.transform(source, result);
+
+		    return writer.toString();
+		  } catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+			  return "";
+		  } catch (TransformerException tfe) {
+			tfe.printStackTrace();
+			  return "";
+		  }
+	}
+
+	public void writeToXmlFile(String xmlIn, String fileName) {
+		try {
+			Document doc;
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(xmlIn)));
+
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			DOMSource source = new DOMSource(doc);
+           File serverFile = new File(fileName);
+
+		   StringWriter writer = new StringWriter();
+		   StreamResult result = new StreamResult(writer);
+		   TransformerFactory tf = TransformerFactory.newInstance();
+		   Transformer transformerTemp = tf.newTransformer();
+		   transformerTemp.transform(source, result);
+
+		   BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+		   stream.write(writer.toString().getBytes());
+		   stream.close();
+
         } catch (Exception e) {
-            logger.error("Error writing XML to file", e);
+        	e.printStackTrace();
         }
-    }
+	}
 }

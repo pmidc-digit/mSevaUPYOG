@@ -157,7 +157,7 @@ const PTRSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
       <div>
         <Header>{t("PTR_SEARCH_PET_APPLICATIONS")}</Header>
         <Card className={"card-search-heading"}>
-          <span style={{ color: "#505A5F" }}>{t("Provide at least one parameter to search for an application")}</span>
+          <span className="cell-text">{t("Provide at least one parameter to search for an application")}</span>
         </Card>
         <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
           <SearchField>
@@ -245,7 +245,7 @@ const PTRSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
           <SearchField className="submit">
             <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
             <p
-              style={{ marginTop: "10px" }}
+              className="link-button-margin"
               onClick={() => {
                 reset({
                   applicationNumber: "",
@@ -269,11 +269,11 @@ const PTRSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
           </SearchField>
         </SearchForm>
         {!isLoading && data?.display ? (
-          <Card style={{ marginTop: 20 }}>
+          <Card className="chb-margin-top-20">
             {t(data.display)
               .split("\\n")
               .map((text, index) => (
-                <p key={index} style={{ textAlign: "center" }}>
+                <p key={index} className="text-align-center">
                   {text}
                 </p>
               ))}

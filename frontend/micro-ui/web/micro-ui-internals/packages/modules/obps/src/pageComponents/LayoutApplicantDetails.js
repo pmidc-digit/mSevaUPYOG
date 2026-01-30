@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
@@ -1111,3 +1113,4 @@ const LayoutApplicantDetails = (_props) => {
 }
 
 export default LayoutApplicantDetails;
+

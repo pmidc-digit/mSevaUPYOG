@@ -81,8 +81,18 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
  }; 
   
  function checkValidation(data){
-    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
+    //Validation for Jamabandi Area Must Be Equal To Total plot Area in sq mt (A)
     const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
+    const propertyPlotAreaRaw = currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerPlotArea;
+
+    const propertyPlotAreaNum = Number(propertyPlotAreaRaw);
+
+    const propertyPlotAreaVal =
+      propertyPlotAreaRaw == null || 
+      (typeof propertyPlotAreaRaw === "string" && propertyPlotAreaRaw?.trim() === "") || 
+      Number.isNaN(propertyPlotAreaNum) 
+        ? true
+        : isEqualArea(data?.netTotalArea, propertyPlotAreaNum);
 
     const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
 
@@ -93,6 +103,11 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     if(!isEqual){
         setTimeout(()=>{setShowToast(null);},3000);
         setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
+        return false;
+    }
+    else if(!propertyPlotAreaVal){
+      setTimeout(()=>{setShowToast(null);},3000);
+        setShowToast({ key: "true", error:true, message: "Total Plot area shall be same as plot area of property provided"});
         return false;
     }
     else if (
@@ -125,6 +140,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
  };
 
   const onSubmit = async (data) => {
+    console.log('data in onsubmit', data)
   trigger();
   if (!checkValidation(data)) return;
 

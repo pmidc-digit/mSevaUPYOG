@@ -35,6 +35,14 @@ public class CalculationCriteria   {
         @JsonProperty("isSecurityDeposite")
         @Default
         private boolean isSecurityDeposite=false;
+
+
+        @JsonProperty("isLegacyArrear")
+        @Default
+        private boolean isLegacyArrear=false;
+
+        @JsonProperty("arrearAmount")
+        private java.math.BigDecimal arrearAmount;
         
         @JsonProperty("isSatelment")
         @Default

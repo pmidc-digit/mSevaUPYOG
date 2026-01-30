@@ -36,7 +36,9 @@ public class RLConstants {
 	public static final String SGST_FEE_RL_APPLICATION = "RL_SGST_FEE";
 
 	public static final String ROUND_OFF_RL_APPLICATION = "RL_FEE_ROUND_OFF";
-	
+
+    public static final String RL_ARREAR_FEE = "RL_ARREAR_FEE";
+    public static final String APPLICATION_TYPE_LEGACY = "Legacy";
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	

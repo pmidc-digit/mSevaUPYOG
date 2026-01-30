@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.cdac.esign.form.MyUploadForm;
 import com.cdac.esign.form.RequestXmlForm;
 import com.cdac.esign.service.ESignService;
 

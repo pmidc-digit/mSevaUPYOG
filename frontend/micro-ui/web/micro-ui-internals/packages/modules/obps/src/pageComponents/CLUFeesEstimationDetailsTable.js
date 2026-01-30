@@ -25,7 +25,10 @@ const handleAdjustedAmountChange = (index, value) => {
   const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
   const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
   if (normalizedValue !== null && normalizedValue < 0) {
-    setShowToast({ error: true, message: "Adjusted_Amount_More_Than_Ammount" });
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000)
+    setShowToast({ error: true, message: "BPA_AMOUNT_CANNOT_BE_NEGATIVE_LABEL" });
     return;
   }
   setFeeAdjustments((prev) =>

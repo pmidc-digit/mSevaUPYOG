@@ -18,6 +18,9 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
+  const latestCurrentStepData = useSelector((state) => state?.obps?.OBPSFormReducer?.formData) || {};
+
+
   const coordinates = useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
@@ -54,7 +57,18 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function validation(documents) {
     if (!isLoading) {
-      const cluDocumentsType = data?.CLU?.Documents || [];
+      const isCluAppliedCategoryIndustry = latestCurrentStepData?.siteDetails?.appliedCluCategory?.code === "INDUSTRY_GODOWN_WAREHOUSING_COLD_STORE" || false;
+
+
+      const cluDocumentsType = data?.CLU?.Documents?.map((item)=> {
+          if(item?.code === "OWNER.INDUSTRYCATEGORYSUPPORTINGDOCUMENT"){
+              return {...item, required: isCluAppliedCategoryIndustry ? true : false};
+          }
+
+          return item;
+      });
+
+
       const documentsData = documents?.documents?.documents || [];
 
       // Step 1: Extract required document codes from layoutDocumentsType

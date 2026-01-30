@@ -1,7 +1,7 @@
 {
   "name": "@mseva/upyog-ui-module-ads",
   "description": "Advertisement Module",
-  "version": "1.1.80",
+  "version": "1.1.81",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
@@ -19,7 +19,7 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
-    "@mseva/digit-ui-libraries": "1.1.61",
+    "@mseva/digit-ui-libraries": "1.1.62",
     "@mseva/digit-ui-react-components": "1.0.8",
     "lodash.merge": "^4.6.2",
     "microbundle-crl": "^0.13.11",

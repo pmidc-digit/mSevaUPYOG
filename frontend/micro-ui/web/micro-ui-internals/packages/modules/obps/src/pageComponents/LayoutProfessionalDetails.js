@@ -74,8 +74,9 @@ const LayoutProfessionalDetails = (_props) => {
           console.log("  Formatted date:", formattedDate);
         }
 
-        if (bpaData.address) {
-          setValue("professionalAddress", bpaData.address);
+        if (bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress) {
+          const professionalAddress = bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress;
+          setValue("professionalAddress", professionalAddress);
         }
       } else if (expiredLicense) {
         setLicenseStatus("EXPIRED");
@@ -98,8 +99,9 @@ const LayoutProfessionalDetails = (_props) => {
           setValue("professionalRegistrationValidity", "");
         }
 
-        if (bpaData.address) {
-          setValue("professionalAddress", bpaData.address);
+        if (bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress) {
+          const professionalAddress = bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress;
+          setValue("professionalAddress", professionalAddress);
         }
       } else {
         console.log("No APPROVED or EXPIRED license found");
@@ -209,7 +211,7 @@ const LayoutProfessionalDetails = (_props) => {
           </div>
 
       <LabelFieldPair>
-        <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}*</CardLabel>
+        <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -245,7 +247,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalName.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -277,7 +279,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalEmailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalEmailId.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -298,7 +300,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalRegId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegId.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -318,7 +320,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalMobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalMobileNumber.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -344,6 +346,7 @@ const LayoutProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />
@@ -352,7 +355,7 @@ const LayoutProfessionalDetails = (_props) => {
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REG_VALIDITY_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REG_VALIDITY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}

@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
 import LayoutDocumentsView from "./LayoutDocumentsView";
 import LayoutImageView from "./LayoutImageView";
-import LayoutFeeEstimationDetails from "./LayoutFeeEstimationDetails";
+import LayoutFeeEstimationDetailsTable from "./LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "./LayoutDocumentsView";
 
 // Component to render document link
@@ -569,7 +569,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             <h3 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h3>
           </div>
           <div style={{ padding: "0 1.5rem" }}>
-            {formData && <LayoutFeeEstimationDetails formData={formData} feeType="PAY1"/>}
+            {formData && <LayoutFeeEstimationDetailsTable formData={formData} feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => {}} disable={false} />}
           </div>
         </div>
       </Card>

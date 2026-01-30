@@ -212,7 +212,10 @@ const LayoutSiteDetails = (_props) => {
     // First priority: restore from currentStepData
     if (currentStepData?.siteDetails?.district) {
       setSelectedCity(currentStepData.siteDetails.district);
-      setValue("district", currentStepData.siteDetails.district);
+      // Use trigger to validate and update the field
+      setTimeout(() => {
+        setValue("district", currentStepData.siteDetails.district, { shouldValidate: true });
+      }, 0);
       setIsDistrictInitialized(true);
       return;
     }
@@ -223,11 +226,14 @@ const LayoutSiteDetails = (_props) => {
       console.log(defaultCity, "DDDDD");
       if (defaultCity) {
         setSelectedCity(defaultCity);
-        setValue("district", defaultCity);
+        // Use trigger to validate and update the field
+        setTimeout(() => {
+          setValue("district", defaultCity, { shouldValidate: true });
+        }, 0);
         setIsDistrictInitialized(true);
       }
     }
-  }, [tenantId, allCities, currentStepData, isDistrictInitialized]);
+  }, [tenantId, allCities, currentStepData, isDistrictInitialized, setValue]);
 
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
@@ -264,7 +270,7 @@ const LayoutSiteDetails = (_props) => {
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
-        if (key !== "floorArea") {
+        if (key !== "floorArea" && key !== "district") {
           setValue(key, value);
         }
       });
@@ -276,6 +282,9 @@ const LayoutSiteDetails = (_props) => {
       if (formattedData.buildingCategory) {
         setSelectedBuildingCategory(formattedData.buildingCategory);
       }
+      if (formattedData.isCluRequired) {
+        setIsCluRequired(formattedData.isCluRequired);
+      }
       if (formattedData.ulbName) {
         setUlbName(formattedData.ulbName);
       }
@@ -284,6 +293,8 @@ const LayoutSiteDetails = (_props) => {
       }
       if (formattedData.district) {
         setSelectedCity(formattedData.district);
+        // Set district field with proper object for validation
+        setValue("district", formattedData.district, { shouldValidate: true });
       }
 
       if (Array.isArray(formattedData.floorArea) && formattedData.floorArea.length > 0) {
@@ -408,7 +419,7 @@ const LayoutSiteDetails = (_props) => {
         <div>
 
                     {/* ===== SECTION: CLU (Comprehensive Layout Undertaking) ===== */}
-          <CardSectionHeader>Comprehensive Layout Undertaking (CLU)</CardSectionHeader>
+          <CardSectionHeader>CLU Details</CardSectionHeader>
 
           {/* Is CLU Required? - Yes/No Dropdown */}
           <LabelFieldPair>
@@ -432,6 +443,7 @@ const LayoutSiteDetails = (_props) => {
                   option={options}
                   optionKey="i18nKey"
                   t={t}
+                  disable={isEditMode}
                 />
               )}
             />
@@ -820,16 +832,27 @@ const LayoutSiteDetails = (_props) => {
               name={"district"}
               rules={{
                 required: t("REQUIRED_FIELD"),
+                validate: (value) => {
+                  // Validate that district is an object or has required properties
+                  if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    return t("REQUIRED_FIELD");
+                  }
+                  return true;
+                }
               }}
               render={(props) => (
                 <TextInput
                   className="form-field"
                   value={selectedCity?.city?.districtName || selectedCity?.districtName || selectedCity}
                   onChange={(e) => {
-                    props.onChange(e.target.value);
+                    // Don't actually change the value on text input since it's disabled
+                    // Just use the selectedCity object
                   }}
                   onBlur={(e) => {
-                    props.onBlur(e);
+                    // Ensure the form field has the district object
+                    if (selectedCity) {
+                      props.onChange(selectedCity);
+                    }
                   }}
                   disable="true"
                 />
@@ -866,7 +889,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_VILLAGE_NAME_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("Village Name")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -934,7 +957,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_KHATUNI_NO_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("Khatuni No")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1066,6 +1089,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disabled={isEditMode}
                   />
                 )}
               />
@@ -1106,6 +1130,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     max={new Date().toISOString().split("T")[0]}
+                    disabled={isEditMode}
                   />
                 )}
               />
@@ -1187,7 +1212,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_TOTAL_PLOT_AREA_LABEL_A")}`} <span className="requiredField">*</span>
+              {`${t("Total Plot Area")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1228,7 +1253,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Net Plot Area After Widening field (B) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_TOTAL_AREA_ROAD_WIDENING_LABEL_B")}`} <span className="requiredField">*</span>
+              {`${t("Total Road Widening Area")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1316,7 +1341,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_TOTAL_AREA_PERCENTAGE_LABEL_C (EWS)")}`} <span className="requiredField">*</span>
+              {`${t("Total Area Percentage (EWS)")}`} <span className="requiredField">*</span>
             </CardLabel>
                
             
@@ -1337,7 +1362,7 @@ const LayoutSiteDetails = (_props) => {
 
           {/* Add Net Total Area field (A-B-C) - disabled/readonly */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL_A-B (Balance)")} = A - (B + C)`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("Net Total Area")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}

@@ -7,38 +7,127 @@ import _ from "lodash";
 
 const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
   const { t } = useTranslation()
-  console.log(formData, "IIIIIIII");
   
-    const payload = useMemo(
+  // Handle multiple data formats:
+  // 1. From LayoutApplicationSummary: { apiData: {...}, applicationDetails: {...}, siteDetails: {...} }
+  // 2. From LayoutSummary (form): { apiData: { Layout: [{...}] }, applicationDetails: {...}, siteDetails: {...} }
+  
+  let layoutData = null;
+  
+  if (formData?.apiData?.Layout) {
+    // NEW or EDIT mode with Layout in apiData
+    const isLayoutArray = Array.isArray(formData?.apiData?.Layout);
+    layoutData = isLayoutArray ? formData?.apiData?.Layout?.[0] : formData?.apiData?.Layout;
+  } else if (formData?.apiData?.applicationNo) {
+    // Direct layout object passed (from LayoutApplicationSummary)
+    layoutData = formData?.apiData;
+  } else {
+    // Fallback - try to extract from formData directly
+    layoutData = formData;
+  }
+
+  // Safely get applicationDetails and siteDetails
+  const applicationDetails = formData?.applicationDetails || layoutData?.layoutDetails?.additionalDetails?.applicationDetails || {};
+  const siteDetails = formData?.siteDetails || layoutData?.layoutDetails?.additionalDetails?.siteDetails || {};
+  
+  // Function to format siteDetails fields for calculator API
+  // Ensures all dropdown/select fields are sent as objects with code and name
+  const formatSiteDetailsForCalculator = (details) => {
+    if (!details) return details;
+
+    const formatted = { ...details };
+
+    // Format zone to object if it's a string
+    if (formatted.zone && typeof formatted.zone === 'string') {
+      formatted.zone = {
+        code: formatted.zone,
+        name: formatted.zone,
+      };
+    }
+
+    // Format isCluRequired to object if it's a string
+    if (formatted.isCluRequired && typeof formatted.isCluRequired === 'string') {
+      formatted.isCluRequired = {
+        code: formatted.isCluRequired,
+        i18nKey: formatted.isCluRequired,
+      };
+    }
+
+    // Format buildingStatus to object if it's a string
+    if (formatted.buildingStatus && typeof formatted.buildingStatus === 'string') {
+      formatted.buildingStatus = {
+        code: formatted.buildingStatus,
+        name: formatted.buildingStatus,
+      };
+    }
+
+    // Format buildingCategory to object if it's a string
+    if (formatted.buildingCategory && typeof formatted.buildingCategory === 'string') {
+      formatted.buildingCategory = {
+        code: formatted.buildingCategory,
+        name: formatted.buildingCategory,
+      };
+    }
+
+    // Format roadType to object if it's a string
+    if (formatted.roadType && typeof formatted.roadType === 'string') {
+      formatted.roadType = {
+        code: formatted.roadType,
+        name: formatted.roadType,
+      };
+    }
+
+    // Format layoutAreaType to object if it's a string
+    if (formatted.layoutAreaType && typeof formatted.layoutAreaType === 'string') {
+      formatted.layoutAreaType = {
+        code: formatted.layoutAreaType,
+        name: formatted.layoutAreaType,
+      };
+    }
+
+    // Format isBasementAreaAvailable to object if it's a string
+    if (formatted.isBasementAreaAvailable && typeof formatted.isBasementAreaAvailable === 'string') {
+      formatted.isBasementAreaAvailable = {
+        code: formatted.isBasementAreaAvailable,
+        i18nKey: formatted.isBasementAreaAvailable,
+      };
+    }
+
+    // Format isAreaUnderMasterPlan to object if it's a string
+    if (formatted.isAreaUnderMasterPlan && typeof formatted.isAreaUnderMasterPlan === 'string') {
+      formatted.isAreaUnderMasterPlan = {
+        code: formatted.isAreaUnderMasterPlan,
+        i18nKey: formatted.isAreaUnderMasterPlan,
+      };
+    }
+
+    return formatted;
+  };
+  
+  const payload = useMemo(
     () => ({
       CalculationCriteria: [
         {
-          applicationNumber: formData?.apiData?.Layout?.[0]?.applicationNo,
-          tenantId: formData?.apiData?.Layout?.[0]?.tenantId,
+          applicationNumber: layoutData?.applicationNo,
+          tenantId: layoutData?.tenantId,
           feeType: feeType,
           Layout: {
-            ...formData?.apiData?.Layout?.[0],
+            ...layoutData,
             layoutDetails: {
-              ...formData.apiData?.Layout?.[0]?.layoutDetails,
+              ...layoutData?.layoutDetails,
               additionalDetails: {
-                ...formData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails,
-                // Spread updated data to preserve full objects (no .code or .name extraction)
-                applicationDetails: {
-                 
-                  ...formData?.applicationDetails,
-                },
-                siteDetails: {
-                  
-                  ...formData?.siteDetails,
-                },
+                ...layoutData?.layoutDetails?.additionalDetails,
+                // Use updated data from props or fallback to layoutData, with proper formatting
+                applicationDetails: applicationDetails,
+                siteDetails: formatSiteDetailsForCalculator(siteDetails),
               },
             },
           },
         },
       ],
     }),
-    [formData],
-  )
+    [layoutData, applicationDetails, siteDetails, feeType],
+  );
 
   const {
     isLoading: layoutCalculatorLoading,
@@ -61,17 +150,24 @@ const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
      revalidate();
      setPrevSiteDetails(formData?.siteDetails);
    }
-  }, [formData?.siteDetails])
-  
+  }, [formData?.siteDetails, revalidate])
 
   const applicationFeeDataWithTotal = useMemo(() => {
-    if (!data?.Calculation?.[0]?.totalAmount) return []
+    if (!data?.Calculation?.[0]) {
+      return [];
+    }
 
-    const totalAmount =
-      data?.Calculation?.[0]?.taxHeadEstimates?.reduce((acc, item) => acc + (item?.estimateAmount || 0), 0) || "N/A"
+    const calculation = data?.Calculation?.[0];
+    const totalAmount = calculation?.taxHeadEstimates?.reduce((acc, item) => {
+      const amount = parseFloat(item?.estimateAmount) || 0;
+      return acc + amount;
+    }, 0) || 0;
 
-    return [{ id: "1", title: t("Fee"), amount: totalAmount }]
-  }, [data, t])
+    // Ensure totalAmount is a valid number
+    const finalAmount = isNaN(totalAmount) ? 0 : totalAmount;
+
+    return [{ id: "1", title: t("Layout Processing Fee"), amount: finalAmount }];
+  }, [data, t]);
 
   const applicationFeeColumns = [
     {
@@ -82,7 +178,12 @@ const LayoutFeeEstimationDetails = ({ formData, feeType }) => {
     {
       Header: t("LAYOUT_AMOUNT_LABEL"),
       accessor: "amount",
-      Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
+      Cell: ({ value }) => {
+        if (value === null || value === undefined || isNaN(value)) {
+          return t("CS_NA");
+        }
+        return `₹ ${parseFloat(value).toLocaleString()}`;
+      },
     },
   ]
 

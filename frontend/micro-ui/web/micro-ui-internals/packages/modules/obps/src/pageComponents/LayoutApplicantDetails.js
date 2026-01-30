@@ -32,6 +32,10 @@ const LayoutApplicantDetails = (_props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId()
   const stateId = Digit.ULBService.getStateId()
 
+  // Determine if in edit mode
+  const applicationNo = currentStepData?.applicationNo || currentStepData?.apiData?.Layout?.[0]?.applicationNo
+  const isEditMode = !!applicationNo
+
   const [mobileNo, setMobileNo] = useState("")
   const [showToast, setShowToast] = useState(null)
   const [userInfo, setUserInfo] = useState(null)
@@ -194,7 +198,7 @@ const LayoutApplicantDetails = (_props) => {
     if (currentStepData?.panDocumentUploadedFiles && Object.keys(currentStepData.panDocumentUploadedFiles).length > 0) {
       setPanDocumentUploadedFiles(currentStepData.panDocumentUploadedFiles)
     }
-  }, [])
+  }, [currentStepData])
 
   const getOwnerDetails = async () => {
     if (mobileNo === "" || mobileNo.length !== 10) {
@@ -488,7 +492,7 @@ const LayoutApplicantDetails = (_props) => {
         {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
             {t(
-              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section",
+              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section, and you cannot edit the applicant detail",
             )}
           </CardSectionSubText>
         )}
@@ -500,7 +504,7 @@ const LayoutApplicantDetails = (_props) => {
 
                    {/* Mobile Number */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div style={{ display: "flex" }} className="field">
               <Controller
                 control={control}
@@ -535,7 +539,7 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -586,7 +590,7 @@ const LayoutApplicantDetails = (_props) => {
  
           {/* Email ID */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -617,7 +621,7 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Address */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -639,7 +643,7 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* DOB */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -674,7 +678,7 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* Gender */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -700,7 +704,7 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.applicantGender?.message || ""}</CardLabelError>
 
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
+            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <CustomUploadFile
                 id="passport-photo-primary"
@@ -721,7 +725,7 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
 
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}*</CardLabel>
+            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}<span className="requiredField">*</span></CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <CustomUploadFile
                 id="id-proof-primary"
@@ -744,7 +748,7 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* PAN Document */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-            <CardLabel className="card-label-smaller">{t("BPA_PAN_DOCUMENT")}*</CardLabel>
+            <CardLabel className="card-label-smaller">{t("BPA_PAN_DOCUMENT")}<span className="requiredField">*</span></CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <CustomUploadFile
                 id="pan-document-primary"
@@ -767,7 +771,7 @@ const LayoutApplicantDetails = (_props) => {
 
           {/* PAN Number */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_PAN_NUMBER_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_PAN_NUMBER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -840,23 +844,25 @@ const LayoutApplicantDetails = (_props) => {
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
                           {`${t("Applicant")} ${index + 1}`}
                         </CardLabel>
-                        <span
-                          onClick={() => handleRemoveApplicant(index)}
-                          style={{
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                          title={t("Remove Applicant")}
-                        >
-                          <DeleteIcon fill="#a82227" />
-                        </span>
+                        {!isEditMode && (
+                          <span
+                            onClick={() => handleRemoveApplicant(index)}
+                            style={{
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                            title={t("Remove Applicant")}
+                          >
+                            <DeleteIcon fill="#a82227" />
+                          </span>
+                        )}
                       </div>
 
                         {/* Mobile Number */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span>
                         </CardLabel>
                         <div style={{ display: "flex" }} className="field">
                           <TextInput
@@ -880,7 +886,7 @@ const LayoutApplicantDetails = (_props) => {
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
                           <TextInput
@@ -909,7 +915,7 @@ const LayoutApplicantDetails = (_props) => {
                       {/* Email ID */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
                           <TextInput
@@ -924,7 +930,7 @@ const LayoutApplicantDetails = (_props) => {
                       {/* Address */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}*
+                          {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
                           <TextArea
@@ -938,7 +944,7 @@ const LayoutApplicantDetails = (_props) => {
 
                       {/* DOB */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                         <div className="field">
                           <TextInput
                             type="date"
@@ -953,7 +959,7 @@ const LayoutApplicantDetails = (_props) => {
 
                       {/* Gender */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                         <div className="field">
                           <RadioButtons
                             t={t}
@@ -972,7 +978,7 @@ const LayoutApplicantDetails = (_props) => {
                       {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>}
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
-                        <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}*</CardLabel>
+                        <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`passport-photo-${index}`}
@@ -992,7 +998,7 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
-                        <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}*</CardLabel>
+                        <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}<span className="requiredField">*</span></CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`id-proof-${index}`}
@@ -1015,7 +1021,7 @@ const LayoutApplicantDetails = (_props) => {
                     
                       {/* PAN Document */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-                        <CardLabel className="card-label-smaller">{t("BPA_PAN_DOCUMENT")}*</CardLabel>
+                        <CardLabel className="card-label-smaller">{t("BPA_PAN_DOCUMENT")}<span className="requiredField">*</span></CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`pan-document-${index}`}
@@ -1035,7 +1041,7 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
 
                         <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-                        <CardLabel className="card-label-smaller">{`${t("BPA_PAN_NUMBER_LABEL")}`}*</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("BPA_PAN_NUMBER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                         <div className="field">
                           <TextInput
                             value={applicant.panNumber || ""}
@@ -1052,26 +1058,28 @@ const LayoutApplicantDetails = (_props) => {
               )}
 
               {/* Add More Applicants Button */}
-              <div style={{ marginTop: "20px" }}>
-                <div
-                  onClick={handleAddApplicant}
-                  style={{
-                    color: "#a82227",
-                    fontWeight: "600",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    display: "inline-block",
-                  }}
-                >
-                  + Add Applicant
+              {!isEditMode && (
+                <div style={{ marginTop: "20px" }}>
+                  <div
+                    onClick={handleAddApplicant}
+                    style={{
+                      color: "#a82227",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      display: "inline-block",
+                    }}
+                  >
+                    + Add Applicant
+                  </div>
                 </div>
-              </div>
+              )}
             </React.Fragment>
           )}
 
 
           {/* Add First Additional Applicant Button */}
-          {applicants.length === 1 && (
+          {applicants.length === 1 && !isEditMode && (
             <div style={{ marginTop: "20px" }}>
               <div
                 onClick={handleAddApplicant}

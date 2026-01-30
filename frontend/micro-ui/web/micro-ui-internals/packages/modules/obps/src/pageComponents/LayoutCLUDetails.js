@@ -48,6 +48,7 @@ const LayoutCLUDetails = (_props) => {
       <CardSectionHeader>{t("BPA_CLU_DETAILS")}</CardSectionHeader>
 
       <div>
+        <h1>HELLO</h1>
         
         <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_IS_CLU_APPROVED_LABEL")}`}*</CardLabel>

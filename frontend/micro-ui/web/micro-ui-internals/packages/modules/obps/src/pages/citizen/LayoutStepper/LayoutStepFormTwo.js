@@ -172,10 +172,17 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       });
     }
 
-    // Build transformedApplicationDetails (owners NOT here - only at top level)
+    // Build transformedApplicationDetails (only professional details, NOT personal details which are in owners array)
     const transformedApplicationDetails = {
-      ...formData?.applicationDetails,
-      applicantGender: formData?.applicationDetails?.applicantGender,  // Keep full object
+      professionalName: formData?.applicationDetails?.professionalName || "",
+      professionalEmailId: formData?.applicationDetails?.professionalEmailId || "",
+      professionalRegId: formData?.applicationDetails?.professionalRegId || "",
+      professionalMobileNumber: formData?.applicationDetails?.professionalMobileNumber || "",
+      professionalAddress: formData?.applicationDetails?.professionalAddress || "",
+      professionalRegistrationValidity: formData?.applicationDetails?.professionalRegistrationValidity || "",
+      panNumber: formData?.applicationDetails?.panNumber || "",
+      primaryOwnerPhoto: formData?.photoUploadedFiles?.[0]?.fileStoreId || formData?.photoUploadedFiles?.[0] || "",
+      primaryOwnerDocument: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || "",
     };
 
     const payload = {
@@ -262,7 +269,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           {LayoutLocalityInfo && <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
           {LayoutSiteDetails && <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
           {LayoutSpecificationDetails && <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
-          {LayoutCLUDetails && <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
+          {/* {LayoutCLUDetails && <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />} */}
         </div>
         <ActionBar>
           <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />

@@ -273,28 +273,63 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
     console.log("[v0] final merged owners:", owners);
 
+  console.log("[v0] isEditMode:", isEditMode);
+  console.log("[v0] selectedAction:", selectedAction);
+
   const updatedApplication = {
     ...layoutData,
     vasikaDate: layoutFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) : "",
     vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber || "",
-    workflow: {
-      action: selectedAction?.action || "",
-    },
+    // Only send workflow action for NEW applications, not for EDIT
+    // In EDIT mode, the backend should handle updates without workflow action
+    workflow: !isEditMode ? {
+      action: selectedAction?.action || "APPLY",
+    } : {},
     layoutDetails: {
       ...layoutData?.layoutDetails,
       tenantId: tenantId,
       additionalDetails: {
         ...layoutData?.layoutDetails?.additionalDetails,
-        applicationDetails: layoutFormData?.applicationDetails,  // Use entire applicationDetails from form (includes professional details)
+        // Keep ONLY professional and applicant-specific details
+        // DO NOT include applicant owner name/address - that info is already in owners array
+        applicationDetails: {
+          // Professional details (only these fields belong here)
+          professionalName: layoutFormData?.applicationDetails?.professionalName,
+          professionalEmailId: layoutFormData?.applicationDetails?.professionalEmailId,
+          professionalRegId: layoutFormData?.applicationDetails?.professionalRegId,
+          professionalMobileNumber: layoutFormData?.applicationDetails?.professionalMobileNumber,
+          professionalAddress: layoutFormData?.applicationDetails?.professionalAddress,
+          professionalRegistrationValidity: layoutFormData?.applicationDetails?.professionalRegistrationValidity,
+          // Applicant-specific fields (not duplicating owner info from owners array)
+          panNumber: layoutFormData?.applicationDetails?.panNumber,
+          primaryOwnerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto,
+          primaryOwnerDocument: layoutFormData?.applicationDetails?.primaryOwnerDocument,
+        },
         siteDetails: {
           ...layoutData?.layoutDetails?.additionalDetails?.siteDetails,  // Keep original siteDetails structure
           // Override only the fields that user modified in the form
           ...(layoutFormData?.siteDetails?.ulbName && { ulbName: layoutFormData?.siteDetails?.ulbName?.name || "" }),
-          ...(layoutFormData?.siteDetails?.roadType && { roadType: layoutFormData?.siteDetails?.roadType?.name || layoutFormData?.siteDetails?.roadType }),
-          ...(layoutFormData?.siteDetails?.buildingStatus && { buildingStatus: layoutFormData?.siteDetails?.buildingStatus?.name || "" }),
+          ...(layoutFormData?.siteDetails?.roadType && { 
+            roadType: typeof layoutFormData?.siteDetails?.roadType === 'string' 
+              ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
+              : layoutFormData?.siteDetails?.roadType
+          }),
+          ...(layoutFormData?.siteDetails?.buildingStatus && { 
+            buildingStatus: typeof layoutFormData?.siteDetails?.buildingStatus === 'string' 
+              ? { code: layoutFormData?.siteDetails?.buildingStatus, name: layoutFormData?.siteDetails?.buildingStatus }
+              : layoutFormData?.siteDetails?.buildingStatus
+          }),
           ...(layoutFormData?.siteDetails?.isBasementAreaAvailable && { isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "" }),
-          ...(layoutFormData?.siteDetails?.district && { district: layoutFormData?.siteDetails?.district?.name || "" }),
-          ...(layoutFormData?.siteDetails?.zone && { zone: layoutFormData?.siteDetails?.zone?.name || "" }),
+          ...(layoutFormData?.siteDetails?.district && { 
+            district: typeof layoutFormData?.siteDetails?.district === 'string'
+              ? { code: layoutFormData?.siteDetails?.district, name: layoutFormData?.siteDetails?.district }
+              : layoutFormData?.siteDetails?.district
+          }),
+          ...(layoutFormData?.siteDetails?.zone && { 
+            zone: typeof layoutFormData?.siteDetails?.zone === 'string'
+              ? { code: layoutFormData?.siteDetails?.zone, name: layoutFormData?.siteDetails?.zone }
+              : layoutFormData?.siteDetails?.zone
+          }),
           ...(layoutFormData?.siteDetails?.plotNo && { plotNo: layoutFormData?.siteDetails?.plotNo }),
           ...(layoutFormData?.siteDetails?.proposedSiteAddress && { proposedSiteAddress: layoutFormData?.siteDetails?.proposedSiteAddress }),
           ...(layoutFormData?.siteDetails?.vasikaNumber && { vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber }),

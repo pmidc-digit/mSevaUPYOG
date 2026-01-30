@@ -18,7 +18,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import LayoutModal from "../../../pageComponents/LayoutModal";
-import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
+import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
 import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
@@ -278,8 +278,21 @@ useEffect(() => {
         return;
       }
 
+      // Ensure all nested data is properly preserved
       const updatedApplicant = {
         ...layoutObject,
+        layoutDetails: {
+          ...layoutObject?.layoutDetails,
+          additionalDetails: {
+            ...layoutObject?.layoutDetails?.additionalDetails,
+            applicationDetails: {
+              ...layoutObject?.layoutDetails?.additionalDetails?.applicationDetails,
+            },
+            siteDetails: {
+              ...layoutObject?.layoutDetails?.additionalDetails?.siteDetails,
+            },
+          },
+        },
         workflow: {
           action: filtData.action,
           assignes: filtData?.assignee,
@@ -441,6 +454,32 @@ function onActionSelect(action) {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  // Helper function to render label-value pairs only when value exists
+  const renderLabel = (label, value) => {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
+      return null;
+    }
+    
+    // Extract value from object if it has 'name' property
+    let displayValue = value;
+    if (typeof value === 'object' && value !== null) {
+      displayValue = value?.name || value?.code || JSON.stringify(value);
+    }
+
+    return (
+      <Row 
+        label={label} 
+        text={displayValue} 
+      />
+    );
+  };
+
   console.log("displayData here", displayData);
 
   const handleViewTimeline = () => {
@@ -545,44 +584,61 @@ function onActionSelect(action) {
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <RenderRow label={t("NOC_PLOT_NO_LABEL")} value={detail?.plotNo} />
-              <RenderRow label={t("NOC_PROPOSED_SITE_ADDRESS")} value={detail?.proposedSiteAddress} />
-              <RenderRow label={t("NOC_ULB_NAME_LABEL")} value={detail?.ulbName?.name || detail?.ulbName} />
-              <RenderRow label={t("NOC_ULB_TYPE_LABEL")} value={detail?.ulbType} />
-              <RenderRow label={t("NOC_KHASRA_NO_LABEL")} value={detail?.khasraNo} />
-              <RenderRow label={t("NOC_HADBAST_NO_LABEL")} value={detail?.hadbastNo} />
-              <RenderRow label={t("NOC_ROAD_TYPE_LABEL")} value={detail?.roadType?.name || detail?.roadType} />
-              <RenderRow label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} value={detail?.areaLeftForRoadWidening} />
-              <RenderRow label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} value={detail?.netPlotAreaAfterWidening} />
-              <RenderRow label={t("NOC_NET_TOTAL_AREA_LABEL")} value={detail?.netTotalArea} />
-              <RenderRow label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} value={detail?.roadWidthAtSite} />
-
-              {/* Building Status */}
-              <RenderRow label={t("NOC_BUILDING_STATUS_LABEL")} value={detail?.buildingStatus?.name || detail?.buildingStatus} />
-
-              {/* Basement Availability */}
-              <RenderRow
-                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
-                value={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable}
-              />
-
-              {/* Basement Area */}
-              {detail?.buildingStatus === "Built Up" && <RenderRow label={t("NOC_BASEMENT_AREA_LABEL")} value={detail?.basementArea} />}
-
-              {/* Floor Areas */}
-              {detail?.buildingStatus === "Built Up" &&
-                detail?.floorArea?.map((floor, idx) => <RenderRow key={idx} label={getFloorLabel(idx)} value={floor?.value} />)}
-
-              {/* Total Floor Area */}
-              {detail?.buildingStatus === "Built Up" && <RenderRow label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} value={detail?.totalFloorArea} />}
-
-              <RenderRow label={t("NOC_DISTRICT_LABEL")} value={detail?.district?.name || detail?.district} />
-              <RenderRow label={t("NOC_ZONE_LABEL")} value={detail?.zone?.name || detail?.zone} />
-              <RenderRow label={t("NOC_SITE_WARD_NO_LABEL")} value={detail?.wardNo} />
-              <RenderRow label={t("NOC_SITE_VILLAGE_NAME_LABEL")} value={detail?.villageName} />
-              <RenderRow label={t("NOC_SITE_COLONY_NAME_LABEL")} value={detail?.colonyName} />
-              <RenderRow label={t("NOC_SITE_VASIKA_NO_LABEL")} value={detail?.vasikaNumber} />
-              <RenderRow label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} value={detail?.khewatAndKhatuniNo} />
+              {renderLabel(t("NOC_PLOT_NO_LABEL"), detail?.plotNo)}
+              {renderLabel(t("BPA_PLOT_AREA_LABEL"), detail?.specificationPlotArea)}
+              {renderLabel("Net Total Area", detail?.netTotalArea)}
+              {renderLabel(t("NOC_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
+              {renderLabel(t("NOC_ULB_NAME_LABEL"), detail?.ulbName?.name || detail?.ulbName)}
+              {renderLabel("ULB Type", detail?.ulbType)}
+              {renderLabel(t("NOC_KHASRA_NO_LABEL"), detail?.khasraNo)}
+              {renderLabel("Khanuti No", detail?.khanutiNo)}
+              {renderLabel(t("NOC_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+              {renderLabel(t("NOC_ROAD_TYPE_LABEL"), detail?.roadType?.name || detail?.roadType)}
+              {renderLabel("Road Width at Site (m)", detail?.roadWidthAtSite)}
+              {renderLabel(t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
+              {renderLabel(t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
+              {renderLabel(t("NOC_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+              {renderLabel(t("NOC_DISTRICT_LABEL"), detail?.district?.name || detail?.district)}
+              {renderLabel(t("NOC_ZONE_LABEL"), detail?.zone)}
+              {renderLabel(t("NOC_SITE_VASIKA_NO_LABEL"), detail?.vasikaNumber)}
+              {renderLabel(t("NOC_SITE_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
+              {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+              
+              {/* Additional Site Details */}
+              {renderLabel("CLU Type", detail?.cluType)}
+              {renderLabel("CLU Number", detail?.cluNumber)}
+              {renderLabel("CLU is Approved", detail?.cluIsApproved?.name || detail?.cluIsApproved?.code)}
+              {renderLabel("CLU Approval Date", formatDate(detail?.cluApprovalDate))}
+              {renderLabel("Is CLU Required", detail?.isCluRequired)}
+              {renderLabel("Residential Type", detail?.residentialType?.name || detail?.residentialType)}
+              {renderLabel("Building Category", detail?.buildingCategory?.name || detail?.buildingCategory)}
+              {renderLabel("Building Status", detail?.buildingStatus)}
+              {renderLabel("Layout Area Type", detail?.layoutAreaType?.name || detail?.layoutAreaType)}
+              {renderLabel("Layout Scheme Name", detail?.layoutSchemeName)}
+              {renderLabel("Type of Application", detail?.typeOfApplication?.name || detail?.typeOfApplication)}
+              {renderLabel("Is Area Under Master Plan", detail?.isAreaUnderMasterPlan?.name || detail?.isAreaUnderMasterPlan?.code)}
+              
+              {/* Area Breakdown */}
+              {renderLabel("Area Under EWS (Sq.M)", detail?.areaUnderEWS)}
+              {renderLabel("Area Under Road (Sq.M)", detail?.areaUnderRoadInSqM)}
+              {renderLabel("Area Under Road (%)", detail?.areaUnderRoadInPct)}
+              {renderLabel("Area Under Park (Sq.M)", detail?.areaUnderParkInSqM)}
+              {renderLabel("Area Under Park (%)", detail?.areaUnderParkInPct)}
+              {renderLabel("Area Under Parking (Sq.M)", detail?.areaUnderParkingInSqM)}
+              {renderLabel("Area Under Parking (%)", detail?.areaUnderParkingInPct)}
+              {renderLabel("Area Under Other Amenities (Sq.M)", detail?.areaUnderOtherAmenitiesInSqM)}
+              {renderLabel("Area Under Other Amenities (%)", detail?.areaUnderOtherAmenitiesInPct)}
+              {renderLabel("Area Under Residential Use (Sq.M)", detail?.areaUnderResidentialUseInSqM)}
+              {renderLabel("Area Under Residential Use (%)", detail?.areaUnderResidentialUseInPct)}
+              
+              {/* Floor Area Details */}
+              {detail?.floorArea && detail?.floorArea?.length > 0 && (
+                <>
+                  {detail?.floorArea?.map((floor, idx) => 
+                    renderLabel(`Floor ${idx + 1} Area (Sq.M)`, floor?.value)
+                  )}
+                </>
+              )}
             </StatusTable>
           </div>
         ))}
@@ -646,21 +702,25 @@ function onActionSelect(action) {
       )}
 
       {/* 3️⃣ FEE DETAILS CARD */}
-      {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
+      {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.applicationDetails) && (
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
 
-          <LayoutFeeEstimationDetails
+          <LayoutFeeEstimationDetailsTable
             formData={{
-              apiData: { ...applicationDetails },
+              apiData: applicationDetails?.Layout?.[0] || applicationDetails?.Layout,
               applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.applicationDetails,
               },
               siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.siteDetails,
               },
+              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || applicationDetails?.Layout?.layoutDetails?.additionalDetails?.calculations || []
             }}
             feeType="PAY1"
+            feeAdjustments={[]}
+            setFeeAdjustments={() => {}}
+            disable={false}
           />
         </Card>
       )}

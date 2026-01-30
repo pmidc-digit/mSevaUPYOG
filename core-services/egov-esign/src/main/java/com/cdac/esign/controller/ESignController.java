@@ -1,40 +1,18 @@
 package com.cdac.esign.controller;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.cdac.esign.form.RequestXmlForm;
 import com.cdac.esign.service.ESignService;
@@ -49,12 +27,17 @@ public class ESignController {
 
     @PostMapping("/upload")
     public ResponseEntity<RequestXmlForm> uploadAndSignDocument(
-            @RequestParam("file") String fileStoreId, @RequestParam("tenantid") String tenantId)  {
+            @RequestParam("file") String fileStoreId, 
+            @RequestParam("tenantid") String tenantId,
+            // 1. ADDED: New Parameter for Signer Name (Optional)
+            @RequestParam(value = "signerName", required = false) String signerName) {
 
-        logger.info("Received upload request for file: {}, authType: {}", fileStoreId,tenantId);
+        logger.info("Received upload request for file: {}, tenant: {}, signer: {}", fileStoreId, tenantId, signerName);
 
         try {
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId,tenantId,null);
+            // 2. UPDATED: Passing the dynamic 'signerName' instead of null
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId, signerName);
+            
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);
         } catch (IllegalArgumentException e) {
@@ -104,8 +87,4 @@ public class ESignController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
-
-
-   
 }

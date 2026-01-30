@@ -1,6 +1,6 @@
 package com.cdac.esign.service;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedInputStream; // Added missing import
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -63,21 +63,22 @@ public class ESignService {
     private Environment env;
 
     /**
-     * PHASE 1: Prepare PDF with Dynamic Location & Custom TXN ID
+     * PHASE 1: Prepare PDF (Stamp Name MUST be passed here)
      */
     public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId, String signerName) throws Exception {
 
         logger.info("Processing Phase 1 for tenant: {}, signer: {}", tenantId, signerName);
 
+        // 1. If Controller sends null, fallback to Generic Title
         if (signerName == null || signerName.trim().isEmpty()) {
             signerName = "Authorized Signatory"; 
         }
 
-        // 1. Get Original PDF
+        // 2. Get Original PDF
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);
         byte[] originalPdfBytes = downloadPdfFromUrlAsBytes(pdfUrl);
 
-        // 2. PREPARE THE PDF (Text Only)
+        // 3. PREPARE THE PDF (Text Only)
         ByteArrayOutputStream preparedPdfStream = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new ByteArrayInputStream(originalPdfBytes));
         PdfSigner signer = new PdfSigner(reader, preparedPdfStream, new StampingProperties());
@@ -89,37 +90,34 @@ public class ESignService {
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");
         dateFormat.setTimeZone(TimeZone.getTimeZone("IST"));
         
-        // --- DYNAMIC LOCATION LOGIC ---
-        // Extract "Nabha" from "pb.nabha"
-        String city = getCityFromTenantId(tenantId);
-        String locationText = city.equalsIgnoreCase("MSeva") ? "India" : city + ", India";
-
+        // --- STAMP TEXT ---
+        // We MUST write the name NOW. We cannot wait for Phase 2.
         String layer2Text = "Digitally Signed by " + signerName + "\n" +
                             "Date: " + dateFormat.format(new Date()) + "\n" +
                             "Reason: mSeva eSign\n" + 
-                            "Location: " + locationText; // <--- DYNAMIC LOCATION
+                            "Location: India"; 
                             
         appearance.setLayer2Text(layer2Text);
         appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION); // Text Only
 
         signer.setFieldName("Signature1");
 
-        // 3. Capture Hash
+        // 4. Capture Hash
         HashCapturingContainer hashContainer = new HashCapturingContainer(PdfName.Adobe_PPKLite, PdfName.Adbe_pkcs7_detached);
         signer.signExternalContainer(hashContainer, 16384); 
 
         String fileHash = hashContainer.getHashAsHex();
 
-        // 4. Upload Prepared PDF
+        // 5. Upload Prepared PDF
         byte[] preparedPdfBytes = preparedPdfStream.toByteArray();
         String tempFileResponse = uploadPdfToFilestore(preparedPdfBytes, tenantId);
         String rawFileStoreId = extractFileStoreIdFromResponse(tempFileResponse);
 
-        // --- CUSTOM TXN ID LOGIC ("pb.nabha-UUID") ---
+        // --- CUSTOM TXN ID: "pb.nabha-UUID" ---
         String customTxnId = tenantId + "-" + rawFileStoreId; 
         logger.info("Generated Custom TXN ID: {}", customTxnId);
 
-        // 5. Generate XML
+        // 6. Generate XML
         String pemKey = env.getProperty("esign.private.key");
         PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
 
@@ -131,7 +129,7 @@ public class ESignService {
         formXmlDataAsp.setVer(env.getProperty("esign.version"));
         formXmlDataAsp.setSc(env.getProperty("esign.sc"));
         formXmlDataAsp.setTs(xmlDateFormat.format(now));
-        formXmlDataAsp.setTxn(customTxnId); // SEND "pb.nabha-UUID"
+        formXmlDataAsp.setTxn(customTxnId); 
         formXmlDataAsp.setEkycId("");
         formXmlDataAsp.setEkycIdType(env.getProperty("esign.ekyc.id.type"));
         formXmlDataAsp.setAspId(env.getProperty("esign.asp.id"));
@@ -156,7 +154,7 @@ public class ESignService {
     }
 
     /**
-     * PHASE 2: Handle Response (Strip Prefix)
+     * PHASE 2: Complete Signing (Extract Tenant ID)
      */
     public String processDocumentCompletion(String eSignResponseXml, String customTxnId, HttpServletRequest request) throws Exception {
         logger.info("Processing Phase 2 for Custom ID: {}", customTxnId);
@@ -184,7 +182,6 @@ public class ESignService {
         String originalFileStoreId = customTxnId;
 
         if (customTxnId.contains("-")) {
-            // "pb.nabha-UUID" -> split at first hyphen
             String[] parts = customTxnId.split("-", 2);
             if (parts.length > 1) {
                 extractedTenantId = parts[0];   // "pb.nabha"
@@ -214,6 +211,7 @@ public class ESignService {
             }
         };
 
+        // Note: The visual stamp from Phase 1 is preserved here.
         PdfSigner.signDeferred(signer.getDocument(), "Signature1", signedBaos, external);
 
         // Upload using EXTRACTED tenant ID
@@ -223,29 +221,8 @@ public class ESignService {
         return getPdfUrlFromFilestore(finalFileStoreId, extractedTenantId);
     }
 
-    // --- HELPER: Extract City Name (e.g. "pb.nabha" -> "Nabha") ---
-    private String getCityFromTenantId(String tenantId) {
-        if (tenantId == null || tenantId.isEmpty()) return "MSeva";
-        
-        try {
-            // Split by dot (e.g. "pb.nabha" -> ["pb", "nabha"])
-            String[] parts = tenantId.split("\\.");
-            String city = parts.length > 1 ? parts[1] : parts[0];
-            
-            // Capitalize (nabha -> Nabha)
-            if (city.length() > 0) {
-                return city.substring(0, 1).toUpperCase() + city.substring(1);
-            }
-            return city;
-        } catch (Exception e) {
-            return "MSeva";
-        }
-    }
+    // --- HELPERS (With Fixed SHA-256) ---
 
-    // --- STANDARD HELPERS (No Changes) ---
- // ==========================================
-    // HELPER: Hash Capturing Container
-    // ==========================================
     private static class HashCapturingContainer implements IExternalSignatureContainer {
         private final PdfName filter;
         private final PdfName subFilter;
@@ -267,7 +244,7 @@ public class ESignService {
                 }
                 byte[] pdfBytes = buffer.toByteArray();
 
-                // FIX: Use "SHA-256" (with hyphen), not "SHA256"
+                // CORRECTED: "SHA-256" (with hyphen)
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 this.docHash = digest.digest(pdfBytes);
                 
@@ -295,19 +272,17 @@ public class ESignService {
         }
     }
 
+    // --- OTHER HELPERS (Same as before) ---
     private String getPdfUrlFromFilestore(String fileStoreId, String tenantId) throws Exception {
         try {
             RestTemplate restTemplate = new RestTemplate();
             String baseUrl = env.getProperty("filestore.base.url", "http://localhost:1001");
             String filesUrl = env.getProperty("filestore.files.url", "/filestore/v1/files/url");
             String url = baseUrl + filesUrl + "?tenantId=" + tenantId + "&fileStoreIds=" + fileStoreId;
-            
             HttpHeaders headers = new HttpHeaders();
             headers.set("accept", env.getProperty("http.header.accept", "application/json, text/plain, */*"));
             HttpEntity<String> entity = new HttpEntity<>(headers);
-
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
             if (response.getStatusCode().is2xxSuccessful()) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());

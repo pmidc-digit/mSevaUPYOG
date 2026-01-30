@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Table } from "@mseva/digit-ui-react-components";
 import BadgeCell from "../common/BadgeCell";
-import "../../../../../../example/src/index.scss";
+
 
 const MappingTable = ({ 
   t, 

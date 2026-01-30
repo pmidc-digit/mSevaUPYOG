@@ -34,7 +34,6 @@ const ownerTypeOptions = [
   { i18nKey: "NOC_OWNER_TYPE_FIRM", code: "Firm", value: "Firm" },
 ];
 
-const LUDHIANA_TENANT = "pb.ludhiana";
 
 const NOCApplicantDetails = (_props) => {
   const {
@@ -59,7 +58,6 @@ const NOCApplicantDetails = (_props) => {
 
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
 
-  console.log('tenantId', tenantId)
   const stateId = Digit.ULBService.getStateId();
   const dispatch = useDispatch();
 
@@ -195,7 +193,7 @@ const NOCApplicantDetails = (_props) => {
     return menu.find((g) => g.code === code) || null;
   };
 
- 
+  const cptObj  = nocCpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0]
   // default owner object
   const defaultOwner = () => ({
     mobileNumber: "",
@@ -222,17 +220,29 @@ const NOCApplicantDetails = (_props) => {
 
   const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
 
-  useEffect(() => {
+
+ useEffect(() => {
     console.log("currentStepData1", currentStepData);
     const formattedData = currentStepData?.applicationDetails;
 
-    if (!formattedData) return;
 
-    let owners =
-      Array.isArray(formattedData.owners) && formattedData.owners.length
+
+  if (!formattedData) return;
+
+
+
+
+
+
+
+  let owners =
+    Array.isArray(formattedData.owners) && formattedData.owners.length
         ? formattedData.owners.map((o) => ({
             mobileNumber: o.mobileNumber || "",
             ownerOrFirmName: o.ownerOrFirmName || o.name || "",
+
+
+
             emailId: o.emailId || "",
             fatherOrHusbandName: o.fatherOrHusbandName || "",
             propertyId: o.propertyId || "",
@@ -247,54 +257,129 @@ const NOCApplicantDetails = (_props) => {
             address: o.address || o.permanentAddress || "",
             ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
           }))
-        : [defaultOwner()];
+
+      : [defaultOwner()];
 
    
 
-    reset({
-      ...formattedData,
+  reset({
+    ...formattedData,
       isPropertyAvailable: formattedData?.isPropertyAvailable || isPropertyAvailable,
-      owners,
-    });
+    owners,
+  });
   }, [currentStepData, setValue, append, reset, tenantId]);
 
+
+
   // Clear property-related fields when propertyId is deleted
-  useEffect(() => {
-    const propertyId = watch(`owners[0].propertyId`);
-    if (!propertyId) {
-      setValue(`owners[0].PropertyOwnerName`, "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].PropertyOwnerMobileNumber`, "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].PropertyOwnerAddress`, "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].PropertyOwnerPlotArea`, null, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].propertyVasikaNo`, null, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].propertyVasikaDate`, null, { shouldValidate: true, shouldDirty: true });
-    }
-  }, [watch(`owners[0].propertyId`), setValue]);
+  // useEffect(() => {
+  //    console.log("useffect 12");
+  //   const propertyId = watch(`owners[0].propertyId`);
+  //   if (!propertyId) {
+  //     setValue(`owners[0].PropertyOwnerName`, "", { shouldValidate: true, shouldDirty: true });
+  //     setValue(`owners[0].PropertyOwnerMobileNumber`, "", { shouldValidate: true, shouldDirty: true });
+  //     setValue(`owners[0].PropertyOwnerAddress`, "", { shouldValidate: true, shouldDirty: true });
+  //     setValue(`owners[0].PropertyOwnerPlotArea`, null, { shouldValidate: true, shouldDirty: true });
+  //     setValue(`owners[0].propertyVasikaNo`, null, { shouldValidate: true, shouldDirty: true });
+  //     setValue(`owners[0].propertyVasikaDate`, null, { shouldValidate: true, shouldDirty: true });
+  //   }
+  // }, [watch(`owners[0].propertyId`), setValue]);
 
   useEffect(() => {
-    if (typeof isPropertyAvailable === "boolean") {
-      const plan = [{ code: "YES", i18nKey: "YES", value: true }, { code: "NO", i18nKey: "NO", value: false }].find((item) => item.value === isPropertyAvailable);
-      if (plan) {
-        setIsPropertyAvailable(plan);
-        setValue("isPropertyAvailable", plan, { shouldValidate: true, shouldDirty: true });
-      }
-    } else if (isPropertyAvailable === null) {
-      if (currentStepData?.applicationDetails?.isPropertyAvailable) {
-        setIsPropertyAvailable(currentStepData?.applicationDetails?.isPropertyAvailable);
-        setValue("isPropertyAvailable", currentStepData?.applicationDetails?.isPropertyAvailable, { shouldValidate: true, shouldDirty: true });
-      }
-    }
-  }, [isPropertyAvailable, currentStepData?.applicationDetails?.isPropertyAvailable, setValue]);
+    
+  if (typeof isPropertyAvailable === "boolean") {
+     console.log("useffect 13");
+    const plan = [
+      { code: "YES", i18nKey: "YES", value: true },
+      { code: "NO", i18nKey: "NO", value: false }
+    ].find((item) =>
+      // {
+      //   if(typeof isPropertyAvailable === "boolean"){
+      //     return item?.value === isPropertyAvailable
+      //   }else{
+      //     return item?.value === isPropertyAvailable?.value
+      //   }
+      // } 
+      item.value === isPropertyAvailable
+    );
 
-  // Fetch property data from cpt and overwrite applicant details
-  useEffect(() => {
-    if (nocCpt?.details?.owners?.[0]) {
-      setValue(`owners[0].ownerOrFirmName`, nocCpt.details.owners[0].name, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].mobileNumber`, nocCpt.details.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[0].address`, nocCpt.details.address?.doorNo || nocCpt.details.address?.street, { shouldValidate: true, shouldDirty: true });
+    if (plan) {
+      setIsPropertyAvailable(plan);
+      // console.log('plan and ispropertyavailable', plan, isPropertyAvailable)
+      // setValue("isPropertyAvailable", plan, { shouldValidate: true, shouldDirty: true });
     }
-  
-  }, [nocCpt?.details, setValue, dispatch, currentStepData?.siteDetails]);
+
+    // if (plan?.value === false) {
+      
+    //   dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+    //   dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+    //   reset({
+    //     owners: [defaultOwner()],
+    //     isPropertyAvailable: plan,
+    //   });
+    // }
+  }
+  // else if(isPropertyAvailable?.code){
+  //   if(isPropertyAvailable?.value === false){
+  //     dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+  //     dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+  //     dispatch(
+  //     UPDATE_NOCNewApplication_FORM("siteDetails", {
+  //       ...currentStepData?.siteDetails,
+  //       vasikaNumber: "",
+  //       vasikaDate: null,
+  //       netTotalArea: null,
+  //     })
+  //   );
+  //     reset({
+  //       owners: [defaultOwner()],
+  //       isPropertyAvailable: isPropertyAvailable,
+  //     });
+  //   }
+  // }
+  else if (isPropertyAvailable === null) {
+    if (currentStepData?.applicationDetails?.isPropertyAvailable) {
+      setIsPropertyAvailable(currentStepData?.applicationDetails?.isPropertyAvailable);
+      setValue("isPropertyAvailable", currentStepData?.applicationDetails?.isPropertyAvailable, { shouldValidate: true, shouldDirty: true });
+    }
+  }
+}, [isPropertyAvailable, currentStepData?.applicationDetails?.isPropertyAvailable]);
+
+   // Fetch property data from cpt and overwrite applicant details
+ useEffect(() => {
+
+  // if (isPropertyAvailable?.value === false ) {
+  //   // Clear Redux nocCpt and form state together
+  //   dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+  //   dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+
+  //   reset({
+  //     owners: [defaultOwner()],
+  //     isPropertyAvailable: { code: "NO", i18nKey: "NO", value: false },
+  //   });
+  // }
+
+  if (isPropertyAvailable?.value === true && nocCpt?.details?.owners?.[0]) {
+    console.log("useffect 14");
+    console.log('nocCpt', nocCpt);
+
+    // Get current owner data
+
+    // Update the owner object with property data
+    setValue('owners[0].ownerOrFirmName', nocCpt.details.owners[0]?.name || "", { shouldValidate: true, shouldDirty: true });
+    setValue('owners[0].mobileNumber', nocCpt.details.owners[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
+    setValue('owners[0].address', nocCpt.details?.address?.doorNo || nocCpt.details?.address?.street || "", { shouldValidate: true, shouldDirty: true });
+    setValue('owners[0].fatherOrHusbandName', nocCpt.details.owners[0]?.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
+    setValue('owners[0].propertyId', nocCpt.details?.propertyId || "", { shouldValidate: true, shouldDirty: true });
+  console.log(getValues(), "values ludhiana")
+
+    // Update Redux applicationDetails
+    // Use update function from useFieldArray to update the owner
+
+    // Hydrate only if property is available AND nocCpt exists
+
+  }
+}, [nocCpt, isPropertyAvailable?.value]);
 
   //For fetching user details
   const [showToast, setShowToast] = useState(null);
@@ -304,14 +389,17 @@ const NOCApplicantDetails = (_props) => {
   
 
   const getOwnerDetails = async (idx) => {
-    const currentMobile = mobileAtIndex(idx);
+    
+    setLoader(true);
+
+    try {
+      console.log('get owner details firing???')
+      const currentMobile = mobileAtIndex(idx);
 
     if (!/^[6-9]\d{9}$/.test(currentMobile)) {
       setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
       return;
     }
-
-    try {
       const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
 
       const users = userResponse?.user ?? [];
@@ -338,75 +426,86 @@ const NOCApplicantDetails = (_props) => {
       setValue(`owners[${idx}].gender`, genderOption, { shouldValidate: true, shouldDirty: true });
     } catch (err) {
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+    }finally{
+      setLoader(false);
     }
   };
-  console.log('tenantId !== BATHINDA_TENANT', tenantId !== BATHINDA_TENANT)
 
   const handlePropertySelect = (property) => {
-    console.log('property', property)
-    if (currentIndex !== null && property?.propertyId) {
+  console.log('property', property);
 
+  // 🚨 Guard: do nothing if property is not available
+  if (isPropertyAvailable?.value === false) {
+    return;
+  }
 
-      const ownerNames = property?.owners?.map((o) => o?.name).filter(Boolean).join(", ") || "";
-      setValue(`owners[${currentIndex}].propertyId`, property.propertyId, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].PropertyOwnerName`, ownerNames || "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].propertyVasikaNo`,  property?.additionalDetails?.vasikaNo || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaNo || null, { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || currentStepData?.applicationDetails?.owners?.[0]?.propertyVasikaDate || null, { shouldValidate: true, shouldDirty: true });
+  if (currentIndex !== null && property?.propertyId) {
+    const ownerNames = property?.owners?.map((o) => o?.name).filter(Boolean).join(", ") || "";
 
-      // Override applicant details with property owner details if present
-      if (currentIndex === 0) {
-        if (property?.owners?.[0]?.name) {
-          setValue(`owners[${currentIndex}].ownerOrFirmName`, property.owners[0].name, { shouldValidate: true, shouldDirty: true });
-        }
-        if (property?.owners?.[0]?.mobileNumber) {
-          setValue(`owners[${currentIndex}].mobileNumber`, property.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
-        }
-        if (property?.owners?.[0]?.permanentAddress) {
-          setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
-        }
+    // Update RHF form state
+    setValue(`owners[${currentIndex}].propertyId`, property.propertyId, { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${currentIndex}].PropertyOwnerName`, ownerNames || "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${currentIndex}].propertyVasikaNo`, property?.additionalDetails?.vasikaNo || null, { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || null, { shouldValidate: true, shouldDirty: true });
+
+    // Override applicant details with property owner details if present
+    if (currentIndex === 0) {
+      if (property?.owners?.[0]?.name) {
+        setValue(`owners[${currentIndex}].ownerOrFirmName`, property.owners[0].name, { shouldValidate: true, shouldDirty: true });
       }
+      if (property?.owners?.[0]?.mobileNumber) {
+        setValue(`owners[${currentIndex}].mobileNumber`, property.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
+      }
+      if (property?.owners?.[0]?.permanentAddress) {
+        setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
+      }
+    }
 
-      // Get current form values to preserve user-filled data
-      const currentOwners = watch('owners');
+    // Get current form values to preserve user-filled data
+    const currentOwners = watch('owners');
 
-      dispatch(
-        UPDATE_NOCNewApplication_FORM("applicationDetails", {
-          ...currentStepData?.applicationDetails,
-          isPropertyAvailable: isPropertyAvailable,  // Ensure isPropertyAvailable persists
-          owners: currentOwners?.map((o, i) =>
-            i === currentIndex
-              ? {
-                  ...o,
-                  propertyId: property?.propertyId,
-                  PropertyOwnerName: ownerNames,
-                  PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
-                  PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
-                  PropertyOwnerPlotArea: property?.landArea,
-                  propertyVasikaNo: property?.additionalDetails?.vasikaNo,
-                  propertyVasikaDate: property?.additionalDetails?.vasikaDate,
-                  ...(currentIndex === 0 && {
-                    ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
-                    mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
-                    address: property?.owners?.[0]?.permanentAddress || o.address,
-                  }),
-                }
-              : o
-          ),
-        })
-      );
-      dispatch(
-       UPDATE_NOCNewApplication_FORM("siteDetails", {
-        ...currentStepData?.siteDetails,
-        vasikaNumber : property?.additionalDetails?.vasikaNo,
-        vasikaDate: formatDateForInput (property?.additionalDetails?.vasikaDate),
-        netTotalArea: property?.landArea
+    // Update Redux applicationDetails
+    dispatch(
+      UPDATE_NOCNewApplication_FORM("applicationDetails", {
+        ...currentStepData?.applicationDetails,
+        isPropertyAvailable: isPropertyAvailable,  // Ensure flag persists
+        owners: currentOwners?.map((o, i) =>
+          i === currentIndex
+            ? {
+                ...o,
+                propertyId: property?.propertyId,
+                PropertyOwnerName: ownerNames,
+                PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
+                PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
+                PropertyOwnerPlotArea: property?.landArea,
+                propertyVasikaNo: property?.additionalDetails?.vasikaNo,
+                propertyVasikaDate: property?.additionalDetails?.vasikaDate,
+                ...(currentIndex === 0 && {
+                  ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
+                  mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
+                  address: property?.owners?.[0]?.permanentAddress || o.address,
+                }),
+              }
+            : o
+        ),
       })
     );
-    }
-  };
+
+    // Update Redux siteDetails
+    dispatch(
+      UPDATE_NOCNewApplication_FORM("siteDetails", {
+        ...currentStepData?.siteDetails,
+        vasikaNumber: property?.additionalDetails?.vasikaNo,
+        vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
+        netTotalArea: property?.landArea,
+      })
+    );
+  }
+};
+
 
   const isEdit = window.location.pathname.includes("edit");
 
@@ -427,11 +526,7 @@ const NOCApplicantDetails = (_props) => {
     remove(index);
   };
 
-  console.log("ownerIdList (local)==>", ownerIdList);
-  console.log("ownerPhotoList (local)==>", ownerPhotoList);
-
-  
-
+ 
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
@@ -452,8 +547,200 @@ const NOCApplicantDetails = (_props) => {
               {!isEdit && fields.length > 1 && `❌`}
             </div>
 
+ {index === 0 && (
+              <div>
+                <LabelFieldPair>
+                  <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} *`}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="isPropertyAvailable"
+                      rules={{ required: t("REQUIRED_FIELD") }}
+                      render={(props) => (
+                        <Dropdown
+                          placeholder={t("IS_PROPERTY_AVAILABLE")}
+                          selected={props.value}
+                          select={(e) => {
+                            props.onChange(e);
+                            if(e?.value === false){
+                              dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+                              dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+                              dispatch(
+                                UPDATE_NOCNewApplication_FORM("siteDetails", {
+                                  ...currentStepData?.siteDetails,
+                                  vasikaNumber: "",
+                                  vasikaDate: null,
+                                  netTotalArea: null,
+                                })
+                              );
+                              reset({
+                                owners: [defaultOwner()],
+                                isPropertyAvailable: e,
+                              });
+                            }
+                            setIsPropertyAvailable(e);
+                          }}
+                          option={[
+                            { code: "YES", i18nKey: "YES", value: true },
+                            { code: "NO", i18nKey: "NO", value: false },
+                          ]}
+                          optionKey="i18nKey"
+                          t={t}
+                        />
+                      )}
+                    />
+                    <Controller
+                  control={control}
+                  name={`owners[${index}].propertyId`}
+                  rules={{
+                    maxLength: {
+                      value: 100,
+                      message: t("MAX_100_CHARACTERS_ALLOWED"),
+                    },
+                  }}
+                  render={(props) => (
+                    <>
+                      <TextInput
+                       style={{display:"none"}}
+                        value={props.value}
+                        onChange={(e) => props.onChange(e.target.value)}
+                        onBlur={(e) => props.onBlur(e)}
+                        disabled={true}
+                      />
+                    </>
+                  )}
+                />
+                  </div>
+                </LabelFieldPair>
+                {errors.isPropertyAvailable && (
+                  <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors.isPropertyAvailable.message}</CardLabelError>
+                )}
+                {isPropertyAvailable?.value === false && (
+                  <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>
+                )}
+
+                
+
+                {tenantId === LUDHIANA_TENANT && isPropertyAvailable?.value && (
+                  <PropertySearchLudhiana formData={currentStepData} setApiLoading={setLoader} menuList={menuList} />
+                )}
+                {/* {tenantId === BATHINDA_TENANT && isPropertyAvailable?.value && (
+                  <PropertySearchBathinda formData={currentStepData} setApiLoading={setLoader} menuList={menuList} />
+                )} */}
+                {tenantId !== LUDHIANA_TENANT && tenantId !== BATHINDA_TENANT && isPropertyAvailable?.value && (
+                  <button
+                    type="button"
+                    className="submit-bar"
+                    // style={{ marginBottom: "1rem", width: "100%" }}
+                    onClick={() => {
+                      setCurrentIndex(index);
+                      setShowModal(true);
+                    }}
+                  >
+                    {t("PT_SEARCH_PROPERTY")}
+                  </button>
+                )}
+                 
+
+                {/* Property Owner Name */}
+                {/* <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerName`}
+                      rules={{
+                        maxLength: {
+                          value: 100,
+                          message: t("MAX_100_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                    />
+                    {errors?.owners?.[index]?.PropertyOwnerName && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerName.message}</p>
+                    )} */}
+
+                {/* Property Owner Mobile Number */}
+                {/* <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerMobileNumber`}
+                      rules={{
+                        pattern: {
+                          value: /^[6-9]\d{9}$/,
+                          message: t("INVALID_MOBILE_NUMBER"),
+                        },
+                      }}
+                    />
+                    {errors?.owners?.[index]?.PropertyOwnerMobileNumber && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerMobileNumber.message}</p>
+                    )} */}
+
+                {/* Property Owner Address */}
+                {/* <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerAddress`}
+                      rules={{
+                        // minLength: {
+                        //   value: 4,
+                        //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                        // },
+                        maxLength: {
+                          value: 500,
+                          message: t("MAX_500_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                    />
+
+                    {errors?.owners?.[index]?.PropertyOwnerAddress && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerAddress.message}</p>
+                    )} */}
+
+                {/* Property Owner Plot Area */}
+                {/* <Controller
+                      control={control}
+                      name={`owners[${index}].PropertyOwnerPlotArea`}
+                      rules={{
+                        pattern: {
+                          value: /^[0-9]*\.?[0-9]+$/,
+                          message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                        },
+                        maxLength: {
+                          value: 100,
+                          message: t("MAX_100_CHARACTERS_ALLOWED"),
+                        },
+                      }}
+                    />
+                    {errors?.owners?.[index]?.PropertyOwnerPlotArea && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerPlotArea.message}</p>
+                    )}
+                    <Controller control={control} name={`owners[${index}].propertyVasikaNo`} />
+                    {errors?.owners?.[index]?.propertyVasikaNo && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyVasikaNo.message}</p>
+                    )}
+                    <Controller control={control} name={`owners[${index}].propertyVasikaDate`} />
+                    {errors?.owners?.[index]?.propertyVasikaDate && (
+                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyVasikaDate.message}</p>
+                    )} */}
+
+                {/* <div className="field">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {watch(`owners[${index}].PropertyOwnerName`) && (
+                      <StatusTable style={{ marginBottom: "1rem" }}>
+                        <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
+                        <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
+                        <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
+                        <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={watch(`owners[${index}].PropertyOwnerAddress`)} />{" "}
+                        <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`)} />
+                        <Row label={t("Vasika Number")} text={watch(`owners[${index}].propertyVasikaNo`)} />
+                        <Row label={t("Vasika Date")} text={watch(`owners[${index}].propertyVasikaDate`)} />
+                      </StatusTable>
+                    )}
+
+                    
+                  </div>
+                </div> */}
+              </div>
+            )}
+
             {index === 0 && (
-              <LabelFieldPair style={{ position: "relative", zIndex: "101", marginBottom: "20px" }}>
+              <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
                   {`${t("NOC_OWNER_TYPE_LABEL")}`}
                   <span className="requiredField">*</span>
@@ -511,11 +798,11 @@ const NOCApplicantDetails = (_props) => {
                           props.onBlur(e);
                         }}
                         t={t}
-                        disabled={isEdit}
+                        disabled={isEdit || Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) || Boolean(cptObj?.owners?.[0]?.mobileNumber)}
                       />
                     )}
                   />
-                  <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
+                  <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit || Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) || Boolean(cptObj?.owners?.[0]?.mobileNumber) ? null : () => getOwnerDetails(index)}>
                     {" "}
                     <SearchIcon />{" "}
                   </div>
@@ -552,7 +839,7 @@ const NOCApplicantDetails = (_props) => {
                         props.onBlur(e);
                       }}
                       t={t}
-                      disabled={isEdit}
+                      disabled={isEdit || Boolean(nocCpt?.details?.owners?.[0]?.name) || Boolean(cptObj?.owners?.[0]?.name)}
                     />
                   )}
                 />
@@ -624,7 +911,8 @@ const NOCApplicantDetails = (_props) => {
                         props.onBlur(e);
                       }}
                       t={t}
-                      // disabled={isEdit}
+                      disabled={isEdit || Boolean(nocCpt?.details?.owners?.[0]?.fatherOrHusbandName) || Boolean(cptObj?.owners?.[0]?.fatherOrHusbandName)}
+
                     />
                   )}
                 />
@@ -664,6 +952,8 @@ const NOCApplicantDetails = (_props) => {
                         props.onBlur(e);
                       }}
                       t={t}
+                      disabled={ Boolean(nocCpt?.details?.address?.doorNo || nocCpt?.details?.address?.street) || Boolean(cptObj?.address?.doorNo || cptObj?.address?.street)}
+
                     />
                   )}
                 />
@@ -673,183 +963,7 @@ const NOCApplicantDetails = (_props) => {
               </div>
             </LabelFieldPair>
 
-            {index === 0 && (
-              <div>
-              <LabelFieldPair>
-                <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} *`}</CardLabel>
-                <div className="field">
-                <Controller
-                  control={control}
-                  name="isPropertyAvailable"
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  render={(props) => (
-                    <Dropdown
-                      placeholder={t("IS_PROPERTY_AVAILABLE")}
-                      selected={props.value}
-                      select={(e) => {
-                        props.onChange(e);
-                        setIsPropertyAvailable(e);
-                      }}
-                      option={[
-                        { code: "YES", i18nKey: "YES", value: true },
-                        { code: "NO", i18nKey: "NO", value: false },
-                      ]}
-                      optionKey="i18nKey"
-                      t={t}
-                    />
-                  )}
-                />
-                </div>
-              </LabelFieldPair>
-                {errors.isPropertyAvailable && (
-                  <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors.isPropertyAvailable.message}</CardLabelError>
-                )}
-                {(isPropertyAvailable?.value === false) && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
-                
-                {/* <Controller
-                      control={control}
-                      name={`owners[${index}].propertyId`}
-                      rules={{
-                        maxLength: {
-                          value: 100,
-                          message: t("MAX_100_CHARACTERS_ALLOWED"),
-                        },
-                      }}
-                      render={(props) => (
-                        <>
-                          <TextInput
-                            style={{ display: "none" }}
-                            value={props.value}
-                            onChange={(e) => props.onChange(e.target.value)}
-                            onBlur={(e) => props.onBlur(e)}
-                            t={t}
-                          />
-                          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} />
-                        </>
-                      )}
-                    /> */}
-
-                    {tenantId === LUDHIANA_TENANT && isPropertyAvailable?.value && (
-                      <PropertySearchLudhiana formData={currentStepData} setApiLoading={setLoader} menuList={menuList}/>
-                    )}
-                    {tenantId === BATHINDA_TENANT && isPropertyAvailable?.value && (
-                      <PropertySearchBathinda
-                        formData={currentStepData}
-                        setApiLoading={setLoader}
-                        menuList={menuList}
-                      />
-                    )}
-                    {tenantId !== LUDHIANA_TENANT && tenantId !== BATHINDA_TENANT && isPropertyAvailable?.value && (
-                      <button
-                        type="button"
-                        className="submit-bar"
-                        // style={{ marginBottom: "1rem", width: "100%" }}
-                        onClick={() => {
-                          setCurrentIndex(index);
-                          setShowModal(true);
-                        }}
-                      >
-                        {t("PT_SEARCH_PROPERTY")}
-                      </button>
-                    )}
-
-                    {/* Property Owner Name */}
-                    {/* <Controller
-                      control={control}
-                      name={`owners[${index}].PropertyOwnerName`}
-                      rules={{
-                        maxLength: {
-                          value: 100,
-                          message: t("MAX_100_CHARACTERS_ALLOWED"),
-                        },
-                      }}
-                    />
-                    {errors?.owners?.[index]?.PropertyOwnerName && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerName.message}</p>
-                    )} */}
-
-                    {/* Property Owner Mobile Number */}
-                    {/* <Controller
-                      control={control}
-                      name={`owners[${index}].PropertyOwnerMobileNumber`}
-                      rules={{
-                        pattern: {
-                          value: /^[6-9]\d{9}$/,
-                          message: t("INVALID_MOBILE_NUMBER"),
-                        },
-                      }}
-                    />
-                    {errors?.owners?.[index]?.PropertyOwnerMobileNumber && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerMobileNumber.message}</p>
-                    )} */}
-
-                    {/* Property Owner Address */}
-                    {/* <Controller
-                      control={control}
-                      name={`owners[${index}].PropertyOwnerAddress`}
-                      rules={{
-                        // minLength: {
-                        //   value: 4,
-                        //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                        // },
-                        maxLength: {
-                          value: 500,
-                          message: t("MAX_500_CHARACTERS_ALLOWED"),
-                        },
-                      }}
-                    />
-
-                    {errors?.owners?.[index]?.PropertyOwnerAddress && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerAddress.message}</p>
-                    )} */}
-
-                    {/* Property Owner Plot Area */}
-                    {/* <Controller
-                      control={control}
-                      name={`owners[${index}].PropertyOwnerPlotArea`}
-                      rules={{
-                        pattern: {
-                          value: /^[0-9]*\.?[0-9]+$/,
-                          message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                        },
-                        maxLength: {
-                          value: 100,
-                          message: t("MAX_100_CHARACTERS_ALLOWED"),
-                        },
-                      }}
-                    />
-                    {errors?.owners?.[index]?.PropertyOwnerPlotArea && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].PropertyOwnerPlotArea.message}</p>
-                    )}
-                    <Controller control={control} name={`owners[${index}].propertyVasikaNo`} />
-                    {errors?.owners?.[index]?.propertyVasikaNo && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyVasikaNo.message}</p>
-                    )}
-                    <Controller control={control} name={`owners[${index}].propertyVasikaDate`} />
-                    {errors?.owners?.[index]?.propertyVasikaDate && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].propertyVasikaDate.message}</p>
-                    )} */}
-
-                {/* <div className="field">
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {watch(`owners[${index}].PropertyOwnerName`) && (
-                      <StatusTable style={{ marginBottom: "1rem" }}>
-                        <Row className="border-none" label={t(`PROPERTY_ID`)} text={watch(`owners[${index}].propertyId`)} />
-                        <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
-                        <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
-                        <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={watch(`owners[${index}].PropertyOwnerAddress`)} />{" "}
-                        <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`)} />
-                        <Row label={t("Vasika Number")} text={watch(`owners[${index}].propertyVasikaNo`)} />
-                        <Row label={t("Vasika Date")} text={watch(`owners[${index}].propertyVasikaDate`)} />
-                      </StatusTable>
-                    )}
-
-                    
-                  </div>
-                </div> */}
-              
-              </div>
-            )}
+           
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">

@@ -31,6 +31,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   });
 
   useEffect(()=>{
+     console.log("useffect 8");
       if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);
   
       if (!_.isEqual(ownerPhotoList, ownerPhotos)) setOwnerPhotoList(ownerPhotos?.ownerPhotoList);
@@ -50,6 +51,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     trigger,
     watch,
     reset,
+    getValues,
   } = useForm({
     defaultValues: {
       owners: [
@@ -74,7 +76,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     },
   });
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
+  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
 
   function checkValidation(data) {
 
@@ -85,6 +87,16 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   
   const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
   const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;
+
+  if (data.isPropertyAvailable?.value) {
+  if (!data.owners[0]?.propertyId?.trim()) {
+    setTimeout(() => {
+      setShowToast(null);
+    }, 3000);
+    setShowToast({ key: "true", error: true, message: t("Noc propertyid required if property registered is selected yes") }); // Use your NOC-specific translation key if different from BPA
+    return false;
+  }
+}
 
   if (ownersCount !== ownerPhotoCount) {
     setTimeout(()=>{
@@ -122,20 +134,6 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function goNext(data) {
-   const updatedOwners = currentStepData?.applicationDetails?.owners?.map((owner, index) => ({
-     ...owner,
-     PropertyOwnerPlotArea: data?.owners?.[0]?.PropertyOwnerPlotArea,
-   }));
-    const updatedApplicationDetails = {
-      ...currentStepData?.applicationDetails,
-      owners: updatedOwners,
-    };
-    dispatch(
-      UPDATE_NOCNewApplication_FORM(config.key, {
-        ...data,
-        applicationDetails: updatedApplicationDetails,
-      })
-    );
 
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     dispatch(UPDATE_NOC_OwnerIds("ownerIdList",ownerIdList));
@@ -165,7 +163,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   );
 
     useEffect(() => {
+       
       if (!stakeHolderDetailsLoading) {
+        console.log("useffect 9");
         let roles = [];
         stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
           type?.role?.map((role) => {
@@ -184,7 +184,9 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     }, [stakeHolderDetailsLoading]);
 
   useEffect(() => {
+     
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {
+      console.log("useffect 10");
      setValue("isRegisteredStakeHolder", "true");
     }
   }, []);

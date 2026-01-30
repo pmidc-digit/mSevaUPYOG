@@ -30,7 +30,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
        floorArea: [{ value: "" }] ,
        vasikaNumber: "",
        vasikaDate: ""
-  }
+      }
 });
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
@@ -82,17 +82,25 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   
  function checkValidation(data){
     //Validation for Jamabandi Area Must Be Equal To Total plot Area in sq mt (A)
+
+    console.log(data,"data in onsubmit sitedetails")
     const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
     const propertyPlotAreaRaw = currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerPlotArea;
+    const landareaObj = currentStepData?.cpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
+    const landArea = landareaObj?.owners?.[0]?.landArea ||landareaObj?.landArea;
 
     const propertyPlotAreaNum = Number(propertyPlotAreaRaw);
 
+    // Pick whichever is valid: propertyPlotAreaNum or landArea
+    const areaToCompare = 
+      !Number.isNaN(propertyPlotAreaNum) && propertyPlotAreaRaw != null && propertyPlotAreaRaw?.trim() !== ""
+        ? propertyPlotAreaNum
+        : Number(landArea);
+
     const propertyPlotAreaVal =
-      propertyPlotAreaRaw == null || 
-      (typeof propertyPlotAreaRaw === "string" && propertyPlotAreaRaw?.trim() === "") || 
-      Number.isNaN(propertyPlotAreaNum) 
+      areaToCompare == null || Number.isNaN(areaToCompare)
         ? true
-        : isEqualArea(data?.netTotalArea, propertyPlotAreaNum);
+        : isEqualArea(data?.netTotalArea, areaToCompare);
 
     const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
 
@@ -274,6 +282,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
 
   function goNext(data) {
+    console.log(data, "data is gonext step 2")
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     onGoNext();
   }

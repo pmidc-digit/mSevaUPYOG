@@ -14,7 +14,7 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const apiDataCheck = useSelector((state) => state?.obps?.OBPSFormReducer?.formData?.createdResponse);
-  console.log("StateInPropertySearch", formData, key);
+  // console.log("StateInPropertySearch", formData, key);
   const isEditScreen = pathname.includes("/modify-application/");
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const search = useLocation().search;
@@ -24,6 +24,8 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
   const [zone, setZone] = useState(formData?.cpt?.zonalMapping?.zone || "");
 
   const ptFromApi = apiDataCheck?.additionalDetails?.propertyuid;
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [propertyId, setPropertyId] = useState(formData?.cpt?.id || ptFromApi || "");
   const [searchPropertyId, setSearchPropertyId] = useState(
@@ -51,27 +53,29 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
 //     }
 //   });
 
-  const [isSearchClicked, setIsSearchClicked] = useState(false);
+  // const [isSearchClicked, setIsSearchClicked] = useState(false);
 //   const [getNoDue, setNoDue] = useState(false);
 //   const [getCheckStatus, setCheckStats] = useState(false);
 //   const [getPayDuesButton, setPayDuesButton] = useState(false);
 
-  const { isLoading, isError, error, data: propertyDetailsFetch } = Digit.Hooks.pt.useLudhianaPropertSearch(
-    {
-      filters: {
-        ulb: "MCL",
-        uidNo: searchPropertyId
-      }
-    },
-    // {
-    //   filters: { propertyIds: searchPropertyId },
-    //   tenantId: tenantId,
-    //   enabled: searchPropertyId ? true : false,
-    //   privacy: Digit.Utils.getPrivacyObject(),
-    // }
-  );
+  // const { isLoading, isError, refetch , error, data: propertyDetailsFetch } = Digit.Hooks.pt.useLudhianaPropertSearch(
+  //   {
+  //     filters: {
+  //       ulb: "MCL",
+  //       uidNo: searchPropertyId
+  //     },
+  //     enabled: false
+  //   },
+  //   // {
+  //   //   filters: { propertyIds: searchPropertyId },
+  //   //   tenantId: tenantId,
+  //   //   enabled: searchPropertyId ? true : false,
+  //   //   privacy: Digit.Utils.getPrivacyObject(),
+  //   // }
+  // );
 
-  console.log("propertyDetailsFetch", propertyDetailsFetch)
+
+  // console.log("propertyDetailsFetch", propertyDetailsFetch)
 
 //   useEffect(() => {
 //     if (ptFromApi) {
@@ -85,9 +89,12 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
 //   }, [ptFromApi]);
 
 useEffect(() => {
+  
+  
   if (menuList && formData?.cpt?.details?.address?.locality
     //  && !formData?.createdResponse?.additionalDetails
     ) {
+      console.log("useffect 1")
     const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
     let ward = {}
     const zone = boundary?.children?.find(item => item?.children?.some((children) => {
@@ -102,76 +109,122 @@ useEffect(() => {
   }
 }, [menuList, formData?.cpt?.details?.address?.locality]);
 
-  useEffect(() => {
-    if (!isLoading && propertyDetailsFetch?.IsSuccess && propertyDetailsFetch?.Record) {
-      const { OwnerName, MobileNo, Zone, Block, ColonyName, PropertyNo, PropertyArea } = propertyDetailsFetch?.Record;
-      const owners = [{
-        mobileNumber: MobileNo,
-        name: OwnerName?.split(",")?.[0]
-      }]
-      const address = {
-        doorNo: [PropertyNo, Block, ColonyName ].filter(Boolean).join(", ")
-      }
-      setPropertyDetails({
-        propertyId: propertyDetailsFetch?.Record?.UIDNo,
-        owners,
-        address,
-        landArea: PropertyArea
-      });
-      dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], zonalMapping: {zone: Zone} }));
-    //   setCheckStats(true);
-    } else if (!isLoading) {
-      if (isfirstRender.current) {
-        isfirstRender.current = false;
-        return;
-      }
-      if (!formData?.cpt?.details) {
-        setPropertyDetails({});
-        setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
-      }
-    }
-  }, [propertyDetailsFetch]);
+  // useEffect(() => {
+  //   if (!isLoading && propertyDetailsFetch?.IsSuccess && propertyDetailsFetch?.Record) {
+  //     console.log("useffect 2");
+  //     const { OwnerName, MobileNo, Zone, Block, ColonyName, PropertyNo, PropertyArea } = propertyDetailsFetch?.Record;
+  //     const owners = [{
+  //       mobileNumber: MobileNo,
+  //       name: OwnerName?.split(",")?.[0]
+  //     }]
+  //     const address = {
+  //       doorNo: [PropertyNo, Block, ColonyName ].filter(Boolean).join(", ")
+  //     }
+  //     setPropertyDetails({
+  //       propertyId: propertyDetailsFetch?.Record?.UIDNo,
+  //       owners,
+  //       address,
+  //       landArea: PropertyArea
+  //     });
+  //     dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], zonalMapping: {zone: Zone} }));
+  //   //   setCheckStats(true);
+  //   } else if (!isLoading) {
+  //     if (isfirstRender.current) {
+  //       isfirstRender.current = false;
+  //       return;
+  //     }
+  //     if (!formData?.cpt?.details) {
+  //       setPropertyDetails({});
+  //       setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
+  //     }
+  //   }
+  // }, [propertyDetailsFetch]);
 
-  useEffect(() => {
-    if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
-      setSearchPropertyId(propertyId);
-  }, [propertyId]);
+  // // useEffect(() => {
+    
+  //   if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
+  //     console.log("useffect 3");
+  //     setSearchPropertyId(propertyId);
+  // }, [propertyId]);
 
-  useEffect(() => {
-    if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
-      setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
-    }
-  }, [error, propertyDetails]);
+  // useEffect(() => 
+  //   {
+      
+  //   if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
+  //      console.log("useffect 4");
+  //     setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
+  //   }
+  // }, [error, propertyDetails]);
 
-  useEffect(() => {
-    dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], details: propertyDetails, id: propertyId }));
-  }, [propertyDetails, pathname]);
+ useEffect(() => {
+   
+  if (propertyDetails?.propertyId) {
+    console.log("useffect 5");
+    dispatch(
+      UPDATE_NOCNewApplication_FORM(key, {
+        ...formData[key],
+        details: propertyDetails,
+        id: propertyId,
+      })
+    );
+  }
+}, [propertyDetails?.propertyId]); // ✅ depend only on propertyId, not full object
+
 
 //   useEffect(() => {
 //     onSelect(key, { ...formData[key], dues: propertyDues?.dues });
 //   }, [propertyDues, pathname]);
 
-  const searchProperty = () => {
-    if (!propertyId) {
-      setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_AND_SEARCH" });
-      return;
-    }
+  const searchProperty = async () => {
+  if (!propertyId) {
+    setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_AND_SEARCH" });
+    return;
+  }
 
-    if (propertyId !== searchPropertyId) {
-      setPropertyDetails({ Properties: [] });
-      setSearchPropertyId(propertyId);
-    //   setIsSearchClicked(true);
-    //   setPropertyDues({ dues: null });
+  try {
+    setIsLoading(true);
+    setError(null);
 
-      // 🔑 Clear PropertyDetails from formData
-    //   dispatch(RESET_OBPS_FORM());
-      // refetch();
+    const response = await Digit.PTService.ludhianaSearch({
+      filters: { ulb: "MCL", uidNo: propertyId }
+    });
+
+    if (response?.IsSuccess && response?.Record) {
+      const { OwnerName, MobileNo, Zone, Block, ColonyName, PropertyNo, PropertyArea } = response.Record;
+
+      const owners = [{
+        mobileNumber: MobileNo,
+        name: OwnerName?.split(",")?.[0]
+      }];
+
+      const address = {
+        doorNo: [PropertyNo, Block, ColonyName].filter(Boolean).join(", ")
+      };
+
+      setPropertyDetails({
+        propertyId: response.Record.UIDNo,
+        owners,
+        address,
+        landArea: PropertyArea
+      });
+
+      dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], zonalMapping: { zone: Zone } }));
+    } else {
+      setPropertyDetails({});
+      setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
     }
-  };
+  } catch (err) {
+    console.error("Property search failed", err);
+    setError(err);
+    setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handlePropertyChange = (e) => {
     setPropertyId(e.target.value);
-    setValue(e.target.value, propertyIdInput.name);
+    // setValue(e.target.value, propertyIdInput.name);
     // setIsSearchClicked(false); // ✅ show button again when input changes
     // setNoDue(false);
     // setCheckStats(false);
@@ -202,13 +255,15 @@ useEffect(() => {
     dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], [input]: value }));
   }
 
-  function getValue(input) {
-    return formData && formData[key] ? formData[key][input] : undefined;
-  }
+  // function getValue(input) {
+  //   return formData && formData[key] ? formData[key][input] : undefined;
+  // }
 
 
   useEffect(() => {
+     
     if (showToast) {
+      console.log("useffect 6");
       const timer = setTimeout(() => {
         setShowToast(null);
       }, 3000); // auto close after 3 sec
@@ -217,9 +272,10 @@ useEffect(() => {
     }
   }, [showToast]);
 
-  useEffect(() => {
-    setApiLoading(isLoading);
-  },[isLoading])
+  // useEffect(() => {
+  //    console.log("useffect 7");
+  //   setApiLoading(isLoading);
+  // },[isLoading])
 
   return (
     <React.Fragment>
@@ -246,13 +302,13 @@ useEffect(() => {
               {...propertyIdInput.validation}
             />
 
-            {!isSearchClicked && !isLoading && (
+            {!isLoading && (
               <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
-                {`${t("PT_SEARCH")}`}
+                {t("PT_SEARCH")}
               </button>
             )}
-            {isLoading && <Loader />}
 
+            {isLoading && <Loader />}
           </div>
         </LabelFieldPair>
         {/* {formData?.cpt?.details && <StatusTable><Row className="border-none" label={t(`PT_ACKNOWLEDGEMENT_NUMBER`)} text={formData?.cpt?.details?.acknowldgementNumber || "NA"} /></StatusTable>} */}

@@ -306,16 +306,28 @@ const CitizenApplicationOverview = () => {
 
   console.log("actions here", actions);
 
-  useEffect(()=>{
-    if(workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
-      const commentsobj = workflowDetails?.data?.timeline
-        ?.filter((item) => item?.performedAction === "APPROVE")
-        ?.flatMap((item) => item?.wfComment || []);
-      const approvercomments = commentsobj?.[0];
-      const finalComment = commentsobj ? `The above approval is subjected to the following conditions: ${approvercomments}` : "";
-      setApproverComment(finalComment);
+  useEffect(() => {
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    const commentsobj = workflowDetails?.data?.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+    
+    const approvercomments = commentsobj?.[0];
+
+    // Extract only the part after [#?..**]
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
     }
-  },[workflowDetails])
+
+    const finalComment = conditionText
+      ? `The above approval is subjected to the following conditions: ${conditionText}`
+      : "";
+
+    setApproverComment(finalComment);
+  }
+}, [workflowDetails]);
+
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -527,6 +539,8 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -550,8 +564,6 @@ const CitizenApplicationOverview = () => {
 
               {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"} />}
 
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 

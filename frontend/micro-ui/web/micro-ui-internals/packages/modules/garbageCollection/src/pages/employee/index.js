@@ -7,6 +7,43 @@ import Inbox from "./Inbox";
 // import PaymentDetails from "./PaymentDetails";
 import SearchApp from "./SearchApp";
 
+const GCBreadCrumbs = ({ location, t }) => {
+  const crumbs = [
+    {
+      path: "/digit-ui/employee",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/employee/garbagecollection/inbox",
+      content: t("CS_COMMON_INBOX"),
+      show: location.pathname.includes("/garbagecollection/inbox") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/garbagecollection/create-application",
+      content: "Create Application",
+      show: location.pathname.includes("/garbagecollection/create-application") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/garbagecollection/applicationsearch/application-details",
+      content: "Application Overview",
+      show: location.pathname.includes("/garbagecollection/applicationsearch/application-details") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/garbagecollection/generate-bill",
+      content: "Generate Bill",
+      show: location.pathname.includes("/garbagecollection/generate-bill") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/garbagecollection/bill-genie",
+      content: "Bill-Genie",
+      show: location.pathname.includes("/garbagecollection/bill-genie") ? true : false,
+    },
+  ];
+
+  return <BreadCrumb crumbs={crumbs} />;
+};
+
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -36,10 +73,9 @@ const EmployeeApp = ({ path, url, userType }) => {
     window.location.href.includes("modify-application") ||
     window.location.href.includes("garbagecollection/application-details");
   return (
-    <Switch>
-      <AppContainer>
-        <React.Fragment>
-          <div className="ground-container">
+    <React.Fragment>
+      <div className="ground-container">
+        {!isRes ? <div style={{ marginLeft: "10px" }}><GCBreadCrumbs location={location} t={t} /></div> : null}
             {/* <PrivateRoute exact path={`${path}/`} component={() => <CHBLinks matchPath={path} userType={userType} />} /> */}
             <PrivateRoute
               path={`${path}/inbox`}
@@ -64,9 +100,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
           </div>
         </React.Fragment>
-      </AppContainer>
-    </Switch>
-  );
-};
+      );
+    };
 
 export default EmployeeApp;

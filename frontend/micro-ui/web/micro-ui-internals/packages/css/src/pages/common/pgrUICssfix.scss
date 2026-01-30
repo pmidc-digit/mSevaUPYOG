@@ -105,3 +105,25 @@ text-align: center !important;
   margin-left: 16px;
   width: calc(100% - 16px);
 }
+
+.pgr-create-complaint-wrapper {
+  input[name="mobileNumber"] {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .form-field .text-input {
+    max-width: none !important;
+    width: 100% !important;
+  }
+  
+  .mobile-number-input-with-prefix {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .label-field-pair .form-field .text-input.desktop-w-full {
+    max-width: none !important;
+    width: 100% !important;
+  }
+}

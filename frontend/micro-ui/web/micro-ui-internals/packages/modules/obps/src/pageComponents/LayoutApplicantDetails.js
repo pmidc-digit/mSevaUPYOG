@@ -1315,5 +1315,4 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
   );
 });
 
-LayoutApplicantDetails.displayName = "LayoutApplicantDetails";
 export default LayoutApplicantDetails;

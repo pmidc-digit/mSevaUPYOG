@@ -21,6 +21,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const currentStepData = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData || {});
   const coordinates = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.coordinates || {});
+  const ownerIds = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.ownerIds || {});
+  const ownerPhotos = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.ownerPhotos || {});
+  
   const menuRef = useRef();
 
   const user = Digit.UserService.getUser();

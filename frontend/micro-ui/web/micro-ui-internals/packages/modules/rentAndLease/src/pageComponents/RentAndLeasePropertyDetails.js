@@ -10,31 +10,32 @@ import {
   CardSectionHeader,
   TextArea,
 } from "@mseva/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
 import {
   useDispatch,
   //  useSelector
 } from "react-redux";
 import { UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM } from "../redux/action/RentAndLeaseNewApplicationActions";
+import RentANDLeaseDocuments from "../components/RentANDLeaseDocuments";
 
-const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, validateStep, config }) => {
+const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, validateStep, config }) => {
   const dispatch = useDispatch();
-  // const apiDataCheck = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData?.responseData);
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  // const { data: mdmsPropertyData } = Digit.Hooks.rentandlease.useRALPropertyMDMS(tenantId);
-
-  const filters = {
-    tenantId,
-    searchType: "1",
-  };
-  const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
-
-  const { triggerLoader, triggerToast } = config?.currStepConfig[0];
+  const [documentsData, setDocumentsData] = useState({});
+  const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   // 🔹 Dropdown options
   const propertyTypeOptions = [
     { name: t("ON_RENT"), code: "rent", i18nKey: "rent" },
     { name: t("ON_LEASE"), code: "lease", i18nKey: "lease" },
+    { name: t("ON_DEED"), code: "deed", i18nKey: "deed" },
+  ];
+
+  const applicationTypeOptions = [
+    { name: t("Legacy"), code: "Legacy" },
+    { name: t("New"), code: "new" },
   ];
 
   const propertySpecificOptions = [
@@ -48,21 +49,14 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     { name: t("NON_PRIME"), code: "Non-Prime", i18nKey: "Non-Prime" },
   ];
 
-  // const notificationPrefOptions = [
-  //   { code: "SMS", name: t("SMS"), i18nKey: "SMS" },
-  //   { code: "EMAIL", name: t("EMAIL"), i18nKey: "EMAIL" },
-  //   { code: "PUSH", name: t("PUSH"), i18nKey: "PUSH" },
-  // ];
+  const filters = {
+    tenantId,
+    searchType: "1",
+  };
 
-  // const penaltyTypeOptions = [
-  //   { code: "DAILY", name: t("DAILY"), i18nKey: "DAILY" },
-  //   { code: "MONTHLY", name: t("MONTHLY"), i18nKey: "MONTHLY" },
-  //   { code: "ONETIME", name: t("ONETIME"), i18nKey: "ONETIME" },
-  // ];
-  // const incrementCycleOptions = [
-  //   { code: "YEARLY", name: t("YEARLY"), i18nKey: "YEARLY" },
-  //   { code: "HALF_YEARLY", name: t("HALF_YEARLY"), i18nKey: "HALF_YEARLY" },
-  // ];
+  const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
+
+  const { triggerLoader, triggerToast } = config?.currStepConfig[0];
 
   // 🔹 Form setup
   const {
@@ -70,9 +64,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     handleSubmit,
     setValue,
     watch,
+    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: {
+      applicationType: { name: t("Legacy"), code: "Legacy" },
       propertyId: "",
       propertyName: "",
       propertyType: "",
@@ -102,6 +98,22 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
       // tax_applicable: null,
     },
   });
+
+  const docUploadData = {
+    Challan: {
+      Documents: [
+        {
+          code: "BPA_FILE_UPLOAD",
+          documentType: "ID_PROOF",
+          required: watch("arrear") > 0 ? true : false,
+          active: true,
+          description: "ID proof of offender",
+          maxSizeMB: 2,
+          hasDropdown: true,
+        },
+      ],
+    },
+  };
 
   const selectedPropertyType = watch("propertyType");
   const selectedPropertySpecific = watch("propertySpecific");
@@ -162,6 +174,15 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
   };
 
   const onSubmit = async (data) => {
+    console.log("data", data);
+
+    if (!documentsData?.[0]?.filestoreId) {
+      alert("Please upload arrear document");
+      return;
+    }
+
+    data["arrearDoc"] = documentsData?.[0]?.filestoreId;
+
     if (validateStep) {
       const validationErrors = validateStep(data);
       if (Object.keys(validationErrors).length > 0) return;
@@ -242,9 +263,44 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
     }
   }, [isError, triggerToast]);
 
+  const handleDocumentsSelect = (data) => {
+    console.log("data check", data);
+    setDocumentsData(data);
+  };
+
+  useEffect(() => {
+    if (watch("arrear") <= 0) {
+      clearErrors(["arrearStartDate", "arrearEndDate", "arrearReason", "remarks"]);
+    }
+  }, [watch("arrear")]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
+
+      {/* application Type */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("PT_COMMON_TABLE_COL_APP_TYPE")} <span className="mandatory-asterisk">*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="applicationType"
+          rules={{ required: t("RENT_LEASE_APPLICATION_TYPE_REQUIRED") }}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              select={props.onChange}
+              selected={props.value}
+              option={applicationTypeOptions}
+              defaultValues
+              optionKey="name"
+              t={t}
+            />
+          )}
+        />
+      </LabelFieldPair>
+      {errors.applicationType && <CardLabelError className="ral-error-label">{getErrorMessage("applicationType")}</CardLabelError>}
 
       {/* Property Type Dropdown */}
       <LabelFieldPair>
@@ -339,6 +395,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         </div>
       </LabelFieldPair>
       {errors.propertyId && <CardLabelError className="ral-error-label">{getErrorMessage("propertyId")}</CardLabelError>}
+
       {/* Hidden field for selected property */}
       <Controller control={control} name="selectedProperty" render={() => null} />
       {/* Start Date */}
@@ -495,197 +552,156 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, t, val
         </div>
       </LabelFieldPair>
       {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
+      {watch("applicationType")?.code == "Legacy" && (
+        <React.Fragment>
+          {/* Arrears Amount */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Arrears")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="arrear"
+                rules={{ required: t("RENT_LEASE_ARREAR_REQUIRED") }}
+                render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
 
-      {/* Late Payment % */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("LATE_PAYMENT_PERCENT")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            name="latePayment"
-            render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.latePayment && <CardLabelError style={errorStyle}>{getErrorMessage("latePayment")}</CardLabelError>} */}
+          {/* arrear Start Date */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("RAL_START_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="arrearStartDate"
+                rules={{
+                  validate: (value) => {
+                    const arrear = watch("arrear");
+                    if (arrear > 0 && !value) {
+                      return t("RENT_LEASE_RAL_START_DATE_REQUIRED");
+                    }
+                    return true;
+                  },
+                }}
+                render={({ value, onChange }) => (
+                  <TextInput
+                    type="date"
+                    min={minStartDateISO}
+                    value={value || ""}
+                    onChange={(e) => {
+                      onChange(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.arrearStartDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearStartDate")}</CardLabelError>}
 
-      {/* Terms & Conditions */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("TERMS_AND_CONDITIONS")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="termsAndConditions"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextArea value={value || ""} onChange={onChange} />}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.termsAndConditions && <CardLabelError style={errorStyle}>{getErrorMessage("termsAndConditions")}</CardLabelError>} */}
+          {/*arrear End Date */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("RAL_END_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="arrearEndDate"
+                rules={{
+                  validate: (value) => {
+                    const arrear = watch("arrear");
+                    if (arrear > 0 && !value) {
+                      return t("RENT_LEASE_RAL_END_DATE_REQUIRED");
+                    }
+                    return true;
+                  },
+                }}
+                render={({ value, onChange }) => {
+                  return <TextInput type="date" value={value || ""} onChange={(e) => onChange(e.target.value)} />;
+                }}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.arrearEndDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearEndDate")}</CardLabelError>}
 
-      {/* Refund Applicable */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("REFUND_APPLICABLE")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            name="refundApplicableOnDiscontinuation"
-            render={({ value, onChange }) => (
-              <div style={wrapper}>
-                <input type="radio" checked={value === true} onChange={() => onChange(true)} style={radioStyles} disabled /> {t("YES")}
-                <input type="radio" checked={value === false} onChange={() => onChange(false)} style={radioStyles} disabled /> {t("NO")}
-              </div>
-            )}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.refundApplicableOnDiscontinuation && (
-        <CardLabelError style={errorStyle}>{getErrorMessage("refundApplicableOnDiscontinuation")}</CardLabelError>
-      )} */}
-
-      {/* GST Applicable */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("GST_APPLICABLE")}
-        </CardLabel>
-        <div className="form-field" style={{ checkStyles }}>
-          <Controller
-            control={control}
-            name="taxApplicable"
-            render={({ value, onChange }) => (
-              <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} style={radioStyles} />
-            )}
-          />
-        </div>
-      </LabelFieldPair> */}
-
-      {/* Cow Cess Applicable */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("COW_CESS_APPLICABLE")}
-        </CardLabel>
-        <div className="form-field" style={{ checkStyles }}>
-          <Controller
-            control={control}
-            name="cowCessApplicable"
-            render={({ value, onChange }) => (
-              <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} style={radioStyles} />
-            )}
-          />
-        </div>
-      </LabelFieldPair> */}
-
-      {/* Amount to be Refunded */}
-      {/* 
-      <LabelFieldPair>
-        <CardLabel>
-          {t("AMOUNT_TO_BE_REFUNDED")}
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="amountToBeRefunded"
-            // rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
-          />
-        </div>
-      </LabelFieldPair>
-      */}
-
-      {/* Increment Applicable */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("INCREMENT_APPLICABLE")}
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="incrementApplicable"
-            // rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => (
-              <div style={wrapper}>
-                <input type="radio" checked={value === true} onChange={() => onChange(true)} style={radioStyles} /> {t("YES")}
-                <input type="radio" checked={value === false} onChange={() => onChange(false)} style={radioStyles} /> {t("NO")}
-              </div>
-            )}
-          />
-        </div>
-      </LabelFieldPair> */}
-
-      {/* Increment Percentage */}
-      {/* <LabelFieldPair>
-        <CardLabel>{t("INCREMENT_PERCENTAGE")}</CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="incrementPercentage"
-            rules={{
-              validate: (val) => {
-                if (watch("incrementApplicable") === "YES" && !val) return t("PTR_FIELD_REQUIRED");
-                return true;
-              },
-            }}
-            render={({ value, onChange }) => <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} />}
-          />
-        </div>
-      </LabelFieldPair> */}
-
-      {/* Increment Cycle */}
-      {/* <LabelFieldPair>
-        <CardLabel>{t("INCREMENT_CYCLE")}</CardLabel>
-        <Controller
-          control={control}
-          name="incrementCycle"
-          render={({ value, onChange }) => (
-            <Dropdown className="form-field" option={incrementCycleOptions} optionKey="name" selected={value} select={onChange} t={t} />
-          )}
-        />
-      </LabelFieldPair> */}
-
-      {/* Notification Preferences */}
-      {/* <LabelFieldPair>
-        <CardLabel>{t("NOTIFICATION_PREFERENCES")} <span style={mandatoryStyle}>*</span></CardLabel>
-        <Controller
-          control={control}
-          name="notificationPrefs"
-          rules={{ required: t("PTR_FIELD_REQUIRED") }}
-          render={({ value, onChange }) => (
-            <Dropdown
-              className="form-field"
-              option={notificationPrefOptions}
-              optionKey="name"
-              selected={value}
-              select={onChange}
-              t={t}
+          {/* Areas reason */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t("Reason")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+            </CardLabel>
+            <Controller
+              control={control}
+              name="arrearReason"
+              rules={{
+                validate: (value) => {
+                  const arrear = watch("arrear");
+                  if (arrear > 0 && !value) {
+                    return t("RENT_LEASE_REASON_REQUIRED");
+                  }
+                  return true;
+                },
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={props.onChange}
+                  selected={props.value}
+                  option={applicationTypeOptions}
+                  defaultValues
+                  optionKey="name"
+                  t={t}
+                />
+              )}
             />
-          )}
-        />
-      </LabelFieldPair>
-      {errors.notificationPrefs && <CardLabelError style={errorStyle}>{getErrorMessage("notificationPrefs")}</CardLabelError>} */}
+          </LabelFieldPair>
+          {errors.arrearReason && <CardLabelError className="ral-error-label">{getErrorMessage("arrearReason")}</CardLabelError>}
 
-      {/* Penalty Type */}
-      {/* <LabelFieldPair>
-        <CardLabel>
-          {t("PENALTY_TYPE")} <span style={mandatoryStyle}>*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="penaltyType"
-          rules={{ required: t("PTR_FIELD_REQUIRED") }}
-          render={({ value, onChange }) => (
-            <Dropdown className="form-field" option={penaltyTypeOptions} optionKey="name" selected={value} select={onChange} t={t} disable={true}/>
-          )}
-        />
-      </LabelFieldPair>
-      {errors.penaltyType && <CardLabelError style={errorStyle}>{getErrorMessage("penaltyType")}</CardLabelError>} */}
+          {/* Remarks */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t("Remarks")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="remarks"
+                rules={{
+                  validate: (value) => {
+                    const arrear = watch("arrear");
+                    if (arrear > 0 && !value?.trim()) {
+                      return t("RENT_LEASE_REMARKS_REQUIRED");
+                    }
+                    return true;
+                  },
+                }}
+                render={({ value, onChange }) => <TextInput type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} t={t} />}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.remarks && <CardLabelError className="ral-error-label">{getErrorMessage("remarks")}</CardLabelError>}
+
+          <div>
+            <RentANDLeaseDocuments
+              t={t}
+              config={{ key: "documents" }}
+              onSelect={handleDocumentsSelect}
+              userType="CITIZEN"
+              formData={{ documents: documentsData }}
+              setError={setError}
+              error={error}
+              clearErrors={() => {}}
+              formState={{}}
+              data={docUploadData}
+              isLoading={isLoading}
+            />
+          </div>
+        </React.Fragment>
+      )}
 
       {/* Action Bar */}
       <ActionBar>

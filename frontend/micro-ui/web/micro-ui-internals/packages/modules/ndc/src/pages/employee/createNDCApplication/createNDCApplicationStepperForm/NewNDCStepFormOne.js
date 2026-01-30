@@ -122,6 +122,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         additionalDetails: {
           propertyAddress: data?.PropertyDetails?.address,
           propertyType: data?.cpt?.details?.usageCategory,
+          reason: data?.NDCReason?.reason,
+          remarks: data?.PropertyDetails?.remarks,
         },
         dueAmount: billData?.totalAmount || 0,
         status: billData?.status,

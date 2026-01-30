@@ -136,16 +136,9 @@ const ChallanStepperForm = () => {
   };
 
   return (
-    <div 
-      className="card custom-challan-card"
-     
-    >
-      <div className="challan-stepper-parent-component"
-       
-      >
-        <CardHeader divider={true}>
-          {t("CREATE_CHALLAN")}
-        </CardHeader>
+    <div className="card custom-challan-card">
+      <div className="challan-stepper-parent-component">
+        <CardHeader divider={true}>{t("CREATE_CHALLAN")}</CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardLabel>{t("CHALLAN_OFFENDER_DETAILS")}</CardLabel>
           <div style={{ width: "100%" }}>
@@ -197,7 +190,6 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <TextInput
-                  
                     value={props.value}
                     error={errors?.name?.message}
                     onChange={(e) => {
@@ -227,7 +219,6 @@ const ChallanStepperForm = () => {
                 }}
                 render={(props) => (
                   <TextArea
-                   
                     name="address"
                     value={props.value}
                     onChange={(e) => {
@@ -255,7 +246,6 @@ const ChallanStepperForm = () => {
                 rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
-                  
                     className="form-field"
                     select={props.onChange}
                     selected={props.value}
@@ -269,7 +259,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* Offence Subcategory */}
-            <LabelFieldPair  >
+            <LabelFieldPair>
               <CardLabel>
                 {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span className="requiredField">*</span>
               </CardLabel>
@@ -280,7 +270,6 @@ const ChallanStepperForm = () => {
                 rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
-                    
                     className="form-field"
                     select={(e) => {
                       props.onChange(e);
@@ -296,7 +285,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* offence type */}
-            <LabelFieldPair  >
+            <LabelFieldPair>
               <CardLabel>
                 {t("CHALLAN_TYPE_OFFENCE")} <span className="requiredField">*</span>
               </CardLabel>
@@ -307,7 +296,6 @@ const ChallanStepperForm = () => {
                 rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
                 render={(props) => (
                   <Dropdown
-                    
                     className="form-field"
                     // select={props.onChange}
                     select={(e) => {
@@ -325,7 +313,7 @@ const ChallanStepperForm = () => {
             </LabelFieldPair>
 
             {/* Challan Amount Default */}
-            <LabelFieldPair  >
+            <LabelFieldPair>
               <CardLabel>{`${t("DEFAULT_CHALLAN_AMOUNT")}`}</CardLabel>
               <Controller
                 control={control}
@@ -333,7 +321,6 @@ const ChallanStepperForm = () => {
                 render={(props) => (
                   <TextInput
                     type="number"
-                    
                     value={props.value}
                     error={errors?.name?.message}
                     disable={true}
@@ -348,44 +335,12 @@ const ChallanStepperForm = () => {
                 )}
               />
             </LabelFieldPair>
-
-            {/* Challan Amount */}
-            {/* <LabelFieldPair  >
-              <CardLabel>{`${t("CHALLAN_AMOUNT")}`}</CardLabel>
-              <Controller
-                control={control}
-                name="challanAmount"
-                render={(props) => (
-                  <input
-                    className="employee-card-input focus-visible"
-                    type="number"
-                    
-                    value={props.value}
-                    error={errors?.name?.message}
-                    onWheel={(e) => e.target.blur()}
-                    onKeyDown={(e) => {
-                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                        e.preventDefault();
-                      }
-                    }}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    // onWheel={(e) => e.preventDefault()}
-                    t={t}
-                  />
-                )}
-              />
-            </LabelFieldPair> */}
           </div>
 
           <CardLabel>
             {t("CHALLAN_DOCUMENTS")} <span className="requiredField">*</span>
           </CardLabel>
-          <div  >
+          <div>
             <SelectNDCDocuments
               t={t}
               config={{ key: "documents" }}

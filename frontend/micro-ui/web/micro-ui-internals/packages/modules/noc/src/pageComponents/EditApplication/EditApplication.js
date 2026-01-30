@@ -190,7 +190,7 @@ const EditApplication = () => {
             owners: applicantDetails.owners?.map(owner => ({
               ...owner,
               propertyVasikaNo: nocObject?.vasikaNumber,
-              propertyVasikaDate : formatDateForInput(nocObject?.vasikaDate)
+              propertyVasikaDate : formatDateForInput(nocObject?.vasikaDate),
             })) || [],
           //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }

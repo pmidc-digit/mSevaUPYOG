@@ -62,8 +62,6 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
-  console.log("workflowDetails", workflowDetails);
-
   if (workflowDetails?.data?.actionState && !workflowDetails.isLoading) {
     workflowDetails.data.actionState.nextActions = workflowDetails.data.nextActions;
   }

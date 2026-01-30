@@ -54,7 +54,7 @@ public class LayoutQueryBuilder {
 					"FROM eg_layout layout " +
 					"LEFT JOIN eg_layout_details details ON details.layoutid = layout.id " +
 					"LEFT JOIN eg_layout_document layoutdoc ON layoutdoc.layoutid = layout.id " +
-					"LEFT JOIN eg_layout_owner layoutowner ON layoutowner.layoutid = layout.id " +
+					"LEFT JOIN eg_layout_owner layoutowner ON layoutowner.layoutid = layout.id AND layoutowner.status = true " +
 					"WHERE 1=1";
 
 
@@ -64,7 +64,7 @@ public class LayoutQueryBuilder {
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT uuid FROM eg_layout_owner WHERE layoutid = ?");
+		sb.append("SELECT uuid FROM eg_layout_owner WHERE status = true and layoutid = ?");
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();

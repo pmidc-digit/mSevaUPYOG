@@ -153,6 +153,13 @@ public class LAYOUTService {
 		if(nocRequest.getLayout().getOwners().get(0).getUuid() != null)
 			nocRequest.getLayout().setAccountId(nocRequest.getLayout().getOwners().get(0).getUuid());
 
+		if(!CollectionUtils.isEmpty(nocRequest.getLayout().getOwners())) {
+			nocRequest.getLayout().getOwners().forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
+		}
+		
 		nocRepository.save(nocRequest);
 		return Arrays.asList(nocRequest.getLayout());
 	}
@@ -204,6 +211,10 @@ public class LAYOUTService {
 		Layout searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getLayout().getOwners();
 		if (owners != null) {
+			owners.forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
 		}
 
@@ -401,9 +412,14 @@ public class LAYOUTService {
 
 				List<String> accountid = nocRepository.getOwnerUserIdsByLayoutId(noc.getId());
 //				accountid.add(noc.getAccountId());
-				criteria.setAccountId(accountid);
-				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				List<OwnerInfo> owner = userDetailResponse.getUser();
+				
+				List<OwnerInfo> owner = new ArrayList<>();
+				
+				if(!CollectionUtils.isEmpty(accountid)) {
+					criteria.setAccountId(accountid);
+					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+					owner = userDetailResponse.getUser();
+				}
 				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
 						.orElse(Collections.emptyList())
 						.stream()
@@ -418,6 +434,7 @@ public class LAYOUTService {
 // Merge by uuid
 				for (OwnerInfo oi : owner) {
 					String uuid = oi.getUuid(); // ensure this getter exists
+					oi.setStatus(true);
 					if (uuid != null) {
 						Object ad = adByUuid.get(uuid);
 						if (ad != null) {

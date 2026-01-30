@@ -54,7 +54,7 @@ public class CluQueryBuilder {
 					"FROM eg_clu clu " +
 					"LEFT JOIN eg_clu_details details ON details.cluid = clu.id " +
 					"LEFT JOIN eg_clu_document cludoc ON cludoc.cluid = clu.id " +
-					"LEFT JOIN eg_clu_owner cluowner ON cluowner.cluid = clu.id " +
+					"LEFT JOIN eg_clu_owner cluowner ON cluowner.cluid = clu.id AND cluowner.status = true " +
 					"WHERE 1=1";
 
 
@@ -117,7 +117,7 @@ public class CluQueryBuilder {
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT uuid FROM eg_clu_owner WHERE cluid = ?");
+		sb.append("SELECT uuid FROM eg_clu_owner WHERE status = true and cluid = ?");
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();

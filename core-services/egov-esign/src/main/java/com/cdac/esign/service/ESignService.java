@@ -85,7 +85,7 @@ public class ESignService {
         PdfSignatureAppearance appearance = signer.getSignatureAppearance();
         appearance.setPageRect(new Rectangle(400, 50, 200, 50)); 
         appearance.setPageNumber(1);
-        appearance.setReason("Digitally Signed via eSign");
+        appearance.setReason("Digitally Signed via mSeva");
         appearance.setLocation("India");
 
         // B. Set Field Name (Must match Phase 2)

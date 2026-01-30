@@ -104,6 +104,13 @@ public class NOCService {
 		if(nocRequest.getNoc().getOwners().get(0).getUuid() != null)
 			nocRequest.getNoc().setAccountId(nocRequest.getNoc().getOwners().get(0).getUuid());
 
+		if(!CollectionUtils.isEmpty(nocRequest.getNoc().getOwners())) {
+			nocRequest.getNoc().getOwners().forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
+		}
+		
 		nocRepository.save(nocRequest);
 		return Arrays.asList(nocRequest.getNoc());
 	}

@@ -114,15 +114,18 @@ public class AllotmentService {
 			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
 		}
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
-		if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
-			try {
-				callCalculatorService(false,true,allotmentRequest);
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new CustomException("CREATE_DEMAND_ERROR",
-						"Error occured while demand generation.");
-			}
-		} else if (isApprove) {
+		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
+
+        if (isApprove && isLegacyApplication) {
+            // For legacy applications, generate demand based on arrear details from additionalDetails
+            try {
+                callCalculatorServiceForLegacy(allotmentRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new CustomException("CREATE_DEMAND_ERROR",
+                        "Error occurred while generating demand for legacy application.");
+            }
+        } else if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
 				callCalculatorService(false,false,allotmentRequest);
 			} catch (Exception e) {
@@ -171,6 +174,79 @@ public class AllotmentService {
 		String demandId =demandResponse.getDemands().get(0).getId();
 		return demandId;
 	}
+
+    /**
+     * Check if the application is a legacy application based on additionalDetails
+     * @param allotmentDetails The allotment details to check
+     * @return true if applicationType in additionalDetails is "Legacy"
+     */
+    private boolean isLegacyApplication(AllotmentDetails allotmentDetails) {
+        if (allotmentDetails.getAdditionalDetails() != null) {
+            com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+            if (additionalDetails.has("applicationType")) {
+                String applicationType = additionalDetails.get("applicationType").asText();
+                return RLConstants.APPLICATION_TYPE_LEGACY.equals(applicationType);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Call calculator service for legacy applications
+     * Extracts arrear details from additionalDetails and generates demand
+     * @param allotmentRequest The allotment request containing legacy application details
+     * @return The demand ID generated
+     */
+    private String callCalculatorServiceForLegacy(AllotmentRequest allotmentRequest) {
+        AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+        com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+
+        // Extract arrear details from additionalDetails
+        BigDecimal arrearAmount = BigDecimal.ZERO;
+        Long arrearStartDate = null;
+        Long arrearEndDate = null;
+
+        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_KEY)) {
+            arrearAmount = new BigDecimal(additionalDetails.get(RLConstants.LEGACY_ARREAR_KEY).asText());
+        }
+        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_START_DATE_KEY)) {
+            arrearStartDate = additionalDetails.get(RLConstants.LEGACY_ARREAR_START_DATE_KEY).asLong();
+        }
+        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_END_DATE_KEY)) {
+            arrearEndDate = additionalDetails.get(RLConstants.LEGACY_ARREAR_END_DATE_KEY).asLong();
+        }
+
+        CalculationReq calculationReq = getCalculationReqForLegacy(allotmentRequest, arrearAmount, arrearStartDate, arrearEndDate);
+
+        StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
+                .append(config.getRlCalculatorEndpoint());
+        Object response = serviceRequestRepository.fetchResult(url, calculationReq).get();
+        DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
+        String demandId = demandResponse.getDemands().get(0).getId();
+        return demandId;
+    }
+
+    /**
+     * Build CalculationReq for legacy applications with arrear details
+     */
+    private CalculationReq getCalculationReqForLegacy(AllotmentRequest allotmentRequest, BigDecimal arrearAmount,
+                                                      Long arrearStartDate, Long arrearEndDate) {
+        CalculationReq calculationReq = new CalculationReq();
+        calculationReq.setRequestInfo(allotmentRequest.getRequestInfo());
+        List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
+        CalculationCriteria calculationCriteria = CalculationCriteria.builder()
+                .isSecurityDeposite(false)
+                .isSatelment(false)
+                .isLegacyArrear(true)
+                .arrearAmount(arrearAmount)
+                .fromDate(arrearStartDate)
+                .toDate(arrearEndDate)
+                .allotmentRequest(allotmentRequest)
+                .build();
+        calculationCriteriaList.add(calculationCriteria);
+        calculationReq.setCalculationCriteria(calculationCriteriaList);
+        return calculationReq;
+    }
 
 	private CalculationReq getCalculationReq(boolean isSatelment,boolean isSecurityDeposite,AllotmentRequest allotmentRequest) {
 		CalculationReq calculationReq =new CalculationReq();

@@ -55,9 +55,11 @@ public class workflowService {
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(application.getApplicationNumber());
 		processInstance.setAction(workflow.getAction());
-		processInstance.setModuleName(RLConstants.RL_SERVICE_NAME);
+        processInstance.setModuleName(RLConstants.RL_SERVICE_NAME);
+        // Check if applicationType is Legacy in additionalDetails if legacy then RENT_AND_LEASE_LEGACY otherwise RENT_AND_LEASE_NEW
+        String workflowName = getWorkflowName(application);
+        processInstance.setBusinessService(workflowName);
 		processInstance.setTenantId(application.getTenantId());
-		processInstance.setBusinessService(RLConstants.RL_WORKFLOW_NAME);
 		processInstance.setDocuments(workflow.getDocuments());
 		processInstance.setComment(workflow.getComments());
 
@@ -77,8 +79,30 @@ public class workflowService {
 
 	}
 
+    /**
+     * Determines the workflow name based on additionalDetails.
+     * If applicationType is "Legacy", returns RENT_AND_LEASE_LG workflow.
+     * Otherwise, returns the default RENT_N_LEASE_NEW workflow.
+     *
+     * @param application The AllotmentDetails containing additionalDetails
+     * @return The appropriate workflow name
+     */
+    private String getWorkflowName(AllotmentDetails application) {
+        if (application.getAdditionalDetails() != null) {
+            com.fasterxml.jackson.databind.JsonNode additionalDetails = application.getAdditionalDetails();
+            if (additionalDetails.has("applicationType")) {
+                String applicationType = additionalDetails.get("applicationType").asText();
+                if (RLConstants.APPLICATION_TYPE_LEGACY.equals(applicationType)) {
+                    return RLConstants.RL_WORKFLOW_NAME_LEGACY;
+                }
+            }
+        }
+        return RLConstants.RL_WORKFLOW_NAME;
+    }
 
-	/**
+
+
+    /**
 	 * Method to integrate with workflow
 	 *
 	 * takes the Pet request as parameter constructs the work-flow request

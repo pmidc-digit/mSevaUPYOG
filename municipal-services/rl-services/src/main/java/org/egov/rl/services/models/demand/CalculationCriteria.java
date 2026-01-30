@@ -39,7 +39,15 @@ public class CalculationCriteria   {
         @JsonProperty("isSatelment")
         @Default
         private boolean isSatelment=false;
-        
+
+
+    @JsonProperty("isLegacyArrear")
+    @Default
+    private boolean isLegacyArrear=false;
+
+    @JsonProperty("arrearAmount")
+    private java.math.BigDecimal arrearAmount;
+
         @JsonProperty("tenantId")
         private String tenantId;
 

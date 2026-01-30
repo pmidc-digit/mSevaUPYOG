@@ -138,35 +138,45 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 		}
 	}
 
-	private JsonNode getAdditionalDetails(Object additionalDetails) {
-		try {
-			ObjectNode root = (ObjectNode) mapper.valueToTree(additionalDetails);
-			JsonNode valueNode = root.get("value");
-			if (valueNode == null || valueNode.isNull()) {
-				return mapper.createArrayNode();
-			}
-			ArrayNode arrayNode;
-			if (valueNode.isTextual()) {
-				String jsonArrayText = valueNode.asText();
-				JsonNode parsed = mapper.readTree(jsonArrayText);
-				if (!parsed.isArray()) {
-					throw new IllegalArgumentException(
-							"Expected JSON array in 'value' string, but found: " + parsed.getNodeType());
-				}
-				arrayNode = (ArrayNode) parsed;
-			} else if (valueNode.isArray()) {
-				arrayNode = (ArrayNode) valueNode;
-			} else {
-				throw new IllegalArgumentException(
-						"The 'value' field must be a JSON array or JSON array string. Found: "
-								+ valueNode.getNodeType());
-			}
-			List<RLProperty> rlList = mapper.convertValue(arrayNode,
-					mapper.getTypeFactory().constructCollectionType(List.class, RLProperty.class));
-			return mapper.valueToTree(rlList);
+    private JsonNode getAdditionalDetails(Object additionalDetails) {
+        try {
+            if (additionalDetails == null) {
+                return mapper.createObjectNode();
+            }
 
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to parse 'additionalDetails.value' as JSON array", e);
-		}
-	}
+            ObjectNode root = (ObjectNode) mapper.valueToTree(additionalDetails);
+            JsonNode valueNode = root.get("value");
+
+            if (valueNode == null || valueNode.isNull()) {
+                // No "value" key - return empty object
+                return mapper.createObjectNode();
+            }
+
+            JsonNode parsed;
+            if (valueNode.isTextual()) {
+                String jsonText = valueNode.asText();
+                parsed = mapper.readTree(jsonText);
+            } else {
+                parsed = valueNode;
+            }
+
+            // Handle both OBJECT (new merged format) and ARRAY (old format)
+            if (parsed.isObject()) {
+                // New format - additionalDetails is an object with propertyDetails and other fields
+                return parsed;
+            } else if (parsed.isArray()) {
+                // Old format - additionalDetails is an array of property details
+                // Convert to new format for consistency
+                ObjectNode result = mapper.createObjectNode();
+                result.set("propertyDetails", parsed);
+                return result;
+            } else {
+                // Unknown format - return as-is
+                return parsed;
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse 'additionalDetails.value' as JSON", e);
+        }
+    }
 }

@@ -31,6 +31,20 @@ public class RLConstants {
 	public static final String RL_SERVICE_NAME = "rl-services";
 
 	public static final String RL_WORKFLOW_NAME = "RENT_N_LEASE_NEW";
+
+    public static final String RL_WORKFLOW_NAME_LEGACY = "RENT_AND_LEASE_LG";
+
+    public static final String APPLICATION_TYPE_LEGACY = "Legacy";
+
+    // Legacy application additionalDetails keys
+    public static final String LEGACY_ARREAR_KEY = "arrear";
+    public static final String LEGACY_ARREAR_START_DATE_KEY = "arrearStartDate";
+    public static final String LEGACY_ARREAR_END_DATE_KEY = "arrearEndDate";
+    public static final String LEGACY_ARREAR_REASON_KEY = "arrearReason";
+    public static final String LEGACY_REMARKS_KEY = "remarks";
+
+    // Legacy workflow tax head
+    public static final String RL_ARREAR_FEE = "RL_ARREAR_FEE";
 	
 	public static final String SECURITY_DEPOSIT_FEE_RL_APPLICATION = "RL_SECURITY_DEPOSIT_FEE";
 

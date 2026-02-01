@@ -34,6 +34,7 @@ import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
 import { Loader } from "../../../config/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -118,7 +119,8 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // States for field inspection
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
-  const [checklistRemarks, setChecklistRemarks] = useState("");
+  const [checklistRemarks, setChecklistRemarks] = useState({});
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
 
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
@@ -193,7 +195,10 @@ const LayoutEmployeeApplicationOverview = () => {
   if (window.location.href.includes("/obps") || window.location.href.includes("/layout")) {
     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
-    user = userInfo?.value;
+    // Keep employee user from Digit.UserService, don't overwrite with sessionStorage data
+    if (!user?.info?.roles) {
+      user = userInfo?.value;
+    }
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -247,16 +252,9 @@ const LayoutEmployeeApplicationOverview = () => {
       hasRole &&
       !isMobile
     ) {
-      setShowToast({
-        key: "true",
-        warning: true,
-        message: "Field_Inspection_Only_Available_On_Mobile",
-      });
+     console.log("Field_Inspection_Only_Available_On_Mobile");
     }
   }, [applicationDetails?.Layout?.[0]?.applicationStatus, hasRole, isMobile]);
-
-  // Prevent field inspection on desktop by hiding the section
-  const shouldShowFieldInspection = applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && isMobile;
 
   // Filter site photographs and remaining documents
   const coordinates = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.coordinates;
@@ -374,6 +372,20 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   }, [id]);
 
+  // Helper function to get remark entries from inspection report
+  function getRemarkEntries(record) {
+    return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+  }
+
+  // Helper function to check if all remarks are filled
+  function areAllRemarksFilled(record) {
+    const remarkEntries = getRemarkEntries(record);
+    return (
+      remarkEntries.length > 0 &&
+      remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
+    );
+  }
+
   const submitAction = async (data) => {
     console.log(" submitAction called with data:", data);
     setIsSubmitting(true);
@@ -399,6 +411,44 @@ const LayoutEmployeeApplicationOverview = () => {
         return;
       }
 
+      // Validation For Site Inspection Report AT JE/BI Level
+      if (applicationDetails?.Layout?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
+        if (fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0) {
+          closeModal();
+          setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENIDNG_VALIDATION_LABEL" });
+          setIsSubmitting(false);
+          return;
+        } else {
+          const record = fieldInspectionPending?.[0] ?? {};
+          const allRemarksFilled = areAllRemarksFilled(record);
+
+          if (!allRemarksFilled) {
+            closeModal();
+            setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENDING_QUESTION_VALIDATION_LABEL" });
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      // Build new calculation object from current fee adjustments
+      const newCalculation = {
+        isLatest: true,
+        updatedBy: Digit.UserService.getUser()?.info?.name,
+        taxHeadEstimates: feeAdjustments
+          .filter((row) => row.taxHeadCode !== "LAYOUT_TOTAL") // exclude UI-only total row
+          .map((row) => ({
+            taxHeadCode: row.taxHeadCode,
+            estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
+            category: row.category,
+            remarks: row.remark || null,
+            filestoreId: row.filestoreId || null,
+          })),
+      };
+
+      // Get old calculations and mark them as not latest
+      const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
+
       // Ensure all nested data is properly preserved
       const updatedApplicant = {
         ...layoutObject,
@@ -416,6 +466,9 @@ const LayoutEmployeeApplicationOverview = () => {
               vasikaNumber: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber,
               vasikaDate: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaDate,
             },
+            siteImages: siteImages?.documents || [],
+            fieldinspection_pending: fieldInspectionPending,
+            calculations: [...oldCalculations, newCalculation],
           },
         },
         workflow: {
@@ -822,24 +875,45 @@ const LayoutEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      {/* Documents Uploaded */}
-      <Card>
-        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>
-          {remainingDocs?.length > 0 && (
-            <LayoutDocumentChecklist
-              documents={remainingDocs}
-              applicationNo={id}
-              tenantId={tenantId}
-              onRemarksChange={setChecklistRemarks}
-              readOnly={!isDocPending}
-            />
-          )}
-        </StatusTable>
-      </Card>
+      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY */}
+      {
+        applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY" &&
+        <Card>
+          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+          <StatusTable>
+            {remainingDocs?.length > 0 && (
+              <LayoutDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                readOnly="true"
+              />
+            )}
+          </StatusTable>
+        </Card>
+      }
+
+      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY */}
+      {
+        applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY" && (user?.info?.roles.filter(role => role.code === "OBPAS_LAYOUT_DM")?.length > 0) &&
+        <Card>
+          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+          <StatusTable>
+            {remainingDocs?.length > 0 && (
+              <LayoutDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+              />
+            )}
+          </StatusTable>
+        </Card>
+      }
 
       {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
-      {shouldShowFieldInspection && (
+      {applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
         <Card>
           <div id="fieldInspection"></div>
           <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
@@ -873,9 +947,10 @@ const LayoutEmployeeApplicationOverview = () => {
           </StatusTable>
 
           {geoLocations?.length > 0 && (
-            <>
+            <Fragment>
               <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-            </>
+              <CustomLocationSearch position={geoLocations} />
+            </Fragment>
           )}
         </Card>
       )}
@@ -931,8 +1006,8 @@ const LayoutEmployeeApplicationOverview = () => {
               calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY2"
-            feeAdjustments={[]}
-            setFeeAdjustments={() => {}}
+            feeAdjustments={feeAdjustments}
+            setFeeAdjustments={setFeeAdjustments}
             disable={isFeeDisabled}
           />
         )}

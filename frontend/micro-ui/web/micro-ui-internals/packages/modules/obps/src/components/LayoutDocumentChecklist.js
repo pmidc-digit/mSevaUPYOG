@@ -6,11 +6,18 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
+  // Debug: Log readOnly status - handle both string and boolean
+  const isReadOnly = readOnly === true || readOnly === "true";
+  console.log("LayoutDocumentChecklist - readOnly prop:", readOnly, "isReadOnly:", isReadOnly);
+
   // fetch urls
   const { data: urlsList } = Digit.Hooks.obps.useLayoutDocumentSearch(
+    
     { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
     { enabled: documents?.length > 0 }
   );
+
+  console.log(urlsList, "USER LIST");
 
   // Initialize remarks for each document
   useEffect(() => {
@@ -19,6 +26,8 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
       documents.forEach(d => { 
         initial[d.documentUid || d.uuid] = d.remarks || ""; 
       });
+      console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
+      console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }
@@ -54,15 +63,43 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                   ) : t("CS_NA")}
                 </td>
                 <td>
-                  <TextInput
-                    t={t}
-                    type="text"
-                    value={localRemarks[doc.documentUid] ?? ""}
-                    onChange={(e) => !readOnly && setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }))}
-                    onBlur={(e) => !readOnly && handleBlur(doc.documentUid, e.target.value)}
-                    disabled={readOnly}
-                    style={{ width: "100%", padding: "4px", border: "1px solid #ccc", borderRadius: "4px" }}
-                  />
+                  {isReadOnly ? (
+                    <input
+                      type="text"
+                      value={localRemarks[doc.documentUid] ?? ""}
+                      disabled={true}
+                      readOnly={true}
+                      style={{ 
+                        width: "100%", 
+                        padding: "4px", 
+                        border: "1px solid #ccc", 
+                        borderRadius: "4px",
+                        backgroundColor: "#f5f5f5",
+                        cursor: "not-allowed"
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={localRemarks[doc.documentUid] ?? ""}
+                      onChange={(e) => {
+                        console.log("onChange triggered - value:", e.target.value);
+                        setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
+                      }}
+                      onBlur={(e) => {
+                        console.log("onBlur triggered - final value:", e.target.value);
+                        handleBlur(doc.documentUid, e.target.value);
+                      }}
+                      style={{ 
+                        width: "100%", 
+                        padding: "4px", 
+                        border: "1px solid #ccc", 
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                        cursor: "text"
+                      }}
+                    />
+                  )}
                 </td>
               </tr>
             );

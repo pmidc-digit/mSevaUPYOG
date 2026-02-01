@@ -27,7 +27,7 @@ const LayoutSiteDetails = (_props) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef } = _props;
   console.log(currentStepData, "DTATA TO BE MAPPED");
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
   console.log(applicationNo, "applicationNo in layout site details");
@@ -46,6 +46,17 @@ const LayoutSiteDetails = (_props) => {
   const [cluDocumentUploadedFile, setCluDocumentUploadedFile] = useState(null);
   const [cluDocumentLoader, setCluDocumentLoader] = useState(false);
   const [cluDocumentError, setCluDocumentError] = useState(null);
+  const [cluValidationLoading, setCluValidationLoading] = useState(false);
+  const [cluValidationError, setCluValidationError] = useState(null);
+  const [isCluValidated, setIsCluValidated] = useState(false);
+
+  // Update parent ref when CLU validation status changes
+  useEffect(() => {
+    if (cluValidationRef) {
+      cluValidationRef.current.isCluValidated = isCluValidated;
+      cluValidationRef.current.isCluRequired = isCluRequired;
+    }
+  }, [isCluValidated, isCluRequired, cluValidationRef]);
 
   console.log("STEPERDFATA", currentStepData);
   console.log(isEditMode, "LOOK EDIT");
@@ -529,19 +540,55 @@ const LayoutSiteDetails = (_props) => {
                   </LabelFieldPair>
 
                   {/* Validate Button for Online CLU */}
-                  <LabelFieldPair style={{display:"flex", justifyContent:"end"}}>
+                  <LabelFieldPair style={{display:"flex", justifyContent:"end", gap: "12px", alignItems: "center"}}>
+                    {isCluValidated && (
+                      <span style={{ color: "#00703c", fontWeight: 500 }}>✓ CLU Validated</span>
+                    )}
                     <button
                       type="button"
                       className="btn btn-primary"
-                      onClick={() => {
-                        // TODO: Add integration with enaksha/upyog for CLU validation
-                        console.log("Validate CLU Number:", watch("cluNumber"));
-                        alert("CLU Validation to be integrated with enaksha/upyog system");
+                      disabled={cluValidationLoading || !watch("cluNumber")}
+                      onClick={async () => {
+                        const cluNumber = watch("cluNumber");
+                        if (!cluNumber) {
+                          setCluValidationError("Please enter CLU Number");
+                          return;
+                        }
+                        
+                        setCluValidationLoading(true);
+                        setCluValidationError(null);
+                        
+                        try {
+                          // Search for CLU by applicationNo
+                          const result = await Digit.OBPSService.CLUSearch({
+                            filters: { applicationNo: cluNumber },
+                            tenantId: tenantId
+                          });
+                          
+                          if (result?.Clu && result.Clu.length > 0) {
+                            // CLU found and validated
+                            setIsCluValidated(true);
+                            setCluValidationError(null);
+                          } else {
+                            // CLU not found
+                            setCluValidationError("CLU Number not found. Please check and try again.");
+                            setIsCluValidated(false);
+                          }
+                        } catch (error) {
+                          console.error("CLU Validation Error:", error);
+                          setCluValidationError("Error validating CLU. Please try again.");
+                          setIsCluValidated(false);
+                        } finally {
+                          setCluValidationLoading(false);
+                        }
                       }}
                     >
-                      {`Validate CLU`}
+                      {cluValidationLoading ? "Validating..." : "Validate CLU"}
                     </button>
                   </LabelFieldPair>
+                  {cluValidationError && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "16px" }}>{cluValidationError}</p>
+                  )}
                 </React.Fragment>
               ) : null}
 
@@ -2366,6 +2413,14 @@ const LayoutSiteDetails = (_props) => {
       </div>
     </React.Fragment>
   );
+};
+
+// Validation function to check if CLU is validated when required
+LayoutSiteDetails.validateCLU = (isCluRequired, isCluValidated) => {
+  if (isCluRequired && !isCluValidated) {
+    return false;
+  }
+  return true;
 };
 
 export default LayoutSiteDetails;

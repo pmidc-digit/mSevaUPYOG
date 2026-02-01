@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
@@ -18,6 +18,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
+  const cluValidationRef = useRef({ isCluValidated: false, isCluRequired: false });
   console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
 
   const {
@@ -73,6 +74,24 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const onSubmit = (data) => {
     trigger()
+
+    // Validation for CLU - if CLU is required, it must be validated
+    const cluType = data?.cluType?.code || data?.cluType;
+    const isCluRequired = data?.isCluRequired?.code === "YES" || data?.isCluRequired === "YES" || false;
+    
+    if (isCluRequired && cluType === "ONLINE") {
+      // For online CLU, check if it was validated by user
+      if (!cluValidationRef.current.isCluValidated) {
+        setShowToast({ key: "true", error: true, message: "CLU Number must be validated before proceeding. Please click 'Validate CLU' button." })
+        return
+      }
+    } else if (isCluRequired && cluType === "OFFLINE") {
+      // For offline CLU, document must be uploaded (this is handled by form validation)
+      if (!data?.cluDocumentUpload) {
+        setShowToast({ key: "true", error: true, message: "CLU Document is required for Offline CLU. Please upload." })
+        return
+      }
+    }
 
     // Validation for Jamabandi Area Must Be Equal To Total Plot Area (A)
     const isEqual = parseFloat(data?.specificationPlotArea) === parseFloat(data?.areaLeftForRoadWidening) || false
@@ -267,7 +286,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
           {LayoutLocalityInfo && <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
-          {LayoutSiteDetails && <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
+          {LayoutSiteDetails && <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} cluValidationRef={cluValidationRef} {...commonProps} />}
           {LayoutSpecificationDetails && <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
           {/* {LayoutCLUDetails && <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />} */}
         </div>

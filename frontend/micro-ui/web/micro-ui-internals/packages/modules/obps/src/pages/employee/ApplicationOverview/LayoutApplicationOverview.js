@@ -128,6 +128,18 @@ const LayoutEmployeeApplicationOverview = () => {
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
+  // Fetch layout checklist data - only if not on first DM submission
+  // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
+  // For other statuses, checklist should already exist from previous submissions
+  const shouldFetchChecklist = applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM";
+  
+  const { data: checklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useLayoutCheckListSearch(
+    { applicationNo: id }, 
+    tenantId,
+    { enabled: shouldFetchChecklist }
+  );
+  console.log("DEBUG: Checklist data fetched:", checklistData, "Fetch enabled:", shouldFetchChecklist);
+
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -223,6 +235,8 @@ const LayoutEmployeeApplicationOverview = () => {
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
 
+      console.log("DEBUG: Documents array with remarks:", Documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
+
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         owners: owners.length > 0 ? owners : [],
@@ -244,6 +258,18 @@ const LayoutEmployeeApplicationOverview = () => {
       setFieldInspectionPending(layoutObject?.layoutDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Layout]);
+
+  // Initialize checklist remarks from API data
+  useEffect(() => {
+    if (checklistData?.checkList?.length > 0 && Object.keys(checklistRemarks).length === 0) {
+      const remarksMap = {};
+      checklistData.checkList.forEach(item => {
+        remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
+      });
+      console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
+      setChecklistRemarks(remarksMap);
+    }
+  }, [checklistData]);
 
   // Show warning toast if desktop user is on FIELDINSPECTION_INPROGRESS status
   useEffect(() => {
@@ -431,6 +457,25 @@ const LayoutEmployeeApplicationOverview = () => {
         }
       }
 
+      // Validation For Document Remarks AT DM Level
+      if (applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM") {
+        const isDM = user?.info?.roles?.some(role => role.code === "OBPAS_LAYOUT_DM");
+        if (isDM && remainingDocs?.length > 0) {
+          // Check if all documents have remarks filled
+          const allRemarksFilledForDocuments = remainingDocs.every(doc => {
+            const remark = checklistRemarks[doc.documentUid || doc.uuid];
+            return remark && typeof remark === 'string' && remark.trim().length > 0;
+          });
+
+          if (!allRemarksFilledForDocuments) {
+            closeModal();
+            setShowToast({ key: "true", error: true, message: "Please Give Remarks for all documents" });
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
       // Build new calculation object from current fee adjustments
       const newCalculation = {
         isLatest: true,
@@ -449,9 +494,16 @@ const LayoutEmployeeApplicationOverview = () => {
       // Get old calculations and mark them as not latest
       const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
 
+      // Update documents with remarks from checklistRemarks
+      const updatedDocuments = displayData?.Documents?.map(doc => ({
+        ...doc,
+        remarks: checklistRemarks[doc.documentUid || doc.uuid] || doc.remarks || "",
+      })) || [];
+
       // Ensure all nested data is properly preserved
       const updatedApplicant = {
         ...layoutObject,
+        documents: updatedDocuments,
         layoutDetails: {
           vasikaNumber: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber,
           vasikaDate: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaDate,
@@ -487,6 +539,55 @@ const LayoutEmployeeApplicationOverview = () => {
 
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
       console.log(" API response:", response);
+
+      // Also send checklist update/create for document remarks
+      // CHECK: If on DM role (shouldFetchChecklist === false), CREATE checklist. Otherwise UPDATE if data exists
+      if (response?.ResponseInfo?.status === "successful" && Object.keys(checklistRemarks).length > 0) {
+        try {
+          // At DM level: shouldFetchChecklist is false, so we ALWAYS CREATE on first DM submit
+          // At other levels: shouldFetchChecklist is true, so checklistData contains existing records, and we UPDATE
+          if (!shouldFetchChecklist) {
+            // DM ROLE: CREATE checklist on first submit
+            const checklistPayload = {
+              checkList: (displayData?.Documents || []).map(doc => ({
+                documentUid: doc.documentUid || doc.uuid,
+                applicationNo: id,
+                tenantId: tenantId,
+                action: "INITIATE",
+                remarks: checklistRemarks[doc.documentUid || doc.uuid] || "",
+              })),
+            };
+            console.log("DEBUG: DM ROLE - Sending checklist CREATE payload:", checklistPayload);
+            const checklistResponse = await Digit.OBPSService.LayoutCheckListCreate({ details: checklistPayload, filters: {} });
+            console.log("DEBUG: Checklist create response:", checklistResponse);
+            // Refetch checklist after creation
+            refetchChecklist();
+          } else if (checklistData?.checkList?.length > 0) {
+            // OTHER ROLES: UPDATE existing checklist records
+            const checklistPayload = {
+              checkList: (displayData?.Documents || []).map(doc => {
+                const existing = checklistData.checkList.find(c => c.documentUid === doc.documentUid || c.documentuid === doc.documentUid);
+                return {
+                  id: existing?.id,
+                  documentUid: doc.documentUid || doc.uuid,
+                  applicationNo: id,
+                  tenantId: tenantId,
+                  action: "update",
+                  remarks: checklistRemarks[doc.documentUid || doc.uuid] || "",
+                };
+              }),
+            };
+            console.log("DEBUG: OTHER ROLES - Sending checklist UPDATE payload:", checklistPayload);
+            const checklistResponse = await Digit.OBPSService.LayoutCheckListUpdate({ details: checklistPayload, filters: { tenantId } });
+            console.log("DEBUG: Checklist update response:", checklistResponse);
+          } else {
+            console.warn("DEBUG: Checklist data not available at non-DM roles - may need to search first");
+          }
+        } catch (checklistErr) {
+          console.error("DEBUG: Error updating/creating checklist:", checklistErr);
+          // Don't fail the main operation if checklist update fails
+        }
+      }
 
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
@@ -875,40 +976,23 @@ const LayoutEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY */}
+      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
       {
-        applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY" &&
+        applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" &&
         <Card>
           <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>
-            {remainingDocs?.length > 0 && (
-              <LayoutDocumentChecklist
-                documents={remainingDocs}
-                applicationNo={id}
-                tenantId={tenantId}
-                onRemarksChange={setChecklistRemarks}
-                readOnly="true"
-              />
-            )}
-          </StatusTable>
+          <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
+            tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly="true" />}</StatusTable>
         </Card>
       }
 
-      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY */}
+      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
       {
-        applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY" && (user?.info?.roles.filter(role => role.code === "OBPAS_LAYOUT_DM")?.length > 0) &&
+        applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" && (user?.info?.roles.filter(role => role.code === "OBPAS_LAYOUT_DM")?.length > 0) &&
         <Card>
           <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>
-            {remainingDocs?.length > 0 && (
-              <LayoutDocumentChecklist
-                documents={remainingDocs}
-                applicationNo={id}
-                tenantId={tenantId}
-                onRemarksChange={setChecklistRemarks}
-              />
-            )}
-          </StatusTable>
+          <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
+            tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
         </Card>
       }
 

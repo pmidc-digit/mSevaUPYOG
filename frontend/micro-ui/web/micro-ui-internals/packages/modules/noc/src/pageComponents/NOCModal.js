@@ -158,7 +158,7 @@ const NOCModal = ({
     const conditionalText = data?.conditionalComments?.trim();
     let finalComments = commentsText;
     if (action?.action === "APPROVE" && conditionalText) {
-      finalComments = `${commentsText} , ${conditionalText}`;
+      finalComments = `${commentsText}[#?..**]${conditionalText}`;
     }
 
     if (action?.action !== "APPROVE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {

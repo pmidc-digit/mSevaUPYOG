@@ -137,6 +137,9 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"} />
           <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || formData?.siteDetails?.ulbName || "N/A"} />
           <Row label={t("NOC_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"} />
+           <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
+          <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"} />
+         
           <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
           <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
           <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"} />
@@ -159,8 +162,6 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
             <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={formData?.siteDetails?.totalFloorArea || "N/A"} />
           )}
 
-          <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
-          <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"} />
           <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"} />
           <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"} />
           <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={formData?.siteDetails?.colonyName || "N/A"} />

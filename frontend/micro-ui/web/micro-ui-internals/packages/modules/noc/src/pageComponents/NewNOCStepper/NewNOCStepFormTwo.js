@@ -85,22 +85,10 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     console.log(data,"data in onsubmit sitedetails")
     const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
-    const propertyPlotAreaRaw = currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerPlotArea;
-    const landareaObj = currentStepData?.cpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
-    const landArea = landareaObj?.owners?.[0]?.landArea ||landareaObj?.landArea;
-
-    const propertyPlotAreaNum = Number(propertyPlotAreaRaw);
-
     // Pick whichever is valid: propertyPlotAreaNum or landArea
-    const areaToCompare = 
-      !Number.isNaN(propertyPlotAreaNum) && propertyPlotAreaRaw != null && propertyPlotAreaRaw?.trim() !== ""
-        ? propertyPlotAreaNum
-        : Number(landArea);
+   
 
-    const propertyPlotAreaVal =
-      areaToCompare == null || Number.isNaN(areaToCompare)
-        ? true
-        : isEqualArea(data?.netTotalArea, areaToCompare);
+   
 
     const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
 
@@ -111,11 +99,6 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     if(!isEqual){
         setTimeout(()=>{setShowToast(null);},3000);
         setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
-        return false;
-    }
-    else if(!propertyPlotAreaVal){
-      setTimeout(()=>{setShowToast(null);},3000);
-        setShowToast({ key: "true", error:true, message: "Total Plot area shall be same as plot area of property provided"});
         return false;
     }
     else if (

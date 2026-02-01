@@ -80,10 +80,21 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   function checkValidation(data) {
 
-  const ownerPhotoCount = ownerPhotoList?.length ?? 0;        
-  const ownerIdCount  = ownerIdList?.length ?? 0;  
+  const owners = data?.owners ?? [];
+
+  // Filter photos/ids to only those that match current owners by mobileNumber
+  const filteredOwnerPhotos = ownerPhotoList?.filter(photo =>
+    owners.some(o => o.mobileNumber === photo?.mobileNumber)
+  ) || [];
+
+  const filteredOwnerIds = ownerIdList?.filter(id =>
+    owners.some(o => o.mobileNumber === id?.mobileNumber)
+  ) || [];
+
+  const ownerPhotoCount = filteredOwnerPhotos?.length;
+  const ownerIdCount = filteredOwnerIds?.length;
   
-  const ownersCount = data?.owners?.length ?? 0;
+  const ownersCount = owners?.length;
   
   const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
   const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;

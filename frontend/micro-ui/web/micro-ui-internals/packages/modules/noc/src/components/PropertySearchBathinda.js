@@ -67,6 +67,7 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
 
   // 🔹 Update form when propertyDetails changes
   useEffect(() => {
+     console.log('useffect b1')
     if (propertyDetails?.propertyId) {
       dispatch(
         UPDATE_NOCNewApplication_FORM(key, {

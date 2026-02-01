@@ -2,67 +2,88 @@ import React, { useEffect, useState, useMemo } from "react";
 import { ImageViewer, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const LayoutSitePhotographs = ({ documents, coordinates = {} }) => {
+const LayoutSitePhotographs = ({ filestoreId, documentType, coordinates, documents = [] }) => {
   const { t } = useTranslation();
+  const stateCode = Digit.ULBService.getStateId();
+  const [imageCitizenZoom, setImageCitizenZoom] = useState(null);
+  const [imageZoom, setImageZoom] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
 
-  const documentObj = {
-    value: {
-      workflowDocs: documents?.map((doc) => ({
-        documentType: doc?.documentType || "",
-        filestoreId: doc?.filestoreId || doc?.fileStoreId || "",
-        documentUid: doc?.documentUid || doc?.fileStoreId || "",
-        documentAttachment: doc?.documentAttachment || "",
-      })),
-    },
+  const onCloseImageZoom = () => {
+    setImageZoom(null);
   };
 
-  const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
-    enabled: documents?.length > 0 ? true : false,
-  });
+  // Handle both new API (filestoreId, documentType) and legacy API (documents array)
+  const actualFilestoreId = filestoreId || documents?.[0]?.filestoreId || documents?.[0]?.fileStoreId;
+  const actualDocumentType = documentType || documents?.[0]?.documentType;
 
-  const mappedDocuments = documents?.map((doc) => {
-    const { documentUid, documentType, title, latitude, longitude } = doc;
-    const url = urlsList?.pdfFiles?.[documentUid];
-    return {
-      documentUid,
-      documentType,
-      url,
-      title,
-      latitude,
-      longitude
-    };
-  });
+  useEffect(() => {
+    (async () => {
+      if (actualFilestoreId) {
+        const result = await Digit.UploadServices.Filefetch([actualFilestoreId], stateCode);
+        if (result?.data?.fileStoreIds) {
+          const url = result.data.fileStoreIds[0]?.url;
+          setImageCitizenZoom(url);
+          setImageUrl(url);
+        }
+      }
+    })();
+  }, [actualFilestoreId]);
 
-  const documentsData = useMemo(() => {
-    return mappedDocuments?.map((doc, index) => ({
-      id: index,
-      documentType: doc?.documentType,
-      title: doc?.documentType !== "" ? t(doc?.documentType?.replaceAll(".", "_")) : doc?.title !== "" ? doc?.title : t("CS_NA"),
-      fileUrl: doc.url,
-      latitude: doc.latitude,
-      longitude: doc.longitude
-    }));
-  }, [mappedDocuments]);
+  // Get coordinates based on document type
+  const getCoordinates = () => {
+    if (!coordinates) return null;
+    
+    switch (actualDocumentType) {
+      case "OWNER.SITEPHOTOGRAPHONE":
+        return {
+          latitude: coordinates?.Latitude1,
+          longitude: coordinates?.Longitude1
+        };
+      case "OWNER.SITEPHOTOGRAPHTWO":
+        return {
+          latitude: coordinates?.Latitude2,
+          longitude: coordinates?.Longitude2
+        };
+      case "SITE.PHOTOGRAPHONE":
+        return {
+          latitude: coordinates?.Latitude3,
+          longitude: coordinates?.Longitude3
+        };
+      case "SITE.PHOTOGRAPHTWO":
+        return {
+          latitude: coordinates?.Latitude4,
+          longitude: coordinates?.Longitude4
+        };
+      default:
+        return null;
+    }
+  };
+
+  const coords = getCoordinates();
+  const docTitle = t(actualDocumentType?.replaceAll(".", "_")) || t("CS_NA");
 
   return (
-    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly", flexWrap: "wrap", gap: "20px" }}>
-      {documentsData?.map((item, index) => (
-        <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", alignItems: "center" }}>
-          <CardSectionHeader>{item?.title}</CardSectionHeader>
-          <div style={{ margin: "5px" }}>
-            <img
-              src={item.fileUrl}
-              alt={item.title}
-              style={{ width: "120px", height: "120px", objectFit: "fill", borderRadius: "10%", cursor: "pointer" }}
-              onClick={() => window.open(item.fileUrl, "_blank")}
-            />
+    <div style={{ padding: "20px 0px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", padding: "0px 20px" }}>
+        <div style={{ textAlign: "start" }}>
+          <div>
+            <span>{docTitle}</span>
           </div>
-          {item?.latitude && <div>Lat: {item.latitude}</div>}
-          {item?.longitude && <div>Long: {item.longitude}</div>}
+          <img
+            src={imageCitizenZoom}
+            alt={docTitle}
+            style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "10%", cursor: imageCitizenZoom ? "pointer" : "default" }}
+            onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
+          />
+          {coords?.latitude && <div>Latitude - {coords.latitude}</div>}
+          {coords?.longitude && <div>Longitude - {coords.longitude}</div>}
         </div>
-      ))}
+      </div>
+      {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}
     </div>
   );
 };
 
 export default LayoutSitePhotographs;
+

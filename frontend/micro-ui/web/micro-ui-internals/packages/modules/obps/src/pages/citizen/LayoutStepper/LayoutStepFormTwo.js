@@ -110,7 +110,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       cluIsApproved: formData?.siteDetails?.cluIsApproved || { code: "NO", i18nKey: "NO" },  // Keep full object
       isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || formData?.siteDetails?.isBasementAreaAvailable || "",
       district: formData?.siteDetails?.district?.name || formData?.siteDetails?.district || "",
-      zone: formData?.siteDetails?.zone?.name || formData?.siteDetails?.zone || "",
+      zone: formData?.siteDetails?.zone,
       specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
       specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
       specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",

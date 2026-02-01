@@ -22,6 +22,15 @@ const LayoutLocalityInfo = (_props) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
+  const [selectedAreaType, setSelectedAreaType] = useState(currentStepData?.siteDetails?.layoutAreaType || []);
+  const [nonSchemeType, setNonSchemeType]=useState(currentStepData?.siteDetails?.layoutNonSchemeType || []);
+
+
+   const { data: mdmsData } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
+   
+   const areaTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
+   const nonSchemeTypeOptions=mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
+
 
   useEffect(() => {
     console.log("currentStepData4", currentStepData);

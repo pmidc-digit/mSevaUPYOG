@@ -15,8 +15,9 @@ import {
   MultiLink,
   LinkButton,
   CheckBox,
+  Modal,
 } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, useRef, Fragment } from "react";
+import React, { useEffect, useState, useRef, Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import LayoutModal from "../../../pageComponents/LayoutModal";
@@ -24,11 +25,15 @@ import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimat
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentTableView";
 import LayoutSitePhotographs from "../../../components/LayoutSitePhotographs";
+import LayoutDocumentChecklist from "../../../components/LayoutDocumentChecklist";
+import InspectionReport from "../../../pageComponents/InspectionReport";
+import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
 import { Loader } from "../../../config/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -111,20 +116,26 @@ const LayoutEmployeeApplicationOverview = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [siteImages, setSiteImages] = useState({});
 
+  // States for field inspection
+  const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
+  const [checklistRemarks, setChecklistRemarks] = useState("");
+
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
   });
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
-const workflowDetails = Digit.Hooks.useWorkflowDetails({
-  tenantId: tenantId,
-  id: id,
-  moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
-});
+  const isMobile = window?.Digit?.Utils?.browser?.isMobile();
+
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: id,
+    moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
+  });
 
   console.log("workflowDetails here=>", workflowDetails);
-  console.log("next employee ======>", data,applicationDetails,applicationDetails?.businessService);
+  console.log("next employee ======>", data, applicationDetails, applicationDetails?.businessService);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -134,32 +145,40 @@ const workflowDetails = Digit.Hooks.useWorkflowDetails({
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-useEffect(() => {
-  let WorkflowService = null;
-  const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
-  
-  console.log("  Business service:", businessService);
-  console.log("  Tenant ID:", tenantId);
-  
-  if (businessService && tenantId) {
-    (async () => {
-      setLoader(true);
-      try {
-        WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
-        const states = WorkflowService?.BusinessServices?.[0]?.states || [];
-        console.log("  Setting workflowService state with", states.length, "states");
-        setWorkflowService(states);
-      } catch (error) {
-        console.error("  Error fetching workflow service:", error);
-      } finally {
-        setLoader(false);
-      }
-    })();
-  } else {
-    console.log("  Skipping workflow load - missing business service or tenant");
-  }
-}, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
+  useEffect(() => {
+    let WorkflowService = null;
+    const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
+
+    console.log("  Business service:", businessService);
+    console.log("  Tenant ID:", tenantId);
+
+    if (businessService && tenantId) {
+      (async () => {
+        setLoader(true);
+        try {
+          WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
+          const states = WorkflowService?.BusinessServices?.[0]?.states || [];
+          console.log("  Setting workflowService state with", states.length, "states");
+          setWorkflowService(states);
+        } catch (error) {
+          console.error("  Error fetching workflow service:", error);
+        } finally {
+          setLoader(false);
+        }
+      })();
+    } else {
+      console.log("  Skipping workflow load - missing business service or tenant");
+    }
+  }, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
   let user = Digit.UserService.getUser();
+
+  // Check if user has field inspection roles
+  const hasRole = user?.info?.roles?.some((role) => role?.code === "OBPAS_LAYOUT_JE" || role?.code === "OBPAS_LAYOUT_BI");
+
+  // Role-based status checks
+  const isFeeDisabled = applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
+  const isDocPending = applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY";
+
   const menuRef = useRef();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -194,12 +213,14 @@ useEffect(() => {
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
+      const owners = layoutObject?.owners || [];
       const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails;
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
+        owners: owners.length > 0 ? owners : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
@@ -209,13 +230,75 @@ useEffect(() => {
     }
   }, [applicationDetails?.Layout]);
 
+  // Initialize site images and field inspection data from application details
+  useEffect(() => {
+    const layoutObject = applicationDetails?.Layout?.[0];
+    if (layoutObject) {
+      const siteImagesFromData = layoutObject?.layoutDetails?.additionalDetails?.siteImages;
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
+      setFieldInspectionPending(layoutObject?.layoutDetails?.additionalDetails?.fieldinspection_pending || []);
+    }
+  }, [applicationDetails?.Layout]);
+
+  // Show warning toast if desktop user is on FIELDINSPECTION_INPROGRESS status
+  useEffect(() => {
+    if (
+      applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+      hasRole &&
+      !isMobile
+    ) {
+      setShowToast({
+        key: "true",
+        warning: true,
+        message: "Field_Inspection_Only_Available_On_Mobile",
+      });
+    }
+  }, [applicationDetails?.Layout?.[0]?.applicationStatus, hasRole, isMobile]);
+
+  // Prevent field inspection on desktop by hiding the section
+  const shouldShowFieldInspection = applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && isMobile;
+
   // Filter site photographs and remaining documents
   const coordinates = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.coordinates;
-  const sitePhotographs = displayData?.Documents?.filter(
-    (doc) => doc.documentType === "SITE.PHOTOGRAPHONE" || doc.documentType === "SITE.PHOTOGRAPHTWO"
+  const sitePhotos = displayData?.Documents?.filter(
+    (doc) =>
+      doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
+      doc.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
+      doc.documentType === "SITE.PHOTOGRAPHONE" ||
+      doc.documentType === "SITE.PHOTOGRAPHTWO"
   );
-  const remainingDocs = displayData?.Documents?.filter((doc) =>
-    !(doc?.documentType === "SITE.PHOTOGRAPHONE" || doc?.documentType === "SITE.PHOTOGRAPHTWO")
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) =>
+      !(
+        doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
+        doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
+        doc?.documentType === "SITE.PHOTOGRAPHONE" ||
+        doc?.documentType === "SITE.PHOTOGRAPHTWO"
+      )
+  );
+
+  // Calculate geo locations from site images
+  const geoLocations = useMemo(() => {
+    if (siteImages?.documents && siteImages?.documents.length > 0) {
+      return siteImages?.documents?.map((img) => {
+        return {
+          latitude: img?.latitude || "",
+          longitude: img?.longitude || "",
+        };
+      });
+    }
+  }, [siteImages]);
+
+  // Format document data for display
+  const documentData = useMemo(
+    () =>
+      siteImages?.documents?.map((value, index) => ({
+        title: value?.documentType,
+        fileStoreId: value?.filestoreId,
+        latitude: value?.latitude,
+        longitude: value?.longitude,
+      })),
+    [siteImages]
   );
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
@@ -244,6 +327,25 @@ useEffect(() => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
+
+  function routeToImage(filestoreId) {
+    getUrlForDocumentView(filestoreId);
+  }
+
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], state);
+      if (result?.data) {
+        const fileUrl = result.data[filestoreId];
+        if (fileUrl) {
+          window.open(fileUrl, "_blank");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
+  };
 
   const dowloadOptions = [];
   if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
@@ -301,6 +403,8 @@ useEffect(() => {
       const updatedApplicant = {
         ...layoutObject,
         layoutDetails: {
+          vasikaNumber: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber,
+          vasikaDate: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaDate,
           ...layoutObject?.layoutDetails,
           additionalDetails: {
             ...layoutObject?.layoutDetails?.additionalDetails,
@@ -309,6 +413,8 @@ useEffect(() => {
             },
             siteDetails: {
               ...layoutObject?.layoutDetails?.additionalDetails?.siteDetails,
+              vasikaNumber: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber,
+              vasikaDate: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaDate,
             },
           },
         },
@@ -370,11 +476,10 @@ useEffect(() => {
       console.error(" Error message:", err?.message);
       console.error(" Error stack:", err?.stack);
       setShowToast({ key: "true", error: true, message: err?.response?.data?.Errors?.[0]?.message });
-      
-    }finally {
-    // <CHANGE> Stop loading when submit completes (success or error)
-    setIsSubmitting(false);
-  }
+    } finally {
+      // <CHANGE> Stop loading when submit completes (success or error)
+      setIsSubmitting(false);
+    }
   };
 
   const closeModal = () => {
@@ -417,44 +522,48 @@ useEffect(() => {
   //   }
   // }
 
+  function onActionSelect(action) {
+    const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-function onActionSelect(action) {
-  const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
+    console.log("check action === ", action);
 
-  console.log("check action === ", action);
+    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+    console.log("check filterNexState=== ", filterNexState[0]?.nextState);
 
-  const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-  console.log("check filterNexState=== ", filterNexState[0]?.nextState );
+    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-  const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+    console.log("check getWorkflowService === ", getWorkflowService);
+    console.log(filterRoles, "filterRoles");
 
-  console.log("check getWorkflowService === ", getWorkflowService);
-  console.log(filterRoles, "filterRoles");
-  
-  // <CHANGE> Added detailed logging and fallback to empty array
-  const nextStateRoles = filterRoles?.[0]?.actions || [];
-  console.log("  Next state roles to filter employees:", nextStateRoles);
-  setEmployees(nextStateRoles);
+    // <CHANGE> Added detailed logging and fallback to empty array
+    const nextStateRoles = filterRoles?.[0]?.actions || [];
+    console.log("  Next state roles to filter employees:", nextStateRoles);
+    setEmployees(nextStateRoles);
 
-  const payload = {
-    Licenses: [action],
-  };
+    const payload = {
+      Licenses: [action],
+    };
 
-  if (action?.action == "EDIT") {
-    history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
-  } else if (action?.action == "DRAFT") {
-    setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-  } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
-    submitAction(payload);
-  } else if (action?.action == "PAY") {
-    history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
-  } else {
-    // <CHANGE> Log before opening modal to verify employees are set
-    console.log("  Opening modal with filtered employees:", nextStateRoles);
-    setShowModal(true);
-    setSelectedAction(action);
+    if (action?.action == "EDIT") {
+      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
+    } else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      submitAction(payload);
+    } else if (action?.action == "PAY") {
+      history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else {
+      // Validation: Prevent forwarding without required site images during field inspection
+      if(applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+        setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
+        return;
+      }
+      // <CHANGE> Log before opening modal to verify employees are set
+      console.log("  Opening modal with filtered employees:", nextStateRoles);
+      setShowModal(true);
+      setSelectedAction(action);
+    }
   }
-}
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -484,19 +593,14 @@ function onActionSelect(action) {
     if (!value || value === "NA" || value === "" || value === null || value === undefined) {
       return null;
     }
-    
+
     // Extract value from object if it has 'name' property
     let displayValue = value;
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === "object" && value !== null) {
       displayValue = value?.name || value?.code || JSON.stringify(value);
     }
 
-    return (
-      <Row 
-        label={label} 
-        text={displayValue} 
-      />
-    );
+    return <Row label={label} text={displayValue} />;
   };
 
   console.log("displayData here", displayData);
@@ -505,6 +609,11 @@ function onActionSelect(action) {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const onChangeReport = (key, value) => {
+    console.log("key,value", key, value);
+    setFieldInspectionPending(value);
   };
 
   const RenderRow = ({ label, value }) => {
@@ -542,59 +651,42 @@ function onActionSelect(action) {
 
       {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
 
-      {displayData?.applicantDetails?.professionalName &&
-        displayData?.applicantDetails?.map((detail, index) => (
+      {displayData?.applicantDetails?.[0]?.professionalName && (
+        <Card>
+          <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
+          <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <StatusTable>
+              <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalRegId || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
+              <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
+              <Row label={t("BPA_CERTIFICATE_EXPIRY_DATE")} text={displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A"} />
+            </StatusTable>
+          </div>
+        </Card>
+      )}
+
+      {/* -------------------- OWNERS / APPLICANTS DETAILS -------------------- */}
+      {displayData?.owners &&
+        displayData?.owners.length > 0 &&
+        displayData?.owners.map((detail, index) => (
           <React.Fragment key={index}>
             <Card>
-              <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
+              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
-                  <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
+                  <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.name || "N/A"} />
+                  <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+                  <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+                  <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.dob ? new Date(detail?.dob).toLocaleDateString() : "N/A"} />
+                  <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender || "N/A"} />
+                  <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.permanentAddress || "N/A"} />
                 </StatusTable>
               </div>
             </Card>
           </React.Fragment>
-        ))}
-
-      {/* -------------------- APPLICANT DETAILS -------------------- */}
-      <Card>
-        <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
-        {displayData?.applicantDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <RenderRow label={t("NOC_FIRM_OWNER_NAME_LABEL")} value={detail?.applicantOwnerOrFirmName} />
-              <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={detail?.applicantEmailId} />
-              <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={detail?.applicantFatherHusbandName} />
-              <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={detail?.applicantMobileNumber} />
-              <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={detail?.applicantDateOfBirth} />
-              <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={detail?.applicantGender?.code || detail?.applicantGender} />
-              <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={detail?.applicantAddress} />
-              <RenderRow label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} value={detail?.applicantPropertyId} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card>
-
-      {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
-      {displayData?.applicantDetails?.[0]?.professionalName &&
-        displayData?.applicantDetails?.map((detail, index) => (
-          <Card key={index}>
-            <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-              <StatusTable>
-                <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
-                <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
-                <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("BPA_CERTIFICATE_EXPIRY_DATE")} value={detail?.professionalRegistrationValidity} />
-              </StatusTable>
-            </div>
-          </Card>
         ))}
 
       {/* -------------------- SITE DETAILS -------------------- */}
@@ -622,7 +714,7 @@ function onActionSelect(action) {
               {renderLabel(t("NOC_SITE_VASIKA_NO_LABEL"), detail?.vasikaNumber)}
               {renderLabel(t("NOC_SITE_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
-              
+
               {/* Additional Site Details */}
               {renderLabel("CLU Type", detail?.cluType)}
               {renderLabel("CLU Number", detail?.cluNumber)}
@@ -636,7 +728,7 @@ function onActionSelect(action) {
               {renderLabel("Layout Scheme Name", detail?.layoutSchemeName)}
               {renderLabel("Type of Application", detail?.typeOfApplication?.name || detail?.typeOfApplication)}
               {renderLabel("Is Area Under Master Plan", detail?.isAreaUnderMasterPlan?.name || detail?.isAreaUnderMasterPlan?.code)}
-              
+
               {/* Area Breakdown */}
               {renderLabel("Area Under EWS (Sq.M)", detail?.areaUnderEWS)}
               {renderLabel("Area Under Road (Sq.M)", detail?.areaUnderRoadInSqM)}
@@ -649,14 +741,10 @@ function onActionSelect(action) {
               {renderLabel("Area Under Other Amenities (%)", detail?.areaUnderOtherAmenitiesInPct)}
               {renderLabel("Area Under Residential Use (Sq.M)", detail?.areaUnderResidentialUseInSqM)}
               {renderLabel("Area Under Residential Use (%)", detail?.areaUnderResidentialUseInPct)}
-              
+
               {/* Floor Area Details */}
               {detail?.floorArea && detail?.floorArea?.length > 0 && (
-                <>
-                  {detail?.floorArea?.map((floor, idx) => 
-                    renderLabel(`Floor ${idx + 1} Area (Sq.M)`, floor?.value)
-                  )}
-                </>
+                <>{detail?.floorArea?.map((floor, idx) => renderLabel(`Floor ${idx + 1} Area (Sq.M)`, floor?.value))}</>
               )}
             </StatusTable>
           </div>
@@ -712,21 +800,107 @@ function onActionSelect(action) {
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable>
-          {sitePhotographs?.length > 0 && <LayoutSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
+        <StatusTable
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {sitePhotos?.length > 0 &&
+            [...sitePhotos]
+              .reverse()
+              .map((doc) => (
+                <LayoutSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
         </StatusTable>
-      </Card>
-
-      <Card>
-        <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
-        <StatusTable>{applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0 && <LayoutDocumentTableView documents={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners} />}</StatusTable>
       </Card>
 
       {/* Documents Uploaded */}
       <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0  && <LayoutDocumentView documents={remainingDocs} />}</StatusTable>
+        <StatusTable>
+          {remainingDocs?.length > 0 && (
+            <LayoutDocumentChecklist
+              documents={remainingDocs}
+              applicationNo={id}
+              tenantId={tenantId}
+              onRemarksChange={setChecklistRemarks}
+              readOnly={!isDocPending}
+            />
+          )}
+        </StatusTable>
       </Card>
+
+      {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
+      {shouldShowFieldInspection && (
+        <Card>
+          <div id="fieldInspection"></div>
+          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+        </Card>
+      )}
+
+      {/* FIELD INSPECTION UPLOADED DOCUMENTS - Display when not in progress */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+          <StatusTable
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            {documentData?.length > 0 &&
+              documentData.map((doc) => (
+                <LayoutSitePhotographs
+                  key={doc?.fileStoreId || doc?.uuid}
+                  filestoreId={doc?.fileStoreId || doc?.uuid}
+                  documentType={doc?.title}
+                  coordinates={{
+                    latitude: doc?.latitude,
+                    longitude: doc?.longitude,
+                  }}
+                />
+              ))}
+          </StatusTable>
+
+          {geoLocations?.length > 0 && (
+            <>
+              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+            </>
+          )}
+        </Card>
+      )}
+
+      {/* INSPECTION REPORT SECTION */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
+        <Card>
+          <div id="fieldInspection"></div>
+          <InspectionReport
+            isCitizen={true}
+            fiReport={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending || []}
+            onSelect={onChangeReport}
+            applicationStatus={applicationDetails?.Layout?.[0]?.applicationStatus}
+          />
+        </Card>
+      )}
+
+      {/* INSPECTION REPORT DISPLAY SECTION */}
+      {applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+          <Card>
+            <div id="fieldInspection"></div>
+            <InspectionReportDisplay fiReport={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending} />
+          </Card>
+        )}
 
       {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
       <Card>
@@ -737,9 +911,10 @@ function onActionSelect(action) {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || []
+              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY1"
+            disable={isFeeDisabled}
           />
         )}
       </Card>
@@ -753,12 +928,12 @@ function onActionSelect(action) {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || []
+              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY2"
             feeAdjustments={[]}
             setFeeAdjustments={() => {}}
-            disable={false}
+            disable={isFeeDisabled}
           />
         )}
       </Card>
@@ -766,8 +941,26 @@ function onActionSelect(action) {
       {siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
-          <StatusTable>
-            {sitePhotographs?.length > 0 && <LayoutSitePhotographs documents={siteImages.documents} />}
+          <StatusTable
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            {siteImages?.documents?.length > 0 &&
+              [...siteImages.documents].reverse().map((doc) => (
+                <LayoutSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={{
+                    latitude: doc?.latitude,
+                    longitude: doc?.longitude,
+                  }}
+                />
+              ))}
           </StatusTable>
         </Card>
       )}
@@ -776,9 +969,9 @@ function onActionSelect(action) {
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant. I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
-
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-
+      <div id="timeline">
+        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      </div>
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
@@ -821,7 +1014,7 @@ function onActionSelect(action) {
       )}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}
-       {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
     </div>
   );
 };

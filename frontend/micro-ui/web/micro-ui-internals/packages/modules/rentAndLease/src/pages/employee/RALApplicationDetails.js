@@ -75,7 +75,9 @@ const RALApplicationDetails = () => {
   };
 
   const rawAdditionalDetails = applicationData?.additionalDetails || {};
-  const propertyDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
+  const propertyDetails = Array.isArray(rawAdditionalDetails?.propertyDetails)
+    ? rawAdditionalDetails?.propertyDetails[0]
+    : rawAdditionalDetails?.propertyDetails;
 
   let user = Digit.UserService.getUser();
 

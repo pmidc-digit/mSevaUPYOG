@@ -97,9 +97,12 @@ const CitizenApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data , refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [timeObj , setTimeObj] = useState(null);
+
+  const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
+
   
   console.log('applicationD', applicationDetails)
  const [approverComment , setApproverComment] = useState(null);
@@ -204,22 +207,89 @@ const CitizenApplicationOverview = () => {
     }
   }
 
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+  try {
+    setLoading(true);
+
+    // Prepare application object
+    let application = applicationDetails?.Noc?.[0]
+
+    // Check if sanction letter already exists
+    let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+    console.log("fileStoreId before create", fileStoreId);
+
+    if (!fileStoreId) {
+      // Prepare sanction data
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, approverComment);
+
+      // Generate PDF
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
+        pdfkey
+      );
+
+      // Update application with sanctionLetterFilestoreId
+      const updatedApplication = {
+        ...application,
+        workflow: {
+          action: "ESIGN",
+        },
+        nocDetails: {
+          ...application?.nocDetails,
+          additionalDetails: {
+            ...application?.nocDetails?.additionalDetails,
+            sanctionLetterFilestoreId: response?.filestoreIds[0],
+          },
+        },
+      };
+
+      await mutation.mutateAsync({
+        Noc: updatedApplication,
+      });
+
+
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
+    }
+
+    // Print receipt
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
+
+  } catch (error) {
+    console.error("Sanction Letter download error:", error);
+  } finally {
+    setLoading(false);
+  }
+}
+
+
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
   dowloadOptions.push({
       label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" ) {
+
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }
+  }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "ESIGEND" ) {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
-          getRecieptSearch({
+          getSanctionLetterReceipt({
             tenantId: reciept_data?.Payments[0]?.tenantId,
             payments: reciept_data?.Payments[0],
-            pdfkey: "noc-sanctionletter",
             EmpData,
           }),
       });
@@ -306,16 +376,28 @@ const CitizenApplicationOverview = () => {
 
   console.log("actions here", actions);
 
-  useEffect(()=>{
-    if(workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
-      const commentsobj = workflowDetails?.data?.timeline
-        ?.filter((item) => item?.performedAction === "APPROVE")
-        ?.flatMap((item) => item?.wfComment || []);
-      const approvercomments = commentsobj?.[0];
-      const finalComment = commentsobj ? `The above approval is subjected to the following conditions: ${approvercomments}` : "";
-      setApproverComment(finalComment);
+  useEffect(() => {
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    const commentsobj = workflowDetails?.data?.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+    
+    const approvercomments = commentsobj?.[0];
+
+    // Extract only the part after [#?..**]
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
     }
-  },[workflowDetails])
+
+    const finalComment = conditionText
+      ? `The above approval is subjected to the following conditions: ${conditionText}`
+      : "";
+
+    setApproverComment(finalComment);
+  }
+}, [workflowDetails]);
+
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -510,10 +592,6 @@ const CitizenApplicationOverview = () => {
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
-            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
           </StatusTable>
         </Card>
       )}
@@ -527,6 +605,8 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -550,8 +630,6 @@ const CitizenApplicationOverview = () => {
 
               {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"} />}
 
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 

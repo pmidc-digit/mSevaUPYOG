@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import {
   LabelFieldPair,
@@ -67,7 +69,8 @@ const LayoutCLUDetails = (_props) => {
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_SITE_DETAILS")}</CardSectionHeader>
 
-      <div style={{marginBottom:"16px"}}>
+      <div>
+    
         
         <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_IS_CLU_REQUIRED_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -471,3 +474,4 @@ const LayoutCLUDetails = (_props) => {
 };
 
 export default LayoutCLUDetails;
+

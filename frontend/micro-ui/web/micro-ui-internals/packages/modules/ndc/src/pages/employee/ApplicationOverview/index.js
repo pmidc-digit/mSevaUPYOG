@@ -11,7 +11,7 @@ import {
   RadioButtons,
   CardLabel,
   TextInput,
-  LinkButton
+  LinkButton,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -144,7 +144,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const isCemp = user?.info?.roles.filter(role => role.code === "CEMP")
+  const isCemp = user?.info?.roles.filter((role) => role.code === "CEMP");
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -262,7 +262,6 @@ const ApplicationOverview = () => {
     console.log("action test", action?.action);
 
     const checkactionApp = action?.action == "APPROVE";
-    
 
     console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
 
@@ -388,17 +387,16 @@ const ApplicationOverview = () => {
     setShowModal(false);
   };
 
-
   useEffect(() => {
-      if (workflowDetails) {
-        console.log("workflowDetails here", workflowDetails);
-        const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
-  
-        const name = approveInstance?.assigner?.name || "NA";
-  
-        setApprover(name);
-      }
-    }, [workflowDetails]);
+    if (workflowDetails) {
+      console.log("workflowDetails here", workflowDetails);
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
+
+      const name = approveInstance?.assigner?.name || "NA";
+
+      setApprover(name);
+    }
+  }, [workflowDetails]);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   useEffect(() => {
@@ -420,7 +418,6 @@ const ApplicationOverview = () => {
 
   console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
 
-  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (toastRef.current && !toastRef.current.contains(event.target)) {
@@ -437,23 +434,23 @@ const ApplicationOverview = () => {
     };
   }, [showToast]);
   let address, formattedAddress;
-  
-    if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
-      address = propertyDetailsFetch.Properties[0].address;
-      formattedAddress = [
-        address?.doorNo,
-        address?.buildingName, // colony/building
-        address?.street,
-        address?.locality?.name, // locality name
-        address?.city,
-      ]
-        .filter(Boolean)
-        .join(", ");
-    }
 
-    if (isLoading || isDetailsLoading) {
-      return <Loader />;
-    }
+  if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
+    address = propertyDetailsFetch.Properties[0].address;
+    formattedAddress = [
+      address?.doorNo,
+      address?.buildingName, // colony/building
+      address?.street,
+      address?.locality?.name, // locality name
+      address?.city,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  if (isLoading || isDetailsLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className={"employee-main-application-details"}>
@@ -461,10 +458,7 @@ const ApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-
-        {isCemp && (
-          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
-        )}
+        {isCemp && <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>}
       </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
@@ -498,8 +492,18 @@ const ApplicationOverview = () => {
           const isRed = detail.dueAmount > 0;
 
           return (
-            <div key={index} className="ndc-emp-app-overview" >
+            <div key={index} className="ndc-emp-app-overview">
               <StatusTable>
+                <Row
+                  label={t("CHB_DISCOUNT_REASON")}
+                  text={t(
+                    `${
+                      applicationDetails?.Applications?.[0]?.reason == "OTHERS"
+                        ? applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.reason
+                        : applicationDetails?.Applications?.[0]?.reason
+                    }`
+                  )}
+                />
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
@@ -575,13 +579,12 @@ const ApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
+                    <Row label={t("Remarks")} text={applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.remarks || "N/A"} />
                   </>
                 )}
               </StatusTable>
               {canRaiseFlag && (
-                <div className="mychallan-custom"
-                 
-                >
+                <div className="mychallan-custom">
                   <CardLabel className="card-label-smaller ndc_card_labels">
                     <b> Pending Dues</b>
                   </CardLabel>

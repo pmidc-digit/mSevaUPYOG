@@ -591,7 +591,7 @@ const CLUApplicationDetails = () => {
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable= "true"
-
+            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
           />
         )}
       </Card>

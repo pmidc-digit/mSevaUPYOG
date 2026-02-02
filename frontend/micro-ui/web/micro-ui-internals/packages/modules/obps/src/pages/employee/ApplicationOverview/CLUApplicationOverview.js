@@ -237,8 +237,8 @@ const CLUEmployeeApplicationDetails = () => {
       const isEdited = !!prevItem.edited;
 
       return {
-        taxHeadCode: tax.taxHeadCode,
-        category: tax.category,
+        taxHeadCode: tax?.taxHeadCode,
+        category: tax?.category,
         adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
         remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
         filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
@@ -873,7 +873,11 @@ const CLUEmployeeApplicationDetails = () => {
       </Card>
 
       <Card>
+
+        {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && 
         <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        }
+
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
             formData={{
@@ -886,6 +890,7 @@ const CLUEmployeeApplicationDetails = () => {
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
 
           />
         )}

@@ -149,7 +149,6 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
   }
 
   return action && config?.form ? (
-    <div className="hrms-modalbutton-disable">
     <Modal
       headerBarMain={<Heading label={t(config?.label?.heading)} />}
       headerBarEnd={<CloseBtn onClick={closeModal} />}
@@ -161,7 +160,6 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
     >
       <FormComposer config={config?.form} noBoxShadow inline disabled={true} childrenAtTheBottom onSubmit={submit} formId="modal-action" />
     </Modal>
-    </div>
   ) : (
     <Loader />
   );

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +87,7 @@ public class NOCPropertyService {
 		String buildingStatus = siteDetails.getOrDefault("buildingStatus", "").toString();
 		String specificationBuildingCategory = siteDetails.getOrDefault("specificationBuildingCategory", "").toString();
 		String localityCode = JsonPath.read(siteDetails, "$.localityAreaType.code");
+		List<Object> floorArea = (List<Object>)siteDetails.getOrDefault("floorArea", Collections.EMPTY_LIST);
 		
 		List<String> buildingTypeList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingType.[?(@.name == '" + buildingStatus + "')].code");
 		List<String> propertyUsageList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].propertyUsage");
@@ -117,6 +119,7 @@ public class NOCPropertyService {
 				.owners(noc.getOwners())
 				.tenantId(noc.getTenantId())
 				.propertyType(buildingTypeList.get(0))
+				.noOfFloors(Long.valueOf(floorArea != null ? floorArea.size() : 0 ))
 				.build();
 		
 	}

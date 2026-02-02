@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState, useRef } from "react";
 import {
   LabelFieldPair,
@@ -22,11 +24,10 @@ const LayoutSiteDetails = (_props) => {
   } else {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  //console.log("tenantId here", tenantId);
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef } = _props;
   console.log(currentStepData, "DTATA TO BE MAPPED");
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
   console.log(applicationNo, "applicationNo in layout site details");
@@ -45,9 +46,19 @@ const LayoutSiteDetails = (_props) => {
   const [cluDocumentUploadedFile, setCluDocumentUploadedFile] = useState(null);
   const [cluDocumentLoader, setCluDocumentLoader] = useState(false);
   const [cluDocumentError, setCluDocumentError] = useState(null);
+  const [cluValidationLoading, setCluValidationLoading] = useState(false);
+  const [cluValidationError, setCluValidationError] = useState(null);
+  const [isCluValidated, setIsCluValidated] = useState(false);
+
+  // Update parent ref when CLU validation status changes
+  useEffect(() => {
+    if (cluValidationRef) {
+      cluValidationRef.current.isCluValidated = isCluValidated;
+      cluValidationRef.current.isCluRequired = isCluRequired;
+    }
+  }, [isCluValidated, isCluRequired, cluValidationRef]);
 
   console.log("STEPERDFATA", currentStepData);
-
   console.log(isEditMode, "LOOK EDIT");
 
   /**Start - Floor Area Calculation Logic */
@@ -150,6 +161,166 @@ const LayoutSiteDetails = (_props) => {
     }
   }, [ulbName, setValue]);
 
+  // Auto-select ULB Name based on login tenantId (same as CLU)
+  useEffect(() => {
+    if (tenantId && ulbList?.length > 0) {
+      const defaultULB = ulbList.find((city) => city.code === tenantId);
+      if (defaultULB) {
+        setUlbName(defaultULB);
+        setValue("ulbName", defaultULB);
+      }
+    }
+  }, [tenantId, ulbList, setValue]);
+
+  /**Start - District and Zone caculation logic */
+  const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
+
+  const options = [
+    {
+      code: "YES",
+      i18nKey: "YES",
+    },
+    {
+      code: "NO",
+      i18nKey: "NO",
+    },
+  ];
+
+  const allCities = Digit.Hooks.obps.useTenants();
+  const [cities, setcitiesopetions] = useState(allCities);
+  const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
+  const [localities, setLocalities] = useState([]);
+  const [isDistrictInitialized, setIsDistrictInitialized] = useState(false);
+
+  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+    selectedCity?.code,
+    "revenue",
+    {
+      enabled: !!selectedCity?.code,
+    },
+    t
+  );
+
+  useEffect(() => {
+    if (fetchedLocalities?.length > 0) {
+      setLocalities(fetchedLocalities);
+    }
+  }, [fetchedLocalities]);
+
+  // Only clear localities when user manually changes district (not on initial load)
+  const prevSelectedCityRef = useRef(selectedCity);
+  useEffect(() => {
+    if (isDistrictInitialized && prevSelectedCityRef.current?.code !== selectedCity?.code) {
+      setLocalities([]);
+      setValue("zone", null);
+    }
+    prevSelectedCityRef.current = selectedCity;
+  }, [selectedCity, setValue, isDistrictInitialized]);
+
+  // Auto-select district based on login tenantId (not ULB)
+  useEffect(() => {
+    // Skip if already initialized or if currentStepData has district
+    if (isDistrictInitialized) return;
+
+    // First priority: restore from currentStepData
+    if (currentStepData?.siteDetails?.district) {
+      setSelectedCity(currentStepData.siteDetails.district);
+      // Use trigger to validate and update the field
+      setTimeout(() => {
+        setValue("district", currentStepData.siteDetails.district, { shouldValidate: true });
+      }, 0);
+      setIsDistrictInitialized(true);
+      return;
+    }
+
+    // Second priority: auto-select based on tenantId
+    if (tenantId && allCities?.length > 0) {
+      const defaultCity = allCities.find((city) => city.code === tenantId);
+      console.log(defaultCity, "DDDDD");
+      if (defaultCity) {
+        setSelectedCity(defaultCity);
+        // Use trigger to validate and update the field
+        setTimeout(() => {
+          setValue("district", defaultCity, { shouldValidate: true });
+        }, 0);
+        setIsDistrictInitialized(true);
+      }
+    }
+  }, [tenantId, allCities, currentStepData, isDistrictInitialized, setValue]);
+
+  const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
+  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
+
+  const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
+  const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
+  const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || [
+    { code: "PAPRA", name: "PAPRA", i18nKey: "PAPRA" },
+    { code: "TOWN_PLANNING", name: "Town Planning", i18nKey: "Town Planning" },
+    { code: "AFFORDABLE", name: "Affordable", i18nKey: "Affordable" },
+    { code: "DEVELOPMENT", name: "Development", i18nKey: "Development" },
+    { code: "EWS", name: "EWS", i18nKey: "EWS" },
+  ];
+
+  // Zone mapping logic (same as CLU)
+  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
+  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
+
+  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.buildingCategory || null);
+
+  // Map zone object to match zoneOptions format
+  useEffect(() => {
+    if (zoneOptions?.length > 0 && currentStepData?.siteDetails?.zone) {
+      const zoneName = currentStepData?.siteDetails?.zone?.name || currentStepData?.siteDetails?.zone;
+      const matchedZone = zoneOptions?.find((zone) => zone.name === zoneName);
+
+      if (matchedZone) {
+        setValue("zone", matchedZone);
+      }
+    }
+  }, [zoneOptions, currentStepData?.siteDetails?.zone, setValue]);
+
+  useEffect(() => {
+    const formattedData = currentStepData?.siteDetails;
+    if (formattedData) {
+      Object.entries(formattedData).forEach(([key, value]) => {
+        if (key !== "floorArea" && key !== "district") {
+          setValue(key, value);
+        }
+      });
+
+      // Set state variables to ensure dropdowns are pre-filled
+      if (formattedData.buildingStatus) {
+        setBuildingStatus(formattedData.buildingStatus);
+      }
+      if (formattedData.buildingCategory) {
+        setSelectedBuildingCategory(formattedData.buildingCategory);
+      }
+      if (formattedData.isCluRequired) {
+        setIsCluRequired(formattedData.isCluRequired);
+      }
+      if (formattedData.ulbName) {
+        setUlbName(formattedData.ulbName);
+      }
+      if (formattedData.isBasementAreaAvailable) {
+        setIsBasementAreaAvailable(formattedData.isBasementAreaAvailable);
+      }
+      if (formattedData.district) {
+        setSelectedCity(formattedData.district);
+        // Set district field with proper object for validation
+        setValue("district", formattedData.district, { shouldValidate: true });
+      }
+
+      if (Array.isArray(formattedData.floorArea) && formattedData.floorArea.length > 0) {
+        for (let i = areaFields.length - 1; i >= 0; i--) {
+          removeFloor(i);
+        }
+        formattedData.floorArea.forEach((item) => {
+          addFloor({ value: item.value || item || "" });
+        });
+      }
+    }
+  }, []);
+
   // Calculate Total Site Area (sum of all distribution areas)
   useEffect(() => {
     const residential = parseFloat(watchedResidentialArea) || 0;
@@ -188,17 +359,6 @@ const LayoutSiteDetails = (_props) => {
     netArea,
   ]);
 
-  // Auto-fetch ULB Name based on tenantId if not already set
-  useEffect(() => {
-    if (!isEditMode && ulbList && ulbList.length > 0 && !currentStepData?.siteDetails?.ulbName) {
-      const matchedULB = ulbList.find((ulb) => ulb.code === tenantId);
-      if (matchedULB) {
-        setUlbName(matchedULB);
-        setValue("ulbName", matchedULB);
-      }
-    }
-  }, [ulbList, tenantId, isEditMode, currentStepData?.siteDetails?.ulbName, setValue]);
-
   // Watch all SqM fields for auto-calculation of percentages
   const areaUnderEWSInSqM = watch("areaUnderEWSInSqM");
   const areaUnderResidentialUseInSqM = watch("areaUnderResidentialUseInSqM");
@@ -212,53 +372,6 @@ const LayoutSiteDetails = (_props) => {
   const watchedNetArea = watch("netTotalArea");
 
   // Auto-calculate percentage fields from SqM fields and netSiteArea sum
-  // useEffect(() => {
-  //   const netArea = parseFloat(watchedNetArea) || 0;
-
-  //   // Calculate sum of all 9 area categories (netSiteArea = 1+2+3+4+5+6+7+8+9)
-  //   const ews = parseFloat(areaUnderEWSInSqM) || 0;
-  //   const residential = parseFloat(areaUnderResidentialUseInSqM) || 0;
-  //   const commercial = parseFloat(areaUnderCommercialUseInSqM) || 0;
-  //   const institutional = parseFloat(areaUnderInstutionalUseInSqM) || 0;
-  //   const communityCenter = parseFloat(areaUnderCommunityCenterInSqM) || 0;
-  //   const park = parseFloat(areaUnderParkInSqM) || 0;
-  //   const road = parseFloat(areaUnderRoadInSqM) || 0;
-  //   const parking = parseFloat(areaUnderParkingInSqM) || 0;
-  //   const otherAmenities = parseFloat(areaUnderOtherAmenitiesInSqM) || 0;
-
-  //   const totalAreaSum = (ews + residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities).toFixed(2);
-  //   setValue("netSiteArea", totalAreaSum);
-
-  //   if (netArea > 0) {
-  //     const calculatePercentage = (sqmValue) => {
-  //       const val = parseFloat(sqmValue) || 0;
-  //       return ((val / netArea) * 100).toFixed(2);
-  //     };
-
-  //     setValue("areaUnderEWSInPct", calculatePercentage(areaUnderEWSInSqM));
-  //     setValue("areaUnderResidentialUseInPct", calculatePercentage(areaUnderResidentialUseInSqM));
-  //     setValue("areaUnderCommercialUseInPct", calculatePercentage(areaUnderCommercialUseInSqM));
-  //     setValue("areaUnderInstutionalUseInPct", calculatePercentage(areaUnderInstutionalUseInSqM));
-  //     setValue("areaUnderCommunityCenterInPct", calculatePercentage(areaUnderCommunityCenterInSqM));
-  //     setValue("areaUnderParkInPct", calculatePercentage(areaUnderParkInSqM));
-  //     setValue("areaUnderRoadInPct", calculatePercentage(areaUnderRoadInSqM));
-  //     setValue("areaUnderParkingInPct", calculatePercentage(areaUnderParkingInSqM));
-  //     setValue("areaUnderOtherAmenitiesInPct", calculatePercentage(areaUnderOtherAmenitiesInSqM));
-  //   }
-  // }, [
-  //   areaUnderEWSInSqM,
-  //   areaUnderResidentialUseInSqM,
-  //   areaUnderCommercialUseInSqM,
-  //   areaUnderInstutionalUseInSqM,
-  //   areaUnderCommunityCenterInSqM,
-  //   areaUnderParkInSqM,
-  //   areaUnderRoadInSqM,
-  //   areaUnderParkingInSqM,
-  //   areaUnderOtherAmenitiesInSqM,
-  //   watchedNetArea,
-  //   setValue,
-  // ]);
-
   useEffect(() => {
     const netArea = parseFloat(watchedNetArea) || 0;
 
@@ -313,135 +426,321 @@ const LayoutSiteDetails = (_props) => {
     setValue,
   ]);
 
-  // <CHANGE> Set default district based on tenantId like NOC form
-
-  /**Start - District and Zone caculation logic */
-  const [isBasementAreaAvailable, setIsBasementAreaAvailable] = useState(currentStepData?.siteDetails?.isBasementAreaAvailable || null);
-
-  const options = [
-    {
-      code: "YES",
-      i18nKey: "YES",
-    },
-    {
-      code: "NO",
-      i18nKey: "NO",
-    },
-  ];
-
-  const allCities = Digit.Hooks.obps.useTenants();
-  const [cities, setcitiesopetions] = useState(allCities);
-  const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
-  const [localities, setLocalities] = useState([]);
-  const [isDistrictInitialized, setIsDistrictInitialized] = useState(false);
-
-  // Zone dropdown from MDMS (like CLU) - REMOVED
-  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
-    { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
-  ]);
-
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-    selectedCity?.code,
-    "revenue",
-    {
-      enabled: !!selectedCity?.code,
-    },
-    t
-  );
-
-  useEffect(() => {
-    if (fetchedLocalities?.length > 0) {
-      setLocalities(fetchedLocalities);
-    }
-  }, [fetchedLocalities]);
-
-  // Only clear localities when user manually changes district (not on initial load)
-  const prevSelectedCityRef = useRef(selectedCity);
-  useEffect(() => {
-    if (isDistrictInitialized && prevSelectedCityRef.current?.code !== selectedCity?.code) {
-      setLocalities([]);
-      setValue("zone", null);
-    }
-    prevSelectedCityRef.current = selectedCity;
-  }, [selectedCity, setValue, isDistrictInitialized]);
-
-  // <CHANGE> Auto-select district based on login tenantId (not ULB)
-  useEffect(() => {
-    // Skip if already initialized or if currentStepData has district
-    if (isDistrictInitialized) return;
-
-    // First priority: restore from currentStepData
-    if (currentStepData?.siteDetails?.district) {
-      setSelectedCity(currentStepData.siteDetails.district);
-      setValue("district", currentStepData.siteDetails.district);
-      setIsDistrictInitialized(true);
-      return;
-    }
-
-    // Second priority: auto-select based on tenantId
-    if (tenantId && allCities?.length > 0) {
-      const defaultCity = allCities.find((city) => city.code === tenantId);
-      console.log(defaultCity, "DDDDD");
-      if (defaultCity) {
-        setSelectedCity(defaultCity);
-        setValue("district", defaultCity);
-        setIsDistrictInitialized(true);
-      }
-    }
-  }, [tenantId, allCities, currentStepData, isDistrictInitialized]);
-
-  const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
-  const { data: mdmsData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
-
-  const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
-  const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
-
-  const schemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.schemeType || [];
-
-  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.buildingCategory || null);
-
-  useEffect(() => {
-    const formattedData = currentStepData?.siteDetails;
-    if (formattedData) {
-      Object.entries(formattedData).forEach(([key, value]) => {
-        if (key !== "floorArea") {
-          setValue(key, value);
-        }
-      });
-
-      // Set state variables to ensure dropdowns are pre-filled
-      if (formattedData.buildingStatus) {
-        setBuildingStatus(formattedData.buildingStatus);
-      }
-      if (formattedData.buildingCategory) {
-        setSelectedBuildingCategory(formattedData.buildingCategory);
-      }
-      if (formattedData.ulbName) {
-        setUlbName(formattedData.ulbName);
-      }
-      if (formattedData.isBasementAreaAvailable) {
-        setIsBasementAreaAvailable(formattedData.isBasementAreaAvailable);
-      }
-      if (formattedData.district) {
-        setSelectedCity(formattedData.district);
-      }
-
-      if (Array.isArray(formattedData.floorArea) && formattedData.floorArea.length > 0) {
-        for (let i = areaFields.length - 1; i >= 0; i--) {
-          removeFloor(i);
-        }
-        formattedData.floorArea.forEach((item) => {
-          addFloor({ value: item.value || item || "" });
-        });
-      }
-    }
-  }, []);
-
   return (
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
         <div>
+
+                    {/* ===== SECTION: CLU (Comprehensive Layout Undertaking) ===== */}
+          <CardSectionHeader>CLU Details</CardSectionHeader>
+
+          {/* Is CLU Required? - Yes/No Dropdown */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`Is CLU Required?`} <span className="requiredField">*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"isCluRequired"}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                    setIsCluRequired(e.code);
+                  }}
+                  selected={props.value}
+                  option={options}
+                  optionKey="i18nKey"
+                  t={t}
+                  disable={isEditMode}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          {errors?.isCluRequired && (
+            <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isCluRequired.message}</p>
+          )}
+
+          {/* ===== CLU Details Section (when isCluRequired = NO) ===== */}
+          {isCluRequired?.code === "NO" || isCluRequired === "NO" ? (
+            <React.Fragment>
+              {/* CLU Type - Online/Offline */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`CLU Type`} <span className="requiredField">*</span>
+                </CardLabel>
+                <Controller
+                  control={control}
+                  name={"cluType"}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        props.onChange(e);
+                        setCluType(e.code);
+                      }}
+                      selected={props.value}
+                      option={[
+                        { code: "ONLINE", i18nKey: "Online" },
+                        { code: "OFFLINE", i18nKey: "Offline" },
+                      ]}
+                      optionKey="i18nKey"
+                      t={t}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              {errors?.cluType && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluType.message}</p>
+              )}
+
+              {/* ===== Online CLU Section ===== */}
+              {cluType?.code === "ONLINE" || cluType === "ONLINE" ? (
+                <React.Fragment>
+                  {/* CLU Number - Online */}
+                  <LabelFieldPair>
+                    <CardLabel className="card-label-smaller">
+                      {`CLU Number`} <span className="requiredField">*</span>
+                    </CardLabel>
+                    <div className="field">
+                      <Controller
+                        control={control}
+                        name="cluNumber"
+                        defaultValue=""
+                        rules={{
+                          required: t("REQUIRED_FIELD"),
+                          maxLength: {
+                            value: 50,
+                            message: "Max 50 characters allowed",
+                          },
+                        }}
+                        render={(props) => (
+                          <TextInput
+                            value={props.value}
+                            onChange={(e) => {
+                              props.onChange(e.target.value);
+                            }}
+                            onBlur={(e) => {
+                              props.onBlur(e);
+                            }}
+                          />
+                        )}
+                      />
+                      {errors?.cluNumber && (
+                        <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluNumber.message}</p>
+                      )}
+                    </div>
+                  </LabelFieldPair>
+
+                  {/* Validate Button for Online CLU */}
+                  <LabelFieldPair style={{display:"flex", justifyContent:"end", gap: "12px", alignItems: "center"}}>
+                    {isCluValidated && (
+                      <span style={{ color: "#00703c", fontWeight: 500 }}>✓ CLU Validated</span>
+                    )}
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={cluValidationLoading || !watch("cluNumber")}
+                      onClick={async () => {
+                        const cluNumber = watch("cluNumber");
+                        if (!cluNumber) {
+                          setCluValidationError("Please enter CLU Number");
+                          return;
+                        }
+                        
+                        setCluValidationLoading(true);
+                        setCluValidationError(null);
+                        
+                        try {
+                          // Search for CLU by applicationNo
+                          const result = await Digit.OBPSService.CLUSearch({
+                            filters: { applicationNo: cluNumber },
+                            tenantId: tenantId
+                          });
+                          
+                          if (result?.Clu && result.Clu.length > 0) {
+                            // CLU found and validated
+                            setIsCluValidated(true);
+                            setCluValidationError(null);
+                          } else {
+                            // CLU not found
+                            setCluValidationError("CLU Number not found. Please check and try again.");
+                            setIsCluValidated(false);
+                          }
+                        } catch (error) {
+                          console.error("CLU Validation Error:", error);
+                          setCluValidationError("Error validating CLU. Please try again.");
+                          setIsCluValidated(false);
+                        } finally {
+                          setCluValidationLoading(false);
+                        }
+                      }}
+                    >
+                      {cluValidationLoading ? "Validating..." : "Validate CLU"}
+                    </button>
+                  </LabelFieldPair>
+                  {cluValidationError && (
+                    <p style={{ color: "red", marginTop: "4px", marginBottom: "16px" }}>{cluValidationError}</p>
+                  )}
+                </React.Fragment>
+              ) : null}
+
+              {/* ===== Offline CLU Section ===== */}
+              {cluType?.code === "OFFLINE" || cluType === "OFFLINE" ? (
+                <React.Fragment>
+                  {/* CLU Document Upload - Offline */}
+                  <LabelFieldPair>
+                    <CardLabel className="card-label-smaller">
+                      {`Upload Approved CLU Copy`} <span className="requiredField">*</span>
+                    </CardLabel>
+                    <div className="field">
+                      <CustomUploadFile
+                        onUpload={(file) => {
+                          setCluDocumentUploadedFile(file);
+                          setCluDocumentError(null);
+                        }}
+                        onRemove={() => {
+                          setCluDocumentUploadedFile(null);
+                        }}
+                        error={cluDocumentError}
+                        loading={cluDocumentLoader}
+                        allowedFileTypes={["pdf"]}
+                        maxFileSize={5} // MB
+                      />
+                    </div>
+                  </LabelFieldPair>
+
+                  {/* CLU Number - Offline */}
+                  <LabelFieldPair>
+                    <CardLabel className="card-label-smaller">
+                      {`CLU Number`} <span className="requiredField">*</span>
+                    </CardLabel>
+                    <div className="field">
+                      <Controller
+                        control={control}
+                        name="cluNumberOffline"
+                        defaultValue=""
+                        rules={{
+                          required: t("REQUIRED_FIELD"),
+                          maxLength: {
+                            value: 50,
+                            message: "Max 50 characters allowed",
+                          },
+                        }}
+                        render={(props) => (
+                          <TextInput
+                            value={props.value}
+                            onChange={(e) => {
+                              props.onChange(e.target.value);
+                            }}
+                            onBlur={(e) => {
+                              props.onBlur(e);
+                            }}
+                          />
+                        )}
+                      />
+                      {errors?.cluNumberOffline && (
+                        <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluNumberOffline.message}</p>
+                      )}
+                    </div>
+                  </LabelFieldPair>
+
+                  {/* CLU Approval Date - Offline */}
+                  <LabelFieldPair>
+                    <CardLabel className="card-label-smaller">
+                      {`CLU Approval Date`} <span className="requiredField">*</span>
+                    </CardLabel>
+                    <div className="field">
+                      <Controller
+                        control={control}
+                        name="cluApprovalDate"
+                        defaultValue=""
+                        rules={{
+                          required: t("REQUIRED_FIELD"),
+                          validate: (value) => {
+                            if (!value) return true;
+                            const selectedDate = new Date(value);
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            if (selectedDate > today) {
+                              return "CLU approval date cannot be a future date";
+                            }
+                            return true;
+                          },
+                        }}
+                        render={(props) => (
+                          <TextInput
+                            type="date"
+                            value={props.value}
+                            onChange={(e) => {
+                              props.onChange(e.target.value);
+                            }}
+                            onBlur={(e) => {
+                              props.onBlur(e);
+                            }}
+                            max={new Date().toISOString().split("T")[0]}
+                          />
+                        )}
+                      />
+                      {errors?.cluApprovalDate && (
+                        <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.cluApprovalDate.message}</p>
+                      )}
+                    </div>
+                  </LabelFieldPair>
+                </React.Fragment>
+              ) : null}
+            </React.Fragment>
+          ) : null}
+
+          {/* ===== Application Applied Under Section (when isCluRequired = YES) ===== */}
+          {isCluRequired?.code === "YES" || isCluRequired === "YES" ? (
+            <React.Fragment>
+              {/* Application Applied Under - Dropdown */}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
+                  {`Application Applied Under`} <span className="requiredField">*</span>
+                </CardLabel>
+                <Controller
+                  control={control}
+                  name={"applicationAppliedUnder"}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {
+                        props.onChange(e);
+                        setApplicationAppliedUnder(e.code);
+                      }}
+                      selected={props.value}
+                      option={[
+                        { code: "PAPRA", name: "PAPRA", i18nKey: "PAPRA" },
+                        { code: "TOWN_PLANNING", name: "TOWN PLANNING", i18nKey: "Town Planning" },
+                        { code: "AFFORDABLE", name: "AFFORDABLE", i18nKey: "Affordable" },
+                        { code: "DEVELOPMENT", name: "DEVELOPMENT", i18nKey: "Development" },
+                        { code: "EWS", name: "EWS", i18nKey: "EWS" },
+                      ]}
+                      optionKey="name"
+                      t={t}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              {errors?.applicationAppliedUnder && (
+                <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.applicationAppliedUnder.message}</p>
+              )}
+            </React.Fragment>
+          ) : null}
           {/* ===== TYPE OF APPLICATION ===== */}
+
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               Type Of Application <span className="requiredField">*</span>
@@ -582,16 +881,27 @@ const LayoutSiteDetails = (_props) => {
               name={"district"}
               rules={{
                 required: t("REQUIRED_FIELD"),
+                validate: (value) => {
+                  // Validate that district is an object or has required properties
+                  if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    return t("REQUIRED_FIELD");
+                  }
+                  return true;
+                }
               }}
               render={(props) => (
                 <TextInput
                   className="form-field"
-                  value={selectedCity?.city?.districtName || selectedCity?.districtName || props.value}
+                  value={selectedCity?.city?.districtName || selectedCity?.districtName || selectedCity}
                   onChange={(e) => {
-                    props.onChange(e.target.value);
+                    // Don't actually change the value on text input since it's disabled
+                    // Just use the selectedCity object
                   }}
                   onBlur={(e) => {
-                    props.onBlur(e);
+                    // Ensure the form field has the district object
+                    if (selectedCity) {
+                      props.onChange(selectedCity);
+                    }
                   }}
                   disable="true"
                 />
@@ -616,7 +926,7 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     select={props.onChange}
                     selected={props.value}
-                    option={zoneList?.tenant?.zoneMaster?.[0]?.zones}
+                    option={zoneOptions}
                     optionKey="code"
                     t={t}
                   />
@@ -628,7 +938,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_VILLAGE_NAME_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("Village Name")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -696,7 +1006,7 @@ const LayoutSiteDetails = (_props) => {
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_KHATUNI_NO_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("Khatuni No")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -828,6 +1138,7 @@ const LayoutSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disabled={isEditMode}
                   />
                 )}
               />
@@ -868,6 +1179,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     max={new Date().toISOString().split("T")[0]}
+                    disabled={isEditMode}
                   />
                 )}
               />
@@ -922,7 +1234,9 @@ const LayoutSiteDetails = (_props) => {
             <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isAreaUnderMasterPlan.message}</p>
           )}
 
-          {/* SECTION: Area Calculation (A-B=C) */}
+
+
+          {/* SECTION: Area Calculation (A-B-C) */}
           <CardSectionHeader>{t("BPA_AREA_CALCULATION_LABEL")}</CardSectionHeader>
 
           {/* ULB Type */}
@@ -932,10 +1246,10 @@ const LayoutSiteDetails = (_props) => {
               <Controller
                 control={control}
                 name="ulbType"
-                defaultValue=""
+                defaultValue={ulbType || ""}
                 render={(props) => (
                   <TextInput 
-                    value={props.value} 
+                    value={ulbType || props.value || ""} 
                     disabled={true}
                     onChange={(e) => props.onChange(e.target.value)}
                   />
@@ -944,10 +1258,10 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* <CHANGE> Add Area Left For Road Widening field (A) */}
+          {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_TOTAL_PLOT_AREA_LABEL_A")}`} <span className="requiredField">*</span>
+              {`${t("Total Plot Area")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -985,10 +1299,10 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* <CHANGE> Add Net Plot Area After Widening field (B) */}
+          {/* Add Net Plot Area After Widening field (B) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_TOTAL_AREA_ROAD_WIDENING_LABEL_B")}`} <span className="requiredField">*</span>
+              {`${t("Total Road Widening Area")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1026,12 +1340,12 @@ const LayoutSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* <CHANGE> Add Area Under EWS field (C) - Input and Percentage */}
+          {/* Add Area Under EWS field (C) - Input and Percentage */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               Area Under EWS <span className="requiredField">*</span>
             </CardLabel>
-          
+      
               {/* EWS Area Input */}
       <div className="field">
                   <Controller
@@ -1072,16 +1386,13 @@ const LayoutSiteDetails = (_props) => {
                   />
                   {errors?.areaUnderEWS && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.areaUnderEWS.message}</p>}
                 </div>
-
-            
-          
           </LabelFieldPair>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_TOTAL_AREA_PERCENTAGE_LABEL_C (EWS)")}`} <span className="requiredField">*</span>
+              {`${t("Total Area Percentage (EWS)")}`} <span className="requiredField">*</span>
             </CardLabel>
-             
+               
             
                
                 <div className="field">
@@ -1096,12 +1407,11 @@ const LayoutSiteDetails = (_props) => {
                     placeholder="%"
                   />
                 </div>
-              
           </LabelFieldPair>
 
-          {/* <CHANGE> Add Net Total Area field (A-B-C) - disabled/readonly */}
+          {/* Add Net Total Area field (A-B-C) - disabled/readonly */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL_A-B (Balance)")} = A - (B + C)`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("Net Total Area")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -1120,14 +1430,14 @@ const LayoutSiteDetails = (_props) => {
                 defaultValue={netArea}
                 render={(props) => (
                   <TextInput
-                    value={netArea} // <CHANGE> Use netArea state directly like NOC
+                    value={netArea}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disabled="true" // <CHANGE> Use disabled instead of disable
+                    disabled="true"
                   />
                 )}
               />
@@ -1135,8 +1445,6 @@ const LayoutSiteDetails = (_props) => {
               {errors?.netTotalArea && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netTotalArea.message}</p>}
             </div>
           </LabelFieldPair>
-
-          {/* <CHANGE> Remove old areaLeftForRoadWidening, netPlotAreaAfterWidening fields if they exist elsewhere */}
 
           {errors?.areaLeftForRoadWidening && (
             <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.areaLeftForRoadWidening.message}</p>
@@ -1708,47 +2016,6 @@ const LayoutSiteDetails = (_props) => {
             </button>
           )}
 
-          {/* {buildingStatus?.code === "BUILTUP" && (
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("BPA_TOTAL_FLOOR_AREA_LABEL")}`}</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name="totalFloorArea"
-                  defaultValue={totalArea}
-                  rules={{
-                    pattern: {
-                      value: /^[0-9]*\.?[0-9]+$/,
-                      message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                    },
-                    maxLength: {
-                      value: 200,
-                      message: t("MAX_200_CHARACTERS_ALLOWED"),
-                    },
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                      }}
-                      disable="true"
-                    />
-                  )}
-                />
-                {floorAreaExceedsError && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{floorAreaExceedsError}</p>
-                )}
-                {!floorAreaExceedsError && totalArea > 0 && (
-                  <p style={{ color: "green", marginTop: "4px", marginBottom: "0" }}>✓ All floors are valid</p>
-                )}
-              </div>
-            </LabelFieldPair>
-          )} */}
-
           {/* SECTION: Area Distribution across 9 Categories */}
           <CardSectionHeader>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardSectionHeader>
 
@@ -2134,10 +2401,6 @@ const LayoutSiteDetails = (_props) => {
             </div>
           )}
 
-          {/* {areaMismatchError && <CardLabelError>{areaMismatchError}</CardLabelError>} */}
-
-          {/* {totalAreaPercentage !== "100.00" && <CardLabelError>Total area percentage must be 100%. Current: {totalAreaPercentage}%</CardLabelError>} */}
-
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`}</CardLabel>
             <div className="field">
@@ -2150,6 +2413,14 @@ const LayoutSiteDetails = (_props) => {
       </div>
     </React.Fragment>
   );
+};
+
+// Validation function to check if CLU is validated when required
+LayoutSiteDetails.validateCLU = (isCluRequired, isCluValidated) => {
+  if (isCluRequired && !isCluValidated) {
+    return false;
+  }
+  return true;
 };
 
 export default LayoutSiteDetails;

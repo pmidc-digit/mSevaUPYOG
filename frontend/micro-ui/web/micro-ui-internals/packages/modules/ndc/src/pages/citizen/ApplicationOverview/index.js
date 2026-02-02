@@ -201,9 +201,11 @@ const CitizenApplicationOverview = () => {
     ?.filter(Boolean)
     ?.join(", ");
 
+  console.log("applicationDetails?.[0]", applicationDetails?.Applications?.[0]);
+
   return (
     <div className={"employee-main-application-details"}>
-      <div className="ndc-application-overview" >
+      <div className="ndc-application-overview">
         {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
@@ -249,10 +251,22 @@ const CitizenApplicationOverview = () => {
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
         {displayData?.NdcDetails?.map((detail, index) => {
+          console.log("detail", detail);
           const isRed = detail.dueAmount > 0;
           return (
-            <div className="ndc-application-overview-table" key={index} >
+            <div className="ndc-application-overview-table" key={index}>
               <StatusTable>
+                <Row
+                  label={t("CHB_DISCOUNT_REASON")}
+                  text={t(
+                    `${
+                      applicationDetails?.Applications?.[0]?.reason == "OTHERS"
+                        ? applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.reason
+                        : applicationDetails?.Applications?.[0]?.reason
+                    }`
+                  )}
+                />
+
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
@@ -288,6 +302,7 @@ const CitizenApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
+                    <Row label={t("Remarks")} text={applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.remarks || "N/A"} />
                   </>
                 )}
               </StatusTable>

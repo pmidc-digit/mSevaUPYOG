@@ -108,9 +108,22 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       return;
     }
 
+    const additionalDetails = {
+      arrear: currentStepData?.propertyDetails?.arrear,
+      arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
+      arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate,
+      arrearStartDate: currentStepData?.propertyDetails?.arrearStartDate,
+      arrearReason: currentStepData?.propertyDetails?.arrearReason?.code,
+      applicationType: currentStepData?.propertyDetails?.applicationType?.code,
+      remarks: currentStepData?.propertyDetails?.remarks,
+    };
+
+    console.log("currentStepData", currentStepData);
+
     const payload = buildAllotmentPayload({
       propertyDetails: currentStepData?.propertyDetails,
       applicants: data?.applicants,
+      additionalDetails,
       tenantId,
     });
 

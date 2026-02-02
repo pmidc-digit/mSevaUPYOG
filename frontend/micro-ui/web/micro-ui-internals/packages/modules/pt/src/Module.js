@@ -54,7 +54,7 @@ import CitizenApp from "./pages/citizen";
 // import { PTMyPayments } from "./pages/citizen/MyPayments";
 // import SelectPTUnits from "./pageComponents/SelectPTUnits";
 // import CreateProperty from "./pages/citizen/Create";
-// import { PTMyApplications } from "./pages/citizen/PTMyApplications";
+import { PTMyApplications } from "./pages/citizen/PTMyApplications";
 // import { MyProperties } from "./pages/citizen/MyProperties";
 // import PTApplicationDetails from "./pages/citizen/PTApplicationDetails";
 // import SearchPropertyComponent from "./pages/citizen/SearchProperty";
@@ -234,7 +234,7 @@ const componentsToRegister = {
   // PTTransferOwnership: TransferOwnership,
   // PTDocsRequired: DocsRequired,
   // PTCreateProperty: CreateProperty,
-  // PTMyApplications: PTMyApplications,
+  PTMyApplications: PTMyApplications,
   // PTMyProperties: MyProperties,
   // PTApplicationDetails: PTApplicationDetails,
   // PTSearchPropertyComponent: SearchPropertyComponent,

@@ -40,23 +40,24 @@ const BillGenie = () => {
     defaultValues,
   });
 
-  
   const onSubmit = async (data) => {
     const hasAtLeastOneField = data?.locality || data?.billNo?.trim() || data?.mobileNumber?.trim();
     if (!hasAtLeastOneField) {
       alert(t("Please select at least one search criteria"));
       return;
     }
+
+    // console.log("data===", data);
+    // return;
     setLoader(true);
     const payload = {
       searchCriteria: {
         tenantId: tenantId,
         url: "egov-searcher/bill-genie/garbagecollectionbills/_get",
         businesService: "GC",
-        locality: data?.locality?.code,
-        // propertyId : "",
-        // consumerCode : "",
-        // mobileNumber : ""
+        ...(data?.locality?.code && { locality: data.locality.code }),
+        ...(data?.billNo && { consumerCode: data.billNo }),
+        ...(data?.mobileNumber && { mobileNumber: data.mobileNumber }),
       },
     };
     try {
@@ -84,7 +85,6 @@ const BillGenie = () => {
       // setLoader(false);
     }
   };
-
 
   useEffect(() => {
     handleApiData();
@@ -125,27 +125,22 @@ const BillGenie = () => {
       status: t(bills.status),
     })) || [];
 
-    const getRecieptSearch = async ({ tenantId, bills }) => {
-      try {
-        setLoader(true);
-        const response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Bills: [...bills] }, 
-          "garbage-bill"
-        );
+  const getRecieptSearch = async ({ tenantId, bills }) => {
+    try {
+      setLoader(true);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Bills: [...bills] }, "garbage-bill");
 
-        const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-          fileStoreIds: response.filestoreIds[0],
-        });
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response.filestoreIds[0],
+      });
 
-        window.open(fileStore[response?.filestoreIds[0]], "_blank");
-      } catch (error) {
-        console.error("Receipt generation failed", error);
-      }finally{
-        setLoader(false);
-      }
-    };
-
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      console.error("Receipt generation failed", error);
+    } finally {
+      setLoader(false);
+    }
+  };
 
   return (
     <React.Fragment>

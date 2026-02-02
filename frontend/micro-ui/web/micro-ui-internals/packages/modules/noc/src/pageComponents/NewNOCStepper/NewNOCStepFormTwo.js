@@ -187,7 +187,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
           isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
           district: formData?.siteDetails?.district || "",
-          zone: formData?.siteDetails?.zone?.name || "",
+          zone: formData?.siteDetails?.zone?.code || "",
           vasikaDate: formData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) : "",
           specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
           specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",

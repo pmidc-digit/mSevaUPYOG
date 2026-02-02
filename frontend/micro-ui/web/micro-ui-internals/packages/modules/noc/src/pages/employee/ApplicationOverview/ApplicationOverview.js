@@ -125,6 +125,7 @@ const NOCEmployeeApplicationOverview = () => {
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
+  const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
 
   console.log("applicationDetails here==>", applicationDetails);
 
@@ -270,15 +271,70 @@ const NOCEmployeeApplicationOverview = () => {
       setLoader(false);
     }
   }
+
+   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+    try {
+      setLoader(true);
+  
+      // Prepare application object
+      let application = applicationDetails?.Noc?.[0]
+  
+      // Check if sanction letter already exists
+      let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+      console.log("fileStoreId before create", fileStoreId);
+  
+      if (!fileStoreId) {
+        // Prepare sanction data
+        const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, approverComment);
+  
+        // Generate PDF
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
+          pdfkey
+        );
+  
+        // Update application with sanctionLetterFilestoreId
+        const updatedApplication = {
+          ...application,
+          workflow: {
+            action: "ESIGN",
+          },
+          nocDetails: {
+            ...application?.nocDetails,
+            additionalDetails: {
+              ...application?.nocDetails?.additionalDetails,
+              sanctionLetterFilestoreId: response?.filestoreIds[0],
+            },
+          },
+        };
+  
+        await mutation.mutateAsync({
+          Noc: updatedApplication,
+        });
+  
+  
+        fileStoreId = response?.filestoreIds[0];
+        refetch();
+      }
+  
+      // Print receipt
+      return fileStoreId;
+  
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoader(false);
+    }
+  }
   const printCertificateWithESign = async () => {
     try {
       console.log("🎯 Starting certificate eSign process with custom hook...");
 
       // Reuse existing certificate data or generate if not available
-      const fileStoreId = await getRecieptSearch({
+      const fileStoreId = await getSanctionLetterReceipt({
         tenantId: reciept_data?.Payments[0]?.tenantId,
         payments: reciept_data?.Payments[0],
-        pdfkey: "noc-sanctionletter",
         EmpData,
       });
 
@@ -313,7 +369,7 @@ const NOCEmployeeApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "ESIGEND") {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
@@ -668,7 +724,9 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
 
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData?.assignee,
+       assignes: applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+    ? [Digit.UserService.getUser()?.info?.uuid]   
+    : filtData?.assignee,                        
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
     };

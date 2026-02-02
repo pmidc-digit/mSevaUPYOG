@@ -194,7 +194,7 @@ console.log('calculatorData', calculatorData)
             buildingStatus: nocFormData?.siteDetails?.buildingStatus?.name || "",
             isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
             district: nocFormData?.siteDetails?.district || "",
-            zone: nocFormData?.siteDetails?.zone?.name || "",
+            zone: nocFormData?.siteDetails?.zone?.code || "",
             vasikaDate: nocFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.vasikaDate) : "",
 
             specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",

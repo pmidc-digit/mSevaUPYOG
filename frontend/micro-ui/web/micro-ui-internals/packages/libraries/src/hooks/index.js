@@ -211,6 +211,7 @@ import useScrutinyDetails from "./obps/useScrutinyDetails";
 import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
+import useNocCreateAPI from "./noc/useNocCreateAPI";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
 import useOBPSDocumentSearch from "./obps/useOBPSDocumentSearch";
 import useObpsAPI from "./obps/useObpsAPI";
@@ -772,7 +773,8 @@ const noc = {
   useNocType,
   useNOCFeeCalculator,
   useNOCSearchApplicationByIdOrMobile,
-  useNOCCheckListSearch
+  useNOCCheckListSearch,
+  useNocCreateAPI
 };
 
 const ndc = {

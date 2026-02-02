@@ -550,7 +550,7 @@ const NOCApplicantDetails = (_props) => {
             {index === 0 && (
               <div>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} *`}</CardLabel>
+                  <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}

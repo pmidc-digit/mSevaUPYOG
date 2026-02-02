@@ -67,6 +67,8 @@ const NOCModal = ({
        //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
+      zones: applicationData?.[0]?.nocDetails?.additionalDetails?.siteDetails?.zone
+
     },
     { enabled: !action?.isTerminateState }
   );

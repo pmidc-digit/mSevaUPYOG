@@ -129,13 +129,25 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
-      const mergedAdditionalDetails = {
-        ...originalAdditionalDetails,
-        ...updatedPropertyDetails,
-        allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
-        propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
-        locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
-      };
+      const applicationType = updatedPropertyDetails?.applicationType?.code || originalAdditionalDetails?.applicationType;
+      const additionalDetails =
+        applicationType === "Legacy"
+          ? {
+              ...originalAdditionalDetails,
+              ...updatedPropertyDetails,
+              arrearDoc: updatedPropertyDetails?.arrearDoc || originalAdditionalDetails?.arrearDoc,
+              arrearStartDate: updatedPropertyDetails?.arrearStartDate
+                ? new Date(updatedPropertyDetails?.arrearStartDate).getTime()
+                : originalAdditionalDetails?.arrearStartDate,
+              arrearEndDate: updatedPropertyDetails?.arrearEndDate
+                ? new Date(updatedPropertyDetails?.arrearEndDate).getTime()
+                : originalAdditionalDetails?.arrearEndDate,
+              allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
+              propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
+              locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
+              applicationType: applicationType,
+            }
+          : null;
 
       // Get the allotmentId from CreatedResponse for new documents
       const allotmentIdForNewDocs = CreatedResponse?.AllotmentDetails?.[0]?.id;
@@ -150,7 +162,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           : CreatedResponse?.AllotmentDetails?.[0]?.endDate,
         penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
-        additionalDetails: [mergedAdditionalDetails],
+        ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
@@ -215,13 +227,25 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
 
-      const mergedAdditionalDetails = {
-        ...originalAdditionalDetails,
-        ...updatedPropertyDetails,
-        allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
-        propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
-        locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
-      };
+      const applicationType = updatedPropertyDetails?.applicationType?.code || originalAdditionalDetails?.applicationType;
+      const additionalDetails =
+        applicationType === "Legacy"
+          ? {
+              ...originalAdditionalDetails,
+              ...updatedPropertyDetails,
+              arrearDoc: updatedPropertyDetails?.arrearDoc || originalAdditionalDetails?.arrearDoc,
+              arrearStartDate: updatedPropertyDetails?.arrearStartDate
+                ? new Date(updatedPropertyDetails?.arrearStartDate).getTime()
+                : originalAdditionalDetails?.arrearStartDate,
+              arrearEndDate: updatedPropertyDetails?.arrearEndDate
+                ? new Date(updatedPropertyDetails?.arrearEndDate).getTime()
+                : originalAdditionalDetails?.arrearEndDate,
+              allotmentType: updatedPropertyDetails?.propertyType?.code || originalAdditionalDetails?.allotmentType,
+              propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
+              locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
+              applicationType: applicationType,
+            }
+          : null;
 
       formData = {
         ...CreatedResponse?.AllotmentDetails?.[0],
@@ -233,7 +257,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           : CreatedResponse?.AllotmentDetails?.[0]?.endDate,
         penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
-        additionalDetails: [mergedAdditionalDetails],
+        ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
@@ -319,11 +343,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         onBackClick={onGoBack}
       />
       <ActionBar>
-        <SubmitBar
-          label={t("CS_COMMON_BACK")}
-          onSubmit={() => onGoBack(currentStepData)}
-          className="submit-bar-back"
-        />
+        <SubmitBar label={t("CS_COMMON_BACK")} onSubmit={() => onGoBack(currentStepData)} className="submit-bar-back" />
 
         {displayMenu && actions && actions.length > 0 ? (
           // <Menu options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />

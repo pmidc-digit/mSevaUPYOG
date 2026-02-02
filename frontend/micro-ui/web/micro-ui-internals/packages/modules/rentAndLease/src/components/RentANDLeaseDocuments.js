@@ -35,6 +35,13 @@ const ChallanDocuments = ({
     console.log("documents", documents);
   }, [documents]);
 
+  useEffect(() => {
+    const incomingDocs = formData?.documents?.documents || [];
+    if (Array.isArray(incomingDocs) && incomingDocs.length > 0 && documents.length === 0) {
+      setDocuments(incomingDocs);
+    }
+  }, [formData]);
+
   const onSkip = () => onSelect();
   function onAdd() {}
 
@@ -106,7 +113,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   });
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || filteredDocument?.fileStoreId || null);
+
+  useEffect(() => {
+    const fsId = filteredDocument?.filestoreId || filteredDocument?.fileStoreId;
+    if (fsId && fsId !== uploadedFile) {
+      setUploadedFile(fsId);
+    }
+  }, [filteredDocument]);
 
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 

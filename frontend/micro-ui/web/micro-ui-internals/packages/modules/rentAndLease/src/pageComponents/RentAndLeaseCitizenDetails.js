@@ -49,7 +49,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
     name: "applicants",
   });
 
-  const buildAllotmentPayload = ({ propertyDetails, applicants, tenantId, previousApplicationNumber = null }) => {
+  const buildAllotmentPayload = ({ propertyDetails, applicants, additionalDetails, tenantId, previousApplicationNumber = null }) => {
     const startDateEpoch = propertyDetails?.startDate ? new Date(propertyDetails?.startDate).getTime() : null;
     const endDateEpoch = propertyDetails?.endDate ? new Date(propertyDetails?.endDate).getTime() : null;
 
@@ -91,6 +91,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
           },
         };
       }),
+      ...(additionalDetails ? { additionalDetails: additionalDetails } : {}),
     };
   };
 
@@ -108,21 +109,28 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       return;
     }
 
-    const additionalDetails = {
-      arrear: currentStepData?.propertyDetails?.arrear,
-      arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
-      arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate,
-      arrearStartDate: currentStepData?.propertyDetails?.arrearStartDate,
-      arrearReason: currentStepData?.propertyDetails?.arrearReason?.code,
-      applicationType: currentStepData?.propertyDetails?.applicationType?.code,
-      remarks: currentStepData?.propertyDetails?.remarks,
-    };
-
-    console.log("currentStepData", currentStepData);
+    const applicationType = currentStepData?.propertyDetails?.applicationType?.code;
+    const additionalDetails =
+      applicationType === "Legacy"
+        ? {
+            arrear: currentStepData?.propertyDetails?.arrear,
+            arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
+            arrearEndDate: currentStepData?.propertyDetails?.arrearEndDate
+              ? new Date(currentStepData?.propertyDetails?.arrearEndDate).getTime()
+              : null,
+            arrearStartDate: currentStepData?.propertyDetails?.arrearStartDate
+              ? new Date(currentStepData?.propertyDetails?.arrearStartDate).getTime()
+              : null,
+            arrearReason: currentStepData?.propertyDetails?.arrearReason?.code,
+            applicationType: applicationType,
+            remarks: currentStepData?.propertyDetails?.remarks,
+          }
+        : null;
 
     const payload = buildAllotmentPayload({
       propertyDetails: currentStepData?.propertyDetails,
       applicants: data?.applicants,
+
       additionalDetails,
       tenantId,
     });

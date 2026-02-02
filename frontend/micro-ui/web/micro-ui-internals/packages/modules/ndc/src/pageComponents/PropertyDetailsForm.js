@@ -779,7 +779,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       )}
 
       {/* remarks */}
-      <LabelFieldPair style={{ marginTop: "40px" }}>
+      <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Remarks")}`}</CardLabel>
         <div className="form-field">
           <Controller

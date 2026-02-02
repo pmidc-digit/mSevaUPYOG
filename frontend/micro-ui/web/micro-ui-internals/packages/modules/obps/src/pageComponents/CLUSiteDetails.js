@@ -548,41 +548,6 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="plotArea"
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  pattern: {
-                    value: /^[0-9]*\.?[0-9]+$/,
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
-                  },
-                  maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
-                }}
-                render={(props) => (
-                  <TextInput
-                    className="form-field"
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.plotArea?.message || ""}</CardLabelError>
-
          {!isZoneListLoading &&  (<LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <Controller
@@ -848,7 +813,7 @@ const CLUSiteDetails = (_props) => {
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    // disabled="true"
+                    disable={currentStepData?.apiData?.Clu?.[0]?.applicationNo ? true: false}
                   />
                 )}
               />

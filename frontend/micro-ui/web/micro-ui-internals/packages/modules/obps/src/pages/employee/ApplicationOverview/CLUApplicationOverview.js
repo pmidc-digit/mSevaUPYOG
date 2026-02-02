@@ -723,26 +723,13 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
               {detail?.localityAreaType?.code === "SCHEME_AREA" && (
-                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "APPROVED_COLONY" && (
-                <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={detail?.localityApprovedColonyName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "NON_SCHEME" && (
-                <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={detail?.localityNonSchemeType?.name || "N/A"} />
-              )}
-
-              <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={detail?.localityNoticeIssued?.code || "N/A"} />
-
-              {detail?.localityNoticeIssued?.code === "YES" && (
-                <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
-              )}
-
-              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
                 <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
               )}
 
-              <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
+              )}
+
             </StatusTable>
           </div>
         ))}
@@ -754,8 +741,6 @@ const CLUEmployeeApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-
-              <Row label={t("BPA_PLOT_AREA_LABEL")} text={detail?.plotArea || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
               <Row label={t("BPA_CORE_AREA_LABEL")} text={detail?.coreArea?.code || "N/A"} />
 

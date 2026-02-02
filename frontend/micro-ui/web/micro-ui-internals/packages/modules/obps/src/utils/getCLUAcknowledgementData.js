@@ -104,48 +104,19 @@ const getLocationInfo = (appData, t) => {
       title: t("BPA_AREA_TYPE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.name || "N/A",
     },
-    {
-      title: t("BPA_NOTICE_ISSUED_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeIssued?.code || "N/A",
-    },
-    {
-      title: t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name || "N/A",
-    },
   ];
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
-    values.push({
-      title: t("BPA_SCHEME_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localitySchemeName || "N/A",
-    });
-  }
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "APPROVED_COLONY") {
-    values.push({
-      title: t("BPA_APPROVED_COLONY_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityApprovedColonyName || "N/A",
-    });
-  }
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "NON_SCHEME") {
-    values.push({
-      title: t("BPA_NON_SCHEME_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNonSchemeType?.name || "N/A",
-    });
-  }
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeIssued?.code == "YES") {
-    values.push({
-      title: t("BPA_NOTICE_NUMBER_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeNumber || "N/A",
-    });
-  }
 
   if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
     values.push({
       title: t("BPA_SCHEME_COLONY_TYPE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityColonyType?.name || "N/A",
+    });
+  }
+
+  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
+    values.push({
+      title: t("BPA_SCHEME_NAME_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localitySchemeName || "N/A",
     });
   }
 
@@ -160,10 +131,6 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_PLOT_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotNo || "N/A",
-    },
-    {
-      title: t("BPA_PLOT_AREA_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotArea || "N/A",
     },
     {
       title: t("BPA_KHEWAT_KHATUNI_NO_LABEL"),

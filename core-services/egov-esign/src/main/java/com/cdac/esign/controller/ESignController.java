@@ -48,7 +48,6 @@ public class ESignController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
     @PostMapping("/complete")
     public ResponseEntity<Map<String, String>> completeSigning(
             @RequestParam("eSignResponse") String response,
@@ -58,32 +57,31 @@ public class ESignController {
         logger.info("Received complete signing request for espTxnID: {}", espTxnID);
 
         try {
-            String fileUrl = eSignService.processDocumentCompletion(response, espTxnID, request);
-            logger.info("Document signing completed successfully: {}", fileUrl);
+            // Updated: Service now returns a Map
+            Map<String, String> signingResult = eSignService.processDocumentCompletion(response, espTxnID, request);
+            
+            logger.info("Document signing completed successfully: {}", signingResult.get("fileUrl"));
 
             Map<String, String> body = new HashMap<>();
             body.put("status", "SUCCESS");
-            body.put("fileUrl", fileUrl);
+            body.put("fileUrl", signingResult.get("fileUrl"));
+            body.put("fileStoreId", signingResult.get("fileStoreId")); // New field returned
 
             return ResponseEntity.ok(body);
 
         } catch (IllegalStateException e) {
+            // ... [Existing error handling] ...
             logger.warn("Session expired or invalid state: {}", e.getMessage());
             Map<String, String> error = new HashMap<>();
             error.put("status", "FAILED");
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        } catch (RuntimeException e) {
-            logger.error("Error processing signature: {}", e.getMessage());
+        } catch (Exception e) {
+            // ... [Existing error handling] ...
+            logger.error("Error processing signature", e);
             Map<String, String> error = new HashMap<>();
             error.put("status", "FAILED");
             error.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        } catch (Exception e) {
-            logger.error("Unexpected error processing signature", e);
-            Map<String, String> error = new HashMap<>();
-            error.put("status", "FAILED");
-            error.put("error", "Error processing signature");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }

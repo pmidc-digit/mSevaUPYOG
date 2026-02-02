@@ -14,9 +14,8 @@ import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
@@ -158,7 +157,7 @@ public class ESignService {
     /**
      * PHASE 2: Handle Response (Strip Prefix)
      */
-    public String processDocumentCompletion(String eSignResponseXml, String customTxnId, HttpServletRequest request) throws Exception {
+    public Map<String, String> processDocumentCompletion(String eSignResponseXml, String customTxnId, HttpServletRequest request) throws Exception {
         logger.info("Processing Phase 2 for Custom ID: {}", customTxnId);
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -179,22 +178,29 @@ public class ESignService {
         String cleanedPkcs7 = sigNodes.item(0).getTextContent().replaceAll("\\s+", ""); 
         final byte[] encodedSig = Base64.getDecoder().decode(cleanedPkcs7);
 
-        // --- EXTRACT TENANT & FILE ID ---
+        // --- EXTRACT TENANT ID FROM CUSTOM TXN ID ---
         String extractedTenantId = env.getProperty("default.tenant.id", "pb");
         String originalFileStoreId = customTxnId;
 
         if (customTxnId.contains("-")) {
-            // "pb.nabha-UUID" -> split at first hyphen
+            // Split at the first hyphen only
             String[] parts = customTxnId.split("-", 2);
             if (parts.length > 1) {
-                extractedTenantId = parts[0];   // "pb.nabha"
-                originalFileStoreId = parts[1]; // "UUID"
+                String potentialTenantId = parts[0]; 
+                
+                // If the first part contains "pb.", use it as the tenant
+                if (potentialTenantId.contains("pb.")) {
+                    extractedTenantId = potentialTenantId;
+                    originalFileStoreId = parts[1]; // The rest is the UUID
+                } else {
+                    // If it's just a raw UUID (starts with numbers), keep customTxnId as is
+                    extractedTenantId = env.getProperty("default.tenant.id", "pb");
+                    originalFileStoreId = customTxnId;
+                }
             }
         }
-        
-        logger.info("Extracted -> Tenant: {}, FileID: {}", extractedTenantId, originalFileStoreId);
 
-        // Download using EXTRACTED tenant ID
+        logger.info("Extracted -> Tenant: {}, FileID: {}", extractedTenantId, originalFileStoreId);// Download using EXTRACTED tenant ID
         byte[] preparedPdfBytes = downloadPdfFromUrlAsBytes(getPdfUrlFromFilestore(originalFileStoreId, extractedTenantId));
 
         ByteArrayOutputStream signedBaos = new ByteArrayOutputStream();
@@ -219,8 +225,13 @@ public class ESignService {
         // Upload using EXTRACTED tenant ID
         String fileStoreResponse = uploadPdfToFilestore(signedBaos.toByteArray(), extractedTenantId);
         String finalFileStoreId = extractFileStoreIdFromResponse(fileStoreResponse);
+        String returnFileStoreURL= getPdfUrlFromFilestore(finalFileStoreId, extractedTenantId);
+
+        Map<String, String> result = new HashMap<>();
+        result.put("fileStoreId", finalFileStoreId);
+        result.put("fileUrl", returnFileStoreURL);
         
-        return getPdfUrlFromFilestore(finalFileStoreId, extractedTenantId);
+        return result;
     }
 
     // --- HELPER: Extract City Name (e.g. "pb.nabha" -> "Nabha") ---

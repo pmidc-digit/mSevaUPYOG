@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, Loader, RemoveableTag, MultiSelectDropdown } from "@mseva/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, Loader, RemoveableTag, MultiSelectDropdown, LinkLabel  } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 // import MultiSelectDropdown from "./Multiselect";
@@ -133,9 +133,30 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
           handleRemoveUnit={handleRemoveUnit}
         />
       ))}
-      <label onClick={handleAddUnit} className="link-label" style={{ width: "12rem" }}>
+      {/* <label onClick={handleAddUnit} className="link-label" style={{ width: "12rem" }}>
         {t("HR_ADD_JURISDICTION")}
-      </label>
+      </label> */}
+
+      <LinkLabel
+        style={{
+          display: "inline-block",
+          padding: "8px 16px",
+          background: "linear-gradient(135deg, #2563eb, #1e40af)",
+          color: "#FFFFFF",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "13px",
+          fontWeight: "600",
+          textDecoration: "none",
+          marginTop: "16px",
+          marginBottom: "8px",
+          border: "none",
+          transition: "background-color 0.2s ease",
+        }}
+        onClick={handleAddUnit}
+      >
+        {t("HR_ADD_JURISDICTION")}
+      </LinkLabel>
     </div>
   );
 };
@@ -271,11 +292,51 @@ function Jurisdiction({
             </h2>
           </div>
           {jurisdictions.length > 1 ? (
-            <div
-              onClick={() => handleRemoveUnit(jurisdiction)}
-              style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
+            // <div
+            //   onClick={() => handleRemoveUnit(jurisdiction)}
+            //   style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
+            // >
+            //   X
+            // </div>
+             <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "16px",
+                paddingRight: "8px",
+              }}
             >
-              X
+              <div
+                onClick={() => handleRemoveUnit(jurisdiction)}
+                onMouseEnter={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.opacity = "0.8";
+                  path.style.fill = "#2341e9b2";
+                }}
+                onMouseLeave={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.opacity = "1";
+                  path.style.fill = "#6b7280";
+                }}
+                style={{
+                  cursor: "pointer",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#6b7280" />
+                </svg>
+              </div>
             </div>
           ) : null}
         </LabelFieldPair>

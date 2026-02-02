@@ -200,7 +200,7 @@ const HRMSEMPMAPDetails = () => {
   const submitAction = (data) => { };
    // ==================== MODAL ACTIONS ====================
   const handleDeleteAll = async () => {
-    if (window.confirm(t("HR_CONFIRM_DELETE_ALL_MAPPINGS") || "Are you sure you want to delete ALL mappings for this employee?")) {
+    if (window.confirm("Are you sure you want to delete ALL mappings for this employee?")) {
       try {
         setMappingLoading(true);
         

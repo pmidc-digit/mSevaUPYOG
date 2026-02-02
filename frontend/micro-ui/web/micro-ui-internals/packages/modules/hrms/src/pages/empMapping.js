@@ -335,7 +335,7 @@ const EmpMaping = () => {
           category: mapping.category.categoryId,
           subcategory: mapping.subCategory.subCategoryId,
           zone: mapping.zone.code,
-          assignedTenantId: selectedULB.code.split(".")[0],
+          assignedTenantId: selectedULB.code,
         })),
       };
 

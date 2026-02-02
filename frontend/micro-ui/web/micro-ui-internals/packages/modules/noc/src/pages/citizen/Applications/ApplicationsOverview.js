@@ -522,10 +522,6 @@ const CitizenApplicationOverview = () => {
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
-            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
           </StatusTable>
         </Card>
       )}

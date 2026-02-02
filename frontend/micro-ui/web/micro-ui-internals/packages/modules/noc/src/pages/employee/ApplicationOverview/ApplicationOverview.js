@@ -362,6 +362,10 @@ const NOCEmployeeApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
 
+  const [documentVerifier, setDocumentVerifier] = useState("");
+const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
+
+
   const closeMenu = () => {
     setDisplayMenu(false);
   };
@@ -379,6 +383,21 @@ const NOCEmployeeApplicationOverview = () => {
 
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
+
+
+  console.log('user', user)
+
+  useEffect(() => {
+  const status = applicationDetails?.Noc?.[0]?.applicationStatus;
+  const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
+  if (status === "DOCUMENTVERIFY") { 
+     setDocumentVerifier( 
+      additionalDetails?.documentVerifier || user?.info?.name || "" ); 
+    } else if (status === "INSPECTION_REPORT_PENDING") { 
+       setInspectionReportVerifier( additionalDetails?.inspectionReportVerifier || user?.info?.name || "" ); 
+      }
+}, [applicationDetails?.Noc?.[0]?.applicationStatus, user?.info?.name]);
+
 
   const hasRole = user?.info?.roles?.some(
   role => role?.code === "OBPAS_NOC_JE" || role?.code === "OBPAS_NOC_BI"
@@ -547,11 +566,13 @@ const NOCEmployeeApplicationOverview = () => {
     console.log("payloadData", payloadData);
     const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
-
+    
     // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
     // Check if remarks are mandatory when status is DOCUMENTVERIFY
     if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
-      const allRemarksFilled = Object.values(checklistRemarks).every((remark) => remark && remark.trim() !== "");
+      const allRemarksFilled = Object.values(checklistRemarks).every(
+        (remark) => typeof remark === "string" && remark.trim() !== ""
+      );
       if (!allRemarksFilled) {
         setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
         return;
@@ -562,11 +583,11 @@ const NOCEmployeeApplicationOverview = () => {
       console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
       if (fieldInspectionPending?.length === 0) {
         closeModal();
-        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
+        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting (In case of internal query kindly re-fill the inspection report)" });
         return;
       } else if (fieldInspectionPending?.[0]?.questionLength === 0) {
         closeModal();
-        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
+        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting ((In case of internal query kindly re-fill the inspection report))" });
         return;
       } else {
         const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_" + index]);
@@ -635,6 +656,8 @@ const NOCEmployeeApplicationOverview = () => {
           calculations: [...oldCalculations, newCalculation],
           siteImages: siteImages?.documents || [],
           fieldinspection_pending: fieldInspectionPending,
+          documentVerifier: documentVerifier,
+          InspectionReportVerifier : InspectionReportVerifier
         },
       },
     };
@@ -857,10 +880,6 @@ const NOCEmployeeApplicationOverview = () => {
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
-            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
           </StatusTable>
         </Card>
       )}
@@ -1030,6 +1049,7 @@ const NOCEmployeeApplicationOverview = () => {
             fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
             onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
+            InspectionReportVerifier = {InspectionReportVerifier}
           />
         </Card>
       )}
@@ -1037,7 +1057,7 @@ const NOCEmployeeApplicationOverview = () => {
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
             <div id="fieldInspection"></div>
-            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} />
+            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} InspectionReportVerifier = {InspectionReportVerifier}  />
           </Card>
         )}
 
@@ -1051,7 +1071,7 @@ const NOCEmployeeApplicationOverview = () => {
       </Card>
 
       <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <CardSubHeader>{"Document Checklist Verified by"} - {documentVerifier}</CardSubHeader>
         <StatusTable>
           {remainingDocs?.length > 0 && (
             <NOCDocumentChecklist

@@ -30,6 +30,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
+  console.log('ownerIds', ownerIds)
+  console.log('ownerPhotos', ownerPhotos)
   useEffect(()=>{
      console.log("useffect 8");
       if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);
@@ -79,61 +81,52 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
 
   function checkValidation(data) {
+    console.log("data in check val", data);
+    const owners = data?.owners ?? [];
 
-  const owners = data?.owners ?? [];
+    console.log("ownerPhotoList", ownerPhotoList);
+    // Filter photos/ids to only those that match current owners by mobileNumber
 
-  // Filter photos/ids to only those that match current owners by mobileNumber
-  const filteredOwnerPhotos = ownerPhotoList?.filter(photo =>
-    owners.some(o => o.mobileNumber === photo?.mobileNumber)
-  ) || [];
+    const ownerPhotoCount = ownerPhotoList?.length ?? 0;
+    const ownerIdCount = ownerIdList?.length ?? 0;
+    console.log("ownerPhotoCount", ownerPhotoCount);
+    const ownersCount = owners?.length;
+    console.log("ownersCount", ownersCount);
+    const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
+    const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
 
-  const filteredOwnerIds = ownerIdList?.filter(id =>
-    owners.some(o => o.mobileNumber === id?.mobileNumber)
-  ) || [];
+    if (data.isPropertyAvailable?.value) {
+      if (!data.owners[0]?.propertyId?.trim()) {
+        setTimeout(() => {
+          setShowToast(null);
+        }, 3000);
+        setShowToast({ key: "true", error: true, message: t("Noc propertyid required if property registered is selected yes") }); // Use your NOC-specific translation key if different from BPA
+        return false;
+      }
+    }
 
-  const ownerPhotoCount = filteredOwnerPhotos?.length;
-  const ownerIdCount = filteredOwnerIds?.length;
-  
-  const ownersCount = owners?.length;
-  
-  const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
-  const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;
-
-  if (data.isPropertyAvailable?.value) {
-  if (!data.owners[0]?.propertyId?.trim()) {
-    setTimeout(() => {
-      setShowToast(null);
-    }, 3000);
-    setShowToast({ key: "true", error: true, message: t("Noc propertyid required if property registered is selected yes") }); // Use your NOC-specific translation key if different from BPA
-    return false;
-  }
-}
-
-  if (ownersCount !== ownerPhotoCount) {
-    setTimeout(()=>{
-      setShowToast(null);
-    },3000);
-    setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
-    return false;
-  }
-  else if (ownersCount !== ownerIdCount) {
-    setTimeout(()=>{
-      setShowToast(null);
-    },3000);
-    setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
-    return false;
-  }
-  else if (isDuplicateOwner) {
-    setTimeout(()=>{
-      setShowToast(null);
-    },3000);
-    setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
-    return false;
-  }
-  else{
+    if (ownersCount !== ownerPhotoCount) {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
+      return false;
+    } else if (ownersCount !== ownerIdCount) {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
+      return false;
+    } else if (isDuplicateOwner) {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+      setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
+      return false;
+    } else {
       return true;
+    }
   }
- }
 
   const onSubmit = (data) => {
     //console.log("data in first step", data);

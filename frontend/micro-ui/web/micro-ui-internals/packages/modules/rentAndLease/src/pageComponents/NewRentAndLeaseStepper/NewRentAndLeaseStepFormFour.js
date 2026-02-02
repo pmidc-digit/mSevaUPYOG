@@ -160,7 +160,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         endDate: updatedPropertyDetails?.endDate
           ? new Date(updatedPropertyDetails?.endDate).getTime()
           : CreatedResponse?.AllotmentDetails?.[0]?.endDate,
-        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
+        penaltyType:
+          typeof updatedPropertyDetails?.penaltyType === "object"
+            ? updatedPropertyDetails?.penaltyType?.code
+            : updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
         ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
@@ -255,7 +258,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         endDate: updatedPropertyDetails?.endDate
           ? new Date(updatedPropertyDetails?.endDate).getTime()
           : CreatedResponse?.AllotmentDetails?.[0]?.endDate,
-        penaltyType: updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
+        penaltyType:
+          typeof updatedPropertyDetails?.penaltyType === "object"
+            ? updatedPropertyDetails?.penaltyType?.code
+            : updatedPropertyDetails?.penaltyType || CreatedResponse?.AllotmentDetails?.[0]?.penaltyType,
         OwnerInfo: mergedOwnerInfo,
         ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,

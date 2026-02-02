@@ -59,7 +59,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       previousApplicationNumber,
       startDate: startDateEpoch,
       endDate: endDateEpoch,
-      penaltyType: propertyDetails.penaltyType,
+      penaltyType: typeof propertyDetails.penaltyType === "object" ? propertyDetails.penaltyType?.code : propertyDetails.penaltyType,
       workflow: {
         action: "INITIATE",
         comments: "",

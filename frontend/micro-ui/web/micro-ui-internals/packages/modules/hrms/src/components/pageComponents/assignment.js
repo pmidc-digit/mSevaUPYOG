@@ -1,4 +1,4 @@
-import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader, TextInput } from "@mseva/digit-ui-react-components";
+import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader, TextInput, LinkLabel } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 import { convertEpochToDate } from "../Utils/index";
@@ -125,9 +125,26 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
           currentassignemtDate={currentassignemtDate}
         />
       ))}
-      <label onClick={handleAddUnit} className="link-label" style={{ width: "12rem" }}>
+      <LinkLabel
+        style={{
+          display: "inline-block",
+          padding: "8px 16px",
+          background: "linear-gradient(135deg, #2563eb, #1e40af)",
+          color: "#FFFFFF",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "13px",
+          fontWeight: "600",
+          textDecoration: "none",
+          marginTop: "16px",
+          marginBottom: "8px",
+          border: "none",
+          transition: "background-color 0.2s ease",
+        }}
+        onClick={handleAddUnit}
+      >
         {t("HR_ADD_ASSIGNMENT")}
-      </label>
+      </LinkLabel>
     </div>
   );
 };
@@ -211,8 +228,45 @@ function Assignment({
             </h2>
           </div>
           {assignments.length > 1 && !assignment?.id && !assignment?.isCurrentAssignment ? (
-            <div onClick={() => handleRemoveUnit(assignment)} style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
-              X
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "16px",
+                paddingRight: "8px",
+              }}
+            >
+              <div
+                onClick={() => handleRemoveUnit(assignment)}
+                onMouseEnter={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.opacity = "0.8";
+                  path.style.fill = "#2341e9b2";
+                }}
+                onMouseLeave={(e) => {
+                  const svg = e.currentTarget.querySelector("svg");
+                  const path = svg.querySelector("path");
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.opacity = "1";
+                  path.style.fill = "#6b7280";
+                }}
+                style={{
+                  cursor: "pointer",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#6b7280" />
+                </svg>
+              </div>
             </div>
           ) : null}
         </LabelFieldPair>

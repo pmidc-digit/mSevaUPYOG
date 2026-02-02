@@ -9,7 +9,7 @@ RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
 RUN yarn add @mseva/digit-ui-module-noc@1.0.66
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32
-RUN yarn add @mseva/digit-ui-module-hrms@1.0.18
+RUN yarn add @mseva/digit-ui-module-hrms@1.0.19
 RUN yarn add @mseva/digit-ui-module-core@1.0.65
 RUN yarn add @mseva/digit-ui-module-common@1.1.84
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
@@ -18,7 +18,7 @@ RUN yarn add @mseva/digit-ui-module-ptr@1.3.1
 RUN yarn add @mseva/digit-ui-module-swach@1.0.54
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39
 RUN yarn add @mseva/digit-ui-module-tl@1.0.31
-RUN yarn add @mseva/digit-ui-module-obps@1.1.71
+RUN yarn add @mseva/digit-ui-module-obps@1.1.72
 RUN yarn add @mseva/digit-ui-module-sv@1.1.46
 RUN yarn add @mseva/upyog-ui-module-ads@1.1.82
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.88
@@ -26,8 +26,8 @@ RUN yarn add @mseva/upyog-ui-module-asset@1.1.40
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.30
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.46
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.65
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.47
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.66
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

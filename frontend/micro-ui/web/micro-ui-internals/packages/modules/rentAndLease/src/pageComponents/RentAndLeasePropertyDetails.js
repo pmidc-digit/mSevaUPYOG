@@ -22,7 +22,7 @@ import RentANDLeaseDocuments from "../components/RentANDLeaseDocuments";
 const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, validateStep, config }) => {
   const dispatch = useDispatch();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  const [documentsData, setDocumentsData] = useState({});
+  const [documentsData, setDocumentsData] = useState([]);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
 
@@ -47,6 +47,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const locationTypeOptions = [
     { name: t("PRIME"), code: "Prime", i18nKey: "Prime" },
     { name: t("NON_PRIME"), code: "Non-Prime", i18nKey: "Non-Prime" },
+  ];
+
+  const arrearReasonOptions = [
+    { name: t("PREVIOUS DUES"), code: "PREVIOUS DUES" },
+    { name: t("UNDER DISPUTE"), code: "UNDER DISPUTE" },
+    { name: t("COURT CASE"), code: "COURT CASE" },
   ];
 
   const filters = {
@@ -103,7 +109,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     Challan: {
       Documents: [
         {
-          code: "BPA_FILE_UPLOAD",
+          code: "arrearDoc",
           documentType: "ID_PROOF",
           required: watch("arrear") > 0 ? true : false,
           active: true,
@@ -137,6 +143,15 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       setFilteredProperties(properties);
     }
   }, [data, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
+
+  useEffect(() => {
+    const startDate = watch("arrearStartDate");
+    if (startDate) {
+      const end = new Date(startDate);
+      end.setFullYear(end.getFullYear() + 1);
+      setValue("arrearEndDate", end.toISOString().split("T")[0], { shouldValidate: true });
+    }
+  }, [watch("arrearStartDate")]);
 
   const todayISO = new Date().toISOString().split("T")[0];
   const minStartDate = new Date();
@@ -176,12 +191,18 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const onSubmit = async (data) => {
     console.log("data", data);
 
-    if (!documentsData?.[0]?.filestoreId) {
+    const applicationType = data?.applicationType?.code;
+
+    if (applicationType === "Legacy" && data?.arrear > 0 && !documentsData?.[0]?.filestoreId) {
       alert("Please upload arrear document");
       return;
     }
 
-    data["arrearDoc"] = documentsData?.[0]?.filestoreId;
+    if (applicationType === "Legacy") {
+      data["arrearDoc"] = documentsData?.[0]?.filestoreId;
+    } else {
+      delete data["arrearDoc"];
+    }
 
     if (validateStep) {
       const validationErrors = validateStep(data);
@@ -208,6 +229,17 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       Object.keys(propertyDetails)?.forEach((key) => {
         setValue(key, propertyDetails[key], { shouldValidate: true });
       });
+
+      // Restore documentsData for persistence
+      if (propertyDetails.arrearDoc) {
+        setDocumentsData([
+          {
+            documentType: "arrearDoc",
+            filestoreId: propertyDetails.arrearDoc,
+            documentUid: propertyDetails.arrearDoc,
+          },
+        ]);
+      }
     }
   }, [currentStepData, setValue]);
 
@@ -651,7 +683,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
-                  option={applicationTypeOptions}
+                  option={arrearReasonOptions}
                   defaultValues
                   optionKey="name"
                   t={t}
@@ -691,7 +723,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
               config={{ key: "documents" }}
               onSelect={handleDocumentsSelect}
               userType="CITIZEN"
-              formData={{ documents: documentsData }}
+              formData={{ documents: { documents: documentsData } }}
               setError={setError}
               error={error}
               clearErrors={() => {}}

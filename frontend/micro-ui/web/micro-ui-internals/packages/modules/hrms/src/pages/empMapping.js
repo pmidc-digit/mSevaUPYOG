@@ -332,10 +332,10 @@ const EmpMaping = () => {
         Employees: mappingsToCreate.map((mapping) => ({
           tenantId: selectedULB.code,
           userUUID: mapping.employeeUUID,
-          category: mapping.category.name,
-          subcategory: mapping.subCategory.name,
+          category: mapping.category.categoryId,
+          subcategory: mapping.subCategory.subCategoryId,
           zone: mapping.zone.code,
-          assignedTenantId: selectedULB.code.split(".")[0],
+          assignedTenantId: selectedULB.code,
         })),
       };
 

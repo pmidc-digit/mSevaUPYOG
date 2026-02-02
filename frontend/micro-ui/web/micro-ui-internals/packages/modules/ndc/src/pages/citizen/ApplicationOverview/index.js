@@ -28,7 +28,7 @@ import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-
+import { EmployeeData } from "../../../utils";
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -66,7 +66,13 @@ const CitizenApplicationOverview = () => {
     }
   }, [workflowDetails]);
 
-  console.log("approver for ndc", approver);
+  const empData = EmployeeData(tenantId, approver)
+  
+    console.log("approver for ndc", approver);
+  
+  
+    console.log('officerData', empData)
+  
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -146,8 +152,11 @@ const CitizenApplicationOverview = () => {
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
     console.log("tenantInfo", tenantInfo);
     const ulbType = tenantInfo?.city?.ulbType;
-    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
+    let acknowledgementData;
 
+    if (empData) {
+      acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
+    }
     console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generateNDC(acknowledgementData);
   };

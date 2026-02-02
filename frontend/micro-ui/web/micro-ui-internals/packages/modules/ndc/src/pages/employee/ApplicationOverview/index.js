@@ -22,6 +22,7 @@ import NDCModal from "../../../pageComponents/NDCModal";
 import { Loader } from "../../../components/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import getAcknowledgementData from "../../../getAcknowlegment";
+import { EmployeeData } from "../../../utils";
 const availableOptions = [
   { code: "yes", name: "Yes" },
   { code: "no", name: "No" },
@@ -52,7 +53,6 @@ const ApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
-
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
       const updated = { ...prev, [consumerCode]: value === "yes" };
@@ -131,6 +131,14 @@ const ApplicationOverview = () => {
       // setComplaintStatus(applicationStatus);
     })();
   }, [tenantId]);
+
+  const empData = EmployeeData(tenantId, approver)
+
+  console.log("approver for ndc", approver);
+
+
+  console.log('officerData', empData)
+
 
   // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
 
@@ -233,8 +241,11 @@ const ApplicationOverview = () => {
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       console.log("tenantInfo", tenantInfo);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
+      let acknowledgementData;
 
+      if(empData){
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
+      }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
@@ -458,7 +469,7 @@ const ApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-        {isCemp && <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>}
+        {isCemp && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>}
       </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>

@@ -46,7 +46,7 @@
     "@mseva/digit-ui-module-dss": "1.0.6",
     "@mseva/digit-ui-module-engagement": "1.1.32",
     "@mseva/digit-ui-module-fsm": "1.0.6",
-    "@mseva/digit-ui-module-hrms": "1.0.18",
+    "@mseva/digit-ui-module-hrms": "1.0.19",
     "@mseva/digit-ui-module-mcollect": "1.0.15",
     "@mseva/digit-ui-module-challangeneration": "1.0.28",
     "@mseva/digit-ui-module-garbagecollection": "1.0.33",

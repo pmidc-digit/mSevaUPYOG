@@ -51,7 +51,7 @@
     "@mseva/digit-ui-module-challangeneration": "1.0.29",
     "@mseva/digit-ui-module-garbagecollection": "1.0.33",
     "@mseva/digit-ui-module-rentandlease": "1.0.45",
-    "@mseva/digit-ui-module-noc": "1.0.64",
+    "@mseva/digit-ui-module-noc": "1.0.65",
     "@mseva/digit-ui-module-pgr": "1.0.26",
     "@mseva/digit-ui-module-swach": "1.0.54",
     "@mseva/digit-ui-module-receipts": "1.0.4",

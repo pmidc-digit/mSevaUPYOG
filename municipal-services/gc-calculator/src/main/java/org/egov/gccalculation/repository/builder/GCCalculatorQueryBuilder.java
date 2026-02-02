@@ -18,8 +18,8 @@ import org.springframework.util.StringUtils;
 
 @Component
 public class GCCalculatorQueryBuilder {
-	
-	
+
+
 
 	@Autowired
 	private GCCalculationConfiguration config;
@@ -45,21 +45,21 @@ public class GCCalculatorQueryBuilder {
 	// private static final String connectionNoListQuery = "SELECT
 	// distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN
 	// eg_ws_service ws ON conn.id = ws.connection_id";
-	
-	
-	
+
+
+
 	private static final String getDemandId = "SELECT DISTINCT d.id AS demandId, d.status AS Status, dd.collectionamount as amountCollected FROM egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 
 	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
-	
+
 	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +
             "SET status = 'EXPIRED' " +
             "FROM egbs_billdetail_v1 ";
-	
-	
+
+
     private static final String connectionNoBill =  " select distinct(bill.id) from egbs_bill_v1 bill, egbs_billdetail_v1 bd  ";
-    
+
     private static final String connectionNoBills =  " select distinct(consumercode) from egbs_billdetail_v1 bd  ";
 
 
@@ -86,7 +86,7 @@ public class GCCalculatorQueryBuilder {
 			+ " conn.id as conn_id, conn.tenantid, conn.applicationNo, conn.applicationStatus, conn.status, conn.connectionNo, conn.oldConnectionNo, conn.property_id,"
 			+ " conn.action, conn.adhocpenalty, conn.adhocrebate, conn.adhocpenaltyreason, conn.applicationType, conn.dateEffectiveFrom,"
 			+ " conn.adhocpenaltycomment, conn.adhocrebatereason, conn.adhocrebatecomment, conn.createdBy as ws_createdBy, conn.lastModifiedBy as ws_lastModifiedBy,"
-			+ " conn.createdTime as ws_createdTime, conn.lastModifiedTime as ws_lastModifiedTime,conn.additionaldetails, conn.frequency,"
+			+ " conn.createdTime as ws_createdTime, conn.lastModifiedTime as ws_lastModifiedTime,conn.additionaldetails, cconn.frequency_of_garbage_collection,"
 			+ " conn.locality, conn.isoldapplication,  document.id as doc_Id, document.documenttype, document.filestoreid, document.active as doc_active,"
 //			+ " plumber.name as plumber_name, plumber.licenseno, roadcuttingInfo.id as roadcutting_id, roadcuttingInfo.roadtype as roadcutting_roadtype, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea,"
 //			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"
@@ -114,7 +114,6 @@ public class GCCalculatorQueryBuilder {
 //			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"
 			+ holderSelectValues + " FROM eg_gc_connection conn " + INNER_JOIN_STRING
 			+ " eg_gc_service wc ON wc.connection_id = conn.id" + LEFT_OUTER_JOIN_STRING
-			+ LEFT_OUTER_JOIN_STRING
 			+ "eg_gc_connectionholder connectionholder ON connectionholder.connectionid = conn.id";
 //			+ LEFT_OUTER_JOIN_STRING + "eg_ws_roadcuttinginfo roadcuttingInfo ON roadcuttingInfo.wsid = conn.id ";
 
@@ -132,7 +131,7 @@ public class GCCalculatorQueryBuilder {
 	public static final String EG_GC_BILL_SCHEDULER_CONNECTION_STATUS_INSERT = "INSERT INTO eg_gc_bill_scheduler_connection_status "
 			+ "(id, eg_gc_scheduler_id, locality, module, createdtime, lastupdatedtime, status, tenantid, reason, consumercode) "
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?);";
-	
+
 	public static final String RELATED_SW_CONNECTION_SEARCH_QUERY = "SELECT conn.relatedSwConn from eg_gc_connection conn ";
 
 	public String getDistinctTenantIds() {
@@ -144,7 +143,7 @@ public class GCCalculatorQueryBuilder {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param criteria          would be meter reading criteria
 	 * @param preparedStatement Prepared SQL Statement
 	 * @return Query for given criteria
@@ -238,7 +237,7 @@ public class GCCalculatorQueryBuilder {
 		return query.toString();
 	}
 
-	
+
 	public String getCurrentReadingConnectionSearchQuery(MeterReadingSearchCriteria criteria,
 			List<Object> preparedStatement) {
 		if (criteria.isEmpty()) {
@@ -258,8 +257,8 @@ public class GCCalculatorQueryBuilder {
 		query.append(" ORDER BY mr.currentReadingDate DESC LIMIT 1 offset 1");
 		return query.toString();
 	}
-	
-	
+
+
 	public String getMeterId(String connectionNo, Long lastReadingDate, Long currentDate, String tenantId,
 			List<Object> preparedStatement) {
 		if (connectionNo.isEmpty()) {
@@ -283,7 +282,7 @@ public class GCCalculatorQueryBuilder {
 		        preparedStatement.add(lastReadingDate);
 		    }
 
-		    
+
 		    query.append(" ORDER BY mr.currentReadingDate DESC LIMIT 1");
 
 		    return query.toString();
@@ -291,7 +290,7 @@ public class GCCalculatorQueryBuilder {
 
 	/**
 	 * Bill expire query builder
-	 * 
+	 *
 	 * @param billIds
 	 * @param preparedStmtList
 	 */
@@ -429,7 +428,7 @@ public class GCCalculatorQueryBuilder {
 
 		addClauseIfRequired(preparedStatement, query);
 		query.append(
-				" conn.connectionno NOT IN (select distinct(consumercode) from egbs_demand_v1 dmd where (dmd.taxperiodfrom >= ? and dmd.taxperiodto <= ?) and businessservice = 'WS' and tenantid=?)");
+				" conn.connectionno NOT IN (select distinct(consumercode) from egbs_demand_v1 dmd where (dmd.taxperiodfrom >= ? and dmd.taxperiodto <= ?) and businessservice = 'GC' and tenantid=?)");
 		preparedStatement.add(fromDate);
 		preparedStatement.add(toDate);
 		preparedStatement.add(tenantId);
@@ -534,16 +533,16 @@ public class GCCalculatorQueryBuilder {
 
 		addClauseIfRequired(preparedStatement, query);
 		query.append(
-				" conn.connectionno NOT IN (select distinct(consumercode) from egbs_demand_v1 dmd where (dmd.taxperiodfrom >= ? and dmd.taxperiodto <= ?) and businessservice = 'WS' and tenantid=? and consumercode = ?)");
+				" conn.connectionno NOT IN (select distinct(consumercode) from egbs_demand_v1 dmd where (dmd.taxperiodfrom >= ? and dmd.taxperiodto <= ?) and businessservice = 'GC' and tenantid=? and consumercode = ?)");
 		preparedStatement.add(fromDate);
 		preparedStatement.add(toDate);
 		preparedStatement.add(tenantId);
 		preparedStatement.add(consumerCode);
 
-		addClauseIfRequired(preparedStatement, query);
+//		addClauseIfRequired(preparedStatement, query);
 		String orderbyClause = " conn.connectionno =? ";
-		preparedStatement.add(consumerCode);
-		query.append(orderbyClause);
+//		preparedStatement.add(consumerCode);
+//		query.append(orderbyClause);
 
 		return query.toString();
 
@@ -723,35 +722,35 @@ public class GCCalculatorQueryBuilder {
 	public String getCancelBill(String businessService, String tenantId, String consumerCode, Long taxPeriodTo, Long taxperiodfrom,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
-		
-		
+
+
 		// Add connection type
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.businessservice = ? ");
 		preparedStatement.add(businessService);
-		
+
 		//Add Businessservice
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.tenantId = ? ");
 		preparedStatement.add(tenantId);
-		
-		
+
+
 		//Add TenantId
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.consumercode = ? ");
 		preparedStatement.add(consumerCode);
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.status = 'ACTIVE' ");
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
-				
+
 		//Add taxperiodfrom
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.taxperiodfrom >= ? ") ;
 		preparedStatement.add(taxperiodfrom);
-		
+
 		//Add taxperiodto
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.taxperiodto <= ? ");
@@ -759,42 +758,42 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 
 		return query.toString();
 	}
-	
-	
-	
+
+
+
 	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(getDemandId);
-		
-		
+
+
 		// Add connection type
 
-		
+
 		//Add Businessservice
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.tenantId = ? ");
 		preparedStatement.add(tenantId);
-		
-		
+
+
 		//Add TenantId
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.consumercode = ? ");
 		preparedStatement.add(consumerCode);
-		
-		
+
+
 		query.append("AND d.businessservice = 'WS' ");
-		
+
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" dd.collectionamount = '0' ");
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
-				
+
 		//Add taxperiodfrom
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.taxperiodfrom >= ? ") ;
 		preparedStatement.add(taxperiodfrom);
-		
+
 //		//Add taxperiodto
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" d.taxperiodto <= ? ");
@@ -803,47 +802,47 @@ StringBuilder query = new StringBuilder(getDemandId);
 
 		return query.toString();
 	}
-	
-	
-	
-	// alternative id pick 
-	
-	
+
+
+
+	// alternative id pick
+
+
 	public String getCancelBills(String tenantId, String demandid,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
-				
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.tenantId = ? ");
 		preparedStatement.add(tenantId);
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.id = ? ");
 		preparedStatement.add(demandid);
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.status = 'ACTIVE' ");
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
-				
+
 		return query.toString();
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	// DEMAND CANCELLED //
-	
+
 	public String getUpdateDemand(List<Canceldemandsearch> demandList, List<Object> preparedStatement) {
-StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);     
-       query.append("status='CANCELLED' ");     
+StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
+       query.append("status='CANCELLED' ");
        addClauseIfRequired(preparedStatement, query);
        // Add the IN clause with placeholders
        query.append(" id IN (");
-       
+
        // Use StringJoiner to build the placeholders string
        StringJoiner placeholders = new StringJoiner(", ");
        for (Canceldemandsearch demand : demandList) {
@@ -854,8 +853,8 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
        query.append(")");
 		return query.toString();
 	}
-	
-	
+
+
 	public String getUpdateDemands(List<Canceldemandsearch> demandLists, List<Object> preparedStatement) {
 	    StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 	    query.append("status='CANCELLED' ");
@@ -880,18 +879,18 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 
 	    return query.toString();
 	}
-	
-	
-	
+
+
+
 	// BILL EXPIRY//
-	
-	
+
+
 	public String getBillid(String consumercode, String businessService, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoBill);	
-		
-		
-		
-		
+		StringBuilder query = new StringBuilder(connectionNoBill);
+
+
+
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.consumercode = ? ");
 		preparedStatement.add(consumercode);
@@ -901,68 +900,68 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.businessService = ? ");
 		preparedStatement.add(businessService);
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bill.status='ACTIVE'");
-		
+
         return query.toString();
 	}
-	
-	
+
+
 	public String getBillids(String tenantid, String demandid, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoBill);	
-		
-		
-		
-		
+		StringBuilder query = new StringBuilder(connectionNoBill);
+
+
+
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.tenantid = ? ");
 		preparedStatement.add(tenantid);
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.billid=bill.id");
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.demandid = ? ");
 		preparedStatement.add(demandid);
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bill.status='ACTIVE'");
-		
+
         return query.toString();
 	}
-	
+
 	public String getBillidss(String tenantid, String demandid, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoBills);	
-		
-		
-		
-		
+		StringBuilder query = new StringBuilder(connectionNoBills);
+
+
+
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.tenantid = ? ");
 		preparedStatement.add(tenantid);
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" bd.billid=bill.id");
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" bd.demandid = ? ");
 		preparedStatement.add(demandid);
-		
+
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" bill.status='ACTIVE'");
-		
+
         return query.toString();
 	}
 
-	
+
 	public String getBillDemand(List<BillSearch> BillSearch, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoListQuerybill);	
-		
-		
+		StringBuilder query = new StringBuilder(connectionNoListQuerybill);
+
+
 		addClauseIfRequired(preparedStatement, query);
 
-		
+
 		query.append("  egbs_billdetail_v1.billid IN (");
-	        
+
 	        // Use StringJoiner to build the placeholders string
 	        StringJoiner placeholders = new StringJoiner(", ");
 	        for (BillSearch billSearch : BillSearch) {
@@ -971,25 +970,25 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 	        }
 	        query.append(placeholders.toString());
 	        query.append(")");
-	        
+
 	        addClauseIfRequired(preparedStatement, query);
 			query.append(" status = 'ACTIVE' ");
-			
+
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" egbs_bill_v1.id = egbs_billdetail_v1.billid");
-			
+
 	        return query.toString();
-}	
-	
-	
+}
+
+
 	public String getBillDemands(List<BillSearchs> billSearchsss, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoListQuerybill);	
-		
-		
+		StringBuilder query = new StringBuilder(connectionNoListQuerybill);
+
+
 		addClauseIfRequired(preparedStatement, query);
-	
+
 		query.append("  egbs_billdetail_v1.consumercode IN (");
-		
+
 	        // Use StringJoiner to build the placeholders string
 	        StringJoiner placeholders = new StringJoiner(", ");
 	        for (BillSearchs billSearchs : billSearchsss) {
@@ -998,13 +997,13 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 	        }
 	        query.append(placeholders.toString());
 	        query.append(")");
-	            
+
 	        addClauseIfRequired(preparedStatement, query);
 			query.append(" status = 'ACTIVE' ");
-			
+
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" egbs_bill_v1.id = egbs_billdetail_v1.billid");
-			
+
 	        return query.toString();
 
 }
@@ -1023,13 +1022,13 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
             query.append(" egws.locality = ? ");
             preparedStatement.add(criteria.getLocality());
         }
-		
+
 		if (criteria.getStatus() != null) {
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" egws.status = ? ");
 			preparedStatement.add(criteria.getStatus());
 		}
-		
+
 		if (criteria.getBatch() != null) {
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" egbm.blockcode = ? ");
@@ -1038,9 +1037,9 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		query.append(" ORDER BY egws.createdtime ");
 		return query.toString();
 	}
-	
-	
-	
+
+
+
 	public String searchBillGenerationSchedulerQuerys(BillGenerationSearchCriteria criteria,
 			List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
@@ -1049,7 +1048,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 			query.append(" tenantid= ? ");
 			preparedStatement.add(criteria.getTenantId());
 		}
-		
+
 		if (criteria.getStatus() != null) {
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" status = ? ");
@@ -1059,7 +1058,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		query.append(" ORDER BY createdtime ");
 		return query.toString();
 	}
-	
+
 	public String getRelatedSwConnenction( String tenantId , String consumerCode ,List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder( RELATED_SW_CONNECTION_SEARCH_QUERY );
 		if(!StringUtils.isEmpty(tenantId)){
@@ -1067,19 +1066,19 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 			query.append(" conn.tenantid = ? ");
 			preparedStatement.add(tenantId);
 		}
-		
+
 		if(!StringUtils.isEmpty(consumerCode)){
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" conn.connectionno = ? ");
 			preparedStatement.add(consumerCode);
 		}
-		
+
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.applicationstatus = 'CONNECTION_ACTIVATED' ");
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.status = 'Active' ");
-		
+
 		return query.toString();
-		
+
 	}
 }

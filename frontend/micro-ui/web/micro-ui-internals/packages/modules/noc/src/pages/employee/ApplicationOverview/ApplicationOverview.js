@@ -1139,6 +1139,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
               onRemarksChange={setChecklistRemarks}
               readOnly={!isDocPending}
             />
+            
           )}
         </StatusTable>
       </Card>

@@ -62,7 +62,7 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   // };
 
   return (
-    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly" }}>
+    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly", flexWrap: "wrap", gap: "20px" }}>
       {documentsData?.map((item, index) => (
         <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", height: "200px", alignItems: "center" }}>
           {/* <CardSectionHeader>{t(item?.documentType?.replaceAll(".", "_"))}</CardSectionHeader> */}

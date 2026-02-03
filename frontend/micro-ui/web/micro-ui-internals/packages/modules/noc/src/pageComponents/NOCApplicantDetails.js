@@ -368,16 +368,10 @@ const NOCApplicantDetails = (_props) => {
     // Update the owner object with property data
     setValue('owners[0].ownerOrFirmName', nocCpt.details.owners[0]?.name || "", { shouldValidate: true, shouldDirty: true });
     setValue('owners[0].mobileNumber', nocCpt.details.owners[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
-    setValue('owners[0].address', nocCpt.details?.address?.doorNo || nocCpt.details?.address?.street || "", { shouldValidate: true, shouldDirty: true });
+    // setValue('owners[0].address', nocCpt.details?.address?.doorNo || nocCpt.details?.address?.street || "", { shouldValidate: true, shouldDirty: true });
     setValue('owners[0].fatherOrHusbandName', nocCpt.details.owners[0]?.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
     setValue('owners[0].propertyId', nocCpt.details?.propertyId || "", { shouldValidate: true, shouldDirty: true });
   // console.log(getValues(), "values ludhiana")
-
-    // Update Redux applicationDetails
-    // Use update function from useFieldArray to update the owner
-
-    // Hydrate only if property is available AND nocCpt exists
-
   }
 }, [nocCpt, isPropertyAvailable?.value]);
 
@@ -446,7 +440,7 @@ const NOCApplicantDetails = (_props) => {
     setValue(`owners[${currentIndex}].propertyId`, property.propertyId, { shouldValidate: true, shouldDirty: true });
     setValue(`owners[${currentIndex}].PropertyOwnerName`, property?.owners?.[0]?.name || "", { shouldValidate: true, shouldDirty: true });
     setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
+    // setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
     setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
     setValue(`owners[${currentIndex}].propertyVasikaNo`, property?.additionalDetails?.vasikaNo || null, { shouldValidate: true, shouldDirty: true });
     setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || null, { shouldValidate: true, shouldDirty: true });
@@ -459,9 +453,9 @@ const NOCApplicantDetails = (_props) => {
       if (property?.owners?.[0]?.mobileNumber) {
         setValue(`owners[${currentIndex}].mobileNumber`, property.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
       }
-      if (property?.owners?.[0]?.permanentAddress) {
-        setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
-      }
+      // if (property?.owners?.[0]?.permanentAddress) {
+      //   setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
+      // }
     }
 
     // Get current form values to preserve user-filled data
@@ -486,7 +480,7 @@ const NOCApplicantDetails = (_props) => {
                 ...(currentIndex === 0 && {
                   ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
                   mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
-                  address: property?.owners?.[0]?.permanentAddress || o.address,
+                  address: o.address,
                 }),
               }
             : o
@@ -501,6 +495,7 @@ const NOCApplicantDetails = (_props) => {
         vasikaNumber: property?.additionalDetails?.vasikaNo,
         vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
         netTotalArea: property?.landArea,
+        proposedSiteAddress : property?.owners?.[0]?.permanentAddress
       })
     );
   }
@@ -544,7 +539,7 @@ const NOCApplicantDetails = (_props) => {
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}</CardSubHeader>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, cursor: "pointer" }} onClick={() => removeOwner(index)}>
-              {!isEdit && fields.length > 1 && `❌`}
+              { fields.length > 1 && `❌`}
             </div>
 
             {index === 0 && (
@@ -580,6 +575,7 @@ const NOCApplicantDetails = (_props) => {
                                   vasikaNumber: "",
                                   vasikaDate: null,
                                   netTotalArea: null,
+                                  proposedSiteAddress : ""
                                 })
                               );
                               reset({
@@ -666,7 +662,7 @@ const NOCApplicantDetails = (_props) => {
 
                 <Controller control={control} name={`owners[${index}].propertyVasikaDate`} />
 
-                {/* <div className="field">
+                <div className="field">
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {watch(`owners[${index}].PropertyOwnerName`) && (
                       <StatusTable style={{ marginBottom: "1rem" }}>
@@ -682,7 +678,7 @@ const NOCApplicantDetails = (_props) => {
 
                     
                   </div>
-                </div> */}
+                </div>
               </div>
             )}
 
@@ -914,11 +910,11 @@ const NOCApplicantDetails = (_props) => {
                         props.onBlur(e);
                       }}
                       t={t}
-                      disabled={
-                        Boolean(nocCpt?.details?.address?.doorNo || nocCpt?.details?.address?.street) ||
-                        Boolean(cptObj?.address?.doorNo || cptObj?.address?.street) ||
-                        Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)
-                      }
+                      // disabled={
+                      //   Boolean(nocCpt?.details?.address?.doorNo || nocCpt?.details?.address?.street) ||
+                      //   Boolean(cptObj?.address?.doorNo || cptObj?.address?.street) ||
+                      //   Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)
+                      // }
                     />
                   )}
                 />
@@ -1046,7 +1042,7 @@ const NOCApplicantDetails = (_props) => {
 
       <div>
         <button type="button" onClick={() => append(defaultOwner())} style={{ cursor: "pointer" }}>
-          {!isEdit && `➕ Add Owner`}
+          {`➕ Add Owner`}
         </button>
       </div>
 

@@ -281,7 +281,7 @@ const CitizenApplicationOverview = () => {
       });
     }
   }
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "ESIGEND" ) {
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED" ) {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({

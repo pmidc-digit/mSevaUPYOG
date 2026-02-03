@@ -29,8 +29,11 @@ const [showHistory, setShowHistory] = useState(false);
  console.log('timeObj', timeObj)
  console.log("feeHistory keys", Object.keys(feeHistory || {}));
   return (
-    <div className="noc-table-container">
-      <table className="customTable table-border-style">
+    <div
+      className="noc-table-container"
+      style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", marginBottom: "16px", display: "block" }}
+    >
+      <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "600px", borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th>{t("BPA_TAXHEAD_CODE")}</th>
@@ -47,28 +50,60 @@ const [showHistory, setShowHistory] = useState(false);
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
                   ""
                 ) : (
+                  // <TextInput
+                  //   t={t}
+                  //   type="number"
+                  //   isMandatory={false}
+                  //   value={
+                  //     feeData[row.index]?.adjustedAmount === 0
+                  //       ? ""
+                  //       : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                  //   }
+                  //   onChange={(e) => {
+                  //     let val = e.target.value;
+
+                  //     if (val.length > 1 && val.startsWith("0")) {
+                  //       val = val.replace(/^0+/, "");
+                  //     }
+
+                  //     handleAdjustedAmountChange(row.index, val);
+                  //   }}
+                  //   // ❌ no onBlur here for NOC
+                  //   disable={disable}
+                  //   step={1}
+                  //   onBlur={onAdjustedAmountBlur}
+                  // />
+
                   <TextInput
                     t={t}
-                    type="number"
+                    type="text" // ✅ keep as text
                     isMandatory={false}
-                    value={
-                      feeData[row.index]?.adjustedAmount === 0
-                        ? "" 
-                        : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-                    }
+                    value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
                     onChange={(e) => {
                       let val = e.target.value;
 
-                      if (val.length > 1 && val.startsWith("0")) {
-                        val = val.replace(/^0+/, "");
+                      // Allow only digits + optional decimal point
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        // Remove leading zeros if more than one digit before decimal
+                        if (val.length > 1 && val.startsWith("0") && !val.startsWith("0.")) {
+                          val = val.replace(/^0+/, "");
+                        }
+                        handleAdjustedAmountChange(row.index, val);
                       }
-
-                      handleAdjustedAmountChange(row.index, val);
                     }}
-                    // ❌ no onBlur here for NOC
+                    onKeyPress={(e) => {
+                      // Block anything except digits and one decimal point
+                      if (!/[0-9.]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                      // Prevent multiple decimals
+                      if (e.key === "." && e.target.value.includes(".")) {
+                        e.preventDefault();
+                      }
+                    }}
                     disable={disable}
-                    step={1}
                     onBlur={onAdjustedAmountBlur}
+                    className="responsive-table-input"
                   />
                 )}
               </td>
@@ -130,60 +165,57 @@ const [showHistory, setShowHistory] = useState(false);
                   {t("TOTAL_TIME_TAKEN")}: {timeObj?.days} {t("DAYS")} {timeObj?.hours} {t("HOURS")} {timeObj?.minutes} {t("MINUTES")} {timeObj?.seconds} {t("SECONDS")} 
                 </div>
               )} */}
-              <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
-                <thead>
-                  <tr>
-                    {Object.keys(feeHistory).map((taxHeadCode) => (
-                      <th key={taxHeadCode}>{t(taxHeadCode)}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
-                    // compute descending index
-                    const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
-                    const descIdx = maxLen - 1 - rowIdx;
+              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: "8px", display: "block", width: "100%" }}>
+                <table
+                  className="customTable table-border-style"
+                  style={{ width: "100%", tableLayout: "auto", minWidth: "500px", borderCollapse: "collapse" }}
+                >
+                  <thead>
+                    <tr>
+                      {Object.keys(feeHistory).map((taxHeadCode) => (
+                        <th key={taxHeadCode} style={{ padding: "12px 8px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "120px" }}>
+                          {t(taxHeadCode)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
+                      // compute descending index
+                      const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
+                      const descIdx = maxLen - 1 - rowIdx;
 
-                    return (
-                      <tr key={rowIdx}>
-                        {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                          const h = historyRows[descIdx]; // use reversed index
-                          return (
-                            <td key={taxHeadCode}>
-                              {h ? (
-                                <table className="customTable table-border-style">
-                                  <tbody>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("FEE")}</strong>
-                                      </td>
-                                      <td>{h.estimateAmount}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("REMARK")}</strong>
-                                      </td>
-                                      <td>{h.remarks || t("CS_NA")}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("LAST_UPDATED_BY")}</strong>
-                                      </td>
-                                      <td>{h.who || t("UNKNOWN")}</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              ) : (
-                                t("CS_NA")
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      return (
+                        <tr key={rowIdx}>
+                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                            const h = historyRows[descIdx]; // use reversed index
+                            return (
+                              <td key={taxHeadCode} style={{ padding: "12px 8px", minWidth: "120px", verticalAlign: "top" }}>
+                                {h ? (
+                                  <div style={{ fontSize: "12px" }}>
+                                    <div style={{ marginBottom: "8px" }}>
+                                      <strong>{t("FEE")}:</strong> {h.estimateAmount}
+                                    </div>
+                                    <div style={{ marginBottom: "8px" }}>
+                                      <strong>{t("REMARK")}:</strong> <span style={{ wordBreak: "break-word" }}>{h.remarks || t("CS_NA")}</span>
+                                    </div>
+                                    <div>
+                                      <strong>{t("LAST_UPDATED_BY")}:</strong>{" "}
+                                      <span style={{ wordBreak: "break-word" }}>{h.who || t("UNKNOWN")}</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  t("CS_NA")
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
         </div>

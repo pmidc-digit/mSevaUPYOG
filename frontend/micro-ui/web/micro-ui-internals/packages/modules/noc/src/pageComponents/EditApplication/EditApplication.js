@@ -175,10 +175,17 @@ useEffect(() => {
 
 }, [id]);
 
+const ready =
+  !isLoading &&
+  !isBuildingTypeLoading &&
+  !isZoneListLoading &&
+  !isNocTypeLoading &&
+  !isUlbListLoading &&
+  applicationDetails?.Noc?.length > 0;
   useEffect(() => {
     console.log(' edit useffect 1')
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    if(!isLoading && !isBuildingTypeLoading && nocObject?.nocDetails  && !isUlbListLoading &&  !isZoneListLoading && !isNocTypeLoading){
+    if(ready){
         const formattedDocuments = {
        documents: {
         documents: documents?.map((doc) => ({
@@ -243,19 +250,16 @@ useEffect(() => {
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
         
     }
-  }, [isLoading, applicationDetails, isBuildingTypeLoading, isZoneListLoading, isNocTypeLoading]);
+  }, [ready]);
 
-  useEffect(() => {
+  
 
-  // When Redux finally contains applicationDetails, mark hydration done.
-
-  if (formData?.applicationDetails && !hydrated) {
-
+useEffect(() => {
+  if (ready && !hydrated) {
     setHydrated(true);
-
   }
+}, [ready, hydrated]);
 
-}, [formData?.applicationDetails, hydrated]);
 
 
   const handleSubmit = (dataGet) => {

@@ -1,8 +1,8 @@
 import { BreadCrumb, PrivateRoute } from "@mseva/digit-ui-react-components";
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import SearchApplication from "./SearchApplication";
-import { Switch, useLocation } from "react-router-dom";
+import { Switch, useLocation, useHistory } from "react-router-dom";
 import Response from "./Response";
 
 const NOCBreadCrumbs = ({ location }) => {
@@ -45,6 +45,7 @@ const NOCBreadCrumbs = ({ location }) => {
 };
 
 const EmployeeApp = ({ path }) => {
+  console.log('path', path)
   const location = useLocation();
   const { t } = useTranslation();
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
@@ -53,9 +54,18 @@ const EmployeeApp = ({ path }) => {
   const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCEmployeeApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
+    const history = useHistory();
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
+    useEffect(() => {
+      if (window.location.pathname.endsWith("/complete")) {
+        history.push(`/digit-ui/employee/noc-home`);
+          console.log('useffect called complete')
+  
+      }
+  
+    }, []);
 
   return (
     <Fragment>
@@ -70,7 +80,8 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/response/:id`} component={Response} />
         <PrivateRoute path={`${path}/search/application`} component={NOCCitizenApplicationOverview} />
-        
+        <PrivateRoute path="/egov-esign/complete" component={NOCCitizenApplicationOverview} />
+
       </Switch>
     </Fragment>
   );

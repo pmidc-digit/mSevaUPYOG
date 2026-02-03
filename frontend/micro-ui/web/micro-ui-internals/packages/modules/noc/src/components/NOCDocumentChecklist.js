@@ -41,12 +41,12 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
         </thead>
         <tbody>
           {documents?.map((doc, i) => {
-            const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
+            const url = urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
             return (
-              <tr key={doc.documentUid || i}>
-                 <td style={{ width: "60px", textAlign: "center" }}>{i + 1}</td>
-                <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
-                <td>
+              <tr key={doc?.documentUid || i}>
+                 <td style={{ width: "60px", textAlign: "center", padding: "14px 12px" }}>{i + 1}</td>
+                <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px" }}>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
+                <td style={{ padding: "14px 12px", minWidth: "100px" }}>
                   {url ? (
                     <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
                   ) : t("CS_NA")}
@@ -55,9 +55,15 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                   <TextInput
                     t={t}
                     type="text"
-                    value={localRemarks[doc.documentUid] ?? ""}
-                    onChange={(e) => !readOnly && setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }))}
-                    onBlur={(e) => !readOnly && handleBlur(doc.documentUid, e.target.value)}
+                    value={localRemarks[doc?.documentUid] ?? ""}
+                    onChange={(e) => {
+                      if (!readOnly) {
+                        const value = e.target.value;
+                        setLocalRemarks(prev => ({ ...prev, [doc?.documentUid]: value }));
+                        onRemarksChange({ ...localRemarks, [doc?.documentUid]: value });
+                      }
+                    }}
+                    onBlur={(e) => !readOnly && handleBlur(doc?.documentUid, e.target.value)}
                     disabled={readOnly}
                     style={{ width: "100%", padding: "4px", border: "1px solid #ccc", borderRadius: "4px" }}
                   />

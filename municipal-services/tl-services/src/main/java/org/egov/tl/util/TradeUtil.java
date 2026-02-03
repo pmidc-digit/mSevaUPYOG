@@ -413,14 +413,14 @@ public class TradeUtil {
      * @param businessService The businessService configuration
      * @return Map of is to isStateUpdatable
      */
-    public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<TradeLicense> searchresult) {
+    public Map<String, Boolean> getIdToIsStateUpdatableMap(Map<String, BusinessService> businessServiceMap, List<TradeLicense> searchresult) {
         Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
         searchresult.forEach(result -> {
             String nameofBusinessService = result.getBusinessService();
             if (StringUtils.equals(nameofBusinessService,businessService_BPA) && (result.getStatus().equalsIgnoreCase(STATUS_INITIATED))) {
                 idToIsStateUpdatableMap.put(result.getId(), true);
             } else
-                idToIsStateUpdatableMap.put(result.getId(), workflowService.isStateUpdatable(result.getStatus(), businessService));
+                idToIsStateUpdatableMap.put(result.getId(), workflowService.isStateUpdatable(result.getStatus(), businessServiceMap.get(result.getTenantId())));
         });
         return idToIsStateUpdatableMap;
     }
@@ -480,5 +480,41 @@ public class TradeUtil {
         String state = (String) jsonOutput.get(0).get("name");
         return state;
     }
+    
+    /**
+	 * prepares the mdms request object
+	 * @param requestInfo
+	 * @param tenantId
+	 * @return
+	 */
+	private MdmsCriteriaReq getMDMSRequestForAutoExpirationData(RequestInfo requestInfo, String tenantId) {
+		final String filterCode = "$.[?(@.active=='true' && (@.module=='BPAREG' || @.module=='TL') )]";
+
+		ModuleDetail bpaModuleDtls = ModuleDetail.builder()
+				.masterDetails(Arrays.asList(MasterDetail.builder().name("AutoEscalation").filter(filterCode).build()))
+				.moduleName("Workflow").build();
+		List<ModuleDetail> moduleRequest = Arrays.asList(bpaModuleDtls);
+
+		List<ModuleDetail> moduleDetails = new LinkedList<>();
+		moduleDetails.addAll(moduleRequest);
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(moduleDetails).tenantId(tenantId).build();
+
+		return MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo).build();
+	}
+    
+    public List<Map<String, Object>> fetchAutoExpirationMdmsData(RequestInfo requestInfo){
+		StringBuilder url = getMdmsSearchUrl();
+		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequestForAutoExpirationData(requestInfo, "pb");
+		List<Map<String, Object>> autoEscalationMdmsData = new ArrayList<>();
+		try {
+			Object result = serviceRequestRepository.fetchResult(url, mdmsCriteriaReq);
+			autoEscalationMdmsData = JsonPath.read(result, "$.MdmsRes.Workflow.AutoEscalation");
+		} catch (Exception e) {
+			throw new CustomException("MDMS_SEARCH_ERROR", " Unable to fetch the Auto Escalation data from MDMS.");
+		}
+		
+		return autoEscalationMdmsData;
+	}
 
 }

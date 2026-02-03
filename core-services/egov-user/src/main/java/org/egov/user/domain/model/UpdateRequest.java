@@ -33,6 +33,12 @@ public class UpdateRequest {
     private String aadhaarNumber;
     private String permanentAddress;
     private String permanentCity;
+
+    private String permanentState;
+    private String permanentDistrict;
+    private String correspondenceState;
+    private String correspondenceDistrict;
+
     private String permanentPinCode;
     private String correspondenceAddress;
     private String correspondenceCity;
@@ -109,6 +115,9 @@ public class UpdateRequest {
             this.correspondenceAddress = user.getCorrespondenceAddress().getAddress();
             this.correspondenceCity = user.getCorrespondenceAddress().getCity();
             this.correspondencePinCode = user.getCorrespondenceAddress().getPinCode();
+            this.correspondenceDistrict = user.getCorrespondenceAddress().getDistrict();
+            this.correspondenceState = user.getCorrespondenceAddress().getState();
+
         }
     }
 
@@ -117,6 +126,8 @@ public class UpdateRequest {
             this.permanentAddress = user.getPermanentAddress().getAddress();
             this.permanentCity = user.getPermanentAddress().getCity();
             this.permanentPinCode = user.getPermanentAddress().getPinCode();
+            this.permanentDistrict = user.getPermanentAddress().getDistrict();
+            this.permanentState = user.getPermanentAddress().getState();
         }
     }
 

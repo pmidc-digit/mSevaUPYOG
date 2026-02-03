@@ -268,6 +268,22 @@ config:
       - work-dir: "core-services/egov-survey-services/src/main/resources/db"
         image-name: "egov-survey-services-db"
 
+  - name: "builds/upyog/municipal-services/ndc-services"
+    build:
+      - work-dir: "municipal-services/ndc-services"
+        image-name: "ndc-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/ndc-services/src/main/resources/db"
+        image-name: "ndc-services-db"
+
+  - name: "builds/upyog/municipal-services/ndc-calculator"
+    build:
+      - work-dir: "municipal-services/ndc-calculator"
+        image-name: "ndc-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/ndc-calculator/src/main/resources/db"
+        image-name: "ndc-calculator-db"
+
   - name: "builds/upyog/core-services/service-request"
     build:
       - work-dir: "core-services/service-request"
@@ -408,13 +424,14 @@ config:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-  
+
+
   - name: "builds/upyog/core-services/nlp-engine"
     build:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-  
+
   - name: "builds/upyog/core-services/xstate-chatbot"
     build:
       - work-dir: "core-services/xstate-chatbot/nodejs"
@@ -593,6 +610,14 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/noc-services/src/main/resources/db"
         image-name: "noc-services-db"
+
+  - name: "builds/upyog/municipal-services/noc-calculator"
+    build:
+      - work-dir: "municipal-services/noc-calculator"
+        image-name: "noc-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/noc-calculator/src/main/resources/db"
+        image-name: "noc-calculator-db"
 
   - name: "builds/upyog/municipal-services/echallan-services"
     build:
@@ -840,7 +865,23 @@ config:
         image-name: "pet-services"
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/pet-services/src/main/resources/db"
-        image-name: "pet-services-db"        
+        image-name: "pet-services-db"
+
+  - name: "builds/upyog/municipal-services/challan-generation"
+    build:
+      - work-dir: "municipal-services/challan-generation"
+        image-name: "challan-generation"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/challan-generation/src/main/resources/db"
+        image-name: "challan-generation-db"
+
+  - name: "builds/upyog/municipal-services/challan-generation-calculator"
+    build:
+      - work-dir: "municipal-services/challan-generation-calculator"
+        image-name: "challan-generation-calculator"
+        dockerfile: "build/maven/Dockerfile"
+        #  - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
+        #   image-name: "challan_generation-calculator-db"
   
   - name: "builds/upyog/municipal-services/chb-services"
     build:
@@ -889,11 +930,3 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
-  
-  - name: "builds/upyog/core-services/egov-esign"
-    build:
-      - work-dir: "core-services/egov-esign"
-        image-name: "egov-esign"
-        dockerfile: "build/maven/Dockerfile"
-  #    - work-dir: "core-services/egov-esign/src/main/resources/db"
-  #      image-name: "egov-esign-db"        

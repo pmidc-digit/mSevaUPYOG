@@ -1,6 +1,7 @@
 package org.egov.pt.repository.rowmapper;
 
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,8 +21,26 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.postgresql.util.PGobject;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.egov.tracer.model.CustomException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+
+import com.fasterxml.jackson.databind.JsonNode;
 @Component
 public class OpenPropertyRowMapper implements ResultSetExtractor<List<Property>> {
+
+	@Autowired
+	private ObjectMapper mapper;
 
 	@Override
 	public List<Property> extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -45,6 +64,8 @@ public class OpenPropertyRowMapper implements ResultSetExtractor<List<Property>>
 						.status(Status.fromValue(rs.getString("propertystatus")))
 						.oldPropertyId(rs.getString("oldPropertyId"))
 						.propertyId(rs.getString("propertyid"))
+						.additionalDetails(getadditionalDetail(rs, "padditionalDetails"))
+
 						.auditDetails(auditdetails)
 						.tenantId(tenanId)
 						.id(propertyUuId)
@@ -197,6 +218,35 @@ public class OpenPropertyRowMapper implements ResultSetExtractor<List<Property>>
 		currentProperty.setOldPropertyId(rs.getString("oldPropertyId"));
 		currentProperty.setTenantId(tenantId);
 		currentProperty.setId(propertyUuId);
+	}
+	private JsonNode getadditionalDetail(ResultSet rs, String key) throws SQLException {
+
+	    try {
+	        PGobject obj = (PGobject) rs.getObject(key);
+	        if (obj == null || obj.getValue() == null) return null;
+
+	        JsonNode fullNode = mapper.readTree(obj.getValue());
+	        if (fullNode == null || fullNode.isEmpty()) return null;
+
+	        // create new node with only required fields
+	        ObjectNode filteredNode = mapper.createObjectNode();
+
+	        if (fullNode.has("vasikaNo")) {
+	            filteredNode.set("vasikaNo", fullNode.get("vasikaNo"));
+	        }
+
+	        if (fullNode.has("vasikaDate")) {
+	            filteredNode.set("vasikaDate", fullNode.get("vasikaDate"));
+	        }
+
+	        return filteredNode.isEmpty() ? null : filteredNode;
+
+	    } catch (IOException e) {
+	        throw new CustomException(
+	                "PARSING_ERROR",
+	                "The propertyAdditionalDetail json cannot be parsed"
+	        );
+	    }
 	}
 
 }

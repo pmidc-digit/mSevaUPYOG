@@ -238,8 +238,7 @@ public class WorkflowUtil {
      */
     public void enrichStatusesInSearchCriteria(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria){
 
-        Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = businessServiceRepository.getRoleTenantAndStatusMapping();
-        Map<String,List<String>> roleToTenantIdMap = getRoleToTenantId(requestInfo);
+        Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = businessServiceRepository.getRoleTenantAndStatusMapping(criteria);        Map<String,List<String>> roleToTenantIdMap = getRoleToTenantId(requestInfo);
 
         List<String> tenantSpecificStatuses = new LinkedList<>();
         List<String> statusIrrespectiveOfTenant = new LinkedList<>();
@@ -466,18 +465,18 @@ public class WorkflowUtil {
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Create System level Role
+     * 
+     * @return System Role
+     */
+    public Role getSystemRole() {
+    	return Role.builder()
+    			.name("SYSTEM user for cron job")
+    			.code("SYSTEM")
+    			.tenantId(config.getStateLevelTenantId())
+    			.build();
+    }
 
 
 }

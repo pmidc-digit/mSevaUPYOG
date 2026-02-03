@@ -7,6 +7,7 @@ import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.tlcalculator.utils.BillingslabConstants;
 import org.egov.tlcalculator.utils.BillingslabUtils;
 import org.egov.tlcalculator.utils.ResponseInfoFactory;
+import org.egov.tlcalculator.utils.TLCalculatorConstants;
 import org.egov.tlcalculator.web.models.BillingSlab;
 import org.egov.tlcalculator.web.models.BillingSlabSearchCriteria;
 import org.egov.tracer.model.CustomException;
@@ -41,7 +42,12 @@ public class BPABillingSlabService {
 
                 List<Map<String, Object>> jsonOutput = JsonPath.read(response, jsonPath);
                 Map<String, Object> billingProperties = jsonOutput.get(0);
-                return BillingSlab.builder().id(String.valueOf(billingProperties.get("id"))).tradeType((String) billingProperties.get("tradeType")).rate(BigDecimal.valueOf((Integer) billingProperties.get("applicationFee"))).build();
+                if(billingSlabSearchCriteria.getApplicationType().equalsIgnoreCase(TLCalculatorConstants.APPLICATION_TYPE_UPGRADE))
+                	return BillingSlab.builder().id(String.valueOf(billingProperties.get("id"))).tradeType((String) billingProperties.get("tradeType")).rate(BigDecimal.valueOf(0)).build();
+                if(billingSlabSearchCriteria.getApplicationType().equalsIgnoreCase(TLCalculatorConstants.APPLICATION_TYPE_RENEWAL))
+                	return BillingSlab.builder().id(String.valueOf(billingProperties.get("id"))).tradeType((String) billingProperties.get("tradeType")).rate(BigDecimal.valueOf((Integer) billingProperties.get("renewalFee"))).build();
+                else
+                	return BillingSlab.builder().id(String.valueOf(billingProperties.get("id"))).tradeType((String) billingProperties.get("tradeType")).rate(BigDecimal.valueOf((Integer) billingProperties.get("applicationFee"))).build();
             } else {
                 throw new CustomException("BILLINGSEARCH_NULLRESPONSE", " Found empty response on billingslab search for BPA");
             }

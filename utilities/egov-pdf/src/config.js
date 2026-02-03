@@ -1,7 +1,7 @@
 // config.js
 // const env = process.env.NODE_ENV; // 'dev' or 'test'
 
-HOST = process.env.EGOV_HOST;
+HOST = process.env.EGOV_HOST || "https://mseva-dev.lgpunjab.gov.in/";
 
 if (!HOST) {
   console.log("You need to set the HOST variable");
@@ -10,14 +10,14 @@ if (!HOST) {
 
 module.exports = {
   auth_token: process.env.AUTH_TOKEN,
-  KAFKA_BROKER_HOST: process.env.KAFKA_BROKER_HOST || "kafka-v2.kafka-cluster:9092",
+  KAFKA_BROKER_HOST: process.env.KAFKA_BROKER_HOST || "localhost:9092",
   KAFKA_RECEIVE_CREATE_JOB_TOPIC: process.env.KAFKA_RECEIVE_CREATE_JOB_TOPIC || "PDF_GEN_RECEIVE",
   KAFKA_BULK_PDF_TOPIC: process.env.KAFKA_BULK_PDF_TOPIC || "BULK_PDF_GEN",
   PDF_BATCH_SIZE: process.env.PDF_BATCH_SIZE || 40,
-  DB_USER: process.env.DB_USER || "postgres",
-  DB_PASSWORD: process.env.DB_PASSWORD || "postgres",
-  DB_HOST: process.env.DB_HOST || "localhost",
-  DB_NAME: process.env.DB_NAME || "postgres",
+  DB_USER: process.env.DB_USER || "egovprod",
+  DB_PASSWORD: process.env.DB_PASSWORD || "jr88WZdM#4YU##1Q",
+  DB_HOST: process.env.DB_HOST || "10.44.237.25",
+  DB_NAME: process.env.DB_NAME || "egov_prod_db_new",
   DB_PORT: process.env.DB_PORT || 5432,
   pdf: {
     epass_pdf_template: process.env.EPASS_TEMPLATE || "tlcertificate",
@@ -63,14 +63,14 @@ module.exports = {
     mdms: process.env.EGOV_MDMS_HOST || HOST,
     epass: process.env.EGOV_TLSERVICES_HOST || HOST,
     tl: process.env.EGOV_TRADELICENSESERVICES_HOST || HOST,
-    pt: process.env.EGOV_PTSERVICES_HOST || HOST,
+    pt: process.env.EGOV_PTSERVICES_HOST || "http://localhost:8088",
     pdf: process.env.EGOV_PDF_HOST || HOST,
     user: process.env.EGOV_USER_HOST || HOST,
     payments: process.env.EGOV_PAYMENTS_HOST || HOST,
-    bill: process.env.EGOV_SEARCHER_HOST || HOST,
+    bill: process.env.EGOV_SEARCHER_HOST || "http://localhost:8087",
     workflow: process.env.EGOV_WORKFLOW_HOST || HOST,
     challan: process.env.EGOV_ECHALLAN_HOST || 'http://echallan-services.egov:8080/',
-    mcollectBilling: process.env.EGOV_BILLING_HOST || 'http://billing-service.egov:8080/',
+    mcollectBilling: process.env.EGOV_BILLING_HOST || 'http://localhost:8086',
     wns: process.env.EGOV_WNS_HOST || HOST,
     sw:  process.env.EGOV_WNS_HOST || HOST
   },

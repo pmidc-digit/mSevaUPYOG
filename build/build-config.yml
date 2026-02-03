@@ -930,5 +930,3 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
-
- 

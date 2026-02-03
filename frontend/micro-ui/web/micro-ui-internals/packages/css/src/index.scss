@@ -1650,3 +1650,182 @@ input[type="date"] {
 .tableClass {
   margin-top: 60px;
 }
+
+/* CLU Fee Table Wrapper */
+.custom-fee-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  margin-bottom: 16px;
+  display: block;
+}
+
+/* CLU Main Fee Table */
+.custom-fee-table {
+  width: 100%;
+  table-layout: auto;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+/* CLU Fee Table Header */
+.custom-fee-table-header {
+  padding: 14px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* CLU Fee Table Cells */
+.custom-fee-table-cell {
+  padding: 14px 12px;
+  font-size: 13px;
+}
+
+.custom-fee-table-cell-taxhead {
+  min-width: 150px;
+}
+
+.custom-fee-table-cell-amount {
+  padding: 14px 12px;
+}
+
+.custom-fee-table-cell-remark {
+  padding: 14px 12px;
+}
+
+/* CLU Fee History Wrapper */
+.custom-fee-history-section {
+  margin-top: 16px;
+}
+
+.custom-fee-history-toggle {
+  cursor: pointer;
+}
+
+.custom-fee-history-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 8px;
+  display: block;
+  width: 100%;
+}
+
+/* CLU Fee History Table */
+.custom-fee-history-table {
+  width: 100%;
+  table-layout: auto;
+  min-width: 500px;
+  border-collapse: collapse;
+}
+
+/* CLU Fee History Header */
+.custom-fee-history-header {
+  padding: 12px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+/* CLU Fee History Cell */
+.custom-fee-history-cell {
+  padding: 12px 8px;
+  min-width: 120px;
+  vertical-align: top;
+}
+
+.custom-fee-history-content {
+  font-size: 12px;
+}
+
+.custom-fee-history-row {
+  margin-bottom: 8px;
+}
+
+.custom-fee-history-label {
+  margin-bottom: 8px;
+}
+
+.custom-fee-history-label-value {
+  word-break: break-word;
+}
+
+/* CLU Fee Table Input */
+.custom-fee-table-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* NOC Document Checklist Table Wrapper */
+.checklist-document-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  display: block;
+}
+
+/* NOC Document Table */
+.checklist-document-table {
+  width: 100%;
+  table-layout: auto;
+  min-width: 500px;
+  border-collapse: collapse;
+}
+
+/* NOC Document Checklist Table Styles */
+.checklist-table-header {
+  padding: 14px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.checklist-table-header-srno {
+  width: 60px;
+  text-align: center;
+}
+
+.checklist-table-header-doc-name {
+  min-width: 150px;
+}
+
+.checklist-table-header-doc-file {
+  min-width: 100px;
+}
+
+.checklist-table-header-remark {
+  min-width: 150px;
+}
+
+.checklist-table-cell {
+  padding: 14px 12px;
+}
+
+.checklist-table-cell-srno {
+  width: 60px;
+  text-align: center;
+}
+
+.checklist-table-cell-doc-name {
+  font-size: 13px;
+  min-width: 150px;
+}
+
+.checklist-table-cell-file {
+  min-width: 100px;
+}
+
+.checklist-table-cell-remark {
+  min-width: 150px;
+}
+
+.checklist-table-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+}

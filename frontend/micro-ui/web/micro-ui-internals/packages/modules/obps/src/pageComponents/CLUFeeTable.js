@@ -30,15 +30,13 @@ export const CLUFeeTable = ({
   // console.log("lastUpdatedBy ==>", lastUpdatedBy);
 
   return (
-    <div className="noc-table-container" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", marginBottom: "16px", display: "block" }}>
-      <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "600px", borderCollapse: "collapse" }}>
+    <div className="custom-fee-table-wrapper">
+      <table className="customTable table-border-style custom-fee-table">
         <thead>
           <tr>
-            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_TAXHEAD_CODE")}</th>
-            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_AMOUNT")}</th>
-            {/* <th>{t("BPA_ADJUSTED_AMOUNT")}</th> */}
-            {/* <th>{t("BPA_FILE_UPLOAD")}</th> */}
-            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_REMARKS")}</th>
+            <th className="custom-fee-table-header">{t("BPA_TAXHEAD_CODE")}</th>
+            <th className="custom-fee-table-header">{t("BPA_AMOUNT")}</th>
+            <th className="custom-fee-table-header">{t("BPA_REMARKS")}</th>
           </tr>
         </thead>
         <tbody>
@@ -46,9 +44,9 @@ export const CLUFeeTable = ({
             (row, i) => (
               (
                 <tr key={row.index || i}>
-                  <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px" }}>{t(row.title) || t("CS_NA")}</td>
+                  <td className="custom-fee-table-cell custom-fee-table-cell-taxhead">{t(row.title) || t("CS_NA")}</td>
                   {/* <td>{row.amount !== null && row.amount !== undefined ? `₹ ${row.amount.toLocaleString()}` : t("CS_NA")}</td> */}
-                  <td className="remark-cell">
+                  <td className="custom-fee-table-cell custom-fee-table-cell-amount">
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                       ""
                     ) : (
@@ -92,7 +90,7 @@ export const CLUFeeTable = ({
                     )}
                   </td> */}
 
-                  <td className="remark-cell">
+                  <td className="custom-fee-table-cell custom-fee-table-cell-remark">
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                     <div>
                       <strong style={{ fontSize: "14px" }}>{row.grandTotal.toLocaleString("en-IN")}</strong>
@@ -125,8 +123,8 @@ export const CLUFeeTable = ({
       </table>
 
       {feeHistory && Object.keys(feeHistory).length > 0 && (
-        <div style={{ marginTop: "16px" }}>
-          <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
+        <div className="custom-fee-history-section">
+          <div onClick={() => setShowHistory(!showHistory)} className="custom-fee-history-toggle">
             <CardSubHeader>
               {t("BPA_FEE_HISTORY_LABEL")} {showHistory ? "▲" : "▼"}
             </CardSubHeader>
@@ -134,12 +132,12 @@ export const CLUFeeTable = ({
 
           {showHistory && (
             <>
-              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: "8px", display: "block", width: "100%" }}>
-                <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "500px", borderCollapse: "collapse" }}>
+              <div className="custom-fee-history-table-wrapper">
+                <table className="customTable table-border-style custom-fee-history-table">
                   <thead>
                     <tr>
                       {Object.keys(feeHistory).map((taxHeadCode) => (
-                        <th key={taxHeadCode} style={{ padding: "12px 8px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "120px" }}>{t(taxHeadCode)}</th>
+                        <th key={taxHeadCode} className="custom-fee-history-header">{t(taxHeadCode)}</th>
                       ))}
                     </tr>
                   </thead>
@@ -154,17 +152,17 @@ export const CLUFeeTable = ({
                           {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
                             const h = historyRows[descIdx]; // use reversed index
                             return (
-                              <td key={taxHeadCode} style={{ padding: "12px 8px", minWidth: "120px", verticalAlign: "top" }}>
+                              <td key={taxHeadCode} className="custom-fee-history-cell">
                                 {h ? (
-                                  <div style={{ fontSize: "12px" }}>
-                                    <div style={{ marginBottom: "8px" }}>
+                                  <div className="custom-fee-history-content">
+                                    <div className="custom-fee-history-row custom-fee-history-label">
                                       <strong>{t("BPA_FEE2_LABEL")}:</strong> {h.estimateAmount}
                                     </div>
-                                    <div style={{ marginBottom: "8px" }}>
-                                      <strong>{t("BPA_REMARK_LABEL")}:</strong> <span style={{ wordBreak: "break-word" }}>{h.remarks || t("CS_NA")}</span>
+                                    <div className="custom-fee-history-row custom-fee-history-label">
+                                      <strong>{t("BPA_REMARK_LABEL")}:</strong> <span className="custom-fee-history-label-value">{h.remarks || t("CS_NA")}</span>
                                     </div>
                                     <div>
-                                      <strong>{t("BPA_UPDATED_BY_LABEL")}:</strong> <span style={{ wordBreak: "break-word" }}>{h.who || t("UNKNOWN")}</span>
+                                      <strong>{t("BPA_UPDATED_BY_LABEL")}:</strong> <span className="custom-fee-history-label-value">{h.who || t("UNKNOWN")}</span>
                                     </div>
                                   </div>
                                 ) : (

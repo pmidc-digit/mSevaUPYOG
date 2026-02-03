@@ -887,7 +887,7 @@ const CLUEmployeeApplicationDetails = () => {
         )}
       </Card>
 
-      <Card>
+      <div className="data-table">
         <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
@@ -904,7 +904,7 @@ const CLUEmployeeApplicationDetails = () => {
 
           />
         )}
-      </Card>
+      </div>
 
       <CheckBox
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${

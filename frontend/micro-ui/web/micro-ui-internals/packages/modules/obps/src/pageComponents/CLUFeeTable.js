@@ -30,15 +30,15 @@ export const CLUFeeTable = ({
   // console.log("lastUpdatedBy ==>", lastUpdatedBy);
 
   return (
-    <div className="noc-table-container">
-      <table className="customTable table-border-style">
+    <div className="noc-table-container" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", marginBottom: "16px", display: "block" }}>
+      <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "600px", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th>{t("BPA_TAXHEAD_CODE")}</th>
-            <th>{t("BPA_AMOUNT")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_TAXHEAD_CODE")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_AMOUNT")}</th>
             {/* <th>{t("BPA_ADJUSTED_AMOUNT")}</th> */}
             {/* <th>{t("BPA_FILE_UPLOAD")}</th> */}
-            <th>{t("BPA_REMARKS")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_REMARKS")}</th>
           </tr>
         </thead>
         <tbody>
@@ -46,9 +46,9 @@ export const CLUFeeTable = ({
             (row, i) => (
               (
                 <tr key={row.index || i}>
-                  <td>{t(row.title) || t("CS_NA")}</td>
+                  <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px" }}>{t(row.title) || t("CS_NA")}</td>
                   {/* <td>{row.amount !== null && row.amount !== undefined ? `₹ ${row.amount.toLocaleString()}` : t("CS_NA")}</td> */}
-                  <td>
+                  <td className="remark-cell">
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                       ""
                     ) : (
@@ -92,11 +92,11 @@ export const CLUFeeTable = ({
                     )}
                   </td> */}
 
-                  <td>
+                  <td className="remark-cell">
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                     <div>
-                      <strong>{row.grandTotal.toLocaleString("en-IN")}</strong>
-                      <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                      <strong style={{ fontSize: "14px" }}>{row.grandTotal.toLocaleString("en-IN")}</strong>
+                      <div style={{ fontSize: "0.85em", color: "#555", marginTop: "4px", lineHeight: "1.3" }}>{amountToWords(row.grandTotal)}</div>
                    </div>
                     ) : (
                       <TextInput
@@ -108,9 +108,11 @@ export const CLUFeeTable = ({
                         disable={disable}
                         style={{
                           width: "100%",
-                          padding: "4px",
+                          padding: "8px",
                           border: "1px solid #ccc",
                           borderRadius: "4px",
+                          fontSize: "13px",
+                          boxSizing: "border-box",
                         }}
                       />
                     )}
@@ -132,60 +134,51 @@ export const CLUFeeTable = ({
 
           {showHistory && (
             <>
-              <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
-                <thead>
-                  <tr>
-                    {Object.keys(feeHistory).map((taxHeadCode) => (
-                      <th key={taxHeadCode}>{t(taxHeadCode)}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
-                    // compute descending index
-                    const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
-                    const descIdx = maxLen - 1 - rowIdx;
+              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: "8px", display: "block", width: "100%" }}>
+                <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "500px", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {Object.keys(feeHistory).map((taxHeadCode) => (
+                        <th key={taxHeadCode} style={{ padding: "12px 8px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "120px" }}>{t(taxHeadCode)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
+                      // compute descending index
+                      const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
+                      const descIdx = maxLen - 1 - rowIdx;
 
-                    return (
-                      <tr key={rowIdx}>
-                        {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                          const h = historyRows[descIdx]; // use reversed index
-                          return (
-                            <td key={taxHeadCode}>
-                              {h ? (
-                                <table className="customTable table-border-style">
-                                  <tbody>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("BPA_FEE2_LABEL")}</strong>
-                                      </td>
-                                      <td>{h.estimateAmount}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("BPA_REMARK_LABEL")}</strong>
-                                      </td>
-                                      <td>{h.remarks || t("CS_NA")}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("BPA_UPDATED_BY_LABEL")}</strong>
-                                      </td>
-                                      <td>{h.who || t("UNKNOWN")}</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              ) : (
-                                t("CS_NA")
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      return (
+                        <tr key={rowIdx}>
+                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                            const h = historyRows[descIdx]; // use reversed index
+                            return (
+                              <td key={taxHeadCode} style={{ padding: "12px 8px", minWidth: "120px", verticalAlign: "top" }}>
+                                {h ? (
+                                  <div style={{ fontSize: "12px" }}>
+                                    <div style={{ marginBottom: "8px" }}>
+                                      <strong>{t("BPA_FEE2_LABEL")}:</strong> {h.estimateAmount}
+                                    </div>
+                                    <div style={{ marginBottom: "8px" }}>
+                                      <strong>{t("BPA_REMARK_LABEL")}:</strong> <span style={{ wordBreak: "break-word" }}>{h.remarks || t("CS_NA")}</span>
+                                    </div>
+                                    <div>
+                                      <strong>{t("BPA_UPDATED_BY_LABEL")}:</strong> <span style={{ wordBreak: "break-word" }}>{h.who || t("UNKNOWN")}</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  t("CS_NA")
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
               {/* <span>Last Updated By : {lastUpdatedBy}</span> */}
             </>
           )}

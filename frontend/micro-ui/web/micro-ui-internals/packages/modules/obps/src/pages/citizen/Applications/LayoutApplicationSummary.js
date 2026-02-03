@@ -349,19 +349,26 @@ const LayoutApplicationSummary = () => {
         )}
       </div>
 
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "24px",
+        padding: window.innerWidth > 768 ? "24px" : "0",
+      }}>
+
       {/* APPLICATION INFO */}
-      <Card>
-        <CardSubHeader>{t("APPLICATION_DETAILS")}</CardSubHeader>
+      <div>
+      
         <StatusTable>
-          <Row label={t("BPA_APPLICATION_NO_LABEL")} text={layoutData?.applicationNo || "N/A"} />
-          <Row label={t("BPA_APPLICATION_STATUS")} text={layoutData?.applicationStatus || "N/A"} />
+          <Row label={t("Application No")} text={layoutData?.applicationNo || "N/A"} />
+          <Row label={t("Application Status")} text={layoutData?.applicationStatus || "N/A"} />
         </StatusTable>
-      </Card>
+      </div>
 
 {console.log("displayData", displayData)}
       {/* APPLICANT DETAILS */}
-      <Card>
-        <CardSubHeader>{t("APPLICANT_DETAILS")}</CardSubHeader>
+      <div>
+        <CardSubHeader>{t("Applicant Details")}</CardSubHeader>
         <StatusTable>
           {displayData?.owners?.map((owner, idx) => (
             <React.Fragment key={idx}>
@@ -378,11 +385,11 @@ const LayoutApplicationSummary = () => {
             </React.Fragment>
           ))}
         </StatusTable>
-      </Card>
+      </div>
 
       {/* PROFESSIONAL DETAILS */}
       {displayData?.applicantDetails?.[0]?.professionalName && (
-        <Card>
+        <div>
           <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
           <StatusTable>
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), displayData?.applicantDetails?.[0]?.professionalName)}
@@ -393,7 +400,7 @@ const LayoutApplicationSummary = () => {
             {renderLabel("Professional Registration Validity", displayData?.applicantDetails?.[0]?.professionalRegistrationValidity)}
             {renderLabel("PAN Number", displayData?.applicantDetails?.[0]?.panNumber)}
           </StatusTable>
-        </Card>
+        </div>
       )}
 
       {/* APPLICANT AND PROFESSIONAL DOCUMENTS */}
@@ -442,15 +449,15 @@ const LayoutApplicationSummary = () => {
         }
 
         return applicantDocuments?.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("APPLICANT_PROFESSIONAL_DOCUMENTS")}</CardSubHeader>
+          <div>
+            <CardSubHeader>{t("Applicant and Professional Documents")}</CardSubHeader>
             <LayoutDocumentTableView documents={applicantDocuments} />
-          </Card>
+          </div>
         );
       })()}
 
       {/* SITE DETAILS */}
-      <Card>
+      <div>
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         <StatusTable>
           {displayData?.siteDetails?.[0] && (
@@ -513,28 +520,28 @@ const LayoutApplicationSummary = () => {
             </>
           )}
         </StatusTable>
-      </Card>
+      </div>
 
       {/* SITE PHOTOGRAPHS */}
       {sitePhotographs?.length > 0 && (
-        <Card>
-          <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <div>
+          <CardSubHeader>{t("Uploaded Site Photographs")}</CardSubHeader>
           <LayoutSitePhotographs documents={sitePhotographs} coordinates={coordinates} />
-        </Card>
+        </div>
       )}
 
       {/* DOCUMENTS */}
       {displayData?.Documents?.length > 0 && (
-        <Card>
-          <CardSubHeader>{t("BPA_DOCUMENTS_UPLOADED")}</CardSubHeader>
+        <div>
+          <CardSubHeader>{t("Documents Uploaded")}</CardSubHeader>
           <LayoutDocumentTableView documents={displayData?.Documents} />
-        </Card>
+        </div>
       )}
 
       {/* FEE DETAILS */}
       {layoutData?.layoutDetails && (
-        <Card>
-          <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
+        <div>
+          <CardSubHeader>{t("Fee Details")}</CardSubHeader>
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
@@ -543,13 +550,13 @@ const LayoutApplicationSummary = () => {
             }}
             feeType="PAY1"
           />
-        </Card>
+        </div>
       )}
 
       {/* FEE DETAILS TABLE - Only show if status is not in disableFeeTable */}
       {layoutData?.applicationStatus && !disableFeeTable?.includes(layoutData?.applicationStatus) &&
-        <Card>
-          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        <div>
+          <CardSubHeader>{t("Fee Details Table")}</CardSubHeader>
           {layoutData?.layoutDetails && (
             <LayoutFeeEstimationDetailsTable
               formData={{
@@ -564,7 +571,7 @@ const LayoutApplicationSummary = () => {
               disable="true"
             />
           )}
-        </Card>
+        </div>
       }
 
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
@@ -587,6 +594,7 @@ const LayoutApplicationSummary = () => {
       {showToast && (
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
+      </div>
     </div>
   );
 };

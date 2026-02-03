@@ -74,7 +74,7 @@ const LayoutDocumentTableView = ({documents}) => {
     }, [mappedDocuments]);
 
   return (
-    <div>
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
       {documentsData && (
         <Table
           className="customTable table-border-style"
@@ -87,6 +87,7 @@ const LayoutDocumentTableView = ({documents}) => {
           autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
+          style={{ width: "100%", minWidth: "400px", tableLayout: "auto" }}
         />
       )}
     </div>

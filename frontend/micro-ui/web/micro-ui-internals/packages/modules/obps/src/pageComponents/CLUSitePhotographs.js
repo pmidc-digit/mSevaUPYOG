@@ -66,18 +66,18 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   //   img.src = fileUrl;
   // };
 
+
   return (
-    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly" , flexWrap: "wrap"}}>
+    <div className="bpa-site-photograph-container">
       {documentsData?.map((item, index) => (
-        <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", height: "200px", alignItems: "center", marginBottom:"20px"}}>
+        <div className="bpa-site-photograph-item">
           <CardSectionHeader>{item?.title}</CardSectionHeader>
 
-          <div style={{ margin: "5px" }}>
+          <div className="bpa-site-photograph-photo-wrapper">
             <img
               src={item.fileUrl}
               alt={item.title}
-              style={{ width: "120px", height: "120px", objectFit: "fill", borderRadius: "10%", cursor: "pointer" }}
-              //onClick={() => window.open(item.fileUrl, "_blank")}
+              className="bpa-site-photograph-photo"
               onClick={()=> setImageZoom(item.fileUrl)}
             />
           </div>

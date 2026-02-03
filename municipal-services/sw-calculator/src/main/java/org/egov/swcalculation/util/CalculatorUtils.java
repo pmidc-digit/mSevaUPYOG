@@ -174,7 +174,7 @@ public class CalculatorUtils {
 	public MdmsCriteriaReq getenats(RequestInfo requestInfo) {
 
 		MasterDetail masterDetail = MasterDetail.builder().name(SWCalculationConstant.SW_DEMAND_MODULE)
-				.filter("[?(@.isautodemand=='true')]").build();
+				.filter("[?(@.issewerage==true)]").build();
 		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(SWCalculationConstant.SW_TENANT_SEARCH)
 				.masterDetails(Arrays.asList(masterDetail)).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pb")

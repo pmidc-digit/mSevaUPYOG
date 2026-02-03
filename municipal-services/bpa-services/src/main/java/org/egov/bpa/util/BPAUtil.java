@@ -108,6 +108,7 @@ public class BPAUtil {
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE_MAPPING).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.BUILDING_HEIGHT).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.WORKFLOW_CONFIG).build());
+		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.PROPERTY_USAGE).build());
 		ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDtls)
 				.moduleName(BPAConstants.BPA_MODULE).build();
 

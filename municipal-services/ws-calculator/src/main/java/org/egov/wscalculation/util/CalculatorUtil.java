@@ -119,7 +119,7 @@ public class CalculatorUtil {
 	public MdmsCriteriaReq gettenants(RequestInfo requestInfo) {
 
 		MasterDetail masterDetail = MasterDetail.builder().name(WSCalculationConstant.WS_DEMAND_MODULE)
-				.filter("[?(@.isautodemand=='true')]").build();
+				.filter("[?(@.iswater == true)]").build();
 		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(WSCalculationConstant.WS_TENANT_SEARCH)
 				.masterDetails(Arrays.asList(masterDetail)).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pb")

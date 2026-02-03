@@ -408,13 +408,10 @@ public class BPAService {
 		if (bpa.getId() == null) {
 			throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Application Not found in the System" + bpa);
 		}
-		Object additionalDetailsData = bpaRequest.getBPA().getAdditionalDetails();
-		Map<String, Object> additionalDetailsMap = (Map<String, Object>) additionalDetailsData;
-		String addDetailApplicationType = (String) additionalDetailsMap.get("applicationType");
-		bpaRequest.getBPA().setApplicationType(addDetailApplicationType);
 
 		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
+		bpa.setApplicationType(applicationType);
 		log.debug("applicationType is " + applicationType);
 		BusinessService businessService = workflowService.getBusinessService(bpa, bpaRequest.getRequestInfo(),
 				bpa.getApplicationNo());
@@ -448,7 +445,7 @@ public class BPAService {
                 /*
                  * Before Citizen approval we need to create Application fee demand
                  */
-                // Generate the Application Demand
+                // Create Property if Property not available
                 if (state.equalsIgnoreCase(BPAConstants.STATUS_CITIZENAPPROVAL)) {
                 	if(bpa.getApplicationType() == null) {
                 		bpa.setApplicationType(applicationType);
@@ -457,7 +454,7 @@ public class BPAService {
                 	Boolean isPropertyAvailable = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isPropertyAvailable");
                 	String propertyId = ((Map<String, String>)bpa.getAdditionalDetails()).getOrDefault("propertyuid", "");
                 	if(!isPropertyAvailable && StringUtils.isEmpty(propertyId))
-                		bpaPropertyService.createProperty(bpaRequest);
+                		bpaPropertyService.createProperty(bpaRequest, mdmsData);
 //                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
                 }
                 

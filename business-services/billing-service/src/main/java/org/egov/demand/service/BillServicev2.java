@@ -223,7 +223,8 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			return;
 
 		BillRequestV2 req = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
-		producer.push(billCancelTopic, req);
+		String key = bills.get(0).getConsumerCode();
+		producer.push(billCancelTopic, key ,req);
 
 	}
 
@@ -503,8 +504,9 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
+		String key = billRequest.getBills().get(0).getTenantId() + billRequest.getBills().get(0).getMobileNumber();
 		if (billRequest.getBills().get(0).getBusinessService().equalsIgnoreCase("WS")||billRequest.getBills().get(0).getBusinessService().equalsIgnoreCase("SW"))
-			kafkaTemplate.send(notifTopicName, null, billRequest);
+			kafkaTemplate.send(notifTopicName, key, billRequest);
 		return create(billRequest);
 	}
 
@@ -893,7 +895,8 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 	public BillResponseV2 sendBillToKafka(BillRequestV2 billRequest) {
 
 		try {
-			kafkaTemplate.send(appProps.getCreateBillTopic(), appProps.getCreateBillTopicKey(), billRequest);
+			String key = billRequest.getBills().get(0).getTenantId() + billRequest.getBills().get(0).getMobileNumber();
+			kafkaTemplate.send(appProps.getCreateBillTopic(), key , billRequest);
 		} catch (Exception e) {
 			log.debug("BillService createAsync:" + e);
 			throw new CustomException("EGBS_BILL_SAVE_ERROR", e.getMessage());

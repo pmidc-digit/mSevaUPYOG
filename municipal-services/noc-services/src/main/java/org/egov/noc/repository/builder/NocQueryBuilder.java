@@ -53,7 +53,7 @@ public class NocQueryBuilder {
 					"FROM eg_noc noc " +
 					"LEFT JOIN eg_noc_details details ON details.nocid = noc.id " +
 					"LEFT JOIN eg_noc_document nocdoc ON nocdoc.nocid = noc.id " +
-					"LEFT JOIN eg_noc_owner nocowner ON nocowner.nocid = noc.id " +
+					"LEFT JOIN eg_noc_owner nocowner ON nocowner.nocid = noc.id AND nocowner.status = true " +
 					"WHERE 1=1";
 
 
@@ -103,7 +103,7 @@ public class NocQueryBuilder {
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT uuid FROM eg_noc_owner WHERE nocid = ?");
+		sb.append("SELECT uuid FROM eg_noc_owner WHERE status = true and nocid = ?");
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();

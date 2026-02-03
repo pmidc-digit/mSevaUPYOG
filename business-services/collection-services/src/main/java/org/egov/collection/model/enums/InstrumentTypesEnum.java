@@ -4,6 +4,7 @@ public enum InstrumentTypesEnum {
     CASH, CHEQUE, DD, ONLINE, CARD,
     OFFLINE_NEFT,
     OFFLINE_RTGS,
+    BBPS,
     ONLINE_NEFT,
     ONLINE_RTGS,
     POSTAL_ORDER;

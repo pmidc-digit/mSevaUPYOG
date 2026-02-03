@@ -109,10 +109,10 @@ public class LandRowMapper implements ResultSetExtractor<List<LandInfo>> {
 		}
 		
 		String ownerId = rs.getString("landInfoowner_id");
-		Object ownerInfoadditionalDetails = new Gson().fromJson(rs.getString("landInfoowner_additionaldetails").equals("{}")
-				|| rs.getString("landInfoowner_additionaldetails").equals("null") ? null : rs.getString("landInfoowner_additionaldetails"),
-				Object.class);
 		if (ownerId != null) {
+			Object ownerInfoadditionalDetails = new Gson().fromJson(rs.getString("landInfoowner_additionaldetails").equals("{}")
+					|| rs.getString("landInfoowner_additionaldetails").equals("null") ? null : rs.getString("landInfoowner_additionaldetails"),
+					Object.class);
 			Boolean isPrimaryOwner = (Boolean) rs.getObject("isprimaryowner");
 			Boolean status = (Boolean) rs.getObject("ownerstatus");
 			Double val =  (Double) rs.getObject("ownershippercentage");

@@ -1958,15 +1958,15 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 					String st = slab.getAreaType();
 					id = slab.getId();
 					log.info("Matching locality found in BillingSlab: {}, {}", st, id);
-					if (usageMajor.equalsIgnoreCase("RESIDENTIAL")) {
+					if (usageMajor.equalsIgnoreCase("RESIDENTIAL") && slab.getUsageCategoryMajor().equalsIgnoreCase("RESIDENTIAL")) {
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;
-					} else if (usageMajor.contains("INDUSTRIAL") || usageMinor.contains("INDUSTRIAL")) {
+					} else if (usageMajor.equalsIgnoreCase("INDUSTRIAL") && slab.getUsageCategoryMajor().equalsIgnoreCase("INDUSTRIAL")) {
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;
-					} else {
+					} else if (usageMajor.equalsIgnoreCase("COMMERCIAL")  && slab.getUsageCategoryMajor().equalsIgnoreCase("COMMERCIAL")) {
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;

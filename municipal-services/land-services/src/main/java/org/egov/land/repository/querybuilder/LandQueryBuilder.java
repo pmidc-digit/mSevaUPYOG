@@ -28,7 +28,7 @@ public class LandQueryBuilder {
 			+ "landInfoowner.additionaldetails as landInfoowner_additionaldetails"
 			+ " FROM eg_land_landInfo landInfo" + INNER_JOIN_STRING
 			+ "eg_land_Address landInfoaddress ON landInfoaddress.landInfoId = landInfo.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_land_institution landInstitution ON landInstitution.landInfoId = landInfo.id" + INNER_JOIN_STRING
+			+ "eg_land_institution landInstitution ON landInstitution.landInfoId = landInfo.id" + LEFT_OUTER_JOIN_STRING
 			+ "eg_land_ownerInfo landInfoowner ON landInfoowner.landInfoId = landInfo.id AND landInfoowner.status = true " + LEFT_OUTER_JOIN_STRING
 			+ "eg_land_unit landInfounit ON landInfounit.landInfoId = landInfo.id" + LEFT_OUTER_JOIN_STRING
 			+ "eg_land_document landInfodoc ON landInfodoc.landInfoId = landInfo.id" + LEFT_OUTER_JOIN_STRING

@@ -26,9 +26,9 @@ import java.util.List;
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
 @Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 public class OwnerInfo extends User{
  
 	@SafeHtml
@@ -198,14 +198,14 @@ public class OwnerInfo extends User{
 
     @Size(max=64)
     @JsonProperty("createdBy")
-    private Long createdBy;
+    private String createdBy;
 
     @JsonProperty("createdDate")
     private Long createdDate;
 
     @Size(max=64)
     @JsonProperty("lastModifiedBy")
-    private Long lastModifiedBy;
+    private String lastModifiedBy;
 
     @JsonProperty("lastModifiedDate")
     private Long lastModifiedDate;

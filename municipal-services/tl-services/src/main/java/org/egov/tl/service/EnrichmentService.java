@@ -24,6 +24,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 //import org.springframework.util.StringUtils;
 import org.egov.tl.repository.ServiceRequestRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -439,24 +442,39 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
      * @param userDetailResponse user search response
      * @param licenses licenses whose owners are to be enriches
      */
-    public void enrichOwner(UserDetailResponse userDetailResponse, List<TradeLicense> licenses){
-        List<OwnerInfo> users = userDetailResponse.getUser();
-        Map<String,OwnerInfo> userIdToOwnerMap = new HashMap<>();
-        users.forEach(user -> userIdToOwnerMap.put(user.getUuid(),user));
-        licenses.forEach(license -> {
-        	if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners()))
-	            license.getTradeLicenseDetail().getOwners().forEach(owner -> {
-	                    if(userIdToOwnerMap.get(owner.getUuid())==null)
-	                        throw new CustomException("OWNER SEARCH ERROR","The owner of the tradeCategoryDetail "+license.getTradeLicenseDetail().getId()+" is not coming in user search");
-	                    else
-	                        owner.addUserDetail(userIdToOwnerMap.get(owner.getUuid()));
-	                 });
+    private static final Logger log = LoggerFactory.getLogger(EnrichmentService.class);
 
-           /* if(userIdToOwnerMap.get(license.getCitizenInfo().getUuid())!=null)
-                license.getCitizenInfo().addCitizenDetail(userIdToOwnerMap.get(license.getCitizenInfo().getUuid()));
-            else
-                throw new CustomException("CITIZENINFO ERROR","The citizenInfo of trade License with ApplicationNumber: "+license.getApplicationNumber()+" cannot be found");
-*/
+    public void enrichOwner(UserDetailResponse userDetailResponse, List<TradeLicense> licenses){
+    	
+    	/*
+    	 * PI-20438 TL owner multiple owner some exsits in user and same not
+    	 */
+
+        List<OwnerInfo> users = userDetailResponse.getUser();
+        Map<String, OwnerInfo> userIdToOwnerMap = new HashMap<>();
+
+        users.forEach(user -> userIdToOwnerMap.put(user.getUuid(), user));
+
+        licenses.forEach(license -> {
+
+            if (!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners())) {
+
+                license.getTradeLicenseDetail().getOwners().forEach(owner -> {
+
+                    OwnerInfo ownerInfo = userIdToOwnerMap.get(owner.getUuid());
+
+                    if (ownerInfo == null) {
+                        log.warn(
+                            "Skipping owner UUID {} for TradeLicenseDetail {} as it is not present in user search",
+                            owner.getUuid(),
+                            license.getTradeLicenseDetail().getId()
+                        );
+                        return; 
+                    }
+
+                    owner.addUserDetail(ownerInfo);
+                });
+            }
         });
     }
 

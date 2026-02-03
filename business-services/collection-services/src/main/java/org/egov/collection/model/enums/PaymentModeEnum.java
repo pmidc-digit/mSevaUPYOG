@@ -14,6 +14,8 @@ public enum PaymentModeEnum {
     ONLINE_RTGS("ONLINE_RTGS"),
     POSTAL_ORDER("POSTAL_ORDER"),
     CARD("CARD"),
+    BBPS("BBPS"),
+
     QR_CODE("QR_CODE");
 
 

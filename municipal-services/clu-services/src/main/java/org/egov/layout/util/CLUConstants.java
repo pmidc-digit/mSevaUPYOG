@@ -100,8 +100,9 @@ public class CLUConstants {
 
 	public static final List<String> BUSINESS_SERVICE_LIST = Arrays.asList("CLU.PAY1", "CLU.PAY2", "CLU");
 
-
-
 	public static final String ACTION_RESUBMIT = "RESUBMIT";
 	
+	public static final String BUILDING_TYPE = "BuildingType";
+	
+	public static final String BUILDING_CATEGORY = "BuildingCategory";
 }

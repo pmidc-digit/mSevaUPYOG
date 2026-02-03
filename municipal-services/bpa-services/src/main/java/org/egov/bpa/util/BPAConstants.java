@@ -423,5 +423,7 @@ public class BPAConstants {
 	public static final String ACTION_RESUBMIT = "RESUBMIT";
 	
 	public static final Long DAY_TO_MILLISECOND = 86400000L;
+	
+	public static final String PROPERTY_USAGE = "PropertyUsage";
 
 }

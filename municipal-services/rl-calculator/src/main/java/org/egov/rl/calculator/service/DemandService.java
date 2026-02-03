@@ -80,6 +80,8 @@ public class DemandService {
 
 		if (calculationReq.getCalculationCriteria().get(0).isSatelment()) {
 			return createSatelmentDemand(calculationReq);
+        } else if (calculationReq.getCalculationCriteria().get(0).isLegacyArrear()) {
+            return createLegacyArrearDemand(calculationReq);
 		} else {
 
 			boolean isSecurityDeposite = calculationReq.getCalculationCriteria().get(0).isSecurityDeposite();
@@ -140,6 +142,82 @@ public class DemandService {
 			return DemandResponse.builder().demands(demands1).build();
 		}
 	}
+    /**
+     * Creates demand for legacy applications based on arrear amount from additionalDetails.
+     * Legacy workflow: INITIATED → PENDINGFORAPPROVAL → APPROVED/REJECTED
+     * Demand is generated when the application is approved with arrear details.
+     */
+    public DemandResponse createLegacyArrearDemand(CalculationReq calculationReq) {
+        List<Demand> demands = new ArrayList<>();
+        CalculationCriteria criteria = calculationReq.getCalculationCriteria().get(0);
+        AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
+        AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+        RequestInfo requestInfo = calculationReq.getRequestInfo();
+        String tenantId = allotmentDetails.getTenantId();
+        String consumerCode = allotmentDetails.getApplicationNumber();
+
+        // Get arrear details from calculation criteria (passed from rl-services)
+        BigDecimal arrearAmount = criteria.getArrearAmount();
+        Long arrearStartDate = criteria.getFromDate();
+        Long arrearEndDate = criteria.getToDate();
+
+        // If arrear amount is not provided in criteria, it will be ZERO
+        if (arrearAmount == null) {
+            arrearAmount = BigDecimal.ZERO;
+        }
+
+        // Use current time if dates are not provided
+        if (arrearStartDate == null) {
+            arrearStartDate = System.currentTimeMillis();
+        }
+        if (arrearEndDate == null) {
+            arrearEndDate = System.currentTimeMillis();
+        }
+
+        OwnerInfo ownerInfo = allotmentDetails.getOwnerInfo().get(0);
+        Owner payerUser = Owner.builder()
+                .name(ownerInfo.getName())
+                .emailId(ownerInfo.getEmailId())
+                .uuid(ownerInfo.getUserUuid())
+                .mobileNumber(ownerInfo.getMobileNo())
+                .tenantId(ownerInfo.getTenantId())
+                .build();
+
+        // Create demand detail for legacy arrear
+        List<DemandDetail> demandDetails = new ArrayList<>();
+        demandDetails.add(DemandDetail.builder()
+                .taxAmount(arrearAmount)
+                .taxHeadMasterCode(RLConstants.RL_ARREAR_FEE)
+                .tenantId(tenantId)
+                .build());
+
+        // Add round off if needed
+        calculationService.addRoundOffTaxHead(tenantId, demandDetails);
+
+        BigDecimal amountPayable = demandDetails.stream()
+                .map(DemandDetail::getTaxAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Demand demand = Demand.builder()
+                .consumerCode(consumerCode)
+                .demandDetails(demandDetails)
+                .payer(payerUser)
+                .minimumAmountPayable(amountPayable)
+                .tenantId(tenantId)
+                .taxPeriodFrom(arrearStartDate)
+                .taxPeriodTo(arrearEndDate)
+                .billExpiryTime(arrearEndDate)
+                .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                .businessService(RLConstants.RL_SERVICE_NAME)
+                .additionalDetails(null)
+                .build();
+
+        demands.add(demand);
+
+        List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
+        log.info("Legacy arrear demand created for application: {} with amount: {}", consumerCode, arrearAmount);
+        return DemandResponse.builder().demands(savedDemands).build();
+    }
 
 	public DemandResponse createSatelmentDemand(CalculationReq calculationReq) {
 

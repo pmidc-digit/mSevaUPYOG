@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -162,8 +163,21 @@ public class BoundaryService {
 				throw new CustomException("PROPERTY ID TENANT ID INFO ERROR",
 						"propertyId and tenantId cannot be wrong, please provide the valid propertyId and tenentId information");
 			} else {
-				JsonNode node = mapper.valueToTree(rlProps);
-				allotementRequest.getAllotment().get(0).setAdditionalDetails(node);
+                JsonNode mdmsPropertyNode = mapper.valueToTree(rlProps);
+                JsonNode existingAdditionalDetails = allotementRequest.getAllotment().get(0).getAdditionalDetails();
+
+                ObjectNode mergedDetails = mapper.createObjectNode();
+                // Add MDMS property data under "propertyDetails" key
+                mergedDetails.set("propertyDetails", mdmsPropertyNode);
+
+                // Preserve existing additionalDetails if present
+                if (existingAdditionalDetails != null && !existingAdditionalDetails.isNull()) {
+                    existingAdditionalDetails.fields().forEachRemaining(entry -> {
+                        mergedDetails.set(entry.getKey(), entry.getValue());
+                    });
+                }
+
+                allotementRequest.getAllotment().get(0).setAdditionalDetails(mergedDetails);
 			}
 			if (!errorMap.isEmpty())
 				throw new CustomException(errorMap);

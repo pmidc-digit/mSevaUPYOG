@@ -107,8 +107,8 @@ public class DemandService {
 				BigDecimal amountPayable = new BigDecimal(0);
 				String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
-				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
-				String cycle = property.path("feesPeriodCycle").asText();
+				JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+				String cycle = additionalDetails.path("feesPeriodCycle").asText();
 
 				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 				BillingPeriod billingPeriod = billingPeriods.stream()
@@ -227,8 +227,8 @@ public class DemandService {
 		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 				.getTenantId();
 
-		JsonNode property = allotmentRequest.getAllotment().get(0).getAdditionalDetails().get(0);
-		String cycle = property.path("feesPeriodCycle").asText();
+		JsonNode additionalDetails = allotmentRequest.getAllotment().get(0).getAdditionalDetails();
+		String cycle = additionalDetails.path("feesPeriodCycle").asText();
 
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 		BillingPeriod billingPeriod = billingPeriods.stream().filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
@@ -499,8 +499,8 @@ public class DemandService {
 						List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
 						list.forEach(d -> {
-							JsonNode property = d.getAdditionalDetails().get(0);
-							String cycle = property.path("feesPeriodCycle").asText();
+							JsonNode additionalDetails = d.getAdditionalDetails();
+							String cycle = additionalDetails.path("feesPeriodCycle").asText();
 
 							List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo,
 									tenantId);

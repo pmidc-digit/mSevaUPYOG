@@ -787,6 +787,7 @@
     height: 120px;
     min-height: 120px;
     max-height: 120px;
+    min-width: 324px;
   }
 
   &.hovered {
@@ -795,6 +796,17 @@
     border: 2px solid rgba(79, 101, 216, 0.3);
   }
 }
+
+@media (max-width: 768px) {
+  .employee-main-application-details .employeeCard {
+    padding: 10px;
+  }
+  .cp {
+    width: 60px !important;
+
+  }
+}
+
 
 .card-icon-container {
   display: flex;

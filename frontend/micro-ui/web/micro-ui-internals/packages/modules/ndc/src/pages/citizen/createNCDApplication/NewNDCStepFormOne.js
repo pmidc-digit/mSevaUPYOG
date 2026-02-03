@@ -16,6 +16,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   );
   const checkApiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.apiData);
 
+  const checkNDCData = useSelector((state) => state.ndc.NDCForm.formData);
+
   console.log("checkApiDataCheck", checkApiDataCheck);
 
   const [getLoader, setLoader] = useState(false);
@@ -55,13 +57,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const createApplication = async (data) => {
     // setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
-    const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
-
-    // Build owners array
-    // const owners = data?.cpt?.details?.owners;
-
-    // const owners = (data?.cpt?.details?.owners || [])?.map(({ status, uuid, ...rest }) => rest);
 
     const owners = (data?.cpt?.details?.owners || []).map(({ status, ...rest }) => {
       if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
@@ -75,10 +71,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return rest; // ✅ keep others unchanged
     });
 
-    console.log("data==", data);
-    console.log("owners==", owners);
-
-    // return;
+    console.log("checkData==", data);
 
     // Prepare NdcDetails
     const ndcDetails = [];
@@ -127,6 +120,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         additionalDetails: {
           propertyAddress: data?.PropertyDetails?.address,
           propertyType: data?.cpt?.details?.usageCategory,
+          reason: data?.NDCReason?.reason,
+          remarks: data?.PropertyDetails?.remarks,
         },
         dueAmount: billData?.totalAmount || 0,
         status: billData?.status,
@@ -264,11 +259,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     } else {
       return { isSuccess: false, response };
     }
-  };
-
-  const validatePropertyId = (value) => {
-    const regex = /^PT-\d{4}-\d{7,8}$/;
-    return regex.test(value);
   };
 
   function validateStepData(data) {

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
 
-const InspectionReportDisplay = ({fiReport}) => {
+const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
     const { t } = useTranslation();
 
     const report = useMemo(() => {
@@ -41,7 +41,7 @@ const InspectionReportDisplay = ({fiReport}) => {
       <div>
         {/* {fiReport.map((report, index) => ( */}
           {/* <div key={index}> */}
-            <CardSectionHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
+            <CardSectionHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1} - Verified by ${InspectionReportVerifier}` : `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier}`}</CardSectionHeader>
             {/* {<LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")}: `}</CardLabel>
               <div className="field" style={{ width: "100%" }}>

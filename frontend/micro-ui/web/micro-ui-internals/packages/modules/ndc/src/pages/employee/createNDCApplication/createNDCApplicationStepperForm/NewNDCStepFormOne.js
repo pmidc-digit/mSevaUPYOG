@@ -122,6 +122,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         additionalDetails: {
           propertyAddress: data?.PropertyDetails?.address,
           propertyType: data?.cpt?.details?.usageCategory,
+          reason: data?.NDCReason?.reason,
+          remarks: data?.PropertyDetails?.remarks,
         },
         dueAmount: billData?.totalAmount || 0,
         status: billData?.status,
@@ -187,9 +189,10 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     if (propertyDetails?.waterConnection?.length > 0) {
       propertyDetails.waterConnection.forEach((value) => {
-        if (value?.billData?.totalAmount != 0) {
-          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
-        }
+        // if (value?.billData?.totalAmount != 0) {
+        //   invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
+        // }
+
         if (value?.billData?.id && value?.billData?.totalAmount > 0) {
           invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
         }
@@ -198,9 +201,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     if (propertyDetails?.sewerageConnection?.length > 0) {
       propertyDetails.sewerageConnection.forEach((value) => {
-        if (value?.billData?.totalAmount != 0) {
-          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
-        }
+        // if (value?.billData?.totalAmount != 0) {
+        //   invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
+        // }
         if (value?.billData?.id && value?.billData?.totalAmount > 0) {
           invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
         }

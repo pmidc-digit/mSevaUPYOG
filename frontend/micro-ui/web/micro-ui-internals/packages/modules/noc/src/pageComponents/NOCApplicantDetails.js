@@ -27,7 +27,7 @@ import NOCCustomUploadFile from "./NOCCustomUploadFile";
 import { PropertySearchModal } from "./PropertySearchModal";
 import { PropertySearchBathinda } from "../components/PropertySearchBathinda";
 import { PropertySearchLudhiana } from "../components/PropertySearchLudhiana";
-import { UPDATE_NOCNewApplication_FORM} from "../redux/action/NOCNewApplicationActions";
+import { UPDATE_NOCNewApplication_FORM, UPDATE_NOC_OwnerIds,UPDATE_NOC_OwnerPhotos } from "../redux/action/NOCNewApplicationActions";
 import { formatDateForInput } from "../utils";
 const ownerTypeOptions = [
   { i18nKey: "NOC_OWNER_TYPE_INDIVIDUAL", code: "Individual", value: "Individual" },
@@ -550,7 +550,7 @@ const NOCApplicantDetails = (_props) => {
             {index === 0 && (
               <div>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} *`}</CardLabel>
+                  <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -561,10 +561,19 @@ const NOCApplicantDetails = (_props) => {
                           placeholder={t("IS_PROPERTY_AVAILABLE")}
                           selected={props.value}
                           select={(e) => {
+                            if ( e?.value === true) { 
+                              alert("Existing user/property specific details entered will be cleared and replaced with data from the searched property."); 
+                            } else if (e?.value === false){ 
+                              alert("Existing user/property derived details will be removed."); 
+                            }
+
                             props.onChange(e);
+
                             if (e) {
                               dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
                               dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+                              dispatch(UPDATE_NOC_OwnerIds("ownerIdList", []));
+                              dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", []));
                               dispatch(
                                 UPDATE_NOCNewApplication_FORM("siteDetails", {
                                   ...currentStepData?.siteDetails,
@@ -578,6 +587,7 @@ const NOCApplicantDetails = (_props) => {
                                 isPropertyAvailable: e,
                               });
                             }
+
                             setIsPropertyAvailable(e);
                           }}
                           option={[
@@ -589,6 +599,7 @@ const NOCApplicantDetails = (_props) => {
                         />
                       )}
                     />
+
                     <Controller
                       control={control}
                       name={`owners[${index}].propertyId`}
@@ -733,7 +744,11 @@ const NOCApplicantDetails = (_props) => {
                           props.onBlur(e);
                         }}
                         t={t}
-                        disabled={Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) || Boolean(cptObj?.owners?.[0]?.mobileNumber) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerMobileNumber)}
+                        disabled={
+                          Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) ||
+                          Boolean(cptObj?.owners?.[0]?.mobileNumber) ||
+                          Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerMobileNumber)
+                        }
                       />
                     )}
                   />
@@ -741,7 +756,9 @@ const NOCApplicantDetails = (_props) => {
                     style={{ marginTop: "17px" }}
                     className="search-icon"
                     onClick={
-                      Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) || Boolean(cptObj?.owners?.[0]?.mobileNumber) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerMobileNumber)
+                      Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) ||
+                      Boolean(cptObj?.owners?.[0]?.mobileNumber) ||
+                      Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerMobileNumber)
                         ? null
                         : () => getOwnerDetails(index)
                     }
@@ -782,7 +799,11 @@ const NOCApplicantDetails = (_props) => {
                         props.onBlur(e);
                       }}
                       t={t}
-                      disabled={Boolean(nocCpt?.details?.owners?.[0]?.name) || Boolean(cptObj?.owners?.[0]?.name) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerName)}
+                      disabled={
+                        Boolean(nocCpt?.details?.owners?.[0]?.name) ||
+                        Boolean(cptObj?.owners?.[0]?.name) ||
+                        Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerName)
+                      }
                     />
                   )}
                 />
@@ -895,7 +916,8 @@ const NOCApplicantDetails = (_props) => {
                       t={t}
                       disabled={
                         Boolean(nocCpt?.details?.address?.doorNo || nocCpt?.details?.address?.street) ||
-                        Boolean(cptObj?.address?.doorNo || cptObj?.address?.street) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)
+                        Boolean(cptObj?.address?.doorNo || cptObj?.address?.street) ||
+                        Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)
                       }
                     />
                   )}

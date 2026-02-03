@@ -1,5 +1,5 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
-import React from "react";
+import { Banner, Card, CardText, ActionBar, SubmitBar , Loader } from "@mseva/digit-ui-react-components";
+import React ,{useState} from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll} from "../../utils";
@@ -13,6 +13,8 @@ const NOCResponseCitizen = (props) => {
   const nocData = state?.data?.Noc?.[0];
   console.log("nocData here", nocData);
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const [loading, setLoading] = useState(false);
+  
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -24,8 +26,12 @@ const NOCResponseCitizen = (props) => {
     history.push(`/digit-ui/citizen`);
   };
   const onViewApplication = () => {
-    history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+    setLoading(true); // show loading first
+    setTimeout(() => {
+      history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+    }, 1000); // delay navigation by 1 second
   };
+
 
   const onGoToNOC = () => {
     history.push(`/digit-ui/citizen/noc-home`);
@@ -50,6 +56,11 @@ const NOCResponseCitizen = (props) => {
   //     console.log("Eroor Occurred !!!", error);
   //   }
   // };
+
+   if (loading) {
+      return <Loader />;
+    }
+  
 
 
   return (

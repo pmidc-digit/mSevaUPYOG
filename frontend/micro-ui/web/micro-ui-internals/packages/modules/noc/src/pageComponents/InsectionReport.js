@@ -14,7 +14,7 @@ const createUnitDetails = () => ({
     key: Date.now(),
 });
 
-const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus }) => {
+const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus, InspectionReportVerifier }) => {
     const { t } = useTranslation();
     const { pathname } = useLocation();
     const fieldInspectionFieldReports = fiReport ? fiReport : JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"));
@@ -107,7 +107,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         props,
         stateId,
         fiReport,
-        applicationStatus
+        applicationStatus,
+        InspectionReportVerifier
     };
 
     console.log("FieldReports", FieldReports)
@@ -168,7 +169,8 @@ const InspectionReportForm = (_props) => {
         props,
         stateId,
         fiReport,
-        applicationStatus
+        applicationStatus,
+        InspectionReportVerifier
     } = _props;
 
     const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
@@ -318,7 +320,7 @@ const InspectionReportForm = (_props) => {
                             onClick={(e) => removeUnit(unit)}
                         />
                     ) : null}
-                    <CardSectionHeader>{allFieldReport?.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
+                    <CardSectionHeader>{allFieldReport?.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1} - Verified by ${InspectionReportVerifier}` : `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier}`}</CardSectionHeader>
                     {/* <LabelFieldPair style={{ width: "100%" }}>
                         <CardLabel style={{ marginTop: "0px", width: "100%" }} className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")} * `}</CardLabel>
                         <div className="field" style={{ width: "100%" }}>

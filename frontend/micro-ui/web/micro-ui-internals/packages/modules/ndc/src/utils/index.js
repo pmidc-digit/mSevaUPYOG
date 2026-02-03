@@ -72,3 +72,22 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
     let documentName = decodeURIComponent(documentLink.split("?")[0].split("/").pop().slice(13)) || `Document - ${index + 1}`;
     return documentName;
   };
+
+  export const EmployeeData = (tenantId, approver) => {
+  const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: approver, isActive: true }, { enabled: !!approver });
+  console.log("employeeData", employeeData);
+  const officerRaw = employeeData?.data?.Employees?.[0];
+  const officerAssignment = officerRaw?.assignments?.[0];
+
+  const officer = officerRaw
+    ? {
+        code: officerRaw?.code,
+        id: officerRaw?.id,
+        name: officerRaw?.user?.name,
+        department: officerAssignment?.department,
+        designation: officerAssignment?.designation,
+      }
+    : null;
+
+  return { officer };
+};

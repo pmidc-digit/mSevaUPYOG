@@ -29,14 +29,14 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   };
 
   return (
-    <div className="noc-table-container">
-      <table className="customTable table-border-style">
+    <div className="noc-table-container" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
+      <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "500px", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th>{t("BPA_SR_NO_LABEL")}</th>
-            <th>{t("BPA_DOCUMENT_NAME")}</th>
-            <th>{t("BPA_DOCUMENT_FILE")}</th>
-            <th>{t("BPA_REMARKS_LABEL")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "50px" }}>{t("BPA_SR_NO_LABEL")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "150px" }}>{t("BPA_DOCUMENT_NAME")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "100px" }}>{t("BPA_DOCUMENT_FILE")}</th>
+            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "150px" }}>{t("BPA_REMARKS_LABEL")}</th>
           </tr>
         </thead>
         <tbody>
@@ -44,14 +44,14 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td>{i + 1}</td>
-                <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
-                <td>
+                 <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "50px" }}>{i + 1}</td>
+                <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px" }}>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
+                <td style={{ padding: "14px 12px", minWidth: "100px" }}>
                   {url ? (
                     <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
                   ) : t("CS_NA")}
                 </td>
-                <td>
+                <td style={{ padding: "14px 12px", minWidth: "150px" }}>
                   <TextInput
                     t={t}
                     type="text"
@@ -59,7 +59,7 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                     onChange={(e) => !readOnly && setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }))}
                     onBlur={(e) => !readOnly && handleBlur(doc.documentUid, e.target.value)}
                     disabled={readOnly}
-                    style={{ width: "100%", padding: "4px", border: "1px solid #ccc", borderRadius: "4px" }}
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", borderRadius: "4px", fontSize: "13px", boxSizing: "border-box" }}
                   />
                 </td>
               </tr>

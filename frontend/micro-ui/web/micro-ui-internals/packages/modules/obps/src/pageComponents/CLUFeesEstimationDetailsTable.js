@@ -246,11 +246,11 @@ const handleAdjustedAmountChange = (index, value) => {
   }
 
   return (
-    <div>
+    <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       {cluCalculatorLoading ? (
         <Loader />
       ) : (
-        <div>
+        <div style={{ width: "100%" }}>
           <CLUFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}

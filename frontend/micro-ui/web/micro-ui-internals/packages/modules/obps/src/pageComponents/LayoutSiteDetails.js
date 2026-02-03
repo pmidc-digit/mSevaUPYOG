@@ -58,6 +58,24 @@ const LayoutSiteDetails = (_props) => {
     }
   }, [isCluValidated, isCluRequired, cluValidationRef]);
 
+  // Restore CLU document from edit data
+  useEffect(() => {
+    if (isEditMode && currentStepData?.siteDetails?.cluDocumentUpload && !cluDocumentUploadedFile) {
+      setCluDocumentUploadedFile({
+        fileStoreId: currentStepData.siteDetails.cluDocumentUpload,
+        fileName: currentStepData.siteDetails.cluDocumentUploadFileName || "CLU Document"
+      });
+    }
+  }, [isEditMode, currentStepData?.siteDetails?.cluDocumentUpload]);
+
+  // Sync cluDocumentUpload form field with cluDocumentUploadedFile state
+  useEffect(() => {
+    if (cluDocumentUploadedFile?.fileStoreId) {
+      console.log("Syncing cluDocumentUpload field with fileStoreId:", cluDocumentUploadedFile.fileStoreId);
+      setValue("cluDocumentUpload", cluDocumentUploadedFile.fileStoreId, { shouldValidate: true });
+    }
+  }, [cluDocumentUploadedFile, setValue]);
+
   console.log("STEPERDFATA", currentStepData);
   console.log(isEditMode, "LOOK EDIT");
 
@@ -602,16 +620,56 @@ const LayoutSiteDetails = (_props) => {
                     </CardLabel>
                     <div className="field">
                       <CustomUploadFile
-                        onUpload={(file) => {
-                          setCluDocumentUploadedFile(file);
+                        onUpload={async (event) => {
+                          try {
+                            // Extract file from event object
+                            const file = event?.target?.files?.[0];
+                            if (!file) return;
+                            
+                            // Validate file size (5MB)
+                            if (file.size > 5 * 1024 * 1024) {
+                              setCluDocumentError("File size exceeds 5MB limit");
+                              return;
+                            }
+                            
+                            // Validate file type is PDF
+                            if (file.type !== "application/pdf") {
+                              setCluDocumentError("Only PDF files are allowed");
+                              return;
+                            }
+                            
+                            setCluDocumentLoader(true);
+                            setCluDocumentError(null);
+                            
+                            const response = await Digit.UploadServices.Filestorage("Layout", file, stateId);
+                            setCluDocumentLoader(false);
+                            
+                            if (response?.data?.files?.length > 0) {
+                              const fileStoreId = response.data.files[0].fileStoreId;
+                              console.log("✅ CLU Document uploaded successfully:", fileStoreId);
+                              setCluDocumentUploadedFile({
+                                fileStoreId: fileStoreId,
+                                fileName: file.name
+                              });
+                              console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
+                            } else {
+                              console.error("❌ File upload failed - no fileStoreId in response");
+                              setCluDocumentError("File upload failed");
+                            }
+                          } catch (err) {
+                            setCluDocumentLoader(false);
+                            console.error("CLU upload error:", err);
+                            setCluDocumentError("File upload failed: " + (err?.message || "Unknown error"));
+                          }
+                        }}
+                        onDelete={() => {
+                          setCluDocumentUploadedFile(null);
                           setCluDocumentError(null);
                         }}
-                        onRemove={() => {
-                          setCluDocumentUploadedFile(null);
-                        }}
+                        uploadedFile={cluDocumentUploadedFile?.fileStoreId || null}
                         error={cluDocumentError}
                         loading={cluDocumentLoader}
-                        allowedFileTypes={["pdf"]}
+                        accept=".pdf"
                         maxFileSize={5} // MB
                       />
                     </div>
@@ -694,6 +752,29 @@ const LayoutSiteDetails = (_props) => {
                       )}
                     </div>
                   </LabelFieldPair>
+                  
+                  {/* Hidden field to store CLU Document in form data */}
+                  <Controller
+                    control={control}
+                    name="cluDocumentUpload"
+                    defaultValue=""
+                    rules={{
+                      // Only required when OFFLINE CLU is selected
+                      validate: (value) => {
+                        if (cluType?.code === "OFFLINE" || cluType === "OFFLINE") {
+                          return cluDocumentUploadedFile ? true : "CLU Document must be uploaded";
+                        }
+                        return true; // Not required for other cases
+                      }
+                    }}
+                    render={(props) => (
+                      <input 
+                        type="hidden" 
+                        value={cluDocumentUploadedFile?.fileStoreId || ""} 
+                        onChange={() => props.onChange(cluDocumentUploadedFile)}
+                      />
+                    )}
+                  />
                 </React.Fragment>
               ) : null}
             </React.Fragment>
@@ -726,7 +807,7 @@ const LayoutSiteDetails = (_props) => {
                         { code: "TOWN_PLANNING", name: "TOWN PLANNING", i18nKey: "Town Planning" },
                         { code: "AFFORDABLE", name: "AFFORDABLE", i18nKey: "Affordable" },
                         { code: "DEVELOPMENT", name: "DEVELOPMENT", i18nKey: "Development" },
-                        { code: "EWS", name: "EWS", i18nKey: "EWS" },
+             
                       ]}
                       optionKey="name"
                       t={t}

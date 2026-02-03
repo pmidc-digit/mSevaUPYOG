@@ -539,11 +539,11 @@ const CitizenApplicationOverview = () => {
       {id.length > 0 && (
         <React.Fragment>
           <Card>
-            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
-            </div>
+          
           </Card>
         </React.Fragment>
       )}

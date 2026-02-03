@@ -930,3 +930,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
+
+  - name: "builds/upyog/core-services/egov-esign"
+    build:
+      - work-dir: "core-services/egov-esign"
+        image-name: "egov-esign"
+        dockerfile: "build/maven/Dockerfile"
+     # - work-dir: "core-services/egov-esign/src/main/resources/db"
+      #  image-name: "egov-esign-db"

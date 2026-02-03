@@ -141,7 +141,7 @@ public class NotificationUtil {
 		if (CollectionUtils.isEmpty(smsRequestList))
 			log.info("Messages fobject is empty in send sms!");
 		for (SMSRequest smsRequest : smsRequestList) {
-			producer.push(config.getSmsNotifTopic(), smsRequest);
+			producer.push(config.getSmsNotifTopic(), smsRequest.getMobileNumber(),smsRequest);
 			log.debug("SMS request object : " + smsRequest);
 			log.info("Sending SMS notification to MobileNumber: " + smsRequest.getMobileNumber() + " Messages: " + smsRequest.getMessage());
 		}
@@ -154,7 +154,9 @@ public class NotificationUtil {
 	 */
 	public void sendEventNotification(EventRequest request) {
 		log.info("EVENT notification sent!");
-		producer.push(config.getSaveUserEventsTopic(), request);
+        String key = request.getEvents() != null && !request.getEvents().isEmpty()
+                ? request.getEvents().get(0).getTenantId() : null;
+		producer.push(config.getSaveUserEventsTopic(), key, request);
 	}
 
 	/**

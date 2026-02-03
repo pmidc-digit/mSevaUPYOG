@@ -65,8 +65,9 @@ public class PGRService {
         validator.validateCreate(request, mdmsData);
         enrichmentService.enrichCreateRequest(request);
         workflowService.updateWorkflowStatus(request);
-        producer.push(config.getCreateTopic(),request);
-        producer.push(config.getSaveForDgrTopic(),request);
+        String key = request.getService().getId();
+        producer.push(config.getCreateTopic(), key,request);
+        producer.push(config.getSaveForDgrTopic(), key,request);
 
         return request;
     }
@@ -126,7 +127,8 @@ public class PGRService {
         validator.validateUpdate(request, mdmsData);
         enrichmentService.enrichUpdateRequest(request);
         //workflowService.updateWorkflowStatus(request);
-        producer.push(config.getUpdateTopic(),request);
+        String key = request.getService().getId();
+        producer.push(config.getUpdateTopic(), key,request);
         return request;
     }
 

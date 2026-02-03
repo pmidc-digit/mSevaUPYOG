@@ -45,7 +45,8 @@ public class BillGeneratorDao {
 	private String createSWBillScheduler;
 
 	public void saveBillGenertaionDetails(BillGenerationRequest billGenerationReq) {
-		sWCalculationProducer.push(createSWBillScheduler, billGenerationReq);
+		String key = billGenerationReq.getBillScheduler().getId();
+		sWCalculationProducer.push(createSWBillScheduler, key , billGenerationReq);
 	}
 
 	public List<BillScheduler> getBillGenerationDetails(BillGenerationSearchCriteria criteria) {

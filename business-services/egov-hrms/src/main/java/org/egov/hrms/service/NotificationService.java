@@ -73,7 +73,7 @@ public class NotificationService {
 		for(Employee employee: request.getEmployees()) {
 			message = buildMessage(employee, message, pwdMap);
 			SMSRequest smsRequest = SMSRequest.builder().mobileNumber(employee.getUser().getMobileNumber()).message(message).build();
-			producer.push(smsTopic, smsRequest);
+			producer.push(smsTopic,smsRequest.getMobileNumber(), smsRequest);
 		}
 	}
 
@@ -95,7 +95,7 @@ public class NotificationService {
 
 				SMSRequest smsRequest = SMSRequest.builder().mobileNumber(employee.getUser().getMobileNumber()).message(message).build();
 				log.info(message );
-				producer.push(smsTopic, smsRequest);
+				producer.push(smsTopic,smsRequest.getMobileNumber(), smsRequest);
 			}
 
 		}

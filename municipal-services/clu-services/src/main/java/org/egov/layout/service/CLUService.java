@@ -141,6 +141,13 @@ public class CLUService {
 		if(nocRequest.getLayout().getOwners().get(0).getUuid() != null)
 			nocRequest.getLayout().setAccountId(nocRequest.getLayout().getOwners().get(0).getUuid());
 
+		if(!CollectionUtils.isEmpty(nocRequest.getLayout().getOwners())) {
+			nocRequest.getLayout().getOwners().forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
+		}
+		
 		nocRepository.save(nocRequest);
 		return Arrays.asList(nocRequest.getLayout());
 	}
@@ -192,6 +199,10 @@ public class CLUService {
 		Clu searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getLayout().getOwners();
 		if (owners != null) {
+			owners.forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getLayout());
 		}
 		Object additionalDetailsData = nocRequest.getLayout().getNocDetails().getAdditionalDetails();
@@ -202,10 +213,11 @@ public class CLUService {
 
 		Boolean propertyCheck = (Boolean) siteDetails.get("isPropertyAvailable");
 		Boolean isPropertyAvailable = propertyCheck==null ? false:propertyCheck;
-
-		String propertyId = (String) siteDetails.get("propertyuid");;
-		if(!isPropertyAvailable && net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(propertyId))
-			cluPropertyService.createProperty(nocRequest);
+		
+		// Create Property if Property not available
+//		String propertyId = (String) siteDetails.get("propertyuid");
+//		if(!isPropertyAvailable && StringUtils.isEmpty(propertyId))
+//			cluPropertyService.createProperty(nocRequest, mdmsData);
 
 		State currentState = workflowService.getCurrentState(clu.getApplicationStatus(), businessServicename);
 		String nextStateId = currentState.getActions().stream()
@@ -400,9 +412,14 @@ public class CLUService {
 
 				List<String> accountid = nocRepository.getOwnerUserIdsByCluId(noc.getId());
 //				accountid.add(noc.getAccountId());
-				criteria.setAccountId(accountid);
-				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				List<OwnerInfo> owner = userDetailResponse.getUser();
+				
+				List<OwnerInfo> owner = new ArrayList<>();
+				
+				if(!CollectionUtils.isEmpty(accountid)) {
+					criteria.setAccountId(accountid);
+					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+					owner = userDetailResponse.getUser();
+				}
 
 
 
@@ -421,6 +438,7 @@ public class CLUService {
 // Merge by uuid
 				for (OwnerInfo oi : owner) {
 					String uuid = oi.getUuid(); // ensure this getter exists
+					oi.setStatus(true);
 					if (uuid != null) {
 						Object ad = adByUuid.get(uuid);
 						if (ad != null) {

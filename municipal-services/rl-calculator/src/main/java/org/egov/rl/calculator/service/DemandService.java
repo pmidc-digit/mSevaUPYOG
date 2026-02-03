@@ -108,7 +108,7 @@ public class DemandService {
 				String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
 				JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
-				String cycle = additionalDetails.path("feesPeriodCycle").asText();
+				String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 				BillingPeriod billingPeriod = billingPeriods.stream()
@@ -228,7 +228,7 @@ public class DemandService {
 				.getTenantId();
 
 		JsonNode additionalDetails = allotmentRequest.getAllotment().get(0).getAdditionalDetails();
-		String cycle = additionalDetails.path("feesPeriodCycle").asText();
+		String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 		BillingPeriod billingPeriod = billingPeriods.stream().filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
@@ -500,7 +500,7 @@ public class DemandService {
 						int batchSize = 10;
 						list.forEach(d -> {
 							JsonNode additionalDetails = d.getAdditionalDetails();
-							String cycle = additionalDetails.path("feesPeriodCycle").asText();
+							String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 							List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo,
 									tenantId);

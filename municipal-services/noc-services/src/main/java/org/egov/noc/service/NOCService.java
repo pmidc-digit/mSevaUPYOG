@@ -104,6 +104,13 @@ public class NOCService {
 		if(nocRequest.getNoc().getOwners().get(0).getUuid() != null)
 			nocRequest.getNoc().setAccountId(nocRequest.getNoc().getOwners().get(0).getUuid());
 
+		if(!CollectionUtils.isEmpty(nocRequest.getNoc().getOwners())) {
+			nocRequest.getNoc().getOwners().forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
+		}
+		
 		nocRepository.save(nocRequest);
 		return Arrays.asList(nocRequest.getNoc());
 	}
@@ -188,6 +195,10 @@ public class NOCService {
 		Noc searchResult= null;
 		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
 		if (owners != null) {
+			owners.forEach(owner -> {
+				if(owner.getStatus() == null)
+					owner.setStatus(true);
+			});
 			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 		}
 		Object additionalDetailsData = nocRequest.getNoc().getNocDetails().getAdditionalDetails();
@@ -197,9 +208,11 @@ public class NOCService {
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
 
 		// Create Property if Property not available
-//		String propertyId = (String) siteDetails.getOrDefault("propertyuid", "");
-//		if(StringUtils.isEmpty(propertyId))
-//			nocPropertyService.createProperty(nocRequest, mdmsData);
+		List<String> propertyId = JsonPath.read(additionalDetailsData, "$.applicationDetails.owners.*.propertyId");
+		propertyId = propertyId.stream().filter(id -> !StringUtils.isEmpty(id)).collect(Collectors.toList());
+		Boolean isPropertyAvailable = JsonPath.read(additionalDetailsData, "$.applicationDetails.isPropertyAvailable.value");
+		if(CollectionUtils.isEmpty(propertyId) && !isPropertyAvailable && noc.getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY))
+			nocPropertyService.createProperty(nocRequest, mdmsData);
 
 		if(nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE) || nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY)){
 			searchResult = new Noc();
@@ -415,9 +428,13 @@ public class NOCService {
 						: new HashMap<String, String>();
 
 				List<String> accountid = nocRepository.getOwnerUserIdsByNocId(noc.getId());
-				criteria.setAccountId(accountid);
-				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-				List<OwnerInfo> owner = userDetailResponse.getUser();
+				List<OwnerInfo> owner = new ArrayList<>();
+				
+				if(!CollectionUtils.isEmpty(accountid)) {
+					criteria.setAccountId(accountid);
+					UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+					owner = userDetailResponse.getUser();
+				}
 
 				Map<String, Object>adByUuid = Optional.ofNullable(noc.getOwners())
 						.orElse(Collections.emptyList())
@@ -433,6 +450,7 @@ public class NOCService {
 // Merge by uuid
 				for (OwnerInfo oi : owner) {
 					String uuid = oi.getUuid(); // ensure this getter exists
+					oi.setStatus(true);
 					if (uuid != null) {
 						Object ad = adByUuid.get(uuid);
 						if (ad != null) {

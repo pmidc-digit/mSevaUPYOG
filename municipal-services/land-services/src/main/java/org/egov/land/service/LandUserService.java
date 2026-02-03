@@ -178,6 +178,8 @@ public class LandUserService {
 		List<String> ids = new ArrayList<String>();
 		Set<String> uuids = new HashSet<String>();
 		landInfos.forEach(landInfo -> {
+			if(landInfo.getOwners() == null)
+				landInfo.setOwners(Collections.EMPTY_LIST);
 			landInfo.getOwners().forEach(owner -> {
 				if (owner.getUuid() != null && owner.getStatus() )
 					uuids.add(owner.getUuid().toString());
@@ -187,6 +189,10 @@ public class LandUserService {
 		for (String uuid : uuids) {
 			ids.add(uuid);
 		}
+		
+		if(ids.isEmpty())
+			return new UserDetailResponse();
+		
 		userSearchRequest.setUuid(ids);
 		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		return userCall(userSearchRequest, uri);

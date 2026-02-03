@@ -152,5 +152,8 @@ public class Bill {
 	
 	@JsonProperty("connection")
 	private Connection connection;	
+	
+	@JsonProperty("meterReading")
+	private MeterReading meterReading;
 
 }

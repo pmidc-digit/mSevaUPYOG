@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionBar, CheckBox, FormComposer, Loader, Menu, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
@@ -6,6 +7,7 @@ import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
 import LayoutSummary from "../../../pageComponents/LayoutSummary";
+import { convertToDDMMYYYY } from "../../../utils";
 
 const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -46,6 +48,38 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     console.log("formData in parent SummaryPage", currentStepData);
 
     onSubmit(currentStepData, action);
+  };
+
+  // Get all applicant names (primary owner + newly added applicants)
+  const getAllApplicantNames = () => {
+    const layoutData = !currentStepData?.apiData?.Layout 
+      ? currentStepData?.apiData 
+      : currentStepData?.apiData?.Layout?.[0];
+    
+    // Primary owner name - try multiple sources for fallback
+    let primaryOwnerName = layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName
+      || currentStepData?.applicationDetails?.applicantOwnerOrFirmName;
+    
+    // Fallback: Get primary owner name from owners array if not in applicationDetails
+    if (!primaryOwnerName && layoutData?.owners && layoutData.owners.length > 0) {
+      primaryOwnerName = layoutData.owners[0]?.name;
+    }
+    
+    // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
+    const applicantsFromRedux = currentStepData?.applicants || [];
+    const newlyAddedApplicants = applicantsFromRedux.slice(1).filter(app => app?.name);
+    
+    // Get all applicant names (primary + additional)
+    const allApplicantNames = [
+      primaryOwnerName,
+      ...newlyAddedApplicants.map(app => app.name)
+    ].filter(name => name); // Filter out undefined/null names
+    
+    console.log("[v0] getAllApplicantNames - primaryOwnerName:", primaryOwnerName);
+    console.log("[v0] getAllApplicantNames - newlyAddedApplicants:", newlyAddedApplicants);
+    console.log("[v0] getAllApplicantNames - allApplicantNames:", allApplicantNames);
+    
+    return allApplicantNames.length > 0 ? allApplicantNames.join(", ") : "NA";
   };
 
   const onSubmit = async (data, selectedAction) => {
@@ -157,16 +191,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   console.log("[v0] layoutFormData.documents.documents", layoutFormData?.documents?.documents)
   console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
   
-  // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
-
-  
   // Check if we're in EDIT mode or NEW mode
-  // In NEW mode: data is at layoutFormData.apiData.Layout[0]
-  // In EDIT mode (from edit application page): data is at layoutFormData.apiData directly
-  const isEditMode = !layoutFormData?.apiData?.Layout
+  // Layout can be either an object (from CREATE response) or array (from some API responses)
+  const isLayoutArray = Array.isArray(layoutFormData?.apiData?.Layout);
+  const isEditMode = !layoutFormData?.apiData?.Layout;
   const layoutData = isEditMode 
     ? layoutFormData?.apiData 
-    : layoutFormData?.apiData?.Layout?.[0]
+    : (isLayoutArray ? layoutFormData?.apiData?.Layout?.[0] : layoutFormData?.apiData?.Layout)
   
   console.log("[v0] isEditMode:", isEditMode)
   console.log("[v0] layoutData:", layoutData)
@@ -183,14 +214,33 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const applicantsFromRedux = layoutFormData?.applicants || [];
     const newlyAddedApplicants = applicantsFromRedux.slice(1).filter(app => app?.name); // Filter out empty entries
     
+    // Get document files
+    const docFiles = layoutFormData?.documentUploadedFiles || {};
+    const photoFiles = layoutFormData?.photoUploadedFiles || {};
+    const panDocFiles = layoutFormData?.panDocumentUploadedFiles || {};
+    
+    // Update primary owner (index 0) with new documents if available
+    const updatedOwnersFromApi = ownersFromApi.map((owner, index) => {
+      if (index === 0) {
+        // Primary owner - update additionalDetails with new documents if provided
+        return {
+          ...owner,
+          pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
+          additionalDetails: {
+            ...owner?.additionalDetails,
+            ownerPhoto: photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
+            documentFile: docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
+            panDocument: panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+          },
+        };
+      }
+      return owner;
+    });
+    
     // Map newly added applicants to owner format for API
     const mappedNewApplicants = newlyAddedApplicants
-      .filter(newApp => !ownersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber))
+      .filter(newApp => !updatedOwnersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber))
       .map((applicant, index) => {
-        // Get document files for this applicant
-        const docFiles = layoutFormData?.documentUploadedFiles || {};
-        const photoFiles = layoutFormData?.photoUploadedFiles || {};
-        const panFiles = layoutFormData?.panUploadedFiles || {};
         const applicantIndex = applicantsFromRedux.indexOf(applicant);
         
         // For new applicants, don't send uuid - let backend create/assign it
@@ -203,57 +253,95 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           permanentAddress: applicant.address,
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
           gender: applicant.gender?.code || applicant.gender,
-          panNumber: applicant.panNumber || "",
+          pan: applicant.panNumber || null,
           additionalDetails: {
             ownerPhoto: photoFiles[applicantIndex]?.fileStoreId || null,
             documentFile: docFiles[applicantIndex]?.fileStoreId || null,
-            panFile: panFiles[applicantIndex]?.fileStoreId || null,
+            panDocument: panDocFiles[applicantIndex]?.fileStoreId || null,
           },
         };
         
         return ownerObj;
       });
     
-    // Merge: existing owners from API + newly added applicants
-    const owners = [...ownersFromApi, ...mappedNewApplicants];
+    // Merge: existing owners from API (updated) + newly added applicants
+    const owners = [...updatedOwnersFromApi, ...mappedNewApplicants];
     
     console.log("[v0] ownersFromApi:", ownersFromApi);
+    console.log("[v0] updatedOwnersFromApi:", updatedOwnersFromApi);
     console.log("[v0] applicantsFromRedux:", applicantsFromRedux);
     console.log("[v0] newlyAddedApplicants:", newlyAddedApplicants);
     console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
     console.log("[v0] final merged owners:", owners);
 
-  // Helper function to convert YYYY-MM-DD to dd-MM-yyyy
-  const convertDateToDDMMYYYY = (dateString) => {
-    if (!dateString) return null;
-    try {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
-    } catch (error) {
-      console.warn("Error converting date:", error);
-      return dateString;
-    }
-  };
+  console.log("[v0] isEditMode:", isEditMode);
+  console.log("[v0] selectedAction:", selectedAction);
 
-  // Following CLU pattern: Put entire formData in additionalDetails
   const updatedApplication = {
     ...layoutData,
-   
-    workflow: {
-      action: selectedAction?.action || "",
-    },
+    vasikaDate: layoutFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) : "",
+    vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber || "",
+    // Only send workflow action for NEW applications, not for EDIT
+    // In EDIT mode, the backend should handle updates without workflow action
+    workflow: !isEditMode ? {
+      action: selectedAction?.action || "APPLY",
+    } : {},
     layoutDetails: {
       ...layoutData?.layoutDetails,
-      additionalDetails: layoutFormData,  // ← Include ENTIRE formData like CLU does
+      tenantId: tenantId,
+      additionalDetails: {
+        ...layoutData?.layoutDetails?.additionalDetails,
+        // Keep ONLY professional and applicant-specific details
+        // DO NOT include applicant owner name/address - that info is already in owners array
+        applicationDetails: {
+          // Professional details (only these fields belong here)
+          professionalName: layoutFormData?.applicationDetails?.professionalName,
+          professionalEmailId: layoutFormData?.applicationDetails?.professionalEmailId,
+          professionalRegId: layoutFormData?.applicationDetails?.professionalRegId,
+          professionalMobileNumber: layoutFormData?.applicationDetails?.professionalMobileNumber,
+          professionalAddress: layoutFormData?.applicationDetails?.professionalAddress,
+          professionalRegistrationValidity: layoutFormData?.applicationDetails?.professionalRegistrationValidity,
+          // Applicant-specific fields (not duplicating owner info from owners array)
+          panNumber: layoutFormData?.applicationDetails?.panNumber,
+          primaryOwnerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto,
+          primaryOwnerDocument: layoutFormData?.applicationDetails?.primaryOwnerDocument,
+        },
+        siteDetails: {
+          ...layoutData?.layoutDetails?.additionalDetails?.siteDetails,  // Keep original siteDetails structure
+          // Override only the fields that user modified in the form
+          ...(layoutFormData?.siteDetails?.ulbName && { ulbName: layoutFormData?.siteDetails?.ulbName?.name || "" }),
+          ...(layoutFormData?.siteDetails?.roadType && { 
+            roadType: typeof layoutFormData?.siteDetails?.roadType === 'string' 
+              ? { code: layoutFormData?.siteDetails?.roadType, name: layoutFormData?.siteDetails?.roadType }
+              : layoutFormData?.siteDetails?.roadType
+          }),
+          ...(layoutFormData?.siteDetails?.buildingStatus && { 
+            buildingStatus: typeof layoutFormData?.siteDetails?.buildingStatus === 'string' 
+              ? { code: layoutFormData?.siteDetails?.buildingStatus, name: layoutFormData?.siteDetails?.buildingStatus }
+              : layoutFormData?.siteDetails?.buildingStatus
+          }),
+          ...(layoutFormData?.siteDetails?.isBasementAreaAvailable && { isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "" }),
+          ...(layoutFormData?.siteDetails?.district && { 
+            district: typeof layoutFormData?.siteDetails?.district === 'string'
+              ? { code: layoutFormData?.siteDetails?.district, name: layoutFormData?.siteDetails?.district }
+              : layoutFormData?.siteDetails?.district
+          }),
+          ...(layoutFormData?.siteDetails?.zone && { 
+            zone: typeof layoutFormData?.siteDetails?.zone === 'string'
+              ? { code: layoutFormData?.siteDetails?.zone, name: layoutFormData?.siteDetails?.zone }
+              : layoutFormData?.siteDetails?.zone
+          }),
+          ...(layoutFormData?.siteDetails?.plotNo && { plotNo: layoutFormData?.siteDetails?.plotNo }),
+          ...(layoutFormData?.siteDetails?.proposedSiteAddress && { proposedSiteAddress: layoutFormData?.siteDetails?.proposedSiteAddress }),
+          ...(layoutFormData?.siteDetails?.vasikaNumber && { vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber }),
+          ...(layoutFormData?.siteDetails?.vasikaDate && { vasikaDate: convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) }),
+        },
+        coordinates: { ...coordinates },
+      },
     },
     // Initialize empty documents array - will be populated below
     documents: [],
     owners: owners,  // ← Top-level owners array (preserved from API response)
-    vasikaDate: convertDateToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate),  // ← Top-level vasika date
-    vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber || "",  // ← Top-level vasika number
   };
 
     // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========
@@ -312,9 +400,6 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       });
     }
 
-    // Add documents for newly added owners (photo and ID proof)
-    const docFiles = layoutFormData?.documentUploadedFiles || {};
-    const photoFiles = layoutFormData?.photoUploadedFiles || {};
     
     // For newly added applicants, add their documents with proper document type keys
     // The key in docFiles/photoFiles corresponds to the applicant index in applicantsFromRedux
@@ -360,8 +445,14 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   console.log("currentStepData in StepFour", currentStepData);
 
-  const applicationNo = currentStepData?.apiData?.Layout?.[0]?.applicationNo || "";
-  const businessServiceCode = currentStepData?.apiData?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
+  // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
+  const isEditMode = !currentStepData?.apiData?.Layout;
+  const layoutData = isEditMode 
+    ? currentStepData?.apiData 
+    : currentStepData?.apiData?.Layout?.[0];
+
+  const applicationNo = layoutData?.applicationNo || "";
+  const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
   console.log("applicationNo here==>", applicationNo);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -397,9 +488,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       <LayoutSummary currentStepData={currentStepData} t={t} />
 
       <CheckBox
-        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-          currentStepData?.applicationDetails?.applicantOwnerOrFirmName || "NA"
-        }). I along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant(s) (${getAllApplicantNames()}). I along with the applicant(s) have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}
         checked={selectedCheckBox}
@@ -431,3 +520,4 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 };
 
 export default LayoutStepFormFour;
+

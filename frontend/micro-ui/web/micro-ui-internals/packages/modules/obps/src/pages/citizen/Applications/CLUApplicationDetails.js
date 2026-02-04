@@ -136,18 +136,29 @@ const CLUApplicationDetails = () => {
     }
   }, [applicationDetails?.Clu]);
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "clu",
+      businessService: "CLU.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+  const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY2",
       consumerCodes: id,
       isEmployee: false,
     },
     { enabled: id ? true : false }
   );
 
-  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
-
+  console.log('businessServiceCode', businessServiceCode)
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -169,7 +180,7 @@ const CLUApplicationDetails = () => {
  // console.log("Approve Comments:", approveComments);
 
 
-  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
+  // const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
   
   const handleDownloadPdf = async () => {
   try {
@@ -222,17 +233,23 @@ const CLUApplicationDetails = () => {
   if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED") {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"clu-sanctionletter" }),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-sanctionletter" }),
       });
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
     });
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
       dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"clu-receipt" }),
+        label: t("CLU_FEE_RECEIPT_1"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey:"clu-receipt" }),
+      });
+    }
+    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_2"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-receiptsecond" }),
       });
     }
   }
@@ -462,26 +479,13 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
               {detail?.localityAreaType?.code === "SCHEME_AREA" && (
-                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "APPROVED_COLONY" && (
-                <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={detail?.localityApprovedColonyName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "NON_SCHEME" && (
-                <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={detail?.localityNonSchemeType?.name || "N/A"} />
-              )}
-
-              <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={detail?.localityNoticeIssued?.code || "N/A"} />
-
-              {detail?.localityNoticeIssued?.code === "YES" && (
-                <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
-              )}
-
-              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
                 <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
               )}
 
-              <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
+              )}
+
             </StatusTable>
           </div>
         ))}
@@ -493,8 +497,6 @@ const CLUApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-
-              <Row label={t("BPA_PLOT_AREA_LABEL")} text={detail?.plotArea || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
               <Row label={t("BPA_CORE_AREA_LABEL")} text={detail?.coreArea?.code || "N/A"} />
 
@@ -606,7 +608,7 @@ const CLUApplicationDetails = () => {
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable= "true"
-
+            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
           />
         )}
       </Card>

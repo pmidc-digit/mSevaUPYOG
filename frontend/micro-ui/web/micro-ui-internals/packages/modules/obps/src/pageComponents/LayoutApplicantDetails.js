@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import {
   LabelFieldPair,
   TextInput,
@@ -24,18 +24,20 @@ import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
 
-const LayoutApplicantDetails = forwardRef((_props, ref) => {
+const LayoutApplicantDetails = (_props) => {
   const dispatch = useDispatch();
-  const { t, goNext, currentStepData, Controller, control, setValue, reset, errors, errorStyle, trigger } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
+  // Determine if in edit mode
+  const applicationNo = currentStepData?.applicationNo || currentStepData?.apiData?.Layout?.[0]?.applicationNo;
+  const isEditMode = !!applicationNo;
+
   const [mobileNo, setMobileNo] = useState("");
   const [showToast, setShowToast] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-  const [isLoadingMobile, setIsLoadingMobile] = useState(false);
-
   const [applicants, setApplicants] = useState([
     {
       name: "",
@@ -45,18 +47,19 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       address: "",
       dob: "",
       gender: "",
+      panNumber: "",
     },
   ]);
   const [documentUploadedFiles, setDocumentUploadedFiles] = useState({});
   const [photoUploadedFiles, setPhotoUploadedFiles] = useState({});
-  const [panUploadedFiles, setPanUploadedFiles] = useState({});
-  const [applicantErrors, setApplicantErrors] = useState({});
+  const [panDocumentUploadedFiles, setPanDocumentUploadedFiles] = useState({});
   const [loader, setLoader] = useState(false);
-  const [isDataRestored, setIsDataRestored] = useState(false);
+  const [applicantErrors, setApplicantErrors] = useState({});
   // State for additional owner mobile search
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
 
+  console.log("userInfo here", userInfo);
   const closeToast = () => setShowToast(null);
 
   const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
@@ -70,42 +73,26 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
         value: `${genderDetails.code}`,
       });
     });
+  const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
+  const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(
+    isUserArchitect ? "pb.punjab" : tenantId,
+    {},
+    { mobileNumber: userInfo?.info?.mobileNumber },
+    { cacheTime: 0 }
+  );
 
   useEffect(() => {
-    // Prevent running multiple times
-    if (isDataRestored) return;
-
-    console.log("[v0] LayoutApplicantDetails - Full currentStepData:", currentStepData);
+    // Only restore data on mount, not on every change
+    console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
     const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
-      // Map applicants to proper format
-      const applicantsData = formattedData.applicants || [{
-        name: "",
-        fatherOrHusbandName: "",
-        mobileNumber: "",
-        emailId: "",
-        address: "",
-        dob: "",
-        gender: "",
-      }];
-
-      // Reset entire form at once (like CLUApplicantDetails does)
-      reset({
-        applicantMobileNumber: formattedData.applicantMobileNumber || "",
-        applicantOwnerOrFirmName: formattedData.applicantOwnerOrFirmName || "",
-        applicantEmailId: formattedData.applicantEmailId || "",
-        applicantFatherHusbandName: formattedData.applicantFatherHusbandName || "",
-        applicantAddress: formattedData.applicantAddress || "",
-        applicantDateOfBirth: formattedData.applicantDateOfBirth || "",
-        applicantGender: formattedData.applicantGender || "",
-        applicantPanNumber: formattedData.applicantPanNumber || "",
+      Object.entries(formattedData).forEach(([key, value]) => {
+        setValue(key, value);
       });
-
-      setApplicants(applicantsData);
     }
 
-    // Restore additional applicants from currentStepData (if already in Redux from previous step navigation)
+    // Restore additional applicants from currentStepData
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
       console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
       setApplicants(currentStepData.applicants);
@@ -162,16 +149,34 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
     // Restore document uploaded files from Redux state
     if (currentStepData?.documentUploadedFiles && Object.keys(currentStepData.documentUploadedFiles).length > 0) {
+      console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
       setDocumentUploadedFiles(currentStepData.documentUploadedFiles);
     }
-    // Map documents from additionalDetails in API response during edit mode
-    else if (isEdit && currentStepData?.apiData?.Layout?.[0]?.owners) {
+    
+    // Restore photo uploaded files from Redux state
+    if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
+      console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
+      setPhotoUploadedFiles(currentStepData.photoUploadedFiles);
+    }
+
+    // Restore PAN document uploaded files from Redux state
+    if (currentStepData?.panDocumentUploadedFiles && Object.keys(currentStepData.panDocumentUploadedFiles).length > 0) {
+      console.log("[v0] Restoring panDocumentUploadedFiles from Redux:", currentStepData.panDocumentUploadedFiles);
+      setPanDocumentUploadedFiles(currentStepData.panDocumentUploadedFiles);
+    }
+
+    // Map documents from additionalDetails in API response during edit mode (only if Redux data is empty)
+    if (
+      isEdit && 
+      currentStepData?.apiData?.Layout?.[0]?.owners &&
+      (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
+    ) {
       const ownersFromApi = currentStepData.apiData.Layout[0].owners;
       console.log("[v0] Mapping documents from owners additionalDetails");
 
       const docFiles = {};
       const photoFiles = {};
-      const panFiles = {};
+      const panDocFiles = {};
 
       // Map documents for all owners from their additionalDetails
       ownersFromApi.forEach((owner, ownerIndex) => {
@@ -182,13 +187,13 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
           photoFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.ownerPhoto, fileName: "Photo" };
         }
         if (owner?.additionalDetails?.panDocument) {
-          panFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.panDocument, fileName: "PAN Document" };
+          panDocFiles[ownerIndex] = { fileStoreId: owner.additionalDetails.panDocument, fileName: "PAN Document" };
         }
       });
 
       console.log("[v0] Mapped document files:", docFiles);
       console.log("[v0] Mapped photo files:", photoFiles);
-      console.log("[v0] Mapped PAN files:", panFiles);
+      console.log("[v0] Mapped PAN document files:", panDocFiles);
 
       if (Object.keys(docFiles).length > 0) {
         setDocumentUploadedFiles(docFiles);
@@ -196,25 +201,14 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       if (Object.keys(photoFiles).length > 0) {
         setPhotoUploadedFiles(photoFiles);
       }
-      if (Object.keys(panFiles).length > 0) {
-        setPanUploadedFiles(panFiles);
+      if (Object.keys(panDocFiles).length > 0) {
+        setPanDocumentUploadedFiles(panDocFiles);
       }
     }
-
-    // Restore photo uploaded files from Redux state
-    if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
-      setPhotoUploadedFiles(currentStepData.photoUploadedFiles);
-    }
-
-    // Mark as restored to prevent re-running
-    if (currentStepData) {
-      setIsDataRestored(true);
-    }
-  }, [currentStepData, isDataRestored, menu]);
+  }, [currentStepData]);
 
   const getOwnerDetails = async () => {
-    // Validation first (no loader needed)
-    if (!mobileNo || mobileNo.length !== 10) {
+    if (mobileNo === "" || mobileNo.length !== 10) {
       setShowToast({
         key: "true",
         error: true,
@@ -223,31 +217,18 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       return;
     }
 
-    try {
-      setIsLoadingMobile(true); // 🔄 start loader
-
-      const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
-
-      if (!userResponse?.user?.length) {
-        setShowToast({
-          key: "true",
-          warning: true,
-          message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
-        });
-        return;
-      }
-
-      setUserInfo(userResponse.user[0]);
-    } catch (err) {
-      console.error(err);
+    const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
+    console.log(userResponse, "PHOTO");
+    if (!userResponse?.user?.length) {
       setShowToast({
         key: "true",
-        error: true,
-        message: t("SOMETHING_WENT_WRONG"),
+        warning: true,
+        message: t("ERR_MOBILE_NUMBER_NOT_REGISTERED"),
       });
-    } finally {
-      setIsLoadingMobile(false); // ✅ stop loader (always)
+      return;
     }
+
+    setUserInfo(userResponse.user[0]);
   };
 
   // Search function for additional owners
@@ -330,41 +311,23 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
   useEffect(() => {
     if (userInfo) {
       Object.entries(userInfo).forEach(([key, value]) => {
-        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true, shouldDirty: true });
+        if (key === "name") setValue("applicantOwnerOrFirmName", value, { shouldValidate: true });
 
-        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true, shouldDirty: true });
+        if (key === "emailId") setValue("applicantEmailId", value, { shouldValidate: true });
 
-        if (key === "dob") {
-          // Normalize DOB to YYYY-MM-DD format for <input type="date">
-          const dobStr = typeof value === "string" ? value : "";
-          const yyyyMmDd = dobStr ? dobStr.slice(0, 10) : "";
-          setValue("applicantDateOfBirth", yyyyMmDd, { shouldValidate: true, shouldDirty: true });
-        }
+        if (key === "dob") setValue("applicantDateOfBirth", value, { shouldValidate: true });
 
-        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value, { shouldValidate: true, shouldDirty: true });
+        if (key === "fatherOrHusbandName") setValue("applicantFatherHusbandName", value);
 
-        if (key === "permanentAddress") {
-          setValue("applicantAddress", value, { shouldValidate: true, shouldDirty: true });
-        }
-
-        if (key === "address") {
-          setValue("applicantAddress", value, { shouldValidate: true, shouldDirty: true });
-        }
+        if (key === "permanentAddress") setValue("applicantAddress", value, { shouldValidate: true });
 
         if (key === "gender") {
           const genderObj = menu.find((obj) => obj.code === value);
-          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
+          if (genderObj) setValue("applicantGender", genderObj, { shouldValidate: true });
         }
       });
     }
-  }, [userInfo, menu, setValue]);
-
-  // Sync applicantErrors to Redux so parent can check before proceeding
-  useEffect(() => {
-    if (Object.keys(applicantErrors).length > 0) {
-      dispatch(UPDATE_LayoutNewApplication_FORM("applicantErrors", applicantErrors));
-    }
-  }, [applicantErrors]);
+  }, [userInfo]);
 
   // Save applicants data to Redux
   useEffect(() => {
@@ -372,14 +335,14 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       applicants?.length > 0 ||
       Object.keys(documentUploadedFiles)?.length > 0 ||
       Object.keys(photoUploadedFiles)?.length > 0 ||
-      Object.keys(panUploadedFiles)?.length > 0
+      Object.keys(panDocumentUploadedFiles)?.length > 0
     ) {
       dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicants));
       dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", documentUploadedFiles));
       dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", photoUploadedFiles));
-      dispatch(UPDATE_LayoutNewApplication_FORM("panUploadedFiles", panUploadedFiles));
+      dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", panDocumentUploadedFiles));
     }
-  }, [applicants, documentUploadedFiles, photoUploadedFiles, panUploadedFiles, dispatch]);
+  }, [applicants, documentUploadedFiles, photoUploadedFiles, panDocumentUploadedFiles, dispatch]);
 
   // Sync document files with react-hook-form for validation
   useEffect(() => {
@@ -396,24 +359,17 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     } else {
       setValue("primaryOwnerDocument", "", { shouldValidate: false });
     }
-    // Set primary owner PAN validation
-    if (panUploadedFiles[0]?.fileStoreId) {
-      setValue("primaryOwnerPan", panUploadedFiles[0].fileStoreId, { shouldValidate: true });
-    } else {
-      setValue("primaryOwnerPan", "", { shouldValidate: false });
-    }
-  }, [photoUploadedFiles, documentUploadedFiles, panUploadedFiles, setValue]);
+  }, [photoUploadedFiles, documentUploadedFiles, setValue]);
 
   const handleAddApplicant = () => {
     const newApplicant = {
-      mobileNumber: "",
       name: "",
       fatherOrHusbandName: "",
+      mobileNumber: "",
       emailId: "",
       address: "",
       dob: "",
       gender: "",
-      panNumber: "",
     };
     setApplicants([...applicants, newApplicant]);
   };
@@ -425,13 +381,11 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     // Remove associated files
     const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
-    const newPanFiles = { ...panUploadedFiles };
     delete newDocFiles[index];
     delete newPhotoFiles[index];
-    delete newPanFiles[index];
     setDocumentUploadedFiles(newDocFiles);
     setPhotoUploadedFiles(newPhotoFiles);
-    setPanUploadedFiles(newPanFiles);
+
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
     delete newErrors[index];
@@ -456,15 +410,11 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        const updatedDocs = { ...documentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        setDocumentUploadedFiles(updatedDocs);
+        const updatedDocFiles = { ...documentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
+        setDocumentUploadedFiles(updatedDocFiles);
+        // Immediately dispatch to Redux for persistence
+        dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", updatedDocFiles));
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "" } }));
-        // Save to Redux immediately
-        dispatch(UPDATE_LayoutNewApplication_FORM({
-          documentUploadedFiles: updatedDocs,
-          photoUploadedFiles,
-          panUploadedFiles,
-        }));
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -486,15 +436,11 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        const updatedPhotos = { ...photoUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        setPhotoUploadedFiles(updatedPhotos);
+        const updatedPhotoFiles = { ...photoUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
+        setPhotoUploadedFiles(updatedPhotoFiles);
+        // Immediately dispatch to Redux for persistence
+        dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", updatedPhotoFiles));
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "" } }));
-        // Save to Redux immediately
-        dispatch(UPDATE_LayoutNewApplication_FORM({
-          documentUploadedFiles,
-          photoUploadedFiles: updatedPhotos,
-          panUploadedFiles,
-        }));
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -504,7 +450,24 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     }
   };
 
-  const selectPANFile = (index) => async (e) => {
+  const deleteDocument = (index) => {
+    const newDocFiles = { ...documentUploadedFiles };
+    delete newDocFiles[index];
+    setDocumentUploadedFiles(newDocFiles);
+    // Dispatch to Redux for persistence
+    dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", newDocFiles));
+  };
+
+  const deletePhoto = (index) => {
+    const newPhotoFiles = { ...photoUploadedFiles };
+    delete newPhotoFiles[index];
+    setPhotoUploadedFiles(newPhotoFiles);
+    // Dispatch to Redux for persistence
+    dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", newPhotoFiles));
+  };
+
+  // PAN Document Upload Handler
+  const selectPanDocumentFile = (index) => async (e) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
@@ -512,19 +475,15 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     }
     try {
       setLoader(true);
-      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      const response = await Digit.UploadServices.Filestorage("Layout", file, stateId);
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-        const updatedPans = { ...panUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        setPanUploadedFiles(updatedPans);
-        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], pan: "" } }));
-        // Save to Redux immediately
-        dispatch(UPDATE_LayoutNewApplication_FORM({
-          documentUploadedFiles,
-          photoUploadedFiles,
-          panUploadedFiles: updatedPans,
-        }));
+        const updatedPanDocFiles = { ...panDocumentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
+        setPanDocumentUploadedFiles(updatedPanDocFiles);
+        // Immediately dispatch to Redux for persistence
+        dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", updatedPanDocFiles));
+        setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "" } }));
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
       }
@@ -534,159 +493,19 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
     }
   };
 
-  const deletePan = (index) => {
-    const newPanFiles = { ...panUploadedFiles };
-    delete newPanFiles[index];
-    setPanUploadedFiles(newPanFiles);
-  };
-
-  const deleteDocument = (index) => {
-    const newDocFiles = { ...documentUploadedFiles };
-    delete newDocFiles[index];
-    setDocumentUploadedFiles(newDocFiles);
-  };
-
-  const deletePhoto = (index) => {
-    const newPhotoFiles = { ...photoUploadedFiles };
-    delete newPhotoFiles[index];
-    setPhotoUploadedFiles(newPhotoFiles);
+  const deletePanDocument = (index) => {
+    const newPanDocFiles = { ...panDocumentUploadedFiles };
+    delete newPanDocFiles[index];
+    setPanDocumentUploadedFiles(newPanDocFiles);
+    // Dispatch to Redux for persistence
+    dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", newPanDocFiles));
   };
 
   const isEdit = window.location.pathname.includes("edit");
 
-  // Expose methods for parent component to validate and save documents
-  useImperativeHandle(ref, () => ({
-    validateAdditionalApplicants: handleGoNext,
-    saveDocumentsToRedux: () => {
-      // Save document states to Redux for persistence
-      dispatch(UPDATE_LayoutNewApplication_FORM({
-        documentUploadedFiles,
-        photoUploadedFiles,
-        panUploadedFiles,
-        applicants
-      }));
-    }
-  }));
-
-  // Validate all applicants and documents before proceeding
-  const handleGoNext = (data) => {
-    let isValid = true;
-    const errors = {};
-
-    // Validate primary owner documents - THIS MUST PASS FIRST
-    const primaryOwnerErrors = {};
-    if (!photoUploadedFiles[0]?.fileStoreId) {
-      primaryOwnerErrors.photo = t("BPA_PASSPORT_PHOTO_REQUIRED");
-      isValid = false;
-    }
-    if (!documentUploadedFiles[0]?.fileStoreId) {
-      primaryOwnerErrors.document = t("BPA_ID_PROOF_REQUIRED");
-      isValid = false;
-    }
-    if (!panUploadedFiles[0]?.fileStoreId) {
-      primaryOwnerErrors.pan = t("BPA_PAN_REQUIRED");
-      isValid = false;
-    }
-
-    if (Object.keys(primaryOwnerErrors).length > 0) {
-      errors[0] = primaryOwnerErrors;
-      setApplicantErrors(errors);
-      setShowToast({
-        key: "true",
-        error: true,
-        message: t("Please upload required documents."),
-      });
-      setTimeout(() => setShowToast(null), 5000);
-      // Prevent form submission
-      return false;
-    }
-
-    // Validate additional applicants
-    if (applicants.length > 1) {
-      applicants.forEach((applicant, index) => {
-        if (index === 0) return;
-
-        const applicantErrors = {};
-        let hasError = false;
-
-        if (!applicant.name?.trim()) {
-          applicantErrors.name = t("REQUIRED_FIELD");
-          hasError = true;
-        }
-        if (!applicant.mobileNumber?.trim()) {
-          applicantErrors.mobileNumber = t("REQUIRED_FIELD");
-          hasError = true;
-        } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
-          applicantErrors.mobileNumber = t("INVALID_MOBILE_NUMBER");
-          hasError = true;
-        }
-        if (!applicant.emailId?.trim()) {
-          applicantErrors.emailId = t("REQUIRED_FIELD");
-          hasError = true;
-        } else if (!/^\S+@\S+\.\S+$/.test(applicant.emailId)) {
-          applicantErrors.emailId = t("INVALID_EMAIL_FORMAT");
-          hasError = true;
-        }
-        if (!applicant.address?.trim()) {
-          applicantErrors.address = t("REQUIRED_FIELD");
-          hasError = true;
-        }
-        if (!applicant.dob?.trim()) {
-          applicantErrors.dob = t("REQUIRED_FIELD");
-          hasError = true;
-        }
-        if (!applicant.gender || (typeof applicant.gender === "object" && !applicant.gender.code)) {
-          applicantErrors.gender = t("REQUIRED_FIELD");
-          hasError = true;
-        }
-
-        // Validate PAN number format
-        if (!applicant.panNumber?.trim()) {
-          applicantErrors.panNumber = t("REQUIRED_FIELD");
-          hasError = true;
-        } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(applicant.panNumber)) {
-          applicantErrors.panNumber = "PAN must be in format: 5 uppercase letters + 4 digits + 1 uppercase letter";
-          hasError = true;
-        }
-
-        // Documents must be uploaded
-        if (!photoUploadedFiles[index]?.fileStoreId) {
-          applicantErrors.photo = t("BPA_PASSPORT_PHOTO_REQUIRED");
-          hasError = true;
-        }
-        if (!documentUploadedFiles[index]?.fileStoreId) {
-          applicantErrors.document = t("BPA_ID_PROOF_REQUIRED");
-          hasError = true;
-        }
-        if (!panUploadedFiles[index]?.fileStoreId) {
-          applicantErrors.pan = t("BPA_PAN_REQUIRED");
-          hasError = true;
-        }
-
-        if (hasError) {
-          errors[index] = applicantErrors;
-          isValid = false;
-        }
-      });
-    }
-
-    if (!isValid) {
-      setApplicantErrors(errors);
-      setShowToast({
-        key: "true",
-        error: true,
-        message: t("BPA_PLEASE_FILL_ALL_REQUIRED_FIELDS_AND_UPLOAD_DOCUMENTS"),
-      });
-      setTimeout(() => setShowToast(null), 5000);
-      // Scroll to first error
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      // Prevent form submission
-      return false;
-    }
-
-    // All validations passed
-    console.log("[v0] All validations passed, proceeding to next step");
-    goNext(data);
+  const ErrorMessage = ({ message }) => {
+    if (!message) return null;
+    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{message}</div>;
   };
 
   return (
@@ -699,7 +518,9 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
         {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
-            {t("To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section")}
+            {t(
+              "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section, and you cannot edit the applicant detail"
+            )}
           </CardSectionSubText>
         )}
 
@@ -738,17 +559,9 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                   />
                 )}
               />
-              {isLoadingMobile ? (
-                <div style={{ marginTop: "-20px" }}>
-                  <Loader />
-                </div>
-              ) : (
-                <div style={{ marginTop: "17px", marginLeft: "10px" }} className="search-icon">
-                  <div onClick={isEdit ? null : getOwnerDetails} style={{ cursor: isEdit ? "not-allowed" : "pointer" }}>
-                    <SearchIcon />
-                  </div>
-                </div>
-              )}
+              <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
+                <SearchIcon />
+              </div>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
@@ -940,13 +753,25 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                 error={applicantErrors[0]?.photo}
                 uploadMessage=""
                 accept="image/*"
-                required
-                
               />
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerPhoto?.message || ""}</CardLabelError>
+          <div
+            style={{
+              padding: "10px 12px",
 
+              borderRadius: "4px",
+              marginBottom: "20px",
+              marginTop: "10px",
+              display: "flex",
+              justifyContent: "end",
+            }}
+          >
+            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
+              <strong>Accepted File Types:</strong> JPEG, JPG, PNG
+            </p>
+          </div>
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
               {t("BPA_APPLICANT_ID_PROOF")}
@@ -966,76 +791,114 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                 error={applicantErrors[0]?.document}
                 uploadMessage=""
                 accept=".pdf"
-                required
               />
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.primaryOwnerDocument?.message || ""}</CardLabelError>
 
+          <div
+            style={{
+              padding: "10px 12px",
+              display: "flex",
+              justifyContent: "end",
 
- <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
+              borderRadius: "4px",
+              marginBottom: "20px",
+              marginTop: "10px",
+            }}
+          >
+            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
+              <strong>Accepted File Types:</strong> PDF
+            </p>
+          </div>
+          {/* PAN Document */}
+          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
             <CardLabel className="card-label-smaller">
-              {t("BPA_APPLICANT_PAN_DOCUMENT")}
+              {t("BPA_PAN_DOCUMENT")}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <CustomUploadFile
                 id="pan-document-primary"
-                onUpload={selectPANFile(0)}
+                onUpload={selectPanDocumentFile(0)}
                 onDelete={() => {
-                  deletePan(0);
-                  setPanUploadedFiles((prev) => ({ ...prev, [0]: null }));
-                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], pan: "PAN document is required" } }));
+                  deletePanDocument(0);
+                  setPanDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], panDocument: "PAN document is required" } }));
                 }}
-                uploadedFile={panUploadedFiles[0]?.fileStoreId}
-                message={panUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                error={applicantErrors[0]?.pan}
+                uploadedFile={panDocumentUploadedFiles[0]?.fileStoreId}
+                message={panDocumentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                error={applicantErrors[0]?.panDocument}
                 uploadMessage=""
                 accept=".pdf"
-                required
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.primaryOwnerPan?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.panDocument?.message || ""}</CardLabelError>
 
+          <div
+            style={{
+              padding: "10px 12px",
+              display: "flex",
+              justifyContent: "end",
+
+              borderRadius: "4px",
+              marginBottom: "20px",
+              marginTop: "10px",
+            }}
+          >
+            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
+              <strong>Accepted File Types:</strong> PDF
+            </p>
+          </div>
+
+          {/* PAN Number */}
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
-            <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_PAN_NUMBER")}`}  <span className="requiredField">*</span></CardLabel>
+            <CardLabel className="card-label-smaller">
+              {`${t("BPA_PAN_NUMBER_LABEL")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
-                name="applicantPanNumber"
+                name="panNumber"
                 rules={{
-                   required: t("REQUIRED_FIELD"),
+                  maxLength: {
+                    value: 10,
+                    message: "PAN Number should not exceed 10 characters",
+                  },
                   pattern: {
-                    value: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
-                    message: "PAN must be in format: 5 uppercase letters + 4 digits + 1 uppercase letter (e.g., AAABP5055K)",
+                    value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                    message: "Invalid PAN Number format. Format should be like AAAAA1234A",
                   },
                 }}
                 render={(props) => (
                   <TextInput
-                    value={props.value}
+                    value={props.value || ""}
                     onChange={(e) => {
-                      props.onChange(e.target.value.toUpperCase());
+                      const upperValue = e.target.value.toUpperCase();
+                      props.onChange(upperValue);
                     }}
-                    onBlur={(e) => {
-                      props.onBlur(e);
-                    }}
-                    placeholder="AAAAA0000A"
-                    t={t}
+                    onBlur={props.onBlur}
+                    placeholder="e.g., AAAAA1234A"
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.applicantPanNumber?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.panNumber?.message || ""}</CardLabelError>
 
-         
+          {/* Hidden Controllers for document validation */}
+          <div style={{ display: "none" }}>
+            <Controller control={control} name="primaryOwnerPhoto" rules={{ required: t("BPA_PASSPORT_PHOTO_REQUIRED") }} render={() => null} />
+            <Controller control={control} name="primaryOwnerDocument" rules={{ required: t("BPA_ID_PROOF_REQUIRED") }} render={() => null} />
+          </div>
+
           {/* Additional Applicants Section */}
           {applicants.length > 1 && (
             <React.Fragment>
               <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
                 {t("Additional Applicants")}
-                <span className="requiredField">*</span>
               </CardSectionHeader>
 
               {applicants.map(
@@ -1055,17 +918,19 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
                           {`${t("Applicant")} ${index + 1}`}
                         </CardLabel>
-                        <span
-                          onClick={() => handleRemoveApplicant(index)}
-                          style={{
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                          title={t("Remove Applicant")}
-                        >
-                          <DeleteIcon fill="#a82227" />
-                        </span>
+                        {!isEditMode && (
+                          <span
+                            onClick={() => handleRemoveApplicant(index)}
+                            style={{
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                            title={t("Remove Applicant")}
+                          >
+                            <DeleteIcon fill="#a82227" />
+                          </span>
+                        )}
                       </div>
 
                       {/* Mobile Number */}
@@ -1081,17 +946,11 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                             className="search-icon"
                             onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
                           >
-                            {additionalOwnerSearchLoading[index] ? (
-                              <div style={{ marginTop: "-20px" }}>
-                                <Loader />
-                              </div>
-                            ) : (
-                              <SearchIcon />
-                            )}
+                            {additionalOwnerSearchLoading[index] ? <Loader /> : <SearchIcon />}
                           </div>
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.mobileNumber && <CardLabelError>{applicantErrors[index].mobileNumber}</CardLabelError>}
+                      {applicantErrors[index]?.mobileNumber && <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>}
 
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
@@ -1103,7 +962,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                           <TextInput value={applicant.name} onChange={(e) => updateApplicant(index, "name", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.name && <CardLabelError>{applicantErrors[index].name}</CardLabelError>}
+                      {applicantErrors[index]?.name && <ErrorMessage>{applicantErrors[index].name}</ErrorMessage>}
 
                       {/* Father/Husband Name */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -1127,7 +986,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                           <TextInput value={applicant.emailId} onChange={(e) => updateApplicant(index, "emailId", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.emailId && <CardLabelError>{applicantErrors[index].emailId}</CardLabelError>}
+                      {applicantErrors[index]?.emailId && <ErrorMessage>{applicantErrors[index].emailId}</ErrorMessage>}
 
                       {/* Address */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -1139,7 +998,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                           <TextArea value={applicant.address} onChange={(e) => updateApplicant(index, "address", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.address && <CardLabelError>{applicantErrors[index].address}</CardLabelError>}
+                      {applicantErrors[index]?.address && <ErrorMessage>{applicantErrors[index].address}</ErrorMessage>}
 
                       {/* DOB */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -1157,7 +1016,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.dob && <CardLabelError>{applicantErrors[index].dob}</CardLabelError>}
+                      {applicantErrors[index]?.dob && <ErrorMessage>{applicantErrors[index].dob}</ErrorMessage>}
 
                       {/* Gender */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -1180,7 +1039,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.gender && <CardLabelError>{applicantErrors[index].gender}</CardLabelError>}
+                      {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>}
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1228,23 +1087,26 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                         </div>
                       </LabelFieldPair>
 
-                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
+                      {/* PAN Number */}
+
+                      {/* PAN Document */}
+                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
                         <CardLabel className="card-label-smaller">
-                          {t("BPA_APPLICANT_PAN_DOCUMENT")}
+                          {t("BPA_PAN_DOCUMENT")}
                           <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
-                            id={`pan-proof-${index}`}
-                            onUpload={selectPANFile(index)}
+                            id={`pan-document-${index}`}
+                            onUpload={selectPanDocumentFile(index)}
                             onDelete={() => {
-                              deletePan(index);
-                              setPanUploadedFiles((prev) => ({ ...prev, [index]: null }));
-                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], pan: "PAN document is required" } }));
+                              deletePanDocument(index);
+                              setPanDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
+                              setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "PAN document is required" } }));
                             }}
-                            uploadedFile={panUploadedFiles[index]?.fileStoreId}
-                            message={panUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                            error={applicantErrors[index]?.pan}
+                            uploadedFile={panDocumentUploadedFiles[index]?.fileStoreId}
+                            message={panDocumentUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                            error={applicantErrors[index]?.panDocument}
                             uploadMessage=""
                             accept=".pdf"
                           />
@@ -1253,45 +1115,45 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
-                          {`${t("BPA_APPLICANT_PAN_NUMBER")}`} <span className="requiredField">*</span>
+                          {`${t("BPA_PAN_NUMBER_LABEL")}`}
+                          <span className="requiredField">*</span>
                         </CardLabel>
                         <div className="field">
-                          <TextInput 
-                            value={applicant.panNumber} 
-                            onChange={(e) => updateApplicant(index, "panNumber", e.target.value.toUpperCase())} 
-                            placeholder="AAAAA0000A"
-                            t={t} 
-                            required
+                          <TextInput
+                            value={applicant.panNumber || ""}
+                            onChange={(e) => updateApplicant(index, "panNumber", e.target.value.toUpperCase())}
+                            placeholder="e.g., AAAAA1234A"
+                            t={t}
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.panNumber && <CardLabelError>{applicantErrors[index].panNumber}</CardLabelError>}
-
-                     
+                      {applicantErrors[index]?.panNumber && <ErrorMessage>{applicantErrors[index].panNumber}</ErrorMessage>}
                     </div>
                   )
               )}
 
               {/* Add More Applicants Button */}
-              <div style={{ marginTop: "20px" }}>
-                <div
-                  onClick={handleAddApplicant}
-                  style={{
-                    color: "#a82227",
-                    fontWeight: "600",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    display: "inline-block",
-                  }}
-                >
-                  {!isEdit && `+ Add Owner`}
+              {!isEditMode && (
+                <div style={{ marginTop: "20px" }}>
+                  <div
+                    onClick={handleAddApplicant}
+                    style={{
+                      color: "#a82227",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      display: "inline-block",
+                    }}
+                  >
+                    + Add Applicant
+                  </div>
                 </div>
-              </div>
+              )}
             </React.Fragment>
           )}
 
           {/* Add First Additional Applicant Button */}
-          {applicants.length === 1 && (
+          {applicants.length === 1 && !isEditMode && (
             <div style={{ marginTop: "20px" }}>
               <div
                 onClick={handleAddApplicant}
@@ -1303,7 +1165,7 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
                   display: "inline-block",
                 }}
               >
-               {!isEdit && `+ Add Owner`}
+                + Add Applicant
               </div>
             </div>
           )}
@@ -1313,7 +1175,6 @@ const LayoutApplicantDetails = forwardRef((_props, ref) => {
       {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
   );
-});
+};
 
-LayoutApplicantDetails.displayName = "LayoutApplicantDetails";
 export default LayoutApplicantDetails;

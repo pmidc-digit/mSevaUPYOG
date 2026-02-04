@@ -49,15 +49,15 @@ const MobileInbox = ({
     },
     {
       Header: t("RENT_LEASE_PROPERTY_NAME"),
-      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["propertyName"]),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["propertyName"]),
     },
     {
       Header: t("RAL_ALLOTMENT_TYPE"),
-      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["allotmentType"]),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["allotmentType"]),
     },
     {
       Header: t("RENT_AMOUNT "),
-      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.[0]?.["baseRent"] || "-"),
+      mobileCell: (original) => GetMobCell(original?.searchData?.additionalDetails?.propertyDetails[0]?.["baseRent"] || "-"),
     },
     {
       Header: t("CS_CREATED_DATE"),

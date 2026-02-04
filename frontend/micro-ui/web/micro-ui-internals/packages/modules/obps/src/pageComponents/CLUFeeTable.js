@@ -30,15 +30,13 @@ export const CLUFeeTable = ({
   // console.log("lastUpdatedBy ==>", lastUpdatedBy);
 
   return (
-    <div className="noc-table-container">
-      <table className="customTable table-border-style">
+    <div className="custom-fee-table-wrapper">
+      <table className="customTable table-border-style custom-fee-table">
         <thead>
           <tr>
-            <th>{t("BPA_TAXHEAD_CODE")}</th>
-            <th>{t("BPA_AMOUNT")}</th>
-            {/* <th>{t("BPA_ADJUSTED_AMOUNT")}</th> */}
-            {/* <th>{t("BPA_FILE_UPLOAD")}</th> */}
-            <th>{t("BPA_REMARKS")}</th>
+            <th className="custom-fee-table-header">{t("BPA_TAXHEAD_CODE")}</th>
+            <th className="custom-fee-table-header">{t("BPA_AMOUNT")}</th>
+            <th className="custom-fee-table-header">{t("BPA_REMARKS")}</th>
           </tr>
         </thead>
         <tbody>
@@ -46,9 +44,9 @@ export const CLUFeeTable = ({
             (row, i) => (
               (
                 <tr key={row.index || i}>
-                  <td>{t(row.title) || t("CS_NA")}</td>
+                  <td className="custom-fee-table-cell custom-fee-table-cell-taxhead">{t(row.title) || t("CS_NA")}</td>
                   {/* <td>{row.amount !== null && row.amount !== undefined ? `₹ ${row.amount.toLocaleString()}` : t("CS_NA")}</td> */}
-                  <td>
+                  <td className="custom-fee-table-cell custom-fee-table-cell-amount">
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                       ""
                     ) : (
@@ -92,11 +90,11 @@ export const CLUFeeTable = ({
                     )}
                   </td> */}
 
-                  <td>
+                  <td className="custom-fee-table-cell custom-fee-table-cell-remark">
                     {row?.taxHeadCode === "CLU_TOTAL" ? (
                     <div>
-                      <strong>{row.grandTotal.toLocaleString("en-IN")}</strong>
-                      <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                      <strong style={{ fontSize: "14px" }}>{row.grandTotal.toLocaleString("en-IN")}</strong>
+                      <div style={{ fontSize: "0.85em", color: "#555", marginTop: "4px", lineHeight: "1.3" }}>{amountToWords(row.grandTotal)}</div>
                    </div>
                     ) : (
                       <TextInput
@@ -108,9 +106,11 @@ export const CLUFeeTable = ({
                         disable={disable}
                         style={{
                           width: "100%",
-                          padding: "4px",
+                          padding: "8px",
                           border: "1px solid #ccc",
                           borderRadius: "4px",
+                          fontSize: "13px",
+                          boxSizing: "border-box",
                         }}
                       />
                     )}
@@ -123,8 +123,8 @@ export const CLUFeeTable = ({
       </table>
 
       {feeHistory && Object.keys(feeHistory).length > 0 && (
-        <div style={{ marginTop: "16px" }}>
-          <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
+        <div className="custom-fee-history-section">
+          <div onClick={() => setShowHistory(!showHistory)} className="custom-fee-history-toggle">
             <CardSubHeader>
               {t("BPA_FEE_HISTORY_LABEL")} {showHistory ? "▲" : "▼"}
             </CardSubHeader>
@@ -132,60 +132,51 @@ export const CLUFeeTable = ({
 
           {showHistory && (
             <>
-              <table className="customTable table-border-style" style={{ marginTop: "8px" }}>
-                <thead>
-                  <tr>
-                    {Object.keys(feeHistory).map((taxHeadCode) => (
-                      <th key={taxHeadCode}>{t(taxHeadCode)}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
-                    // compute descending index
-                    const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
-                    const descIdx = maxLen - 1 - rowIdx;
+              <div className="custom-fee-history-table-wrapper">
+                <table className="customTable table-border-style custom-fee-history-table">
+                  <thead>
+                    <tr>
+                      {Object.keys(feeHistory).map((taxHeadCode) => (
+                        <th key={taxHeadCode} className="custom-fee-history-header">{t(taxHeadCode)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
+                      // compute descending index
+                      const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
+                      const descIdx = maxLen - 1 - rowIdx;
 
-                    return (
-                      <tr key={rowIdx}>
-                        {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                          const h = historyRows[descIdx]; // use reversed index
-                          return (
-                            <td key={taxHeadCode}>
-                              {h ? (
-                                <table className="customTable table-border-style">
-                                  <tbody>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("BPA_FEE2_LABEL")}</strong>
-                                      </td>
-                                      <td>{h.estimateAmount}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("BPA_REMARK_LABEL")}</strong>
-                                      </td>
-                                      <td>{h.remarks || t("CS_NA")}</td>
-                                    </tr>
-                                    <tr>
-                                      <td>
-                                        <strong>{t("BPA_UPDATED_BY_LABEL")}</strong>
-                                      </td>
-                                      <td>{h.who || t("UNKNOWN")}</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              ) : (
-                                t("CS_NA")
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      return (
+                        <tr key={rowIdx}>
+                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                            const h = historyRows[descIdx]; // use reversed index
+                            return (
+                              <td key={taxHeadCode} className="custom-fee-history-cell">
+                                {h ? (
+                                  <div className="custom-fee-history-content">
+                                    <div className="custom-fee-history-row custom-fee-history-label">
+                                      <strong>{t("BPA_FEE2_LABEL")}:</strong> {h.estimateAmount}
+                                    </div>
+                                    <div className="custom-fee-history-row custom-fee-history-label">
+                                      <strong>{t("BPA_REMARK_LABEL")}:</strong> <span className="custom-fee-history-label-value">{h.remarks || t("CS_NA")}</span>
+                                    </div>
+                                    <div>
+                                      <strong>{t("BPA_UPDATED_BY_LABEL")}:</strong> <span className="custom-fee-history-label-value">{h.who || t("UNKNOWN")}</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  t("CS_NA")
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
               {/* <span>Last Updated By : {lastUpdatedBy}</span> */}
             </>
           )}

@@ -15,22 +15,48 @@ const InspectionReportDisplay = ({fiReport}) => {
       return null;
     }, [fiReport]);
 
-    const tableData = useMemo(() => {
-      if (report?.questionList?.length > 0) {
-        return [...report.questionList]
-          .sort((a, b) => {
-            const getIndex = (q) =>
-              Number(q?.question?.split("_").pop()) || 0;
+    // const tableData = useMemo(() => {
+    //   if (report?.questionList?.length > 0) {
+    //     return [...report.questionList]
+    //       .sort((a, b) => {
+    //         const getIndex = (q) =>
+    //           Number(q?.question?.split("_").pop()) || 0;
 
-            return getIndex(a) - getIndex(b);
-          })
-          .map((item, idx) => ({
-            question: t(item?.question),
-            remarks: report?.["Remarks_" + idx] || "-"
-          }));
-      }
-      return [];
-    }, [report, t]);
+    //         return getIndex(a) - getIndex(b);
+    //       })
+    //       .map((item, idx) => ({
+    //         question: t(item?.question),
+    //         remarks: report?.["Remarks_" + idx] || "-"
+    //       }));
+    //   }
+    //   return [];
+    // }, [report, t]);
+
+  const tableData = useMemo(() => {
+    if (report?.questionList?.length > 0) {
+      const rows = [...report.questionList]
+        .sort((a, b) => {
+          const getIndex = (q) =>
+            Number(q?.question?.split("_").pop()) || 0;
+
+          return getIndex(a) - getIndex(b);
+        })
+        .map((item, idx) => ({
+          question: t(item?.question),
+          remarks: report?.["Remarks_" + idx] || "-"
+        }));
+
+      // ➕ Add Recommendations row
+      rows.push({
+        question: t("BPA_RECOMMENDATIONS"),
+        remarks: report?.Recommendations || "-"
+      });
+
+      return rows;
+    }
+
+    return [];
+  }, [report, t]);
   
     if (!fiReport || fiReport.length === 0) {
       return <div>{t("NO_INSPECTION_REPORTS_AVAILABLE")}</div>;

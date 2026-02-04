@@ -20,7 +20,8 @@ public class BillingNotificationConsumer {
 	PaymentNotificationService service;
 	
 	
-	@KafkaListener(topics = { "${kafka.topics.billgen.topic}" })
+	@KafkaListener(topics = { "${kafka.topics.billgen.topic}" } ,
+			concurrency = "${egov.sw.calculator.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			log.info("Consuming record: " + record);

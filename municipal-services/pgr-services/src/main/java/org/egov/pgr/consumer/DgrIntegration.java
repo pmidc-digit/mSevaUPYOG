@@ -88,7 +88,8 @@ public class DgrIntegration {
     /* =========================
        Kafka Listener
        ========================= */
-    @KafkaListener(topics = {"${kafka.topics.save.dgr.service}"})
+    @KafkaListener(topics = {"${kafka.topics.save.dgr.service}"},
+    		concurrency = "${kafka.config.consumer.concurrency.count}")
     public void listen(final HashMap<String, Object> record,
                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 

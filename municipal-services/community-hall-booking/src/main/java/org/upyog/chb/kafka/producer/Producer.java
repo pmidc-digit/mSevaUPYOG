@@ -19,12 +19,12 @@ public class Producer {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void push(String topic, Object value) {
+    public void push(String topic,String key, Object value) {
     	try {
             String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(value);
 
             log.info("Producing message to topic [{}]:\n{}", topic, json);
-    		kafkaTemplate.send(topic, value);
+    		kafkaTemplate.send(topic,key,value);
 
 		} catch (Exception e) {
 			log.error("Exception occured while sending message to topic : " + topic);

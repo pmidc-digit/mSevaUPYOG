@@ -38,9 +38,9 @@ const SelectEmployeeType = ({ t, config, onSelect, formData = {}, userType }) =>
   return inputs?.map((input, index) => {
     return (
       <LabelFieldPair key={index}>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {t(input.label)}
-          {input.isMandatory ? " * " : null}
+          {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
         </CardLabel>
         <Dropdown
           className="form-field"
@@ -48,6 +48,7 @@ const SelectEmployeeType = ({ t, config, onSelect, formData = {}, userType }) =>
           option={EmployeeTypes?.["egov-hrms"]?.EmployeeType}
           select={SelectEmployeeType}
           optionKey="code"
+          placeholder={t("HR_EMPLOYMENT_TYPE_PLACEHOLDER")}
           defaultValue={undefined}
           t={t}
         />

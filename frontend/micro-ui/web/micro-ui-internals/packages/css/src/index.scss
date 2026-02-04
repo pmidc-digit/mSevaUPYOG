@@ -998,7 +998,7 @@
 
 .options-card {
   max-height: 350px; /* Upper limit to trigger scrolling */
-  min-height: 120px; /* Always some visible height */
+  min-height: 20px; /* Always some visible height */
   overflow-y: auto; /* Vertical scrolling only */
   overflow-x: hidden; /* No horizontal scroll */
   border: 1px solid #ccc; /* Optional: visual boundary */

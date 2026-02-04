@@ -12,6 +12,7 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
       isMandatory: true,
       type: "text",
       name: "mobileNumber",
+      placeHolder: "HR_MOB_NO_PLACEHOLDER",
       populators: {
         validation: {
           required: true,
@@ -35,9 +36,9 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
       {inputs?.map((input, index) => (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {t(input.label)}
-              {input.isMandatory ? " * " : null}
+              {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
             </CardLabel>
 
             <div className="field hrms-flex hrms-flex--center">
@@ -47,6 +48,7 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
                 value={formData?.[config.key]?.[input.name] || ""}
                 onChange={(e) => setValue(e.target.value, input.name, validate(e.target.value, input))}
                 disable={false}
+                placeholder={t(input.placeHolder)}
                 defaultValue={undefined}
                 onBlur={(e) => validate(e.target.value, input)}
                 {...input.validation}

@@ -8,18 +8,26 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   const [selectedRoles, onSelectFilterRolessetSelectedRole] = useState(null);
   const { t } = useTranslation();
   
-  // Fetch all tenants from API
   const storedTenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
   const { data: tenantsData, isLoading: tenantsLoading } = Digit.Hooks.useTenants();
   const cityChange = Digit.SessionStorage.get("Employee.tenantId");
   
-  // Use fetched tenants or fallback to stored ones
   const tenantIds = React.useMemo(() => {
     if (tenantsData && tenantsData.length > 0) {
       return tenantsData;
     }
     return storedTenantIds || [];
   }, [tenantsData, storedTenantIds]);
+
+  const mappedTenantOptions = React.useMemo(() => {
+    if (!tenantIds || tenantIds.length === 0) return [];
+    
+    const sortedCities = [...tenantIds].sort((x, y) => x?.name?.localeCompare(y?.name));
+    return sortedCities.map(city => ({ 
+      ...city, 
+      i18text: Digit.Utils.locale.getCityLocale(city.code) || city.name || city.code 
+    }));
+  }, [tenantIds]);
 
   function onSelectRoles(value, type) {
     if (!ifExists(filters.role, value)) {
@@ -44,37 +52,32 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   
   const [tenantId, settenantId] = useState(() => {
     const currentTenantId = searchParams?.tenantId || Digit.ULBService.getCurrentTenantId();
-    if (!tenantIds || tenantIds.length === 0) {
-      return { code: currentTenantId, name: currentTenantId };
-    }
+    
     let targetCode = currentTenantId;
-    // Handle Punjab as special case - default to Amritsar
     if (currentTenantId === "pb.punjab") {
       targetCode = Digit.SessionStorage.get("punjab-tenantId") || "pb.amritsar";
-      Digit.SessionStorage.set("punjab-tenantId", targetCode);
     }
-    return tenantIds.find(ele => ele.code === targetCode) || tenantIds[0];
+    return { code: targetCode };
   });
   
-  // Update tenantId when tenantIds are loaded or cityChange occurs
+  
   useEffect(() => {
-    if (tenantIds && tenantIds.length > 0) {
+    if (mappedTenantOptions && mappedTenantOptions.length > 0) {
       const currentTenantId = Digit.ULBService.getCurrentTenantId();
       const changeCity = cityChange || currentTenantId;
       
       let targetCode = changeCity;
-      // Handle Punjab as special case - default to Amritsar
       if (changeCity === "pb.punjab") {
         targetCode = Digit.SessionStorage.get("punjab-tenantId") || "pb.amritsar";
         Digit.SessionStorage.set("punjab-tenantId", targetCode);
       }
       
-      const matchingTenant = tenantIds.find(ele => ele.code === targetCode);
-      if (matchingTenant && matchingTenant.code !== tenantId?.code) {
+      const matchingTenant = mappedTenantOptions.find(ele => ele.code === targetCode);
+      if (matchingTenant && (!tenantId.i18text || matchingTenant.code !== tenantId.code)) {
         settenantId(matchingTenant);
       }
     }
-  }, [tenantIds, cityChange]);
+  }, [mappedTenantOptions, cityChange]);
   
   const { isLoading, isError, errors, data: data, ...rest } = Digit.Hooks.hrms.useHrmsMDMS(
     tenantId ? tenantId.code : searchParams?.tenantId,
@@ -142,12 +145,22 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
     setDepartments(null);
     setRoles(null);
     setIsactive(null);
-    props?.onClose?.();
     onSelectFilterRoles({ role: [] });
-    // Keep tenantId as is, don't reset it
+    
+    const currentTenantId = Digit.ULBService.getCurrentTenantId();
+    let targetCode = currentTenantId;
+    if (currentTenantId === "pb.punjab") {
+      targetCode = "pb.amritsar";
+    }
+    
+    const resetTenant = mappedTenantOptions.find(ele => ele.code === targetCode);
+    if (resetTenant) {
+      settenantId(resetTenant);
+    }
+    
+    props?.onClose?.();
   };
 
-  // Handle tenant selection
   const onSelectTenants = (value) => {
     if (value) {
       Digit.SessionStorage.set("punjab-tenantId", value.code);
@@ -171,7 +184,6 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
     );
   };
   
-  // Show loading state while fetching tenants
   if (tenantsLoading) {
     return (
       <div className="filter">
@@ -200,10 +212,10 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
               </span>
               <span>{t("HR_COMMON_FILTER")}:</span>{" "}
             </div>
-            <div className="clearAll" onClick={clearAll}>
+            <div className="clear-search" onClick={clearAll}>
               {t("HR_COMMON_CLEAR_ALL")}
             </div>
-            {props.type === "desktop" && (
+            {/* {props.type === "desktop" && (
               <span className="clear-search hrms-filter__clear-search-icon" onClick={clearAll}>
                 <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -212,7 +224,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
                   />
                 </svg>
               </span>
-            )}
+            )} */}
             {props.type === "mobile" && (
               <span onClick={props.onClose}>
                 <CloseSvg />
@@ -223,18 +235,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
             <div>
               <div className="filter-label">{t("HR_CITY_LABEL") || t("HR_ULB_LABEL")}</div>
               <Dropdown
-                option={(() => {
-                  // Show all tenants without filtering by user permissions
-                  // Backend will handle permission-based filtering of results
-                  const sortedCities = tenantIds?.sort((x, y) => x?.name?.localeCompare(y?.name));
-                  
-                  const mappedOptions = sortedCities?.map(city => ({ 
-                    ...city, 
-                    i18text: Digit.Utils.locale.getCityLocale(city.code) || city.name || city.code 
-                  }));
-                  
-                  return (tenantIds && tenantIds.length > 0) ? mappedOptions : [];
-                })()}
+                option={mappedTenantOptions}
                 selected={tenantId}
                 select={onSelectTenants}
                 optionKey={"i18text"}

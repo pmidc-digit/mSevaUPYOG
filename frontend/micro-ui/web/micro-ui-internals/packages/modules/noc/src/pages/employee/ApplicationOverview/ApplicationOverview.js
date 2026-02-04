@@ -494,7 +494,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
      setDocumentVerifier( 
       additionalDetails?.documentVerifier || user?.info?.name || "" ); 
     } else if (status === "INSPECTION_REPORT_PENDING") { 
-       setInspectionReportVerifier( additionalDetails?.inspectionReportVerifier || user?.info?.name || "" ); 
+       setInspectionReportVerifier( additionalDetails?.InspectionReportVerifier || user?.info?.name || "" ); 
       }
 }, [applicationDetails?.Noc?.[0]?.applicationStatus, user?.info?.name]);
 
@@ -532,7 +532,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
 
   console.log("actions here", actions);
 
-  useEffect(() => {
+  useEffect(() => {    
     const nocObject = applicationDetails?.Noc?.[0];
 
     if (nocObject) {
@@ -1155,8 +1155,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           <div id="fieldInspection"></div>
           <InspectionReport
             isCitizen={true}
-            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
-            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
+            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
             InspectionReportVerifier={InspectionReportVerifier}
           />

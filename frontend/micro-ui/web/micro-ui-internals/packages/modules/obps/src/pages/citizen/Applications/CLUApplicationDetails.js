@@ -209,9 +209,13 @@ const CLUApplicationDetails = () => {
       setLoading(true);
         const application = applicationDetails?.Clu;
         const approvecomments = approveComments?.[0];
-        const finalComment = approvecomments
-      ? `The above approval is subjected to the following conditions: ${approvecomments}`
-      : "";
+        let conditionText = "";
+      if (approvecomments?.includes("[#?..**]")) {
+        conditionText = approvecomments.split("[#?..**]")[1] || "";
+      }
+       const finalComment = conditionText
+        ? `The above approval is subjected to the following conditions: ${conditionText}`
+        : "";
       console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");

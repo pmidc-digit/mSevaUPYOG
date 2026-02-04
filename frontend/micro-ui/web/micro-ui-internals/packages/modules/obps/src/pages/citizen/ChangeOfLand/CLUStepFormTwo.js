@@ -27,7 +27,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 });
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  const errorStyle = { color: "red", marginTop: "4px", marginBottom: "0" };
 
   const currentStepData = useSelector(function (state) {
     return state.obps.OBPSFormReducer.formData;

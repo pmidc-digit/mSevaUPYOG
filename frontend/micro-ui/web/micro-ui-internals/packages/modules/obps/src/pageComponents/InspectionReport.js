@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader, TextArea } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -451,6 +451,26 @@ const InspectionReportForm = (_props) => {
                                         </td>
                                     </tr>
                                 ))}
+                                <tr>
+                                    <td>{t("BPA_RECOMMENDATIONS_MIN_MESSAGE")}</td>
+                                    <td>
+                                        <Controller
+                                            control={control}
+                                            name={`Recommendations`}
+                                            defaultValue={unit?.uomValue}
+                                            render={(props) => (                                                
+                                                <TextArea 
+                                                    value={getValues(`Recommendations`)}
+                                                    onChange={(e) => {
+                                                        props.onChange(e);
+                                                    }}
+                                                    placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
+                                                    onBlur={props.onBlur}
+                                                />
+                                            )}
+                                        />
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

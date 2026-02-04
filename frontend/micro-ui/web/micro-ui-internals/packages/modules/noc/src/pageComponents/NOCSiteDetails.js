@@ -308,7 +308,7 @@ const sortedRoadType = useMemo(
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disabled ={Boolean(siteAddress)}
+                    disabled ={Boolean(siteAddress) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)}
                   />
                 )}
               />

@@ -947,6 +947,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                 value={ownershipCategory}
                 labelKey="PT_OWNERSHIP"
                 isDependent={true}
+                disabled={currentStepData?.PlotDetails?.landInfo?.ownershipCategory ? true : false}
               />
               <ErrorMessage message={errors[`ownershipCategory`]} />
             </div>
@@ -973,15 +974,16 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                             value={field.mobileNumber} 
                             onChange={(val) => setMobileNo(index, val)}
                             maxLength={10}
+                            disable={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? true : false}
                           />
-                          <div className="bpa-owner-search-icon-container" onClick={(e) => getOwnerDetails(index, e)}>
+                          {currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.mobileNumber ? null : <div className="bpa-owner-search-icon-container" onClick={(e) => getOwnerDetails(index, e)}>
                             <SearchIcon />
-                          </div>
+                          </div>}
                       </div>
                       <ErrorMessage message={errors[`mobileNumber_${index}`]} />
                     </div>
                     <CardLabel>{`${t("CORE_COMMON_NAME")} *`}</CardLabel>
-                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"text"} isMandatory={false} optionKey="i18nKey" name="name" value={field.name} onChange={(e) => setOwnerName(index, e)} {...(validation = { isRequired: true, pattern: "^[a-zA-Z ]*$", type: "text", title: t("TL_NAME_ERROR_MESSAGE"), })} />
+                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"text"} disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.name ? true : false} isMandatory={false} optionKey="i18nKey" name="name" value={field.name} onChange={(e) => setOwnerName(index, e)} {...(validation = { isRequired: true, pattern: "^[a-zA-Z ]*$", type: "text", title: t("TL_NAME_ERROR_MESSAGE"), })} />
                     <ErrorMessage message={errors[`name_${index}`]} />
                     <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")} *`}</CardLabel>
                     <RadioOrSelect
@@ -991,6 +993,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       optionKey="i18nKey"
                       onSelect={(e) => setGenderName(index, e)}
                       t={t}
+                      disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.gender ? true : false}
                     />
                     <ErrorMessage message={errors[`gender_${index}`]} />
                     {/* <CardLabel>{`${t("BPA_AADHAAR_NUMBER_LABEL_NEW")}`}</CardLabel>
@@ -1010,7 +1013,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       })}
                     /> */}
                     <CardLabel>{`${t("CORE_EMAIL_ID")}`}</CardLabel>
-                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"emailId"} isMandatory={false} optionKey="i18nKey" name="emailId" value={field.emailId} onChange={(e) => setOwnerEmail(index, e)} {...(validation = { pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$", type: "emailId", title: t("TL_EMAIL_ID_ERROR_MESSAGE"), })} disabled={false} />
+                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"emailId"} disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.emailId ? true : false} isMandatory={false} optionKey="i18nKey" name="emailId" value={field.emailId} onChange={(e) => setOwnerEmail(index, e)} {...(validation = { pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$", type: "emailId", title: t("TL_EMAIL_ID_ERROR_MESSAGE"), })} />
                     <ErrorMessage message={errors[`email_${index}`]} />
                     {/* <CardLabel>{`Document Type *`}</CardLabel>
                     <Dropdown
@@ -1068,7 +1071,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     <ErrorMessage message={errors[`ownerPhoto_${index}`]} />
 
                     <CardLabel style={{ marginTop: "30px" }}>{`${t("Date of Birth")} *`}</CardLabel>
-                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"date"} isMandatory={false} name="dob" value={field.dob} onChange={(e) => setDateOfBirth(index, e)} />
+                    <TextInput className="bpa-owner-input-bg-fa" t={t} type={"date"} isMandatory={false} name="dob" disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.dob ? true : false} value={field.dob} onChange={(e) => setDateOfBirth(index, e)} />
                     <ErrorMessage message={errors[`dob_${index}`]} />
 
                     <CardLabel>{`${t("Authorized Person (If Any)")}`}</CardLabel>
@@ -1103,7 +1106,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     )}
 
                     <CardLabel>{`${t("Owner's Address")} *`}</CardLabel>
-                    <TextArea className="bpa-owner-owner-textarea" placeholder="Enter complete address" value={field?.permanentAddress || ""} onChange={(e) => setOwnerAddress(index, e)} />
+                    <TextArea className="bpa-owner-owner-textarea" placeholder="Enter complete address" disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.permanentAddress ? true : false} value={field?.permanentAddress || ""} onChange={(e) => setOwnerAddress(index, e)} />
                     <ErrorMessage message={errors[`address_${index}`]} />
 
                     {ismultiple && (

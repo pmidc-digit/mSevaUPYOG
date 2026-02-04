@@ -114,7 +114,23 @@ public class EstimationService {
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 
+	@Value("${pt.tax.residential.slab1.area.max}")
+	private double slab1AreaMax;
 
+	@Value("${pt.tax.residential.slab1.land.max}")
+	private double slab1LandMax;
+
+	@Value("${pt.tax.residential.slab1.tax}")
+	private double slab1Tax;
+
+	@Value("${pt.tax.residential.slab2.area.max}")
+	private double slab2AreaMax;
+
+	@Value("${pt.tax.residential.slab2.land.max}")
+	private double slab2LandMax;
+
+	@Value("${pt.tax.residential.slab2.tax}")
+	private double slab2Tax;
 
 	/**
 	 * Calculates tax and creates demand for the given assessment number
@@ -2076,10 +2092,10 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			}
 
 			if (isResidentialOcc && !"MIXED".equalsIgnoreCase(usageMajor)) {
-				if (totalUnitAreaSy <= 450 && landArea <= 50) {
-					PT_TAX = 50;
-				} else if (totalUnitAreaSy <= 900 && landArea <= 100) {
-					PT_TAX = 150;
+				if (totalUnitAreaSy <= slab1AreaMax  && landArea <= slab1LandMax) {
+					PT_TAX = slab1Tax;
+				} else if (totalUnitAreaSy <= slab2AreaMax && landArea <= slab2LandMax) {
+					PT_TAX = slab2Tax;
 				}
 			}
 			JsonNode owners = propertyDetails.get("owners");

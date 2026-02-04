@@ -251,8 +251,6 @@ const ApplicationDetails = () => {
 
   const handleDownloadPdf = async () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === applicationDetails.tenantId);
-    console.log("applicationDetails here: ", applicationDetails);
-    console.log("applicationData here: ", applicationDetails?.applicationData);
     const data = await getPDFData(applicationDetails?.applicationData, tenantInfo, t);
     //data.then((ress) => Digit.Utils.pdf.generate(ress));
     Digit.Utils.pdf.generate(data);
@@ -287,7 +285,6 @@ const ApplicationDetails = () => {
       redirectUrl: "",
     };
     const res1 = await Digit.DigiLockerService.pdfUrl({ TokenReq });
-    console.log("res1res1res1res1res1", res1);
     window.location.href = res1;
   };
   // Generate and cache certificate data to avoid duplicate API calls
@@ -311,7 +308,6 @@ const ApplicationDetails = () => {
       try {
         TLcertificatefile = await Digit.PaymentService.generatePdf(tenantId, { Licenses: res?.Licenses }, "tlcertificate");
       } catch (pdfError) {
-        console.error("❌ PDF Generation failed:", pdfError);
 
         if (pdfError.message?.includes("Lexical error")) {
           throw new Error("PDF template error. Please contact system administrator to fix the certificate template.");
@@ -333,7 +329,6 @@ const ApplicationDetails = () => {
       setCertificateData(data);
       return data;
     } catch (error) {
-      console.error("❌ Certificate generation failed:", error);
       throw error;
     }
   };
@@ -358,7 +353,6 @@ const ApplicationDetails = () => {
 
       setIsDisplayDownloadMenu(false);
     } catch (error) {
-      console.error("❌ Certificate download failed:", error);
       setShowToast({
         key: "error",
         error: true,
@@ -370,7 +364,6 @@ const ApplicationDetails = () => {
   // eSign Certificate - reuses cached PDF data
   const printCertificateWithESign = async () => {
     try {
-      console.log("🎯 Starting certificate eSign process with custom hook...");
 
       // Reuse existing certificate data or generate if not available
       const { fileStoreId } = await generateCertificateData();
@@ -380,11 +373,9 @@ const ApplicationDetails = () => {
         { fileStoreId, tenantId },
         {
           onSuccess: () => {
-            console.log("✅ eSign process initiated successfully");
             setIsDisplayDownloadMenu(false);
           },
           onError: (error) => {
-            console.error("❌ Certificate eSign failed:", error);
             setShowToast({
               key: "error",
               error: true,
@@ -394,7 +385,6 @@ const ApplicationDetails = () => {
         }
       );
     } catch (error) {
-      console.error("❌ Certificate preparation failed:", error);
       setShowToast({
         key: "error",
         error: true,
@@ -420,11 +410,11 @@ const ApplicationDetails = () => {
             label: t("TL_APPLICATION"),
             onClick: handleDownloadPdf,
           },
-          // {
-          //   label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-          //   onClick: printCertificateWithESign,
-          //   disabled: eSignLoading,
-          // },
+          {
+            label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+            onClick: printCertificateWithESign,
+            disabled: eSignLoading,
+          },
         ]
       : [
           {

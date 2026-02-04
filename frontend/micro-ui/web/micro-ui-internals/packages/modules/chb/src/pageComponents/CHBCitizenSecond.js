@@ -250,7 +250,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     type={"date"}
                     className="form-field chb-form-field-margin"
                     value={props.value}
-                    min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                    // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                    min={new Date().toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       setValue("endDate", "");
@@ -283,13 +284,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
                     const start = new Date(startDate);
                     const end = new Date(value);
-                    const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
-                    if (daysDiff > 5) {
-                      return t("END_DATE_MAX_5_DAYS");
+                    const diffDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+
+                    if (diffDays < 0) {
+                      return t("END_DATE_BEFORE_START"); // end before start ❌
                     }
 
-                    return true;
+                    if (diffDays > 5) {
+                      return t("END_DATE_MAX_5_DAYS"); // more than 5 days ❌
+                    }
+
+                    return true; // 0–5 days ✅
                   },
                 }}
                 render={(props) => (
@@ -303,7 +309,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     //     : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                     // }
                     min={startDate || new Date().toISOString().split("T")[0]}
-                    // max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       trigger("endDate");
@@ -366,9 +371,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     },
                   }}
                   render={(field) => (
-                    <div
-                      className="chb-slot-grid"
-                    >
+                    <div className="chb-slot-grid">
                       {getSlots?.map((slot, idx) => {
                         const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
                         const isChecked = field.value?.some(
@@ -381,7 +384,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         const isAvailable = slot.slotStaus?.toLowerCase() === "available";
 
                         return (
-                          <label key={slotKey} className={`chb-slot-card ${!isAvailable ? 'chb-slot-card--unavailable' : ''}`}>
+                          <label key={slotKey} className={`chb-slot-card ${!isAvailable ? "chb-slot-card--unavailable" : ""}`}>
                             {/* <input
                             type="checkbox"
                             checked={isChecked}
@@ -461,7 +464,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                             />
                             <span className="chb-slot-text">
                               {slot.bookingDate} ({slot.hallCode}) –{" "}
-                                <span className={`chb-slot-status ${slot.slotStaus !== "AVAILABLE" ? 'chb-slot-status--unavailable' : ''}`}>
+                              <span className={`chb-slot-status ${slot.slotStaus !== "AVAILABLE" ? "chb-slot-status--unavailable" : ""}`}>
                                 {slot.slotStaus ? slot.slotStaus.charAt(0).toUpperCase() + slot.slotStaus.slice(1).toLowerCase() : ""}
                               </span>
                             </span>
@@ -555,9 +558,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.purposeDescription && (
-                  <p className="chb-error-text">{errors.purposeDescription.message}</p>
-                )}
+                {errors.purposeDescription && <p className="chb-error-text">{errors.purposeDescription.message}</p>}
               </div>
             </div>
 

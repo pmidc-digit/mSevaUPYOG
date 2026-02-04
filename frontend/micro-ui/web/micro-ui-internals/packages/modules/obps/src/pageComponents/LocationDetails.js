@@ -592,7 +592,7 @@ return (
               name="pincode"
               onChange={selectPincode}
               value={pincode}
-              disabled={propertyData?.address ? true : false}
+              disabled={currentStepData?.PlotDetails?.landInfo?.address?.pincode ? true : false}
             />
           )}          
         </div>
@@ -627,7 +627,7 @@ return (
                 t={t}
                 isDependent={true}
                 labelKey={`${stringReplaceAll(selectedCity?.code, ".", "_").toUpperCase()}_REVENUE`}
-                //disabled={isEdit}
+                disabled={currentStepData?.PlotDetails?.landInfo?.address?.locality ? true : false}
               />
             </span>
           ) : (

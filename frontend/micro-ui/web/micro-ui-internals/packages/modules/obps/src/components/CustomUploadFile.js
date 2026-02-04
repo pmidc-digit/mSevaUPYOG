@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, Fragment } from "react";
+import React, { useEffect, useRef, useState, Fragment, forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ButtonSelector, Close, RemoveableTag, SubmitBar } from "@mseva/digit-ui-react-components";
 import { LoaderNew } from "./LoaderNew";
@@ -243,13 +243,18 @@ const CustomUploadFile = (props) => {
           } ${props.disabled ? "disabled" : ""}`}
       >
         <div className="upload-container-flex">
-          <ButtonSelector
+          {/* <ButtonSelector
             theme="border"
             label={t("CS_COMMON_CHOOSE_FILE")}
             className={`upload-file-button ${props.disabled ? "upload-hidden" : ""}`}
             textStyles={props?.textStyles}
             type={props.buttonType}
-          />
+          /> */}
+          <SubmitBar
+                className={`upload-file-button ${props.disabled ? "upload-hidden" : ""}`}
+                // onSubmit={() => routeTo(props.uploadedFile)}
+                label={t("CS_COMMON_CHOOSE_FILE")}
+            />
 
           {props?.uploadedFiles?.map((file, index) => {
             const fileDetailsData = file[1];
@@ -268,7 +273,7 @@ const CustomUploadFile = (props) => {
               {t("ES_NO_FILE_SELECTED_LABEL")}
             </h2>
           ) : (
-            <div className="upload-tag-container view-doc-container">
+            <div className="upload-tag-container">
               <SubmitBar
                 onSubmit={() => routeTo(props.uploadedFile)}
                 label={t("CS_VIEW_DOCUMENT")}
@@ -278,8 +283,9 @@ const CustomUploadFile = (props) => {
         </div>
 
         <input
-          className={`input-mirror-selector-button upload-file-input ${props.disabled ? "disabled" : ""
-            }`}
+          // className={`input-mirror-selector-button upload-file-input ${props.disabled ? "disabled" : ""
+          //   }`}
+          className={`upload-file-button ${props.disabled ? "upload-hidden" : ""}`}
           ref={inpRef}
           type="file"
           id={props.id || `document-${getRandomId()}`}

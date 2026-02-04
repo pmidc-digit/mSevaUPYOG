@@ -57,7 +57,7 @@ const App = () => {
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
-    <span className={"pt-citizen"} style={{ width: "100%" }}>
+    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
         <AppContainer>
           {!isResponse ? (

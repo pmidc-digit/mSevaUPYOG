@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown } from "@mseva/digit-ui-react-components";
+import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -16,6 +16,9 @@ const GenerateBill = () => {
 
   const [loader, setLoader] = useState(false);
   const [getData, setData] = useState();
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+  const [getLable, setLable] = useState(false);
 
   const { data: FreqType = [], isLoading: FreqTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [
     { name: "GarbageCollectionFrequency" },
@@ -49,13 +52,19 @@ const GenerateBill = () => {
     try {
       const response = await Digit.GCService.schedulerCreate(payload);
       setLoader(false);
+      setLable("Bill Generated Successfully");
+      setError(false);
+      setShowToast(true);
       console.log("response", response);
-      goNext(response?.GarbageConnection?.[0]);
     } catch (error) {
       setLoader(false);
       // setShowToast(true);
       // setError(error.response.data?.Errors?.[0]?.message);
     }
+  };
+
+  const closeToast = () => {
+    setShowToast(null);
   };
 
   const batchLocality = [
@@ -256,6 +265,8 @@ const GenerateBill = () => {
           <SubmitBar label="Generate Bill" submit="submit" />
         </ActionBar>
       </form>
+      {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
+
       {(loader || FreqTypeLoading) && <Loader page={true} />}
     </React.Fragment>
   );

@@ -7,7 +7,7 @@ import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions"
 import { useLocation } from "react-router-dom";
 // import { Loader } from "../components/Loader";
 
-export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApiLoading, menuList }) => {
+export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApiLoading, menuList, confirmPropertyChange, option }) => {
   const { t } = useTranslation();
   const myElementRef = useRef(null);
   const dispatch = useDispatch();
@@ -176,6 +176,10 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
 
   useEffect(() => {
     dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails, id: propertyId }));
+    console.log("PropertyDetailsInUseEffect", propertyDetails, propertyId);
+    // if (formData?.createdResponse?.applicationNo) {
+    //   confirmPropertyChange(option);
+    // }
   }, [propertyDetails, pathname]);
 
   //   useEffect(() => {

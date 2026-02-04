@@ -28,7 +28,7 @@ const CloseBtn = (props) => {
     );
 };
 
-export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoading, menuList, closeModal }) => {
+export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoading, menuList, closeModal, confirmPropertyChange, option }) => {
     const { t } = useTranslation();
     const myElementRef = useRef(null);
     const dispatch = useDispatch();
@@ -176,9 +176,15 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                 }));
                 dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails?.Properties?.[0], id: propertyDetails?.Properties?.[0]?.propertyId, zonalMapping: { zone, ward } }));
                 closeModal();
+                if(formData?.createdResponse?.applicationNo){
+                    confirmPropertyChange(option);
+                }
             } else {
                 dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails?.Properties?.[0], id: propertyDetails?.Properties?.[0]?.propertyId }));
                 closeModal();
+                if(formData?.createdResponse?.applicationNo){
+                    confirmPropertyChange(option);
+                }
             }
         }
     }, [menuList, propertyDetails]);
@@ -391,8 +397,8 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                         </div>
                     </LabelFieldPair>
                     {/* {formData?.cpt?.details && <StatusTable><Row className="border-none" label={t(`PT_ACKNOWLEDGEMENT_NUMBER`)} text={formData?.cpt?.details?.acknowldgementNumber || NA} /></StatusTable>} */}
-                    {propertyData?.length>0 && <StatusTable>
-                        {(isLoading ) ? <Loader /> : <Table
+                    {/* {<StatusTable> */}
+                        {(isLoading ) ? <Loader /> : propertyData?.length>0 && <Table
                             className="customTable table-border-style"
                             t={t}
                             data={propertyData}
@@ -403,7 +409,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
-                    </StatusTable>}
+                    {/* </StatusTable>} */}
 
                     {showToast && (
                         <Toast

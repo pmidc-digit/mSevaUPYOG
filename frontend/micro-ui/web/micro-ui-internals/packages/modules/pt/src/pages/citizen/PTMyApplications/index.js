@@ -169,11 +169,12 @@ export const PTMyApplications = () => {
   };
   console.log("formvalues", formValues);
   const handleRedirect = () => {
-    history.push("/digit-ui/citizen/pt/property/new-application");
+    // pt/property/create-application
+    history.push("/digit-ui/citizen/pt/property/create-application");
   };
   return (
     <React.Fragment>
-      <Card style={{ marginTop: "16px", marginBottom: "16px", backgroundColor: "white", maxWidth: "99%" }}>
+      <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 style={{ fontSize: "20px" }}>Search Application </h1>
           <SubmitBar label="Add New Property" onSubmit={handleRedirect} />
@@ -188,8 +189,8 @@ export const PTMyApplications = () => {
               control={control}
               render={(props) => <TextInput onChange={props.onChange} type="text" value={formValues?.applicationNumber} />}
             />
-            {/* <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError> */}
           </SearchField>
+
           <SearchField>
             <label>{t("CORE_COMMON_MOBILE_NUMBER")}</label>
             <Controller
@@ -201,7 +202,6 @@ export const PTMyApplications = () => {
               name="mobileNumber"
               control={control}
             />
-            {/* <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError> */}
           </SearchField>
 
           <SearchField>
@@ -212,18 +212,10 @@ export const PTMyApplications = () => {
               control={control}
               render={(props) => <TextInput onChange={props.onChange} type="text" value={formValues?.propertyId} />}
             />
-            {/* <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError> */}
           </SearchField>
-          <SearchField></SearchField>
-          <SearchField></SearchField>
-          <SearchField></SearchField>
-          <div className={`form-field`} style={{ marginTop: "40px" }}>
-            {" "}
-            <SubmitBar label="Reset" onSubmit={handleReset} />
-          </div>
 
-          <div className={`form-field`} style={{ marginTop: "40px" }}>
-            {" "}
+          <div style={{ marginTop: "40px", display: "flex", gap: "15px" }}>
+            <SubmitBar label="Reset" onSubmit={handleReset} />
             <SubmitBar label="Search" submit="submit" onSubmit={onSubmit} />
           </div>
         </form>

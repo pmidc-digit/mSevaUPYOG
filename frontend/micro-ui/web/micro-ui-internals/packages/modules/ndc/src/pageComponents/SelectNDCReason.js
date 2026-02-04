@@ -94,6 +94,36 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
         />
       </LabelFieldPair>
       <CardLabelError className="ndc-card-label-error">{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
+      {/* Reason */}
+      {watch("NDCReason")?.code == "OTHERS" && (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Reason")}`}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name={"reason"}
+              render={(props) => (
+                <TextInput
+                  onChange={(e) => {
+                    console.log("config.key", config.key);
+                    console.log("formData", formData);
+                    // onSelect("NDCValue", { checkReason: "tese" });
+
+                    onSelect("NDCReason", { ...formData?.NDCReason, reason: e.target.value }, config);
+
+                    // onSelect("reason", e.target.value, config);
+                    // setPropertyDetails((prev) => ({ ...prev, reason: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+      )}
     </div>
   );
 }

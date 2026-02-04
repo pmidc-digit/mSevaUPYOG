@@ -115,18 +115,6 @@ const getApplicantDetails = (appData, t) => {
       owner?.propertyId && { 
         title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"), 
         value: owner.propertyId 
-      },
-      owner?.PropertyOwnerName && { 
-        title: t("PROPERTY_OWNER_NAME"),
-         value: owner.PropertyOwnerName 
-      },
-      owner?.PropertyOwnerMobileNumber && { 
-        title: t("PROPERTY_OWNER_MOBILE_NUMBER"), 
-        value: owner.PropertyOwnerMobileNumber 
-      },
-      owner?.PropertyOwnerPlotArea && { 
-        title: t("PROPERTY_PLOT_AREA"), 
-        value: owner.PropertyOwnerPlotArea 
       }
     ].filter(Boolean),
   }));

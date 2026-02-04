@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { LabelFieldPair, TextInput, CardLabel, BreakLine, CardSectionHeader, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 
@@ -19,17 +20,17 @@ const LayoutSpecificationDetails = (_props) => {
   }, [currentStepData, setValue])
 
   const specificationPlotAreaValue = watch ? watch("specificationPlotArea") : ""
-  const areaLeftForRoadWidening = watch("areaLeftForRoadWidening")
+  const areaLeftForRoadWidening = currentStepData?.siteDetails?.areaLeftForRoadWidening
 
   useEffect(() => {
     if (specificationPlotAreaValue && areaLeftForRoadWidening) {
       const plotArea = Number.parseFloat(specificationPlotAreaValue)
-      const totalArea = Number.parseFloat(areaLeftForRoadWidening)
+      const fieldA = Number.parseFloat(areaLeftForRoadWidening)
 
-      if (!isNaN(plotArea) && !isNaN(totalArea) && plotArea !== totalArea) {
+      if (!isNaN(plotArea) && !isNaN(fieldA) && plotArea !== fieldA) {
         setShowToast({
           error: true,
-          label: "Plot area as per jamabandi must be equal to Total Area in Square Meter",
+          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)",
         })
       } else {
         setShowToast(null)
@@ -43,7 +44,7 @@ const LayoutSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("Plot area as per jamabandi must be equal to total area in Square Meter")}*`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -57,12 +58,9 @@ const LayoutSpecificationDetails = (_props) => {
                 validate: (value) => {
                   if (!areaLeftForRoadWidening) return true
                   const plotArea = Number.parseFloat(value)
-                  const totalArea = Number.parseFloat(areaLeftForRoadWidening)
-                  if (isNaN(plotArea) || isNaN(totalArea)) return true
-                  // Normalize values by removing unnecessary trailing zeros
-                  const normalizedPlotArea = parseFloat(plotArea.toString())
-                  const normalizedTotalArea = parseFloat(totalArea.toString())
-                  return normalizedPlotArea === normalizedTotalArea || t("Plot area as per jamabandi must be equal to Total Area in Square Meter")
+                  const fieldA = Number.parseFloat(areaLeftForRoadWidening)
+                  if (isNaN(plotArea) || isNaN(fieldA)) return true
+                  return plotArea === fieldA || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)")
                 },
               }}
               render={(props) => (
@@ -102,3 +100,4 @@ const LayoutSpecificationDetails = (_props) => {
 }
 
 export default LayoutSpecificationDetails
+

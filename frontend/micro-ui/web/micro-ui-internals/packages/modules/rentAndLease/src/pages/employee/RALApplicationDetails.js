@@ -75,7 +75,12 @@ const RALApplicationDetails = () => {
   };
 
   const rawAdditionalDetails = applicationData?.additionalDetails || {};
-  const propertyDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
+  const propertyDetails = Array.isArray(rawAdditionalDetails?.propertyDetails)
+    ? rawAdditionalDetails?.propertyDetails[0]
+    : rawAdditionalDetails?.propertyDetails;
+
+  const arrearDoc = rawAdditionalDetails?.arrearDoc ? [{ documentType: "Arrear Doc", fileStoreId: rawAdditionalDetails.arrearDoc }] : [];
+  const allDocuments = [...(applicationData?.Document || []), ...arrearDoc];
 
   let user = Digit.UserService.getUser();
 
@@ -125,6 +130,15 @@ const RALApplicationDetails = () => {
 
   const getDate = (epoch) => {
     return Digit.DateUtils.ConvertEpochToDate(epoch);
+  };
+
+  const tValue = (value) => {
+    if (value === 0 || value === "0") return "0";
+    if (!value) return t("CS_NA");
+    if (typeof value === "object" && value !== null) {
+      return t(value?.name || value?.code || "CS_NA");
+    }
+    return t(value);
   };
 
   function onActionSelect(action) {
@@ -329,6 +343,8 @@ const RALApplicationDetails = () => {
     }
   };
 
+  console.log("rawAdditionalDetails", rawAdditionalDetails);
+
   return (
     <React.Fragment>
       <div>
@@ -350,17 +366,14 @@ const RALApplicationDetails = () => {
                       </CardSectionHeader>
                     )}
 
-                    <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={owner?.name || t("CS_NA")} />
-                    <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={owner?.emailId || t("CS_NA")} />
-                    <Row label={t("CORE_MOBILE_NUMBER")} text={owner?.mobileNo || t("CS_NA")} />
+                    <Row label={t("PT_OWNERSHIP_INFO_NAME")} text={tValue(owner?.name)} />
+                    <Row label={t("CORE_COMMON_PROFILE_EMAIL")} text={tValue(owner?.emailId)} />
+                    <Row label={t("CORE_MOBILE_NUMBER")} text={tValue(owner?.mobileNo)} />
                     <Row
                       label={t("PT_COMMON_COL_ADDRESS")}
-                      text={owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId || t("CS_NA")}
+                      text={tValue(owner?.correspondenceAddress?.addressId || owner?.permanentAddress?.addressId)}
                     />
-                    <Row
-                      label={t("CORE_COMMON_PINCODE")}
-                      text={owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode || t("CS_NA")}
-                    />
+                    <Row label={t("CORE_COMMON_PINCODE")} text={tValue(owner?.correspondenceAddress?.pincode || owner?.permanentAddress?.pincode)} />
                   </React.Fragment>
                 );
               })
@@ -371,43 +384,67 @@ const RALApplicationDetails = () => {
 
           <CardSubHeader className="ral-card-subheader-24">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
-            {applicationData?.registrationNumber && (
-              <Row label={t("RAL_REGISTRATION_NUMBER")} text={applicationData?.registrationNumber || t("CS_NA")} />
-            )}
-            <Row label={t("APPLICATION_NUMBER")} text={applicationData?.applicationNumber || t("CS_NA")} />
-            <Row label={t("RENT_LEASE_PROPERTY_ID")} text={propertyDetails?.propertyId || t("CS_NA")} />
-            <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={propertyDetails?.propertyName || t("CS_NA")} />
-            <Row label={t("RAL_ALLOTMENT_TYPE")} text={propertyDetails?.allotmentType || t("CS_NA")} />
-            <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={propertyDetails?.propertyType || t("CS_NA")} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={propertyDetails?.address || t("CS_NA")} />
-            <Row label={t("RAL_PROPERTY_AMOUNT")} text={propertyDetails?.baseRent || t("CS_NA")} />
-            <Row label={t("PENALTY_TYPE")} text={propertyDetails?.penaltyType || t("CS_NA")} />
+            {applicationData?.registrationNumber && <Row label={t("RAL_REGISTRATION_NUMBER")} text={tValue(applicationData?.registrationNumber)} />}
+            <Row label={t("APPLICATION_NUMBER")} text={tValue(applicationData?.applicationNumber)} />
+            <Row label={t("RENT_LEASE_PROPERTY_ID")} text={tValue(propertyDetails?.propertyId)} />
+            <Row label={t("RENT_LEASE_PROPERTY_NAME")} text={tValue(propertyDetails?.propertyName)} />
+            <Row label={t("RAL_ALLOTMENT_TYPE")} text={tValue(propertyDetails?.allotmentType)} />
+            <Row label={t("RENT_LEASE_PROPERTY_TYPE")} text={tValue(propertyDetails?.propertyType)} />
+            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={tValue(propertyDetails?.address)} />
+            <Row label={t("RAL_PROPERTY_AMOUNT")} text={tValue(propertyDetails?.baseRent)} />
+            <Row label={t("PENALTY_TYPE")} text={tValue(propertyDetails?.penaltyType)} />
             <Row
               label={t("RAL_FEE_CYCLE")}
-              text={propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase() || t("CS_NA")}
+              text={
+                propertyDetails?.feesPeriodCycle
+                  ? tValue(propertyDetails?.feesPeriodCycle?.[0]?.toUpperCase() + propertyDetails?.feesPeriodCycle?.slice(1)?.toLowerCase())
+                  : t("CS_NA")
+              }
             />
-            <Row label={t("PROPERTY_SIZE")} text={propertyDetails?.propertySizeOrArea || t("CS_NA")} />
-            <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={propertyDetails?.locationType || t("CS_NA")} />
-            <Row label={t("RAL_START_DATE")} text={getDate(applicationData?.startDate) || t("CS_NA")} />
-            <Row label={t("RAL_END_DATE")} text={getDate(applicationData?.endDate) || t("CS_NA")} />
-            {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={applicationData?.amountToBeDeducted} />}
-            <Row label={t("SECURITY_DEPOSIT")} text={propertyDetails?.securityDeposit || t("CS_NA")} />
+            <Row label={t("PROPERTY_SIZE")} text={tValue(propertyDetails?.propertySizeOrArea)} />
+            <Row label={t("RENT_LEASE_LOCATION_TYPE")} text={tValue(propertyDetails?.locationType)} />
+            <Row label={t("RAL_START_DATE")} text={tValue(getDate(applicationData?.startDate))} />
+            <Row label={t("RAL_END_DATE")} text={tValue(getDate(applicationData?.endDate))} />
+            {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={tValue(applicationData?.amountToBeDeducted)} />}
+            <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
             {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 && (
-              <Row label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")} text={applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit} />
+              <Row
+                label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")}
+                text={tValue(applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit)}
+              />
             )}
-            {applicationData?.amountToBeRefund > 0 && <Row label={t("RAL_AMOUNT_TO_REFUND")} text={applicationData?.amountToBeRefund} />}
+            {applicationData?.amountToBeRefund > 0 && <Row label={t("RAL_AMOUNT_TO_REFUND")} text={tValue(applicationData?.amountToBeRefund)} />}
             {applicationData?.tradeLicenseNumber && (
-              <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={applicationData?.tradeLicenseNumber || t("CS_NA")} />
+              <Row label={t("RENT_LEASE_TRADE_LICENSE_NUMBER")} text={tValue(applicationData?.tradeLicenseNumber)} />
             )}
           </StatusTable>
+
+          {rawAdditionalDetails?.applicationType === "Legacy" && (
+            <React.Fragment>
+              <CardSubHeader className="ral-card-subheader-24">{t("RAL_ARREAR_DETAILS")}</CardSubHeader>
+              <StatusTable>
+                <Row label={t("Arrears")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row
+                  label={t("RAL_START_DATE")}
+                  text={rawAdditionalDetails?.arrearStartDate ? getDate(rawAdditionalDetails.arrearStartDate) : t("CS_NA")}
+                />
+                <Row
+                  label={t("RAL_END_DATE")}
+                  text={rawAdditionalDetails?.arrearEndDate ? getDate(rawAdditionalDetails.arrearEndDate) : t("CS_NA")}
+                />
+                <Row label={t("Reason")} text={tValue(rawAdditionalDetails?.arrearReason)} />
+                <Row label={t("Remarks")} text={tValue(rawAdditionalDetails?.remarks)} />
+              </StatusTable>
+            </React.Fragment>
+          )}
 
           <CardSubHeader className="ral-card-subheader-24-margin">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
             <Card className="ral-app-details-docs-card">
-              {applicationData?.Document?.length > 0 ? (
-                applicationData.Document.map((doc, index) => (
+              {allDocuments?.length > 0 ? (
+                allDocuments.map((doc, index) => (
                   <div key={index}>
-                    <RALDocuments value={applicationData.Document} Code={doc?.documentType} index={index} />
+                    <RALDocuments value={allDocuments} Code={doc?.documentType} index={index} />
                     {t(doc?.documentType)}
                   </div>
                 ))

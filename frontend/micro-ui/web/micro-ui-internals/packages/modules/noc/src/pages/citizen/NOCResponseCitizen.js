@@ -1,9 +1,9 @@
-import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
-import React from "react";
+import { Banner, Card, CardText, ActionBar, SubmitBar , Loader } from "@mseva/digit-ui-react-components";
+import React ,{useState} from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll} from "../../utils";
-// import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
+import { getNOCAcknowledgementData } from "../../utils/getNOCAcknowledgementData";
 
 const NOCResponseCitizen = (props) => {
   const location=useLocation();
@@ -13,6 +13,8 @@ const NOCResponseCitizen = (props) => {
   const nocData = state?.data?.Noc?.[0];
   console.log("nocData here", nocData);
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const [loading, setLoading] = useState(false);
+  
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -24,8 +26,12 @@ const NOCResponseCitizen = (props) => {
     history.push(`/digit-ui/citizen`);
   };
   const onViewApplication = () => {
-    history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+    setLoading(true); // show loading first
+    setTimeout(() => {
+      history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+    }, 1000); // delay navigation by 1 second
   };
+
 
   const onGoToNOC = () => {
     history.push(`/digit-ui/citizen/noc-home`);
@@ -36,20 +42,28 @@ const NOCResponseCitizen = (props) => {
   };
 
 
-  // const handleDownloadPdf = async () => {
-  //   try{
-  //   const Property = nocData;
-  //   //console.log("tenants in NOC", tenants);
-  //   const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-  //   const ulbType = site?.ulbType;
-  //   const ulbName = site?.ulbName?.city?.name || site?.ulbName;
-  //   const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-  //   const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-  //   Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
-  //   }catch(error){
-  //     console.log("Eroor Occurred !!!", error);
-  //   }
-  // };
+  const handleDownloadPdf = async () => {
+    try{
+      setLoading(true);
+    const Property = nocData;
+    //console.log("tenants in NOC", tenants);
+    const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+    const ulbType = site?.ulbType;
+    const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+    }catch(error){
+      console.log("Eroor Occurred !!!", error);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+   if (loading) {
+      return <Loader />;
+    }
+  
 
 
   return (
@@ -70,13 +84,14 @@ const NOCResponseCitizen = (props) => {
           {/* <CardText>
             {t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}
           </CardText> */}
-          {/* <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+        {/* <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
           </div>
-        ) : null} */} 
+        ) : null} */}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
-          <SubmitBar label={t("View Application")} onSubmit={onViewApplication} />
+          <SubmitBar label={nocData?.applicationStatus === "INITIATED" ? t("View Application") : t("Download Application")} onSubmit={handleDownloadPdf} />
+          
           {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>

@@ -67,7 +67,7 @@ const SelfCertificationResponse = (props) => {
 
   const handlePayment = () => {
     window.location.assign(
-      `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(bpaData?.businessService, bpaData?.applicationStatus)}/${bpaData?.applicationNo}/${bpaData?.tenantId}?tenantId=${bpaData?.tenantId}`}`,
+      `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(bpaData?.businessService, bpaData?.applicationStatus, bpaData?.additionalDetails?.applicationType)}/${bpaData?.applicationNo}/${bpaData?.tenantId}?tenantId=${bpaData?.tenantId}`}`,
     )
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };

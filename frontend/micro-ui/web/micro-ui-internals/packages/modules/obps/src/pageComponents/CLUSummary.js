@@ -94,23 +94,10 @@ function CLUSummary({ currentStepData: formData, t }) {
        <Row label={t("BPA_AREA_TYPE_LABEL")} text={formData?.siteDetails?.localityAreaType?.name|| "N/A"}/> 
 
         {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
-          <Row label={t("BPA_SCHEME_NAME_LABEL")} text={formData?.siteDetails?.localitySchemeName || "N/A"}/>}
-
-        {formData?.siteDetails?.localityAreaType?.code === "APPROVED_COLONY" &&
-          <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={formData?.siteDetails?.localityApprovedColonyName || "N/A"}/>}
-
-        {formData?.siteDetails?.localityAreaType?.code === "NON_SCHEME" &&
-           <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={formData?.siteDetails?.localityNonSchemeType?.name || "N/A"}/>}
-
-        <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={formData?.siteDetails?.localityNoticeIssued?.code || "N/A"}/>
-
-        {formData?.siteDetails?.localityNoticeIssued?.code === "YES" &&
-          <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={formData?.siteDetails?.localityNoticeNumber || "N/A"}/>}
-
-        {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
           <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={formData?.siteDetails?.localityColonyType?.name || "N/A"}/>}
 
-        <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={formData?.siteDetails?.localityTransferredSchemeType?.name || "N/A"}/>
+        {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
+          <Row label={t("BPA_SCHEME_NAME_LABEL")} text={formData?.siteDetails?.localitySchemeName || "N/A"}/>}
 
       </StatusTable>
   
@@ -120,7 +107,6 @@ function CLUSummary({ currentStepData: formData, t }) {
       <StatusTable>
 
         <Row label={t("BPA_PLOT_NO_LABEL")} text={formData?.siteDetails?.plotNo || "N/A"}/>
-        <Row label={t("BPA_PLOT_AREA_LABEL")} text={formData?.siteDetails?.plotArea || "N/A"}/>
         <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={formData?.siteDetails?.khewatOrKhatuniNo || "N/A"}/>
         <Row label={t("BPA_CORE_AREA_LABEL")} text={formData?.siteDetails?.coreArea?.code || "N/A"}/> 
 

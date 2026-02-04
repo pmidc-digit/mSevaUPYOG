@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader, CardSubHeader  } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation } from "react-router-dom";
 
-const InspectionReportDisplay = ({fiReport}) => {
+const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
     const { t } = useTranslation();
 
     const report = useMemo(() => {
@@ -15,22 +15,37 @@ const InspectionReportDisplay = ({fiReport}) => {
       return null;
     }, [fiReport]);
 
+    // const tableData = useMemo(() => {
+    //   if (report?.questionList?.length > 0) {
+    //     return [...report.questionList]
+    //       .sort((a, b) => {
+    //         // If either is the additional remarks, push it to the end
+    //         if (a.question === "BPA_ADDITIONAL_REMARKS") return 1;
+    //         if (b.question === "BPA_ADDITIONAL_REMARKS") return -1;
+
+    //         const getIndex = (q) => Number(q?.question?.split("_").pop());
+
+    //         return getIndex(a) - getIndex(b);
+    //       })
+    //       .map((item, idx) => ({
+    //         question: t(item?.question),
+    //         remarks: report?.["Remarks_" + idx] || "-",
+    //       }));
+    //   }
+    //   return [];
+    // }, [report, t]);
+
     const tableData = useMemo(() => {
       if (report?.questionList?.length > 0) {
-        return [...report.questionList]
-          .sort((a, b) => {
-            const getIndex = (q) =>
-              Number(q?.question?.split("_").pop()) || 0;
-
-            return getIndex(a) - getIndex(b);
-          })
-          .map((item, idx) => ({
-            question: t(item?.question),
-            remarks: report?.["Remarks_" + idx] || "-"
-          }));
+        return report.questionList.map((item, idx) => ({
+          question: t(item?.question),
+          remarks: report?.["Remarks_" + idx] || "-",
+        }));
       }
       return [];
     }, [report, t]);
+
+
   
     if (!fiReport || fiReport.length === 0) {
       return <div>{t("NO_INSPECTION_REPORTS_AVAILABLE")}</div>;
@@ -41,7 +56,7 @@ const InspectionReportDisplay = ({fiReport}) => {
       <div>
         {/* {fiReport.map((report, index) => ( */}
           {/* <div key={index}> */}
-            <CardSectionHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
+            <CardSubHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1} - Verified by ${InspectionReportVerifier}` : `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier}`}</CardSubHeader>
             {/* {<LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")}: `}</CardLabel>
               <div className="field" style={{ width: "100%" }}>

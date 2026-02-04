@@ -55,7 +55,7 @@ const App = () => {
       <Switch>
         <AppContainer>
            {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
               <NOCBreadCrumbs location={location} />
             </div>
           ) : null}

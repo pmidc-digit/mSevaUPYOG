@@ -971,7 +971,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     }
     if (action === "PAY") {
       window.location.assign(
-        `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(data?.businessService, data?.applicationStatus)}/${id}/${data?.tenantId
+        `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(data?.businessService, data?.applicationStatus, data?.applicationData?.additionalDetails?.applicationType)}/${id}/${data?.tenantId
         }?tenantId=${data?.tenantId}`}`,
       )
     }

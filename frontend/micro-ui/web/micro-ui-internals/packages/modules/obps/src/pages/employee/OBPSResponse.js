@@ -33,7 +33,7 @@ const OBPSResponse = (props) => {
     // let businessService = "BPA.LOW_RISK_PERMIT_FEE";
     // if (bpaResponse?.BPA?.[0]?.businessService === "BPA") businessService = "BPA.NC_SAN_FEE";
     // else if (bpaResponse?.BPA?.[0]?.businessService === "BPA_OC") businessService = "BPA.NC_OC_SAN_FEE";
-    let businessService = await getBusinessServices(bpaResponse?.BPA?.[0]?.businessService, bpaResponse?.BPA?.[0]?.status);
+    let businessService = getBusinessServices(bpaResponse?.BPA?.[0]?.businessService, bpaResponse?.BPA?.[0]?.status, bpaResponse?.BPA?.[0]?.additionalDetails?.applicationType);
 
     const fetchBill = await Digit.PaymentService.fetchBill(tenantId, {
       consumerCode: bpaResponse?.BPA?.[0]?.applicationNo,
@@ -80,14 +80,14 @@ const OBPSResponse = (props) => {
 
   const getPaymentURL = (isCitizen) => {
     if (isCitizen == true)
-      return `/digit-ui/citizen/payment/collect/${getBusinessServices(applicationData?.businessService, applicationData?.status)}/${
+      return `/digit-ui/citizen/payment/collect/${getBusinessServices(applicationData?.businessService, applicationData?.status, applicationData?.additionalDetails?.applicationType)}/${
         applicationData?.applicationNo
       }/${applicationData?.tenantId}?tenantId=${applicationData?.tenantId}`;
   };
 
   const getPaymentURLEmployee = () => {
     history.push(
-      `/digit-ui/employee/payment/collect/${getBusinessServices(applicationData?.businessService, applicationData?.status)}/${
+      `/digit-ui/employee/payment/collect/${getBusinessServices(applicationData?.businessService, applicationData?.status, applicationData?.additionalDetails?.applicationType)}/${
         applicationData?.applicationNo
       }/${applicationData?.tenantId}?tenantId=${applicationData?.tenantId}`
     );

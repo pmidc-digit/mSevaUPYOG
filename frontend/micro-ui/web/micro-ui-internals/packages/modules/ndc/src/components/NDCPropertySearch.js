@@ -249,15 +249,9 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       <div style={{ marginBottom: "16px" }}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
-            {`${t(propertyIdInput.label)}`}
-            {propertyIdInput.isMandatory ? "*" : null}
+            {`${t(propertyIdInput.label)} *`}
           </CardLabel>
-          <div
-            className="field ndc_property_search"
-            
-            ref={myElementRef}
-            id="search-property-field"
-          >
+          <div className="field ndc_property_search" ref={myElementRef} id="search-property-field">
             <TextInput
               key={propertyIdInput.name}
               value={propertyId} //{propertyId}

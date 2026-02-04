@@ -211,6 +211,7 @@ import useScrutinyDetails from "./obps/useScrutinyDetails";
 import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
+import useNocCreateAPI from "./noc/useNocCreateAPI";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
 import useOBPSDocumentSearch from "./obps/useOBPSDocumentSearch";
 import useObpsAPI from "./obps/useObpsAPI";
@@ -409,7 +410,7 @@ import useLayoutBuildingType from "./obps/useLayoutBuildingType";
 import useLayoutBuildingCategory from "./obps/useLayoutBuildingCategory";
 import useLayoutRoadType from "./obps/useLayoutRoadType";
 import useLayoutType from "./obps/useLayoutType";
-import { useLayoutSearchApplication } from "./obps/useSearchApplication";
+import { useLayoutSearchApplication, useLayoutCheckListSearch } from "./obps/useSearchApplication";
 import { useLayoutCitizenSearchApplication, useLayoutSearchApplicationByIdOrMobile } from "./obps/useLayoutCitizenSearchApplication";
 import useLayoutDocumentSearch from "./obps/useLayoutDocumentSearch";
 // GC
@@ -646,6 +647,7 @@ const obps = {
   useLayoutRoadType,
   useLayoutType,
   useLayoutSearchApplication,
+  useLayoutCheckListSearch,
   useLayoutBuildingType,
   useLayoutBuildingCategory,
   useLayoutRoadType,
@@ -771,7 +773,8 @@ const noc = {
   useNocType,
   useNOCFeeCalculator,
   useNOCSearchApplicationByIdOrMobile,
-  useNOCCheckListSearch
+  useNOCCheckListSearch,
+  useNocCreateAPI
 };
 
 const ndc = {

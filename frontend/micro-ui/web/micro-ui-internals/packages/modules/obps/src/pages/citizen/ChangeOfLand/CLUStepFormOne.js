@@ -41,7 +41,7 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo type here", userInfo?.info?.type);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  const errorStyle = { color: "red", marginTop: "4px", marginBottom: "0" };
 
   const {
     control,

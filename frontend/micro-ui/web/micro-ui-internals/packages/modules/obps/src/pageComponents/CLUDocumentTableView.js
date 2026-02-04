@@ -67,7 +67,7 @@ const CLUDocumentTableView = ({documents}) => {
     }, [mappedDocuments]);
 
   return (
-    <div>
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
       {documentsData && 
         <Table
           className="customTable table-border-style"
@@ -80,6 +80,7 @@ const CLUDocumentTableView = ({documents}) => {
           manualPagination={false}
           isPaginationRequired={false}
           pageSizeLimit = {documentsData?.length || 10}
+          style={{ width: "100%", minWidth: "400px", tableLayout: "auto" }}
         />
       }
     </div>

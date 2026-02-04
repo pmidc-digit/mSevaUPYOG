@@ -1079,10 +1079,14 @@ const BpaApplicationDetail = () => {
     //   alert(t("Please fill in the comments before submitting  "))
     // }
     if(data?.BPA?.status === "INSPECTION_REPORT_PENDING"){
-      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending)
+      const recommendation = fieldInspectionPending?.[0]?.Recommendations ?? "";
       if(fieldInspectionPending?.length === 0){
         closeModal();
         setShowToast({error: true, label: t("Please fill in the Field Inspection Report before submitting")})
+        return;
+      }else if(recommendation.trim().split(/\s+/).filter(Boolean).length < 20){
+        closeModal();
+        setShowToast({error: true, label: t("Please fill in the Field Inspection Report with at least 20 words before submitting")})
         return;
       }else if(fieldInspectionPending?.[0]?.questionLength === 0){
         closeModal();

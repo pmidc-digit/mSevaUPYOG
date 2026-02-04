@@ -59,6 +59,28 @@ const HRMSEMPMAPDetails = () => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const stateId = Digit.ULBService.getStateId();
 
+  // Fetch MDMS data for BPA Category and SubCategory
+  const { data: mdmsDataBPA, isLoading: isBPALoading } = Digit.Hooks.useCommonMDMS(stateId, "BPA", ["Category", "SubCategory"]);
+
+  // Create lookup maps for categories and subcategories
+  const categoryMap = useMemo(() => {
+    if (!mdmsDataBPA?.BPA?.Category) return {};
+    const map = {};
+    mdmsDataBPA.BPA.Category.forEach(cat => {
+      map[cat.categoryId] = cat.categoryName;
+    });
+    return map;
+  }, [mdmsDataBPA]);
+
+  const subCategoryMap = useMemo(() => {
+    if (!mdmsDataBPA?.BPA?.SubCategory) return {};
+    const map = {};
+    mdmsDataBPA.BPA.SubCategory.forEach(sub => {
+      map[sub.subCategoryId] = sub.subCategoryName;
+    });
+    return map;
+  }, [mdmsDataBPA]);
+
   useEffect(() => {
     setMutationHappened(false);
     clearSuccessData();
@@ -109,8 +131,8 @@ const HRMSEMPMAPDetails = () => {
             displayId: String(pageOffset + index + 1),
             employeeUUID: emp.uuid,
             userUUID: emp.userUUID,
-            category: emp.category || "N/A",
-            subCategory: emp.subcategory || "N/A",
+            category: categoryMap[emp.category] || emp.category || "N/A",
+            subCategory: subCategoryMap[emp.subcategory] || emp.subcategory || "N/A",
             ward: emp.assignedTenantId || "N/A",
             zone: emp.zone || "N/A",
             roles: roleNames, // Same roles for all mappings since it's per employee
@@ -138,10 +160,10 @@ const HRMSEMPMAPDetails = () => {
   };
 
   useEffect(() => {
-    if (data && Object.keys(obpsRoleMap).length > 0) {
+    if (data && Object.keys(obpsRoleMap).length > 0 && Object.keys(categoryMap).length > 0 && Object.keys(subCategoryMap).length > 0) {
       fetchMappingData();
     }
-  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, refreshCounter]);
+  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, categoryMap, subCategoryMap, refreshCounter]);
 
   function onActionSelect(action) {
     setSelectedAction(action);
@@ -178,7 +200,7 @@ const HRMSEMPMAPDetails = () => {
   const submitAction = (data) => { };
    // ==================== MODAL ACTIONS ====================
   const handleDeleteAll = async () => {
-    if (window.confirm(t("HR_CONFIRM_DELETE_ALL_MAPPINGS") || "Are you sure you want to delete ALL mappings for this employee?")) {
+    if (window.confirm("Are you sure you want to delete ALL mappings for this employee?")) {
       try {
         setMappingLoading(true);
         
@@ -349,7 +371,7 @@ const HRMSEMPMAPDetails = () => {
     }
   }, [selectedAction]);
 
-  if (isLoading) {
+  if (isLoading || isBPALoading) {
     return <Loader />;
   }
 

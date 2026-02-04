@@ -74,7 +74,7 @@ const NOCDocumentTableView = ({documents}) => {
     }, [mappedDocuments]);
 
   return (
-    <div>
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
       {documentsData && (
         <Table
           className="customTable table-border-style"
@@ -83,7 +83,7 @@ const NOCDocumentTableView = ({documents}) => {
           columns={documentsColumns}
           getCellProps={(cellInfo) => (cellInfo.column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
           getHeaderProps={(column) => (column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
-          disableSort={true}
+          style={{ width: "100%", minWidth: "400px", tableLayout: "auto" }}          disableSort={true}
           autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}

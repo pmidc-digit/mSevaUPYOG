@@ -237,8 +237,8 @@ const CLUEmployeeApplicationDetails = () => {
       const isEdited = !!prevItem.edited;
 
       return {
-        taxHeadCode: tax.taxHeadCode,
-        category: tax.category,
+        taxHeadCode: tax?.taxHeadCode,
+        category: tax?.category,
         adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
         remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
         filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
@@ -258,6 +258,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
 
   const closeToast = () => {
     setShowToast(null);
@@ -640,6 +641,12 @@ const CLUEmployeeApplicationDetails = () => {
   return `${day}/${month}/${year}`;
   };
 
+  const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
+
   console.log("displayData here", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
@@ -659,8 +666,10 @@ const CLUEmployeeApplicationDetails = () => {
 
   return (
     <div className={"employee-main-application-details"}>
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
+        <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
       </div>
 
       <Card>
@@ -714,26 +723,13 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
               {detail?.localityAreaType?.code === "SCHEME_AREA" && (
-                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "APPROVED_COLONY" && (
-                <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={detail?.localityApprovedColonyName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "NON_SCHEME" && (
-                <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={detail?.localityNonSchemeType?.name || "N/A"} />
-              )}
-
-              <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={detail?.localityNoticeIssued?.code || "N/A"} />
-
-              {detail?.localityNoticeIssued?.code === "YES" && (
-                <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
-              )}
-
-              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
                 <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
               )}
 
-              <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
+              )}
+
             </StatusTable>
           </div>
         ))}
@@ -745,8 +741,6 @@ const CLUEmployeeApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-
-              <Row label={t("BPA_PLOT_AREA_LABEL")} text={detail?.plotArea || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
               <Row label={t("BPA_CORE_AREA_LABEL")} text={detail?.coreArea?.code || "N/A"} />
 
@@ -797,21 +791,6 @@ const CLUEmployeeApplicationDetails = () => {
         ))}
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("BPA_SITE_COORDINATES_LABEL")}</CardSubHeader>
-        {displayData?.coordinates?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-
-              <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card> */}
-
       <Card>
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
@@ -819,25 +798,38 @@ const CLUEmployeeApplicationDetails = () => {
       </StatusTable>
       </Card>
 
+      {
+        applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 &&
+        <Card>
+          <CardSubHeader>{t("BPA_FIELD_INSPECTION_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+          <StatusTable>
+          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={siteImages.documents} />}
+          </StatusTable>
+          {   geoLocations?.length > 0 &&
+              <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CustomLocationSearch position={geoLocations}/>
+              </React.Fragment>
+          }
+        </Card>
+      }
+
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0  && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
-      </Card> */}
-
-      {/*Document CheckList At DM Level */}
      {
-      applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0)  ? 
-      <Card>
-        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
-          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
-      </Card> 
-      : 
+      applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        <Card>
+            <InspectionReportDisplay
+              fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending}                                
+            />
+        </Card>
+     }
+
+     {
+      applicationDetails?.Clu?.[0]?.applicationStatus !== "DOC_VERIFICATION_PENDING" &&
       <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
@@ -846,7 +838,7 @@ const CLUEmployeeApplicationDetails = () => {
      }
 
       {
-        applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 ?
+        applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 &&
         <Card>
             <InspectionReport
               isCitizen={true}
@@ -854,12 +846,15 @@ const CLUEmployeeApplicationDetails = () => {
               onSelect={onChangeReport}
             />
         </Card>
-        :
-         <Card>
-            <InspectionReportDisplay
-              fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending}                                
-            />
-         </Card>
+      }
+
+      {
+       applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0) &&
+       <Card>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
+          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
+       </Card> 
       }
 
       <Card>
@@ -877,8 +872,10 @@ const CLUEmployeeApplicationDetails = () => {
         )}
       </Card>
 
-      <Card>
+      <div className="data-table">
         <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        
+
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
             formData={{
@@ -891,10 +888,11 @@ const CLUEmployeeApplicationDetails = () => {
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
 
           />
         )}
-      </Card>
+      </div>
 
       <CheckBox
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
@@ -930,46 +928,10 @@ const CLUEmployeeApplicationDetails = () => {
           <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
         </Card>
       }
-      {/* {
-          applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
-            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
-            <Table
-              className="customTable table-border-style"
-              t={t}
-              data={documentData}
-              columns={documentsColumnsSiteImage}
-              getCellProps={() => ({ style: {} })}
-              disableSort={false}
-              autoSort={true}
-              manualPagination={false}
-              isPaginationRequired={false}
-            />
-            {geoLocations?.length > 0 &&
-                <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                <CustomLocationSearch position={geoLocations}/>
-                </React.Fragment>
-            }
-          </Card>
-      } */}
-      {
-        applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 &&
-        <Card>
-          <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
-          <StatusTable>
-          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={siteImages.documents} />}
-          {/* <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} /> */}
-          </StatusTable>
-          {   geoLocations?.length > 0 &&
-              <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                <CustomLocationSearch position={geoLocations}/>
-              </React.Fragment>
-          }
-        </Card>
-      }
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      <div id="timeline">
+       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      </div>
 
       {actions?.length > 0 && (
         <ActionBar>

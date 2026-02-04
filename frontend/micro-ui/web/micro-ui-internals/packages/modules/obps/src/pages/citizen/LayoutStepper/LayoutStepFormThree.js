@@ -121,15 +121,21 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   return (
     <React.Fragment>
-      <FormComposer
-        defaultValues={currentStepData}
-        config={config.currStepConfig}
-        onSubmit={goNext}
-        onFormValueChange={onFormValueChange}
-        label={t(`${config.texts.submitBarLabel}`)}
-        currentStep={config.currStepNumber}
-        onBackClick={onGoBack}
-      />
+      {!isLoading && config?.currStepConfig ? (
+        <FormComposer
+          defaultValues={currentStepData}
+          config={config.currStepConfig}
+          onSubmit={goNext}
+          onFormValueChange={onFormValueChange}
+          label={t(`${config.texts.submitBarLabel}`)}
+          currentStep={config.currStepNumber}
+          onBackClick={onGoBack}
+        />
+      ) : (
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <p>Loading documents...</p>
+        </div>
+      )}
 
       {showToast && (
         <Toast

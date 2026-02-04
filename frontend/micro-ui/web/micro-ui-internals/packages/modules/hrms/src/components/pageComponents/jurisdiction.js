@@ -283,7 +283,7 @@ function Jurisdiction({
       <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
         <LabelFieldPair>
           <div className="label-field-pair" style={{ width: "100%" }}>
-            <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
+            <h2 className="card-label card-label-smaller hrms-text-transform-none" style={{ color: "#505A5F" }}>
               {t("HR_JURISDICTION")} {index + 1}
             </h2>
           </div>
@@ -331,7 +331,7 @@ function Jurisdiction({
           ) : null}
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel isMandatory={true} className="card-label-smaller">{`${t("HR_HIERARCHY_LABEL")} * `}</CardLabel>
+          <CardLabel isMandatory={true} className="card-label-smaller hrms-text-transform-none">{`${t("HR_HIERARCHY_LABEL")}`}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
             selected={jurisdiction?.hierarchy}
@@ -340,11 +340,12 @@ function Jurisdiction({
             option={gethierarchylistdata(hierarchylist) || []}
             select={selectHierarchy}
             optionKey="code"
+            placeholder={t("HR_HIERARCHY_PLACEHOLDER")}
             t={t}
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("HR_BOUNDARY_TYPE_LABEL")} * `}</CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("HR_BOUNDARY_TYPE_LABEL")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
             isMandatory={true}
@@ -353,11 +354,12 @@ function Jurisdiction({
             option={BoundaryType}
             select={selectboundaryType}
             optionKey="i18text"
+            placeholder={t("HR_BOUNDARY_TYPE_PLACEHOLDER")}
             t={t}
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("HR_BOUNDARY_LABEL")} * `}</CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("HR_BOUNDARY_LABEL")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
             isMandatory={true}
@@ -366,12 +368,13 @@ function Jurisdiction({
             option={Boundary}
             select={selectedboundary}
             optionKey="i18text"
+            placeholder={t("HR_BOUNDARY_PLACEHOLDER")}
             t={t}
           />
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("SELECT_SERVICE")} * `}</CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("SELECT_SERVICE")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
             isMandatory={true}
@@ -380,13 +383,14 @@ function Jurisdiction({
             option={roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups}
             select={handleService}
             optionKey="groupName"
+            placeholder={t("HR_SERVICE_PLACEHOLDER")}
             t={t}
           />
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("HR_COMMON_TABLE_COL_ROLE")} *</CardLabel>
-          <div className="form-field">
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{t("HR_COMMON_TABLE_COL_ROLE")} <span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
+          <div className="form-field hrmsMLS">
             <MultiSelectDropdown
               className="form-field"
               isMandatory={true}
@@ -396,6 +400,7 @@ function Jurisdiction({
               options={getRoles}
               onSelect={selectrole}
               optionsKey="name"
+              defaultLabel={t("HR_ROLE_PLACEHOLDER")}
               t={t}
             />
             <div className="tag-container">

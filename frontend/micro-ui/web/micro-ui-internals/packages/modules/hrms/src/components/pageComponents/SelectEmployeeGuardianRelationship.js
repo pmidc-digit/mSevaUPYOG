@@ -29,7 +29,7 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
       validation: {
         //isRequired: true,
       },
-      //isMandatory: true,
+      isMandatory: true,
     },
   ];
 
@@ -43,9 +43,9 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
   return inputs?.map((input, index) => {
     return (
       <LabelFieldPair key={index}>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {t(input.label)}
-          {input.isMandatory ? " * " : null}
+          {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
         </CardLabel>
         <Dropdown
           className="form-field"
@@ -54,6 +54,7 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
           option={Relationships}
           select={SelectEmployeeType}
           optionKey="code"
+          placeholder={t("HR_RELATIONSHIP_PLACEHOLDER")}
           defaultValue={undefined}
           t={t}
         />

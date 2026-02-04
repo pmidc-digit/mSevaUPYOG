@@ -212,10 +212,10 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
               </span>
               <span>{t("HR_COMMON_FILTER")}:</span>{" "}
             </div>
-            <div className="clearAll" onClick={clearAll}>
+            <div className="clear-search" onClick={clearAll}>
               {t("HR_COMMON_CLEAR_ALL")}
             </div>
-            {props.type === "desktop" && (
+            {/* {props.type === "desktop" && (
               <span className="clear-search hrms-filter__clear-search-icon" onClick={clearAll}>
                 <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -224,7 +224,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
                   />
                 </svg>
               </span>
-            )}
+            )} */}
             {props.type === "mobile" && (
               <span onClick={props.onClose}>
                 <CloseSvg />

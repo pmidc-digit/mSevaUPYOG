@@ -131,4 +131,16 @@ export const newConfig = [
       },
     ],
   },
+  {
+    head: "",
+    stepNumber: 3,
+    body: [
+      {
+        type: "component",
+        component: "Summary",
+        key: "summary",
+        withoutLabel: true,
+      }
+    ],
+  },
 ];

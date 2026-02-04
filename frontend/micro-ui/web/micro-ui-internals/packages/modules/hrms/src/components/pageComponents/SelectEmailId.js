@@ -10,6 +10,7 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
       label: "HR_EMAIL_LABEL",
       type: "email",
       name: "emailId",
+      placeHolder: "HR_EMAIL_PLACEHOLDER",
       validation: {
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
@@ -39,6 +40,7 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
                   value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                   onChange={(e) => setValue(e.target.value, input.name)}
                   disable={false}
+                  placeholder={t(input.placeHolder)}
                   defaultValue={undefined}
                   {...input.validation}
                 />

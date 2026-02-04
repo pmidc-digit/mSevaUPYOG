@@ -5,7 +5,7 @@ import { SET_OBPS_STEP, UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import PlotDetails from "../../../pageComponents/PlotDetails";
+import PlotDetailsOC from "../../../pageComponents/PlotDetailsOC";
 
 const OCStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
@@ -71,7 +71,7 @@ const OCStepFormTwo = ({ config, onGoNext, onBackClick }) => {
 
   return (
     <React.Fragment>
-      <PlotDetails onGoBack={onGoBack} onSelect={goNext} formData={scrutinyDetails} t={t} currentStepData={currentStepData}/>
+      <PlotDetailsOC onGoBack={onGoBack} onSelect={goNext} formData={scrutinyDetails} t={t} currentStepData={currentStepData}/>
       <div></div>
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>

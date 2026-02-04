@@ -715,7 +715,7 @@ const CitizenApplicationOverview = () => {
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
+            [...sitePhotos].reverse()
               .map((doc) => (
                 <NocSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}

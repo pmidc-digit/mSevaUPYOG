@@ -68,7 +68,7 @@ public class PropertyRateController {
     }
     
     
-    @PostMapping("/revenue/_search")
+    @PostMapping("/revenue/_mappedsearch")
     public ResponseEntity<Object> updatedMissing(
             @RequestParam(value = "tenantId", required = false) String tenantId,
             @RequestParam(value = "localityCode", required = false) String localityCode,

@@ -47,6 +47,7 @@ public class PropertyRateController {
     public ResponseEntity<Object> searchMissing(
             @RequestParam(value = "tenantId", required = false) String tenantId,
             @RequestParam(value = "localityCode", required = false) String localityCode,
+            @RequestParam(value = "propertyId", required = false) String propertyId,
             @RequestParam(value = "limit", required = false) Integer limit) {
 
         // 1. Better Validation Response
@@ -56,7 +57,32 @@ public class PropertyRateController {
             return ResponseEntity.badRequest().body(error);
         }
 
-     List<Map<String, Object>> results = service.searchMissingRevenueProperties(tenantId, localityCode, limit);
+     List<Map<String, Object>> results = service.searchMissingRevenueProperties(tenantId, localityCode, limit,false,propertyId);
+
+        if (results == null) results = Collections.emptyList();
+
+        // 3. Return the actual data
+        return results.isEmpty()
+				? ResponseEntity.ok().body(Collections.emptyList())
+				: ResponseEntity.ok().body(results);
+    }
+    
+    
+    @PostMapping("/revenue/_search")
+    public ResponseEntity<Object> updatedMissing(
+            @RequestParam(value = "tenantId", required = false) String tenantId,
+            @RequestParam(value = "localityCode", required = false) String localityCode,
+            @RequestParam(value = "propertyId", required = false) String propertyId,
+            @RequestParam(value = "limit", required = false) Integer limit) {
+
+        // 1. Better Validation Response
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "tenantId is mandatory and cannot be empty");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+     List<Map<String, Object>> results = service.searchMissingRevenueProperties(tenantId, localityCode, limit,false,propertyId);
 
         if (results == null) results = Collections.emptyList();
 
@@ -78,6 +104,20 @@ public class PropertyRateController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PostMapping("/_update")
+    public ResponseEntity<PropertyRateResponse> updatePropertyRate(
+            @Valid @RequestBody PropertyRateRequest request) {
+
+        // 1. Call service to process the update logic (validation, enrichment, and repository call)
+        List<AddPropertyRate> updatedEntities = service.update(request);
+
+        // 2. Build Response using the Factory
+        PropertyRateResponse response = 
+                responseFactory.createCreateResponse(updatedEntities, request);
+
+        // 3. Return 200 OK or 201 CREATED depending on your business requirement
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 

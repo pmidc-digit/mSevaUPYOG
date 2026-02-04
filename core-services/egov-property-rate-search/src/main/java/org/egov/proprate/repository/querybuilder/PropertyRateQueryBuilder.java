@@ -77,22 +77,42 @@ public class PropertyRateQueryBuilder {
 
     
     /* =========================
-       MISSING PROPERTIES QUERY
-       (Only revenue_property_integration uses the prefix here, others are eg_pt)
-       ========================= */
-    private static final String MISSING_PROPERTIES =
-            "SELECT p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
-            "add.* " + 
-            "FROM eg_pt_property p " +
-            "LEFT JOIN revenue_property_integration r " +
-            "  ON p.propertyid = r.propertyid " +
-            "LEFT JOIN eg_pt_address add " +
-            "  ON p.id = add.propertyid " +
-            "LEFT JOIN public.eg_pt_owner o " +   
-            "  ON o.propertyid = p.id " +
-            "WHERE p.status = 'ACTIVE' " +
-            "AND (r.propertyid IS NULL OR r.isproratacal = true)";
+    MISSING PROPERTIES QUERY
+    ========================= */
+ // Added DISTINCT ON to ensure unique property records
+ private static final String MISSING_PROPERTIES =
+         "SELECT DISTINCT ON (p.propertyid) p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
+         "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
+         "FROM eg_pt_property p " +
+         "LEFT JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
+         "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
+         "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
+         "WHERE p.status = 'ACTIVE' " +
+         "AND (r.propertyid IS NULL OR r.isproratacal = true) ";
 
+ /* =========================
+    MAPPED PROPERTIES QUERY
+    ========================= */
+ // Added DISTINCT ON and explicit column selection for clarity
+ private static final String MAPPED_PROPERTIES =
+	        "SELECT DISTINCT ON (p.propertyid) " +
+	        "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, r.isproratacal, " + // Changed r.villageid to r.village_id
+	        "dm.district_name, tm.tehsil_name, vm.village_name, " + 
+	        "p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
+	        "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
+	        "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
+	        "FROM eg_pt_property p " +
+	        "INNER JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
+	        "LEFT JOIN revenue_district_master dm ON r.districtid::integer = dm.district_id " +
+	        "LEFT JOIN revenue_tehsil_master tm ON r.tehsilid::integer = tm.tehsil_id " +
+	        "LEFT JOIN revenue_village_master vm ON r.village_id::integer = vm.village_id " + // Ensure r.village_id matches here too
+	        "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
+	        "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
+	        "WHERE p.status = 'ACTIVE' " +
+	        "AND r.propertyid IS NOT NULL ";
+ 
+ 
+ 
     /* =========================
        MAIN QUERY BUILDER
        ========================= */
@@ -223,30 +243,39 @@ public class PropertyRateQueryBuilder {
     }
     
     public String searchMissingRevenueProperties(
-            String tenantId, String localityCode, Integer limit, Map<String, Object> params) {
-
-        String query = MISSING_PROPERTIES;
+            String tenantId, String localityCode, Integer limit, Boolean isMissing, String propertyId, Map<String, Object> params) {
+        
+        StringBuilder query = new StringBuilder();
+        
+        if (isMissing != null && isMissing) {
+            query.append(MISSING_PROPERTIES);
+        } else {
+            query.append(MAPPED_PROPERTIES);
+        }
 
         if (localityCode != null && !localityCode.isEmpty()) {
-            query += " AND add.locality = :localityCode ";
+            query.append(" AND add.locality = :localityCode ");
             params.put("localityCode", localityCode);
         }
 
         if (tenantId != null && !tenantId.isEmpty()) {
-            query += " AND p.tenantid = :tenantId ";
+            query.append(" AND p.tenantid = :tenantId ");
             params.put("tenantId", tenantId);
         }
+        
+        if (propertyId != null && !propertyId.isEmpty()) {
+            query.append(" AND p.propertyid = :propertyId ");
+            params.put("propertyId", propertyId);
+        }
 
-        // UPDATED GROUP BY: Changed add.locality to add.id
-        query += " GROUP BY p.propertyid, p.tenantid, add.id, o.userid, p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory";
+        // REMOVED GROUP BY: It is no longer needed because of DISTINCT ON
+        // ADDED ORDER BY: PostgreSQL requires DISTINCT ON columns to be the first in ORDER BY
+        query.append(" ORDER BY p.propertyid ");
 
-        // If limit is null, use default from properties
         int finalLimit = (limit != null) ? limit : defaultLimit;
-
-        // Add LIMIT at the end
-        query += " LIMIT :limit";
+        query.append(" LIMIT :limit");
         params.put("limit", finalLimit);
 
-        return query;
+        return query.toString();
     }
 }

@@ -38,11 +38,11 @@ public class PropertyRateRepository {
     
     
     public List<Map<String, Object>> searchMissingRevenueProperties(String tenantId, String localityCode
-    		            ,Integer limit ) {
+    		            ,Integer limit, Boolean isMissing, String propertyId ) {
         Map<String, Object> params = new HashMap<>();
 
         // 1. Build the query and populate the params map
-        String query = queryBuilder.searchMissingRevenueProperties(tenantId,localityCode,limit , params);
+        String query = queryBuilder.searchMissingRevenueProperties(tenantId,localityCode,limit,isMissing,propertyId , params);
 
         // 2. Execute using NamedParameterJdbcTemplate
         return namedParameterJdbcTemplate.queryForList(query, params);

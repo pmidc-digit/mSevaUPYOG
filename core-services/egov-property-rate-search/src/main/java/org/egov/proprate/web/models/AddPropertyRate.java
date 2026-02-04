@@ -47,20 +47,11 @@ public class AddPropertyRate {
     @JsonProperty("locality")
     private String locality;
 
-    @JsonProperty("rate")
-    private BigDecimal rate;
+    @JsonProperty("isVerified")
+    private Boolean isVerified;
 
     @JsonProperty("unit")
     private String unit;
-
-    @JsonProperty("rateId")
-    private String rateId;
-
-    @JsonProperty("isActive")
-    private Boolean isActive;
-
-    @JsonProperty("isProrataCal")
-    private Boolean isProrataCal;
 
     // --- ADDED AUDIT FIELDS ---
     @JsonProperty("createdBy")

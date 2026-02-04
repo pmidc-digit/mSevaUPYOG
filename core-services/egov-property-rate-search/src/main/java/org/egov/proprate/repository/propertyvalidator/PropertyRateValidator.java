@@ -4,7 +4,7 @@ import org.egov.tracer.model.CustomException;
 import org.egov.proprate.web.models.AddPropertyRate;
 import org.egov.proprate.web.models.PropertyRateRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils; // Spring's utility for Lists
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -15,10 +15,40 @@ import java.util.Map;
 public class PropertyRateValidator {
 
     public void validateCreateRequest(PropertyRateRequest request) {
-        
+        validateCommonFields(request);
+    }
+
+    public void validateUpdateRequest(PropertyRateRequest request) {
         Map<String, String> errorMap = new HashMap<>();
 
-        // 1. Check if list is empty (Using Spring's CollectionUtils)
+        // 1. Basic field checks
+        validateCommonFields(request);
+
+        List<AddPropertyRate> rates = request.getPropertyRates();
+
+        for (int i = 0; i < rates.size(); i++) {
+            AddPropertyRate rate = rates.get(i);
+
+            // 2. ID is mandatory for Update
+            if (rate.getId() == null ) {
+                errorMap.put("UPDATE_ERROR_ID_MISSING_" + i, "ID is mandatory for update at record " + (i + 1));
+            }
+			if (rate.getPropertyId() == null || rate.getPropertyId().trim().isEmpty()) {
+				errorMap.put("INVALID_PROPERTY_ID_" + i, "Property ID is mandatory for record " + (i + 1));
+			}
+        }
+
+        if (!errorMap.isEmpty()) {
+            throw new CustomException(errorMap);
+        }
+        
+        // 3. Note: In a production eGov app, you would also call repository.search() 
+        // here to verify these IDs actually exist in the DB before proceeding.
+    }
+
+    private void validateCommonFields(PropertyRateRequest request) {
+        Map<String, String> errorMap = new HashMap<>();
+
         if (CollectionUtils.isEmpty(request.getPropertyRates())) {
             throw new CustomException("INVALID_REQUEST", "Property Rates list cannot be empty");
         }
@@ -28,27 +58,20 @@ public class PropertyRateValidator {
         for (int i = 0; i < rates.size(); i++) {
             AddPropertyRate rate = rates.get(i);
             
-            // FIX: Using standard Java instead of StringUtils
-            // Validate Tenant ID
             if (rate.getTenantId() == null || rate.getTenantId().trim().isEmpty()) {
                 errorMap.put("INVALID_TENANT_ID_" + i, "Tenant ID is mandatory for record " + (i + 1));
             }
 
-            // FIX: Using standard Java instead of StringUtils
-            // Validate Property ID
             if (rate.getPropertyId() == null || rate.getPropertyId().trim().isEmpty()) {
                 errorMap.put("INVALID_PROPERTY_ID_" + i, "Property ID is mandatory for record " + (i + 1));
             }
 
-            // Validate Rate
-            if (rate.getRate() == null || rate.getRate().compareTo(BigDecimal.ZERO) <= 0) {
-                errorMap.put("INVALID_RATE_" + i, "Rate must be greater than 0 for record " + (i + 1));
-            }
         }
 
-        // Check for Duplicates
+        // Check for Duplicates within the request list
         long uniqueCount = rates.stream()
                 .map(AddPropertyRate::getPropertyId)
+                .filter(java.util.Objects::nonNull)
                 .distinct()
                 .count();
 

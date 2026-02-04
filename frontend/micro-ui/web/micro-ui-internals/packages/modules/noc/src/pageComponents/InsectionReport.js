@@ -46,7 +46,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         setFieldReports((prev) => prev.filter((o) => o.key != unit.key));
     };
 
-    useEffect(() => {
+    useEffect(() => {        
         const data = FieldReports.map((e) => {
             return e;
         });
@@ -59,6 +59,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     }, [previousLicenseDetails]);
 
     useEffect(() => {
+                console.log("useffect 2INSPECTION_REPORT_PENDING");
+
         let ques = [];
         let documentlist = [];
         bpaDocs && bpaDocs.BPA.CheckList.map((ob) => {
@@ -268,7 +270,10 @@ const InspectionReportForm = (_props) => {
         trigger();
     }, []);
 
+
     useEffect(() => {
+                console.log("useffect 3INSPECTION_REPORT_PENDING");
+
         const keys = Object.keys(formValue);
         const part = {};
         keys.forEach((key) => (part[key] = unit[key]));
@@ -311,7 +316,7 @@ const InspectionReportForm = (_props) => {
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     
-    const extendedQuestions = [ ...(questionList || []), { question: "BPA_ADDITIONAL_REMARKS", isAdditional: true } ];
+    const extendedQuestions = [ ...(questionList || []), { question: t("BPA_ADDITIONAL_REMARKS"), isAdditional: true } ];
     
     return (
       <React.Fragment>
@@ -330,9 +335,12 @@ const InspectionReportForm = (_props) => {
         ) : null}
         <CardSubHeader>
           {allFieldReport?.length > 1
-            ? `${t("BPA_FI_REPORT")}-${index + 1} - Verified by ${InspectionReportVerifier}`
-            : `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier}`}
+            ? `${t("BPA_FI_REPORT")}-${index + 1} - ${
+                InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : t("BPA_FI_REPORT")
+              }`
+            : `${t("BPA_FI_REPORT")} - ${InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : t("BPA_FI_REPORT")}`}
         </CardSubHeader>
+
         {/* <LabelFieldPair style={{ width: "100%" }}>
                         <CardLabel style={{ marginTop: "0px", width: "100%" }} className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")} * `}</CardLabel>
                         <div className="field" style={{ width: "100%" }}>

@@ -150,7 +150,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   },
   remarks && remarks.trim() !== "" && {
     text: [
-      { text: `• ${remarks}\n`, bold: true, fontSize: 9 }
+      { text: `• Remarks:  ${remarks}\n`, bold: true, fontSize: 9 }
     ]
   },
 ];

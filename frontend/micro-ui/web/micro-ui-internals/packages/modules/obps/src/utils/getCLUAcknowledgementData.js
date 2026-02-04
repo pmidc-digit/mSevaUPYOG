@@ -280,7 +280,7 @@ const getDocuments = async (appData, t) => {
         ? filteredDocs.map((document, index) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
             return {
-              title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA"),
+              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,              
               value: " ",
               link: documentLink || "",
             };

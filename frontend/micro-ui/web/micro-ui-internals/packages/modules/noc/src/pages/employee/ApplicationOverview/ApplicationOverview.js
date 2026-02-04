@@ -568,6 +568,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      console.log('nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending', nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending)
       setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);

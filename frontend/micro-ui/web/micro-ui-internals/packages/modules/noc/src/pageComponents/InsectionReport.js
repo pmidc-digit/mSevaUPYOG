@@ -311,7 +311,7 @@ const InspectionReportForm = (_props) => {
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     
-    const extendedQuestions = [ ...(questionList || []), { question: "BPA_ADDITIONAL_REMARKS", isAdditional: true } ];
+    const extendedQuestions = [ ...(questionList || []), { question: t("BPA_ADDITIONAL_REMARKS"), isAdditional: true } ];
     
     return (
       <React.Fragment>

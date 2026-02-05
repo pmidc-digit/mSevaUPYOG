@@ -2091,7 +2091,17 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				((ObjectNode) propertyDetails).set("units", updatedUnits);
 			}
 
-			if (isResidentialOcc && !"MIXED".equalsIgnoreCase(usageMajor)) {
+			int floorNoInt = 0;
+			if (floorNo != null && !floorNo.trim().isEmpty()) {
+				try {
+					floorNoInt = Integer.parseInt(floorNo.trim());
+				} catch (NumberFormatException e) {
+					log.warn("Invalid floorNo value received: {}", floorNo);
+					floorNoInt = 0;
+                }
+			}
+
+			if (isResidentialOcc &&   !"MIXED".equalsIgnoreCase(usageMajor) && floorNoInt==1) {
 				if (totalUnitAreaSy <= slab1AreaMax  && landArea <= slab1LandMax) {
 					PT_TAX = slab1Tax;
 				} else if (totalUnitAreaSy <= slab2AreaMax && landArea <= slab2LandMax) {

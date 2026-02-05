@@ -30,13 +30,15 @@ public class ESignController {
             @RequestParam("file") String fileStoreId, 
             @RequestParam("tenantid") String tenantId,
             // 1. ADDED: New Parameter for Signer Name (Optional)
-            @RequestParam(value = "signerName", required = false) String signerName) {
+            @RequestParam(value = "signerName", required = false) String signerName,
+         // 1. ADDED: New Parameter for Custom response URL (Optional)
+            @RequestParam(value = "responseUrl", required = false) String responseUrl) {
 
         logger.info("Received upload request for file: {}, tenant: {}, signer: {}", fileStoreId, tenantId, signerName);
 
         try {
             // 2. UPDATED: Passing the dynamic 'signerName' instead of null
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName);
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName, responseUrl);
             
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);

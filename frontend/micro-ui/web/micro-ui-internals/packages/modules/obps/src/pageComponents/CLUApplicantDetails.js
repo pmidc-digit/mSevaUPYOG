@@ -277,7 +277,7 @@ const getOwnerDetails = async (idx) => {
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_APPLICANT_DETAILS")}</CardSectionHeader>
-      <div>
+      <div style={{ marginTop: "20px" }}>
         {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px" }}>
             {" "}

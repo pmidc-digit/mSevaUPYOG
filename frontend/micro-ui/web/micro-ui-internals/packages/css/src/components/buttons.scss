@@ -80,12 +80,8 @@
   justify-content: center;
   height: auto;
   min-height: 40px;
-  width: 100%;
   margin: 0;
 
-  @media (min-width: 768px) {
-    width: 30%;
-  }
 
   &:hover {
     background-color: #1e3a8a !important;
@@ -143,5 +139,4 @@
   flex-wrap: wrap;
   margin-top: 10px;
 }
-
 

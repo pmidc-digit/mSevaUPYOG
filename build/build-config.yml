@@ -931,7 +931,7 @@ config:
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
 
-    - name: 'builds/upyog/municipal-services/clu-services'
+  - name: 'builds/upyog/municipal-services/clu-services'
     build:
       - work-dir: 'municipal-services/clu-services'
         image-name: 'clu-services'

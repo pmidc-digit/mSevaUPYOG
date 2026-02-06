@@ -20,7 +20,7 @@ import {
   MultiLink,
   CheckBox
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
@@ -35,6 +35,9 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { convertToDDMMYYYY,formatDuration } from "../../../utils/index";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
+import NocUploadedDocument from "../../../components/NocUploadedDocument";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -102,7 +105,9 @@ const CitizenApplicationOverview = () => {
   const [timeObj , setTimeObj] = useState(null);
 
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
-
+  const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
+       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+   } : {})
   
   console.log('applicationD', applicationDetails)
  const [approverComment , setApproverComment] = useState(null);
@@ -120,6 +125,25 @@ const CitizenApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  const geoLocations = useMemo(() => {
+      if (siteImages?.documents && siteImages?.documents.length > 0) {
+        return siteImages?.documents?.map((img) => {
+          return {
+            latitude: img?.latitude || "",
+            longitude: img?.longitude || "",
+          }
+        })
+      }
+    }, [siteImages]);
+
+
+     const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+        title: value?.documentType,
+        fileStoreId: value?.filestoreId,
+        latitude: value?.latitude,
+        longitude: value?.longitude,
+      })), [siteImages])
 
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
@@ -152,6 +176,10 @@ const CitizenApplicationOverview = () => {
       const time = formatDuration(totalTime)
       
       setTimeObj(time);
+      const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
+
+      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+
     }
   }, [applicationDetails?.Noc]);
 
@@ -211,25 +239,20 @@ const CitizenApplicationOverview = () => {
   try {
     setLoading(true);
 
-    // Prepare application object
     let application = applicationDetails?.Noc?.[0]
 
-    // Check if sanction letter already exists
     let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
     console.log("fileStoreId before create", fileStoreId);
 
     if (!fileStoreId) {
-      // Prepare sanction data
       const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, approverComment);
 
-      // Generate PDF
       const response = await Digit.PaymentService.generatePdf(
         tenantId,
         { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
         pdfkey
       );
 
-      // Update application with sanctionLetterFilestoreId
       const updatedApplication = {
         ...application,
         workflow: {
@@ -726,6 +749,39 @@ const CitizenApplicationOverview = () => {
               ))}
         </StatusTable>
       </Card>
+
+       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+              <Card>
+                <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+                <StatusTable
+                  style={{
+                    display: "flex",
+                    gap: "20px",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  {documentData?.length > 0 &&
+                    documentData.map((doc) => (
+                      <NocUploadedDocument
+                        key={doc?.fileStoreId || doc?.uuid}
+                        filestoreId={doc?.fileStoreId || doc?.uuid}
+                        documentType={doc?.title}
+                        documentName={doc?.title}
+                        latitude={doc?.latitude}
+                        longitude={doc?.longitude}
+                      />
+                    ))}
+                </StatusTable>
+      
+                {geoLocations?.length > 0 && (
+                  <>
+                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                    <CustomLocationSearch position={geoLocations} />
+                  </>
+                )}
+              </Card>
+            )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>

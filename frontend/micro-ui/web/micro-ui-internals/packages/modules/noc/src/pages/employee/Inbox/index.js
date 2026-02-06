@@ -23,7 +23,7 @@ const Inbox = ({ parentRoute }) => {
     applicationStatus: [],
     businessService: "obpas_noc",
     locality: [],
-    assignee: "ASSIGNED_TO_ALL",
+    assignee: "ASSIGNED_TO_ME",
     businessServiceArray: businessServiceList(true) || [],
   };
   const tableOrderFormDefaultValues = {

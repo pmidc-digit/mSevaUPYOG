@@ -28,9 +28,70 @@ export const CLUFeeTable = ({
   }, []);
 
   const columns = [
-    { id: "taxHeadCode", label: "BPA_TAXHEAD_CODE", headerLabel: "BPA_TAXHEAD_CODE" },
-    { id: "amount", label: "BPA_AMOUNT", headerLabel: "BPA_AMOUNT" },
-    { id: "remark", label: "BPA_REMARKS", headerLabel: "BPA_REMARKS" },
+    {
+      key: "title",
+      label: "BPA_TAXHEAD_CODE",
+      headerLabel: "BPA_TAXHEAD_CODE",
+      type: "text",
+    },
+    {
+      key: "amount",
+      label: "BPA_AMOUNT",
+      headerLabel: "BPA_AMOUNT",
+      type: "number",
+      step: 1,
+      isMandatory: false,
+      onChange: handleAdjustedAmountChange,
+      onBlur: onAdjustedAmountBlur,
+      getValue: (row) => {
+        if (row.taxHeadCode === "CLU_TOTAL") return null;
+        return feeData[row.index]?.adjustedAmount === 0
+          ? ""
+          : feeData[row.index]?.adjustedAmount ?? row.amount ?? "";
+      },
+      disable: (row) => row.taxHeadCode === "CLU_TOTAL" || readOnly,
+    },
+    {
+      key: "remark",
+      label: "BPA_REMARKS",
+      headerLabel: "BPA_REMARKS",
+      type: "custom",
+      render: (row, rowIndex, t) => {
+        if (row.taxHeadCode === "CLU_TOTAL") {
+          return (
+            <div>
+              <strong style={{ fontSize: "14px" }}>
+                ₹ {row.grandTotal.toLocaleString("en-IN")}
+              </strong>
+              <div
+                style={{
+                  fontSize: "0.85em",
+                  color: "#555",
+                  marginTop: "4px",
+                  lineHeight: "1.3",
+                }}
+              >
+                {amountToWords(row.grandTotal)}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <TextInput
+            t={t}
+            type="text"
+            isMandatory={false}
+            value={feeData[row.index]?.remark || ""}
+            onChange={(e) =>
+              handleRemarkChange(row.index, e.target.value, row.amount)
+            }
+            disable={readOnly}
+            className="custom-fee-table-input"
+          />
+        );
+      },
+    },
   ];
 
   const renderHistoryCell = (h, key, t) => (
@@ -168,72 +229,14 @@ export const CLUFeeTable = ({
   };
 
 
-  const renderTableBody = () => {
-    return feeDataWithTotal.map((row, i) => (
-      <tr key={row.index || i}>
 
-        <td className="custom-fee-table-cell custom-fee-table-cell-taxhead">
-          {t(row.title) || t("CS_NA")}
-        </td>
-
-
-        <td className="custom-fee-table-cell custom-fee-table-cell-amount">
-          {row?.taxHeadCode === "CLU_TOTAL" ? (
-            ""
-          ) : (
-            <TextInput
-              t={t}
-              type="number"
-              isMandatory={false}
-              value={
-                feeData[row.index]?.adjustedAmount === 0
-                  ? ""
-                  : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-              }
-              onChange={(e) => {
-                let val = e.target.value;
-                if (val.length > 1 && val.startsWith("0")) {
-                  val = val.replace(/^0+/, "");
-                }
-                handleAdjustedAmountChange(row.index, val);
-              }}
-              disable={readOnly}
-              step={1}
-              onBlur={onAdjustedAmountBlur}
-            />
-          )}
-        </td>
-
-
-        <td className="custom-fee-table-cell custom-fee-table-cell-remark">
-          {row?.taxHeadCode === "CLU_TOTAL" ? (
-            <div>
-              <strong style={{ fontSize: "14px" }}>{row.grandTotal.toLocaleString("en-IN")}</strong>
-              <div style={{ fontSize: "0.85em", color: "#555", marginTop: "4px", lineHeight: "1.3" }}>
-                {amountToWords(row.grandTotal)}
-              </div>
-            </div>
-          ) : (
-            <TextInput
-              t={t}
-              type="text"
-              isMandatory={false}
-              value={feeData[row.index]?.remark || ""}
-              onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
-              disable={readOnly}
-              className="custom-fee-table-input"
-            />
-          )}
-        </td>
-      </tr>
-    ));
-  };
 
   return (
     isMobile ? renderMobileCardView() : (
       <CustomFeeTable
+        data={feeDataWithTotal}
         columns={columns}
-        renderTableBody={renderTableBody}
+        extraStyleName="CLU"
         historyData={feeHistory}
         historyTitle="BPA_FEE_HISTORY_LABEL"
         onHistoryRender={renderHistoryCell}

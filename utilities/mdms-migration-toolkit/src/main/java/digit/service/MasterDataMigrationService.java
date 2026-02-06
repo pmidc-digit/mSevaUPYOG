@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import digit.util.FileReader;
 import digit.web.models.MasterDataMigrationRequest;
@@ -82,6 +83,10 @@ public class MasterDataMigrationService {
                     masterDataJsonArray.forEach(masterDatum -> {
                         // Convert JSONArray member to JsonNode
                         JsonNode masterDatumJsonNode = objectMapper.valueToTree(masterDatum);
+                        
+                        if(!masterDatumJsonNode.has("id")) {
+                        	((ObjectNode)masterDatumJsonNode).put("id", UUID.randomUUID().toString());
+                        }
 
                         // Build MDMS objects
                         Mdms mdms = Mdms.builder()

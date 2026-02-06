@@ -57,7 +57,7 @@ public class PropertyRateController {
             return ResponseEntity.badRequest().body(error);
         }
 
-     List<Map<String, Object>> results = service.searchMissingRevenueProperties(tenantId, localityCode, limit,false,propertyId);
+     List<Map<String, Object>> results = service.searchMissingRevenueProperties(tenantId, localityCode, limit,true,propertyId);
 
         if (results == null) results = Collections.emptyList();
 

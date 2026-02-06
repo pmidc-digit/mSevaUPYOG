@@ -9,12 +9,11 @@ import { CardHeader } from "@mseva/digit-ui-react-components";
 const EmployeeDetails = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   function goNext(data) {
-    //console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("Form Data changed: ", data);
+    
     
     // Update Redux if data changed
     if (!_.isEqual(data, currentStepData)) {
@@ -34,7 +33,6 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
         : {};
 });
   const dispatch = useDispatch();
-  console.log("currentStepData in EmployeeDetails: ", currentStepData);
 
   const [mobileNumber, setMobileNumber] = useState(null);
   const [phonecheck, setPhonecheck] = useState(false);
@@ -64,12 +62,10 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
   };
   // Validate on mount and when currentStepData or phonecheck changes
   useEffect(() => {
-    console.log("Running validation on mount/data change");
     checkConditions(currentStepData);
   }, [currentStepData, phonecheck]);
 
   const checkConditions = (formData) => {
-    console.log("Checking conditions with formData: ", formData);
     
     // Update mobile number if changed
     if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {

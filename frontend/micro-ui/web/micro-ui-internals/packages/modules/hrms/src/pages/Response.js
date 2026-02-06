@@ -44,7 +44,6 @@ const Response = (props) => {
 
   // Clear form Redux when Response page mounts (after successful submission)
   useEffect(() => {
-    console.log("🧹 Clearing employee form Redux - Response page mounted");
     dispatch(resetEmployeeForm());
   }, [dispatch]);
 

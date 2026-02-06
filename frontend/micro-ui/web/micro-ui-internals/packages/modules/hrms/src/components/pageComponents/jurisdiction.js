@@ -220,7 +220,6 @@ function Jurisdiction({
   getBoundaryTypeValue,
   getBoundaryValue,
 }) {
-  console.log(`🔷 JURISDICTION COMPONENT RENDER - Key: ${jurisdiction.key}, Index: ${index}, Boundary: ${typeof jurisdiction?.boundary === 'string' ? jurisdiction?.boundary : jurisdiction?.boundary?.code}`);
   
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
@@ -265,15 +264,12 @@ function Jurisdiction({
     { name: "roleGroups" },
   ]);
 
-  console.log("roleGroups", roleGroups);
 
   // Initialize boundary object only once on mount if needed
   useEffect(() => {
-    console.log(`🔷🔶 BOUNDARY INIT useEffect - Key: ${jurisdiction.key}, KeyRef: ${jurisdictionKeyRef.current}, isInitialized: ${isInitialized}, Boundary length: ${Boundary?.length}`);
     
     // Only run if this is the correct component instance for this jurisdiction key
     if (jurisdictionKeyRef.current !== jurisdiction.key) {
-      console.log(`🔷⚠️ KEY MISMATCH - Resetting initialization. Old: ${jurisdictionKeyRef.current}, New: ${jurisdiction.key}`);
       // Jurisdiction data has changed, reset initialization
       setIsInitialized(false);
       jurisdictionKeyRef.current = jurisdiction.key;
@@ -285,18 +281,15 @@ function Jurisdiction({
         ? jurisdiction?.boundary 
         : jurisdiction?.boundary?.code;
       
-      console.log(`🔷🎯 Attempting to initialize boundary for Key: ${jurisdiction.key}, BoundaryCode: ${boundaryCode}, Type: ${typeof jurisdiction?.boundary}`);
       
       // Only convert string to object, don't update if already an object
       if (boundaryCode && typeof jurisdiction?.boundary === 'string') {
         const boundaryObj = Boundary?.find((ele) => ele.code === boundaryCode);
         if (boundaryObj) {
-          console.log(`🔷✅ Converting string to object for Key: ${jurisdiction.key}, Boundary: ${boundaryCode}`);
           selectedboundary(boundaryObj);
           setIsInitialized(true);
         }
       } else if (typeof jurisdiction?.boundary === 'object') {
-        console.log(`🔷 ${jurisdiction.key}, marking initialized`);
         // Already an object, mark as initialized
         setIsInitialized(true);
       }
@@ -312,9 +305,7 @@ function Jurisdiction({
 
   const selectHierarchy = (value) => {
     const currentKey = jurisdiction.key;
-    console.log(`🔷📍 selectHierarchy called - Key: ${currentKey}, Value:`, value?.code || value);
     setjurisdictions((pre) => {
-      console.log(`🔷📍 selectHierarchy setState - Updating key: ${currentKey}`, pre.map(j => `Key:${j.key} Boundary:${j.boundary?.code || j.boundary}`));
       return pre.map((item) => {
         if (item.key === currentKey) {
           return { ...item, hierarchy: value };
@@ -326,17 +317,13 @@ function Jurisdiction({
 
   const selectboundaryType = (value) => {
     const currentKey = jurisdiction.key;
-    console.log(`🔷📍 selectboundaryType called - Key: ${currentKey}, Value:`, value?.label || value);
     setjurisdictions((pre) => {
-      console.log(`🔷📍 selectboundaryType setState BEFORE - Updating key: ${currentKey}`, pre.map(j => `Key:${j.key} Boundary:${j.boundary?.code || j.boundary}`));
       const result = pre.map((item) => {
         if (item.key === currentKey) {
-          console.log(`🔷✏️ Updating boundaryType for Key: ${currentKey}`);
           return { ...item, boundaryType: value };
         }
         return item;
       });
-      console.log(`🔷📍 selectboundaryType setState AFTER`, result.map(j => `Key:${j.key} Boundary:${j.boundary?.code || j.boundary}`));
       return result;
     });
   };
@@ -344,46 +331,35 @@ function Jurisdiction({
   const selectedboundary = (value) => {
     const currentKey = jurisdiction.key;
     const boundaryCode = value?.code || value;
-    console.log(`🔷🎯 selectedboundary called - Key: ${currentKey}, Value: ${boundaryCode}`);
     setjurisdictions((pre) => {
-      console.log(`🔷🎯 selectedboundary setState BEFORE - Updating key: ${currentKey}`);
-      console.log('🔷BEFORE STATE:', pre.map(j => `Key:${j.key} Boundary:${j.boundary?.code || j.boundary} BoundaryType:${j.boundaryType?.label || j.boundaryType}`));
-      
       const result = pre.map((item) => {
         if (item.key === currentKey) {
-          console.log(`🔷✅ UPDATING BOUNDARY for Key: ${currentKey} to ${boundaryCode}`);
           return { 
             ...item, 
             boundary: value,
             tenantId: boundaryCode
           };
         }
-        console.log(`🔷⏭️ SKIPPING Key: ${item.key} (current: ${currentKey})`);
         return item;
       });
-      
-      console.log('🔷AFTER STATE:', result.map(j => `Key:${j.key} Boundary:${j.boundary?.code || j.boundary} BoundaryType:${j.boundaryType?.label || j.boundaryType}`));
       return result;
     });
   };
 
   const handleService = (value) => {
-    console.log("value", value);
 
     const groupId = value?.groupId;
 
     const rolesData = data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles;
 
-    console.log("rolesData==", rolesData);
 
     const filterData = rolesData?.filter((item) => item?.groupId == groupId);
-    console.log("filterData==", filterData);
+    
 
     const mapRoles = filterData?.map((roles) => {
       return { code: roles.code, name: roles?.name ? roles?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + roles.code, description: value?.groupName || roles?.description || "" };
     });
 
-    console.log("mapRoles", mapRoles);
 
     setRoles(mapRoles);
     
@@ -409,7 +385,6 @@ function Jurisdiction({
       resData.description = resData?.description || data?.groupName || ""
     });
 
-    console.log("res====", res);
 
     const currentKey = jurisdiction.key;
     setjurisdictions((pre) => pre.map((item) => {

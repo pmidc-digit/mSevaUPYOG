@@ -14,7 +14,6 @@ public class SearchCriteria {
     
     // Classification IDs
     private String usageCategoryId;
-    private String subCategoryId;
 
     // Geographical Names (Keep these for flexibility if needed)
     private String districtName;
@@ -24,7 +23,6 @@ public class SearchCriteria {
     
     // Classification Names
     private String usageCategory;
-    private String subCategory;
     
     // Control Flags
     private Boolean isRateCheck; 

@@ -41,9 +41,6 @@ public class AddPropertyRate {
     @JsonProperty("categoryId")
     private String categoryId;
 
-    @JsonProperty("subCategoryId")
-    private String subCategoryId;
-
     @JsonProperty("locality")
     private String locality;
 

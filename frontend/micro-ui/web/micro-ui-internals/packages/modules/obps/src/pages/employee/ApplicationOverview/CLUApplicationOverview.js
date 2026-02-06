@@ -323,7 +323,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       setDisplayData(finalDisplayData);
 
-      const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages
+      const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
 
@@ -651,7 +651,8 @@ const CLUEmployeeApplicationDetails = () => {
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
   //console.log("coordinates==>", coordinates);
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
+
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
   //console.log("sitePhotoGrahphs==>", sitePhotographs);
@@ -675,6 +676,12 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
         <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      </Card>
+
+      <Card>
+        <StatusTable>
+          <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
+        </StatusTable>
       </Card>
 
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
@@ -747,6 +754,10 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("BPA_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("BPA_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              
+              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+        
               <Row label={t("BPA_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("BPA_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("BPA_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -757,8 +768,6 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
 
               <Row label={t("BPA_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
-              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
 
               <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
               <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
@@ -803,7 +812,7 @@ const CLUEmployeeApplicationDetails = () => {
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
           <StatusTable>
-          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={siteImages.documents} />}
+          <CLUSitePhotographs documents={siteImages.documents} />
           </StatusTable>
           {   geoLocations?.length > 0 &&
               <React.Fragment>

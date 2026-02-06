@@ -76,7 +76,7 @@ public class ESignService {
         String responseUrl = env.getProperty("esign.response.host") + env.getProperty("esign.response.url");
         
         //Added Custome response Url logic
-        if(StringUtils.isEmpty(applicationNo))
+        if(!StringUtils.isEmpty(applicationNo))
         	responseUrl += "/" + applicationNo;
         
         // 1. Get Original PDF

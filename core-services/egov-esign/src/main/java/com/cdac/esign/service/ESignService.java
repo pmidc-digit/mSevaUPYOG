@@ -77,7 +77,7 @@ public class ESignService {
         
         //Added Custome response Url logic
         if(!StringUtils.isEmpty(applicationNo))
-        	responseUrl += "/" + applicationNo;
+        	responseUrl += "?applicationNo=" + applicationNo;
         
         // 1. Get Original PDF
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);

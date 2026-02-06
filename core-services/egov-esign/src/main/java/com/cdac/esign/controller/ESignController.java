@@ -94,11 +94,11 @@ public class ESignController {
 //        }
 //    }
     
-    @PostMapping("/complete/{applicationNo}")
+    @PostMapping("/complete")
     public ResponseEntity<Map<String, String>> completeSigning(
             @RequestParam("eSignResponse") String response,
             @RequestParam("espTxnID") String espTxnID,
-            @PathParam("applicationNo") String applicationNo,
+            @RequestParam(value = "applicationNo", required = false) String applicationNo,
             HttpServletRequest request) {
 
         logger.info("Received complete signing request for espTxnID: {}", espTxnID);

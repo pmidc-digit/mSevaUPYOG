@@ -43,7 +43,7 @@ export const HRMSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "HR";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-  console.log("Tenants: ", tenants);
+  
   Digit.SessionStorage.set("HRMS_TENANTS", tenants);
   const { path, url } = useRouteMatch();
   if (!Digit.Utils.hrmsAccess()) {

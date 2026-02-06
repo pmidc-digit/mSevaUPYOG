@@ -81,7 +81,6 @@ const CreateEmployeeStepForm = () => {
     onSubmit(data, tenantId, setShowToast, history);
   };
 
-  console.log("formState: ",formState);
   return (
     <div className="card">
       <CardHeader className="hrms-card-header" divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>

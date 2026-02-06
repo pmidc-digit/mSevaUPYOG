@@ -37,8 +37,6 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
   //   return <Loader />;
   // }
 
-  //console.log("Employment Types: ", Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "EmployeeType"));
-  // console.log("EmployeeTypes: ", EmployeeTypes);
 
   return inputs?.map((input, index) => {
     return (

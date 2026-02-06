@@ -75,7 +75,7 @@ const CreateEmployee = () => {
   };
 
   const onFormValueChange = (setValue = true, formData) => {
-    console.log("onFormValueChange: ", formData);
+
     if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     } else {

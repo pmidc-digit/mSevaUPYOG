@@ -14,11 +14,15 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("Form Data: ", data);
+    console.log("Form Data changed: ", data);
+    
+    // Update Redux if data changed
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateEmployeeForm(config.key, data));
-      checkConditions(data);
     }
+    
+    // Always run validation regardless of equality check
+    checkConditions(data);
   };
 
   var currentStepData = useSelector(function (state) {
@@ -58,8 +62,16 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
     const validEmail = email.length == 0 ? true : email.match(Digit.Utils.getPattern("Email"));
     return validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address"));
   };
+  // Validate on mount and when currentStepData or phonecheck changes
+  useEffect(() => {
+    console.log("Running validation on mount/data change");
+    checkConditions(currentStepData);
+  }, [currentStepData, phonecheck]);
+
   const checkConditions = (formData) => {
-    console.log("onFormValueChange: ", formData);
+    console.log("Checking conditions with formData: ", formData);
+    
+    // Update mobile number if changed
     if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     } else {

@@ -8,8 +8,25 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
   const { data: data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
   const [currentassignemtDate, setCurrentAssiginmentDate] = useState(null);
   const [showToast, setShowToast] = useState(null);
+  
+  // Transform assignments from Redux format (epoch dates) to component format (date strings)
+  const transformAssignmentsFromRedux = (assignments) => {
+    if (!assignments) return null;
+    return assignments.map((assignment, index) => ({
+      ...assignment,
+      key: assignment.key || index + 1,
+      // Convert epoch timestamps to date strings for DatePicker
+      fromDate: typeof assignment.fromDate === 'number' 
+        ? convertEpochToDate(assignment.fromDate) 
+        : assignment.fromDate,
+      toDate: typeof assignment.toDate === 'number' 
+        ? convertEpochToDate(assignment.toDate) 
+        : assignment.toDate,
+    }));
+  };
+
   const [assignments, setassignments] = useState(
-    formData?.Assignments || [
+    transformAssignmentsFromRedux(formData?.Assignments) || [
       {
         key: 1,
         fromDate: undefined,
@@ -103,8 +120,14 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
           fromDate: assignment?.fromDate ? new Date(assignment?.fromDate).getTime() : undefined,
           toDate: assignment?.toDate ? new Date(assignment?.toDate).getTime() : undefined,
           isCurrentAssignment: assignment?.isCurrentAssignment,
-          department: assignment?.department?.code,
-          designation: assignment?.designation?.code,
+          // department: assignment?.department?.code,
+          // designation: assignment?.designation?.code,
+          department: typeof assignment?.department === 'string' 
+            ? assignment?.department 
+            : assignment?.department?.code,
+          designation: typeof assignment?.designation === 'string' 
+            ? assignment?.designation 
+            : assignment?.designation?.code,
           reportingTo: assignment?.reportingTo,
           isHOD: assignment?.isHOD
         })
@@ -141,6 +164,22 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
       return ele;
     });
   }
+  
+  // Helper function to get department value for dropdown
+  const getDepartmentValue = (assignment, departmentData) => {
+    if (!assignment.department) return null;
+    if (typeof assignment.department === 'object') return assignment.department;
+    // If it's a string code, find the matching object from MDMS
+    return departmentData?.find(dept => dept.code === assignment.department) || null;
+  };
+  
+  // Helper function to get designation value for dropdown
+  const getDesignationValue = (assignment, designationData) => {
+    if (!assignment.designation) return null;
+    if (typeof assignment.designation === 'object') return assignment.designation;
+    // If it's a string code, find the matching object from MDMS
+    return designationData?.find(desig => desig.code === assignment.designation) || null;
+  };
   if (isLoading) {
     return <Loader />;
   }
@@ -176,6 +215,9 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
           currentassignemtDate={currentassignemtDate}
           checkOverlapsForAssignment={checkOverlapsForAssignment}
           setShowToast={setShowToast}
+          getDepartmentValue={getDepartmentValue}
+          getDesignationValue={getDesignationValue}
+          data={data}
         />
       ))}
       <LinkLabel
@@ -219,6 +261,9 @@ function Assignment({
   currentassignemtDate,
   checkOverlapsForAssignment,
   setShowToast,
+  getDepartmentValue,
+  getDesignationValue,
+  data,
 }) {
   // Validate and show all overlaps
   const validateOverlap = (updatedAssignment) => {
@@ -304,31 +349,32 @@ function Assignment({
               }}
             >
               <div
+              className="hrms-delete-icon-button"
                 onClick={() => handleRemoveUnit(assignment)}
-                onMouseEnter={(e) => {
-                  const svg = e.currentTarget.querySelector("svg");
-                  const path = svg.querySelector("path");
-                  e.currentTarget.style.transform = "scale(1.1)";
-                  e.currentTarget.style.opacity = "0.8";
-                  path.style.fill = "#2341e9b2";
-                }}
-                onMouseLeave={(e) => {
-                  const svg = e.currentTarget.querySelector("svg");
-                  const path = svg.querySelector("path");
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.opacity = "1";
-                  path.style.fill = "#6b7280";
-                }}
-                style={{
-                  cursor: "pointer",
-                  padding: "4px",
-                  borderRadius: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.2s ease",
-                  backgroundColor: "transparent",
-                }}
+                // onMouseEnter={(e) => {
+                //   const svg = e.currentTarget.querySelector("svg");
+                //   const path = svg.querySelector("path");
+                //   e.currentTarget.style.transform = "scale(1.1)";
+                //   e.currentTarget.style.opacity = "0.8";
+                //   path.style.fill = "#2341e9b2";
+                // }}
+                // onMouseLeave={(e) => {
+                //   const svg = e.currentTarget.querySelector("svg");
+                //   const path = svg.querySelector("path");
+                //   e.currentTarget.style.transform = "scale(1)";
+                //   e.currentTarget.style.opacity = "1";
+                //   path.style.fill = "#6b7280";
+                // }}
+                // style={{
+                //   cursor: "pointer",
+                //   padding: "4px",
+                //   borderRadius: "4px",
+                //   display: "flex",
+                //   alignItems: "center",
+                //   justifyContent: "center",
+                //   transition: "all 0.2s ease",
+                //   backgroundColor: "transparent",
+                // }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#6b7280" />
@@ -398,7 +444,7 @@ function Assignment({
           <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}> {`${t("HR_DEPT_LABEL")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
-            selected={assignment?.department}
+            selected={getDepartmentValue(assignment, data?.MdmsRes?.["common-masters"]?.Department)}
             disable={assignment?.id ? true : false}
             optionKey={"i18key"}
             option={getdepartmentdata(department) || []}
@@ -411,7 +457,7 @@ function Assignment({
           <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}>{`${t("HR_DESG_LABEL")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span> </CardLabel>
           <Dropdown
             className="form-field"
-            selected={assignment?.designation}
+            selected={getDesignationValue(assignment, data?.MdmsRes?.["common-masters"]?.Designation)}
             disable={assignment?.id ? true : false}
             option={getdesignationdata(designation) || []}
             select={selectDesignation}

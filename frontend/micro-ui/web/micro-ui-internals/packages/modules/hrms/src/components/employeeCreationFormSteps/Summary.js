@@ -102,7 +102,7 @@ const Summary = ({ config, formData: propsFormData, onSelect }) => {
           employeeData?.SelectEmployeeGuardianRelationship?.name || employeeData?.SelectEmployeeGuardianRelationship?.code
         )}
         {renderLabel(t("CORE_COMMON_GENDER") || "Gender", 
-          employeeData?.SelectEmployeeGender?.gender?.name || employeeData?.SelectEmployeeGender?.gender?.code
+          employeeData?.SelectEmployeeGender?.gender?.code || employeeData?.SelectEmployeeGender?.gender?.name
         )}
         {renderLabel(t("CORE_COMMON_DATE_OF_BIRTH") || "Date of Birth", 
           formatDate(employeeData?.SelectDateofBirthEmployment?.dob)

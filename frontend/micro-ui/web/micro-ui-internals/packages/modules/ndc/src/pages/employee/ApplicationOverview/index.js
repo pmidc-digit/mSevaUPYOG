@@ -132,13 +132,11 @@ const ApplicationOverview = () => {
     })();
   }, [tenantId]);
 
-  const empData = EmployeeData(tenantId, approver)
+  const empData = EmployeeData(tenantId, approver);
 
   console.log("approver for ndc", approver);
 
-
-  console.log('officerData', empData)
-
+  console.log("officerData", empData);
 
   // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
 
@@ -243,7 +241,7 @@ const ApplicationOverview = () => {
       const ulbType = tenantInfo?.city?.ulbType;
       let acknowledgementData;
 
-      if(empData){
+      if (empData) {
         acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
       }
       console.log("acknowledgementData", acknowledgementData);
@@ -469,7 +467,9 @@ const ApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-        {isCemp && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>}
+        {isCemp && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
+        )}
       </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
@@ -505,16 +505,6 @@ const ApplicationOverview = () => {
           return (
             <div key={index} className="ndc-emp-app-overview">
               <StatusTable>
-                <Row
-                  label={t("CHB_DISCOUNT_REASON")}
-                  text={t(
-                    `${
-                      applicationDetails?.Applications?.[0]?.reason == "OTHERS"
-                        ? applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.reason
-                        : applicationDetails?.Applications?.[0]?.reason
-                    }`
-                  )}
-                />
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
@@ -578,6 +568,16 @@ const ApplicationOverview = () => {
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {isPT && propertyDetailsFetch?.Properties && (
                   <>
+                    <Row
+                      label={t("CHB_DISCOUNT_REASON")}
+                      text={t(
+                        `${
+                          applicationDetails?.Applications?.[0]?.reason == "OTHERS"
+                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.[2]?.additionalDetails?.reason
+                            : applicationDetails?.Applications?.[0]?.reason
+                        }`
+                      )}
+                    />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
@@ -590,7 +590,7 @@ const ApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
-                    <Row label={t("Remarks")} text={applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.remarks || "N/A"} />
+                    <Row label={t("Remarks")} text={applicationDetails?.Applications?.[0]?.NdcDetails?.[2]?.additionalDetails?.remarks || "N/A"} />
                   </>
                 )}
               </StatusTable>

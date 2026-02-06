@@ -1,4 +1,4 @@
-import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader, TextInput } from "@mseva/digit-ui-react-components";
+import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader, TextInput, LinkLabel, Toast } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 import { convertEpochToDate } from "../Utils/index";
@@ -7,8 +7,26 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
   const [currentassignemtDate, setCurrentAssiginmentDate] = useState(null);
+  const [showToast, setShowToast] = useState(null);
+  
+  // Transform assignments from Redux format (epoch dates) to component format (date strings)
+  const transformAssignmentsFromRedux = (assignments) => {
+    if (!assignments) return null;
+    return assignments.map((assignment, index) => ({
+      ...assignment,
+      key: assignment.key || index + 1,
+      // Convert epoch timestamps to date strings for DatePicker
+      fromDate: typeof assignment.fromDate === 'number' 
+        ? convertEpochToDate(assignment.fromDate) 
+        : assignment.fromDate,
+      toDate: typeof assignment.toDate === 'number' 
+        ? convertEpochToDate(assignment.toDate) 
+        : assignment.toDate,
+    }));
+  };
+
   const [assignments, setassignments] = useState(
-    formData?.Assignments || [
+    transformAssignmentsFromRedux(formData?.Assignments) || [
       {
         key: 1,
         fromDate: undefined,
@@ -21,6 +39,47 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
       },
     ]
   );
+
+  // Check ALL overlaps for a specific assignment
+  const checkOverlapsForAssignment = (targetAssignment, allAssignments) => {
+    if (!targetAssignment.fromDate) return { hasOverlap: false, conflicts: [] };
+
+    const targetFrom = new Date(targetAssignment.fromDate).getTime();
+    const targetTo = targetAssignment.toDate ? new Date(targetAssignment.toDate).getTime() : new Date().getTime();
+    
+    const conflicts = [];
+
+    for (let i = 0; i < allAssignments.length; i++) {
+      const assignment = allAssignments[i];
+      
+      // Skip comparing with itself
+      if (assignment.key === targetAssignment.key) continue;
+      
+      // Skip if assignment doesn't have dates
+      if (!assignment.fromDate) continue;
+
+      const from = new Date(assignment.fromDate).getTime();
+      const to = assignment.toDate ? new Date(assignment.toDate).getTime() : new Date().getTime();
+
+      // Check for overlap
+      const hasOverlap = 
+        (targetFrom >= from && targetFrom < to) ||
+        (targetTo > from && targetTo <= to) ||
+        (targetFrom <= from && targetTo >= to);
+
+      if (hasOverlap) {
+        conflicts.push(i + 1); // Store assignment number (1-indexed)
+      }
+    }
+
+    return {
+      hasOverlap: conflicts.length > 0,
+      conflicts: conflicts,
+      message: conflicts.length > 0 
+        ? `Assignment overlaps with: ${conflicts.map(num => `#${num}`).join(', ')}`
+        : null
+    };
+  };
   const reviseIndexKeys = () => {
     setassignments((prev) => prev.map((unit, index) => ({ ...unit, key: index })));
   };
@@ -61,8 +120,14 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
           fromDate: assignment?.fromDate ? new Date(assignment?.fromDate).getTime() : undefined,
           toDate: assignment?.toDate ? new Date(assignment?.toDate).getTime() : undefined,
           isCurrentAssignment: assignment?.isCurrentAssignment,
-          department: assignment?.department?.code,
-          designation: assignment?.designation?.code,
+          // department: assignment?.department?.code,
+          // designation: assignment?.designation?.code,
+          department: typeof assignment?.department === 'string' 
+            ? assignment?.department 
+            : assignment?.department?.code,
+          designation: typeof assignment?.designation === 'string' 
+            ? assignment?.designation 
+            : assignment?.designation?.code,
           reportingTo: assignment?.reportingTo,
           isHOD: assignment?.isHOD
         })
@@ -99,11 +164,36 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
       return ele;
     });
   }
+  
+  // Helper function to get department value for dropdown
+  const getDepartmentValue = (assignment, departmentData) => {
+    if (!assignment.department) return null;
+    if (typeof assignment.department === 'object') return assignment.department;
+    // If it's a string code, find the matching object from MDMS
+    return departmentData?.find(dept => dept.code === assignment.department) || null;
+  };
+  
+  // Helper function to get designation value for dropdown
+  const getDesignationValue = (assignment, designationData) => {
+    if (!assignment.designation) return null;
+    if (typeof assignment.designation === 'object') return assignment.designation;
+    // If it's a string code, find the matching object from MDMS
+    return designationData?.find(desig => desig.code === assignment.designation) || null;
+  };
   if (isLoading) {
     return <Loader />;
   }
   return (
     <div>
+      {showToast && (
+        <Toast
+          warning={true}
+          label={t(showToast.label)}
+          onClose={() => setShowToast(null)}
+          isDleteBtn={true}
+        />
+      )}
+      
       {assignments?.map((assignment, index) => (
         <Assignment
           t={t}
@@ -123,11 +213,33 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
           handleRemoveUnit={handleRemoveUnit}
           setCurrentAssiginmentDate={setCurrentAssiginmentDate}
           currentassignemtDate={currentassignemtDate}
+          checkOverlapsForAssignment={checkOverlapsForAssignment}
+          setShowToast={setShowToast}
+          getDepartmentValue={getDepartmentValue}
+          getDesignationValue={getDesignationValue}
+          data={data}
         />
       ))}
-      <label onClick={handleAddUnit} className="link-label" style={{ width: "12rem" }}>
+      <LinkLabel
+        style={{
+          display: "inline-block",
+          padding: "8px 16px",
+          background: "linear-gradient(135deg, #2563eb, #1e40af)",
+          color: "#FFFFFF",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "13px",
+          fontWeight: "600",
+          textDecoration: "none",
+          marginTop: "16px",
+          marginBottom: "8px",
+          border: "none",
+          transition: "background-color 0.2s ease",
+        }}
+        onClick={handleAddUnit}
+      >
         {t("HR_ADD_ASSIGNMENT")}
-      </label>
+      </LinkLabel>
     </div>
   );
 };
@@ -147,7 +259,24 @@ function Assignment({
   getdesignationdata,
   setCurrentAssiginmentDate,
   currentassignemtDate,
+  checkOverlapsForAssignment,
+  setShowToast,
+  getDepartmentValue,
+  getDesignationValue,
+  data,
 }) {
+  // Validate and show all overlaps
+  const validateOverlap = (updatedAssignment) => {
+    setTimeout(() => {
+      const overlapResult = checkOverlapsForAssignment(updatedAssignment, assignments);
+      
+      if (overlapResult.hasOverlap) {
+        setShowToast({
+          label: `HR_ASSIGNMENT_OVERLAP_WARNING: Assignment ${index + 1} ${overlapResult.message}`
+        });
+      }
+    }, 100);
+  };
   const selectDepartment = (value) => {
     setassignments((pre) => pre.map((item) => (item.key === assignment.key ? { ...item, department: value } : item)));
   };
@@ -211,14 +340,52 @@ function Assignment({
             </h2>
           </div>
           {assignments.length > 1 && !assignment?.id && !assignment?.isCurrentAssignment ? (
-            <div onClick={() => handleRemoveUnit(assignment)} style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
-              X
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "16px",
+                paddingRight: "8px",
+              }}
+            >
+              <div
+              className="hrms-delete-icon-button"
+                onClick={() => handleRemoveUnit(assignment)}
+                // onMouseEnter={(e) => {
+                //   const svg = e.currentTarget.querySelector("svg");
+                //   const path = svg.querySelector("path");
+                //   e.currentTarget.style.transform = "scale(1.1)";
+                //   e.currentTarget.style.opacity = "0.8";
+                //   path.style.fill = "#2341e9b2";
+                // }}
+                // onMouseLeave={(e) => {
+                //   const svg = e.currentTarget.querySelector("svg");
+                //   const path = svg.querySelector("path");
+                //   e.currentTarget.style.transform = "scale(1)";
+                //   e.currentTarget.style.opacity = "1";
+                //   path.style.fill = "#6b7280";
+                // }}
+                // style={{
+                //   cursor: "pointer",
+                //   padding: "4px",
+                //   borderRadius: "4px",
+                //   display: "flex",
+                //   alignItems: "center",
+                //   justifyContent: "center",
+                //   transition: "all 0.2s ease",
+                //   backgroundColor: "transparent",
+                // }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z" fill="#6b7280" />
+                </svg>
+              </div>
             </div>
           ) : null}
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}> {`${t("HR_ASMT_FROM_DATE_LABEL")} * `} </CardLabel>
+          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}> {`${t("HR_ASMT_FROM_DATE_LABEL")}`}<span className="hrms-emp-mapping__required-asterisk"> * </span> </CardLabel>
           <div className="field">
             <DatePicker
               type="date"
@@ -227,8 +394,10 @@ function Assignment({
               min={formData?.SelectDateofEmployment?.dateOfAppointment}
               disabled={assignment?.id ? true : false}
               onChange={(e) => {
-                setassignments((pre) => pre.map((item) => (item.key === assignment.key ? { ...item, fromDate: e } : item)));
+                const updatedAssignment = { ...assignment, fromDate: e };
+                setassignments((pre) => pre.map((item) => (item.key === assignment.key ? updatedAssignment : item)));
                 setFocusIndex(index);
+                validateOverlap(updatedAssignment);
               }}
               date={assignment?.fromDate}
               autoFocus={focusIndex === index}
@@ -236,9 +405,9 @@ function Assignment({
           </div>
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className={assignment?.isCurrentAssignment ? "card-label-smaller disabled" : "card-label-smaller"}>
+          <CardLabel className={assignment?.isCurrentAssignment ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}>
             {t("HR_ASMT_TO_DATE_LABEL")}
-            {assignment?.isCurrentAssignment ? "" : " * "}{" "}
+            {assignment?.isCurrentAssignment ? "" :  <span className="hrms-emp-mapping__required-asterisk"> * </span> }{" "}
           </CardLabel>
           <div className="field">
             <DatePicker
@@ -248,8 +417,10 @@ function Assignment({
               max={currentassignemtDate ? currentassignemtDate : convertEpochToDate(new Date())}
               disabled={assignment?.isCurrentAssignment}
               onChange={(e) => {
-                setassignments((pre) => pre.map((item) => (item.key === assignment.key ? { ...item, toDate: e } : item)));
+                const updatedAssignment = { ...assignment, toDate: e };
+                setassignments((pre) => pre.map((item) => (item.key === assignment.key ? updatedAssignment : item)));
                 setFocusIndex(index);
+                validateOverlap(updatedAssignment);
               }}
               date={assignment?.toDate}
               autoFocus={focusIndex === index}
@@ -258,7 +429,7 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={{ color: "white" }}>
+          <CardLabel className="card-label-smaller hrms-text-transform-none" style={{ color: "white" }}>
             .
           </CardLabel>
           <div className="field">
@@ -270,10 +441,10 @@ function Assignment({
           </div>
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}> {`${t("HR_DEPT_LABEL")} * `}</CardLabel>
+          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}> {`${t("HR_DEPT_LABEL")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span></CardLabel>
           <Dropdown
             className="form-field"
-            selected={assignment?.department}
+            selected={getDepartmentValue(assignment, data?.MdmsRes?.["common-masters"]?.Department)}
             disable={assignment?.id ? true : false}
             optionKey={"i18key"}
             option={getdepartmentdata(department) || []}
@@ -283,10 +454,10 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>{`${t("HR_DESG_LABEL")} * `}</CardLabel>
+          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}>{`${t("HR_DESG_LABEL")} `}<span className="hrms-emp-mapping__required-asterisk"> * </span> </CardLabel>
           <Dropdown
             className="form-field"
-            selected={assignment?.designation}
+            selected={getDesignationValue(assignment, data?.MdmsRes?.["common-masters"]?.Designation)}
             disable={assignment?.id ? true : false}
             option={getdesignationdata(designation) || []}
             select={selectDesignation}
@@ -296,9 +467,9 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className={assignment?.isHOD ? "card-label-smaller disabled" : "card-label-smaller"}>          
+          <CardLabel className={assignment?.isHOD ? "card-label-smaller disabled" : "card-label-smaller hrms-text-transform-none"}>          
             {t("HR_REP_TO_LABEL")}
-            {assignment?.isHOD ? "" : " * "}
+            {assignment?.isHOD ? "" :  <span className="hrms-emp-mapping__required-asterisk"> * </span> }
           </CardLabel>
           <div className="field">
             <TextInput
@@ -310,7 +481,7 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={{ color: "white" }}>
+          <CardLabel className="card-label-smaller hrms-text-transform-none" style={{ color: "white" }}>
             .
           </CardLabel>
           <div className="field">

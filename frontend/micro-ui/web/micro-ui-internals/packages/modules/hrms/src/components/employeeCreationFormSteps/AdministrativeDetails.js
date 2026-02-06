@@ -74,7 +74,7 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("Form Data: ", data);
+  
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateEmployeeForm(config.key, data));
     }

@@ -14,7 +14,6 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.hrms.employeeForm.formData);
 
   useEffect(()=>{
-    console.log("➡️ Submitting employee data:", formData);
   },[formData]);
 
   // Auto-close toast
@@ -28,7 +27,6 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
   }, [showToast]);
 
   const goNext = async () => {
-    console.log("📋 Submitting employee data:", formData);
 
     setIsLoading(true);
 
@@ -59,7 +57,6 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
         }));
       }
       
-      console.log("📤 Transformed data for API:", data);
       
       await onSubmit(data, tenantId, setShowToast, history);
       

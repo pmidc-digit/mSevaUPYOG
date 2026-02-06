@@ -183,7 +183,26 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
       </div>
     );
   };
-  
+      const getRoleDisplayName = (role, t) => {
+      if (!role) return "N/A";
+      
+      // Try labelKey first
+      if (role.labelKey) {
+        const translated = t(role.labelKey);
+        if (translated !== role.labelKey) return translated;
+      }
+      
+      // Try translating code with underscore format
+      if (role.code) {
+        const normalizedCode = role.code.replace(/\s+/g, "_").toUpperCase();
+        const translationKey = `ACCESSCONTROL_ROLES_ROLES_${normalizedCode}`;
+        const translated = t(translationKey);
+        if (translated !== translationKey) return translated;
+      }
+      // Fallback to name or code
+      return role.name || role.code || "N/A";
+    };
+      
   if (tenantsLoading) {
     return (
       <div className="filter">
@@ -254,10 +273,25 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
               />
             </div>
             <div>
-              <div>
+              {/* <div>
                 {GetSelectOptions(
                   t("HR_COMMON_TABLE_COL_ROLE"),
                   Digit.Utils.locale.convertToLocaleData(data?.MdmsRes["ACCESSCONTROL-ROLES"]?.roles, 'ACCESSCONTROL_ROLES_ROLES', t),
+                  selectedRoles,
+                  onSelectRoles,
+                  "i18text",
+                  onRemove,
+                  "role"
+                )}
+              </div> */}
+              <div>
+                {GetSelectOptions(
+                  t("HR_COMMON_TABLE_COL_ROLE"),
+                  (data?.MdmsRes["ACCESSCONTROL-ROLES"]?.roles || []).map(role => ({
+                    ...role,
+                    i18text: getRoleDisplayName(role, t),  
+                    code: role.code
+                  })),
                   selectedRoles,
                   onSelectRoles,
                   "i18text",

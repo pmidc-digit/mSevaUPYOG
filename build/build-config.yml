@@ -930,3 +930,26 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
+
+  - name: 'builds/upyog/municipal-services/clu-services'
+    build:
+      - work-dir: 'municipal-services/clu-services'
+        image-name: 'clu-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/clu-services/src/main/resources/db"
+        image-name: "clu-services-db"
+
+  - name: "builds/upyog/municipal-services/clu-calculator"
+    build:
+      - work-dir: "municipal-services/clu-calculator"
+        image-name: "clu-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/clu-calculator/migration"
+    #    image-name: "clu-calculator-db"
+  - name: "builds/upyog/core-services/egov-property-rate-search"
+    build:
+      - work-dir: "core-services/egov-property-rate-search"
+        image-name: "egov-property-rate-search"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-property-rate-search/src/main/resources/db"
+        image-name: "egov-property-rate-search-db"

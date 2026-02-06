@@ -27,9 +27,6 @@ public class ESignController {
 
     @Autowired
     private ESignService eSignService;
-    
-    @Value("${esign.redirect.url}")
-    String redirectUrl;
 
     @PostMapping("/upload")
     public ResponseEntity<RequestXmlForm> uploadAndSignDocument(
@@ -38,13 +35,13 @@ public class ESignController {
             // 1. ADDED: New Parameter for Signer Name (Optional)
             @RequestParam(value = "signerName", required = false) String signerName,
          // 1. ADDED: New Parameter for Custom response URL (Optional)
-            @RequestParam(value = "applicationNo", required = false) String applicationNo) {
+            @RequestParam(value = "callbackUrl", required = false) String callbackUrl) {
 
         logger.info("Received upload request for file: {}, tenant: {}, signer: {}", fileStoreId, tenantId, signerName);
 
         try {
             // 2. UPDATED: Passing the dynamic 'signerName' instead of null
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName, applicationNo);
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName, callbackUrl);
             
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);
@@ -98,7 +95,7 @@ public class ESignController {
     public ResponseEntity<Map<String, String>> completeSigning(
             @RequestParam("eSignResponse") String response,
             @RequestParam("espTxnID") String espTxnID,
-            @RequestParam(value = "applicationNo", required = false) String applicationNo,
+            @RequestParam(value = "callbackUrl", required = false) String callbackUrl,
             HttpServletRequest request) {
 
         logger.info("Received complete signing request for espTxnID: {}", espTxnID);
@@ -114,7 +111,7 @@ public class ESignController {
             body.put("fileUrl", signingResult.get("fileUrl"));
             body.put("fileStoreId", signingResult.get("fileStoreId")); // New field returned
 
-            String finalRedirectUrl = redirectUrl + applicationNo + "/" + signingResult.get("fileStoreId");
+            String finalRedirectUrl = callbackUrl + "/" + signingResult.get("fileStoreId");
             HttpHeaders headers = new HttpHeaders();
             headers.add("Location", finalRedirectUrl);
             return new ResponseEntity<>(headers, HttpStatus.FOUND);

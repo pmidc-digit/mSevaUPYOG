@@ -126,7 +126,8 @@ public class EmployeeService {
 			pwdMap.put(employee.getUuid(), employee.getUser().getPassword());
 			employee.getUser().setPassword(null);
 		});
-		hrmsProducer.push(propertiesManager.getSaveEmployeeTopic(), employeeRequest);
+		String key = employeeRequest.getEmployees().get(0).getUuid();
+		hrmsProducer.push(propertiesManager.getSaveEmployeeTopic(),key, employeeRequest);
 		notificationService.sendNotification(employeeRequest, pwdMap);
 		return generateResponse(employeeRequest);
 	}
@@ -155,7 +156,8 @@ public class EmployeeService {
 	    }
 
 	    // 4️⃣ Push to Kafka
-	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), employeeRequest);
+	    String key = employeeRequest.getEmployees().get(0).getUuid();
+	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, employeeRequest);
 
 	    // 5️⃣ Generate response
 	    return generateObpassResponse(employeeRequest);
@@ -276,7 +278,8 @@ public class EmployeeService {
 	    Map<String, Object> kafkaPayload = new HashMap<>();
 	    kafkaPayload.put("Employees", employeesToDelete);
 
-	    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), kafkaPayload);
+    	String key = deleteRequest.getEmployees().get(0).getUuid();
+	    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), key, kafkaPayload);
 
 	    return ObpassEmployeeResponse.builder()
 	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))
@@ -555,7 +558,8 @@ public class EmployeeService {
 			enrichUpdateRequest(employee, requestInfo, existingEmployees);
 			updateUser(employee, requestInfo);
 		});
-		hrmsProducer.push(propertiesManager.getUpdateTopic(), employeeRequest);
+		String key = employeeRequest.getEmployees().get(0).getUuid();
+		hrmsProducer.push(propertiesManager.getUpdateTopic(), key, employeeRequest);
 		//notificationService.sendReactivationNotification(employeeRequest);
 		return generateResponse(employeeRequest);
 	}

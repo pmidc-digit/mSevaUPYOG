@@ -21,7 +21,8 @@ public class ReportListener {
     private ObjectMapper objectMapper;
 
 
-    @KafkaListener(topics = "${kafka.topics.sms.bounce}")
+    @KafkaListener(topics = "${kafka.topics.sms.bounce}",
+    		concurrency = "${spring.kafka.consumer.concurrency.count}")
     public void listen(final HashMap<String, Object> record) {
         Report report = objectMapper.convertValue(record, Report.class);
         log.info(report.toString());

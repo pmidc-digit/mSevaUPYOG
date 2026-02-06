@@ -47,7 +47,8 @@ public class StatusUpdateService {
             processInstances.add(processStateAndAction.getProcessInstanceFromRequest());
         });
         ProcessInstanceRequest processInstanceRequest = new ProcessInstanceRequest(requestInfo,processInstances);
-        producer.push(config.getSaveTransitionTopic(),processInstanceRequest);
+        String key = processInstanceRequest.getProcessInstances().get(0).getId();
+        producer.push(config.getSaveTransitionTopic(), key,processInstanceRequest);
     }
 
 

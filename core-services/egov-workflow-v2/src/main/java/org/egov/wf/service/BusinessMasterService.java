@@ -61,7 +61,8 @@ public class BusinessMasterService {
         evictAllCacheValues("businessService");
         evictAllCacheValues("roleTenantAndStatusesMapping");
         enrichmentService.enrichCreateBusinessService(request);
-        producer.push(config.getSaveBusinessServiceTopic(),request);
+        String key = request.getBusinessServices().get(0).getUuid();
+        producer.push(config.getSaveBusinessServiceTopic(), key,request);
         return request.getBusinessServices();
     }
 
@@ -85,7 +86,8 @@ public class BusinessMasterService {
         evictAllCacheValues("businessService");
         evictAllCacheValues("roleTenantAndStatusesMapping");
         enrichmentService.enrichUpdateBusinessService(request);
-        producer.push(config.getUpdateBusinessServiceTopic(),request);
+        String key = request.getBusinessServices().get(0).getUuid();
+        producer.push(config.getUpdateBusinessServiceTopic(), key,request);
         return request.getBusinessServices();
     }
 

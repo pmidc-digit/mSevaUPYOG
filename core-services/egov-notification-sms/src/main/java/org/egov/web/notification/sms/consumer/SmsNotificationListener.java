@@ -56,7 +56,8 @@ public class SmsNotificationListener {
     }
 
     @KafkaListener(
-            topics = "${kafka.topics.notification.sms.name}"
+            topics = "${kafka.topics.notification.sms.name}",
+            concurrency = "${spring.kafka.consumer.concurrency.count}"
     )
     public void process(HashMap<String, Object> consumerRecord) {
         RequestContext.setId(UUID.randomUUID().toString());
@@ -69,7 +70,7 @@ public class SmsNotificationListener {
                 if (expiryTime < currentTime) {
                     log.info("OTP Expired");
                     if (!StringUtils.isEmpty(expiredSmsTopic))
-                        kafkaTemplate.send(expiredSmsTopic, request);
+                        kafkaTemplate.send(expiredSmsTopic,kafkaKey(request), request);
                 } else {
                     smsService.sendSMS(request.toDomain());
                 }
@@ -79,19 +80,23 @@ public class SmsNotificationListener {
         } catch (RestClientException rx) {
             log.info("Going to backup SMS Service", rx);
             if (!StringUtils.isEmpty(backupSmsTopic))
-                kafkaTemplate.send(backupSmsTopic, request);
+                kafkaTemplate.send(backupSmsTopic,kafkaKey(request), request);
             else if (!StringUtils.isEmpty(errorSmsTopic)) {
-                kafkaTemplate.send(errorSmsTopic, request);
+                kafkaTemplate.send(errorSmsTopic,kafkaKey(request), request);
             } else {
                 throw rx;
             }
         } catch (Exception ex) {
             log.error("Sms service failed", ex);
             if (!StringUtils.isEmpty(errorSmsTopic)) {
-                kafkaTemplate.send(errorSmsTopic, request);
+                kafkaTemplate.send(errorSmsTopic,kafkaKey(request), request);
             } else {
                 throw ex;
             }
         }
+    }
+    
+    public String kafkaKey(SMSRequest request) {
+    	return request.getMobileNumber();
     }
 }

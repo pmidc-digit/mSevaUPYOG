@@ -137,7 +137,7 @@ public class NotificationUtil {
                 return;
             }
             for (SMSRequest smsRequest : smsRequestList) {
-                producer.push(config.getSmsNotifTopic(), smsRequest);
+                producer.push(config.getSmsNotifTopic(),smsRequest.getMobileNumber(), smsRequest);
                 log.info("Messages: " + smsRequest.getMessage());
             }
         }
@@ -149,7 +149,7 @@ public class NotificationUtil {
      * @param request EventRequest Object
      */
     public void sendEventNotification(EventRequest request) {
-        producer.push(config.getSaveUserEventsTopic(), request);
+        producer.push(config.getSaveUserEventsTopic(),request.getEvents().get(0).getId(), request);
         log.info("Events added to send:: " + request.getEvents());
     }
 

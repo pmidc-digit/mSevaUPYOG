@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,15 +62,8 @@ public class NOCPropertyService {
 
 		}
 		Object object = nocRequest.getNoc().getNocDetails().getAdditionalDetails();
-		if (object instanceof Map) {
-			Map<String, Object> additionalDetails = (Map<String, Object>) object;
-			additionalDetails.put("propertyuid", propertyId);
-			nocRequest.getNoc().getNocDetails().setAdditionalDetails(additionalDetails);
-		} else {
-			Map<String, Object> additionalDetails = new HashMap<>();
-			additionalDetails.put("propertyuid", propertyId);
-			nocRequest.getNoc().getNocDetails().setAdditionalDetails(additionalDetails);
-		}
+		DocumentContext context = JsonPath.parse(object);
+		context.put("$.applicationDetails.owners.*", "propertyId", propertyId);
 
 	}
 
@@ -92,6 +86,8 @@ public class NOCPropertyService {
 		Map<String, String> coordinates = (Map<String, String>) additionalDetails.get("coordinates");		
 		String buildingStatus = siteDetails.getOrDefault("buildingStatus", "").toString();
 		String specificationBuildingCategory = siteDetails.getOrDefault("specificationBuildingCategory", "").toString();
+		String localityCode = JsonPath.read(siteDetails, "$.localityAreaType.code");
+		List<Object> floorArea = (List<Object>)siteDetails.getOrDefault("floorArea", Collections.EMPTY_LIST);
 		
 		List<String> buildingTypeList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingType.[?(@.name == '" + buildingStatus + "')].code");
 		List<String> propertyUsageList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].propertyUsage");
@@ -107,7 +103,7 @@ public class NOCPropertyService {
 				.geoLocation(GeoLocation.builder()
 						.latitude(coordinates.get("Latitude1") != null ? Double.valueOf(coordinates.get("Latitude1")) : null )
 						.longitude(coordinates.get("Longitude1") != null ? Double.valueOf(coordinates.get("Longitude1")) : null ).build())
-				.locality(Boundary.builder().code("ALOC5").build())
+				.locality(Boundary.builder().code(localityCode).build())
 				.build();
 		
 		noc.getOwners().stream().forEach(owner -> {
@@ -123,6 +119,7 @@ public class NOCPropertyService {
 				.owners(noc.getOwners())
 				.tenantId(noc.getTenantId())
 				.propertyType(buildingTypeList.get(0))
+				.noOfFloors(Long.valueOf(floorArea != null ? floorArea.size() : 0 ))
 				.build();
 		
 	}

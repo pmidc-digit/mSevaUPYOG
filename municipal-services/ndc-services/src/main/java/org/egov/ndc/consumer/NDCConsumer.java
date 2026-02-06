@@ -21,7 +21,7 @@ public class NDCConsumer {
 	@Autowired
 	private NDCNotificationService notificationService;
 	
-	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}" })
+	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final String record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		ObjectMapper mapper = new ObjectMapper();
 		NdcApplicationRequest ndcRequest = new NdcApplicationRequest();

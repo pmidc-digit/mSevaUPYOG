@@ -4,10 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.PathParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -24,6 +27,9 @@ public class ESignController {
 
     @Autowired
     private ESignService eSignService;
+    
+    @Value("${esign.redirect.url}")
+    String redirectUrl;
 
     @PostMapping("/upload")
     public ResponseEntity<RequestXmlForm> uploadAndSignDocument(
@@ -32,13 +38,13 @@ public class ESignController {
             // 1. ADDED: New Parameter for Signer Name (Optional)
             @RequestParam(value = "signerName", required = false) String signerName,
          // 1. ADDED: New Parameter for Custom response URL (Optional)
-            @RequestParam(value = "responseUrl", required = false) String responseUrl) {
+            @RequestParam(value = "applicationNo", required = false) String applicationNo) {
 
         logger.info("Received upload request for file: {}, tenant: {}, signer: {}", fileStoreId, tenantId, signerName);
 
         try {
             // 2. UPDATED: Passing the dynamic 'signerName' instead of null
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName, responseUrl);
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId, tenantId,signerName, applicationNo);
             
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);
@@ -50,10 +56,49 @@ public class ESignController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    @PostMapping("/complete")
+//    @PostMapping("/complete")
+//    public ResponseEntity<Map<String, String>> completeSigning(
+//            @RequestParam("eSignResponse") String response,
+//            @RequestParam("espTxnID") String espTxnID,
+//            HttpServletRequest request) {
+//
+//        logger.info("Received complete signing request for espTxnID: {}", espTxnID);
+//
+//        try {
+//            // Updated: Service now returns a Map
+//            Map<String, String> signingResult = eSignService.processDocumentCompletion(response, espTxnID, request);
+//            
+//            logger.info("Document signing completed successfully: {}", signingResult.get("fileUrl"));
+//
+//            Map<String, String> body = new HashMap<>();
+//            body.put("status", "SUCCESS");
+//            body.put("fileUrl", signingResult.get("fileUrl"));
+//            body.put("fileStoreId", signingResult.get("fileStoreId")); // New field returned
+//
+//            return ResponseEntity.ok(body);
+//
+//        } catch (IllegalStateException e) {
+//            // ... [Existing error handling] ...
+//            logger.warn("Session expired or invalid state: {}", e.getMessage());
+//            Map<String, String> error = new HashMap<>();
+//            error.put("status", "FAILED");
+//            error.put("error", e.getMessage());
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+//        } catch (Exception e) {
+//            // ... [Existing error handling] ...
+//            logger.error("Error processing signature", e);
+//            Map<String, String> error = new HashMap<>();
+//            error.put("status", "FAILED");
+//            error.put("error", e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+//        }
+//    }
+    
+    @PostMapping("/complete/{applicationNo}")
     public ResponseEntity<Map<String, String>> completeSigning(
             @RequestParam("eSignResponse") String response,
             @RequestParam("espTxnID") String espTxnID,
+            @PathParam("applicationNo") String applicationNo,
             HttpServletRequest request) {
 
         logger.info("Received complete signing request for espTxnID: {}", espTxnID);
@@ -69,7 +114,10 @@ public class ESignController {
             body.put("fileUrl", signingResult.get("fileUrl"));
             body.put("fileStoreId", signingResult.get("fileStoreId")); // New field returned
 
-            return ResponseEntity.ok(body);
+            String finalRedirectUrl = redirectUrl + applicationNo + "/" + signingResult.get("fileStoreId");
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Location", finalRedirectUrl);
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
 
         } catch (IllegalStateException e) {
             // ... [Existing error handling] ...

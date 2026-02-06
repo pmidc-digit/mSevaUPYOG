@@ -65,7 +65,7 @@ public class ESignService {
     /**
      * PHASE 1: Prepare PDF with Dynamic Location & Custom TXN ID
      */
-    public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId, String signerName, String responseUrl) throws Exception {
+    public RequestXmlForm processDocumentUpload(String fileStoreId, String tenantId, String signerName, String applicationNo) throws Exception {
 
         logger.info("Processing Phase 1 for tenant: {}, signer: {}", tenantId, signerName);
 
@@ -73,9 +73,11 @@ public class ESignService {
             signerName = "Authorized Signatory"; 
         }
 
+        String responseUrl = env.getProperty("esign.response.host") + env.getProperty("esign.response.url");
+        
         //Added Custome response Url logic
-        if(StringUtils.isEmpty(responseUrl))
-        	responseUrl = env.getProperty("esign.response.host") + env.getProperty("esign.response.url");
+        if(StringUtils.isEmpty(applicationNo))
+        	responseUrl += "/" + applicationNo;
         
         // 1. Get Original PDF
         String pdfUrl = getPdfUrlFromFilestore(fileStoreId, tenantId);

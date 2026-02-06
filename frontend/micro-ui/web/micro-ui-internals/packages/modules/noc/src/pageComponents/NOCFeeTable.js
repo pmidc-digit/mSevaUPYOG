@@ -47,28 +47,60 @@ const [showHistory, setShowHistory] = useState(false);
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
                   ""
                 ) : (
+                  // <TextInput
+                  //   t={t}
+                  //   type="number"
+                  //   isMandatory={false}
+                  //   value={
+                  //     feeData[row.index]?.adjustedAmount === 0
+                  //       ? ""
+                  //       : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                  //   }
+                  //   onChange={(e) => {
+                  //     let val = e.target.value;
+
+                  //     if (val.length > 1 && val.startsWith("0")) {
+                  //       val = val.replace(/^0+/, "");
+                  //     }
+
+                  //     handleAdjustedAmountChange(row.index, val);
+                  //   }}
+                  //   // ❌ no onBlur here for NOC
+                  //   disable={disable}
+                  //   step={1}
+                  //   onBlur={onAdjustedAmountBlur}
+                  // />
+
                   <TextInput
                     t={t}
-                    type="number"
+                    type="text" // ✅ keep as text
                     isMandatory={false}
-                    value={
-                      feeData[row.index]?.adjustedAmount === 0
-                        ? "" 
-                        : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-                    }
+                    value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
                     onChange={(e) => {
                       let val = e.target.value;
 
-                      if (val.length > 1 && val.startsWith("0")) {
-                        val = val.replace(/^0+/, "");
+                      // Allow only digits + optional decimal point
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        // Remove leading zeros if more than one digit before decimal
+                        if (val.length > 1 && val.startsWith("0") && !val.startsWith("0.")) {
+                          val = val.replace(/^0+/, "");
+                        }
+                        handleAdjustedAmountChange(row.index, val);
                       }
-
-                      handleAdjustedAmountChange(row.index, val);
                     }}
-                    // ❌ no onBlur here for NOC
+                    onKeyPress={(e) => {
+                      // Block anything except digits and one decimal point
+                      if (!/[0-9.]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                      // Prevent multiple decimals
+                      if (e.key === "." && e.target.value.includes(".")) {
+                        e.preventDefault();
+                      }
+                    }}
                     disable={disable}
-                    step={1}
                     onBlur={onAdjustedAmountBlur}
+                    className="responsive-table-input"
                   />
                 )}
               </td>

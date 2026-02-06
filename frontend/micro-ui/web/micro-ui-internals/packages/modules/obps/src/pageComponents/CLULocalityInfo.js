@@ -56,9 +56,10 @@ const CLULocalityInfo = (_props) => {
       <CardSectionHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSectionHeader>
 
       <div>
-        <LabelFieldPair>
+        <LabelFieldPair style={{ marginBottom: "20px" }}>
           <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           {areaTypeOptions.length > 0 && (
+            <div className="field">
             <Controller
               control={control}
               name={"localityAreaType"}
@@ -77,13 +78,15 @@ const CLULocalityInfo = (_props) => {
                 />
               )}
             />
+            <p style={errorStyle}>{errors?.localityAreaType?.message}</p>
+            </div>
           )}
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.localityAreaType ? errors.localityAreaType.message : ""}</CardLabelError>
         
         {selectedAreaType?.code === "SCHEME_AREA" && 
-         <LabelFieldPair>
+         <LabelFieldPair style={{ marginBottom: "20px" }}>
           <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_COLONY_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+          <div className="field">
           <Controller
             control={control}
             name={"localityColonyType"}
@@ -94,9 +97,10 @@ const CLULocalityInfo = (_props) => {
               <Dropdown className="form-field" select={props.onChange} selected={props.value} option={colonyTypeOptions} optionKey="name" t={t}/>
             )}
           />
+          <p style={errorStyle}>{errors?.localityColonyType?.message}</p>
+          </div>
          </LabelFieldPair>
          }
-        <CardLabelError style={errorStyle}>{errors?.localityColonyType?.message || ""}</CardLabelError>
 
         {selectedAreaType?.code === "SCHEME_AREA" && (
           <LabelFieldPair>
@@ -122,10 +126,10 @@ const CLULocalityInfo = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.localitySchemeName?.message}</p>
             </div>
           </LabelFieldPair>
         )}
-        <CardLabelError style={errorStyle}>{errors?.localitySchemeName?.message || ""}</CardLabelError>
 
       </div>
       <BreakLine />

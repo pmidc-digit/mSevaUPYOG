@@ -7,7 +7,7 @@ import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions"
 import { useLocation } from "react-router-dom";
 // import { Loader } from "../components/Loader";
 
-export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApiLoading, menuList }) => {
+export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApiLoading, menuList, confirmPropertyChange, option }) => {
   const { t } = useTranslation();
   const myElementRef = useRef(null);
   const dispatch = useDispatch();
@@ -143,7 +143,13 @@ useEffect(() => {
   }, [error, propertyDetails]);
 
   useEffect(() => {
+    const oldPropertyId = formData?.cpt?.id;
     dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails, id: propertyId }));
+    // console.log("PropertyDetailsInUseEffect", propertyDetails, propertyId, oldPropertyId, formData);
+    // if (formData?.createdResponse?.applicationNo && !propertyDetails?.Properties && oldPropertyId !== propertyId) {
+      // confirmPropertyChange(option);
+      // console.log("ConfirmPropertyChangeCalled");
+    // }
   }, [propertyDetails, pathname]);
 
 //   useEffect(() => {

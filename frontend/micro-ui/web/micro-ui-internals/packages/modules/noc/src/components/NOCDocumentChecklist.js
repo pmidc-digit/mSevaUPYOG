@@ -41,7 +41,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
         </thead>
         <tbody>
           {documents?.map((doc, i) => {
-            const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
+            const url = urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
                  <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
@@ -55,9 +55,15 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                   <TextInput
                     t={t}
                     type="text"
-                    value={localRemarks[doc.documentUid] ?? ""}
-                    onChange={(e) => !readOnly && setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }))}
-                    onBlur={(e) => !readOnly && handleBlur(doc.documentUid, e.target.value)}
+                    value={localRemarks[doc?.documentUid] ?? ""}
+                    onChange={(e) => {
+                      if (!readOnly) {
+                        const value = e.target.value;
+                        setLocalRemarks(prev => ({ ...prev, [doc?.documentUid]: value }));
+                        onRemarksChange({ ...localRemarks, [doc?.documentUid]: value });
+                      }
+                    }}
+                    onBlur={(e) => !readOnly && handleBlur(doc?.documentUid, e.target.value)}
                     disabled={readOnly}
                     className="checklist-table-input"
                   />

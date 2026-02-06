@@ -198,11 +198,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.plotNo?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.plotNo?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{t("BPA_PROPOSED_SITE_ADDRESS")}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -231,11 +231,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.proposedSiteAddress?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedSiteAddress ? errors.proposedSiteAddress.message : ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_WARD_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -264,11 +264,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.wardNo?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.wardNo?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_KHASRA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -297,11 +297,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.khasraNo?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.khasraNo?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_KHEWAT_KHATUNI_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -331,11 +331,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.khewatOrKhatuniNo?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.khewatOrKhatuniNo?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_HADBAST_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -368,11 +368,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+             <p style={errorStyle}>{errors?.hadbastNo?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.hadbastNo?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VILLAGE_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -405,11 +405,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.villageName?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_SITE_VASIKA_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -438,11 +438,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.vasikaNumber?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("BPA_SITE_VASIKA_DATE_LABEL")}`}
               <span className="requiredField">*</span>
@@ -469,12 +469,12 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.vasikaDate?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.vasikaDate?.message || ""}</CardLabelError>
 
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -505,12 +505,13 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+             <p style={errorStyle}>{errors?.ownershipInPct?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.ownershipInPct?.message || ""}</CardLabelError>
 
-           <LabelFieldPair>
+           <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
              <Controller
               control={control}
               name={"isOriginalCategoryAgriculture"}
@@ -528,11 +529,13 @@ const CLUSiteDetails = (_props) => {
                 />
               )}
             />
+            <p style={errorStyle}>{errors?.isOriginalCategoryAgriculture?.message}</p>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.isOriginalCategoryAgriculture?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             {!isRoadTypeLoading && (
               <Controller
                 control={control}
@@ -545,11 +548,13 @@ const CLUSiteDetails = (_props) => {
                 )}
               />
             )}
+            <p style={errorStyle}>{errors?.roadType?.message }</p>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadType?.message || ""}</CardLabelError>
 
-         {!isZoneListLoading &&  (<LabelFieldPair>
+         {!isZoneListLoading &&  (<LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_ZONE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             <Controller
               control={control}
               name={"zone"}
@@ -560,13 +565,15 @@ const CLUSiteDetails = (_props) => {
                 <Dropdown className="form-field" select={props.onChange} selected={props.value} option={zoneList?.tenant?.zoneMaster?.[0]?.zones} optionKey="code" t={t}/>
               )}
             />
+            <p style={errorStyle}>{errors?.zone?.message}</p>
+            </div>
           </LabelFieldPair>
            )}
-          <CardLabelError style={errorStyle}>{errors?.zone?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isUlbListLoading && (
+              <div className="field">
               <Controller
                 control={control}
                 name={"ulbName"}
@@ -588,11 +595,12 @@ const CLUSiteDetails = (_props) => {
                   />                
                 )}
               />
+              <p style={errorStyle}>{errors?.ulbName?.message}</p>
+              </div>
             )}
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.ulbName ? errors.ulbName.message : ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_ULB_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -615,8 +623,9 @@ const CLUSiteDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_DISTRICT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
             <Controller 
               control={control}
               name={"district"}
@@ -637,12 +646,14 @@ const CLUSiteDetails = (_props) => {
                   />
               )}
             />
+            <p style={errorStyle}>{errors?.district?.message}</p>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.district?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isMdmsLoading && (
+              <div className="field">
               <Controller
                 control={control}
                 name={"appliedCluCategory"}
@@ -661,12 +672,14 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+              <p style={errorStyle}>{errors?.appliedCluCategory?.message}</p>
+              </div>
             )}
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.appliedCluCategory?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_CORE_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
               <Controller
                 control={control}
                 name="coreArea"
@@ -682,12 +695,14 @@ const CLUSiteDetails = (_props) => {
                 />
                 )}
               />
+              <p style={errorStyle}>{errors?.coreArea?.message}</p>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.coreArea?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_STATUS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isBuildingTypeLoading && (
+            <div className="field">
               <Controller
                 control={control}
                 name={"buildingStatus"}
@@ -705,12 +720,14 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
-            )}
+              <p style={errorStyle}>{errors?.buildingStatus?.message}</p>
+              </div>
+            )}  
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.buildingStatus?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_RESTRICTED_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
              <Controller
               control={control}
               name={"restrictedArea"}
@@ -728,10 +745,11 @@ const CLUSiteDetails = (_props) => {
                 />
               )}
             />
+            <p style={errorStyle}>{errors?.restrictedArea?.message}</p>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.restrictedArea?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_PROPERTY_UID_LABEL")}`}</CardLabel>
             <div className="field">
               <Controller
@@ -761,12 +779,13 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.propertyUid?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.propertyUid?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+            <div className="field">
              <Controller
               control={control}
               name={"isSiteUnderMasterPlan"}
@@ -784,10 +803,11 @@ const CLUSiteDetails = (_props) => {
                 />
               )}
             />
+            <p style={errorStyle}>{errors?.isSiteUnderMasterPlan?.message}</p>
+            </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.isSiteUnderMasterPlan?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_NET_TOTAL_AREA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -817,11 +837,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+             <p style={errorStyle}>{errors?.netTotalArea?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -852,11 +872,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.areaLeftForRoadWidening?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -888,12 +908,12 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
 
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_ROAD_WIDTH_AT_SITE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -922,9 +942,9 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+             <p style={errorStyle}>{errors?.roadWidthAtSite?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.roadWidthAtSite ? errors.roadWidthAtSite.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")}`}</CardLabel>
@@ -955,11 +975,11 @@ const CLUSiteDetails = (_props) => {
                   />
                 )}
               />
+            <p style={errorStyle}>{errors?.proposedRoadWidthAfterWidening?.message}</p>
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.proposedRoadWidthAfterWidening?.message || ""}</CardLabelError>
 
-          {/* <LabelFieldPair>
+          {/* <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_BUILDING_CATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             {!isBuildingCategoryLoading && buildingCategory.length > 0 && (
               <Controller

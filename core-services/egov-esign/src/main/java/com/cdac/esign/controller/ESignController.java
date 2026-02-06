@@ -34,8 +34,7 @@ public class ESignController {
             @RequestParam("tenantid") String tenantId,
             // 1. ADDED: New Parameter for Signer Name (Optional)
             @RequestParam(value = "signerName", required = false) String signerName,
-         // 1. ADDED: New Parameter for Custom response URL (Optional)
-            @RequestParam(value = "callbackUrl", required = false) String callbackUrl) {
+            @RequestParam(value = "callbackUrl") String callbackUrl) {
 
         logger.info("Received upload request for file: {}, tenant: {}, signer: {}", fileStoreId, tenantId, signerName);
 
@@ -53,43 +52,6 @@ public class ESignController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-//    @PostMapping("/complete")
-//    public ResponseEntity<Map<String, String>> completeSigning(
-//            @RequestParam("eSignResponse") String response,
-//            @RequestParam("espTxnID") String espTxnID,
-//            HttpServletRequest request) {
-//
-//        logger.info("Received complete signing request for espTxnID: {}", espTxnID);
-//
-//        try {
-//            // Updated: Service now returns a Map
-//            Map<String, String> signingResult = eSignService.processDocumentCompletion(response, espTxnID, request);
-//            
-//            logger.info("Document signing completed successfully: {}", signingResult.get("fileUrl"));
-//
-//            Map<String, String> body = new HashMap<>();
-//            body.put("status", "SUCCESS");
-//            body.put("fileUrl", signingResult.get("fileUrl"));
-//            body.put("fileStoreId", signingResult.get("fileStoreId")); // New field returned
-//
-//            return ResponseEntity.ok(body);
-//
-//        } catch (IllegalStateException e) {
-//            // ... [Existing error handling] ...
-//            logger.warn("Session expired or invalid state: {}", e.getMessage());
-//            Map<String, String> error = new HashMap<>();
-//            error.put("status", "FAILED");
-//            error.put("error", e.getMessage());
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-//        } catch (Exception e) {
-//            // ... [Existing error handling] ...
-//            logger.error("Error processing signature", e);
-//            Map<String, String> error = new HashMap<>();
-//            error.put("status", "FAILED");
-//            error.put("error", e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-//        }
-//    }
     
     @PostMapping("/complete")
     public ResponseEntity<Map<String, String>> completeSigning(
@@ -111,6 +73,7 @@ public class ESignController {
             body.put("fileUrl", signingResult.get("fileUrl"));
             body.put("fileStoreId", signingResult.get("fileStoreId")); // New field returned
 
+            // Redirect to custom callback URL 
             String finalRedirectUrl = callbackUrl + "/" + signingResult.get("fileStoreId");
             HttpHeaders headers = new HttpHeaders();
             headers.add("Location", finalRedirectUrl);

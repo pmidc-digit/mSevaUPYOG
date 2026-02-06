@@ -7,7 +7,6 @@ import {
   StatusTable,
   LabelFieldPair,
   CardLabel,
-  Loader,
   Card,
   CardSubHeader,
   ActionBar,
@@ -28,6 +27,8 @@ import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import { EmployeeData } from "../../../utils";
+import { Loader } from "../../../components/Loader";
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
@@ -41,7 +42,8 @@ const CitizenApplicationOverview = () => {
 
   const [ndcDatils, setNdcDetails] = useState([]);
   const [displayData, setDisplayData] = useState({});
-
+   const [getLoader, setLoader] = useState(false);
+ 
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -66,7 +68,13 @@ const CitizenApplicationOverview = () => {
     }
   }, [workflowDetails]);
 
-  console.log("approver for ndc", approver);
+  const empData = EmployeeData(tenantId, approver)
+  
+    console.log("approver for ndc", approver);
+  
+  
+    console.log('officerData', empData)
+  
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -136,20 +144,32 @@ const CitizenApplicationOverview = () => {
   }, [applicationDetails]);
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails;
-    const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
-    const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+    try {
+      setLoader(true);
+      const Property = applicationDetails;
+      const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+      const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
 
-    Property.propertyOwnerNames = propertyOwnerNames;
+      Property.propertyOwnerNames = propertyOwnerNames;
 
-    console.log("propertyOwnerNames", propertyOwnerNames);
-    const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-    console.log("tenantInfo", tenantInfo);
-    const ulbType = tenantInfo?.city?.ulbType;
-    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
+      console.log("propertyOwnerNames", propertyOwnerNames);
+      const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
+      console.log("tenantInfo", tenantInfo);
+      const ulbType = tenantInfo?.city?.ulbType;
+      let acknowledgementData;
 
-    console.log("acknowledgementData", acknowledgementData);
-    Digit.Utils.pdf.generateNDC(acknowledgementData);
+      if (empData) {
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
+      }
+      console.log("acknowledgementData", acknowledgementData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateNDC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoader(false);
+    }
   };
 
   const [getPropertyId, setPropertyId] = useState(null);
@@ -208,9 +228,13 @@ const CitizenApplicationOverview = () => {
       <div className="ndc-application-overview">
         {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
-        {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}> 
+         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
           <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
         )}
+      </div>
+
+       
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
           applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
           <ActionBar>
@@ -331,6 +355,8 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
+      
     </div>
   );
 };

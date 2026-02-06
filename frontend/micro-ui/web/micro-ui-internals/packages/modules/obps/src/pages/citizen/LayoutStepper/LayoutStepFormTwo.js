@@ -21,6 +21,13 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const cluValidationRef = useRef({ isCluValidated: false, isCluRequired: false });
   console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
 
+  // Get Redux data BEFORE using it in useForm
+  const currentStepData = useSelector(function (state) {
+    return state.obps.LayoutNewApplicationFormReducer.formData;
+  });
+
+  console.log(currentStepData, "FFFFFFFFFFF");
+
   const {
     control,
     handleSubmit,
@@ -31,18 +38,20 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   } = useForm({
     defaultValues: {
       floorArea: [{ value: "" }],
-      vasikaNumber: "",
-      vasikaDate: "",
+      vasikaNumber: currentStepData?.siteDetails?.vasikaNumber || "",
+      vasikaDate: currentStepData?.siteDetails?.vasikaDate || "",
+      applicationAppliedUnder: currentStepData?.siteDetails?.applicationAppliedUnder || "",
+      zone: currentStepData?.siteDetails?.zone || "",
+      cluType: currentStepData?.siteDetails?.cluType || "",
+      cluNumber: currentStepData?.siteDetails?.cluNumber || "",
+      cluNumberOffline: currentStepData?.siteDetails?.cluNumberOffline || "",
+      cluApprovalDate: currentStepData?.siteDetails?.cluApprovalDate || "",
+      cluDocumentUpload: currentStepData?.siteDetails?.cluDocumentUpload || "",
+      isCluRequired: currentStepData?.siteDetails?.isCluRequired || "",
     },
   });
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-
-  const currentStepData = useSelector(function (state) {
-    return state.obps.LayoutNewApplicationFormReducer.formData;
-  });
-
-  console.log(currentStepData, "FFFFFFFFFFF");
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch };
 
@@ -60,55 +69,85 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const siteDetails = currentStepData?.siteDetails;
   
-  // Map zone object to match zoneOptions format
+  // Restore zone from zoneOptions after they load
   useEffect(() => {
     if (zoneOptions?.length > 0 && siteDetails?.zone) {
       const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
       const matchedZone = zoneOptions?.find((loc) => loc.name === zoneName);
-
       if (matchedZone) {
         setValue("zone", matchedZone);
       }
     }
   }, [zoneOptions, siteDetails?.zone, setValue]);
 
-  const onSubmit = (data) => {
-    trigger()
-
-    // Validation for CLU - if CLU is required, it must be validated
-    const cluType = data?.cluType?.code || data?.cluType;
-    const isCluRequired = data?.isCluRequired?.code === "YES" || data?.isCluRequired === "YES" || false;
+  const onSubmit = async (data) => {
+    console.log("========== FORM SUBMIT START ==========");
+    console.log("Form Submit - Raw data:", data);
+    console.log("Form errors BEFORE trigger:", errors);
     
-    if (isCluRequired && cluType === "ONLINE") {
+    // Validate all form fields
+    const isValid = await trigger();
+    console.log("Form validation result:", isValid);
+    console.log("Form errors AFTER trigger:", errors);
+    
+    if (!isValid) {
+      console.log("❌ FORM VALIDATION FAILED - Listing all errors:");
+      Object.keys(errors).forEach(key => {
+        if (errors[key]) {
+          console.log(`  - ${key}:`, errors[key].message);
+        }
+      });
+      setShowToast({ key: "true", error: true, message: "Please fill all required fields correctly" })
+      return;
+    }
+
+    console.log("✅ Form validation PASSED");
+
+    // Validation for CLU - ONLY when CLU is NOT required (isCluRequired = "NO")
+    // When isCluRequired = "YES", CLU Type doesn't show, so skip this validation
+    const cluNotRequired = data?.isCluRequired?.code === "NO" || data?.isCluRequired === "NO";
+    const cluType = data?.cluType?.code || data?.cluType;
+    
+    console.log("CLU Validation - isCluRequired:", data?.isCluRequired, "cluNotRequired:", cluNotRequired, "cluType:", cluType);
+    console.log("CLU data:", { 
+      cluDocumentUpload: data?.cluDocumentUpload,
+      cluNumberOffline: data?.cluNumberOffline,
+      cluApprovalDate: data?.cluApprovalDate
+    });
+    
+    if (cluNotRequired && cluType === "ONLINE") {
       // For online CLU, check if it was validated by user
       if (!cluValidationRef.current.isCluValidated) {
+        console.log("CLU Validation Failed - Not Validated");
         setShowToast({ key: "true", error: true, message: "CLU Number must be validated before proceeding. Please click 'Validate CLU' button." })
         return
       }
-    } else if (isCluRequired && cluType === "OFFLINE") {
+    } else if (cluNotRequired && cluType === "OFFLINE") {
       // For offline CLU, document must be uploaded (this is handled by form validation)
+      console.log("Checking OFFLINE CLU document upload...");
+      console.log("data?.cluDocumentUpload:", data?.cluDocumentUpload);
+      console.log("data?.cluNumberOffline:", data?.cluNumberOffline);
+      console.log("data?.cluApprovalDate:", data?.cluApprovalDate);
+      
       if (!data?.cluDocumentUpload) {
+        console.log("CLU Validation Failed - Document not uploaded");
         setShowToast({ key: "true", error: true, message: "CLU Document is required for Offline CLU. Please upload." })
         return
       }
     }
 
-    // Validation for Jamabandi Area Must Be Equal To Total Plot Area (A)
-    const isEqual = parseFloat(data?.specificationPlotArea) === parseFloat(data?.areaLeftForRoadWidening) || false
-
-    if (!isEqual) {
-      setShowToast({ key: "true", error: true, message: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A)" })
-      return
-    }
+    console.log("All validations passed, proceeding...");
 
     // Save data in redux
     dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data))
 
     // If create api is already called then move to next step
     if (isEditApplication || currentStepData?.apiData?.Layout?.applicationNo) {
+      console.log("Edit mode or API already called, calling onGoNext");
       onGoNext()
     } else {
       // Call Create API and move to next Page
+      console.log("New application, calling Create API");
       callCreateAPI({ ...currentStepData, siteDetails: { ...data } })
     }
   }
@@ -285,7 +324,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-          {LayoutLocalityInfo && <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
+          {/* {LayoutLocalityInfo && <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />} */}
           {LayoutSiteDetails && <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} cluValidationRef={cluValidationRef} {...commonProps} />}
           {LayoutSpecificationDetails && <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />}
           {/* {LayoutCLUDetails && <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />} */}

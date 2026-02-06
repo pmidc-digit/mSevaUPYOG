@@ -11,25 +11,25 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const closeToast = () => setShowToast(null);
   const stateCode = Digit.ULBService.getStateId();
 
-  // Handle both NEW mode (Layout array/object) and EDIT mode (direct object)
+
   let layoutData = null;
   
   if (formData?.apiData?.Layout) {
-    // NEW or EDIT mode with Layout in apiData
+
     const isLayoutArray = Array.isArray(formData?.apiData?.Layout);
     layoutData = isLayoutArray ? formData?.apiData?.Layout?.[0] : formData?.apiData?.Layout;
   } else if (formData?.apiData?.applicationNo) {
-    // Direct layout object passed (from LayoutApplicationSummary)
+
     layoutData = formData?.apiData;
   } else {
-    // Fallback - try to extract from formData directly
+
     layoutData = formData;
   }
   
   const tenantId = layoutData?.tenantId;
   const applicationNo = layoutData?.applicationNo;
 
-  // Safely get applicationDetails and siteDetails
+
   const applicationDetails = formData?.applicationDetails || layoutData?.layoutDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = formData?.siteDetails || layoutData?.layoutDetails?.additionalDetails?.siteDetails || {};
 
@@ -123,14 +123,13 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     if (jumpTo) window.open(jumpTo);
   }
 
-  // Function to format siteDetails fields for calculator API
-  // Ensures all dropdown/select fields are sent as objects with code and name
+
   const formatSiteDetailsForCalculator = (details) => {
     if (!details) return details;
 
     const formatted = { ...details };
 
-    // Format zone to object if it's a string
+
     if (formatted.zone && typeof formatted.zone === 'string') {
       formatted.zone = {
         code: formatted.zone,
@@ -138,7 +137,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
       };
     }
 
-    // Format isCluRequired to object if it's a string
+
     if (formatted.isCluRequired && typeof formatted.isCluRequired === 'string') {
       formatted.isCluRequired = {
         code: formatted.isCluRequired,
@@ -320,11 +319,11 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   if (layoutCalculatorLoading) return <Loader />;
 
   return (
-    <div>
+    <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       {layoutCalculatorLoading ? (
         <Loader />
       ) : (
-        <div>
+        <div style={{ width: "100%" }}>
           <LayoutFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}

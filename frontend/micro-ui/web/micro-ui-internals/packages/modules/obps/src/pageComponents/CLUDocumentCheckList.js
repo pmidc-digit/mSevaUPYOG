@@ -29,14 +29,14 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   };
 
   return (
-    <div className="noc-table-container">
-      <table className="customTable table-border-style">
+    <div className="checklist-document-table-wrapper">
+      <table className="customTable table-border-style checklist-document-table">
         <thead>
           <tr>
-            <th>{t("BPA_SR_NO_LABEL")}</th>
-            <th>{t("BPA_DOCUMENT_NAME")}</th>
-            <th>{t("BPA_DOCUMENT_FILE")}</th>
-            <th>{t("BPA_REMARKS_LABEL")}</th>
+            <th className="checklist-table-header checklist-table-header-srno">{t("BPA_SR_NO_LABEL")}</th>
+            <th className="checklist-table-header checklist-table-header-doc-name">{t("BPA_DOCUMENT_NAME")}</th>
+            <th className="checklist-table-header checklist-table-header-doc-file">{t("BPA_DOCUMENT_FILE")}</th>
+            <th className="checklist-table-header checklist-table-header-remark">{t("BPA_REMARKS_LABEL")}</th>
           </tr>
         </thead>
         <tbody>
@@ -44,14 +44,14 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td>{i + 1}</td>
-                <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
-                <td>
+                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
+                <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
+                <td className="checklist-table-cell checklist-table-cell-file">
                   {url ? (
                     <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
                   ) : t("CS_NA")}
                 </td>
-                <td>
+                <td className="checklist-table-cell checklist-table-cell-remark">
                   <TextInput
                     t={t}
                     type="text"
@@ -59,7 +59,7 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                     onChange={(e) => !readOnly && setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }))}
                     onBlur={(e) => !readOnly && handleBlur(doc.documentUid, e.target.value)}
                     disabled={readOnly}
-                    style={{ width: "100%", padding: "4px", border: "1px solid #ccc", borderRadius: "4px" }}
+                    className="checklist-table-input"
                   />
                 </td>
               </tr>

@@ -40,14 +40,14 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
   };
 
   return (
-    <div className="noc-table-container">
-      <table className="customTable table-border-style">
+    <div className="checklist-document-table-wrapper">
+      <table className="customTable table-border-style checklist-document-table">
         <thead>
           <tr>
-            <th style={{ width: "60px", textAlign: "center" }}>{t("SR_NO")}</th>
-            <th>{t("BPA_DOCUMENT_NAME")}</th>
-            <th>{t("BPA_DOCUMENT_FILE")}</th>
-            <th>{t("BPA_DOCUMENT_REMARK")}</th>
+            <th className="checklist-table-header checklist-table-header-srno">{t("SR_NO")}</th>
+            <th className="checklist-table-header checklist-table-header-doc-name">{t("BPA_DOCUMENT_NAME")}</th>
+            <th className="checklist-table-header checklist-table-header-doc-file">{t("BPA_DOCUMENT_FILE")}</th>
+            <th className="checklist-table-header checklist-table-header-remark">{t("BPA_DOCUMENT_REMARK")}</th>
           </tr>
         </thead>
         <tbody>
@@ -55,25 +55,22 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td style={{ width: "60px", textAlign: "center" }}>{i + 1}</td>
-                <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
-                <td>
+                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
+                <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
+                <td className="checklist-table-cell checklist-table-cell-file">
                   {url ? (
                     <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
                   ) : t("CS_NA")}
                 </td>
-                <td>
+                <td className="checklist-table-cell checklist-table-cell-remark">
                   {isReadOnly ? (
                     <input
                       type="text"
                       value={localRemarks[doc.documentUid] ?? ""}
                       disabled={true}
                       readOnly={true}
+                      className="checklist-table-input"
                       style={{ 
-                        width: "100%", 
-                        padding: "4px", 
-                        border: "1px solid #ccc", 
-                        borderRadius: "4px",
                         backgroundColor: "#f5f5f5",
                         cursor: "not-allowed"
                       }}
@@ -90,11 +87,8 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                         console.log("onBlur triggered - final value:", e.target.value);
                         handleBlur(doc.documentUid, e.target.value);
                       }}
+                      className="checklist-table-input"
                       style={{ 
-                        width: "100%", 
-                        padding: "4px", 
-                        border: "1px solid #ccc", 
-                        borderRadius: "4px",
                         backgroundColor: "#ffffff",
                         cursor: "text"
                       }}

@@ -44,6 +44,7 @@ const NOCSiteDetails = (_props) => {
     setValue("netPlotAreaAfterWidening", diff);
   }, [NetTotalArea, AreaLeftForRoadWidening]);
   const [landArea, setLandArea] = useState("");
+  const [siteAddress, setSiteAddress] = useState("");
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("");
   const { fields: areaFields, append: addFloor, remove: removeFloor } = useFieldArray({
@@ -170,6 +171,12 @@ const sortedRoadType = useMemo(
     if (currentStepData){
       const landareaObj = currentStepData?.cpt?.details;
 
+      const siteObj = currentStepData?.cpt?.details?.address
+
+      const siteAdd = siteObj?.doorNo || siteObj?.street
+
+      setSiteAddress(siteAdd)
+
       const landAreacpt = landareaObj?.owners?.[0]?.landArea ||landareaObj?.landArea;
       // console.log('landAreacpt', landAreacpt)
       setLandArea(landAreacpt)
@@ -186,8 +193,12 @@ const sortedRoadType = useMemo(
   }, [landArea, setValue]);
 
 
- 
-  
+  useEffect(() => {
+    if (siteAddress) {
+      setValue("proposedSiteAddress", siteAddress, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [siteAddress, setValue]);
+
   useEffect(() => {
     //console.log("currentStepData3", currentStepData);
     const formattedData = currentStepData?.siteDetails;
@@ -297,6 +308,7 @@ const sortedRoadType = useMemo(
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
+                    disabled ={Boolean(siteAddress) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)}
                   />
                 )}
               />

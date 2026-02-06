@@ -243,11 +243,53 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
         : []),
     ],
   });
-  const docDetails = application?.Document?.map((doc, index) => ({
-    title: t(`${doc.documentType}`) || "NA",
-    value: " ",
-    link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
-  }));
+
+  if (application?.additionalDetails?.applicationType === "Legacy") {
+    details.push({
+      title: t("RAL_ARREAR_DETAILS"),
+      values: [
+        {
+          title: t("Arrears"),
+          value: application?.additionalDetails?.arrear || "NA",
+        },
+        {
+          title: t("RAL_START_DATE"),
+          value: convertEpochToDate(application?.additionalDetails?.arrearStartDate) || "NA",
+        },
+        {
+          title: t("RAL_END_DATE"),
+          value: convertEpochToDate(application?.additionalDetails?.arrearEndDate) || "NA",
+        },
+        {
+          title: t("Reason"),
+          value: application?.additionalDetails?.arrearReason || "NA",
+        },
+        {
+          title: t("Remarks"),
+          value: application?.additionalDetails?.remarks || "NA",
+        },
+      ],
+    });
+  }
+
+  const standardDocs =
+    application?.Document?.map((doc, index) => ({
+      title: t(`${doc.documentType}`) || "NA",
+      value: " ",
+      link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+    })) || [];
+
+  const arrearDoc = application?.additionalDetails?.arrearDoc
+    ? [
+        {
+          title: t("Arrear Doc"),
+          value: " ",
+          link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
+        },
+      ]
+    : [];
+
+  const docDetails = [...standardDocs, ...arrearDoc];
 
   details.push({
     title: t("BPA_APPLICATION_DOCUMENTS"),

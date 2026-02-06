@@ -281,7 +281,7 @@ const CitizenApplicationOverview = () => {
       });
     }
   }
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "ESIGEND" ) {
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED" ) {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
@@ -539,11 +539,11 @@ const CitizenApplicationOverview = () => {
       {id.length > 0 && (
         <React.Fragment>
           <Card>
-            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
-            </div>
+          
           </Card>
         </React.Fragment>
       )}
@@ -715,7 +715,7 @@ const CitizenApplicationOverview = () => {
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
+            [...sitePhotos].reverse()
               .map((doc) => (
                 <NocSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}

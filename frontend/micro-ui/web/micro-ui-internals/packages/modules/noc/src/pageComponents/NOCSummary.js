@@ -7,6 +7,7 @@ import NOCDocument from "./NOCDocument";
 import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 import NocSitePhotographs from "../components/NocSitePhotographs";
+import { convertToDDMMYYYY } from "../utils";
 
 function NOCSummary({ currentStepData: formData, t }) {
   const { pathname: url } = useLocation();
@@ -162,7 +163,7 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"} />
           <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={formData?.siteDetails?.colonyName || "N/A"} />
           <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"} />
-          <Row label={t("NOC_VASIKA_DATE")} text={formData?.siteDetails?.vasikaDate || "N/A"} />
+          <Row label={t("NOC_VASIKA_DATE")} text={convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) || "N/A"} />
           <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={formData?.siteDetails?.khewatAndKhatuniNo || "N/A"} />
         </StatusTable>
       </Card>

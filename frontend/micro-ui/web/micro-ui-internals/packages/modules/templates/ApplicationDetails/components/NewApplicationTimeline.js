@@ -188,13 +188,17 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                       <h3 className="custom-action-title">{t("Action taken by")}</h3>
                       {item?.assigner && (
                         <div className="custom-officer-info">
-                          <div className="custom-officer-name">{item?.assigner?.name || t("CS_COMMON_NA")}</div>
+                          <div className="custom-officer-name">
+                            {item?.assigner?.name || t("CS_COMMON_NA")}
+                            {deptMap[item?.assigner?.userName] && (
+                              <span className="custom-officer-name">- {t(deptMap[item?.assigner?.userName])}</span>
+                            )}
+                          </div>
                           {item?.assigner?.emailId && (
                             <div className="custom-officer-email">
                               <span className="custom-email-label">{t("Email")}</span> {item?.assigner?.emailId}
                             </div>
                           )}
-                          {deptMap[item?.assigner?.userName] && <div className="custom-officer-name">{t(deptMap[item?.assigner?.userName])}</div>}
                         </div>
                       )}
                     </div>
@@ -223,19 +227,26 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                       <div className="custom-comments-content">
                         <h4 className="custom-comments-title">{t("Officer Comments")}</h4>
                         <div className="custom-comment-text">
-                          {item?.wfComment?.map((comment, idx) => (
-                            <p key={idx}>{comment}</p>
-                          ))}
+                          {item?.wfComment?.map((comment, idx) => {
+                            const pattern = /\[#\?.*?\*\*\]/;
+                            const truncatedComment = typeof comment === "string" ? comment?.split(pattern)[0] : comment;
+                            return <p key={idx}>{truncatedComment}</p>;
+                          })}
                         </div>
                       </div>
                       {item?.assignes?.length > 0 && (
                         <div className="custom-assigned-to-footer">
                           <h3 className="custom-comments-title">{t("Assigned To")}</h3>
                           <div className="custom-officer-info">
-                            <div className="custom-officer-name">{item.assignes[0]?.name}</div>
-                            {deptMap[item.assignes[0]?.userName] && (
+                            <div className="custom-officer-name">
+                              {item.assignes[0]?.name}
+                              {deptMap[item.assignes[0]?.userName] && (
+                                <span className="custom-officer-email">- {t(deptMap[item.assignes[0]?.userName])}</span>
+                              )}
+                            </div>
+                            {/* {deptMap[item.assignes[0]?.userName] && (
                               <div className="custom-officer-email">{t(deptMap[item.assignes[0]?.userName])}</div>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       )}

@@ -172,7 +172,7 @@ const LayoutProfessionalDetails = (_props) => {
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
-      <div>
+      {/* <div>
 
   
       {userPhoto && (
@@ -210,7 +210,7 @@ const LayoutProfessionalDetails = (_props) => {
           </div>
         </div>
       )}
-          </div>
+          </div> */}
 
       <LabelFieldPair>
         <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>

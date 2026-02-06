@@ -14,7 +14,6 @@ const SelectEmployeeType = ({ t, config, onSelect, formData = {}, userType }) =>
     setEmployeeType(value);
   }
 
-  console.log("EmployeeTypes", EmployeeTypes);
 
   useEffect(() => {
     onSelect(config.key, employeeType);

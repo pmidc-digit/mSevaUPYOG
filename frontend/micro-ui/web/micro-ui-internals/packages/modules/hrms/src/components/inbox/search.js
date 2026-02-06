@@ -22,7 +22,6 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   // Transform designations to dropdown options
   const designationOptions = useMemo(() => {
     if (!mdmsData?.MdmsRes?.["common-masters"]?.Designation) {
-      console.log("⚠️ Designations not found in MDMS at common-masters.Designation");
       return [];
     }
     
@@ -37,12 +36,10 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
       }))
       .sort((a, b) => a.i18text.localeCompare(b.i18text));
     
-    console.log("📊 Designation options loaded:", options.length);
     return options;
   }, [mdmsData, t]);
 
   const onSubmitInput = (data) => {
-    console.log("🔍 Form data BEFORE processing:", data);
     
     if (!data.mobileNumber) {
       delete data.mobileNumber;
@@ -55,7 +52,6 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
       }
     });
     
-    console.log("✅ Form data AFTER processing:", data);
     
     data.delete = [];
     searchFields.forEach((field) => {

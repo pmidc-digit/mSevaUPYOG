@@ -13,14 +13,14 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
     { code: "Father", active: true },
     { code: "Husband", active: true },
   ];
-  const [employeeType, setemployeeType] = useState(formData?.SelectEmployeeType);
-  function SelectEmployeeType(value) {
-    setemployeeType(value);
+  const [relationship, setRelationship] = useState(formData?.SelectEmployeeGuardianRelationship);
+  function SelectRelationship(value) {
+    setRelationship(value);
   }
 
   useEffect(() => {
-    onSelect(config.key, employeeType);
-  }, [employeeType]);
+    onSelect(config.key, relationship);
+  }, [relationship]);
   const inputs = [
     {
       label: "HR_RELATIONSHIP_LABEL",
@@ -49,10 +49,10 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
         </CardLabel>
         <Dropdown
           className="form-field"
-          selected={employeeType}
+          selected={relationship}
           // option={EmployeeTypes?.["egov-hrms"]?.EmployeeType}
           option={Relationships}
-          select={SelectEmployeeType}
+          select={SelectRelationship}
           optionKey="code"
           placeholder={t("HR_RELATIONSHIP_PLACEHOLDER")}
           defaultValue={undefined}

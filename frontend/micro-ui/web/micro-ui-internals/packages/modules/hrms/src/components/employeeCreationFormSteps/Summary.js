@@ -21,7 +21,7 @@ const Summary = ({ config, formData: propsFormData, onSelect }) => {
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
       <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
-      <div>{value || "N/A"}</div>
+      <div className="hrms-summary-value">{value || "N/A"}</div>
     </div>
   );
 
@@ -158,7 +158,7 @@ const Summary = ({ config, formData: propsFormData, onSelect }) => {
           <div key={index} className="bpa-summary-section">
             <div style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
               #{index + 1}
-              {assignment.isCurrentAssignment && (
+              {/* {assignment.isCurrentAssignment && (
                 <span style={{ 
                   marginLeft: "10px", 
                   padding: "2px 8px", 
@@ -170,7 +170,7 @@ const Summary = ({ config, formData: propsFormData, onSelect }) => {
                 }}>
                   {t("HR_CURRENT_ASSIGNMENT") || "Current Assignment"}
                 </span>
-              )}
+              )} */}
             </div>
             {renderLabel(t("HR_DEPARTMENT") || "Department", getDepartmentName(assignment.department))}
             {renderLabel(t("HR_DESIGNATION") || "Designation", getDesignationName(assignment.designation))}

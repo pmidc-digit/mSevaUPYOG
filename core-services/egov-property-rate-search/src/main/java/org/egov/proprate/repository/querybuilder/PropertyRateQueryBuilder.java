@@ -19,7 +19,7 @@ public class PropertyRateQueryBuilder {
        ========================= */
 
     private static final String BASE_SELECT =
-            "SELECT prm.rate_id, prm.property_rate, prm.unit, prm.segment_no, prm.is_active, " +
+            "SELECT distinct (prm.rate_id), prm.property_rate, prm.unit, prm.segment_no, prm.is_active, " +
             "sl.segment_list_name, " +
             "vm.village_name, vm.village_id, vm.is_urban, " +
             "tm.tehsil_name, tm.tehsil_id, " +

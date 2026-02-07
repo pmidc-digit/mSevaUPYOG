@@ -19,11 +19,7 @@ public class SearchCriteria {
     private String districtName;
     private String tehsilName;
     private String villageName;
-    private String segmentName;    
-    
-    // Classification Names
-    private String usageCategory;
-    
+    private String segmentName;        
     // Control Flags
     private Boolean isRateCheck; 
     private Boolean isActive;    

@@ -90,6 +90,10 @@ const getApplicantDetails = (appData, t) => {
         title: t("BPA_APPLICANT_ADDRESS_LABEL"),
         value: owner?.address || "NA",
       },
+      {
+        title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
+        value: owner?.ownershipInPct || "NA",
+      },
     ],
   }));
 
@@ -154,6 +158,15 @@ const getSiteDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.ulbType || "N/A",
     },
     {
+      title: t("BPA_DISTRICT_LABEL"),
+      value:
+        appData?.cluDetails?.additionalDetails?.siteDetails?.district?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.district || "N/A",
+    },
+    {
+      title: t("BPA_ZONE_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.zone?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.zone || "N/A",
+    },
+    {
       title: t("BPA_KHASRA_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.khasraNo || "N/A",
     },
@@ -187,15 +200,6 @@ const getSiteDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.wardNo || "N/A",
     },
     {
-      title: t("BPA_DISTRICT_LABEL"),
-      value:
-        appData?.cluDetails?.additionalDetails?.siteDetails?.district?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.district || "N/A",
-    },
-    {
-      title: t("BPA_ZONE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.zone?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.zone || "N/A",
-    },
-    {
       title: t("BPA_SITE_VASIKA_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
     },
@@ -210,10 +214,10 @@ const getSiteDetails = (appData, t) => {
       title: t("NOC_SITE_VILLAGE_NAME_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.villageName || "N/A",
     },
-    {
-      title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.ownershipInPct || "N/A",
-    },
+    // {
+    //   title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
+    //   value: appData?.cluDetails?.additionalDetails?.siteDetails?.ownershipInPct || "N/A",
+    // },
 
     {
       title: t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"),

@@ -28,7 +28,9 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
     setValue,
     trigger,
     getValues,
-  } = useForm();
+  } = useForm({
+    defaultValues: formData?.NDCReason || {},
+  });
   const { t } = useTranslation();
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   // const firstTimeRef = useRef(true);
@@ -102,8 +104,10 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
             <Controller
               control={control}
               name={"reason"}
+              defaultValue={ndcReason?.reason || ""}
               render={(props) => (
                 <TextInput
+                  value={props.value}
                   onChange={(e) => {
                     console.log("config.key", config.key);
                     console.log("formData", formData);

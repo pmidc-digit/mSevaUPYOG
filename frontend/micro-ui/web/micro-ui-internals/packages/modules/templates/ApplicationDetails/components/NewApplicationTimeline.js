@@ -189,8 +189,10 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                       {item?.assigner && (
                         <div className="custom-officer-info">
                           <div className="custom-officer-name">
-                            {item?.assigner?.name || t("CS_COMMON_NA")} -{" "}
-                            {deptMap[item?.assigner?.userName] && <span className="custom-officer-name">{t(deptMap[item?.assigner?.userName])}</span>}
+                            {item?.assigner?.name || t("CS_COMMON_NA")}
+                            {deptMap[item?.assigner?.userName] && (
+                              <span className="custom-officer-name">- {t(deptMap[item?.assigner?.userName])}</span>
+                            )}
                           </div>
                           {item?.assigner?.emailId && (
                             <div className="custom-officer-email">
@@ -237,9 +239,9 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                           <h3 className="custom-comments-title">{t("Assigned To")}</h3>
                           <div className="custom-officer-info">
                             <div className="custom-officer-name">
-                              {item.assignes[0]?.name} -{" "}
+                              {item.assignes[0]?.name}
                               {deptMap[item.assignes[0]?.userName] && (
-                                <span className="custom-officer-email">{t(deptMap[item.assignes[0]?.userName])}</span>
+                                <span className="custom-officer-email">- {t(deptMap[item.assignes[0]?.userName])}</span>
                               )}
                             </div>
                             {/* {deptMap[item.assignes[0]?.userName] && (

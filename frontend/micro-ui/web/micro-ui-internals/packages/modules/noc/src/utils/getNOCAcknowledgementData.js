@@ -393,7 +393,7 @@ const getSitePhotographs = async (appData, t, stateCode) => {
 
 
 
-export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,ulbType, ulbName, t) => {
+export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,ulbType, ulbName, t, isView = false ) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData=applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
@@ -408,27 +408,33 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo,u
   
   if(appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalName)detailsArr.push(getProfessionalDetails(appData, t),)
 
-  return {
-    t: t,
+   const data = {
+    t,
     tenantId: tenantInfo?.code,
     name: "NOC Application",
-    // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
     heading: t("LOCAL_GOVERNMENT_PUNJAB"),
-    // heading: t("NOC_REGISTRATION_CERTIFICATE"),
     applicationNumber: appData?.applicationNo || "NA",
     details: [
-        getRegistrationDetails(appData,t),
-        ...detailsArr,
-        ...getApplicantDetails(appData, t),
-        getSiteDetails(appData, t), 
-        getSpecificationDetails(appData, t),
-        await getDocuments(appData,t),
-        await getSitePhotographs(appData,t, stateCode)
+      getRegistrationDetails(appData, t),
+      ...detailsArr,
+      ...getApplicantDetails(appData, t),
+      getSiteDetails(appData, t),
+      getSpecificationDetails(appData, t),
+      await getDocuments(appData, t),
+      await getSitePhotographs(appData, t, stateCode)
     ],
     imageURL,
     ulbType,
     ulbName
   };
+
+  // ✅ Append flag only if called with isView = true
+  if (isView) {
+    data.openInNewTab = true;
+  }
+
+  return data;
+
 };

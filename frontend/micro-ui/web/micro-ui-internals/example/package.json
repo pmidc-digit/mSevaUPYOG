@@ -19,7 +19,7 @@
     "@mseva/digit-ui-module-pgr": "1.0.26",
     "@mseva/digit-ui-module-receipts": "1.0.4",
     "@mseva/digit-ui-module-ws": "1.0.15",
-    "@mseva/digit-ui-module-hrms": "1.0.21",
+    "@mseva/digit-ui-module-hrms": "1.0.23",
     "@mseva/digit-ui-module-bills": "1.0.8",
     "@mseva/digit-ui-module-commonpt": "1.0.6",
     "@mseva/digit-ui-module-ptr": "1.2.9",

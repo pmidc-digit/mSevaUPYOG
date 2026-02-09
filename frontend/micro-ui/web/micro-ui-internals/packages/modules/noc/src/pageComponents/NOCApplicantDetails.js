@@ -749,7 +749,7 @@ const NOCApplicantDetails = (_props) => {
                     )}
                   />
                   <div
-                    style={{ marginTop: "17px" }}
+                    style={{ marginTop: "23px" }}
                     className="search-icon"
                     onClick={
                       Boolean(nocCpt?.details?.owners?.[0]?.mobileNumber) ||

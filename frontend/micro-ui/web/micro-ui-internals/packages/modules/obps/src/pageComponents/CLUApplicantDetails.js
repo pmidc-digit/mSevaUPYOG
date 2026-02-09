@@ -165,6 +165,7 @@ const CLUApplicantDetails = (_props) => {
     gender: null,
     dateOfBirth: "",
     address: "",
+    ownershipInPct: ""
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -190,6 +191,7 @@ const CLUApplicantDetails = (_props) => {
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
+            ownershipInPct: o.ownershipInPct || ""
           }))
         : [defaultOwner()];
 
@@ -301,7 +303,7 @@ const getOwnerDetails = async (idx) => {
             <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", position: "relative", alignItems: "center", width: "100%" }}>
                 <Controller
                   control={control}
                   name={`owners[${index}].mobileNumber`}
@@ -323,10 +325,11 @@ const getOwnerDetails = async (idx) => {
                       }}
                       t={t}
                       disabled={isEdit}
+                      style={{ width: "100%", paddingRight: "40px" }}
                     />
                   )}
                 />
-                <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
+                <div className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
                   {" "}
                   <SearchIcon />{" "}
                 </div>
@@ -527,6 +530,42 @@ const getOwnerDetails = async (idx) => {
                   )}
                 />
                  <p style={errorStyle}>{errors?.owners?.[index]?.gender?.message}</p>
+              </div>
+            </LabelFieldPair>
+
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
+              <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={`owners[${index}].ownershipInPct`}
+                  rules={{
+                  required: t("REQUIRED_FIELD"),
+                  validate: (value) => {
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = parseFloat(value) >0 && parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_GREATER_THAN_ZERO_AND_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
+                   },
+                  }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        props.onBlur(e);
+                      }}
+                      t={t}
+                      disabled={isEdit}
+                    />
+                  )}
+                />
+                <p style={errorStyle}>{errors?.owners?.[index]?.ownershipInPct?.message}</p>
               </div>
             </LabelFieldPair>
 

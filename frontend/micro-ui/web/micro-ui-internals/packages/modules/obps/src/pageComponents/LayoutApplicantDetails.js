@@ -559,7 +559,7 @@ const LayoutApplicantDetails = (_props) => {
                   />
                 )}
               />
-              <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
+              <div style={{ marginTop: "25px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
                 <SearchIcon />
               </div>
             </div>
@@ -942,7 +942,7 @@ const LayoutApplicantDetails = (_props) => {
                         <div style={{ display: "flex" }} className="field">
                           <TextInput value={applicant.mobileNumber} onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)} t={t} />
                           <div
-                            style={{ marginTop: "17px", cursor: "pointer" }}
+                            style={{ marginTop: "23px", cursor: "pointer" }}
                             className="search-icon"
                             onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
                           >

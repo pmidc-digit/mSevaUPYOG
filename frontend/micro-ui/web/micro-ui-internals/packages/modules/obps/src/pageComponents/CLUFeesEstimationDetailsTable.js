@@ -254,7 +254,7 @@ const handleAdjustedAmountChange = (index, value) => {
           <CLUFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}
-            disable={disable}
+            readOnly={disable}
             isEmployee={!disable}
             handleAdjustedAmountChange={handleAdjustedAmountChange}
             handleRemarkChange={handleRemarkChange}

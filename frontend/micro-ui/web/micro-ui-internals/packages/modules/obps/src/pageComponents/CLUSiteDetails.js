@@ -474,7 +474,7 @@ const CLUSiteDetails = (_props) => {
           </LabelFieldPair>
 
 
-          <LabelFieldPair style={{ marginBottom: "20px" }}>
+          {/* <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
             <div className="field">
               <Controller
@@ -507,7 +507,7 @@ const CLUSiteDetails = (_props) => {
               />
              <p style={errorStyle}>{errors?.ownershipInPct?.message}</p>
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
            <LabelFieldPair style={{ marginBottom: "20px" }}>
             <CardLabel className="card-label-smaller">{`${t("BPA_IS_ORIGINAL_CATEGORY_AGRICULTURE_LABEL")}`}<span className="requiredField">*</span></CardLabel>

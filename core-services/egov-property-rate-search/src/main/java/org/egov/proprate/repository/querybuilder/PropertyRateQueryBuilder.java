@@ -132,7 +132,7 @@ public class PropertyRateQueryBuilder {
             return FETCH_SEGMENTS;
         }
         
-        if (criteria.getGetUsageCategories()) {
+        if (Boolean.TRUE.equals(criteria.getGetUsageCategories())) {
             return FETCH_USAGE_CATEGORIES;
         }
 

@@ -452,9 +452,10 @@ const CLUApplicationDetails = () => {
         )}
       </div>
 
-
+      <Card>
       <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
       <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      </Card>
 
       <Card>
         <StatusTable>
@@ -465,7 +466,7 @@ const CLUApplicationDetails = () => {
 
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
       <React.Fragment>
-   
+         <Card>
           <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
@@ -476,16 +477,17 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
               <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
               <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
               </StatusTable>
             </div>
-   
+         </Card>
         </React.Fragment>
       ))}
 
       {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
-       
+              <Card>
               <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
@@ -497,11 +499,11 @@ const CLUApplicationDetails = () => {
                   <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
-        
+              </Card>
           </React.Fragment>
        ))}
 
-  
+        <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -519,9 +521,10 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+        </Card>
    
 
-   
+        <Card>
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -551,7 +554,7 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
               <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
-              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
+              {/* <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} /> */}
               <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={detail?.proposedRoadWidthAfterWidening || "N/A"} />
 
               <Row label={t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")} text={detail?.appliedCluCategory?.name || "N/A"} />
@@ -565,9 +568,10 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+        </Card>
     
 
-    
+        <Card>
         <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -576,6 +580,7 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+        </Card>
     
 
       {/* <Card>
@@ -593,11 +598,12 @@ const CLUApplicationDetails = () => {
         ))}
       </Card> */}
 
-    
+      <Card>
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
       </StatusTable>
+      </Card>
 
       {
         applicationDetails?.Clu?.[0]?.applicationStatus && !disableSiteInspectionImage?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && siteImages?.documents?.length > 0 &&
@@ -616,17 +622,17 @@ const CLUApplicationDetails = () => {
       }
     
 
-    
+        <Card>
         <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
-      
+        </Card>
 
-    
+        <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
-      
+        </Card>
 
-      
+        <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetails
@@ -638,6 +644,7 @@ const CLUApplicationDetails = () => {
             feeType="PAY1"
           />
         )}
+        </Card>
     
 
       {applicationDetails?.Clu?.[0]?.applicationStatus && !disableFeeTable?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && 

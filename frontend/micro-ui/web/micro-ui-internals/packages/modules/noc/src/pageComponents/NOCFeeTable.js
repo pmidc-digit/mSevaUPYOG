@@ -48,7 +48,10 @@ const [showHistory, setShowHistory] = useState(false);
               <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px", fontWeight: "bold" }}>{t(row.title) || t("CS_NA")}</td>
               <td style={{ padding: "14px 12px", minWidth: "130px" }}>
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
-                  ""
+                  <div>
+                    <strong style={{ fontSize: "14px" }}>{`₹ ${row.grandTotal.toLocaleString("en-IN")}`}</strong>
+                    <div style={{ fontSize: "0.85em", color: "#555", marginTop: "4px", lineHeight: "1.3" }}>{amountToWords(row.grandTotal)}</div>
+                  </div>
                 ) : (
                   // <TextInput
                   //   t={t}
@@ -125,10 +128,7 @@ const [showHistory, setShowHistory] = useState(false);
 
               <td style={{ padding: "14px 12px", minWidth: "200px" }}>
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
-                  <div>
-                    <strong style={{ fontSize: "14px" }}>{row.grandTotal.toLocaleString("en-IN")}</strong>
-                    <div style={{ fontSize: "0.85em", color: "#555", marginTop: "4px", lineHeight: "1.3" }}>{amountToWords(row.grandTotal)}</div>
-                  </div>
+                  " "
                 ) : (
                   <TextInput
                     t={t}

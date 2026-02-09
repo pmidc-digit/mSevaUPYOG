@@ -511,7 +511,7 @@ const LayoutApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       {loader && <Loader />}
-      <div style={{ padding: "20px" }}>
+      <div>
         {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader> */}
@@ -530,7 +530,7 @@ const LayoutApplicantDetails = (_props) => {
           </CardSectionHeader>
 
           {/* Mobile Number */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">
               {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
               <span className="requiredField">*</span>
@@ -587,7 +587,7 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
 
           {/* Father/Husband Name */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
             <div className="field">
               <Controller
@@ -610,7 +610,7 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
 
           {/* Email ID */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">
               {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}
               <span className="requiredField">*</span>
@@ -644,7 +644,7 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.applicantEmailId?.message || ""}</CardLabelError>
 
           {/* Address */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">
               {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}
               <span className="requiredField">*</span>
@@ -667,7 +667,7 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.applicantAddress?.message || ""}</CardLabelError>
 
           {/* DOB */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">
               {`${t("BPA_APPLICANT_DOB_LABEL")}`}
               <span className="requiredField">*</span>
@@ -705,7 +705,7 @@ const LayoutApplicantDetails = (_props) => {
           <CardLabelError style={errorStyle}>{errors?.applicantDateOfBirth?.message || ""}</CardLabelError>
 
           {/* Gender */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">
               {`${t("BPA_APPLICANT_GENDER_LABEL")}`}
               <span className="requiredField">*</span>
@@ -853,7 +853,7 @@ const LayoutApplicantDetails = (_props) => {
           </div>
 
           {/* PAN Number */}
-          <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+          <LabelFieldPair  >
             <CardLabel className="card-label-smaller">
               {`${t("BPA_PAN_NUMBER_LABEL")}`}
               <span className="requiredField">*</span>
@@ -934,7 +934,7 @@ const LayoutApplicantDetails = (_props) => {
                       </div>
 
                       {/* Mobile Number */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
                           {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
                           <span className="requiredField">*</span>
@@ -965,7 +965,7 @@ const LayoutApplicantDetails = (_props) => {
                       {applicantErrors[index]?.name && <ErrorMessage>{applicantErrors[index].name}</ErrorMessage>}
 
                       {/* Father/Husband Name */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
                         <div className="field">
                           <TextInput
@@ -977,7 +977,7 @@ const LayoutApplicantDetails = (_props) => {
                       </LabelFieldPair>
 
                       {/* Email ID */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
                           {`${t("NEW_LAYOUT_APPLICANT_EMAIL_LABEL")}`}
                           <span className="requiredField">*</span>
@@ -989,7 +989,7 @@ const LayoutApplicantDetails = (_props) => {
                       {applicantErrors[index]?.emailId && <ErrorMessage>{applicantErrors[index].emailId}</ErrorMessage>}
 
                       {/* Address */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
                           {`${t("NEW_LAYOUT_APPLICANT_ADDRESS_LABEL")}`}
                           <span className="requiredField">*</span>
@@ -1001,7 +1001,7 @@ const LayoutApplicantDetails = (_props) => {
                       {applicantErrors[index]?.address && <ErrorMessage>{applicantErrors[index].address}</ErrorMessage>}
 
                       {/* DOB */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
                           {`${t("BPA_APPLICANT_DOB_LABEL")}`}
                           <span className="requiredField">*</span>
@@ -1019,7 +1019,7 @@ const LayoutApplicantDetails = (_props) => {
                       {applicantErrors[index]?.dob && <ErrorMessage>{applicantErrors[index].dob}</ErrorMessage>}
 
                       {/* Gender */}
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
                           {`${t("BPA_APPLICANT_GENDER_LABEL")}`}
                           <span className="requiredField">*</span>
@@ -1113,7 +1113,7 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
 
-                      <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
+                      <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">
                           {`${t("BPA_PAN_NUMBER_LABEL")}`}
                           <span className="requiredField">*</span>

@@ -91,7 +91,6 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
     // setSelectedAction(action);
   }
 
-
   const documentCardStyle = {
     flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
     minWidth: "200px", // keeps it from shrinking too small
@@ -107,10 +106,11 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
-        
-           <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
-      
-         <div>{value || "NA"}</div>
+      <CardLabel className="bpa-summary-bold-label" style={{ width: "auto" }}>
+        {label}
+      </CardLabel>
+
+      <div>{value || "NA"}</div>
     </div>
   );
 
@@ -125,7 +125,11 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         {renderLabel(t("Mobile Number"), formData?.NDCDetails?.PropertyDetails?.mobileNumber)}
         {renderLabel(t("Email ID"), formData?.NDCDetails?.PropertyDetails?.email)}
         {renderLabel(t("Address"), formData?.NDCDetails?.PropertyDetails?.address)}
-        {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
+        {/* {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))} */}
+        {formData?.NDCDetails?.NDCReason?.i18nKey === "OTHERS"
+          ? renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason))
+          : renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
+        {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)}
 
         {renderLabel(
           t("Water Connection"),
@@ -153,7 +157,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
       <h2 className="bpa-summary-heading">{t("Documents Uploaded")}</h2>
       <div className="bpa-summary-section">
         {docs?.length > 0 ? (
-          <div className="ndc-doc-view-comp" >
+          <div className="ndc-doc-view-comp">
             {docs?.map((doc, index) => (
               <div key={index} style={documentCardStyle}>
                 <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />

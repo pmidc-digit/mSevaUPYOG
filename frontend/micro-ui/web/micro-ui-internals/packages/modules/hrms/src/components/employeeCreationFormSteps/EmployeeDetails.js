@@ -9,16 +9,19 @@ import { CardHeader } from "@mseva/digit-ui-react-components";
 const EmployeeDetails = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   function goNext(data) {
-    //console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("Form Data: ", data);
+    
+    
+    // Update Redux if data changed
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateEmployeeForm(config.key, data));
-      checkConditions(data);
     }
+    
+    // Always run validation regardless of equality check
+    checkConditions(data);
   };
 
   var currentStepData = useSelector(function (state) {
@@ -30,7 +33,6 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
         : {};
 });
   const dispatch = useDispatch();
-  console.log("currentStepData in EmployeeDetails: ", currentStepData);
 
   const [mobileNumber, setMobileNumber] = useState(null);
   const [phonecheck, setPhonecheck] = useState(false);
@@ -58,8 +60,14 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
     const validEmail = email.length == 0 ? true : email.match(Digit.Utils.getPattern("Email"));
     return validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address"));
   };
+  // Validate on mount and when currentStepData or phonecheck changes
+  useEffect(() => {
+    checkConditions(currentStepData);
+  }, [currentStepData, phonecheck]);
+
   const checkConditions = (formData) => {
-    console.log("onFormValueChange: ", formData);
+    
+    // Update mobile number if changed
     if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     } else {

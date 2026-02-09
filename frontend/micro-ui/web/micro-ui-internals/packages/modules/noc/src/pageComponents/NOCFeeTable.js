@@ -42,7 +42,7 @@ const [showHistory, setShowHistory] = useState(false);
         <tbody>
           {feeDataWithTotal.map((row, i) => (
             <tr key={row.index || i}>
-              <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px" }}>{t(row.title) || t("CS_NA")}</td>
+              <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px" , fontWeight: "bold" }}>{t(row.title) || t("CS_NA")}</td>
               <td style={{ padding: "14px 12px", minWidth: "130px" }}>
                 {row?.taxHeadCode === "NOC_TOTAL" ? (
                   ""

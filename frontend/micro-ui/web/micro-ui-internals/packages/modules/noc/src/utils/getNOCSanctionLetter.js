@@ -6,6 +6,19 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
     year: "numeric",
   });
 
+const owners = application?.owners || [];
+let ownersString = "NA";
+
+if(!approverComment){
+  approverComment= " "
+}
+
+if (owners.length > 1) {
+  ownersString = owners.map((o, idx) => o?.name ? o.name : `owner ${idx+1}`).join(", ");
+} else if (owners.length === 1) {
+  ownersString = owners[0]?.name || "owner 1";
+}
+
   let regularized_label ="";
   const getFloorLabel = (index) => {
       if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -84,7 +97,8 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
       sanctionTerms,
       ...EmpData,
       approverComment,
-      regularized_label
+      regularized_label,
+      ownersString,
       },
     ],
   };

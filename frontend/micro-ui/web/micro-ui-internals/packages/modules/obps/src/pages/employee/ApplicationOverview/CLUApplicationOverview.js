@@ -881,7 +881,7 @@ const CLUEmployeeApplicationDetails = () => {
         )}
       </Card>
 
-      <div className="data-table">
+      <div className="employeeCard">
         <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
         
 

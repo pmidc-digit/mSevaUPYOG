@@ -101,7 +101,7 @@ const NOCModal = ({
         approverData?.Employees?.map((employee) => {
           const deptCode = employee?.assignments?.[0]?.department;
           const matchedDept = departments?.find((d) => d?.code === deptCode);
-          return { uuid: employee?.uuid, name: `${employee?.user?.name}` };
+          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}`  };
         })
       );
     }

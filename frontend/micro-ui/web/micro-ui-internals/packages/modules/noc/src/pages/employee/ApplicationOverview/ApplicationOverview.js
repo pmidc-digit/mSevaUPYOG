@@ -155,9 +155,9 @@ const NOCEmployeeApplicationOverview = () => {
   useEffect(() => {
       if (eSignError) {
         setShowToast({
-          key: "error",
+          key: "true",
           error: true,
-          label: eSignError.message || "eSign process failed. Please try again.",
+          message: "eSign process failed. Please try again.",
         });
       }
     }, [eSignError]);
@@ -316,85 +316,69 @@ const NOCEmployeeApplicationOverview = () => {
 }
 
 
-   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
     try {
       setLoader(true);
-  
-      // Prepare application object
-      let application = applicationDetails?.Noc?.[0]
-  
-      // Check if sanction letter already exists
-      let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-      console.log("fileStoreId before create", fileStoreId);
-  
+
+      let application = applicationDetails?.Noc?.[0];
+      let fileStoreId = application?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+
       if (!fileStoreId) {
-        // Prepare sanction data
-        const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, approverComment);
-  
-        // Generate PDF
-        const response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
-          pdfkey
-        );
-  
-        // Update application with sanctionLetterFilestoreId
-        const updatedApplication = {
-          ...application,
-          workflow: {
-            action: "ESIGN",
-          },
-          nocDetails: {
-            ...application?.nocDetails,
-            additionalDetails: {
-              ...application?.nocDetails?.additionalDetails,
-              sanctionLetterFilestoreId: response?.filestoreIds[0],
-            },
-          },
-        };
-  
-        await mutation.mutateAsync({
-          Noc: updatedApplication,
-        });
-  
-  
+        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
+
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
+
         fileStoreId = response?.filestoreIds[0];
-        refetch();
       }
-  
-      // Print receipt
+
       return fileStoreId;
-  
     } catch (error) {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoader(false);
     }
   }
+
   const printCertificateWithESign = async () => {
     try {
-      console.log("🎯 Starting certificate eSign process with custom hook...");
+      console.log("🎯 Starting certificate eSign process...");
 
-      // Reuse existing certificate data or generate if not available
       const fileStoreId = await getSanctionLetterReceipt({
         tenantId: reciept_data?.Payments[0]?.tenantId,
         payments: reciept_data?.Payments[0],
         EmpData,
       });
 
-      // Use custom hook for eSign
+      // Update application with sanctionLetterFilestoreId here
+      const application = applicationDetails?.Noc?.[0];
+      // const updatedApplication = {
+      //   ...application,
+      //   workflow: { action: "ESIGN" },
+      //   nocDetails: {
+      //     ...application?.nocDetails,
+      //     additionalDetails: {
+      //       ...application?.nocDetails?.additionalDetails,
+      //       sanctionLetterFilestoreId: fileStoreId,
+      //     },
+      //   },
+      // };
+
+      // await mutation.mutateAsync({ Noc: updatedApplication });
+      // refetch();
+
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
+
+      // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId },
+        { fileStoreId, tenantId, callbackUrl },
         {
-          onSuccess: () => {
-            console.log("✅ eSign process initiated successfully");
-          },
+          onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
-            console.error("❌ Certificate eSign failed:", error);
+            console.error("❌ eSign failed:", error);
             setShowToast({
-              key: "error",
+              key: "true",
               error: true,
-              label: error.message || "Failed to initiate digital signing process",
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
             });
           },
         }
@@ -402,12 +386,13 @@ const NOCEmployeeApplicationOverview = () => {
     } catch (error) {
       console.error("❌ Certificate preparation failed:", error);
       setShowToast({
-        key: "error",
+        key: "true",
         error: true,
-        label: error.message || "Failed to prepare certificate for eSign",
+        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
       });
     }
   };
+
 
   
 
@@ -702,11 +687,17 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
         }
       }
       const additionalRemarks = fieldInspectionPending?.[0]?.["Remarks_19"];
-      if (additionalRemarks && additionalRemarks.length < 20) {
+
+      if (additionalRemarks && additionalRemarks.trim().split(/\s+/).filter(Boolean).length < 20) {
         closeModal();
-        setShowToast({ key: "true", error: true, message: "Additional remarks must be at least 20 characters long" });
+        setShowToast({
+          key: "true",
+          error: true,
+          message: "Additional remarks must be at least 20 words long",
+        });
         return;
       }
+
     }
 
     if (!isFeeDisabled) {
@@ -941,6 +932,17 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
+        {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Noc?.[0]?.applicationStatus) && (
+            <SubmitBar
+              label={t("OPEN_SANCTION_LETTER")}
+              onSubmit={() =>
+                openSanctionLetterPopup({
+                  tenantId,
+                  EmpData,
+                })
+              }
+            />
+          )}
         {/* {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
@@ -1100,14 +1102,16 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos].map((doc) => (
-              <NocSitePhotographs
-                key={doc?.filestoreId || doc?.uuid}
-                filestoreId={doc?.filestoreId || doc?.uuid}
-                documentType={doc?.documentType}
-                coordinates={coordinates}
-              />
-            ))}
+            [...sitePhotos]
+              .reverse()
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
         </StatusTable>
       </Card>
 
@@ -1155,7 +1159,8 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           <div id="fieldInspection"></div>
           <InspectionReport
             isCitizen={true}
-            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
+            fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
+            onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
             InspectionReportVerifier={InspectionReportVerifier}
           />
@@ -1182,19 +1187,24 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       </Card>
 
       <Card>
-        <CardSubHeader>{documentVerifier ? `Document Checklist Verified by - ${documentVerifier}` : "Documents Uploaded"}</CardSubHeader>
-        <StatusTable>
-          {remainingDocs?.length > 0 && (
-            <NOCDocumentChecklist
-              documents={remainingDocs}
-              applicationNo={id}
-              tenantId={tenantId}
-              onRemarksChange={setChecklistRemarks}
-              readOnly={!isDocPending}
-            />
-            
-          )}
-        </StatusTable>
+      <CardSubHeader>{documentVerifier ? `Document Checklist Verified by - ${documentVerifier}` : "Documents Uploaded"}</CardSubHeader>
+        {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
+        applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
+          <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+        ) : (
+          <>
+
+            {remainingDocs?.length > 0 && (
+              <NOCDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                readOnly={!isDocPending}
+              />
+            )}
+          </>
+        )}
       </Card>
 
       <Card>
@@ -1235,19 +1245,9 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-          {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Noc?.[0]?.applicationStatus) && (
-            <SubmitBar
-              label={t("OPEN_SANCTION_LETTER")}
-              onSubmit={() =>
-                openSanctionLetterPopup({
-                  tenantId,
-                  EmpData,
-                })
-              }
-            />
-          )}
         </ActionBar>
       )}
+      
 
       {showImageModal && (
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>

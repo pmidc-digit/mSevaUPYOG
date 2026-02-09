@@ -153,7 +153,7 @@ const Details = () => {
                   >
                     <div className="hrms-section-title">
                       {" "}
-                      {t("HR_JURISDICTION")} {index + 1}
+                      {/* {t("HR_JURISDICTION")} {index + 1} */}
                     </div>
                     <Row label={t("HR_HIERARCHY_LABEL")} text={t(element?.hierarchy ? `EGOV_LOCATION_TENANTBOUNDARY_${element?.hierarchy}` : "NA")} textStyle={{ whiteSpace: "pre" }} />
                     <Row label={t("HR_BOUNDARY_TYPE_LABEL")} text={t(Digit.Utils.locale.convertToLocale(element?.boundaryType, 'EGOV_LOCATION_BOUNDARYTYPE'))} textStyle={{ whiteSpace: "pre" }} />
@@ -175,7 +175,7 @@ const Details = () => {
                 className="hrms-jurisdiction-status-table"
               >
                 <div className="hrms-section-title">
-                  {t("HR_ASSIGNMENT")} {index + 1}
+                  {/* {t("HR_ASSIGNMENT")} {index + 1} */}
                 </div>
                 <Row label={t("HR_ASMT_FROM_DATE_LABEL")} text={convertEpochFormateToDate(element?.fromDate)} textStyle={{ whiteSpace: "pre" }} />
                 <Row

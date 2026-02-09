@@ -161,7 +161,10 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
     props?.onClose?.();
   };
 
+  const isStateLevelTenant = Digit.ULBService.getCurrentTenantId() === "pb.punjab";
+
   const onSelectTenants = (value) => {
+    if (!isStateLevelTenant) return;
     if (value) {
       Digit.SessionStorage.set("punjab-tenantId", value.code);
       settenantId(value);
@@ -259,7 +262,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
                 select={onSelectTenants}
                 optionKey={"i18text"}
                 t={t}
-                disable={false}
+                disable={!isStateLevelTenant}
               />
             </div>
             <div>

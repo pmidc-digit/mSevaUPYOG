@@ -35,24 +35,75 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
   const dispatch = useDispatch();
 
   const [mobileNumber, setMobileNumber] = useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
   const [phonecheck, setPhonecheck] = useState(false);
+  const [idUnique, setIdUnique] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isEdit = window.location.pathname.includes("/edit/");
+  // Mobile number uniqueness check (with debounce)
   useEffect(() => {
-    if (mobileNumber && mobileNumber.length == 10 && mobileNumber.match(Digit.Utils.getPattern("MobileNo"))) {
+    if (!mobileNumber) {
+      setPhonecheck(false);
+      return;
+    }
+    if (mobileNumber.length === 10 && mobileNumber.match(Digit.Utils.getPattern("MobileNo"))) {
       setShowToast(null);
-      Digit.HRMSService.search(tenantId, null, { phone: mobileNumber }).then((result, err) => {
-        if (result.Employees.length > 0) {
-          setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_MOB" });
-          setPhonecheck(false);
-        } else {
-          setPhonecheck(true);
-        }
-      });
+      const tenantToSearch = tenantId === "pb.punjab"
+        ? (Digit.SessionStorage.get("punjab-tenantId") || tenantId)
+        : tenantId;
+      const tid = setTimeout(() => {
+        Digit.HRMSService.search(tenantToSearch, null, { phone: mobileNumber })
+          .then((result) => {
+            if (result?.Employees?.length > 0) {
+              setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_MOB" });
+              setPhonecheck(false);
+            } else {
+              setPhonecheck(true);
+            }
+          })
+          .catch((e) => {
+            console.error("HRMS phone search error:", e);
+            setPhonecheck(false);
+          });
+      }, 400);
+      return () => clearTimeout(tid);
     } else {
       setPhonecheck(false);
     }
   }, [mobileNumber]);
+
+  // Employee ID uniqueness check (with debounce) — skip in edit mode
+  useEffect(() => {
+    if (isEdit) {
+      setIdUnique(true);
+      return;
+    }
+    if (!employeeId || employeeId.trim().length === 0) {
+      setIdUnique(false);
+      return;
+    }
+    setShowToast(null);
+    const tenantToSearch = tenantId === "pb.punjab"
+      ? (Digit.SessionStorage.get("punjab-tenantId") || tenantId)
+      : tenantId;
+    const tid = setTimeout(() => {
+      Digit.HRMSService.search(tenantToSearch, null, { codes: employeeId.trim() })
+        .then((result) => {
+          if (result?.Employees?.length > 0) {
+            setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
+            setIdUnique(false);
+          } else {
+            setIdUnique(true);
+          }
+        })
+        .catch((e) => {
+          console.error("HRMS ID search error:", e);
+          setIdUnique(false);
+        });
+    }, 400);
+    return () => clearTimeout(tid);
+  }, [employeeId]);
   const checkMailNameNum = (formData) => {
     const email = formData?.SelectEmployeeEmailId?.emailId || "";
     const name = formData?.SelectEmployeeName?.employeeName || "";
@@ -60,18 +111,23 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
     const validEmail = email.length == 0 ? true : email.match(Digit.Utils.getPattern("Email"));
     return validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address"));
   };
-  // Validate on mount and when currentStepData or phonecheck changes
+  // Validate on mount and when currentStepData, phonecheck, or idUnique changes
   useEffect(() => {
     checkConditions(currentStepData);
-  }, [currentStepData, phonecheck]);
+  }, [currentStepData, phonecheck, idUnique]);
 
   const checkConditions = (formData) => {
     
     // Update mobile number if changed
-    if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {
-      setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
-    } else {
-      setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
+    const newMobile = formData?.SelectEmployeePhoneNumber?.mobileNumber || null;
+    if (newMobile !== mobileNumber) {
+      setMobileNumber(newMobile);
+    }
+
+    // Update employee ID if changed
+    const newEmpId = formData?.SelectEmployeeId?.code || null;
+    if (newEmpId !== employeeId) {
+      setEmployeeId(newEmpId);
     }
     if (
       formData?.SelectEmployeeName?.employeeName &&
@@ -81,6 +137,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
       formData?.SelectDateofEmployment?.dateOfAppointment &&
       formData?.SelectEmployeeType?.code &&     
       phonecheck &&
+      idUnique &&
       checkMailNameNum(formData)
     ) {
       setSubmitValve(true);

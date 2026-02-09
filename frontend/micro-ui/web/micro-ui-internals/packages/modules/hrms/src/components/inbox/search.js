@@ -116,7 +116,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                         ) : (
                           <div className="field-container">
                             {input?.componentInFront ? (
-                              <span className="employee-card-input employee-card-input--front">
+                              <span className="employee-card-input employee-card-input--front flex">
                                 {input?.componentInFront}
                               </span>
                             ) : null}

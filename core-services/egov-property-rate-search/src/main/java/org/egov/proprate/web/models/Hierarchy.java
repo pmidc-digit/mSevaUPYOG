@@ -13,7 +13,7 @@ public class Hierarchy {
         private String code;
         private String name;
         @JsonProperty("tehsil") 
-        private Tehsil tehsil; // District contains Tehsil
+        private Tehsil tehsil;
     }
 
     @Data @Builder @AllArgsConstructor @NoArgsConstructor
@@ -21,7 +21,7 @@ public class Hierarchy {
         private String code;
         private String name;
         @JsonProperty("village") 
-        private Village village; // Tehsil contains Village
+        private Village village;
     }
 
     @Data @Builder @AllArgsConstructor @NoArgsConstructor
@@ -30,11 +30,19 @@ public class Hierarchy {
         private String name;
         private Boolean isUrban;
         @JsonProperty("segment") 
-        private Segment segment; // Village contains Segment
+        private Segment segment;
     }
 
     @Data @Builder @AllArgsConstructor @NoArgsConstructor
     public static class Segment {
+        private String code;
+        private String name;
+        @JsonProperty("subSegment") // Added: Segment now contains SubSegment
+        private SubSegment subSegment;
+    }
+
+    @Data @Builder @AllArgsConstructor @NoArgsConstructor
+    public static class SubSegment { // New: SubSegment class
         private String code;
         private String name;
     }

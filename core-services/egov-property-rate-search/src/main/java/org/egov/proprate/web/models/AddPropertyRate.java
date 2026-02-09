@@ -37,6 +37,10 @@ public class AddPropertyRate {
 
     @JsonProperty("segmentId")
     private String segmentId;
+    
+
+    @JsonProperty("subSegmentId")
+    private String subSegmentId;
 
     @JsonProperty("categoryId")
     private String categoryId;

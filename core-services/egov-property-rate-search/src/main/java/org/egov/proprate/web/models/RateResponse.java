@@ -35,6 +35,9 @@ public class RateResponse {
 
     @JsonProperty("segments")
     private List<Boundary> segments;
+    
+    @JsonProperty("SubSegments")
+    private List<Boundary> subSegments;
 
     @JsonProperty("usageCategories")
     private List<Boundary> usageCategories;

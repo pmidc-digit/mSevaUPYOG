@@ -20,7 +20,8 @@ public class PropertyRateQueryBuilder {
 
     private static final String BASE_SELECT =
             "SELECT distinct (prm.rate_id), prm.property_rate, prm.unit, prm.segment_no, prm.is_active, " +
-            "sl.segment_list_name, " +
+            "sl.sub_segment_name, " +
+            "sl.sub_segment_id, " +	
             "vm.village_name, vm.village_id, vm.is_urban, " +
             "tm.tehsil_name, tm.tehsil_id, " +
             "dm.district_name, dm.district_id, " +
@@ -29,7 +30,7 @@ public class PropertyRateQueryBuilder {
 
     private static final String BASE_FROM =
             "FROM revenue_property_rate_master prm " +
-            "INNER JOIN revenue_segment_list sl ON prm.segment_list_id = sl.segment_list_id " +
+            "INNER JOIN revenue_sub_segment_list sl ON prm.segment_list_id = sl.sub_segment_id " +
             "INNER JOIN revenue_segment_master sm ON sl.segment_level_id = sm.segment_level_id " +
             "INNER JOIN revenue_village_master vm ON sm.village_id = vm.village_id " +
             "INNER JOIN revenue_tehsil_master tm ON vm.tehsil_id = tm.tehsil_id " +
@@ -54,8 +55,12 @@ public class PropertyRateQueryBuilder {
             "WHERE vm.tehsil_id = :tehsilId ORDER BY vm.village_name";
 
     private static final String FETCH_SEGMENTS =
-            "SELECT sm.segment_name, sm.segment_level_id FROM revenue_segment_master sm " +
+            "SELECT sm.segment_name, sm.segment_level_id, sm.segment_list_id FROM revenue_segment_master sm " +
             "WHERE sm.village_id = :villageId ORDER BY sm.segment_name";
+    
+    private static final String FETCH_SUB_SEGMENTS =
+            "SELECT sb.sub_segment_id, sb.sub_segment_name, sb.segment_level_id FROM revenue_sub_segment_list sb " +
+            "WHERE sb.segment_level_id = :segmentId ORDER BY sb.sub_segment_id";
 
     private static final String FETCH_USAGE_CATEGORIES =
             "SELECT usage_category_name, usage_category_id FROM revenue_usage_category_master " +
@@ -115,23 +120,20 @@ public class PropertyRateQueryBuilder {
             return query.toString();
         }
 
-        /* DRILL DOWN LOGIC (Sub-category step removed)
-        */
-        if (!ObjectUtils.isEmpty(criteria.getUsageCategoryId())) {
-            // Previously returned FETCH_SUB_CATEGORIES. 
-            // Now, if usage category is selected, the drill-down usually ends or moves to rate check.
-            params.put("usageCategoryId", Integer.parseInt(criteria.getUsageCategoryId()));
-            // Adjust return based on your UI flow. If selection of Usage Category is the final step:
-            return null; 
-        }
-
+       
         if (!ObjectUtils.isEmpty(criteria.getSegmentId())) {
-            return FETCH_USAGE_CATEGORIES;
+            params.put("segmentId", Integer.parseInt(criteria.getSegmentId()));
+
+            return FETCH_SUB_SEGMENTS;
         }
 
         if (!ObjectUtils.isEmpty(criteria.getVillageId())) {
             params.put("villageId", Integer.parseInt(criteria.getVillageId()));
             return FETCH_SEGMENTS;
+        }
+        
+        if (criteria.getGetUsageCategories()) {
+            return FETCH_USAGE_CATEGORIES;
         }
 
         if (!ObjectUtils.isEmpty(criteria.getTehsilId())) {
@@ -167,6 +169,10 @@ public class PropertyRateQueryBuilder {
         if (!ObjectUtils.isEmpty(criteria.getSegmentId())) {
             query.append(" AND sm.segment_level_id = :segmentId");
             params.put("segmentId", Integer.parseInt(criteria.getSegmentId()));
+        }
+        if (!ObjectUtils.isEmpty(criteria.getSubSegmentId())) {
+            query.append(" AND sl.sub_segment_id = :subSegmentId");
+            params.put("subSegmentId", Integer.parseInt(criteria.getSubSegmentId()));
         }
         if (!ObjectUtils.isEmpty(criteria.getUsageCategoryId())) {
             query.append(" AND uc.usage_category_id = :usageCategoryId");

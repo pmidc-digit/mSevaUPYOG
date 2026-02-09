@@ -1,21 +1,16 @@
 package org.egov.proprate.web.models;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.egov.common.contract.response.ResponseInfo;
-//import org.egov.proprate.web.controllers.PropertyRateRequest;
-//import org.egov.proprate.web.controllers.PropertyRateResponse;
 import org.egov.proprate.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList; // Added
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class ResponseFactory {
@@ -36,22 +31,27 @@ public class ResponseFactory {
         SearchCriteria c = request.getSearchCriteria();
 
         // =================================================================
-        // SCENARIO 1: Return Rates (Using explicit loop to fix type inference)
+        // SCENARIO 1: Return Final Rates (Full Nested Hierarchy)
         // =================================================================
         if (Boolean.TRUE.equals(c.getIsRateCheck())) {
             List<PropertyRate> rates = new ArrayList<>();
             
             for (Map<String, Object> row : results) {
-                // 1. Safe Data Extraction
-                String segId = safeString(row.get("segment_level_id"));
-                String segName = safeString(row.get("segment_name"));
                 
-                // 2. Build Hierarchy Objects
+                // 1. Build Sub-Segment
+                Hierarchy.SubSegment subSegObj = Hierarchy.SubSegment.builder()
+                        .code(safeString(row.get("sub_segment_id")))
+                        .name(safeString(row.get("sub_segment_name"))) 
+                        .build();
+
+                // 2. Build Segment
                 Hierarchy.Segment segObj = Hierarchy.Segment.builder()
-                    .code(segId)
-                    .name(segName)
+                    .code(safeString(row.get("segment_level_id")))
+                    .name(safeString(row.get("segment_name")))
+                    .subSegment(subSegObj) 
                     .build();
 
+                // 3. Build Geographical Hierarchy
                 Hierarchy.Village vilObj = Hierarchy.Village.builder()
                     .code(safeString(row.get("village_id")))
                     .name(safeString(row.get("village_name")))
@@ -71,20 +71,16 @@ public class ResponseFactory {
                     .tehsil(tehObj)
                     .build();
 
-                // 3. Build Rate Object
+                // 4. Build Final Rate Object (Usage Category is now a simple top-level field)
                 PropertyRate rate = PropertyRate.builder()
                     .rateId(safeString(row.get("rate_id")))
                     .rate(safeDecimal(row.get("property_rate")))
                     .unit(safeString(row.get("unit")))
-                    .segmanentName(safeString(row.get("segment_list_name")))
                     .isActive(safeBool(row.get("is_active")))
                     .district(distObj)
                     .category(Boundary.builder()
                         .code(safeString(row.get("usage_category_id")))
                         .name(safeString(row.get("usage_category_name"))).build())
-                    .subCategory(Boundary.builder()
-                        .code(safeString(row.get("sub_category_id")))
-                        .name(safeString(row.get("sub_category_name"))).build())
                     .build();
                 
                 rates.add(rate);
@@ -93,15 +89,21 @@ public class ResponseFactory {
         } 
         
         // =================================================================
-        // SCENARIO 2: Master Data Drill-Down
+        // SCENARIO 2: Master Data Drill-Down Logic (Decoupled Flow)
         // =================================================================
-        else if (!ObjectUtils.isEmpty(c.getUsageCategoryId())) {
-            response.setSubCategories(mapToBoundary(results, "sub_category_id", "sub_category_name"));
+        
+        // Case A: Fetch Usage Categories (Standalone)
+        else if (Boolean.TRUE.equals(c.getGetUsageCategories())) {
+             response.setUsageCategories(mapToBoundary(results, "usage_category_id", "usage_category_name"));
         }
+        
+        // Case B: Geographical Drill-down
         else if (!ObjectUtils.isEmpty(c.getSegmentId())) {
-            response.setUsageCategories(mapToBoundary(results, "usage_category_id", "usage_category_name"));
+            // After Segment -> Sub-Segment
+            response.setSubSegments(mapToBoundary(results, "sub_segment_id", "sub_segment_name"));
         }
         else if (!ObjectUtils.isEmpty(c.getVillageId())) {
+            // After Village -> Segment
             response.setSegments(mapToBoundary(results, "segment_level_id", "segment_name"));
         }
         else if (!ObjectUtils.isEmpty(c.getTehsilId())) {
@@ -117,10 +119,12 @@ public class ResponseFactory {
         return response;
     }
 
-    // --- HELPER METHODS TO FIX CASTING ISSUES ---
+    // --- HELPER METHODS ---
 
     private List<Boundary> mapToBoundary(List<Map<String, Object>> list, String idKey, String nameKey) {
         List<Boundary> boundaries = new ArrayList<>();
+        if (ObjectUtils.isEmpty(list)) return boundaries;
+
         for (Map<String, Object> row : list) {
             boundaries.add(Boundary.builder()
                 .code(safeString(row.get(idKey)))
@@ -131,28 +135,29 @@ public class ResponseFactory {
         return boundaries;
     }
 
-    // Safety helpers to handle Nulls and Objects gracefully
     private String safeString(Object obj) {
         return obj != null ? String.valueOf(obj) : null;
     }
 
     private Boolean safeBool(Object obj) {
-        return obj != null && (Boolean) obj;
+        if (obj == null) return false;
+        if (obj instanceof Boolean) return (Boolean) obj;
+        return Boolean.parseBoolean(String.valueOf(obj));
     }
 
     private BigDecimal safeDecimal(Object obj) {
         if (obj == null) return BigDecimal.ZERO;
-        return new BigDecimal(String.valueOf(obj));
+        try {
+            return new BigDecimal(String.valueOf(obj));
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
     }
     
-public PropertyRateResponse createCreateResponse(List<AddPropertyRate> rates, PropertyRateRequest request) {
-        
+    public PropertyRateResponse createCreateResponse(List<AddPropertyRate> rates, PropertyRateRequest request) {
         PropertyRateResponse response = new PropertyRateResponse();
-
-        // No need to wrap in Collections.singletonList anymore
         response.setPropertyRates(rates); 
 
-        // Set Response Info
         ResponseInfo responseInfo = ResponseInfo.builder()
                 .apiId(request.getRequestInfo().getApiId())
                 .ver(request.getRequestInfo().getVer())
@@ -163,7 +168,6 @@ public PropertyRateResponse createCreateResponse(List<AddPropertyRate> rates, Pr
                 .build();
 
         response.setResponseInfo(responseInfo);
-
         return response;
     }
 }

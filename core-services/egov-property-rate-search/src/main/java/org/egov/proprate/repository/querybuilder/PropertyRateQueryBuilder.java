@@ -59,7 +59,7 @@ public class PropertyRateQueryBuilder {
             "WHERE sm.village_id = :villageId ORDER BY sm.segment_name";
     
     private static final String FETCH_SUB_SEGMENTS =
-            "SELECT sb.sub_segment_id, sb.segment_name as sub_segment_name, sb.segment_level_id FROM revenue_sub_segment_list sb " +
+            "SELECT sb.sub_segment_id, sb.sub_segment_name as sub_segment_name, sb.segment_level_id FROM revenue_sub_segment_list sb " +
             "WHERE sb.segment_level_id = :segmentId ORDER BY sb.sub_segment_id";
 
     private static final String FETCH_USAGE_CATEGORIES =

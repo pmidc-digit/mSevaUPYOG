@@ -43,6 +43,7 @@
 .selector-button-primary {
   @extend .selector-button;
   background-color: #2947a3 !important;
+  width: 100%;
 
   &:hover {
     background-color: #1e3a8a !important;
@@ -81,6 +82,7 @@
   height: auto;
   min-height: 40px;
   margin: 0;
+  width: 100%;
 
 
   &:hover {

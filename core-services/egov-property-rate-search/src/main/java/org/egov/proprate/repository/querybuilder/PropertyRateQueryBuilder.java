@@ -11,8 +11,8 @@ import java.util.Map;
 @Component
 public class PropertyRateQueryBuilder {
 	
-	@Value("${property-rate.missing-limit}")
-	private int defaultLimit;
+    @Value("${property-rate.missing-limit}")
+    private int defaultLimit;
 
     /* =========================
        BASE QUERY CONSTANTS
@@ -35,7 +35,7 @@ public class PropertyRateQueryBuilder {
             "INNER JOIN revenue_village_master vm ON sm.village_id = vm.village_id " +
             "INNER JOIN revenue_tehsil_master tm ON vm.tehsil_id = tm.tehsil_id " +
             "INNER JOIN revenue_district_master dm ON tm.district_id = dm.district_id " +
-            "INNER JOIN revenue_usage_category_master uc ON prm.usage_category_id = uc.usage_category_id "; // Joined PRM directly to Usage Category
+            "INNER JOIN revenue_usage_category_master uc ON prm.usage_category_id = uc.usage_category_id ";
 
     private static final String BASE_WHERE = "WHERE 1=1 ";
 
@@ -55,33 +55,41 @@ public class PropertyRateQueryBuilder {
             "WHERE vm.tehsil_id = :tehsilId ORDER BY vm.village_name";
 
     private static final String FETCH_SEGMENTS =
-            "SELECT sm.segment_name, sm.segment_level_id, sm.segment_list_id FROM revenue_segment_master sm " +
+            "SELECT sm.segment_name, sm.segment_level_id FROM revenue_segment_master sm " +
             "WHERE sm.village_id = :villageId ORDER BY sm.segment_name";
     
     private static final String FETCH_SUB_SEGMENTS =
-            "SELECT sb.sub_segment_id, sb.sub_segment_name, sb.segment_level_id FROM revenue_sub_segment_list sb " +
+            "SELECT sb.sub_segment_id, sb.segment_name as sub_segment_name, sb.segment_level_id FROM revenue_sub_segment_list sb " +
             "WHERE sb.segment_level_id = :segmentId ORDER BY sb.sub_segment_id";
 
     private static final String FETCH_USAGE_CATEGORIES =
             "SELECT usage_category_name, usage_category_id FROM revenue_usage_category_master " +
             "ORDER BY usage_category_name";
+    
+    private static final String FETCH_SUB_CATEGORIES =
+            "SELECT sub_category_name, sub_category_id FROM revenue_sub_category_master " +
+            "WHERE usage_category_id = :usageCategoryId ORDER BY sub_category_name";
 
     /* =========================
-       MISSING/MAPPED PROPERTIES QUERIES (Unchanged logic, just maintaining)
+       MAPPED PROPERTIES QUERIES
        ========================= */
     private static final String MISSING_PROPERTIES =
-             "SELECT DISTINCT ON (p.propertyid) p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
-             "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
-             "FROM eg_pt_property p " +
-             "LEFT JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
-             "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
-             "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
-             "WHERE p.status = 'ACTIVE' " +
-             "AND (r.propertyid IS NULL OR r.isproratacal = true) ";
+    	     "SELECT DISTINCT ON (p.propertyid) p.propertyid, p.tenantid, add.locality AS localityCode, " +
+    	     "STRING_AGG(o.userid, ',') OVER (PARTITION BY p.propertyid) AS ownerUuid, " +
+    	     "STRING_AGG(CAST(o.ownerShipPercentage AS TEXT), ',') OVER (PARTITION BY p.propertyid) AS ownerPercentages, " +
+    	     "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
+    	     "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
+    	     "FROM eg_pt_property p " +
+    	     "LEFT JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
+    	     "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
+    	     "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
+    	     "WHERE p.status = 'ACTIVE' " +
+    	     "AND (r.propertyid IS NULL OR r.isproratacal = true) ";
 
     private static final String MAPPED_PROPERTIES =
             "SELECT DISTINCT ON (p.propertyid) " +
             "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, r.isproratacal, " +
+            "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, " + // Added IDs here
             "dm.district_name, tm.tehsil_name, vm.village_name, " + 
             "p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
             "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
@@ -120,16 +128,21 @@ public class PropertyRateQueryBuilder {
             return query.toString();
         }
 
-       
+        // Drill-down Logic
         if (!ObjectUtils.isEmpty(criteria.getSegmentId())) {
             params.put("segmentId", Integer.parseInt(criteria.getSegmentId()));
-
             return FETCH_SUB_SEGMENTS;
         }
 
         if (!ObjectUtils.isEmpty(criteria.getVillageId())) {
             params.put("villageId", Integer.parseInt(criteria.getVillageId()));
             return FETCH_SEGMENTS;
+        }
+
+
+        if (!ObjectUtils.isEmpty(criteria.getUsageCategoryId())) {
+            params.put("usageCategoryId", Integer.parseInt(criteria.getUsageCategoryId()));
+            return FETCH_SUB_CATEGORIES;
         }
         
         if (Boolean.TRUE.equals(criteria.getGetUsageCategories())) {
@@ -178,8 +191,11 @@ public class PropertyRateQueryBuilder {
             query.append(" AND uc.usage_category_id = :usageCategoryId");
             params.put("usageCategoryId", Integer.parseInt(criteria.getUsageCategoryId()));
         }
-        
-        // Removed subCategoryId filter block from here
+        // Sub-Category ID filter placed after usage category
+        if (!ObjectUtils.isEmpty(criteria.getSubCategoryId())) {
+            query.append(" AND prm.sub_category_id = :subCategoryId");
+            params.put("subCategoryId", Integer.parseInt(criteria.getSubCategoryId()));
+        }
 
         if (!ObjectUtils.isEmpty(criteria.getDistrictName())) {
             query.append(" AND dm.district_name = :districtName");

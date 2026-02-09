@@ -38,12 +38,14 @@ public class AddPropertyRate {
     @JsonProperty("segmentId")
     private String segmentId;
     
-
     @JsonProperty("subSegmentId")
     private String subSegmentId;
 
-    @JsonProperty("categoryId")
+    @JsonProperty("categoryId") // Usage Category
     private String categoryId;
+
+    @JsonProperty("subCategoryId") // Added Sub-Usage Type/Sub-Category
+    private String subCategoryId;
 
     @JsonProperty("locality")
     private String locality;
@@ -54,7 +56,14 @@ public class AddPropertyRate {
     @JsonProperty("unit")
     private String unit;
 
-    // --- ADDED AUDIT FIELDS ---
+    // Added to capture the numeric rate during integration
+    @JsonProperty("rate")
+    private BigDecimal rate;
+
+    @JsonProperty("rateId")
+    private String rateId;
+
+    // --- AUDIT FIELDS ---
     @JsonProperty("createdBy")
     private String createdBy;
 

@@ -71,7 +71,7 @@ public class ResponseFactory {
                     .tehsil(tehObj)
                     .build();
 
-                // 4. Build Final Rate Object (Usage Category is now a simple top-level field)
+                // 4. Build Final Rate Object
                 PropertyRate rate = PropertyRate.builder()
                     .rateId(safeString(row.get("rate_id")))
                     .rate(safeDecimal(row.get("property_rate")))
@@ -81,6 +81,10 @@ public class ResponseFactory {
                     .category(Boundary.builder()
                         .code(safeString(row.get("usage_category_id")))
                         .name(safeString(row.get("usage_category_name"))).build())
+                    // Added Sub-Category to final rate mapping
+                    .subCategory(Boundary.builder()
+                        .code(safeString(row.get("sub_category_id")))
+                        .name(safeString(row.get("sub_category_name"))).build())
                     .build();
                 
                 rates.add(rate);
@@ -89,21 +93,24 @@ public class ResponseFactory {
         } 
         
         // =================================================================
-        // SCENARIO 2: Master Data Drill-Down Logic (Decoupled Flow)
+        // SCENARIO 2: Master Data Drill-Down Logic
         // =================================================================
         
-        // Case A: Fetch Usage Categories (Standalone)
+        // New CASE: Fetch Sub-Categories based on selected Usage Category
+        else if (!ObjectUtils.isEmpty(c.getUsageCategoryId())) {
+            response.setSubCategories(mapToBoundary(results, "sub_category_id", "sub_category_name"));
+        }
+        
+        // CASE: Fetch Usage Categories (Standalone initial list)
         else if (Boolean.TRUE.equals(c.getGetUsageCategories())) {
              response.setUsageCategories(mapToBoundary(results, "usage_category_id", "usage_category_name"));
         }
         
-        // Case B: Geographical Drill-down
+        // CASE: Geographical Drill-down Chain
         else if (!ObjectUtils.isEmpty(c.getSegmentId())) {
-            // After Segment -> Sub-Segment
             response.setSubSegments(mapToBoundary(results, "sub_segment_id", "sub_segment_name"));
         }
         else if (!ObjectUtils.isEmpty(c.getVillageId())) {
-            // After Village -> Segment
             response.setSegments(mapToBoundary(results, "segment_level_id", "segment_name"));
         }
         else if (!ObjectUtils.isEmpty(c.getTehsilId())) {

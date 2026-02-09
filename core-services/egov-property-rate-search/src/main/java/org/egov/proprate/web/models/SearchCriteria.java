@@ -23,6 +23,7 @@ public class SearchCriteria {
 
     // Classification IDs
     private String usageCategoryId;
+    private String subCategoryId;
     
     // Control Flags
     private Boolean isRateCheck; 

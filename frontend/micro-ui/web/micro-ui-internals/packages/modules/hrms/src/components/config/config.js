@@ -82,16 +82,16 @@ export const newConfig = [
         withoutLabel: true,
       },
 
-      {
-        type: "component",
-        component: "Banner",
-        key: "Banner1",
-        withoutLabel: true,
-        texts: {
-          headerCaption: "Info",
-          header: "HR_EMP_ID_MESSAGE",
-        },
-      },
+      // {
+      //   type: "component",
+      //   component: "Banner",
+      //   key: "Banner1",
+      //   withoutLabel: true,
+      //   texts: {
+      //     headerCaption: "Info",
+      //     header: "HR_EMP_ID_MESSAGE",
+      //   },
+      // },
     ],
   },
   {

@@ -611,7 +611,7 @@ const CLUApplicationDetails = () => {
             feeType="PAY2"
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable= "true"
+            disable={true}
             applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
           />
         )}

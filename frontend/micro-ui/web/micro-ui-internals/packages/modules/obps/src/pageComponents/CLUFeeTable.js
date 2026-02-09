@@ -77,6 +77,20 @@ export const CLUFeeTable = ({
           );
         }
 
+
+        if (readOnly) {
+          return (
+            <TextInput
+              t={t}
+              type="text"
+              isMandatory={false}
+              value={feeData[row.index]?.remark || ""}
+              disable={true}
+              className="custom-fee-table-input"
+            />
+          );
+        }
+
         return (
           <TextInput
             t={t}
@@ -86,7 +100,7 @@ export const CLUFeeTable = ({
             onChange={(e) =>
               handleRemarkChange(row.index, e.target.value, row.amount)
             }
-            disable={readOnly}
+            disable={false}
             className="custom-fee-table-input"
           />
         );

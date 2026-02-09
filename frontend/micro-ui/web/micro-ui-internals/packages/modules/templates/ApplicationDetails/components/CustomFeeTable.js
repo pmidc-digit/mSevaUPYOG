@@ -78,7 +78,7 @@ const CustomFeeTable = ({
             isMandatory={isMandatory}
             value={value === 0 ? "" : value}
             onChange={(e) => {
-              if (onChange) {
+              if (onChange && !isDisabled) {
                 let val = e.target.value;
                 if (val.length > 1 && val.startsWith("0")) {
                   val = val.replace(/^0+/, "");
@@ -87,7 +87,7 @@ const CustomFeeTable = ({
               }
             }}
             onBlur={(e) => {
-              if (onBlur) {
+              if (onBlur && !isDisabled) {
                 onBlur(e, row.index, row);
               }
             }}
@@ -106,12 +106,12 @@ const CustomFeeTable = ({
             isMandatory={isMandatory}
             value={value}
             onChange={(e) => {
-              if (onChange) {
+              if (onChange && !isDisabled) {
                 onChange(row.index, e.target.value, row);
               }
             }}
             onBlur={(e) => {
-              if (onBlur) {
+              if (onBlur && !isDisabled) {
                 onBlur(e, row.index, row);
               }
             }}

@@ -301,7 +301,7 @@ const getOwnerDetails = async (idx) => {
             <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", position: "relative", alignItems: "center", width: "100%" }}>
                 <Controller
                   control={control}
                   name={`owners[${index}].mobileNumber`}
@@ -323,10 +323,11 @@ const getOwnerDetails = async (idx) => {
                       }}
                       t={t}
                       disabled={isEdit}
+                      style={{ width: "100%", paddingRight: "40px" }}
                     />
                   )}
                 />
-                <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
+                <div className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
                   {" "}
                   <SearchIcon />{" "}
                 </div>

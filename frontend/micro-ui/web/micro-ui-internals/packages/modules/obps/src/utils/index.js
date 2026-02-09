@@ -1,5 +1,5 @@
 import cloneDeep from "lodash/cloneDeep";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 export const getPattern = (type) => {
   switch (type) {
@@ -1041,6 +1041,11 @@ export const getBusinessServices = (businessService, status, applicationType) =>
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
   }
   return billBusinessService;
+};
+
+export const useQueryParam = (key) => {
+  const { search } = useLocation();
+  return new URLSearchParams(search).get(key);
 };
 
 export const downloadPdf = (blob, fileName) => {

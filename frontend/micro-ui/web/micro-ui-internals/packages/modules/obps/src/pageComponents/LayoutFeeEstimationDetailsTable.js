@@ -321,9 +321,11 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
 
   return (
     <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-      {cluCalculatorLoading ? (
-        <Loader />
-      ) : (
+      {
+      // cluCalculatorLoading ? (
+      //   <Loader />
+      // ) : 
+      (
         <div style={{ width: "100%" }}>
           <LayoutFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}

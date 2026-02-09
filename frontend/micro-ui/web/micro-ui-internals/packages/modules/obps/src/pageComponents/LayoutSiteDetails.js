@@ -27,10 +27,9 @@ const LayoutSiteDetails = (_props) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef } = _props;
-  console.log(currentStepData, "DTATA TO BE MAPPED");
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues } = _props;
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
-  console.log(applicationNo, "applicationNo in layout site details");
+  console.log(applicationNo, getValues("residentialType"), "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
   const [netArea, setNetArea] = useState("0.00");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening"); // A = Total Plot Area
@@ -60,13 +59,13 @@ const LayoutSiteDetails = (_props) => {
 
   // Restore CLU document from edit data
   useEffect(() => {
-    if (isEditMode && currentStepData?.siteDetails?.cluDocumentUpload && !cluDocumentUploadedFile) {
+    if (currentStepData?.siteDetails?.cluDocumentUpload && !cluDocumentUploadedFile) {
       setCluDocumentUploadedFile({
         fileStoreId: currentStepData.siteDetails.cluDocumentUpload,
         fileName: currentStepData.siteDetails.cluDocumentUploadFileName || "CLU Document"
       });
     }
-  }, [isEditMode, currentStepData?.siteDetails?.cluDocumentUpload]);
+  }, [currentStepData?.siteDetails?.cluDocumentUpload]);
 
   // Sync cluDocumentUpload form field with cluDocumentUploadedFile state
   useEffect(() => {
@@ -90,6 +89,7 @@ const LayoutSiteDetails = (_props) => {
 
   const floorAreaValues = watch("floorArea");
   const basementAreaValues = watch("basementArea");
+  console.log(currentStepData, "DTATA TO BE MAPPED", getValues("isCluRequired"), isCluRequired);
 
   // Watch percentage fields to display calculated values
   const watchedEWSPct = watch("areaUnderEWSInPct");
@@ -484,7 +484,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* ===== CLU Details Section (when isCluRequired = NO) ===== */}
-          {isCluRequired?.code === "NO" || isCluRequired === "NO" ? (
+          {getValues("isCluRequired") === "NO" || getValues("isCluRequired")?.code === "NO" || isCluRequired?.code === "NO" || isCluRequired === "NO" ? (
             <React.Fragment>
               {/* CLU Type - Online/Offline */}
               <LabelFieldPair>
@@ -611,7 +611,7 @@ const LayoutSiteDetails = (_props) => {
               ) : null}
 
               {/* ===== Offline CLU Section ===== */}
-              {cluType?.code === "OFFLINE" || cluType === "OFFLINE" ? (
+              {getValues("cluType") === "OFFLINE" || getValues("cluType")?.code === "OFFLINE" || cluType?.code === "OFFLINE" || cluType === "OFFLINE" ? (
                 <React.Fragment>
                   {/* CLU Document Upload - Offline */}
                   <LabelFieldPair>
@@ -1635,7 +1635,7 @@ const LayoutSiteDetails = (_props) => {
           </LabelFieldPair>
 
           {/* Sub-category for Residential */}
-          {buildingCategoryMain?.code === "RESIDENTIAL" && (
+          {(getValues("buildingCategory")?.code === "RESIDENTIAL" || buildingCategoryMain?.code === "RESIDENTIAL") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 Residential Type <span className="requiredField">*</span>
@@ -1666,7 +1666,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Commercial */}
-          {buildingCategoryMain?.code === "COMMERCIAL" && (
+          {(getValues("buildingCategory")?.code === "COMMERCIAL"|| buildingCategoryMain?.code === "COMMERCIAL") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">Commercial Type</CardLabel>
               <div className="field">
@@ -1676,7 +1676,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Industrial-Warehouse */}
-          {buildingCategoryMain?.code === "INDUSTRIAL_WAREHOUSE" && (
+          {(getValues("buildingCategory")?.code === "INDUSTRIAL_WAREHOUSE" || buildingCategoryMain?.code === "INDUSTRIAL_WAREHOUSE") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">Industrial Type</CardLabel>
               <div className="field">
@@ -1686,7 +1686,7 @@ const LayoutSiteDetails = (_props) => {
           )}
 
           {/* Sub-category for Institution */}
-          {buildingCategoryMain?.code === "INSTITUTION" && (
+          {(getValues("buildingCategory")?.code === "INSTITUTION" || buildingCategoryMain?.code === "INSTITUTION") && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">Institution Type</CardLabel>
               <div className="field">
@@ -2017,7 +2017,8 @@ const LayoutSiteDetails = (_props) => {
             areaFields.map((field, index) => (
               <div key={field.id} style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
                 <CardLabel className="card-label-smaller">
-                  {index === 0 ? "Ground" : `${index}`} Floor Area <span className="requiredField">*</span>
+                  {/* {index === 0 ? "Ground" : `${index}`} Floor Area <span className="requiredField">*</span> */}
+                  {index === 0 ? "Ground" : `${index}st`} Floor (IN SQ MT) <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field" style={{ display: "flex", gap: "10px" }}>
                   <Controller

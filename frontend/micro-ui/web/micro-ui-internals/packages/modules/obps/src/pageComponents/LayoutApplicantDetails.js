@@ -22,47 +22,44 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
+
+const useQueryParam = (key) => {
+  const { search } = useLocation();
+  return new URLSearchParams(search).get(key);
+};
 
 const LayoutApplicantDetails = (_props) => {
   const dispatch = useDispatch();
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
   // Determine if in edit mode
   const applicationNo = currentStepData?.applicationNo || currentStepData?.apiData?.Layout?.[0]?.applicationNo;
-  const isEditMode = !!applicationNo;
+  const applicationNO = useQueryParam("applicationNo");
+  const isEditMode = !!applicationNo || !!applicationNO;
 
   const [mobileNo, setMobileNo] = useState("");
   const [showToast, setShowToast] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-  const [applicants, setApplicants] = useState([
-    {
-      name: "",
-      fatherOrHusbandName: "",
-      mobileNumber: "",
-      emailId: "",
-      address: "",
-      dob: "",
-      gender: "",
-      panNumber: "",
-    },
-  ]);
+  const [applicants, setApplicants] = useState([]);
   const [documentUploadedFiles, setDocumentUploadedFiles] = useState({});
   const [photoUploadedFiles, setPhotoUploadedFiles] = useState({});
   const [panDocumentUploadedFiles, setPanDocumentUploadedFiles] = useState({});
   const [loader, setLoader] = useState(false);
   const [applicantErrors, setApplicantErrors] = useState({});
   // State for additional owner mobile search
+  const [isLoading, setIsLoading] = useState(false);
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
 
   console.log("userInfo here", userInfo);
   const closeToast = () => setShowToast(null);
 
-  const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+  const { isLoading: genderTypeDataLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
   const menu = [];
   genderTypeData &&
@@ -74,12 +71,12 @@ const LayoutApplicantDetails = (_props) => {
       });
     });
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
-  const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(
-    isUserArchitect ? "pb.punjab" : tenantId,
-    {},
-    { mobileNumber: userInfo?.info?.mobileNumber },
-    { cacheTime: 0 }
-  );
+  // const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(
+  //   isUserArchitect ? "pb.punjab" : tenantId,
+  //   {},
+  //   { mobileNumber: userInfo?.info?.mobileNumber },
+  //   { cacheTime: 0 }
+  // );
 
   useEffect(() => {
     // Only restore data on mount, not on every change
@@ -216,8 +213,10 @@ const LayoutApplicantDetails = (_props) => {
       });
       return;
     }
+    setIsLoading(true);
 
     const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
+    setIsLoading(false);
     console.log(userResponse, "PHOTO");
     if (!userResponse?.user?.length) {
       setShowToast({
@@ -411,7 +410,17 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedDocFiles = { ...documentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        setDocumentUploadedFiles(updatedDocFiles);
+        // setDocumentUploadedFiles(updatedDocFiles);
+        if(index === 0){
+          setValue("documentUploadedFiles", fileId, { shouldValidate: true });
+        }else{
+          setApplicants(prev => {
+            const updated = [...prev];
+            if(!updated[index-1]) updated[index-1] = {};
+            updated[index-1].documentUploadedFiles = fileId;
+            return updated;
+          })
+        }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", updatedDocFiles));
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "" } }));
@@ -437,7 +446,17 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedPhotoFiles = { ...photoUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        setPhotoUploadedFiles(updatedPhotoFiles);
+        // setPhotoUploadedFiles(updatedPhotoFiles);
+        if(index === 0){
+          setValue("photoUploadedFiles", fileId, { shouldValidate: true });
+        }else{
+          setApplicants(prev => {
+            const updated = [...prev];
+            if(!updated[index-1]) updated[index-1] = {};
+            updated[index-1].photoUploadedFiles = fileId;
+            return updated;
+          })
+        }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", updatedPhotoFiles));
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "" } }));
@@ -480,7 +499,17 @@ const LayoutApplicantDetails = (_props) => {
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
         const updatedPanDocFiles = { ...panDocumentUploadedFiles, [index]: { fileStoreId: fileId, fileName: file.name } };
-        setPanDocumentUploadedFiles(updatedPanDocFiles);
+        // setPanDocumentUploadedFiles(updatedPanDocFiles);
+        if(index === 0){
+          setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
+        }else{
+          setApplicants(prev => {
+            const updated = [...prev];
+            if(!updated[index-1]) updated[index-1] = {};
+            updated[index-1].panDocumentUploadedFiles = fileId;
+            return updated;
+          })
+        }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", updatedPanDocFiles));
         setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "" } }));
@@ -501,7 +530,7 @@ const LayoutApplicantDetails = (_props) => {
     dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", newPanDocFiles));
   };
 
-  const isEdit = window.location.pathname.includes("edit");
+  const isEdit = window.location.pathname.includes("edit") || !!applicationNO;
 
   const ErrorMessage = ({ message }) => {
     if (!message) return null;
@@ -511,7 +540,7 @@ const LayoutApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       {loader && <Loader />}
-      <div style={{ padding: "20px" }}>
+      <div >
         {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader> */}
@@ -535,6 +564,7 @@ const LayoutApplicantDetails = (_props) => {
               {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
+            {isLoading ? <Loader /> : null}
             <div style={{ display: "flex" }} className="field">
               <Controller
                 control={control}
@@ -740,19 +770,27 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <CustomUploadFile
-                id="passport-photo-primary"
-                onUpload={selectPhotoFile(0)}
-                onDelete={() => {
-                  deletePhoto(0);
-                  setPhotoUploadedFiles((prev) => ({ ...prev, [0]: null }));
-                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], photo: "Passport photo is required" } }));
-                }}
-                uploadedFile={photoUploadedFiles[0]?.fileStoreId}
-                message={photoUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                error={applicantErrors[0]?.photo}
-                uploadMessage=""
-                accept="image/*"
+              <Controller
+                control={control}
+                name="photoUploadedFiles"
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <CustomUploadFile
+                    id="passport-photo-primary"
+                    onUpload={selectPhotoFile(0)}
+                    onDelete={() => {
+                      deletePhoto(0);
+                      setPhotoUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                      setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], photo: "Passport photo is required" } }));
+                    }}
+                    // uploadedFile={photoUploadedFiles[0]?.fileStoreId}
+                    uploadedFile={getValues("photoUploadedFiles")}
+                    message={getValues("photoUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    error={applicantErrors[0]?.photo}
+                    uploadMessage=""
+                    accept="image/*"
+                  />
+              )}
               />
             </div>
           </LabelFieldPair>
@@ -778,19 +816,26 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <CustomUploadFile
-                id="id-proof-primary"
-                onUpload={selectDocumentFile(0)}
-                onDelete={() => {
-                  deleteDocument(0);
-                  setDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
-                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], document: "Document upload is required" } }));
-                }}
-                uploadedFile={documentUploadedFiles[0]?.fileStoreId}
-                message={documentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                error={applicantErrors[0]?.document}
-                uploadMessage=""
-                accept=".pdf"
+              <Controller
+                control={control}
+                name="documentUploadedFiles"
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <CustomUploadFile
+                    id="id-proof-primary"
+                    onUpload={selectDocumentFile(0)}
+                    onDelete={() => {
+                      deleteDocument(0);
+                      setDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                      setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], document: "Document upload is required" } }));
+                    }}
+                    uploadedFile={getValues("documentUploadedFiles")}
+                    message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    error={applicantErrors[0]?.document}
+                    uploadMessage=""
+                    accept=".pdf"
+                  />
+                  )}
               />
             </div>
           </LabelFieldPair>
@@ -818,23 +863,30 @@ const LayoutApplicantDetails = (_props) => {
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field" style={{ width: "100%" }}>
-              <CustomUploadFile
-                id="pan-document-primary"
-                onUpload={selectPanDocumentFile(0)}
-                onDelete={() => {
-                  deletePanDocument(0);
-                  setPanDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
-                  setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], panDocument: "PAN document is required" } }));
-                }}
-                uploadedFile={panDocumentUploadedFiles[0]?.fileStoreId}
-                message={panDocumentUploadedFiles[0]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                error={applicantErrors[0]?.panDocument}
-                uploadMessage=""
-                accept=".pdf"
+              <Controller
+                control={control}
+                name="panDocumentUploadedFiles"  
+                rules={{ required: t("REQUIRED_FIELD") }}              
+                render={(props) => (
+                <CustomUploadFile
+                  id="pan-document-primary"
+                  onUpload={selectPanDocumentFile(0)}
+                  onDelete={() => {
+                    deletePanDocument(0);
+                    setPanDocumentUploadedFiles((prev) => ({ ...prev, [0]: null }));
+                    setApplicantErrors((prev) => ({ ...prev, [0]: { ...prev[0], panDocument: "PAN document is required" } }));
+                  }}
+                  uploadedFile={getValues("panDocumentUploadedFiles")}
+                    message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                  error={applicantErrors[0]?.panDocument}
+                  uploadMessage=""
+                  accept=".pdf"
+                />
+                )}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.panDocument?.message || ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.panDocumentUploadedFiles?.message || ""}</CardLabelError>
 
           <div
             style={{
@@ -871,6 +923,7 @@ const LayoutApplicantDetails = (_props) => {
                     value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
                     message: "Invalid PAN Number format. Format should be like AAAAA1234A",
                   },
+                  required: t("REQUIRED_FIELD")
                 }}
                 render={(props) => (
                   <TextInput
@@ -895,15 +948,14 @@ const LayoutApplicantDetails = (_props) => {
           </div>
 
           {/* Additional Applicants Section */}
-          {applicants.length > 1 && (
+          {applicants.length > 0 && (
             <React.Fragment>
               <CardSectionHeader className="card-section-header" style={{ marginTop: "30px", marginBottom: "20px" }}>
                 {t("Additional Applicants")}
               </CardSectionHeader>
 
               {applicants.map(
-                (applicant, index) =>
-                  index > 0 && (
+                (applicant, index) => (
                     <div key={index}>
                       <div
                         style={{
@@ -916,7 +968,7 @@ const LayoutApplicantDetails = (_props) => {
                         }}
                       >
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
-                          {`${t("Applicant")} ${index + 1}`}
+                          {`${t("Applicant")} ${index + 2}`}
                         </CardLabel>
                         {!isEditMode && (
                           <span
@@ -939,6 +991,7 @@ const LayoutApplicantDetails = (_props) => {
                           {`${t("NEW_LAYOUT_APPLICANT_MOBILE_NO_LABEL")}`}
                           <span className="requiredField">*</span>
                         </CardLabel>
+                       {additionalOwnerSearchLoading[index] ? <Loader /> : null}
                         <div style={{ display: "flex" }} className="field">
                           <TextInput value={applicant.mobileNumber} onChange={(e) => updateApplicant(index, "mobileNumber", e.target.value)} t={t} />
                           <div
@@ -946,11 +999,12 @@ const LayoutApplicantDetails = (_props) => {
                             className="search-icon"
                             onClick={() => !additionalOwnerSearchLoading[index] && getAdditionalOwnerDetails(index)}
                           >
-                            {additionalOwnerSearchLoading[index] ? <Loader /> : <SearchIcon />}
+                             <SearchIcon />
                           </div>
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.mobileNumber && <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>}
+                      {/* {applicantErrors[index]?.mobileNumber && <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>} */}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>
 
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
@@ -962,7 +1016,8 @@ const LayoutApplicantDetails = (_props) => {
                           <TextInput value={applicant.name} onChange={(e) => updateApplicant(index, "name", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.name && <ErrorMessage>{applicantErrors[index].name}</ErrorMessage>}
+                      {/* {applicantErrors[index]?.name && <ErrorMessage>{applicantErrors[index].name}</ErrorMessage>} */}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.name?.message || ""}</CardLabelError>
 
                       {/* Father/Husband Name */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -986,7 +1041,8 @@ const LayoutApplicantDetails = (_props) => {
                           <TextInput value={applicant.emailId} onChange={(e) => updateApplicant(index, "emailId", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.emailId && <ErrorMessage>{applicantErrors[index].emailId}</ErrorMessage>}
+                      {/* {applicantErrors[index]?.emailId && <ErrorMessage>{applicantErrors[index].emailId}</ErrorMessage>} */}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.emailId?.message || ""}</CardLabelError>
 
                       {/* Address */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -998,7 +1054,8 @@ const LayoutApplicantDetails = (_props) => {
                           <TextArea value={applicant.address} onChange={(e) => updateApplicant(index, "address", e.target.value)} t={t} />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.address && <ErrorMessage>{applicantErrors[index].address}</ErrorMessage>}
+                      {/* {applicantErrors[index]?.address && <ErrorMessage>{applicantErrors[index].address}</ErrorMessage>} */}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.address?.message || ""}</CardLabelError>
 
                       {/* DOB */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -1016,7 +1073,8 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.dob && <ErrorMessage>{applicantErrors[index].dob}</ErrorMessage>}
+                      {/* {applicantErrors[index]?.dob && <ErrorMessage>{applicantErrors[index].dob}</ErrorMessage>} */}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.dob?.message || ""}</CardLabelError>
 
                       {/* Gender */}
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
@@ -1039,7 +1097,8 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>}
+                      {/* {applicantErrors[index]?.gender && <ErrorMessage>{applicantErrors[index].gender}</ErrorMessage>} */}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.gender?.message || ""}</CardLabelError>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1049,20 +1108,21 @@ const LayoutApplicantDetails = (_props) => {
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`passport-photo-${index}`}
-                            onUpload={selectPhotoFile(index)}
+                            onUpload={selectPhotoFile(index+1)}
                             onDelete={() => {
                               deletePhoto(index);
                               setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }));
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], photo: "Passport photo is required" } }));
                             }}
-                            uploadedFile={photoUploadedFiles[index]?.fileStoreId}
-                            message={photoUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                            uploadedFile={applicant.photoUploadedFiles}
+                            message={applicant.photoUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.photo}
                             uploadMessage=""
                             accept="image/*"
                           />
                         </div>
                       </LabelFieldPair>
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1072,20 +1132,21 @@ const LayoutApplicantDetails = (_props) => {
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`id-proof-${index}`}
-                            onUpload={selectDocumentFile(index)}
+                            onUpload={selectDocumentFile(index+1)}
                             onDelete={() => {
                               deleteDocument(index);
                               setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], document: "Document upload is required" } }));
                             }}
-                            uploadedFile={documentUploadedFiles[index]?.fileStoreId}
-                            message={documentUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                            uploadedFile={applicant.documentUploadedFiles}
+                            message={applicant.documentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.document}
                             uploadMessage=""
                             accept=".pdf"
                           />
                         </div>
                       </LabelFieldPair>
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
 
                       {/* PAN Number */}
 
@@ -1098,20 +1159,21 @@ const LayoutApplicantDetails = (_props) => {
                         <div className="field" style={{ width: "100%" }}>
                           <CustomUploadFile
                             id={`pan-document-${index}`}
-                            onUpload={selectPanDocumentFile(index)}
+                            onUpload={selectPanDocumentFile(index+1)}
                             onDelete={() => {
                               deletePanDocument(index);
                               setPanDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }));
                               setApplicantErrors((prev) => ({ ...prev, [index]: { ...prev[index], panDocument: "PAN document is required" } }));
                             }}
-                            uploadedFile={panDocumentUploadedFiles[index]?.fileStoreId}
-                            message={panDocumentUploadedFiles[index]?.fileStoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                            uploadedFile={applicant.panDocumentUploadedFiles}
+                            message={applicant.panDocumentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.panDocument}
                             uploadMessage=""
                             accept=".pdf"
                           />
                         </div>
                       </LabelFieldPair>
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "15px" }}>
                         <CardLabel className="card-label-smaller">
@@ -1127,7 +1189,7 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      {applicantErrors[index]?.panNumber && <ErrorMessage>{applicantErrors[index].panNumber}</ErrorMessage>}
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panNumber?.message || ""}</CardLabelError>
                     </div>
                   )
               )}
@@ -1153,7 +1215,7 @@ const LayoutApplicantDetails = (_props) => {
           )}
 
           {/* Add First Additional Applicant Button */}
-          {applicants.length === 1 && !isEditMode && (
+          {applicants.length === 0 && !isEditMode && (
             <div style={{ marginTop: "20px" }}>
               <div
                 onClick={handleAddApplicant}

@@ -9,8 +9,8 @@ import { businessServiceList } from "../../../utils";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
-  const [employeeName, setEmployeeName] = useState(null);
-  const [employeeRole, setEmployeeRole] = useState(null);
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeRole, setEmployeeRole] = useState("");
 
   
 
@@ -126,8 +126,8 @@ const Inbox = ({ parentRoute }) => {
 
     useEffect(() => {
       if (!isLoading && employeeData) {
-        const code=  employeeData?.Employees?.[0]?.code
-        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation
+        const code=  employeeData?.Employees?.[0]?.user?.name || "";
+        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation || ""
         setEmployeeName(code);
         setEmployeeRole(desig);
       }

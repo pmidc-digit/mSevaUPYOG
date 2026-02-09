@@ -9,12 +9,13 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
       label: "HR_GUARDIAN_NAME_LABEL",
       type: "text",
       name: "employeeGuardianName",
+      placeHolder: "HR_GUARDIAN_NAME_PLACEHOLDER",
       validation: {
         isRequired: true,
         pattern: Digit.Utils.getPattern("Name"),
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
-      isMandatory: false,
+      isMandatory: true,
     },
   ];
 
@@ -30,9 +31,9 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
           <React.Fragment key={index}>
             {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">
+              <CardLabel className="card-label-smaller hrms-text-transform-none">
                 {t(input.label)}
-                {input.isMandatory ? " * " : null}
+                {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
               </CardLabel>
               <div className="field">
                 <TextInput
@@ -40,6 +41,7 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
                   value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                   onChange={(e) => setValue(e.target.value, input.name)}
                   disable={false}
+                  placeholder={t(input.placeHolder)}
                   defaultValue={undefined}
                   {...input.validation}
                 />

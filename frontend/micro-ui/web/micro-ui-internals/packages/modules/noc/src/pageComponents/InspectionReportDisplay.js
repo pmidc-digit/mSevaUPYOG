@@ -55,9 +55,13 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
     return (
       <div>
         {/* {fiReport.map((report, index) => ( */}
-          {/* <div key={index}> */}
-            <CardSubHeader>{fiReport.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1} - Verified by ${InspectionReportVerifier}` : `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier}`}</CardSubHeader>
-            {/* {<LabelFieldPair>
+        {/* <div key={index}> */}
+        <CardSubHeader>
+          {fiReport.length > 1
+            ? `${t("BPA_FI_REPORT")}-${index + 1}${InspectionReportVerifier ? ` - Verified by ${InspectionReportVerifier}` : ""}`
+            : `${t("BPA_FI_REPORT")}${InspectionReportVerifier ? ` - Verified by ${InspectionReportVerifier}` : ""}`}
+        </CardSubHeader>
+        {/* {<LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")}: `}</CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 {report?.InspectionDate || t("NA")}
@@ -69,50 +73,50 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
                 {report?.InspectionTime || t("NA")}
               </div>
             </LabelFieldPair>} */}
-            <div style={{ marginTop: "16px" }}>
-              {/* <CardLabel className="card-label-smaller">{t("BPA_FI_CHECKLIST_LABEL")}:</CardLabel> */}
-              {report.questionList && report.questionList.length > 0 ? (
-                // report.questionList.map((questionItem, qIndex) => (
-                //   <div key={qIndex}>
-                //     <div>
-                //       <strong>{questionItem.question}</strong>
-                //     </div>
-                //     <div>
-                //       {t(report?.["question_"+qIndex]?.i18nKey)}
-                //     </div>
-                //     {report?.["Remarks_"+qIndex] && (
-                //       <div>
-                //         <em>{t("COMMENTS")}: {report?.["Remarks_"+qIndex]}</em>
-                //       </div>
-                //     )}
-                //   </div>
-                // ))
-                        <Table
-                            className="customTable table-border-style"
-                            t={t}
-                            data={tableData}
-                            columns={[
-                                {
-                                    Header: t("BPA_CHECK_LIST_DETAILS"),
-                                    accessor: "question"
-                                },                                
-                                {
-                                    Header: t("BPA_REMARKS"),
-                                    accessor: "remarks"
-                                }
-                            ]}
-                            getCellProps={() => ({ style: {} })}
-                            disableSort={true}
-                            // autoSort={true}
-                            manualPagination={false}
-                            isPaginationRequired={false}
-                            pageSizeLimit={tableData.length}
-                        />
-              ) : (
-                <div>{t("NA")}</div>
-              )}
-            </div>
-          {/* </div> */}
+        <div style={{ marginTop: "16px" }}>
+          {/* <CardLabel className="card-label-smaller">{t("BPA_FI_CHECKLIST_LABEL")}:</CardLabel> */}
+          {report.questionList && report.questionList.length > 0 ? (
+            // report.questionList.map((questionItem, qIndex) => (
+            //   <div key={qIndex}>
+            //     <div>
+            //       <strong>{questionItem.question}</strong>
+            //     </div>
+            //     <div>
+            //       {t(report?.["question_"+qIndex]?.i18nKey)}
+            //     </div>
+            //     {report?.["Remarks_"+qIndex] && (
+            //       <div>
+            //         <em>{t("COMMENTS")}: {report?.["Remarks_"+qIndex]}</em>
+            //       </div>
+            //     )}
+            //   </div>
+            // ))
+            <Table
+              className="customTable table-border-style"
+              t={t}
+              data={tableData}
+              columns={[
+                {
+                  Header: t("BPA_CHECK_LIST_DETAILS"),
+                  accessor: "question",
+                },
+                {
+                  Header: t("BPA_REMARKS"),
+                  accessor: "remarks",
+                },
+              ]}
+              getCellProps={() => ({ style: {} })}
+              disableSort={true}
+              // autoSort={true}
+              manualPagination={false}
+              isPaginationRequired={false}
+              pageSizeLimit={tableData.length}
+            />
+          ) : (
+            <div>{t("NA")}</div>
+          )}
+        </div>
+        {/* </div> */}
         {/* ))} */}
       </div>
     );

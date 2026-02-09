@@ -6,14 +6,15 @@ const useESign = () => {
 
 
       // eSignPayload should be: { fileStoreId, tenantId }
-      const { fileStoreId, tenantId } = eSignPayload;
-      if (!fileStoreId || !tenantId) {
-        throw new Error('fileStoreId and tenantId are required for eSign.');
+      const { fileStoreId, tenantId , callbackUrl } = eSignPayload;
+      if (!fileStoreId || !tenantId || !callbackUrl) {
+        throw new Error('fileStoreId and tenantId & callbackUrl are required for eSign.');
       }
 
       const formData = new FormData();
       formData.append('file', fileStoreId); // If backend expects actual file, pass File object instead
       formData.append('tenantid', tenantId);
+      formData.append('callbackUrl', callbackUrl)
 
       const response = await fetch('/egov-esign/upload', {
         method: 'POST',

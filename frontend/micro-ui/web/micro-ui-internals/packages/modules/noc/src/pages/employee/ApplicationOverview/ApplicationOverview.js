@@ -475,12 +475,9 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
   useEffect(() => {
   const status = applicationDetails?.Noc?.[0]?.applicationStatus;
   const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
-  if (status === "DOCUMENTVERIFY") { 
-     setDocumentVerifier( 
-      additionalDetails?.documentVerifier || user?.info?.name || "" ); 
-    } else if (status === "INSPECTION_REPORT_PENDING") { 
-       setInspectionReportVerifier( additionalDetails?.InspectionReportVerifier || user?.info?.name || "" ); 
-      }
+  setDocumentVerifier(additionalDetails?.documentVerifier || user?.info?.name || "");
+  setInspectionReportVerifier(additionalDetails?.InspectionReportVerifier || user?.info?.name || ""); 
+      
 }, [applicationDetails?.Noc?.[0]?.applicationStatus, user?.info?.name]);
 
 

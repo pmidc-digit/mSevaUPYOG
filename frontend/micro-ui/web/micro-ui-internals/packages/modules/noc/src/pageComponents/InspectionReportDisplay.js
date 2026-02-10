@@ -98,6 +98,9 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
               t={t}
               data={tableData}
               columns={[
+                { Header: t("SR_NO"), 
+                  Cell: ({ row }) => row.index + 1 
+                },
                 {
                   Header: t("BPA_CHECK_LIST_DETAILS"),
                   accessor: "question",

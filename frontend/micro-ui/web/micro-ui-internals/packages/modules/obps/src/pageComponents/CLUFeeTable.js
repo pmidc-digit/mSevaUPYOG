@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextInput } from "@mseva/digit-ui-react-components";
+import { TextInput, TextArea } from "@mseva/digit-ui-react-components";
 
 import { amountToWords } from "../utils";
 import CustomFeeTable from "../../../templates/ApplicationDetails/components/CustomFeeTable";
@@ -80,28 +80,21 @@ export const CLUFeeTable = ({
 
         if (readOnly) {
           return (
-            <TextInput
-              t={t}
-              type="text"
-              isMandatory={false}
-              value={feeData[row.index]?.remark || ""}
-              disable={true}
-              className="custom-fee-table-input"
-            />
+            <div className="custom-fee-remark-display">
+              {feeData[row.index]?.remark || "-"}
+            </div>
           );
         }
 
         return (
-          <TextInput
-            t={t}
-            type="text"
-            isMandatory={false}
+          <TextArea
             value={feeData[row.index]?.remark || ""}
             onChange={(e) =>
               handleRemarkChange(row.index, e.target.value, row.amount)
             }
-            disable={false}
-            className="custom-fee-table-input"
+            disabled={false}
+            className="custom-fee-table-textarea"
+            placeholder="Enter remarks..."
           />
         );
       },
@@ -171,14 +164,12 @@ export const CLUFeeTable = ({
                 <div className="custom-fee-card-row">
                   <div className="custom-fee-card-field">
                     <label className="custom-fee-card-label">{t("BPA_REMARK_LABEL")}</label>
-                    <TextInput
-                      t={t}
-                      type="text"
-                      isMandatory={false}
+                    <TextArea
                       value={feeData[row.index]?.remark || ""}
                       onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
-                      disable={readOnly}
-                      className="custom-fee-table-input"
+                      disabled={readOnly}
+                      className="custom-fee-table-textarea"
+                      placeholder="Enter remarks..."
                     />
                   </div>
                 </div>

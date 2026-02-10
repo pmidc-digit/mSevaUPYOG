@@ -23,14 +23,14 @@ const CLUInbox = ({ parentRoute }) => {
     moduleName: "clu-service",
     applicationStatus: [],
     businessService: "clu_mcl",// it is dynamic as it  consists of two businessServices
-    assignee: "ASSIGNED_TO_ALL",
+    assignee: "ASSIGNED_TO_ME",
   }
 
   const tableOrderFormDefaultValues = {
     sortBy: "",
     limit: Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
-    sortOrder: "DESC",
+    sortOrder: "ASC",
   }
 
   function formReducer(state, payload) {
@@ -65,7 +65,7 @@ const CLUInbox = ({ parentRoute }) => {
   }
 
   const onSortFormReset = (setSortFormValue) => {
-    setSortFormValue("sortOrder", "DESC")
+    setSortFormValue("sortOrder", "ASC")
     dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues })
   }
 

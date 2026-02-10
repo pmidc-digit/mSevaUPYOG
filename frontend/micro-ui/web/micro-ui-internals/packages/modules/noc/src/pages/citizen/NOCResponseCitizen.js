@@ -42,7 +42,7 @@ const NOCResponseCitizen = (props) => {
   };
 
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (isView = false) => {
     try{
       setLoading(true);
     const Property = nocData;
@@ -51,7 +51,7 @@ const NOCResponseCitizen = (props) => {
     const ulbType = site?.ulbType;
     const ulbName = site?.ulbName?.city?.name || site?.ulbName;
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t, isView);
     Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     }catch(error){
       console.log("Eroor Occurred !!!", error);
@@ -90,8 +90,11 @@ const NOCResponseCitizen = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
-          <SubmitBar label={nocData?.applicationStatus === "INITIATED" ? t("View Application") : t("Download Application")} onSubmit={handleDownloadPdf} />
-          
+          {nocData?.applicationStatus === "INITIATED" ? (
+            <SubmitBar label={t("View Application")} onSubmit={() => handleDownloadPdf(true)} />
+          ) : (
+            <SubmitBar label={t("Download Application")} onSubmit={() => handleDownloadPdf(false)} />
+          )}
           {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>

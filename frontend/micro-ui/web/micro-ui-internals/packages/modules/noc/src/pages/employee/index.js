@@ -54,6 +54,8 @@ const EmployeeApp = ({ path }) => {
   const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCEmployeeApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
+  const NOCEsignResponse = Digit?.ComponentRegistryService?.getComponent("NOCEsignResponse");
+
     const history = useHistory();
 
   const isResponse = window.location.href.includes("/response");
@@ -80,7 +82,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/response/:id`} component={Response} />
         <PrivateRoute path={`${path}/search/application`} component={NOCCitizenApplicationOverview} />
-        <PrivateRoute path="/egov-esign/complete" component={NOCCitizenApplicationOverview} />
+        <PrivateRoute path={`${path}/esign/complete/:id/:file`} component={NOCEsignResponse} />
 
       </Switch>
     </Fragment>

@@ -29,7 +29,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   };
 
   return (
-    <div className="checklist-document-table-wrapper">
+    <div className="checklist-document-table-wrapper" style ={{fontWeight: "bold"}}>
       <table className="customTable table-border-style checklist-document-table">
         <thead>
           <tr>

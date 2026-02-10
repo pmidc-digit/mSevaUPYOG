@@ -209,8 +209,9 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 
 		@SuppressWarnings("unchecked")
 		List<TaxHeadMaster> ll = ((List<TaxHeadMaster>) masterMap.get(GCCalculationConstant.TAXHEADMASTER_MASTER_KEY));
-		Map<String, TaxHeadCategory> taxHeadCategoryMap = ll.stream().collect(
-				Collectors.toMap(TaxHeadMaster::getCode, TaxHeadMaster::getCategory, (OldValue, NewValue) -> NewValue));
+        Map<String, TaxHeadCategory> taxHeadCategoryMap = ll.stream()
+                .filter(taxHead -> taxHead.getCategory() != null)
+                .collect(Collectors.toMap(TaxHeadMaster::getCode, TaxHeadMaster::getCategory, (OldValue, NewValue) -> NewValue));
 
 		BigDecimal taxAmt = BigDecimal.ZERO;
 		BigDecimal waterCharge = BigDecimal.ZERO;

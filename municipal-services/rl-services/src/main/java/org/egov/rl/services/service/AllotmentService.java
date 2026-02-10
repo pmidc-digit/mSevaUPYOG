@@ -127,7 +127,7 @@ public class AllotmentService {
             }
         } else if (isApprove && applicationType.contains(RLConstants.NEW_RL_APPLICATION)) {
 			try {
-				callCalculatorService(false,false,allotmentRequest);
+				callCalculatorService(false,true,allotmentRequest);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new CustomException("CREATE_DEMAND_ERROR",

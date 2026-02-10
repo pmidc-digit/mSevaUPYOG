@@ -16,6 +16,7 @@ const createUnitDetails = () => ({
 
 const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus, InspectionReportVerifier }) => {
     const { t } = useTranslation();
+    console.log('InspectionReportVerifier here', InspectionReportVerifier)
     const { pathname } = useLocation();
     const fieldInspectionFieldReports = fiReport ? fiReport : JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"));
     const [FieldReports, setFieldReports] = useState(fieldInspectionFieldReports?.length > 0 ? fieldInspectionFieldReports : [createUnitDetails()]);
@@ -333,13 +334,13 @@ const InspectionReportForm = (_props) => {
             onClick={(e) => removeUnit(unit)}
           />
         ) : null}
-        <CardSubHeader>
+        {/* <CardSubHeader>
           {allFieldReport?.length > 1
             ? `${t("BPA_FI_REPORT")}-${index + 1} - ${
-                InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : t("BPA_FI_REPORT")
+                InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : " "
               }`
-            : `${t("BPA_FI_REPORT")} - ${InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : t("BPA_FI_REPORT")}`}
-        </CardSubHeader>
+            : `${t("BPA_FI_REPORT")} - ${InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : " "}`}
+        </CardSubHeader> */}
 
         {/* <LabelFieldPair style={{ width: "100%" }}>
                         <CardLabel style={{ marginTop: "0px", width: "100%" }} className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")} * `}</CardLabel>

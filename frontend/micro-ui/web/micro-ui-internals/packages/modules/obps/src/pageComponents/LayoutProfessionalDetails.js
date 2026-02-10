@@ -12,6 +12,7 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 
 const LayoutProfessionalDetails = (_props) => {
@@ -77,6 +78,7 @@ const LayoutProfessionalDetails = (_props) => {
         }
 
         if (bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress) {
+          console.log("ProfessionalsAddress",bpaData)
           const professionalAddress = bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress;
           setValue("professionalAddress", professionalAddress);
         }
@@ -168,7 +170,7 @@ const LayoutProfessionalDetails = (_props) => {
     }
   }, [data, tenantId]);
 
-  console.log(userInfo, "VVVVVVV");
+  console.log("VVVVVVV", userInfo);
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
@@ -212,6 +214,7 @@ const LayoutProfessionalDetails = (_props) => {
       )}
           </div> */}
 
+      {isLoading? <Loader /> : <div>
       <LabelFieldPair>
         <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
@@ -391,6 +394,7 @@ const LayoutProfessionalDetails = (_props) => {
         </span>
       )}
       */}
+      </div>}
     </React.Fragment>
   );
 };

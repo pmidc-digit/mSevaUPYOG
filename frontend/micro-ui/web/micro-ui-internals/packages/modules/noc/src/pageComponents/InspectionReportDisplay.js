@@ -8,6 +8,8 @@ import { useLocation } from "react-router-dom";
 const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
     const { t } = useTranslation();
 
+        console.log('InspectionReportVerifier here', InspectionReportVerifier)
+
     const report = useMemo(() => {
       if (fiReport && fiReport.length > 0) {
         return fiReport[0]; // Display the first report for now
@@ -56,11 +58,11 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
       <div>
         {/* {fiReport.map((report, index) => ( */}
         {/* <div key={index}> */}
-        <CardSubHeader>
+        {/* <CardSubHeader>
           {fiReport.length > 1
-            ? `${t("BPA_FI_REPORT")}-${index + 1}${InspectionReportVerifier ? ` - Verified by ${InspectionReportVerifier}` : ""}`
-            : `${t("BPA_FI_REPORT")}${InspectionReportVerifier ? ` - Verified by ${InspectionReportVerifier}` : ""}`}
-        </CardSubHeader>
+            ? `${t("BPA_FI_REPORT")}-${index + 1}  - Verified by ${InspectionReportVerifier} `
+            : `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier}`}
+        </CardSubHeader> */}
         {/* {<LabelFieldPair>
               <CardLabel className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")}: `}</CardLabel>
               <div className="field" style={{ width: "100%" }}>

@@ -573,7 +573,8 @@ const ApplicationOverview = () => {
                       text={t(
                         `${
                           applicationDetails?.Applications?.[0]?.reason == "OTHERS"
-                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.[2]?.additionalDetails?.reason
+                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                                ?.reason
                             : applicationDetails?.Applications?.[0]?.reason
                         }`
                       )}
@@ -590,7 +591,13 @@ const ApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
-                    <Row label={t("Remarks")} text={applicationDetails?.Applications?.[0]?.NdcDetails?.[2]?.additionalDetails?.remarks || "N/A"} />
+                    <Row
+                      label={t("Remarks")}
+                      text={
+                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                          ?.remarks || "N/A"
+                      }
+                    />
                   </>
                 )}
               </StatusTable>

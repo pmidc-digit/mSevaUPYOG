@@ -77,15 +77,21 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
   /* use customiseCreateFormData hook to make some chnages to the Employee object */
   Employees = Digit?.Customizations?.HRMS?.customiseCreateFormData ? Digit.Customizations.HRMS.customiseCreateFormData(data, Employees) : Employees;
 
+  // Safety fallback — primary ID uniqueness check is now in EmployeeDetails step (Next button)
   if (data?.SelectEmployeeId?.code && data?.SelectEmployeeId?.code?.trim().length > 0) {
-    Digit.HRMSService.search(employeeTenantId, null, { codes: data?.SelectEmployeeId?.code }).then((result, err) => {
-      if (result.Employees.length > 0) {
+    Digit.HRMSService.search(employeeTenantId, null, { codes: data?.SelectEmployeeId?.code })
+      .then((result) => {
+        if (result?.Employees?.length > 0) {
+          setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
+          return;
+        } else {
+          navigateToAcknowledgement(Employees, history);
+        }
+      })
+      .catch((e) => {
+        console.error("HRMS ID check error:", e);
         setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
-        return;
-      } else {
-        navigateToAcknowledgement(Employees, history);
-      }
-    });
+      });
   } else {
     navigateToAcknowledgement(Employees, history);
   }

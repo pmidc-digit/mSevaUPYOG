@@ -309,6 +309,7 @@ const InspectionReportForm = (_props) => {
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     return (
         <React.Fragment>
+            
             {/* <div>          */}
                     {allFieldReport?.length > 1 ? (
                         <LinkButton
@@ -438,13 +439,14 @@ const InspectionReportForm = (_props) => {
                                                 name={`Remarks_${ind}`}
                                                 defaultValue={unit?.uomValue}
                                                 render={(props) => (
-                                                    <TextInput
+                                                    <TextArea
                                                         value={getValues(`Remarks_${ind}`)}
                                                         onChange={(e) => {
                                                             props.onChange(e);
                                                         }}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
+                                                        className="checklist-table-textarea"
                                                     />
                                                 )}
                                             />
@@ -466,6 +468,7 @@ const InspectionReportForm = (_props) => {
                                                     }}
                                                     placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
                                                     onBlur={props.onBlur}
+                                                    className="checklist-table-textarea"
                                                 />
                                             )}
                                         />

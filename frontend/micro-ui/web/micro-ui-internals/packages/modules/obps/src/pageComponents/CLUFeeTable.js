@@ -38,23 +38,6 @@ export const CLUFeeTable = ({
       key: "amount",
       label: "BPA_AMOUNT",
       headerLabel: "BPA_AMOUNT",
-      type: "number",
-      step: 1,
-      isMandatory: false,
-      onChange: handleAdjustedAmountChange,
-      onBlur: onAdjustedAmountBlur,
-      getValue: (row) => {
-        if (row.taxHeadCode === "CLU_TOTAL") return null;
-        return feeData[row.index]?.adjustedAmount === 0
-          ? ""
-          : feeData[row.index]?.adjustedAmount ?? row.amount ?? "";
-      },
-      disable: (row) => row.taxHeadCode === "CLU_TOTAL" || readOnly,
-    },
-    {
-      key: "remark",
-      label: "BPA_REMARKS",
-      headerLabel: "BPA_REMARKS",
       type: "custom",
       render: (row, rowIndex, t) => {
         if (row.taxHeadCode === "CLU_TOTAL") {
@@ -76,12 +59,42 @@ export const CLUFeeTable = ({
             </div>
           );
         }
-
+        return (
+          <TextInput
+            t={t}
+            type="number"
+            isMandatory={false}
+            value={feeData[row.index]?.adjustedAmount === 0
+              ? ""
+              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+            onChange={(e) => {
+              let val = e.target.value;
+              if (val.length > 1 && val.startsWith("0")) {
+                val = val.replace(/^0+/, "");
+              }
+              handleAdjustedAmountChange(row.index, val);
+            }}
+            disable={readOnly}
+            step={1}
+            onBlur={onAdjustedAmountBlur}
+          />
+        );
+      },
+    },
+    {
+      key: "remark",
+      label: "BPA_REMARKS",
+      headerLabel: "BPA_REMARKS",
+      type: "custom",
+      render: (row, rowIndex, t) => {
+        if (row.taxHeadCode === "CLU_TOTAL") {
+          return " ";
+        }
 
         if (readOnly) {
           return (
-            <div className="custom-fee-remark-display">
-              {feeData[row.index]?.remark || "-"}
+            <div>
+              {feeData[row.index]?.remark || <TextArea placeholder="Enter remarks" disabled={true} className="custom-fee-table-textarea" />}
             </div>
           );
         }

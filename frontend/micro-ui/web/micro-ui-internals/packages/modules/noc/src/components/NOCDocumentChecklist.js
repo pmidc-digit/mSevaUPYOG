@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, LinkButton } from "@mseva/digit-ui-react-components";
+import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
@@ -52,9 +52,8 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                   ) : t("CS_NA")}
                 </td>
                 <td className="checklist-table-cell checklist-table-cell-remark">
-                  <TextInput
+                  <TextArea
                     t={t}
-                    type="text"
                     value={localRemarks[doc?.documentUid] ?? ""}
                     onChange={(e) => {
                       if (!readOnly) {
@@ -65,7 +64,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                     }}
                     onBlur={(e) => !readOnly && handleBlur(doc?.documentUid, e.target.value)}
                     disabled={readOnly}
-                    className="checklist-table-input"
+                    className="checklist-table-textarea"
                   />
                 </td>
               </tr>

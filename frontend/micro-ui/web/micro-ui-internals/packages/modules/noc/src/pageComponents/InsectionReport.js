@@ -448,6 +448,7 @@ const InspectionReportForm = (_props) => {
           <table className="customTable table-border-style">
             <thead>
               <tr>
+                <th>{t("SR_NO")}</th>
                 <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
                 <th>{t("BPA_REMARKS")}</th>
               </tr>
@@ -456,6 +457,7 @@ const InspectionReportForm = (_props) => {
               {extendedQuestions &&
                 extendedQuestions.map((ob, ind) => (
                   <tr key={ind}>
+                    <td>{ind + 1}</td> {/* Serial number column */}
                     <td>{t(ob?.question) || t("CS_NA")}</td>
                     <td>
                       <Controller
@@ -501,6 +503,7 @@ const InspectionReportForm = (_props) => {
             </tbody>
           </table>
         </div>
+
         {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader> */}
         {/* <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} /> */}
         {/* <Table

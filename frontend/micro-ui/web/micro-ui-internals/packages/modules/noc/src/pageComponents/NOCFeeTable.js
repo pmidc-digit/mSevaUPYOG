@@ -7,17 +7,12 @@ import CustomFeeTable from "../../../templates/ApplicationDetails/components/Cus
 export const NOCFeeTable = ({
   feeDataWithTotal,
   disable,
-  isEmployee,
   feeData,
   handleAdjustedAmountChange,
-  handleFileUpload,
-  handleFileDelete,
-  routeTo,
-  t,
   handleRemarkChange,
   onAdjustedAmountBlur,
   feeHistory,
-  timeObj
+  t,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -33,8 +28,6 @@ export const NOCFeeTable = ({
   }, []);
 
   console.log('feeHistory', feeHistory)
-  console.log('timeObj', timeObj)
-  console.log("feeHistory keys", Object.keys(feeHistory || {}));
 
   const columns = [
     {
@@ -222,7 +215,7 @@ export const NOCFeeTable = ({
               className="custom-fee-history-toggle-mobile"
               onClick={() => setShowHistory(!showHistory)}
             >
-              <span className="custom-fee-history-title">{t("FEE_HISTORY")}</span>
+              <span className="custom-fee-history-title">{t("BPA_FEE_HISTORY_LABEL")}</span>
               <span className="custom-fee-history-icon">{showHistory ? "▲" : "▼"}</span>
             </div>
 

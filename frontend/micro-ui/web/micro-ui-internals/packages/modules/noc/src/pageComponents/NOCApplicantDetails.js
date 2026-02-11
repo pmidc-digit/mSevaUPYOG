@@ -539,13 +539,16 @@ const NOCApplicantDetails = (_props) => {
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}</CardSubHeader>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, cursor: "pointer" }} onClick={() => removeOwner(index)}>
-              { fields.length > 1 && `❌`}
+              {fields.length > 1 && `❌`}
             </div>
 
             {index === 0 && (
               <div>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+                  <CardLabel>
+                    {`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")}`}
+                    <span className="requiredField">*</span>
+                  </CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -556,32 +559,41 @@ const NOCApplicantDetails = (_props) => {
                           placeholder={t("IS_PROPERTY_AVAILABLE")}
                           selected={props.value}
                           select={(e) => {
-                            if ( e?.value === true) { 
-                              alert("Existing user/property specific details entered will be cleared and replaced with data from the searched property."); 
-                            } else if (e?.value === false){ 
-                              alert("Existing user/property derived details will be removed."); 
+                            if (e?.value === true) {
+                              alert(
+                                "Existing user/property specific details entered will be cleared and replaced with data from the searched property."
+                              );
+                            } else if (e?.value === false) {
+                              alert("Existing user/property derived details will be removed.");
                             }
 
                             props.onChange(e);
 
                             if (e) {
-                              dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
-                              dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
-                              dispatch(UPDATE_NOC_OwnerIds("ownerIdList", []));
-                              dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", []));
-                              dispatch(
-                                UPDATE_NOCNewApplication_FORM("siteDetails", {
-                                  ...currentStepData?.siteDetails,
-                                  vasikaNumber: "",
-                                  vasikaDate: null,
-                                  netTotalArea: null,
-                                  proposedSiteAddress : ""
-                                })
-                              );
-                              reset({
-                                owners: [defaultOwner()],
-                                isPropertyAvailable: e,
-                              });
+                              const firstOwnerPropertyId = getValues("owners[0].propertyId");
+                              const isYes = e.value === true;
+                              const mustReset = tenantId === LUDHIANA_TENANT || tenantId === BATHINDA_TENANT;
+                              const shouldReset = isYes || mustReset || (!!firstOwnerPropertyId && firstOwnerPropertyId.trim() !== "");
+
+                              if (shouldReset) {
+                                dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+                                dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+                                dispatch(UPDATE_NOC_OwnerIds("ownerIdList", []));
+                                dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", []));
+                                dispatch(
+                                  UPDATE_NOCNewApplication_FORM("siteDetails", {
+                                    ...currentStepData?.siteDetails,
+                                    vasikaNumber: "",
+                                    vasikaDate: null,
+                                    netTotalArea: null,
+                                    proposedSiteAddress: "",
+                                  })
+                                );
+                                reset({
+                                  owners: [defaultOwner()],
+                                  isPropertyAvailable: e,
+                                });
+                              }
                             }
 
                             setIsPropertyAvailable(e);
@@ -675,8 +687,6 @@ const NOCApplicantDetails = (_props) => {
                         <Row label={t("Vasika Date")} text={watch(`owners[${index}].propertyVasikaDate`)} />
                       </StatusTable>
                     )}
-
-                    
                   </div>
                 </div>
               </div>

@@ -12,7 +12,7 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [isDisabled, setIsDisabled] = useState(formData?.data?.scrutinyNumber ? true : false);
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const state = Digit.ULBService.getStateId();
   const [bpaData, setBpaData] = useState(formData?.data?.bpaData || {});
   const [data, setData] = useState(formData?.data?.edcrDetails || null);
@@ -24,12 +24,13 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
     // setTimeout(closeToast, 5000);
   }, showToast);
 
+  console.log("basic details data",formData, data, bpaData);
 
   const getOCEDCRTotalDetails = async () => {
     setData(null);
     setBpaData(null);
     setIsLoadingApplication(true);
-    const details = await ocScrutinyDetailsData(scrutinyNumber?.edcrNumber, state);
+    const details = await ocScrutinyDetailsData(scrutinyNumber?.edcrNumber, tenantId);
     setIsLoadingApplication(false);
     if (details?.type == "ERROR") {
       setShowToast({ key: "true", message: details?.message });

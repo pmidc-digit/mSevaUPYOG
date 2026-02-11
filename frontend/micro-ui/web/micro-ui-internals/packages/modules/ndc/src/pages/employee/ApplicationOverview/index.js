@@ -150,7 +150,11 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const isCemp = user?.info?.roles.filter((role) => role.code === "CEMP");
+  console.log('userRoles', userRoles)
+  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
+
+
+  console.log('isCemp', isCemp)
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -467,7 +471,7 @@ const ApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-        {isCemp && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+        {isCemp  && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
           <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
         )}
       </div>

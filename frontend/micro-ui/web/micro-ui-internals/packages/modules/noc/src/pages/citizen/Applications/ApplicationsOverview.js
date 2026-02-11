@@ -414,7 +414,7 @@ const CitizenApplicationOverview = () => {
     }
 
     const finalComment = conditionText
-      ? `The above approval is subjected to the following conditions: ${conditionText}`
+      ? `The above approval is subjected to the following conditions:\n${conditionText}`
       : "";
 
     setApproverComment(finalComment);

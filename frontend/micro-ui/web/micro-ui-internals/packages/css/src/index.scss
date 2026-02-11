@@ -1774,8 +1774,52 @@ input[type="date"] {
 .custom-fee-table-input {
   width: 100%;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 15px;
   box-sizing: border-box;
+}
+
+/* Textarea Styles for CLU Fee Table */
+.custom-fee-table-textarea {
+  min-height: 60px;
+  max-height: 240px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid #CCCCCC;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-fee-table-textarea:focus {
+  outline: none;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.custom-fee-table-textarea:disabled {
+  background-color: #F5F5F5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.custom-fee-remark-display {
+  padding: 10px 12px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  background-color: #F9F9F9;
+  font-size: 15px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 240px;
+  overflow-y: auto;
+  min-height: 40px;
+  display: flex;
+  align-items: flex-start;
+  color: #333;
 }
 
 
@@ -1810,14 +1854,14 @@ input[type="date"] {
 
 .custom-fee-card-type {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: #1A1A1A;
   text-transform: capitalize;
   letter-spacing: 0.3px;
 }
 
 .custom-fee-card-original-amount {
-  font-size: 12px;
+  font-size: 15px;
   color: #888;
   font-weight: 500;
 }
@@ -2054,6 +2098,7 @@ input[type="date"] {
 .checklist-table-cell-doc-name {
   font-size: 16px;
   min-width: 150px;
+  max-width: 340px;
 }
 
 .checklist-table-cell-file {
@@ -2067,11 +2112,147 @@ input[type="date"] {
 .checklist-table-input {
   width: 100%;
   padding: 8px;
-
   border-radius: 4px;
   font-size: 13px;
   box-sizing: border-box;
 }
+
+/* Mobile Card View for Document Checklist */
+.checklist-mobile-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+}
+
+.checklist-mobile-card {
+  border-bottom: 1px solid #E0E0E0;
+  padding: 12px 0;
+}
+
+.checklist-card-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.checklist-card-sr-no {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  min-width: 20px;
+}
+
+.checklist-card-doc-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+}
+
+.checklist-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 28px;
+}
+
+.checklist-card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checklist-card-label {
+  font-weight: 500;
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.checklist-card-remark {
+  font-size: 13px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  color: #333;
+}
+
+/* Textarea Styles for CLU Document Checklist */
+.checklist-table-textarea {
+  min-height: 60px;
+  max-height: 240px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  resize: vertical;
+  padding: 14px 16px;
+  border: 1px solid #CCCCCC;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  text-align: justify;
+}
+
+.checklist-table-textarea:focus {
+  outline: none;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.checklist-table-textarea:disabled {
+  background-color: #F5F5F5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #e1e8f0;
+}
+
+@media (max-width: 1024px) {
+  .checklist-table-textarea {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .checklist-table-textarea {
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 50px;
+  }
+}
+
+.checklist-remark-display {
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  color: #000000;
+  text-align: justify;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .checklist-remark-display {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .checklist-remark-display {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
 @media (min-width: 1024px) {
   .data-card{
     .employee-card-sub-heade {

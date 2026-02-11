@@ -930,13 +930,13 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
   }
 
   function onActionSelect(action) {
-    const path = data?.applicationData?.businessService == "BPA_OC" ? "ocbpa" : "bpa";
+    const path = data?.applicationData?.additionalDetails?.applicationType == "BUILDING_OC_PLAN_SCRUTINY" ? "ocbpa" : "bpa";
     // if(!agree || !isCitizenDeclared || !isTocAccepted){
     //   alert("Please Accept Terms, Upload and Accept Decleration");
     //   return 
     // }
     const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
-    console.log("SelectedAction", action, isCitizenConsentIncluded, isUserCitizen)
+    console.log("SelectedAction", action, isCitizenConsentIncluded, isUserCitizen, path)
     if (isCitizenConsentIncluded && !isOCApplication) {
       if (!agree) {
         setIsEnableLoader(false);
@@ -979,8 +979,10 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
       getBPAFormData(data?.applicationData, mdmsData, history, t, path)
     }
     if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY"){
-      if(!validateDataForAction(action)){
-        return;
+      if (path == "bpa") {
+        if (!validateDataForAction(action)) {
+          return;
+        }
       }
       saveAsDraft(data?.applicationData, action)
     }
@@ -1260,6 +1262,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     const docs = Array.isArray(app.documents) ? app.documents : [];
     const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
     const isArchitectSubmissionPending = workflowDetails?.data?.actionState?.state === "INPROGRESS" && !isUserCitizen;
+    const isOCApplication = app?.additionalDetails?.applicationType === "BUILDING_OC_PLAN_SCRUTINY"
 
     // Keep one per documentType; prefer entries that have fileStoreId
     const dedupedDocs = Array.from(
@@ -1275,6 +1278,9 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         return map;
       }, new Map()).values()
     );
+    let updatedDocuments
+    let additionalDetails
+    if(!isOCApplication){
     if (!isTocAccepted) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1283,9 +1289,6 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         });
         return;
     }
-
-    let updatedDocuments
-    let additionalDetails
     if (isCitizenConsentIncluded && !isOCApplication) {
       if (!agree) {
         setIsEnableLoader(false);
@@ -1345,6 +1348,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         }
       }
     }
+   }
 
     let payload = { ...app, applicationType, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
 

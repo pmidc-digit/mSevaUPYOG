@@ -437,13 +437,11 @@ const InspectionReportForm = (_props) => {
                                             <Controller
                                                 control={control}
                                                 name={`Remarks_${ind}`}
-                                                defaultValue={unit?.uomValue}
+                                                defaultValue={unit[`Remarks_${ind}`] || ""}
                                                 render={(props) => (
                                                     <TextArea
-                                                        value={getValues(`Remarks_${ind}`)}
-                                                        onChange={(e) => {
-                                                            props.onChange(e);
-                                                        }}
+                                                        value={props.value}
+                                                        onChange={(e) => props.onChange(e.target.value)}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
                                                         className="checklist-table-textarea"
@@ -459,13 +457,18 @@ const InspectionReportForm = (_props) => {
                                         <Controller
                                             control={control}
                                             name={`Recommendations`}
-                                            defaultValue={unit?.uomValue}
+                                            defaultValue={unit[`Recommendations`] || ""}
+                                            rules={{
+                                                required: t("REQUIRED_FIELD"),
+                                                minLength: {
+                                                  value: 20,
+                                                  message: t("MIN_20_CHARACTERS_REQUIRED"),
+                                                },
+                                              }}
                                             render={(props) => (                                                
                                                 <TextArea 
-                                                    value={getValues(`Recommendations`)}
-                                                    onChange={(e) => {
-                                                        props.onChange(e);
-                                                    }}
+                                                    value={props.value}
+                                                    onChange={(e) => props.onChange(e.target.value)}
                                                     placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
                                                     onBlur={props.onBlur}
                                                     className="checklist-table-textarea"

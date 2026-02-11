@@ -1,252 +1,265 @@
-import React, {useState, Fragment } from "react";
-import {
-  TextInput,
-  CardSubHeader,
-} from "@mseva/digit-ui-react-components";
-// import NOCCustomUploadFile from "./NOCCustomUploadFile";
+import React, { useState, useEffect } from "react";
+import { TextInput, TextArea } from "@mseva/digit-ui-react-components";
 
 import { amountToWords } from "../utils";
+import CustomFeeTable from "../../../templates/ApplicationDetails/components/CustomFeeTable";
+
 export const NOCFeeTable = ({
   feeDataWithTotal,
   disable,
-  isEmployee,
   feeData,
   handleAdjustedAmountChange,
-  handleFileUpload,
-  handleFileDelete,
-  routeTo,
-  t,
   handleRemarkChange,
   onAdjustedAmountBlur,
   feeHistory,
-  timeObj
-
+  t,
 }) => {
-  
-const [showHistory, setShowHistory] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
- console.log('feeHistory', feeHistory)
- console.log('timeObj', timeObj)
- console.log("feeHistory keys", Object.keys(feeHistory || {}));
-  return (
-    <div
-      className="noc-table-container"
-      style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", marginBottom: "16px", display: "block" }}
-    >
-      <table className="customTable table-border-style" style={{ width: "100%", tableLayout: "auto", minWidth: "600px", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_TAXHEAD_CODE")}</th>
-            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_AMOUNT")}</th>
-            {/* <th>{t("BPA_FILE_UPLOAD")}</th> */}
-            <th style={{ padding: "14px 12px", fontSize: "12px", whiteSpace: "nowrap" }}>{t("BPA_REMARKS")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {feeDataWithTotal.map((row, i) => (
-            <tr key={row.index || i}>
-              <td style={{ padding: "14px 12px", fontSize: "13px", minWidth: "150px", fontWeight: "bold" }}>{t(row.title) || t("CS_NA")}</td>
-              <td style={{ padding: "14px 12px", minWidth: "130px" }}>
-                {row?.taxHeadCode === "NOC_TOTAL" ? (
-                  <div>
-                    <strong style={{ fontSize: "14px" }}>{`₹ ${row.grandTotal.toLocaleString("en-IN")}`}</strong>
-                    <div style={{ fontSize: "0.85em", color: "#555", marginTop: "4px", lineHeight: "1.3" }}>{amountToWords(row.grandTotal)}</div>
-                  </div>
-                ) : (
-                  // <TextInput
-                  //   t={t}
-                  //   type="number"
-                  //   isMandatory={false}
-                  //   value={
-                  //     feeData[row.index]?.adjustedAmount === 0
-                  //       ? ""
-                  //       : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-                  //   }
-                  //   onChange={(e) => {
-                  //     let val = e.target.value;
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
-                  //     if (val.length > 1 && val.startsWith("0")) {
-                  //       val = val.replace(/^0+/, "");
-                  //     }
+  console.log('feeHistory', feeHistory)
 
-                  //     handleAdjustedAmountChange(row.index, val);
-                  //   }}
-                  //   // ❌ no onBlur here for NOC
-                  //   disable={disable}
-                  //   step={1}
-                  //   onBlur={onAdjustedAmountBlur}
-                  // />
-
-                  <TextInput
-                    t={t}
-                    type="text" // ✅ keep as text
-                    isMandatory={false}
-                    value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
-                    onChange={(e) => {
-                      let val = e.target.value;
-
-                      // Allow only digits + optional decimal point
-                      if (/^\d*\.?\d*$/.test(val)) {
-                        // Remove leading zeros if more than one digit before decimal
-                        if (val.length > 1 && val.startsWith("0") && !val.startsWith("0.")) {
-                          val = val.replace(/^0+/, "");
-                        }
-                        handleAdjustedAmountChange(row.index, val);
-                      }
-                    }}
-                    onKeyPress={(e) => {
-                      // Block anything except digits and one decimal point
-                      if (!/[0-9.]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                      // Prevent multiple decimals
-                      if (e.key === "." && e.target.value.includes(".")) {
-                        e.preventDefault();
-                      }
-                    }}
-                    disable={disable}
-                    onBlur={onAdjustedAmountBlur}
-                    className="responsive-table-input"
-                  />
-                )}
-              </td>
-              {/* <td>
-                {row?.taxHeadCode === "NOC_TOTAL" ? null : (
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <NOCCustomUploadFile
-                      key={row.index}
-                      id={`file-${row.id}`}
-                      onUpload={(file) => handleFileUpload(row.index, file || null)}
-                      onDelete={() => handleFileDelete(row.index)}
-                      message={row.filestoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                      uploadedFile={row.filestoreId}
-                      disabled={disable}
-                    />
-                  </div>
-                )}
-              </td> */}
-
-              <td style={{ padding: "14px 12px", minWidth: "200px" }}>
-                {row?.taxHeadCode === "NOC_TOTAL" ? (
-                  " "
-                ) : (
-                  <TextInput
-                    t={t}
-                    type="text"
-                    isMandatory={true}
-                    value={feeData[row.index]?.remark ?? row.remark ?? ""}
-                    onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
-                    disable={disable}
-                    className="responsive-table-input"
-                  />
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {feeHistory && Object.keys(feeHistory).length > 0 && (
-        <div style={{ marginTop: "16px" }}>
-          <div onClick={() => setShowHistory(!showHistory)} style={{ cursor: "pointer" }}>
-            <CardSubHeader>
-              {t("FEE_HISTORY")} {showHistory ? "▲" : "▼"}
-            </CardSubHeader>
-          </div>
-
-          {showHistory && (
-            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: "8px", display: "block", width: "100%" }}>
-              <table
-                className="customTable table-border-style"
-                style={{ width: "100%", tableLayout: "auto", minWidth: "600px", borderCollapse: "collapse" }}
+  const columns = [
+    {
+      key: "title",
+      label: "BPA_TAXHEAD_CODE",
+      headerLabel: "BPA_TAXHEAD_CODE",
+      type: "text",
+    },
+    {
+      key: "amount",
+      label: "BPA_AMOUNT",
+      headerLabel: "BPA_AMOUNT",
+      type: "custom",
+      render: (row, rowIndex, t) => {
+        if (row.taxHeadCode === "NOC_TOTAL") {
+          return (
+            <div>
+              <strong style={{ fontSize: "14px" }}>
+                ₹ {row.grandTotal.toLocaleString("en-IN")}
+              </strong>
+              <div
+                style={{
+                  fontSize: "0.85em",
+                  color: "#555",
+                  marginTop: "4px",
+                  lineHeight: "1.3",
+                }}
               >
-                <thead>
-                  <tr>
-                    <th style={{ padding: "12px 8px", fontSize: "12px", minWidth: "150px" }}> </th>
-                    {Object.keys(feeHistory).map((taxHeadCode) => (
-                      <th key={taxHeadCode} style={{ padding: "12px 8px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "120px" }}>
-                        {t(taxHeadCode)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
-                    // const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
-                    const descIdx = rowIdx;
-
-                    return (
-                      <>
-                        {/* Fee row */}
-                        <tr key={`fee-${rowIdx}`}>
-                          <td
-                            style={{
-                              fontWeight: "bold",
-                              padding: "12px 8px",
-                              borderBottom: "none", // hide bottom border for Fee label
-                            }}
-                          >
-                            {t("FEE")}
-                          </td>
-                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                            const h = historyRows[descIdx];
-                            return (
-                              <td key={`${taxHeadCode}-fee-${rowIdx}`} style={{ padding: "12px 8px" }}>
-                                {h?.estimateAmount || t("CS_NA")}
-                              </td>
-                            );
-                          })}
-                        </tr>
-
-                        {/* Remark row */}
-                        <tr key={`remark-${rowIdx}`}>
-                          <td
-                            style={{
-                              fontWeight: "bold",
-                              padding: "12px 8px",
-                              borderBottom: "none", // hide bottom border for Remark label
-                            }}
-                          >
-                            {t("REMARK")}
-                          </td>
-                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                            const h = historyRows[descIdx];
-                            return (
-                              <td key={`${taxHeadCode}-remark-${rowIdx}`} style={{ padding: "12px 8px" }}>
-                                {h?.remarks || t("CS_NA")}
-                              </td>
-                            );
-                          })}
-                        </tr>
-
-                        {/* Last Updated By row */}
-                        <tr key={`who-${rowIdx}`}>
-                          <td
-                            style={{
-                              fontWeight: "bold",
-                              padding: "12px 8px",
-                              // keep normal border here so the block closes visually
-                            }}
-                          >
-                            {t("LAST_UPDATED_BY")}
-                          </td>
-                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                            const h = historyRows[descIdx];
-                            return (
-                              <td key={`${taxHeadCode}-who-${rowIdx}`} style={{ padding: "12px 8px" }}>
-                                {h?.who || t("UNKNOWN")}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      </>
-                    );
-                  })}
-                </tbody>
-              </table>
+                {amountToWords(row.grandTotal)}
+              </div>
             </div>
-          )}
-        </div>
-      )}
+          );
+        }
+        return (
+          <TextInput
+            t={t}
+            type="number"
+            isMandatory={false}
+            value={feeData[row.index]?.adjustedAmount === 0
+              ? ""
+              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+            onChange={(e) => {
+              let val = e.target.value;
+              if (val.length > 1 && val.startsWith("0")) {
+                val = val.replace(/^0+/, "");
+              }
+              handleAdjustedAmountChange(row.index, val);
+            }}
+            disable={disable}
+            step={1}
+            onBlur={onAdjustedAmountBlur}
+          />
+        );
+      },
+    },
+    {
+      key: "remark",
+      label: "BPA_REMARKS",
+      headerLabel: "BPA_REMARKS",
+      type: "custom",
+      render: (row, rowIndex, t) => {
+        if (row.taxHeadCode === "NOC_TOTAL") {
+          return " ";
+        }
+
+        if (disable) {
+          return (
+            <div>
+              {feeData[row.index]?.remark || <TextArea placeholder="Enter remarks" disabled={true} className="custom-fee-table-textarea" />}
+            </div>
+          );
+        }
+
+        return (
+          <TextArea
+            value={feeData[row.index]?.remark || ""}
+            onChange={(e) =>
+              handleRemarkChange(row.index, e.target.value, row.amount)
+            }
+            disabled={false}
+            className="custom-fee-table-textarea"
+            placeholder="Enter remarks..."
+          />
+        );
+      },
+    },
+  ];
+
+  const renderHistoryCell = (h, key, t) => (
+    <div className="custom-fee-history-content">
+      <div className="custom-fee-history-row custom-fee-history-label">
+        <span className="custom-fee-history-label-bold">{t("BPA_FEE2_LABEL")}:</span> {h.estimateAmount}
+      </div>
+      <div className="custom-fee-history-row custom-fee-history-label">
+        <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span>{" "}
+        <span className="custom-fee-history-label-value">{h.remarks || t("CS_NA")}</span>
+      </div>
+      <div>
+        <span className="custom-fee-history-label-bold">{t("BPA_UPDATED_BY_LABEL")}:</span>{" "}
+        <span className="custom-fee-history-label-value">{h.who || t("UNKNOWN")}</span>
+      </div>
     </div>
   );
-};;
+
+  const renderMobileCardView = () => {
+    return (
+      <React.Fragment>
+        <div className="custom-fee-mobile-cards">
+          {feeDataWithTotal.map((row, i) => (
+            <div key={row.index || i} className={`custom-fee-card ${row?.taxHeadCode === "NOC_TOTAL" ? "custom-fee-card-total-row" : ""}`}>
+              <div className="custom-fee-card-header">
+                <span className="custom-fee-card-type">{t(row.title) || t("CS_NA")}</span>
+              </div>
+
+              {row?.taxHeadCode !== "NOC_TOTAL" && (
+                <div className="custom-fee-card-content">
+                  <div className="custom-fee-card-row">
+                    <div className="custom-fee-card-field">
+                      <label className="custom-fee-card-label">{t("BPA_AMOUNT_LABEL")}</label>
+                      <TextInput
+                        t={t}
+                        type="text"
+                        isMandatory={false}
+                        value={
+                          feeData[row.index]?.adjustedAmount === 0
+                            ? ""
+                            : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                        }
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (/^\d*\.?\d*$/.test(val)) {
+                            if (val.length > 1 && val.startsWith("0") && !val.startsWith("0.")) {
+                              val = val.replace(/^0+/, "");
+                            }
+                            handleAdjustedAmountChange(row.index, val);
+                          }
+                        }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9.]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                          if (e.key === "." && e.target.value.includes(".")) {
+                            e.preventDefault();
+                          }
+                        }}
+                        disable={disable}
+                        onBlur={onAdjustedAmountBlur}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="custom-fee-card-row">
+                    <div className="custom-fee-card-field">
+                      <label className="custom-fee-card-label">{t("BPA_REMARKS")}</label>
+                      <TextArea
+                        value={feeData[row.index]?.remark || ""}
+                        onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
+                        disabled={disable}
+                        className="custom-fee-table-textarea"
+                        placeholder="Enter remarks..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {row?.taxHeadCode === "NOC_TOTAL" && (
+                <div className="custom-fee-card-total-content">
+                  <div className="custom-fee-card-total-label">Total Amount :</div>
+                  <div className="custom-fee-card-total-value">
+                    <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+                  </div>
+                  <div className="custom-fee-card-total-words">
+                    {amountToWords(row.grandTotal)}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {feeHistory && Object.keys(feeHistory).length > 0 && (
+          <div className="custom-fee-mobile-history">
+            <div 
+              className="custom-fee-history-toggle-mobile"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <span className="custom-fee-history-title">{t("BPA_FEE_HISTORY_LABEL")}</span>
+              <span className="custom-fee-history-icon">{showHistory ? "▲" : "▼"}</span>
+            </div>
+
+            {showHistory && (
+              <div className="custom-fee-history-cards">
+                {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => (
+                  <div key={taxHeadCode} className="custom-fee-history-card">
+                    <div className="custom-fee-history-card-header">{t(taxHeadCode)}</div>
+                    <div className="custom-fee-history-card-content">
+                      {historyRows.map((h, idx) => (
+                        <div key={idx} className="custom-fee-history-entry">
+                          <div className="custom-fee-history-item">
+                            <span className="custom-fee-history-label-bold">{t("BPA_FEE2_LABEL")}:</span> ₹ {h.estimateAmount}
+                          </div>
+                          <div className="custom-fee-history-item">
+                            <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || t("CS_NA")}
+                          </div>
+                          <div className="custom-fee-history-item">
+                            <span className="custom-fee-history-label-bold">{t("BPA_UPDATED_BY_LABEL")}:</span> {h.who || t("UNKNOWN")}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </React.Fragment>
+    );
+  };
+
+  return isMobile ? renderMobileCardView() : (
+    <CustomFeeTable
+      data={feeDataWithTotal}
+      columns={columns}
+      extraStyleName="NOC"
+      historyData={feeHistory}
+      historyTitle="FEE_HISTORY"
+      onHistoryRender={renderHistoryCell}
+      t={t}
+      readOnly={disable}
+    />
+
+  
+  );}

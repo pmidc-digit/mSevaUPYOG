@@ -71,7 +71,7 @@ const EmployeeApp = ({ path }) => {
 
   return (
     <Fragment>
-      {!isResponse ? <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
+      {!isResponse ? <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"34px" } : {}}>
         <NOCBreadCrumbs location={location} />
       </div> : null} 
       <Switch>

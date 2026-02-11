@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, LinkButton } from "@mseva/digit-ui-react-components";
+import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
@@ -64,20 +64,15 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                 </td>
                 <td className="checklist-table-cell checklist-table-cell-remark">
                   {isReadOnly ? (
-                    <input
-                      type="text"
+                    <TextArea
+                      t={t}
                       value={localRemarks[doc.documentUid] ?? ""}
                       disabled={true}
-                      readOnly={true}
-                      className="checklist-table-input"
-                      style={{ 
-                        backgroundColor: "#f5f5f5",
-                        cursor: "not-allowed"
-                      }}
+                      className="checklist-table-textarea"
                     />
                   ) : (
-                    <input
-                      type="text"
+                    <TextArea
+                      t={t}
                       value={localRemarks[doc.documentUid] ?? ""}
                       onChange={(e) => {
                         console.log("onChange triggered - value:", e.target.value);
@@ -87,11 +82,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                         console.log("onBlur triggered - final value:", e.target.value);
                         handleBlur(doc.documentUid, e.target.value);
                       }}
-                      className="checklist-table-input"
-                      style={{ 
-                        backgroundColor: "#ffffff",
-                        cursor: "text"
-                      }}
+                      className="checklist-table-textarea"
                     />
                   )}
                 </td>

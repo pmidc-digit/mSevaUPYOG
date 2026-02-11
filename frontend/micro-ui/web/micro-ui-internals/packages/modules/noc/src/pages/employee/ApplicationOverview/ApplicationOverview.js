@@ -266,7 +266,7 @@ const NOCEmployeeApplicationOverview = () => {
       }
   
       const finalComment = conditionText
-        ? `The above approval is subjected to the following conditions: ${conditionText}`
+        ? `The above approval is subjected to the following conditions:\n${conditionText}`
         : "";
   
       setApproverComment(finalComment);
@@ -712,13 +712,20 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
         // Find the original estimate for this taxHeadCode
         const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
 
-        console.log("originalRemark", originalRemark);
+        const adjustedAmount = row.adjustedAmount ?? 0;
 
-        const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
-        console.log("isremarksSame", isremarksSame);
-        // Require remark to be non-empty AND different from the original
-        return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+        if (row?.taxHeadCode === "NOC_COMPOUNDING_FEES") {
+          // Special case: only require remark if changed to non-zero
+          if (adjustedAmount > 0) {
+            return row?.remark && row?.remark.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+          }
+          return true; // no remark needed if set to 0/null
+        } else {
+          // Default logic for all other fees
+          return row?.remark && row?.remark?.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+        }
       });
+
       if (!hasNonZeroFee) {
         setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
         return;

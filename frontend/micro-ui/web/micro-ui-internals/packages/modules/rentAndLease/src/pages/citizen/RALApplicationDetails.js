@@ -28,6 +28,8 @@ const RALApplicationDetails = () => {
     }
   };
 
+  console.log('applicationData', applicationData)
+
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -44,7 +46,7 @@ const RALApplicationDetails = () => {
       const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
       const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
       setTimeout(() => {
-        Digit.Utils.pdf.generateFormatted(acknowldgementDataAPI);
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
       }, 0);
     } catch (error) {
@@ -66,7 +68,7 @@ const RALApplicationDetails = () => {
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
       } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "rentandlease-receipt");
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...applicationData }] }, "rentandlease-receipt");
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: response.filestoreIds[0],

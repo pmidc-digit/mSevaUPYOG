@@ -89,7 +89,7 @@ public class ESignService {
         PdfSigner signer = new PdfSigner(reader, preparedPdfStream, new StampingProperties());
 
         PdfSignatureAppearance appearance = signer.getSignatureAppearance();
-        appearance.setPageRect(new Rectangle(330, 50, 200, 80));
+        appearance.setPageRect(new Rectangle(340, 50, 200, 80));
         appearance.setPageNumber(1);
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");

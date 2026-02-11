@@ -435,13 +435,25 @@ const CLUEmployeeApplicationDetails = () => {
 
   function areAllRemarksFilledForDocumentCheckList(record){
     const entries = Object.entries(record);
-    //console.log("entries==>", entries);
+    console.log("entries==>", entries);
+    console.log("remainingDocs?.length==>", remainingDocs?.length);
+    console.log("checklistRemarks state==>", checklistRemarks);
     
     // Rule 1: Must have exact entries equal to remainingDocs
-    if (entries.length !== remainingDocs?.length) return false;
+    if (entries.length !== remainingDocs?.length) {
+      console.log("Entries length mismatch: entries=", entries.length, "remainingDocs=", remainingDocs?.length);
+      return false;
+    }
 
    // Rule 2: Every value must be a non-empty string (trimmed)
-    return entries.every(([, value]) => typeof value === 'string' && value.trim().length > 0);
+    const allFilled = entries.every(([key, value]) => {
+      const isFilled = typeof value === 'string' && value.trim().length > 0;
+      if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
+      return isFilled;
+    });
+    
+    console.log("allFilled==>", allFilled);
+    return allFilled;
 
   }
 
@@ -479,6 +491,9 @@ const CLUEmployeeApplicationDetails = () => {
 
     //Validation for Document CheckList At DM Level
     if(applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
+      console.log("Validating document checklist remarks...");
+      console.log("Current checklistRemarks:", checklistRemarks);
+      console.log("remainingDocs:", remainingDocs);
       const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
       console.log("allRemarks at DM Level", allRemarksFilled);
 

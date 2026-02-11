@@ -154,65 +154,96 @@ const [showHistory, setShowHistory] = useState(false);
           </div>
 
           {showHistory && (
-            <>
-              {/* {timeObj && (
-                <div style={{ marginBottom: "8px", fontStyle: "italic" }}>
-                  {t("TOTAL_TIME_TAKEN")}: {timeObj?.days} {t("DAYS")} {timeObj?.hours} {t("HOURS")} {timeObj?.minutes} {t("MINUTES")} {timeObj?.seconds} {t("SECONDS")} 
-                </div>
-              )} */}
-              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: "8px", display: "block", width: "100%" }}>
-                <table
-                  className="customTable table-border-style"
-                  style={{ width: "100%", tableLayout: "auto", minWidth: "500px", borderCollapse: "collapse" }}
-                >
-                  <thead>
-                    <tr>
-                      <th rowSpan={2} style={{ padding: "12px 8px", fontSize: "12px", minWidth: "120px" }}>
-                        {t("LABELS")}
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginTop: "8px", display: "block", width: "100%" }}>
+              <table
+                className="customTable table-border-style"
+                style={{ width: "100%", tableLayout: "auto", minWidth: "600px", borderCollapse: "collapse" }}
+              >
+                <thead>
+                  <tr>
+                    <th style={{ padding: "12px 8px", fontSize: "12px", minWidth: "150px" }}> </th>
+                    {Object.keys(feeHistory).map((taxHeadCode) => (
+                      <th key={taxHeadCode} style={{ padding: "12px 8px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "120px" }}>
+                        {t(taxHeadCode)}
                       </th>
-                      {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, idx) => (
-                        <th key={idx} colSpan={Object.keys(feeHistory).length} style={{ padding: "12px 8px", fontSize: "12px", textAlign: "center" }}>
-                          {t("ENTRY")} {idx + 1}
-                        </th>
-                      ))}
-                    </tr>
-                    <tr>
-                      {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).flatMap((_, idx) =>
-                        Object.keys(feeHistory).map((taxHeadCode) => (
-                          <th
-                            key={`${idx}-${taxHeadCode}`}
-                            style={{ padding: "12px 8px", fontSize: "12px", whiteSpace: "nowrap", minWidth: "120px" }}
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).map((_, rowIdx) => {
+                    // const maxLen = Math.max(...Object.values(feeHistory).map((rows) => rows.length));
+                    const descIdx = rowIdx;
+
+                    return (
+                      <>
+                        {/* Fee row */}
+                        <tr key={`fee-${rowIdx}`}>
+                          <td
+                            style={{
+                              fontWeight: "bold",
+                              padding: "12px 8px",
+                              borderBottom: "none", // hide bottom border for Fee label
+                            }}
                           >
-                            {t(taxHeadCode)}
-                          </th>
-                        ))
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {["FEE", "REMARK", "LAST_UPDATED_BY"].map((labelKey) => (
-                      <tr key={labelKey}>
-                        <td style={{ fontWeight: "bold", padding: "12px 8px" }}>{t(labelKey)}</td>
-                        {Array.from({ length: Math.max(...Object.values(feeHistory).map((rows) => rows.length)) }).flatMap((_, idx) =>
-                          Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
-                            const h = historyRows[idx];
-                            let value;
-                            if (labelKey === "FEE") value = h?.estimateAmount || t("CS_NA");
-                            if (labelKey === "REMARK") value = h?.remarks || t("CS_NA");
-                            if (labelKey === "LAST_UPDATED_BY") value = h?.who || t("UNKNOWN");
+                            {t("FEE")}
+                          </td>
+                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                            const h = historyRows[descIdx];
                             return (
-                              <td key={`${labelKey}-${idx}-${taxHeadCode}`} style={{ padding: "12px 8px", fontSize: "12px" }}>
-                                {value}
+                              <td key={`${taxHeadCode}-fee-${rowIdx}`} style={{ padding: "12px 8px" }}>
+                                {h?.estimateAmount || t("CS_NA")}
                               </td>
                             );
-                          })
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                          })}
+                        </tr>
+
+                        {/* Remark row */}
+                        <tr key={`remark-${rowIdx}`}>
+                          <td
+                            style={{
+                              fontWeight: "bold",
+                              padding: "12px 8px",
+                              borderBottom: "none", // hide bottom border for Remark label
+                            }}
+                          >
+                            {t("REMARK")}
+                          </td>
+                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                            const h = historyRows[descIdx];
+                            return (
+                              <td key={`${taxHeadCode}-remark-${rowIdx}`} style={{ padding: "12px 8px" }}>
+                                {h?.remarks || t("CS_NA")}
+                              </td>
+                            );
+                          })}
+                        </tr>
+
+                        {/* Last Updated By row */}
+                        <tr key={`who-${rowIdx}`}>
+                          <td
+                            style={{
+                              fontWeight: "bold",
+                              padding: "12px 8px",
+                              // keep normal border here so the block closes visually
+                            }}
+                          >
+                            {t("LAST_UPDATED_BY")}
+                          </td>
+                          {Object.entries(feeHistory).map(([taxHeadCode, historyRows]) => {
+                            const h = historyRows[descIdx];
+                            return (
+                              <td key={`${taxHeadCode}-who-${rowIdx}`} style={{ padding: "12px 8px" }}>
+                                {h?.who || t("UNKNOWN")}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

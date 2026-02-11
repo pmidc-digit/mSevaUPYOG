@@ -59,6 +59,13 @@ if (owners.length > 1) {
     regularized_label= "NA"
   }
 
+  let areaSummary;
+  if (site?.buildingStatus === "Built Up") {
+    areaSummary = ` ${floorArea.map(f => `${f.floorNo}: ${f.value} sq.mtrs\n`).join(" ")}Basement Area: ${basementArea} sq.mtrs\nTotal Buildup Area (sq.mtrs): ${totalFloorArea} sq.mtrs `;
+  }else{
+    areaSummary = "NA"
+  }
+
 
   const sanctionKeys = [
     "NOC_SANCTION_THREE",
@@ -99,6 +106,7 @@ if (owners.length > 1) {
       approverComment,
       regularized_label,
       ownersString,
+      areaSummary
       },
     ],
   };

@@ -367,7 +367,7 @@ export const getBPAFormData = async (data, mdmsData, history, t, path) => {
     // history.push(
     //   `/digit-ui/citizen/obps/ocbpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`
     // );
-    history.push(`/digit-ui/citizen/obps/ocbpa/building_plan_scrutiny/new_construction/docs-required`);
+    history.push(`/digit-ui/citizen/obps/ocbpa/building_oc_plan_scrutiny/new_construction/docs-required`);
   } else {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
     history.push(`/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`);

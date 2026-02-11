@@ -359,15 +359,16 @@ console.log("sessionStorageData",currentStepData, userDetails);
   },[currentStepData?.BasicDetails?.edcrDetails])
 
   useEffect(() => {
-  if (currentStepData?.createdResponse?.additionalDetails) {
-    const details = currentStepData.createdResponse.additionalDetails;
+  if (currentStepData?.BasicDetails?.bpaData?.bpaApprovalResponse?.[0]?.additionalDetails) {
+    const details = currentStepData?.BasicDetails?.bpaData?.bpaApprovalResponse?.[0]?.additionalDetails;
+    // const ocDetail = currentStepData.createdResponse.additionalDetails;
 
     setRegistrationDetails(details?.registrationDetails || "");
     setBoundaryWallLength(details?.boundaryWallLength || "");
     setWardNumber(details?.wardnumber || "");
     setIsClubbedPlot(details?.isClubbedPlot !== null ? details?.isClubbedPlot : {});
-    setIsSelfCertification(details?.isSelfCertification !== null ? details?.isSelfCertification : true);
-    setIsPropertyAvailable(details?.isPropertyAvailable !== null ? details?.isPropertyAvailable : {});
+    // setIsSelfCertification(ocDetail?.isSelfCertification !== null ? ocDetail?.isSelfCertification : true);
+    // setIsPropertyAvailable(details?.isPropertyAvailable !== null ? details?.isPropertyAvailable : {});
     setZoneNumber(details?.zonenumber || "");
     setKhasraNumber(details?.khasraNumber || "");
     setArchitectId(details?.architectid || "");
@@ -386,7 +387,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
     }
     // setPropertyUid(details?.propertyuid || "");
   }
-}, [currentStepData?.createdResponse]);
+}, [currentStepData?.BasicDetails]);
 
 // useEffect(() => {
 //   if (menuList && currentStepData?.cpt?.details?.address?.locality && !currentStepData?.createdResponse?.additionalDetails) {
@@ -433,13 +434,13 @@ useEffect(() => {
       newErrors.registrationDetails = t("BPA_REGISTRATION_DETAILS_REQUIRED");
     }
 
-    if (!isSelfCertification?.code && currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A")) {
-      newErrors.isSelfCertification = t("BPA_IS_SELF_CERTIFICATION_REQUIRED_MESSAGE");
-    }
+    // if (!isSelfCertification?.code && currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code?.includes("A")) {
+    //   newErrors.isSelfCertification = t("BPA_IS_SELF_CERTIFICATION_REQUIRED_MESSAGE");
+    // }
 
-    if(!isPropertyAvailable?.code){
-      newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
-    }
+    // if(!isPropertyAvailable?.code){
+    //   newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
+    // }
     
     if (!isClubbedPlot?.code) {
       newErrors.isClubbedPlot = t("BPA_IS_CLUBBED_PLOT_REQUIRED");
@@ -467,11 +468,11 @@ useEffect(() => {
       newErrors.architectid = t("BPA_ARCHITECT_ID_REQUIRED");
     }
 
-    if (isPropertyAvailable?.value) {
-      if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
-        newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
-      }
-    }
+    // if (isPropertyAvailable?.value) {
+    //   if (!(currentStepData?.cpt?.id?.trim() || currentStepData?.cpt?.details?.propertyId?.trim())) {
+    //     newErrors.propertyuid = t("BPA_PROPERTY_UID_REQUIRED");
+    //   }
+    // }
 
     if (!bathnumber) {
       newErrors.bathnumber = t("BPA_BATH_NUMBER_REQUIRED");
@@ -556,7 +557,7 @@ useEffect(() => {
     // const base64Signature = await getBase64Img(userDetails?.user[0]?.signature, state);
     // const result = await Digit.UploadServices.Filefetch([userDetails?.user[0]?.signature], state);
     const signURL = userDetails?.user[0]?.signature || "";
-    const propertyuid = currentStepData?.cpt?.details?.propertyId || currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid;
+    const propertyuid = currentStepData?.BasicDetails?.bpaData?.bpaApprovalResponse?.[0]?.additionalDetails?.propertyuid;
     const address = {
       ...currentStepData?.cpt?.details?.address,
       city: currentStepData?.cpt?.details?.address?.tenantId || currentStepData?.cpt?.details?.address?.city || "",
@@ -585,7 +586,8 @@ useEffect(() => {
       zonenumber: zonenumber?.code,
       khasraNumber,
       architectid,
-      propertyuid: isPropertyAvailable?.value ? propertyuid : null,
+      // propertyuid: isPropertyAvailable?.value ? propertyuid : null,
+      propertyuid: propertyuid || null,
       bathnumber,
       kitchenNumber,
       approxinhabitants,
@@ -613,7 +615,7 @@ useEffect(() => {
       isSelfCertificationRequired,
       architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null,
       isClubbedPlot: isClubbedPlot?.value,
-      isPropertyAvailable: isPropertyAvailable?.value,
+      isPropertyAvailable: true,
       isSelfCertification: false,
       categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
@@ -625,13 +627,15 @@ useEffect(() => {
         // base64Signature
       }
     } :{
+      ...currentStepData?.BasicDetails?.bpaData?.bpaApprovalResponse?.[0]?.additionalDetails,
       registrationDetails,
       boundaryWallLength,
       wardnumber,
       zonenumber: zonenumber?.code,
       khasraNumber,
       architectid,
-      propertyuid: isPropertyAvailable?.value ? propertyuid : null,
+      // propertyuid: isPropertyAvailable?.value ? propertyuid : null,
+      propertyuid: propertyuid || null,
       bathnumber,
       kitchenNumber,
       approxinhabitants,
@@ -661,7 +665,7 @@ useEffect(() => {
       roadType,
       farDetails,
       isClubbedPlot: isClubbedPlot?.value,
-      isPropertyAvailable: isPropertyAvailable?.value,
+      isPropertyAvailable: true,
       isSelfCertification: false,
       categories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code,
       subcategories: currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code,
@@ -819,11 +823,15 @@ useEffect(() => {
             />
             <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
             <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
-
+            <Row
+              className="border-none"
+              label={t(`PROPERTY_ID`)}
+              text={currentStepData?.BasicDetails?.bpaData?.bpaApprovalResponse?.[0]?.additionalDetails?.propertyuid || "NA"}
+            />
             
           </StatusTable>
 
-          <div style={{ marginTop: "1rem" }}>
+          {/* <div style={{ marginTop: "1rem" }}>
             <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} *`}</CardLabel>
             <Dropdown
               placeholder={t("IS_PROPERTY_AVAILABLE")}
@@ -866,7 +874,7 @@ useEffect(() => {
               text={currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid || "NA"}
             />
           </StatusTable>}
-          </div>}
+          </div>} */}
 
           <CardLabel>{`${t("BPA_IS_CLUBBED_PLOT_LABEL")} *`}</CardLabel>
           <Dropdown
@@ -876,6 +884,7 @@ useEffect(() => {
             option={common}
             optionKey="i18nKey"
             t={t}
+            disable={true}
           />
           {errors["isClubbedPlot"] && (
             <CardLabelError>{errors["isClubbedPlot"]}</CardLabelError>
@@ -899,14 +908,15 @@ useEffect(() => {
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )} */}
             
-          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}
-          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}
-          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", currentStepData?.cpt?.zonalMapping?.ward)}
+          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...", true)}
+          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", true)}
+          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", true)}
           {/* {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number" , currentStepData?.cpt?.zonalMapping?.zone)} */}
           <CardLabel>{`${t("BPA_ZONE_NUMBER_LABEL")} *`}</CardLabel>
           <Dropdown
             placeholder={t("BPA_ZONE_NUMBER_LABEL")}
             selected={zonenumber}
+            disable={true}
             select={setZoneNumber}//setClubbedPlot
             option={zonesOptions}
             optionKey="name"
@@ -918,16 +928,16 @@ useEffect(() => {
           {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
           {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
           {/* {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")} */}
-          {renderField(t("BPA_NUMBER_OF_BATHS")+"*", bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
-          {renderField(t("BPA_NUMBER_OF_KITCHENS")+"*", kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
-          {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION")+"*", approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}
-          {renderField(t("BPA_DISTANCE_FROM_SEWER")+"*", distancefromsewer, setDistanceFromSewer, "distancefromsewer", "Distance from sewer (in meters)")}
-          {renderField(t("BPA_SOURCE_OF_WATER")+"*", sourceofwater, setSourceOfWater, "sourceofwater", "Source of Water")}
-          {renderField(t("BPA_NUMBER_OF_WATER_CLOSETS")+"*", watercloset, setWaterCloset, "watercloset", "Water Closet")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS")+"*", materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR")+"*", materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setEstimatedCost, "estimatedCost", "Please Provide Estimated Cost")}
+          {renderField(t("BPA_NUMBER_OF_BATHS")+"*", bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms", true)}
+          {renderField(t("BPA_NUMBER_OF_KITCHENS")+"*", kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens", true)}
+          {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION")+"*", approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants", true)}
+          {renderField(t("BPA_DISTANCE_FROM_SEWER")+"*", distancefromsewer, setDistanceFromSewer, "distancefromsewer", "Distance from sewer (in meters)", true)}
+          {renderField(t("BPA_SOURCE_OF_WATER")+"*", sourceofwater, setSourceOfWater, "sourceofwater", "Source of Water", true)}
+          {renderField(t("BPA_NUMBER_OF_WATER_CLOSETS")+"*", watercloset, setWaterCloset, "watercloset", "Water Closet", true)}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS")+"*", materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc", true)}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR")+"*", materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc", true)}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc", true)}
+          {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setEstimatedCost, "estimatedCost", "Please Provide Estimated Cost", true)}
 
           
           <ActionBar>

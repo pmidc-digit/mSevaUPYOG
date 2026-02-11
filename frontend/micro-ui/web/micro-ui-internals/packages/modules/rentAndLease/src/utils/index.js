@@ -199,7 +199,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
-        value: application?.additionalDetails?.address || "NA",
+        value: application?.additionalDetails?.propertyDetails?.[0]?.address || "NA",
       },
       {
         title: t("Allotment Type"),
@@ -262,7 +262,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
         },
         {
           title: t("Reason"),
-          value: application?.additionalDetails?.arrearReason || "NA",
+          value: application?.additionalDetails?.arrearReason?.name || "NA",
         },
         {
           title: t("Remarks"),
@@ -276,7 +276,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     application?.Document?.map((doc, index) => ({
       title: t(`${doc.documentType}`) || "NA",
       value: " ",
-      link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+      // link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
     })) || [];
 
   const arrearDoc = application?.additionalDetails?.arrearDoc
@@ -284,7 +284,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
         {
           title: t("Arrear Doc"),
           value: " ",
-          link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
+          // link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
         },
       ]
     : [];
@@ -296,7 +296,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
   });
 
-  const imageURL = application?.additionalDetails?.propertyImage;
+  // const imageURL = application?.additionalDetails?.propertyDetails?.[0]?.propertyImage;
   return {
     t: t,
     tenantId: tenantInfo?.code,
@@ -306,6 +306,6 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     heading: t("Allotment letter for Rent and Lease Services"),
     applicationNumber: application?.applicationNumber || "NA",
     details,
-    imageURL,
+    // imageURL,
   };
 };

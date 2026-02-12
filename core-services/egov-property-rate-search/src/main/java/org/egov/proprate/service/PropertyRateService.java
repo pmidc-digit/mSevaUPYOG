@@ -172,8 +172,8 @@ public class PropertyRateService {
             rate.setId(UUID.randomUUID());
             rate.setCreatedBy(userId);
             rate.setCreatedTime(time);
-            rate.setLastModifiedBy(userId);
-            rate.setLastModifiedTime(time);
+            rate.setIsVerified(false);
+
                     });
     }
 

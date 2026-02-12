@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j // Lombok annotation to provide the 'log' object
 @Repository
 public class PropertyRateRepository {
 
@@ -31,7 +34,8 @@ public class PropertyRateRepository {
 
         // 1. Build the query and populate the params map
         String query = queryBuilder.getSearchQuery(request, params);
-
+        log.info("Executing Search Query: {}", query);
+        log.info("Query Parameters: {}", params);
         // 2. Execute using NamedParameterJdbcTemplate
         return namedParameterJdbcTemplate.queryForList(query, params);
     }
@@ -43,7 +47,8 @@ public class PropertyRateRepository {
 
         // 1. Build the query and populate the params map
         String query = queryBuilder.searchMissingRevenueProperties(tenantId,localityCode,limit,isMissing,propertyId , params);
-
+        log.info("Executing Search Query of searchMissingRevenueProperties: {}", query);
+        log.info("Query Parameters of searchMissingRevenueProperties: {}", params);
         // 2. Execute using NamedParameterJdbcTemplate
         return namedParameterJdbcTemplate.queryForList(query, params);
     }

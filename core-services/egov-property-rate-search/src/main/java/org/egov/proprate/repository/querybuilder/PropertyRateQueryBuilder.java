@@ -44,7 +44,14 @@ public class PropertyRateQueryBuilder {
        ========================= */
 
     private static final String FETCH_DISTRICTS =
-            "SELECT district_name, district_id FROM revenue_district_master ORDER BY district_name";
+            "SELECT DISTINCT district_id,district_name FROM revenue_district_master ORDER BY district_name";
+   
+    
+    private static final String FETCH_DISTRICTS_BY_TENANT =
+    	    "SELECT DISTINCT district_id, district_name " +
+    	    "FROM revenue_district_master " + 
+    	    "WHERE tenantid = :tenantId " +
+    	    "ORDER BY district_id";
 
     private static final String FETCH_TEHSILS =
             "SELECT tm.tehsil_name, tm.tehsil_id FROM revenue_tehsil_master tm " +
@@ -158,7 +165,10 @@ public class PropertyRateQueryBuilder {
             params.put("districtId", Integer.parseInt(criteria.getDistrictId()));
             return FETCH_TEHSILS;
         }
-
+		if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
+			params.put("tenantId",criteria.getTenantId());
+			return FETCH_DISTRICTS_BY_TENANT;
+		}
         return FETCH_DISTRICTS;
     }
 

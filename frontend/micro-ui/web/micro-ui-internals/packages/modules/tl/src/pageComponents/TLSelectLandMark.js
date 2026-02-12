@@ -40,7 +40,7 @@ const TLSelectLandmark = ({ t, config, onSelect, formData, userType }) => {
     return inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller">
+          <CardLabel className="card-label-smaller hrms-text-transform-none">
             {t(input.label)}
             {config.isMandatory ? " * " : null}
           </CardLabel>

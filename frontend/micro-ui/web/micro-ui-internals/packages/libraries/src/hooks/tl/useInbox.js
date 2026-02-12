@@ -2,9 +2,11 @@ import React from "react";
 import useInbox from "../useInbox";
 
 const useTLInbox = ({ tenantId, filters = {}, config }) => {
-  console.log("filters coming useTLInbox ", filters);
 
-  const { pgrQuery = {}, tlfilters = {}, wfFilters = {}, sortBy, sortOrder, limit, offset } = filters;
+  const { pgrQuery = {}, tlfilters = {}, wfFilters = {}, sortBy, sortOrder, sortParams, limit, offset } = filters;
+  // Map sortParams from Table format [{id, desc}] to API format
+  const effectiveSortBy = sortParams?.[0]?.id || sortBy || "applicationDate";
+  const effectiveSortOrder = sortParams?.[0] ? (sortParams[0].desc ? "DESC" : "ASC") : (sortOrder || "DESC");
   // const { applicationStatus, mobileNumber, applicationNumber, sortBy, sortOrder, locality, uuid, limit, offset } = filters;
   const USER_UUID = Digit.UserService.getUser()?.info?.uuid;
 
@@ -58,8 +60,8 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
         : {}),
 
       //   ...(tenants?.length > 0 ? { tenantId: tenants } : {}),
-      ...(sortBy ? { sortBy } : {}),
-      sortOrder: "DESC",
+      sortBy: effectiveSortBy,
+      sortOrder: effectiveSortOrder,
     },
 
     limit,

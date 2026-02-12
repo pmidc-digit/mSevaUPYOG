@@ -46,6 +46,33 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
     ? window.location.href.substring(window.location.href.indexOf("?") + 1, window.location.href.length)
     : "";
   const myElementRef = useRef(null);
+  const prevPropertyRef = useRef(null);
+  const scrollLockRef = useRef(false);
+
+  // Lock scroll position — intercept any scroll-to-top during parent re-render
+  useEffect(() => {
+    if (!scrollLockRef.current) return;
+
+    const savedY = scrollLockRef.current;
+
+    const handleScroll = () => {
+      if (window.scrollY === 0 && savedY > 0) {
+        window.scrollTo(0, savedY);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    const timer = setTimeout(() => {
+      window.removeEventListener("scroll", handleScroll);
+      scrollLockRef.current = false;
+    }, 300);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
+  });
 
   const { isLoading, isError, error, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
@@ -63,41 +90,66 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
   }, [propertyId]);
 
   useEffect(() => {
-    if ((isLoading == false && error && error == true) || propertyDetails?.Properties?.length == 0) {
-      setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
+    if (isLoading === false && searchPropertyId) {
+      if ((error && error === true) || propertyDetails?.Properties?.length === 0) {
+        setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
+      }
     }
-  }, [error, propertyDetails]);
+  }, [isLoading, error]);
+
   useEffect(() => {
-    onSelect(config.key, { ...formData[config.key], details: propertyDetails?.Properties[0] });
-    sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(propertyDetails?.Properties[0]));
-    localStorage.setItem("pgrProperty", JSON.stringify(propertyDetails?.Properties[0]));
-    sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]));
-  }, [propertyDetails, pathname]);
+    const currentProperty = propertyDetails?.Properties?.[0];
+    const currentPropertyId = currentProperty?.propertyId;
+    const prevPropertyId = prevPropertyRef.current?.propertyId;
+
+    // Only update parent if property actually changed
+    if (!currentPropertyId || currentPropertyId === prevPropertyId) return;
+
+    prevPropertyRef.current = currentProperty;
+
+    // Lock scroll position BEFORE onSelect triggers parent re-render
+    scrollLockRef.current = window.scrollY;
+
+    onSelect(config.key, { ...formData[config.key], details: currentProperty });
+    sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(currentProperty));
+    localStorage.setItem("pgrProperty", JSON.stringify(currentProperty));
+    sessionStorage.setItem("wsProperty", JSON.stringify(currentProperty));
+  }, [propertyDetails]);
 
   const searchProperty = () => {
     if (!propertyId) {
       setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_AND_SEARCH" });
+      return;
     }
     setSearchPropertyId(propertyId);
-    if (window.location.pathname.includes("/tl/new-application")) {
-      history.push(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`);
-      const scrollConst = 1600;
-      setTimeout(() => window.scrollTo(0, scrollConst), 0);
-    }
 
-    if (window.location.pathname.includes("/tl/tradelicence/new-application")) {
-      history.push(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`);
-      const scrollConst = 1600;
-      setTimeout(() => window.scrollTo(0, scrollConst), 0);
-      // const offsetTop= myElementRef.current.offsetTop;
-      // setTimeout(() => window.scrollTo({top: offsetTop, behavior: "smooth"}),0);
-      // const element=document.getElementById("search-property-field");
-      // element.scrollIntoView({behavior:"smooth"})
-    }
+    // --- URL navigation commented out to prevent scroll-to-top on search ---
+    // const currentUrl = window.location.pathname;
+    // const currentSearch = new URLSearchParams(window.location.search);
+    // const currentPropertyId = currentSearch.get("propertyId");
 
-    if (window.location.pathname.includes("/ws/new-application")) history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
-    const scrollConst = 460;
-    setTimeout(() => window.scrollTo(0, scrollConst), 0);
+    // // If propertyId already matches, no URL update needed
+    // if (currentPropertyId === propertyId) return;
+
+    // // Update URL without triggering scroll reset
+    // if (currentUrl.includes("/tl/new-application")) {
+    //   history.replace(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`);
+    //   return;
+    // }
+
+    // if (currentUrl.includes("/tl/tradelicence/new-application")) {
+    //   history.replace(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`);
+    //   return;
+    // }
+
+    // if (currentUrl.includes("/ws/new-application")) {
+    //   history.replace(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
+    //   return;
+    // }
+
+    // // Fallback: scroll to section for other routes
+    // setTimeout(scrollToSearchSection, 200);
+    // --- End commented out URL navigation ---
   };
 
   if (isEditScreen) {

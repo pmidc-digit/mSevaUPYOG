@@ -16,8 +16,13 @@ const ApplicationTable = ({
   sortParams,
   totalRecords,
 }) => {
+  
+  // include pageSizeLimit and currentPage in key to force remount when pagination size/page changes
+  const tableKey = `table-${pageSizeLimit}-${currentPage}-${sortParams?.[0]?.id || ""}-${sortParams?.[0]?.desc ? "d" : "a"}`;
+   
   return (
     <Table
+      key={tableKey}
       t={t}
       data={data}
       currentPage={currentPage}

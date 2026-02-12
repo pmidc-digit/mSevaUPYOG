@@ -131,6 +131,12 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       billData: formData?.PropertyDetails?.propertyBillData?.billData || {},
     };
 
+    // Extract remarks from PT NdcDetails
+    const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
+    if (ptDetail?.additionalDetails?.remarks) {
+      combinedObject.remarks = ptDetail.additionalDetails.remarks;
+    }
+
     setPropertyDetails((prev) => {
       return {
         ...prev,

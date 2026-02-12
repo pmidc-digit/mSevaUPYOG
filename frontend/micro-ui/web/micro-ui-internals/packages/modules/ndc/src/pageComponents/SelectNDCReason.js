@@ -19,18 +19,11 @@ import isUndefined from "lodash/isUndefined";
 
 function SelectNDCReason({ config, onSelect, userType, formData, setError, formState, clearErrors }) {
   const [ndcReason, setNDCReason] = useState(formData?.NDCReason || {});
-  const {
-    control,
-    formState: localFormState,
-    watch,
-    setError: setLocalError,
-    clearErrors: clearLocalErrors,
-    setValue,
-    trigger,
-    getValues,
-  } = useForm({
-    defaultValues: formData?.NDCReason || {},
-  });
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
+    {
+      defaultValues: formData?.NDCReason || {},
+    }
+  );
   const { t } = useTranslation();
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   // const firstTimeRef = useRef(true);
@@ -60,8 +53,18 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
       // find the matching option from MDMS
       const matchedOption = ndcReasonOptions.find((opt) => opt?.code === apiDataCheck?.[0]?.reason);
       if (matchedOption) {
-        setNDCReason(matchedOption);
-        setValue("NDCReason", matchedOption); // update react-hook-form value
+        let updatedOption = { ...matchedOption };
+
+        // Handle "OTHERS" case with custom reason
+        if (matchedOption.code === "OTHERS") {
+          const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
+          if (ptDetail?.additionalDetails?.reason) {
+            updatedOption.reason = ptDetail.additionalDetails.reason;
+          }
+        }
+
+        setNDCReason(updatedOption);
+        setValue("NDCReason", updatedOption); // update react-hook-form value
       }
     }
   }, [apiDataCheck, ndcReasonOptions]);

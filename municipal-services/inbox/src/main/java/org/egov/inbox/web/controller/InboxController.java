@@ -23,12 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Home redirection to swagger api documentation 
  */
-@Slf4j
 @RestController
 @RequestMapping("/v1")
 public class InboxController {
@@ -49,18 +46,6 @@ public class InboxController {
 	
 	@PostMapping(value = "/_search")
 	public ResponseEntity<InboxResponse> search(@Valid @RequestBody  InboxRequest inboxRequest) {
-		
-		// Debug logging for UserInfo tenant issue
-		log.info("=== INBOX SEARCH DEBUG ===");
-		log.info("Request TenantId from criteria: {}", inboxRequest.getInbox() != null ? inboxRequest.getInbox().getTenantId() : "null");
-		if(inboxRequest.getRequestInfo() != null && inboxRequest.getRequestInfo().getUserInfo() != null) {
-			log.info("UserInfo TenantId: {}", inboxRequest.getRequestInfo().getUserInfo().getTenantId());
-			log.info("UserInfo UUID: {}", inboxRequest.getRequestInfo().getUserInfo().getUuid());
-			log.info("UserInfo Roles: {}", inboxRequest.getRequestInfo().getUserInfo().getRoles());
-		} else {
-			log.info("UserInfo is NULL");
-		}
-		log.info("=== END DEBUG ===");
 		
 		InboxResponse response = inboxService.fetchInboxData(inboxRequest.getInbox(),inboxRequest.getRequestInfo());
 		

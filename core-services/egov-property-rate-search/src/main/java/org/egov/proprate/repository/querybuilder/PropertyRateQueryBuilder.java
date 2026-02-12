@@ -84,11 +84,11 @@ public class PropertyRateQueryBuilder {
     	     "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
     	     "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
     	     "WHERE p.status = 'ACTIVE' " +
-    	     "AND (r.propertyid IS NULL OR r.isproratacal = true) ";
+    	     "AND (r.propertyid IS NULL) ";
 
     private static final String MAPPED_PROPERTIES =
             "SELECT DISTINCT ON (p.propertyid) " +
-            "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, r.isproratacal, " +
+            "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, " +
             "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, " + // Added IDs here
             "dm.district_name, tm.tehsil_name, vm.village_name, " + 
             "p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
@@ -102,7 +102,7 @@ public class PropertyRateQueryBuilder {
             "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
             "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
             "WHERE p.status = 'ACTIVE' " +
-            "AND r.propertyid IS NOT NULL ";
+            "AND r.propertyid IS NOT NULL AND r.is_verified = false ";
 
     /* =========================
        MAIN QUERY BUILDER

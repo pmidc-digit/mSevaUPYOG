@@ -165,9 +165,9 @@ const ComplaintDetailsPage = (props) => {
   return (
     <React.Fragment>
       <div className="complaint-summary">
-        <div className="swach-comp-detils-citizen-header">
+        <div style={{ display: "flex", justifyContent: "space-between", maxWidth: "960px" }}>
           <Header>{t(`${LOCALIZATION_KEY.CS_HEADER}_COMPLAINT_SUMMARY`)}</Header>
-          <div>
+          <div style={{ color: "#A52A2A" }}>
             <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
           </div>
         </div>
@@ -192,7 +192,7 @@ const ComplaintDetailsPage = (props) => {
                   ))}
                 <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
               </StatusTable>
-              <h1 className="swach-comp-detils-maps-link">
+              <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
                 <a
                   href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
                   rel="noopener noreferrer"

@@ -40,7 +40,7 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
               {input.isMandatory ? " * " : null}
             </CardLabel>
 
-            <div className="field hrms-flex hrms-flex--center">
+            <div className="field" style={{ display: "flex", alignItems: "center" }}>
               {/* <div className="employee-card-input employee-card-input--front">+91</div> */}
               <TextInput
                 key={input.name}

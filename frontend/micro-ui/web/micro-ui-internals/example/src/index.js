@@ -52,8 +52,6 @@ import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module
 // import { Body, TopBar } from "@mseva/digit-ui-react-components";
 //import "@mseva-niua/upyog-css/example/index.css";
 import "@pmidc/upyog-css";
-// import "index.css";
-import "./index.scss";
 // import * as comps from "@mseva/digit-ui-react-components";
 
 import { pgrCustomizations, pgrComponents } from "./pgr";

@@ -35,8 +35,9 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   }
 
   const clearAll = (mobileView) => {
+    const mobileViewStyles = mobileView ? { margin: 0 } : {};
     return (
-      <LinkLabel className="inline" onClick={clearSearch}>
+      <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
         {t("HR_COMMON_CLEAR_SEARCH")}
       </LinkLabel>
     );
@@ -45,17 +46,17 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-        <div className={isInboxPage ? "search-container w-auto ml-6" : "search-container w-auto"}>
+        <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
-              <div className="complaint-header flex justify-between">
+              <div className="complaint-header" style={{ display: 'flex', justifyContent: "space-between" }}>
                 <h2>{t("ES_COMMON_SEARCH_BY")}</h2>
                 <span onClick={onClose}>
                   <CloseSvg />
                 </span>
               </div>
             )}
-            <div className="complaint-input-container w-full text-left">
+            <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
@@ -86,17 +87,17 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
             </div>
             {isInboxPage && (
-              <div className="search-action-wrapper hrms-w-full-form">
+              <div className="search-action-wrapper" style={{width: "100%"}}>
                 {type === "desktop" && !mobileView && (
                   <SubmitBar
-                    className="submit-bar-search mt-0"
-                    // className="submit-bar-search"
+                    style={{ marginTop: "unset" }}
+                    className="submit-bar-search"
                     label={t("ES_COMMON_SEARCH")}
                     submit
                   />
                 )}
                 {type === "desktop" && !mobileView && (
-                  <span className="clear-search pt-2">
+                  <span style={{ paddingTop: "9px" }} className="clear-search">
                     {clearAll()}
                   </span>
                 )}
@@ -105,11 +106,12 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
             {type === "desktop" && !mobileView && !isInboxPage && (
               <div className="search-action-wrapper">
                 <SubmitBar
-                  className="submit-bar-search mt-0"
+                  style={{ marginTop: "unset" }}
+                  className="submit-bar-search"
                   label={t("ES_COMMON_SEARCH")}
                   submit
                 />
-                <div className="w-60 text-right ml-24 mt-2">
+                <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
                   {clearAll()}
                 </div>
               </div>
@@ -118,10 +120,10 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
         </div>
         {(type === "mobile" || mobileView) && (
           <ActionBar className="clear-search-container">
-            <button className="clear-search hrms-flex-item--1">
+            <button className="clear-search" style={{ flex: 1 }}>
               {clearAll(mobileView)}
             </button>
-            <SubmitBar label={t("HR_COMMON_SEARCH")} className="hrms-flex-item--1" submit={true} />
+            <SubmitBar label={t("HR_COMMON_SEARCH")} style={{ flex: 1 }} submit={true} />
           </ActionBar>
         )}
       </React.Fragment>

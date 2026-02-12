@@ -2,12 +2,11 @@
   
   .pgr-desktop-card-empty-state,
   .pgr-desktop-card-error-state {
-    margin-top: 20px !important; 
-   
-  }
-
-  .pgr-desktop-card-text-align{
-text-align: center !important;
+    margin-top: 20px;
+    
+    p {
+      text-align: center;
+    }
   }
 
   .pgr-desktop-inbox-content-wrapper {

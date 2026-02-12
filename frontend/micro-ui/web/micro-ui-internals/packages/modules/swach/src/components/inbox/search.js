@@ -50,9 +50,9 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="swach-search-form">
+    <form onSubmit={handleSubmit(onSubmit)} style={{ marginLeft: "24px" }}>
       <React.Fragment>
-        <div className="search-container swach-search-container">
+        <div className="search-container" style={{ width: "auto" }}>
           <div className="search-complaint-container">
             {type === "mobile" && (
               <div className="complaint-header">
@@ -61,7 +61,7 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" >
+            <div className="complaint-input-container" style={{ textAlign: "start" }}>
               <div className="input-fields">
                 <span className="complaint-input">
                   <h4 className="h4">{t("CS_COMMON_COMPLAINT_NO")}.</h4>
@@ -81,9 +81,10 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                       inputRef={register({
                         pattern: /(?!^$)([^\s])/,
                       })}
+                      style={{ marginBottom: "8px" }}
                     />
                   </div>
-                  {errors.serviceRequestId && <p className="swach-search-error-text">{errors.serviceRequestId.message}</p>}
+                  {errors.serviceRequestId && <p style={{ color: "red", fontSize: "12px" }}>{errors.serviceRequestId.message}</p>}
                 </span>
               </div>
               <div className="input-fields">
@@ -109,18 +110,18 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                       })}
                     />
                   </div>
-                  {errors.mobileNumber && <p className="swach-search-error-text">{errors.mobileNumber.message}</p>}
+                  {errors.mobileNumber && <p style={{ color: "red", fontSize: "12px" }}>{errors.mobileNumber.message}</p>}
                 </span>
               </div>
               {type === "desktop" && (
-                <div className="search-action-wrapper swach-search-action-full">
+                <div className="search-action-wrapper" style={{ width: "100%" }}>
                   <SubmitBar
                     className="submit-bar-search"
                     label={t("ES_COMMON_SEARCH")}
                     submit={true}
                     // disabled={Object.keys(errors).filter((i) => errors[i]).length}
                   />
-                  <span className="clear-search swach-search-clear-padding">
+                  <span className="clear-search" style={{ paddingTop: "9px" }}>
                     {clearAll()}
                   </span>
                 </div>

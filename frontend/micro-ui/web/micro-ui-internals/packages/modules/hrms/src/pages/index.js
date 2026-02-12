@@ -133,7 +133,8 @@ const EmployeeApp = ({ path, url, userType }) => {
           <div className="hrms-breadcrumb-wrapper">
             <BreadCrumb 
               crumbs={crumbs}
-              className="hrms-breadcrumb"
+              style={{ fontSize: "16px" }}
+              spanStyle={{ fontWeight: "500" }}
             />
           </div>
           <PrivateRoute

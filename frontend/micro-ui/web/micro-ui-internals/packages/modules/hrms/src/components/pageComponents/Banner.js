@@ -3,10 +3,10 @@ import { CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 const HRBanner = ({ t, config }) => {
   return (
     <LabelFieldPair>
-      {config?.texts?.nosideText!==true && <CardLabel className="card-label-smaller text-white">
+      {config?.texts?.nosideText!==true && <CardLabel className="card-label-smaller" style={{ color: "white" }}>
         .
       </CardLabel>}
-      <span className={config?.texts?.nosideText!==true ? "form-field text-gray-600" : "form-field text-gray-600 w-full mt-2"}>
+      <span className="form-field" style={config?.texts?.nosideText!==true ? { color: "gray" }:{ color: "gray" ,  width:"100%" ,marginTop: "9px"}}>
         {t(config?.texts?.header)}
       </span>
     </LabelFieldPair>

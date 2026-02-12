@@ -46,7 +46,7 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
               </div>
             </LabelFieldPair>
               {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern("Email")) && (
-                  <CardLabelError className="w-full -mt-3.5 text-base mb-3">
+                  <CardLabelError style={{ width: "100%", marginTop: "-15px", fontSize: "16px", marginBottom: "12px" }}>
                     {t("CS_PROFILE_EMAIL_ERRORMSG")}
                   </CardLabelError>
                 )}

@@ -106,7 +106,7 @@ const ViewAttendence = () => {
 
       {(!data?.Attendance || data.Attendance.length === 0) && (
         <Card>
-          <div className="mb-2.5 text-center">
+          <div style={{ padding: "16px", textAlign: "center" }}>
             <h3>No attendance records found</h3>
           </div>
         </Card>

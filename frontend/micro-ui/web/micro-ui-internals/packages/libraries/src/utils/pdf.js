@@ -924,13 +924,14 @@ const generateTimelinePDF = async (data) => {
                           text: row.comment && row.comment !== '-'
                             ? [
                                 { text: 'Note: ', bold: true },
-                                { text: row.comment }
+                                { text: row.comment.split('').join('\u200B') }
                               ]
                             : { text: 'No Comments', color: '#777' },
                           fontSize: 11,
                           color: row.comment && row.comment !== '-' ? '#222' : '#777',
                           margin: [0, 5, 0, 0],
-                          lineHeight: 1.5
+                          lineHeight: 1.5,
+                          width: '*'
                         },
 
                         ...(row.hasDocuments ? [

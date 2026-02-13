@@ -96,7 +96,7 @@ public class PropertyRateQueryBuilder {
     private static final String MAPPED_PROPERTIES =
             "SELECT DISTINCT ON (p.propertyid) " +
             "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, " +
-            "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, " + // Added IDs here
+            "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, r.rate," + // Added IDs here
             "dm.district_name, tm.tehsil_name, vm.village_name, " + 
             "p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
             "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +

@@ -224,7 +224,7 @@ const CitizenApplicationOverview = () => {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -245,7 +245,7 @@ const CitizenApplicationOverview = () => {
     console.log("fileStoreId before create", fileStoreId);
 
     if (!fileStoreId) {
-      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, approverComment);
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
 
       const response = await Digit.PaymentService.generatePdf(
         tenantId,
@@ -399,27 +399,52 @@ const CitizenApplicationOverview = () => {
 
   console.log("actions here", actions);
 
-  useEffect(() => {
-  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-    const commentsobj = workflowDetails?.data?.timeline
+//   useEffect(() => {
+//   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+//     const commentsobj = workflowDetails?.data?.timeline
+//       ?.filter((item) => item?.performedAction === "APPROVE")
+//       ?.flatMap((item) => item?.wfComment || []);
+    
+//     const approvercomments = commentsobj?.[0];
+
+//     // Extract only the part after [#?..**]
+//     let conditionText = "";
+//     if (approvercomments?.includes("[#?..**]")) {
+//       conditionText = approvercomments.split("[#?..**]")[1] || "";
+//     }
+
+//     const finalComment = conditionText
+//       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+//       : "";
+
+//     setApproverComment(finalComment);
+//   }
+// }, [workflowDetails]);
+
+
+const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
+    }
+
+    const commentsobj = workflowDetails.data.timeline
       ?.filter((item) => item?.performedAction === "APPROVE")
       ?.flatMap((item) => item?.wfComment || []);
-    
+
     const approvercomments = commentsobj?.[0];
 
-    // Extract only the part after [#?..**]
     let conditionText = "";
     if (approvercomments?.includes("[#?..**]")) {
       conditionText = approvercomments.split("[#?..**]")[1] || "";
     }
 
-    const finalComment = conditionText
-      ? `The above approval is subjected to the following conditions:\n${conditionText}`
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
       : "";
-
-    setApproverComment(finalComment);
-  }
-}, [workflowDetails]);
+  }, [workflowDetails]);
 
 
   function onActionSelect(action) {

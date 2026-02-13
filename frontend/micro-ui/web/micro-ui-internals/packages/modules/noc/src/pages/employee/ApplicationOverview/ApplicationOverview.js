@@ -251,28 +251,53 @@ const NOCEmployeeApplicationOverview = () => {
         }
       })();
   }, [tenantId, businessServiceCode, isLoading]);
-  useEffect(() => {
-    if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-      const commentsobj = workflowDetails?.data?.timeline
-        ?.filter((item) => item?.performedAction === "APPROVE")
-        ?.flatMap((item) => item?.wfComment || []);
+  // useEffect(() => {
+  //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+  //     const commentsobj = workflowDetails?.data?.timeline
+  //       ?.filter((item) => item?.performedAction === "APPROVE")
+  //       ?.flatMap((item) => item?.wfComment || []);
       
-      const approvercomments = commentsobj?.[0];
+  //     const approvercomments = commentsobj?.[0];
   
-      // Extract only the part after [#?..**]
-      let conditionText = "";
-      if (approvercomments?.includes("[#?..**]")) {
-        conditionText = approvercomments.split("[#?..**]")[1] || "";
-      }
+  //     // Extract only the part after [#?..**]
+  //     let conditionText = "";
+  //     if (approvercomments?.includes("[#?..**]")) {
+  //       conditionText = approvercomments.split("[#?..**]")[1] || "";
+  //     }
   
-      const finalComment = conditionText
-        ? `The above approval is subjected to the following conditions:\n${conditionText}`
-        : "";
+  //     const finalComment = conditionText
+  //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+  //       : "";
   
-      setApproverComment(finalComment);
+  //     setApproverComment(finalComment);
+  //   }
+  // }, [workflowDetails]);
+  
+
+  const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
     }
+
+    const commentsobj = workflowDetails.data.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+
+    const approvercomments = commentsobj?.[0];
+
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }
+
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
+      : "";
   }, [workflowDetails]);
-  
+
 
   
   // async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -324,13 +349,13 @@ const NOCEmployeeApplicationOverview = () => {
       let application = applicationDetails?.Noc?.[0];
       let fileStoreId = application?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
 
-      if (!fileStoreId) {
-        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
+     
+        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
 
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
         fileStoreId = response?.filestoreIds[0];
-      }
+      
 
       return fileStoreId;
     } catch (error) {
@@ -923,9 +948,16 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
   console.log("displayData here", displayData);
+  const order = {
+    "OWNER.SITEPHOTOGRAPHONE": 1,
+    "OWNER.SITEPHOTOGRAPHTWO": 2,
+  };
+
   const sitePhotos = displayData?.Documents?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+  )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
+
+  console.log('sitePhotos', sitePhotos)
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
@@ -1112,7 +1144,6 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos]
-              .reverse()
               .map((doc) => (
                 <NocSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}

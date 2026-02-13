@@ -349,13 +349,13 @@ const NOCEmployeeApplicationOverview = () => {
       let application = applicationDetails?.Noc?.[0];
       let fileStoreId = application?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
 
-     
+      if (!fileStoreId) {
         const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
 
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
         fileStoreId = response?.filestoreIds[0];
-      
+      }
 
       return fileStoreId;
     } catch (error) {

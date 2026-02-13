@@ -416,55 +416,7 @@ public class SWCalculatorQueryBuilder {
 		}
 	}
 	
-//	public String getConnectionsNoByLocality(String tenantId, String connectionType,String status,String locality, String groups,List<Object> preparedStatement) {
-//		StringBuilder query = new StringBuilder(connectionNoByLocality);
-//		// add tenantid
-//		if(tenantId != null) {
-//			addClauseIfRequired(preparedStatement, query);
-//			query.append(" conn.tenantid = ? ");
-//			preparedStatement.add(tenantId);
-//		}
-//		
-//		// Add connection type
-//		if(connectionType != null) {
-//			addClauseIfRequired(preparedStatement, query);
-//			query.append(" ws.connectiontype = ? ");
-//			preparedStatement.add(connectionType);
-//		}
-//
-//		//Active status	
-//		if(status != null) {
-//			addClauseIfRequired(preparedStatement, query);
-//			query.append(" conn.status = ? ");
-//			preparedStatement.add(status);			
-//		}
-//
-////		addClauseIfRequired(preparedStatement, query);
-////		query.append(" conn.connectionno = ? ");
-////		preparedStatement.add("SW/107/2020-21/000018");
-//
-//		if (locality != null) {
-//			addClauseIfRequired(preparedStatement, query);
-//			query.append(" conn.locality = ? ");
-//			preparedStatement.add(locality);
-//		}
-//		
-//		
-//		if (groups != null) {
-//	        addClauseIfRequired(preparedStatement, query);
-//	        query.append(" conn.additionaldetails->>'groups' = ? ");
-//	        preparedStatement.add(groups); // Exact match
-//	    }
-//		
-//		//Getting only non exempted connection to generate bill
-//		addClauseIfRequired(preparedStatement, query);
-//		query.append(" (conn.additionaldetails->>'isexempted')::boolean is not true ");
-//
-//		addClauseIfRequired(preparedStatement, query);
-//		query.append(" conn.connectionno is not null");
-//		return query.toString();
-//
-//	}
+
 	
 	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality, String groups, List<Object> preparedStatement) {
 	    StringBuilder query = new StringBuilder(connectionNoByLocality);

@@ -52,7 +52,9 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
       console.log("check apiDataCheck", apiDataCheck);
       // find the matching option from MDMS
       const matchedOption = ndcReasonOptions.find((opt) => opt?.code === apiDataCheck?.[0]?.reason);
-      if (matchedOption) {
+
+      // Only update from API if formData doesn't already have a value (prevents overwriting on back navigation)
+      if (matchedOption && (_.isEmpty(formData?.NDCReason) || !formData?.NDCReason?.code)) {
         let updatedOption = { ...matchedOption };
 
         // Handle "OTHERS" case with custom reason

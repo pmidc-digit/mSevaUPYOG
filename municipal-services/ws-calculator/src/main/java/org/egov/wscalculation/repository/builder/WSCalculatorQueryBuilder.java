@@ -70,8 +70,13 @@ public class WSCalculatorQueryBuilder {
 
 	private static final String distinctTenantIdsCriteria = "SELECT distinct(tenantid) FROM eg_ws_connection ws";
 
-	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id  ";
+//	private static final String connectionNoByLocality = "SELECT distinct(conn.connectionno) FROM eg_ws_connection conn INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id  ";
 
+	private static final String connectionNoByLocality = "SELECT DISTINCT(conn.connectionno) FROM eg_ws_connection conn " +
+		    "INNER JOIN eg_ws_service ws ON conn.id = ws.connection_id " +
+		    "INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid " +
+		    "INNER JOIN eg_pt_address a ON a.propertyid = p.id ";
+	
 	private static final String BILL_SCHEDULER_STATUS_SEARCH_QUERY = "select status from eg_ws_scheduler ";
 	private static final String LAST_DEMAND_GEN_FOR_CONN = " SELECT d.taxperiodfrom FROM egbs_demand_v1 d ";
 
@@ -453,44 +458,97 @@ public class WSCalculatorQueryBuilder {
 
 	}
 
-	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality,String groups,
-			List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoByLocality);
+//	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality,String groups,
+//			List<Object> preparedStatement) {
+//		StringBuilder query = new StringBuilder(connectionNoByLocality);
+//
+//		// add tenantid
+//		addClauseIfRequired(preparedStatement, query);
+//		query.append(" conn.tenantid = ? ");
+//		preparedStatement.add(tenantId);
+//
+//		// Add connection type
+//		addClauseIfRequired(preparedStatement, query);
+//		query.append(" ws.connectiontype = ? ");
+//		preparedStatement.add(connectionType);
+//
+//		// Active status
+//		addClauseIfRequired(preparedStatement, query);
+//		query.append(" conn.status = ? ");
+//		preparedStatement.add(status);
+//
+//		if (locality != null) {
+//			addClauseIfRequired(preparedStatement, query);
+//			query.append(" conn.locality = ? ");
+//			preparedStatement.add(locality);
+//		}
+//
+//		if (groups != null) {
+//	        addClauseIfRequired(preparedStatement, query);
+//	        query.append(" conn.additionaldetails->>'groups' = ? ");
+//	        preparedStatement.add(groups); // Exact match
+//	    }
+//		// Getting only non exempted connection to generate bill
+//		addClauseIfRequired(preparedStatement, query);
+//		query.append(" (conn.additionaldetails->>'isexempted')::boolean is not true ");
+//
+//		addClauseIfRequired(preparedStatement, query);
+//		query.append(" conn.connectionno is not null");
+//		return query.toString();
+//
+//	}
+	
+	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality, String groups, List<Object> preparedStatement) {
+	    StringBuilder query = new StringBuilder(connectionNoByLocality);
 
-		// add tenantid
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.tenantid = ? ");
-		preparedStatement.add(tenantId);
+	    // 1. Tenant ID
+	    if (tenantId != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.tenantid = ? ");
+	        preparedStatement.add(tenantId);
+	    }
 
-		// Add connection type
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" ws.connectiontype = ? ");
-		preparedStatement.add(connectionType);
+	    // 2. Connection Type
+	    if (connectionType != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" ws.connectiontype = ? ");
+	        preparedStatement.add(connectionType);
+	    }
 
-		// Active status
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.status = ? ");
-		preparedStatement.add(status);
+	    // 3. Connection Status
+	    if (status != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.status = ? ");
+	        preparedStatement.add(status);
+	    }
 
-		if (locality != null) {
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" conn.locality = ? ");
-			preparedStatement.add(locality);
-		}
+	    // 4. Locality (Now using the 'a' alias from eg_pt_address)
+	    if (locality != null) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" a.locality = ? ");
+	        preparedStatement.add(locality);
+	    }
 
-		if (groups != null) {
+	    // 5. Property Status Filter (Added based on your successful reference query)
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" p.status != 'INACTIVE' ");
+
+	    // 6. Groups filter
+	    if (groups != null) {
 	        addClauseIfRequired(preparedStatement, query);
 	        query.append(" conn.additionaldetails->>'groups' = ? ");
-	        preparedStatement.add(groups); // Exact match
+	        preparedStatement.add(groups);
 	    }
-		// Getting only non exempted connection to generate bill
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" (conn.additionaldetails->>'isexempted')::boolean is not true ");
 
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.connectionno is not null");
-		return query.toString();
+	    // 7. Exemption Filter
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" (conn.additionaldetails->>'isexempted')::boolean IS NOT TRUE ");
 
+	    // 8. Connection Number Null Check
+	    addClauseIfRequired(preparedStatement, query);
+	    query.append(" conn.connectionno IS NOT NULL ");
+
+	    return query.toString();
 	}
 
 	public String getConnectionNumberListForDemand(String tenantId, String connectionType,

@@ -189,8 +189,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   };
 
   const onSubmit = async (data) => {
-    console.log("data", data);
-
     const applicationType = data?.applicationType?.code;
 
     if (applicationType === "Legacy" && data?.arrear > 0 && !documentsData?.[0]?.filestoreId) {
@@ -296,7 +294,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   }, [isError, triggerToast]);
 
   const handleDocumentsSelect = (data) => {
-    console.log("data check", data);
     setDocumentsData(data);
   };
 
@@ -568,22 +565,26 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       {errors.penaltyType && <CardLabelError>{getErrorMessage("penaltyType")}</CardLabelError>}
 
       {/* Security Amount */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="securityDeposit"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => (
-              <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
-            )}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
+      {watch("applicationType")?.code != "Legacy" && (
+        <React.Fragment>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="securityDeposit"
+                rules={{ required: t("PTR_FIELD_REQUIRED") }}
+                render={({ value, onChange }) => (
+                  <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
+        </React.Fragment>
+      )}
       {watch("applicationType")?.code == "Legacy" && (
         <React.Fragment>
           {/* Arrears Amount */}

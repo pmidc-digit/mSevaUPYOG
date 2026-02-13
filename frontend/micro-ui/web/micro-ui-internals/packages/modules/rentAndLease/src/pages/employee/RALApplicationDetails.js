@@ -343,8 +343,6 @@ const RALApplicationDetails = () => {
     }
   };
 
-  console.log("rawAdditionalDetails", rawAdditionalDetails);
-
   return (
     <React.Fragment>
       <div>
@@ -406,7 +404,9 @@ const RALApplicationDetails = () => {
             <Row label={t("RAL_START_DATE")} text={tValue(getDate(applicationData?.startDate))} />
             <Row label={t("RAL_END_DATE")} text={tValue(getDate(applicationData?.endDate))} />
             {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={tValue(applicationData?.amountToBeDeducted)} />}
-            <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
+            {rawAdditionalDetails?.applicationType !== "Legacy" && (
+              <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
+            )}
             {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 && (
               <Row
                 label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")}

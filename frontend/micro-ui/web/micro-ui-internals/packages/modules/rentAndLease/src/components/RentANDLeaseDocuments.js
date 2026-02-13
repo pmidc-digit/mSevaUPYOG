@@ -32,7 +32,6 @@ const ChallanDocuments = ({
 
   useEffect(() => {
     if (documents) onSelect(documents);
-    console.log("documents", documents);
   }, [documents]);
 
   useEffect(() => {

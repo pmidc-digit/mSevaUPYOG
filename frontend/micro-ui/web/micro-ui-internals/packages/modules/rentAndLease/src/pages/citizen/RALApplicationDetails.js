@@ -28,8 +28,6 @@ const RALApplicationDetails = () => {
     }
   };
 
-  console.log('applicationData', applicationData)
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -68,7 +66,11 @@ const RALApplicationDetails = () => {
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
       } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...applicationData }] }, "rentandlease-receipt");
+        response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...applicationData }] },
+          "rentandlease-receipt"
+        );
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: response.filestoreIds[0],
@@ -115,7 +117,6 @@ const RALApplicationDetails = () => {
   };
 
   const rawAdditionalDetails = applicationData?.additionalDetails || {};
-  console.log("rawAdditionalDetails", rawAdditionalDetails);
   const propertyDetails = Array.isArray(rawAdditionalDetails?.propertyDetails)
     ? rawAdditionalDetails?.propertyDetails[0]
     : rawAdditionalDetails?.propertyDetails;
@@ -190,7 +191,9 @@ const RALApplicationDetails = () => {
             <Row label={t("RAL_START_DATE")} text={tValue(getDate(applicationData?.startDate))} />
             <Row label={t("RAL_END_DATE")} text={tValue(getDate(applicationData?.endDate))} />
             {applicationData?.amountToBeDeducted > 0 && <Row label={t("RAL_PROPERTY_PENALTY")} text={tValue(applicationData?.amountToBeDeducted)} />}
-            <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
+            {rawAdditionalDetails?.applicationType !== "Legacy" && (
+              <Row label={t("SECURITY_DEPOSIT")} text={tValue(propertyDetails?.securityDeposit)} />
+            )}
             {applicationData?.amountToBeDeducted - propertyDetails?.securityDeposit > 0 && (
               <Row
                 label={t("RAL_AMOUNT_TO_TAKE_FROM_CITIZEN")}

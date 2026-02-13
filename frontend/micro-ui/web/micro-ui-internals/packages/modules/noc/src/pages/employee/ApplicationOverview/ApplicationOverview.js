@@ -130,14 +130,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
 
-  const [showSanctionModal, setShowSanctionModal] = useState(false);
-const [sanctionPdfUrl, setSanctionPdfUrl] = useState(null);
-
-const closeSanctionModal = () => {
-  setShowSanctionModal(false);
-  setSanctionPdfUrl(null);
-};
-
+  
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
@@ -326,21 +319,16 @@ const closeSanctionModal = () => {
   try {
     setLoader(true);
 
-    const fileStoreId = await getSanctionLetterReceipt({
-      tenantId,
-      payments: reciept_data?.Payments[0],
-      EmpData,
-    });
+    // Get filestoreId from sanction letter function
+    const fileStoreId = await getSanctionLetterReceipt({ tenantId, payments : reciept_data?.Payments[0], EmpData });
 
     if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-      fileStoreIds: fileStoreId,
-    });
+    // Use printReciept to fetch the actual file URL
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
 
-    // Set PDF URL and open modal
-    setSanctionPdfUrl(fileStore[fileStoreId]);
-    setShowSanctionModal(true);
+    // Open in new tab/popup
+    window.open(fileStore[fileStoreId], "_blank");
 
   } catch (error) {
     console.error("Sanction Letter popup error:", error);
@@ -348,7 +336,6 @@ const closeSanctionModal = () => {
     setLoader(false);
   }
 }
-
 
 const handleDownloadPdf = async () => {
     try {
@@ -711,40 +698,6 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
 
-  const modalStyles = {
-    modal: {
-      width: "100%",
-      height: "100%",
-      top: "0",
-      position: "relative",
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    modalOverlay: {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-    },
-    modalContent: {
-      backgroundColor: "#FFFFFF",
-      padding: "2rem",
-      borderRadius: "0.5rem",
-      maxWidth: "800px",
-      margin: "auto",
-      fontFamily: "Roboto, serif",
-      overflowX: "hidden",
-      textAlign: "justify",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-      maxHeight: "80vh",
-      overflowY: "auto",
-      lineHeight: "2",
-    }
-  };
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
     console.log("payloadData", payloadData);
@@ -1061,27 +1014,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           />
         )}
       </div>
-      <Modal
-        isOpen={showSanctionModal}
-        onRequestClose={closeSanctionModal}
-        contentLabel="Sanction Letter"
-        style={{
-          modal: modalStyles.modal,
-          overlay: modalStyles.modalOverlay,
-          content: modalStyles.modalContent,
-        }}
-      >
-        <div style={{ height: "80vh" }}>
-          {sanctionPdfUrl ? (
-            <iframe src={sanctionPdfUrl} title="Sanction Letter" width="100%" height="100%" style={{ border: "none" }} />
-          ) : (
-            <p>Loading PDF...</p>
-          )}
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
-          <SubmitBar label="Close" onSubmit={closeSanctionModal} />
-        </div>
-      </Modal>
+
       <NOCImageView
         ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
         ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
@@ -1231,14 +1164,15 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos].map((doc) => (
-              <NocSitePhotographs
-                key={doc?.filestoreId || doc?.uuid}
-                filestoreId={doc?.filestoreId || doc?.uuid}
-                documentType={doc?.documentType}
-                coordinates={coordinates}
-              />
-            ))}
+            [...sitePhotos]
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
         </StatusTable>
       </Card>
 
@@ -1284,12 +1218,12 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
         <Card>
           <CardSubHeader>
-            {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-              ? `${t("BPA_FI_REPORT")} - Verified by ${
-                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                }`
-              : t("BPA_FI_REPORT")}
-          </CardSubHeader>
+              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                ? `${t("BPA_FI_REPORT")} - Verified by ${
+                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                  }`
+                : t("BPA_FI_REPORT")}
+            </CardSubHeader>
 
           <div id="fieldInspection"></div>
           <InspectionReport

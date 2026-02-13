@@ -32,6 +32,8 @@ public class PropertyCriteria {
 	private Set<String> oldpropertyids;
 	
 	private Set<Status> status;
+	
+	private Set<String> vasikaNos;
 
 	private String mobileNumber;
 
@@ -83,4 +85,5 @@ public class PropertyCriteria {
 	
 	private String surveyId;
 
+    private Boolean plainSearchOffset;
 }

@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +151,26 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		log.debug("Query: " + query);
 		log.debug("Prepared Statement" + preparedStatement.toString());
 		return jdbcTemplate.query(query, preparedStatement.toArray(), currentMeterReadingRowMapper);
+	}
+	
+//    PI-20289 Metered Breakdown penalty enable and working new logic
+
+	// DAO method to get previous meter status (second latest)
+	public String getPreviousMeterStatus(String tenantId, String connectionNo) {
+	    List<Object> preparedStatement = new ArrayList<>();
+	    StringBuilder query = new StringBuilder();
+	    query.append("SELECT meterstatus FROM eg_ws_meterreading ")
+	         .append("WHERE tenantid = ? AND connectionno = ? ")
+	         .append("ORDER BY currentreadingdate DESC");
+
+	    preparedStatement.add(tenantId);
+	    preparedStatement.add(connectionNo);
+
+	    List<String> statuses = jdbcTemplate.query(query.toString(), preparedStatement.toArray(),
+	            (rs, rowNum) -> rs.getString("meterstatus"));
+
+	    // Return second latest meter status (previous)
+	    return (statuses.size() > 1) ? statuses.get(1) : null;
 	}
 
 	@Override
@@ -341,6 +362,7 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(status.toString());
 		String queryStr = queryBuilder.getBillStatusUpdateQuery(consumerCodes,businessService, preparedStmtList);
+		log.info("Query for updateBillStatus : "  + queryStr );
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	@Override
@@ -474,6 +496,24 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 		return true;
 }
 	
+	public String getSwConnection(String tenantId, String consumerCode){
+	    List<Object> preparedStatement = new ArrayList<>();
+	    String query = queryBuilder.getRelatedSwConnenction(tenantId, consumerCode, preparedStatement);
+	    log.info("Query: {}", query);
+	    log.info("Parameters: {}", preparedStatement);
+
+	    try {
+	        String result = jdbcTemplate.queryForObject(query, preparedStatement.toArray(), String.class);
+	        log.info("Query result: {}", result);
+	        return result;
+	    } catch (EmptyResultDataAccessException e) {
+	        log.warn("No result found for tenantId={} and consumerCode={}", tenantId, consumerCode);
+	        return "";
+	    } catch (Exception e) {
+	        log.error("Error executing query", e);
+	        throw e; 
+	    }
+	}
 
 
 

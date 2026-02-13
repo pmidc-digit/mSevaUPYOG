@@ -12,10 +12,12 @@ import org.egov.tl.workflow.WorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.egov.tl.util.TLConstants.ACTION_ADHOC;
 
@@ -35,17 +37,20 @@ public class TLRepository {
     private TLConfiguration config;
 
     private WorkflowService workflowService;
+    
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
 
     @Autowired
     public TLRepository(JdbcTemplate jdbcTemplate, TLQueryBuilder queryBuilder, TLRowMapper rowMapper,
-                        Producer producer, TLConfiguration config, WorkflowService workflowService) {
+                        Producer producer, TLConfiguration config, WorkflowService workflowService, KafkaTemplate<String, Object> kafkaTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.queryBuilder = queryBuilder;
         this.rowMapper = rowMapper;
         this.producer = producer;
         this.config = config;
         this.workflowService = workflowService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
 
@@ -92,8 +97,27 @@ public class TLRepository {
      * @param tradeLicenseRequest The tradeLciense create request
      */
     public void save(TradeLicenseRequest tradeLicenseRequest) {
-        producer.push(config.getSaveTopic(), tradeLicenseRequest);
+    	
+    	if(tradeLicenseRequest.getLicenses() != null && tradeLicenseRequest.getLicenses().size() > 1) {
+    		// If there are multiple licenses, we need to send each license as a separate request
+    		tradeLicenseRequest.getLicenses().forEach(license -> {
+    			TradeLicenseRequest request = new TradeLicenseRequest(tradeLicenseRequest.getRequestInfo(), Collections.singletonList(license));
+    			  String key = (license.getLicenseNumber() != null)
+    	                    ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+    	                    : UUID.randomUUID().toString();
+    			  
+    			kafkaTemplate.send(config.getSaveTopic(),key,request);
+    		});
+		}else {
+			     TradeLicense license = tradeLicenseRequest.getLicenses().get(0);
+
+		        String key = (license.getLicenseNumber() != null)
+		                ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+		                : UUID.randomUUID().toString();
+			// If there is only one license, we can send the entire request
+			producer.push(config.getSaveTopic(),key, tradeLicenseRequest);
     }
+}
     /**
      * Pushes the update request to update topic or on workflow topic depending on the status
      *
@@ -119,17 +143,51 @@ public class TLRepository {
             }
         }
 
-        if (!CollectionUtils.isEmpty(licensesForUpdate))
-            producer.push(config.getUpdateTopic(), new TradeLicenseRequest(requestInfo, licensesForUpdate));
+        if (!CollectionUtils.isEmpty(licensesForUpdate)) {
+        	// If there are multiple licenses, we need to send each license as a separate request
+        	if(licensesForUpdate.size() > 1 ) {
+        		licensesForUpdate.forEach(license -> {
+        			String key = (license.getLicenseNumber() != null)
+                            ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+                            : UUID.randomUUID().toString();
+        			
+        			TradeLicenseRequest request = new TradeLicenseRequest(requestInfo, Collections.singletonList(license));
+        			kafkaTemplate.send(config.getUpdateTopic(),key, request);
+        		});
+        		
+        	}else {
+        		TradeLicense license = licensesForUpdate.get(0);
 
-        if (!CollectionUtils.isEmpty(licesnsesForStatusUpdate))
-            producer.push(config.getUpdateWorkflowTopic(), new TradeLicenseRequest(requestInfo, licesnsesForStatusUpdate));
+            String key = (license.getLicenseNumber() != null)
+                    ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+                    : UUID.randomUUID().toString();
+            
+        		producer.push(config.getUpdateTopic(),key,new TradeLicenseRequest(requestInfo, licensesForUpdate));
+        }
+     }
+            
 
-        if(!licensesForAdhocChargeUpdate.isEmpty())
-            producer.push(config.getUpdateAdhocTopic(),new TradeLicenseRequest(requestInfo,licensesForAdhocChargeUpdate));
+        if (!CollectionUtils.isEmpty(licesnsesForStatusUpdate)) {
+        	 TradeLicense license = licesnsesForStatusUpdate.get(0);
+
+             String key = (license.getLicenseNumber() != null)
+                     ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+                     : UUID.randomUUID().toString();
+        
+            producer.push(config.getUpdateWorkflowTopic(),key, new TradeLicenseRequest(requestInfo, licesnsesForStatusUpdate));
+        }
+
+        if(!licensesForAdhocChargeUpdate.isEmpty()) {
+        	TradeLicense license = licensesForAdhocChargeUpdate.get(0);
+
+            String key = (license.getLicenseNumber() != null)
+                    ? license.getLicenseNumber() + "-" + UUID.randomUUID()
+                    : UUID.randomUUID().toString();
+        
+            producer.push(config.getUpdateAdhocTopic(),key,new TradeLicenseRequest(requestInfo,licensesForAdhocChargeUpdate));
 
     }
-
+}
 
 
 
@@ -142,7 +200,7 @@ public class TLRepository {
             return;
         tradeLicenses.forEach(license -> {
 //	try{
-//	   if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners())) 
+	   if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners())) 
             license.getTradeLicenseDetail().getOwners().sort(Comparator.comparing(User::getUuid));
 	//   if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getTradeUnits())) 	
             license.getTradeLicenseDetail().getTradeUnits().sort(Comparator.comparing(TradeUnit::getId));
@@ -174,44 +232,24 @@ public class TLRepository {
         return licenses;
     }
 
-    public List<String> fetchTradeLicenseIds(TradeLicenseSearchCriteria criteria){
+    public List<String> fetchTradeLicenseIds(TradeLicenseSearchCriteria criteria) {
 
-  //  	String query ="SELECT id from eg_tl_tradelicense ";
         List<Object> preparedStmtList = new ArrayList<>();
-        preparedStmtList.add(criteria.getOffset());
-        preparedStmtList.add(criteria.getLimit());
-     //   if(!StringUtils.isEmpty(criteria.getTenantId())) {
-     //  	System.out.println(criteria.getTenantId());
-     //  	query=query+" where tenantid= '"+criteria.getTenantId()+"'";
-     //   }
 
-//if(!StringUtils.isEmpty(criteria.getTenantId()) && (criteria.getFromDate()!=null && criteria.getFromDate()>0) && (criteria.getToDate()!=null && criteria.getToDate()>0) ) {
- //       	query=query+" AND  createdtime between "+ criteria.getFromDate()+" AND "+criteria.getToDate();
- //       }else  if((criteria.getFromDate()!=null && criteria.getFromDate()>0) && (criteria.getToDate()!=null && criteria.getToDate()>0)){
- //       	query=query+" where createdtime between "+ criteria.getFromDate()+" AND "+criteria.getToDate();
- //       }
-        
- //       query=query+" ORDER BY createdtime offset " +
- //               " ? " +
- //               " limit ? ";
-//	 System.out.println("SQL : "+query);
-      /*  "SELECT id from eg_tl_tradelicense ORDER BY createdtime offset " +
-        " ? " +
-        "limit ? "*/
-  //      return jdbcTemplate.query(query,
-    //            preparedStmtList.toArray(),
-      //          new SingleColumnRowMapper<>(String.class));
+        String query = queryBuilder.getTLPlainSearchQueryIDs(criteria, preparedStmtList);
+        log.info("Query: " + query);
 
-
-        return jdbcTemplate.query("SELECT id from eg_tl_tradelicense ORDER BY createdtime offset " +
-                        " ? " +
-                        "limit ? ",
+        return jdbcTemplate.query(
+                query,
                 preparedStmtList.toArray(),
-                new SingleColumnRowMapper<>(String.class));
+                new SingleColumnRowMapper<>(String.class)
+        );
     }
+
     
-    public List <String> fetchTradeLicenseTenantIds(){
+    public List <String> fetchTradeLicenseTenantIds(String businessservice){
     	List<Object> preparedStmtList = new ArrayList<>();
+    	preparedStmtList.add(businessservice);
     	return jdbcTemplate.query(queryBuilder.TENANTIDQUERY,preparedStmtList.toArray(),new SingleColumnRowMapper<>(String.class));
     	
     }

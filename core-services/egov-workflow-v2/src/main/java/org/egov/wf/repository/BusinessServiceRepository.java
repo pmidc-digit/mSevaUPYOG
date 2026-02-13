@@ -93,20 +93,54 @@ public class BusinessServiceRepository {
      * @return
      */
     @Cacheable(value = "roleTenantAndStatusesMapping")
-    public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(){
+    public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(ProcessInstanceSearchCriteria criteria){
 
 
         Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = new HashMap();
 
-        List<BusinessService> businessServices = getAllBusinessService();
+        List<BusinessService> businessServices = getAllBusinessService(criteria);
 
         for(BusinessService businessService : businessServices){
 
             String tenantId = businessService.getTenantId();
 
+            // Collect all roles present in this business service (from any state's actions)
+            Set<String> rolesInService = new HashSet<>();
+            businessService.getStates().forEach(st -> {
+                if(!CollectionUtils.isEmpty(st.getActions())){
+                    st.getActions().forEach(ac -> {
+                        if(!CollectionUtils.isEmpty(ac.getRoles())){
+                            rolesInService.addAll(ac.getRoles());
+                        }
+                    });
+                }
+            });
+
             for(State state : businessService.getStates()){
 
                 String uuid = state.getUuid();
+
+                // Ensure terminate states are also counted (they usually have no actions/roles)
+                if (Boolean.TRUE.equals(state.getIsTerminateState())) {
+                    // Add terminate state to all roles seen in this business service
+                    for (String role : rolesInService) {
+                        Map<String, List<String>> tenantToStatusMap = roleTenantAndStatusMapping.get(role);
+                        if (tenantToStatusMap == null) {
+                            tenantToStatusMap = new HashMap<>();
+                            roleTenantAndStatusMapping.put(role, tenantToStatusMap);
+                        }
+
+                        List<String> statuses = tenantToStatusMap.get(tenantId);
+                        if (statuses == null) {
+                            statuses = new LinkedList<>();
+                            tenantToStatusMap.put(tenantId, statuses);
+                        }
+
+                        if (!statuses.contains(uuid)) {
+                            statuses.add(uuid);
+                        }
+                    }
+                }
 
                 if(!CollectionUtils.isEmpty(state.getActions())){
 
@@ -151,16 +185,27 @@ public class BusinessServiceRepository {
      * Returns all the avialable businessServices
      * @return
      */
-    private List<BusinessService> getAllBusinessService(){
+    private List<BusinessService> getAllBusinessService(ProcessInstanceSearchCriteria criteria){
 
         List<Object> preparedStmtList = new ArrayList<>();
-        String query = queryBuilder.getBusinessServices(new BusinessServiceSearchCriteria(), preparedStmtList);
+        String query=null;
 
-        List<BusinessService> businessServices = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-        List<BusinessService> filterBusinessServices = filterBusinessServices((businessServices));
+        BusinessServiceSearchCriteria businessCriteria = new BusinessServiceSearchCriteria();
 
-        return filterBusinessServices;
+        if (criteria != null && criteria.getBusinessService() != null) {
+            businessCriteria.setBusinessServices(
+                Arrays.asList(criteria.getBusinessService())
+            );
+        }
+
+        query = queryBuilder.getBusinessServices(businessCriteria, preparedStmtList);
+
+        List<BusinessService> businessServices =
+                jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+
+        return filterBusinessServices(businessServices);
     }
+
 
 
     /**

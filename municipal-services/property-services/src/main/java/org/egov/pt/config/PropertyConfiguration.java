@@ -71,6 +71,21 @@ public class PropertyConfiguration {
     @Value("${persister.migration.batch.count.topic}")
     private String migartionBatchCountTopic;
 
+
+
+    @Value("${pmidc.auth.host}")
+    private String pmidcAuthHost;
+
+    @Value("${pmidc.auth.path}")
+    private String pmidcAuthPath;
+
+    @Value("${pmidc.auth.username:}")
+    private String defaultUserName;
+
+    @Value("${pmidc.auth.password:}")
+    private String defaultPassword;
+
+
     //USER
     @Value("${egov.user.host}")
     private String userHost;
@@ -119,6 +134,13 @@ public class PropertyConfiguration {
 
     @Value("${thirdParty.subUrl}")
     private String thirdPartysubUrl;
+
+
+    @Value("${thirdPartyBhatinda.host}")
+    private String thirdPartyBhatindahost;
+
+    @Value("${thirdPartyBhatinda.subUrl}")
+    private String thirdPartyBhatindasubUrl;
     
     @Value("${thirdparty.key}")
    private String thirdpartykey;

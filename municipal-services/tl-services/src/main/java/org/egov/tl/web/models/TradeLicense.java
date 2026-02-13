@@ -77,7 +77,9 @@ public class  TradeLicense   {
     public enum ApplicationTypeEnum {
         NEW(TLConstants.APPLICATION_TYPE_NEW),
 
-        RENEWAL(TLConstants.APPLICATION_TYPE_RENEWAL);
+        RENEWAL(TLConstants.APPLICATION_TYPE_RENEWAL),
+    	
+    	UPGRADE(TLConstants.APPLICATION_TYPE_UPGRADE);
 
         private String value;
 
@@ -104,7 +106,7 @@ public class  TradeLicense   {
 
         @SafeHtml
         @JsonProperty("businessService")
-        private String businessService = "NewTL";
+        private String businessService = "TL";
 
         @JsonProperty("licenseType")
         private LicenseTypeEnum licenseType = null;

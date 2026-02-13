@@ -145,6 +145,8 @@ public class BPAConstants {
 	public static final String ACTION_SEND_TO_ARCHITECT = "SEND_TO_ARCHITECT";
 	
 	public static final String ACTION_SEND_TO_CITIZEN = "SEND_TO_CITIZEN";
+	
+	public static final String ACTION_SAVE_AS_DRAFT = "SAVE_AS_DRAFT";
 
 	// BPA Status
 
@@ -231,6 +233,8 @@ public class BPAConstants {
 	// OCCUPANCY TYPE
 
 	public static final String RESIDENTIAL_OCCUPANCY = "A";
+	
+	public static final String RESIDENTIAL_GH_SUBOCCUPANCY = "A-AF";
 
 	// CALCULATION FEEe
 	public static final String APPLICATION_FEE_KEY = "ApplicationFee";
@@ -398,7 +402,28 @@ public class BPAConstants {
 
 	public static final String PAYMENT_LINK_PLACEHOLDER = "{PAYMENT_LINK}";
 	
-	public static final Double MAAX_BUILDING_HEIGHT = 21.0;
+	public static final Double MAAX_BUILDING_HEIGHT = 15.01;
+	
+	public static final String BUILDING_HEIGHT = "BuildingHeight";
 
+	public static final String ACTION_VERIFY = "VERIFY";
+	
+	public static final String SYSTEM = "SYSTEM";
+	
+	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
+	
+	public static final String TENANT_MODULE = "tenant";
+
+	public static final String TENANTS = "tenants";
+
+	public static final String PENDINGVERIFICATION_STATE = "PENDINGVERIFICATION";
+	
+	public static final String PENDINGINITIALVERIFICATION_STATE = "PENDINGINITIALVERIFICATION";
+	
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
+	
+	public static final Long DAY_TO_MILLISECOND = 86400000L;
+	
+	public static final String PROPERTY_USAGE = "PropertyUsage";
 
 }

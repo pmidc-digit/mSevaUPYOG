@@ -344,14 +344,11 @@ public class PaymentService {
 		String payerId = createUser(paymentRequest);
 		if (!StringUtils.isEmpty(payerId))
 			payment.setPayerId(payerId);
-//		paymentRepository.savePayment(payment);
+		paymentRepository.savePayment(payment);
 
-		producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
-		 if (payment.getPaymentDetails().get(0).getBusinessService() != null && (payment.getPaymentDetails().get(0).getBusinessService().equals("PT") || payment.getPaymentDetails().get(0).getBusinessService().equals("WS") || payment.getPaymentDetails().get(0).getBusinessService().equals("SW")  ) )
-				{
-				producer.producer(applicationProperties.getGisTopicName(), paymentRequest);
+		String key = paymentRequest.getPayment().getMobileNumber() + paymentRequest.getPayment().getId();
+		producer.producer(applicationProperties.getCreatePaymentTopicName(), key ,paymentRequest);
 
-				}
 		return payment;
 	}
 
@@ -456,7 +453,8 @@ public class PaymentService {
 				Collections.singletonList(paymentRequest.getPayment()), paymentRequest.getRequestInfo());
 
 		paymentRepository.updatePayment(validatedPayments);
-		producer.producer(applicationProperties.getUpdatePaymentTopicName(),
+		String key = paymentRequest.getPayment().getMobileNumber() + paymentRequest.getPayment().getId();
+		producer.producer(applicationProperties.getUpdatePaymentTopicName(), key,
 				new PaymentRequest(paymentRequest.getRequestInfo(), paymentRequest.getPayment()));
 
 		return validatedPayments;

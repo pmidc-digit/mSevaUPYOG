@@ -262,26 +262,84 @@ public class EstimationService {
 	            applicableSlab = filteredSlabs.get(0);
 	        }
 	    }
+	    
+	    
 
+//	    PI-20289 Metered Breakdown penalty enable and working new logic
+	    
+	    
 	    if (applicableBillSlab != null && applicableSlab != null) {
-	        if (isRangeCalculation(calculationAttribute)) {
-	            if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
-	                Double meterReading = totalUOM;
-	                String meterStatus = criteria.getMeterStatus().toString();
+	    	 if (isRangeCalculation(calculationAttribute)) {
 
-	                if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
-	                        || WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
+	    	        /* =======================
+	    	         * METERED CONNECTION
+	    	         * ======================= */
+	    	        if (WSCalculationConstant.meteredConnectionType
+	    	                .equalsIgnoreCase(waterConnection.getConnectionType())) {
 
-	                    meterReading = (Double) additionalDetail.getOrDefault(
-	                            WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
-	                }
+	    	            Double meterReading = totalUOM;
+	    	            String meterStatus = criteria.getMeterStatus().toString();
 
-	                waterCharge = BigDecimal.valueOf(meterReading * applicableSlab.getCharge());
+	    	            if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
+	    	                    || WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
 
-	                if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
-	                        || waterCharge.doubleValue() < applicableBillSlab.getMinimumCharge()) {
-	                    waterCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
-	                }
+//	    	                meterReading = (Double) additionalDetail.getOrDefault(
+//	    	                        WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
+	    	            	
+	    	            	
+	    	            	Object avgObj = additionalDetail.get(WSCalculationConstant.AVARAGEMETERREADING);
+
+	    	            	if (avgObj instanceof Number) {
+	    	            	    meterReading = ((Number) avgObj).doubleValue();
+	    	            	} else {
+	    	            	    meterReading = totalUOM;
+	    	            	}
+	    	            }
+
+	    	            BigDecimal remainingConsumption = BigDecimal.valueOf(meterReading);
+	    	            BigDecimal totalAmount = BigDecimal.ZERO;
+
+	    	            // sort slabs by range
+	    	            List<Slab> slabs = applicableBillSlab.getSlabs().stream()
+	    	                    .filter(s -> s.getEffectiveFrom() <= System.currentTimeMillis()
+	    	                            && s.getEffectiveTo() >= System.currentTimeMillis())
+	    	                    .sorted(Comparator.comparing(Slab::getFrom))
+	    	                    .collect(Collectors.toList());
+
+	    	            for (Slab slab : slabs) {
+
+	    	                if (remainingConsumption.compareTo(BigDecimal.ZERO) <= 0) {
+	    	                    break;
+	    	                }
+
+	    	                double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
+	    	                double slabTo   = slab.getTo();
+
+	    	                BigDecimal slabRange = BigDecimal.valueOf(
+	    	                        slabTo - slabFrom + 1
+	    	                );
+
+	    	                BigDecimal billableUnits = remainingConsumption.min(slabRange);
+
+	    	                BigDecimal slabAmount = billableUnits
+	    	                        .multiply(BigDecimal.valueOf(slab.getCharge()));
+
+	    	                totalAmount = totalAmount.add(slabAmount);
+	    	                remainingConsumption = remainingConsumption.subtract(billableUnits);
+	    	            }
+
+	    	            BigDecimal minimumCharge =
+	    	                    BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+
+	    	            if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
+	    	                    || totalAmount.compareTo(minimumCharge) < 0) {
+
+	    	                totalAmount = minimumCharge;
+	    	            }
+
+	    	            waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+//	    	    	    PI-20289 Metered Breakdown penalty enable and working new logic
+
 
 	            } else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());
@@ -441,8 +499,10 @@ public class EstimationService {
 				return waterConnection.getPipeSize();
 		} else if (waterConnection.getConnectionType().equals(WSCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(WSCalculationConstant.plotBasedConst)) {
-			if (property.getLandArea() != null && property.getLandArea() > 0)
-				return property.getLandArea();
+				return  (property.getLandArea() != null && property.getLandArea() > 0)
+						? property.getLandArea()
+						: (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0)
+						? property.getSuperBuiltUpArea().doubleValue() : 0.0 ;
 		}
 		return 0.0;
 	}
@@ -582,13 +642,14 @@ public class EstimationService {
 		if (feeObj.get(WSCalculationConstant.WS_SECURITY_CHARGE_CONST) != null) {
 
 			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
-
-			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+				        ? BigDecimal.ZERO
+				        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
+			
+			if ((connection_plotSize == null || connection_plotSize.compareTo(BigDecimal.ZERO) == 0 )|| connection_propertyType == null || connection_propertyType.equals(""))
 				connection_propertyType = "DEFAULT"; // default securityCharge to be applied from mdms
 			else if (connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL"))
 				connection_propertyType = "DOMESTIC";
@@ -649,11 +710,11 @@ public class EstimationService {
 		if (feeObj.get(WSCalculationConstant.WS_CONNECTION_FEE_CONST) != null) {
 
 			BigDecimal connection_plotSize;
-			if (property.getLandArea() == null || property.getLandArea().equals("")) // in case of shared proprties
-																						// landArea may not be present
-				connection_plotSize = null;
-			else
-				connection_plotSize = new BigDecimal(property.getLandArea());
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+			        ? BigDecimal.ZERO
+			        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
 
 			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
 				connection_propertyType = "DEFAULT"; // default connectionFee to be applied from mdms
@@ -750,7 +811,7 @@ public class EstimationService {
 		Object categoryObj = additionalDetails.get(WSCalculationConstant.connectionCategory);
 		String category = categoryObj != null ? categoryObj.toString().toUpperCase() : null;
 
-		if ("REGULARIZED".equals(category) || "LEGACY".equals(category)) {
+		if ("REGULARIZED".equals(category) || "LEGACY".equals(category)|| "DISCHARGE_CONNECTION".equals(category)) {
 //		    if (otherCharges.compareTo(BigDecimal.ZERO) != 0) {
 			otherCharges = (otherCharges == null) ? BigDecimal.ZERO : otherCharges;
 		        estimates.add(TaxHeadEstimate.builder()

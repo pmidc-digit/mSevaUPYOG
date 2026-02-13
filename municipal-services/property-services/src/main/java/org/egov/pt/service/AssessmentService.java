@@ -2,11 +2,7 @@ package org.egov.pt.service;
 
 import static org.egov.pt.util.PTConstants.ASSESSMENT_BUSINESSSERVICE;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pt.config.PropertyConfiguration;
@@ -88,9 +84,11 @@ public class AssessmentService {
 		else {
 			calculationService.calculateTax(request, property);
 		}
+
 		producer.push(props.getCreateAssessmentTopic(), request);
-		
-		producer.push(props.getGisassessmentTopic(), request);
+		String key = property.getPropertyId();
+		producer.push(props.getCreateAssessmentTopic(), key, request);
+
 
 		return request.getAssessment();
 	}
@@ -139,7 +137,8 @@ public class AssessmentService {
 			if(assessment.getWorkflow().getState().getState().equalsIgnoreCase(config.getDemandTriggerState()))
 				calculationService.calculateTax(request, property);
 
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 
 
 			/*
@@ -161,7 +160,8 @@ public class AssessmentService {
 		}
 		else if(!config.getIsAssessmentWorkflowEnabled()){
 			calculationService.calculateTax(request, property);
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 		}
 		return request.getAssessment();
 	}
@@ -203,7 +203,8 @@ public class AssessmentService {
 			if(assessment.getWorkflow().getState().getState().equalsIgnoreCase(config.getDemandTriggerState()))
 				calculationService.calculateTax(request, property);
 
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 
 
 			/*
@@ -225,7 +226,8 @@ public class AssessmentService {
 		}
 		else if(!config.getIsAssessmentWorkflowEnabled()){
 			calculationService.calculateTaxForCancel(request, property);
-			producer.push(props.getUpdateAssessmentTopic(), request);
+			String key = property.getPropertyId();
+			producer.push(props.getUpdateAssessmentTopic(), key, request);
 		}
 		return request.getAssessment();
 	}
@@ -242,6 +244,17 @@ public class AssessmentService {
 		if(criteria.getOffset()==null)
 			criteria.setOffset(config.getDefaultOffset());
 		AssessmentSearchCriteria assessmentSearchCriteria = new AssessmentSearchCriteria();
+		
+		// Copy all criteria fields to the new search criteria
+		assessmentSearchCriteria.setTenantId(criteria.getTenantId());
+		assessmentSearchCriteria.setFinancialYear(criteria.getFinancialYear());
+		assessmentSearchCriteria.setStatus(criteria.getStatus());
+		assessmentSearchCriteria.setFromDate(criteria.getFromDate());
+		assessmentSearchCriteria.setToDate(criteria.getToDate());
+		assessmentSearchCriteria.setOffset(criteria.getOffset());
+		assessmentSearchCriteria.setLimit(criteria.getLimit());
+        assessmentSearchCriteria.setPlainSearchOffset(criteria.getPlainSearchOffset());
+		
 		if (criteria.getIds() != null || criteria.getPropertyIds() != null || criteria.getAssessmentNumbers() != null) {
 			if (criteria.getIds() != null)
 				assessmentSearchCriteria.setIds(criteria.getIds());
@@ -251,12 +264,12 @@ public class AssessmentService {
 				assessmentSearchCriteria.setAssessmentNumbers(criteria.getAssessmentNumbers());
 
 		} else {
-			List<String> assessmentNumbers = repository.fetchAssessmentNumbers(criteria);
+            List<String> assessmentNumbers = repository.fetchAssessmentNumbers(criteria);
 			if (assessmentNumbers.isEmpty())
 				return Collections.emptyList();
 			assessmentSearchCriteria.setAssessmentNumbers(new HashSet<>(assessmentNumbers));
 		}
-		assessmentSearchCriteria.setLimit(criteria.getLimit());
+		
 		return repository.getAssessmentPlainSearch(assessmentSearchCriteria);
 	}
 

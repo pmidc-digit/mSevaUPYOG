@@ -20,7 +20,7 @@ import {
   MultiLink,
   CheckBox
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 
@@ -34,6 +34,7 @@ import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
 import { convertToDDMMYYYY } from "../../../utils/index";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -95,12 +96,16 @@ const CLUApplicationDetails = () => {
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
+  const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
+      documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
+  } : []);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
   let user = Digit.UserService.getUser();
-  const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS","INSPECTION_REPORT_PENDING"]
+  const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS","INSPECTION_REPORT_PENDING"];
+  const disableSiteInspectionImage = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS"];
 
   //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
   //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
@@ -133,21 +138,36 @@ const CLUApplicationDetails = () => {
       };
 
       setDisplayData(finalDisplayData);
+
+      const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
+
+      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
     }
   }, [applicationDetails?.Clu]);
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "clu",
+      businessService: "CLU.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+  const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY2",
       consumerCodes: id,
       isEmployee: false,
     },
     { enabled: id ? true : false }
   );
 
-  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
-
+  console.log('businessServiceCode', businessServiceCode)
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -155,6 +175,17 @@ const CLUApplicationDetails = () => {
   });
 
   console.log('workflowDetails', workflowDetails)
+
+  const geoLocations = useMemo(() => {
+    if (siteImages?.documents && siteImages?.documents.length > 0) {
+      return siteImages?.documents?.map((img) => {
+        return {
+          latitude: img?.latitude || "",
+          longitude: img?.longitude || "",
+        }
+      })
+    }
+  }, [siteImages]);
 
   let approveComments = []
   let approvalDate ,approvalTime= ""
@@ -169,7 +200,7 @@ const CLUApplicationDetails = () => {
  // console.log("Approve Comments:", approveComments);
 
 
-  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
+  // const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
   
   const handleDownloadPdf = async () => {
   try {
@@ -198,9 +229,13 @@ const CLUApplicationDetails = () => {
       setLoading(true);
         const application = applicationDetails?.Clu;
         const approvecomments = approveComments?.[0];
-        const finalComment = approvecomments
-      ? `The above approval is subjected to the following conditions: ${approvecomments}`
-      : "";
+        let conditionText = "";
+      if (approvecomments?.includes("[#?..**]")) {
+        conditionText = approvecomments.split("[#?..**]")[1] || "";
+      }
+       const finalComment = conditionText
+        ? `The above approval is subjected to the following conditions: ${conditionText}`
+        : "";
       console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");
@@ -222,17 +257,23 @@ const CLUApplicationDetails = () => {
   if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED") {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"clu-sanctionletter" }),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-sanctionletter" }),
       });
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
     });
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
       dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"clu-receipt" }),
+        label: t("CLU_FEE_RECEIPT_1"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey:"clu-receipt" }),
+      });
+    }
+    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_2"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-receiptsecond" }),
       });
     }
   }
@@ -381,16 +422,16 @@ const CLUApplicationDetails = () => {
   console.log("displayData==>", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  console.log("coordinates==>", coordinates);
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  //console.log("coordinates==>", coordinates);
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
-  console.log("sitePhotoGrahphs==>", sitePhotographs);
-  console.log("remainingDocs==>", remainingDocs);
+  //console.log("sitePhotoGrahphs==>", sitePhotographs);
+  //console.log("remainingDocs==>", remainingDocs);
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-  console.log("combinerOwnersName", combinedOwnersName);
+  //console.log("combinerOwnersName", combinedOwnersName);
 
   if (isLoading) {
     return <Loader />;
@@ -411,14 +452,21 @@ const CLUApplicationDetails = () => {
         )}
       </div>
 
+      <Card>
+      <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+      <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      </Card>
 
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+      <Card>
+        <StatusTable>
+          <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
+        </StatusTable>
+      </Card>
    
 
       {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
       <React.Fragment>
-   
+         <Card>
           <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
@@ -429,16 +477,17 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
               <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
               <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
               </StatusTable>
             </div>
-   
+         </Card>
         </React.Fragment>
       ))}
 
       {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
-       
+              <Card>
               <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
@@ -450,11 +499,11 @@ const CLUApplicationDetails = () => {
                   <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
-        
+              </Card>
           </React.Fragment>
        ))}
 
-  
+        <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -462,45 +511,34 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
               {detail?.localityAreaType?.code === "SCHEME_AREA" && (
-                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "APPROVED_COLONY" && (
-                <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={detail?.localityApprovedColonyName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "NON_SCHEME" && (
-                <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={detail?.localityNonSchemeType?.name || "N/A"} />
-              )}
-
-              <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={detail?.localityNoticeIssued?.code || "N/A"} />
-
-              {detail?.localityNoticeIssued?.code === "YES" && (
-                <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
-              )}
-
-              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
                 <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
               )}
 
-              <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
+              )}
+
             </StatusTable>
           </div>
         ))}
+        </Card>
    
 
-   
+        <Card>
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-
-              <Row label={t("BPA_PLOT_AREA_LABEL")} text={detail?.plotArea || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
               <Row label={t("BPA_CORE_AREA_LABEL")} text={detail?.coreArea?.code || "N/A"} />
 
               <Row label={t("BPA_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("BPA_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("BPA_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+
               <Row label={t("BPA_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("BPA_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("BPA_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -511,14 +549,12 @@ const CLUApplicationDetails = () => {
               <Row label={t("BPA_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
 
               <Row label={t("BPA_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
-              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
 
               <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
               <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
               <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
-              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
+              {/* <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} /> */}
               <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={detail?.proposedRoadWidthAfterWidening || "N/A"} />
 
               <Row label={t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")} text={detail?.appliedCluCategory?.name || "N/A"} />
@@ -532,9 +568,10 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+        </Card>
     
 
-    
+        <Card>
         <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -543,6 +580,7 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
+        </Card>
     
 
       {/* <Card>
@@ -560,24 +598,41 @@ const CLUApplicationDetails = () => {
         ))}
       </Card> */}
 
-    
+      <Card>
       <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
       <StatusTable>
          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
       </StatusTable>
+      </Card>
+
+      {
+        applicationDetails?.Clu?.[0]?.applicationStatus && !disableSiteInspectionImage?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && siteImages?.documents?.length > 0 &&
+        <Card>
+          <CardSubHeader>{t("BPA_FIELD_INSPECTION_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+          <StatusTable>
+          <CLUSitePhotographs documents={siteImages.documents} />
+          </StatusTable>
+          {   geoLocations?.length > 0 &&
+              <React.Fragment>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                <CustomLocationSearch position={geoLocations}/>
+              </React.Fragment>
+          }
+        </Card>
+      }
     
 
-    
+        <Card>
         <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
         <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
-      
+        </Card>
 
-    
+        <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
-      
+        </Card>
 
-      
+        <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetails
@@ -589,6 +644,7 @@ const CLUApplicationDetails = () => {
             feeType="PAY1"
           />
         )}
+        </Card>
     
 
       {applicationDetails?.Clu?.[0]?.applicationStatus && !disableFeeTable?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && 
@@ -605,8 +661,8 @@ const CLUApplicationDetails = () => {
             feeType="PAY2"
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable= "true"
-
+            disable={true}
+            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
           />
         )}
       </Card>

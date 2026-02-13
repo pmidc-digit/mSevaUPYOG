@@ -17,7 +17,7 @@ const assetsProxy = createProxyMiddleware({
 const bathindaProxy = createProxyMiddleware({
   target: BATHINDA_API_URL,
   changeOrigin: true,
-})
+});
 
 module.exports = function (app) {
   [
@@ -120,9 +120,10 @@ module.exports = function (app) {
     "/clu-calculator",
     "/layout-calculator",
     "/gc-services",
+    "/gc-calculator",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
-   ["/api/Property/", "/api/Property/GetPropertyDetail", "/api/Authenticate", "/api/Authenticate/GetToken"].forEach((location) =>
+  ["/api/Property/", "/api/Property/GetPropertyDetail", "/api/Authenticate", "/api/Authenticate/GetToken"].forEach((location) =>
     app.use(location, bathindaProxy)
   );
 };

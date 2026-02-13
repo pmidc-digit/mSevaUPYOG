@@ -6,6 +6,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
+import { CustomLoader } from "./CustomLoader";
 
 const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast }) => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -44,7 +45,12 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
         onSelect(config.key, data, true, true);
     };
 
-    if (isSubmitBtnDisable) return <Loader />;
+    // if (isSubmitBtnDisable) return <Loader />;
+    if (isSubmitBtnDisable) {
+        return (
+            <CustomLoader message={"EDCR_SCRUTINY_LOADING_MESSAGE"} />
+        );
+    }
 
     return (
         <FormStep

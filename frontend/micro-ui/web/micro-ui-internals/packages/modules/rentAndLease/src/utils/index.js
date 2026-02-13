@@ -199,7 +199,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
-        value: application?.additionalDetails?.address || "NA",
+        value: application?.additionalDetails?.propertyDetails?.[0]?.address || "NA",
       },
       {
         title: t("Allotment Type"),
@@ -243,18 +243,60 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
         : []),
     ],
   });
-  const docDetails = application?.Document?.map((doc, index) => ({
-    title: t(`${doc.documentType}`) || "NA",
-    value: " ",
-    link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
-  }));
+
+  if (application?.additionalDetails?.applicationType === "Legacy") {
+    details.push({
+      title: t("RAL_ARREAR_DETAILS"),
+      values: [
+        {
+          title: t("Arrears"),
+          value: application?.additionalDetails?.arrear || "NA",
+        },
+        {
+          title: t("RAL_START_DATE"),
+          value: convertEpochToDate(application?.additionalDetails?.arrearStartDate) || "NA",
+        },
+        {
+          title: t("RAL_END_DATE"),
+          value: convertEpochToDate(application?.additionalDetails?.arrearEndDate) || "NA",
+        },
+        {
+          title: t("Reason"),
+          value: application?.additionalDetails?.arrearReason?.name || "NA",
+        },
+        {
+          title: t("Remarks"),
+          value: application?.additionalDetails?.remarks || "NA",
+        },
+      ],
+    });
+  }
+
+  const standardDocs =
+    application?.Document?.map((doc, index) => ({
+      title: t(`${doc.documentType}`) || "NA",
+      value: " ",
+      // link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+    })) || [];
+
+  const arrearDoc = application?.additionalDetails?.arrearDoc
+    ? [
+        {
+          title: t("Arrear Doc"),
+          value: " ",
+          // link: Digit.Utils.getFileUrl(application.additionalDetails.arrearDoc),
+        },
+      ]
+    : [];
+
+  const docDetails = [...standardDocs, ...arrearDoc];
 
   details.push({
     title: t("BPA_APPLICATION_DOCUMENTS"),
     values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
   });
 
-  const imageURL = application?.additionalDetails?.propertyImage;
+  // const imageURL = application?.additionalDetails?.propertyDetails?.[0]?.propertyImage;
   return {
     t: t,
     tenantId: tenantInfo?.code,
@@ -264,6 +306,6 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     heading: t("Allotment letter for Rent and Lease Services"),
     applicationNumber: application?.applicationNumber || "NA",
     details,
-    imageURL,
+    // imageURL,
   };
 };

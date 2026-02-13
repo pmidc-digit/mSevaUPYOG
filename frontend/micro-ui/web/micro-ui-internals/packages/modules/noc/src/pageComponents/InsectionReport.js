@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader, CardSubHeader, TextArea  } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -14,8 +14,9 @@ const createUnitDetails = () => ({
     key: Date.now(),
 });
 
-const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus }) => {
+const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus, InspectionReportVerifier }) => {
     const { t } = useTranslation();
+    console.log('InspectionReportVerifier here', InspectionReportVerifier)
     const { pathname } = useLocation();
     const fieldInspectionFieldReports = fiReport ? fiReport : JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"));
     const [FieldReports, setFieldReports] = useState(fieldInspectionFieldReports?.length > 0 ? fieldInspectionFieldReports : [createUnitDetails()]);
@@ -46,7 +47,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         setFieldReports((prev) => prev.filter((o) => o.key != unit.key));
     };
 
-    useEffect(() => {
+    useEffect(() => {        
         const data = FieldReports.map((e) => {
             return e;
         });
@@ -59,6 +60,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     }, [previousLicenseDetails]);
 
     useEffect(() => {
+                console.log("useffect 2INSPECTION_REPORT_PENDING");
+
         let ques = [];
         let documentlist = [];
         bpaDocs && bpaDocs.BPA.CheckList.map((ob) => {
@@ -107,7 +110,8 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         props,
         stateId,
         fiReport,
-        applicationStatus
+        applicationStatus,
+        InspectionReportVerifier
     };
 
     console.log("FieldReports", FieldReports)
@@ -168,7 +172,8 @@ const InspectionReportForm = (_props) => {
         props,
         stateId,
         fiReport,
-        applicationStatus
+        applicationStatus,
+        InspectionReportVerifier
     } = _props;
 
     const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
@@ -266,14 +271,17 @@ const InspectionReportForm = (_props) => {
         trigger();
     }, []);
 
+
     useEffect(() => {
+                console.log("useffect 3INSPECTION_REPORT_PENDING");
+
         const keys = Object.keys(formValue);
         const part = {};
         keys.forEach((key) => (part[key] = unit[key]));
 
         let _ownerType = isIndividualTypeOwner ? {} : { ownerType: { code: "NONE" } };
-        let questionLength = questionList ? { questionLength: questionList.length } : { questionLength: 0 };
-        let Ques = questionList ? { questionList: questionList } : { questionList: [] };
+        let questionLength = extendedQuestions ? { questionLength: extendedQuestions.length } : { questionLength: 0 };
+        let Ques = extendedQuestions ? { questionList: extendedQuestions } : { questionList: [] };
 
         if (!_.isEqual(formValue, part)) {
             Object.keys(formValue).map(data => {
@@ -308,18 +316,33 @@ const InspectionReportForm = (_props) => {
     }
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+    
+    const extendedQuestions = [ ...(questionList || []), { question: t("BPA_ADDITIONAL_REMARKS"), isAdditional: true } ];
+    
     return (
-        <React.Fragment>
-            {/* <div>          */}
-                    {allFieldReport?.length > 1 ? (
-                        <LinkButton
-                            label={<DeleteIcon style={{ float: "right", position: "relative", bottom: "-6px" }} fill={!(allFieldReport.length == 1) ? "#494848" : "#FAFAFA"} />}
-                            style={{ width: "100px", display: "inline", background: "black" }}
-                            onClick={(e) => removeUnit(unit)}
-                        />
-                    ) : null}
-                    <CardSectionHeader>{allFieldReport?.length > 1 ? `${t("BPA_FI_REPORT")}-${index + 1}` : `${t("BPA_FI_REPORT")}`}</CardSectionHeader>
-                    {/* <LabelFieldPair style={{ width: "100%" }}>
+      <React.Fragment>
+        {/* <div>          */}
+        {allFieldReport?.length > 1 ? (
+          <LinkButton
+            label={
+              <DeleteIcon
+                style={{ float: "right", position: "relative", bottom: "-6px" }}
+                fill={!(allFieldReport.length == 1) ? "#494848" : "#FAFAFA"}
+              />
+            }
+            style={{ width: "100px", display: "inline", background: "black" }}
+            onClick={(e) => removeUnit(unit)}
+          />
+        ) : null}
+        {/* <CardSubHeader>
+          {allFieldReport?.length > 1
+            ? `${t("BPA_FI_REPORT")}-${index + 1} - ${
+                InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : " "
+              }`
+            : `${t("BPA_FI_REPORT")} - ${InspectionReportVerifier ? `Verified by ${InspectionReportVerifier}` : " "}`}
+        </CardSubHeader> */}
+
+        {/* <LabelFieldPair style={{ width: "100%" }}>
                         <CardLabel style={{ marginTop: "0px", width: "100%" }} className="card-label-smaller">{`${t("BPA_FI_DATE_LABEL")} * `}</CardLabel>
                         <div className="field" style={{ width: "100%" }}>
                             <Controller
@@ -355,10 +378,10 @@ const InspectionReportForm = (_props) => {
                             />
                         </div>
                     </LabelFieldPair> */}
-                    {/* <CardSectionHeader>{t("BPA_CHECK_LIST_DETAILS")}</CardSectionHeader> */}
-                    {/* {questionList && questionList.map((ob, ind) => (
+        {/* <CardSectionHeader>{t("BPA_CHECK_LIST_DETAILS")}</CardSectionHeader> */}
+        {/* {questionList && questionList.map((ob, ind) => (
                         <div key={ind}> */}
-                            {/* <LabelFieldPair >
+        {/* <LabelFieldPair >
                                 <CardLabel  className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
                                 <div className="field" >
                                     <Controller
@@ -403,7 +426,7 @@ const InspectionReportForm = (_props) => {
                                     />
                                 </div>
                             </LabelFieldPair> */}
-                            {/* <CardLabel className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
+        {/* <CardLabel className="card-label-smaller">{`${t(ob.question)}`}</CardLabel>
                             <Controller
                                 control={control}
                                 name={`Remarks_${ind}`}
@@ -420,44 +443,70 @@ const InspectionReportForm = (_props) => {
                                 )}
                             />
                         </div>
-                    ))} */}                
-                    <div className="bpa-table-container">
-                        <table className="customTable table-border-style">
-                            <thead>
-                                <tr>
-                                    <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
-                                    <th>{t("BPA_REMARKS")}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {questionList && questionList.map((ob, ind) => (
-                                    <tr key={ind}>
-                                        <td>{t(ob?.question)|| t("CS_NA")}</td>
-                                        <td>
-                                            <Controller
-                                                control={control}
-                                                name={`Remarks_${ind}`}
-                                                defaultValue={unit[`Remarks_${ind}`]}
-                                                rules={applicationStatus === "INSPECTION_REPORT_PENDING" ? { required: t("REQUIRED_FIELD") } : {}}
-                                                render={(props) => (
-                                                    <TextInput
-                                                        value={props.value}
-                                                        onChange={props.onChange}
-                                                        placeholder={t("BPA_ENTER_REMARKS")}
-                                                        onBlur={props.onBlur}
-                                                        disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
-                                                    />
-                                                )}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader> */}
-                    {/* <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} /> */}
-                    {/* <Table
+                    ))} */}
+        <div className="bpa-table-container">
+          <table className="customTable table-border-style">
+            <thead>
+              <tr>
+                <th>{t("SR_NO")}</th>
+                <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
+                <th>{t("BPA_REMARKS")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {extendedQuestions &&
+                extendedQuestions.map((ob, ind) => (
+                  <tr key={ind}>
+                    <td>{ind + 1}</td> {/* Serial number column */}
+                    <td>{t(ob?.question) || t("CS_NA")}</td>
+                    <td>
+                      <Controller
+                        control={control}
+                        name={`Remarks_${ind}`}
+                        defaultValue={unit[`Remarks_${ind}`] || ""}
+                        rules={
+                          ob.isAdditional
+                            ? {
+                                required: t("REQUIRED_FIELD"),
+                                minLength: {
+                                  value: 20,
+                                  message: t("MIN_20_CHARACTERS_REQUIRED"),
+                                },
+                              }
+                            : applicationStatus === "INSPECTION_REPORT_PENDING"
+                            ? { required: t("REQUIRED_FIELD") }
+                            : {}
+                        }
+                        render={(props) =>
+                          ob.isAdditional ? (
+                            <TextArea
+                              value={props.value}
+                              onChange={(e) => props.onChange(e.target.value)}
+                              onBlur={props.onBlur}
+                              t={t}
+                              disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
+                            />
+                          ) : (
+                            <TextArea
+                              value={props.value}
+                              onChange={(e) => props.onChange(e.target.value)}
+                              placeholder={t("BPA_ENTER_REMARKS")}
+                              onBlur={props.onBlur}
+                              disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
+                            />
+                          )
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader> */}
+        {/* <OBPSDocumentsEmp t={t} config={config} onSelect={onSelect} userType={userType} formData={formData} setError={setError} clearErrors={clearErrors} formState={formState} index={index} setFieldReports={setFieldReports} documentList={documentList} /> */}
+        {/* <Table
                         className="customTable table-border-style"
                         t={t}
                         data={documentData}
@@ -468,8 +517,8 @@ const InspectionReportForm = (_props) => {
                         manualPagination={false}
                         isPaginationRequired={false}
                     /> */}
-            {/* </div> */}
-         </React.Fragment>
+        {/* </div> */}
+      </React.Fragment>
     );
 };
 

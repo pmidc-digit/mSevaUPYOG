@@ -28,7 +28,9 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
     setValue,
     trigger,
     getValues,
-  } = useForm();
+  } = useForm({
+    defaultValues: formData?.NDCReason || {},
+  });
   const { t } = useTranslation();
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   // const firstTimeRef = useRef(true);
@@ -68,9 +70,8 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
     return <Loader />;
   }
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-    <div style={{ paddingBottom: "16px" }}>
+    <div>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_NEW_NDC_APPLICATION_NDC_REASON")} * `}</CardLabel>
         <Controller
@@ -94,7 +95,39 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
           )}
         />
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
+      <CardLabelError className="ndc-card-label-error">{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
+      {/* Reason */}
+      {watch("NDCReason")?.code == "OTHERS" && (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Reason")}`}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name={"reason"}
+              defaultValue={ndcReason?.reason || ""}
+              render={(props) => (
+                <TextInput
+                  value={props.value}
+                  onChange={(e) => {
+                    console.log("config.key", config.key);
+                    console.log("formData", formData);
+                    // onSelect("NDCValue", { checkReason: "tese" });
+
+                    onSelect("NDCReason", { ...formData?.NDCReason, reason: e.target.value }, config);
+
+                    // onSelect("reason", e.target.value, config);
+                    // setPropertyDetails((prev) => ({ ...prev, reason: e.target.value }));
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+      )}
     </div>
   );
 }

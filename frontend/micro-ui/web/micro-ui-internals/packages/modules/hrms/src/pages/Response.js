@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Card, Banner, CardText, SubmitBar, Loader, LinkButton, ActionBar } from "@mseva/digit-ui-react-components";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { resetEmployeeForm } from "../redux/actions/employeeFormActions";
 
 const GetMessage = (type, action, isSuccess, isEmployee, t) => {
   return t(`EMPLOYEE_RESPONSE_${action ? action : "CREATE"}_${type}${isSuccess ? "" : "_ERROR"}`);
@@ -31,6 +33,7 @@ const BannerPicker = (props) => {
 
 const Response = (props) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const { state } = props.location;
@@ -38,6 +41,11 @@ const Response = (props) => {
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
   const [errorInfo, setErrorInfo, clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
   const mutation = state.key === "UPDATE" ? Digit.Hooks.hrms.useHRMSUpdate(tenantId) : Digit.Hooks.hrms.useHRMSCreate(tenantId);
+
+  // Clear form Redux when Response page mounts (after successful submission)
+  useEffect(() => {
+    dispatch(resetEmployeeForm());
+  }, [dispatch]);
 
   const onError = (error, variables) => {
     setErrorInfo(error?.response?.data?.Errors[0]?.code || 'ERROR');

@@ -165,6 +165,7 @@ const CLUApplicantDetails = (_props) => {
     gender: null,
     dateOfBirth: "",
     address: "",
+    ownershipInPct: ""
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -190,6 +191,7 @@ const CLUApplicantDetails = (_props) => {
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
+            ownershipInPct: o.ownershipInPct || ""
           }))
         : [defaultOwner()];
 
@@ -277,7 +279,7 @@ const getOwnerDetails = async (idx) => {
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_APPLICANT_DETAILS")}</CardSectionHeader>
-      <div>
+      <div style={{ marginTop: "20px" }}>
         {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px" }}>
             {" "}
@@ -298,9 +300,10 @@ const getOwnerDetails = async (idx) => {
               {!isEdit && fields.length > 1 && `❌`}
             </div>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
-              <div style={{ display: "flex" }} className="field">
+              <div className="field">
+              <div style={{ display: "flex", position: "relative", alignItems: "center", width: "100%" }}>
                 <Controller
                   control={control}
                   name={`owners[${index}].mobileNumber`}
@@ -322,18 +325,20 @@ const getOwnerDetails = async (idx) => {
                       }}
                       t={t}
                       disabled={isEdit}
+                      style={{ width: "100%", paddingRight: "40px" }}
                     />
                   )}
                 />
-                <div style={{ marginTop: "17px" }} className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
+                <div className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
                   {" "}
                   <SearchIcon />{" "}
                 </div>
               </div>
+              <p style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message}</p>
+              </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message || ""}</CardLabelError>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
@@ -360,11 +365,11 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <p style={errorStyle}>{errors?.owners?.[index]?.ownerOrFirmName?.message}</p>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.ownerOrFirmName?.message || ""}</CardLabelError>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
@@ -391,11 +396,11 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                <p style={errorStyle}>{errors?.owners?.[index]?.emailId?.message}</p>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.emailId?.message || ""}</CardLabelError>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
               <div className="field">
                 <Controller
@@ -425,11 +430,11 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                 <p style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message}</p>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message || ""}</CardLabelError>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
@@ -459,11 +464,11 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                 <p style={errorStyle}>{errors?.owners?.[index]?.address?.message}</p>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.address?.message || ""}</CardLabelError>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
@@ -498,11 +503,11 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+               <p style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message}</p>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message || ""}</CardLabelError>
 
-            <LabelFieldPair>
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
@@ -524,9 +529,45 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
+                 <p style={errorStyle}>{errors?.owners?.[index]?.gender?.message}</p>
               </div>
             </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{errors?.owners?.[index]?.gender?.message || ""}</CardLabelError>
+
+            <LabelFieldPair style={{ marginBottom: "20px" }}>
+              <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={`owners[${index}].ownershipInPct`}
+                  rules={{
+                  required: t("REQUIRED_FIELD"),
+                  validate: (value) => {
+                    if (!value) return true;
+                    const regex = /^\d+(\.\d{1,2})?$/;
+                    const isValidFormat = regex.test(value);
+                    const isWithinRange = parseFloat(value) >0 && parseFloat(value) <= 100;
+                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                    if (!isWithinRange) return t("VALUE_SHOULD_BE_GREATER_THAN_ZERO_AND_LESS_THAN_OR_EQUAL_TO_100");
+                    return true;
+                   },
+                  }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        props.onBlur(e);
+                      }}
+                      t={t}
+                      disabled={isEdit}
+                    />
+                  )}
+                />
+                <p style={errorStyle}>{errors?.owners?.[index]?.ownershipInPct?.message}</p>
+              </div>
+            </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
               <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>

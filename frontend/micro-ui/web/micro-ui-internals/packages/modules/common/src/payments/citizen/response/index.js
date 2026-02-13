@@ -719,6 +719,29 @@ const WrapPaymentComponent = (props) => {
       setPrinting(false);
     }
   };
+
+  const printRLReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: consumerCode } });
+      let application = applicationDetails;
+      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "rentandlease-receipt"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
   let bannerText;
   if (workflw) {
     bannerText = `CITIZEN_SUCCESS_UC_PAYMENT_MESSAGE`;
@@ -1217,6 +1240,29 @@ const WrapPaymentComponent = (props) => {
             )}
           </div>
           {business_service == "adv-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+
+      {business_service == "rl-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
+          <div style={IconWrapperStyle} onClick={printing ? undefined : printRLReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
+          </div>
+          {business_service == "rl-services" && (
             <Link to={`/digit-ui/citizen`}>
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
             </Link>

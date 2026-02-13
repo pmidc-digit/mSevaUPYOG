@@ -220,7 +220,7 @@ public Object fetchDataFromMdms(RequestInfo requestInfo, String tenantId, String
 
 		} 
 		
-		else if ((propertyFromDb.getStatus().equals(Status.ACTIVE)|| propertyFromDb.getStatus().equals(Status.INACTIVE)) && isWfEnabled && !isnumberchange)
+		else if ((propertyFromDb.getStatus().equals(Status.ACTIVE)|| propertyFromDb.getStatus().equals(Status.INACTIVE) || propertyFromDb.getStatus().equals(Status.PENDINGWS)) && isWfEnabled && !isnumberchange)
 		{
 				enrichPropertyForNewWf(requestInfo, property, false);	
 		}

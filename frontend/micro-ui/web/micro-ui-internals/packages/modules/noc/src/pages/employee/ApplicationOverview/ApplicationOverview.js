@@ -42,6 +42,7 @@ import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
+import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -105,7 +106,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [approverComment , setApproverComment] = useState(null);
-
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
@@ -127,6 +129,14 @@ const NOCEmployeeApplicationOverview = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
+
+  const [showSanctionModal, setShowSanctionModal] = useState(false);
+const [sanctionPdfUrl, setSanctionPdfUrl] = useState(null);
+
+const closeSanctionModal = () => {
+  setShowSanctionModal(false);
+  setSanctionPdfUrl(null);
+};
 
   console.log("applicationDetails here==>", applicationDetails);
 
@@ -152,6 +162,7 @@ const NOCEmployeeApplicationOverview = () => {
 
  const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
+ console.log('searchChecklistData', searchChecklistData)
 
   useEffect(() => {
       if (eSignError) {
@@ -163,14 +174,6 @@ const NOCEmployeeApplicationOverview = () => {
       }
     }, [eSignError]);
 
-  useEffect(() => {
-    if (window.location.pathname.endsWith("/complete")) {
-      history.push(`/digit-ui/employee/noc/search/application-overview/${id}`);
-        console.log('useeffetc called complete')
-
-    }
-
-  }, [history, id]);
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -190,27 +193,27 @@ const NOCEmployeeApplicationOverview = () => {
     longitude: value?.longitude,
   })), [siteImages])
 
-  const documentsColumnsSiteImage = [
-    {
-      Header: t("BPA_SITES"),
-      accessor: "title",
-      Cell: ({ value }) => t(value) || t("CS_NA"),
-    },
-    {
-      Header: t(" "),
-      accessor: "fileStoreId",
-      Cell: ({ value }) => {
-        return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
-            label={t("View")}
-            onClick={() => routeToImage(value)}
-          />
-        ) : (
-          t("CS_NA")
-        )
-      },
-    }
-  ];
+  // const documentsColumnsSiteImage = [
+  //   {
+  //     Header: t("BPA_SITES"),
+  //     accessor: "title",
+  //     Cell: ({ value }) => t(value) || t("CS_NA"),
+  //   },
+  //   {
+  //     Header: t(" "),
+  //     accessor: "fileStoreId",
+  //     Cell: ({ value }) => {
+  //       return value ? (
+  //         <LinkButton style={{ float: "right", display: "inline" }}
+  //           label={t("View")}
+  //           onClick={() => routeToImage(value)}
+  //         />
+  //       ) : (
+  //         t("CS_NA")
+  //       )
+  //     },
+  //   }
+  // ];
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -323,16 +326,21 @@ const NOCEmployeeApplicationOverview = () => {
   try {
     setLoader(true);
 
-    // Get filestoreId from sanction letter function
-    const fileStoreId = await getSanctionLetterReceipt({ tenantId, payments : reciept_data?.Payments[0], EmpData });
+    const fileStoreId = await getSanctionLetterReceipt({
+      tenantId,
+      payments: reciept_data?.Payments[0],
+      EmpData,
+    });
 
     if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-    // Use printReciept to fetch the actual file URL
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+      fileStoreIds: fileStoreId,
+    });
 
-    // Open in new tab/popup
-    window.open(fileStore[fileStoreId], "_blank");
+    // Set PDF URL and open modal
+    setSanctionPdfUrl(fileStore[fileStoreId]);
+    setShowSanctionModal(true);
 
   } catch (error) {
     console.error("Sanction Letter popup error:", error);
@@ -341,6 +349,28 @@ const NOCEmployeeApplicationOverview = () => {
   }
 }
 
+
+const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const Property = applicationDetails?.Noc?.[0];
+      //console.log("tenants", tenants);
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , searchChecklistData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoader(false);
+    }
+  };
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
     try {
@@ -424,15 +454,19 @@ const NOCEmployeeApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-        onClick: printCertificateWithESign,
-        disabled: eSignLoading,
-      });
-    }
-  }
+  dowloadOptions.push({
+      label: t("Application Form"),
+      onClick: handleDownloadPdf,
+    });
+  // if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
+  //   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  //     dowloadOptions.push({
+  //       label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+  //       onClick: printCertificateWithESign,
+  //       disabled: eSignLoading,
+  //     });
+  //   }
+  // }
  useEffect(() => {
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
   const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -677,6 +711,40 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
 
+  const modalStyles = {
+    modal: {
+      width: "100%",
+      height: "100%",
+      top: "0",
+      position: "relative",
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    modalOverlay: {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100%",
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+    },
+    modalContent: {
+      backgroundColor: "#FFFFFF",
+      padding: "2rem",
+      borderRadius: "0.5rem",
+      maxWidth: "800px",
+      margin: "auto",
+      fontFamily: "Roboto, serif",
+      overflowX: "hidden",
+      textAlign: "justify",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+      maxHeight: "80vh",
+      overflowY: "auto",
+      lineHeight: "2",
+    }
+  };
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
     console.log("payloadData", payloadData);
@@ -984,16 +1052,36 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }
           />
         )}
-        {/* {dowloadOptions && dowloadOptions.length > 0 && (
+        {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-        )} */}
+        )}
       </div>
-
+      <Modal
+        isOpen={showSanctionModal}
+        onRequestClose={closeSanctionModal}
+        contentLabel="Sanction Letter"
+        style={{
+          modal: modalStyles.modal,
+          overlay: modalStyles.modalOverlay,
+          content: modalStyles.modalContent,
+        }}
+      >
+        <div style={{ height: "80vh" }}>
+          {sanctionPdfUrl ? (
+            <iframe src={sanctionPdfUrl} title="Sanction Letter" width="100%" height="100%" style={{ border: "none" }} />
+          ) : (
+            <p>Loading PDF...</p>
+          )}
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+          <SubmitBar label="Close" onSubmit={closeSanctionModal} />
+        </div>
+      </Modal>
       <NOCImageView
         ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
         ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
@@ -1143,15 +1231,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 
@@ -1197,12 +1284,12 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
         <Card>
           <CardSubHeader>
-              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${
-                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                  }`
-                : t("BPA_FI_REPORT")}
-            </CardSubHeader>
+            {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+              ? `${t("BPA_FI_REPORT")} - Verified by ${
+                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
+              : t("BPA_FI_REPORT")}
+          </CardSubHeader>
 
           <div id="fieldInspection"></div>
           <InspectionReport

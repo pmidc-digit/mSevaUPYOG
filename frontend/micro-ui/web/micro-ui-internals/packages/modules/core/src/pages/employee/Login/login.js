@@ -199,14 +199,14 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </div>
 
           <div className="employee-login-branding">
-            <h1 className="employee-upyog-title">UPYOG</h1>
-            <p className="employee-upyog-subtitle">Urban Governance Platform</p>
+            <h1 className="employee-upyog-title">{t("COMMON_UPYOG")}</h1>
+            <p className="employee-upyog-subtitle">{t("COMMON_URBAN_GOVERNANCE_PLATFORM")}</p>
           </div>
 
           <div className="employee-login-card">
             {isForgotPasswordView && (
               <button onClick={onBackToLogin} className="employee-back-button" type="button">
-                ← Back to Login
+                {t("BACK_TO_LOGIN")}
               </button>
             )}
 
@@ -236,10 +236,10 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
             ) : (
               <div className="employee-forgot-password-content">
                 <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px", color: "#0b0c0c" }}>
-                  Forgot Password?
+                 {t("FORGOT_PASSWORD_MESSAGE")}
                 </h2>
                 <p style={{ fontSize: "16px", color: "#686677", lineHeight: "1.5" }}>
-                  Please contact your system administrator to reset your password.
+                 {t("FORGOT_PASSWORD_INSTRUCTION")}
                 </p>
               </div>
             )}

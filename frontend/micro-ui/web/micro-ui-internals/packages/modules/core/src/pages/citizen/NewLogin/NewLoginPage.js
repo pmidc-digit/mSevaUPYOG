@@ -227,8 +227,8 @@ const NewLogin = ({ stateCode }) => {
             <div className="hero-icon-circle">
               <LoginIcon />
             </div>
-            <h1 className="hero-title">Welcome to UPYOG</h1>
-            <p className="hero-description">Your digital gateway to urban governance services. Access all municipal services in one place.</p>
+            <h1 className="hero-title">{t("CORE_COMMON_WELCOME")}</h1>
+            <p className="hero-description">{t("CORE_COMMON_WELCOME_DESCRIPTION")}</p>
             <div className="hero-features">
               <div className="feature-item">
                 <div className="feature-icon">
@@ -240,7 +240,7 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Multi-lingual</span>
+                <span className="feature-text">{t("CORE_COMMON_MULTILINGUAL")}</span>
               </div>
               <div className="feature-item">
                 <div className="feature-icon">
@@ -251,7 +251,7 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Location Based</span>
+                <span className="feature-text">{t("CORE_COMMON_LOCATION_BASED")}</span>
               </div>
               <div className="feature-item">
                 <div className="feature-icon">
@@ -262,7 +262,7 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Secure Login</span>
+                <span className="feature-text">{t("CORE_COMMON_SECURE_LOGIN")}</span>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ const NewLogin = ({ stateCode }) => {
           <div className="login-wrapper">
             <div className="login-form-header">
               <h2 className="login-title">{t("CORE_COMMON_LOGIN")}</h2>
-              <p className="login-subtitle">Enter your details to access your account</p>
+              <p className="login-subtitle">{t("CORE_COMMON_LOGIN_SUBTITLE")}</p>
             </div>
 
             <LanguageSelect onLanguageChange={setSelectedLanguage} />

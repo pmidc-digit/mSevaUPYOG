@@ -171,9 +171,9 @@ const NewRegistration = ({ stateCode }) => {
             <div className="hero-icon-circle">
               <LoginIcon />
             </div>
-            <h1 className="hero-title">Welcome to UPYOG</h1>
+            <h1 className="hero-title">{t("CORE_COMMON_WELCOME")}</h1>
             <p className="hero-description">
-              Your digital gateway to urban governance services. Access all municipal services in one place.
+              {t("CORE_COMMON_HERO_DESCRIPTION")}
             </p>
             <div className="hero-features">
               <div className="feature-item">
@@ -186,7 +186,7 @@ const NewRegistration = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Multi-lingual</span>
+                <span className="feature-text">{t("CORE_COMMON_MULTI_LINGUAL")}</span>
               </div>
               <div className="feature-item">
                 <div className="feature-icon">
@@ -197,7 +197,7 @@ const NewRegistration = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Location Based</span>
+                <span className="feature-text">{t("CORE_COMMON_LOCATION_BASED")}</span>
               </div>
               <div className="feature-item">
                 <div className="feature-icon">
@@ -208,7 +208,7 @@ const NewRegistration = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Secure Login</span>
+                <span className="feature-text">{t("CORE_COMMON_SECURE_LOGIN")}</span>
               </div>
             </div>
           </div>
@@ -219,7 +219,7 @@ const NewRegistration = ({ stateCode }) => {
           <div className="register-login-wrapper">
             <div className="login-form-header">
               <h2 className="login-title">{t("CS_COMMON_REGISTER")}</h2>
-              <p className="login-subtitle">Create your account to get started</p>
+              <p className="login-subtitle">{t("CS_COMMON_REGISTER_SUBTITLE")}</p>
             </div>
 
             <LanguageSelect onLanguageChange={setSelectedLanguage} />

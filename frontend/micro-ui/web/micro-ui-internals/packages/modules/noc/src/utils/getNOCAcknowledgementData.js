@@ -530,10 +530,11 @@ const getLatestCalculationDetails = (appData, t) => {
 
 
 
-export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, checklistData = null, isView = false) => {
+export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, isView = false, checklistData = null) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
+  console.log('isView', isView)
 
   let detailsArr = [],
     imageURL = "";

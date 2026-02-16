@@ -117,21 +117,19 @@ export const NOCFeeTable = ({
   ];
 
   const renderHistoryCell = (h, key, t) => {
-    // This is called per entry, so we only render the value part
-    // The labels are shown once in the header via a different approach
-    return null; // We'll use a custom history renderer instead
+    return null; 
   };
 
   const renderCustomHistory = () => {
     if (!feeHistory || Object.keys(feeHistory).length === 0) return null;
 
     const feeTypes = Object.keys(feeHistory);
-    // Find the maximum number of history entries across all fee types
+
     const maxHistoryLength = Math.max(...feeTypes.map(ft => feeHistory[ft]?.length || 0));
 
     return (
       <div className="custom-fix-fee-history-wrapper">
-        {/* Toggle Header */}
+
         <div 
           className="custom-fix-fee-history-toggle"
           onClick={() => setShowHistory(!showHistory)}
@@ -140,7 +138,6 @@ export const NOCFeeTable = ({
           <span className="custom-fix-fee-history-toggle-icon">{showHistory ? "▲" : "▼"}</span>
         </div>
 
-        {/* History Table - Visible when showHistory is true */}
         {showHistory && (
           <div className="custom-fix-fee-history-table-container">
             <table className="custom-fix-fee-history-table">
@@ -155,10 +152,10 @@ export const NOCFeeTable = ({
                 </tr>
               </thead>
               <tbody>
-                {/* Iterate through each history entry */}
+
                 {Array.from({ length: maxHistoryLength }).map((_, entryIndex) => (
                   <React.Fragment key={entryIndex}>
-                    {/* Fee Amount Row */}
+
                     <tr>
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_FEE2_LABEL")}</td>
                       {feeTypes.map((feeType) => (
@@ -167,7 +164,7 @@ export const NOCFeeTable = ({
                         </td>
                       ))}
                     </tr>
-                    {/* Remarks Row */}
+
                     <tr>
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_REMARK_LABEL")}</td>
                       {feeTypes.map((feeType) => (
@@ -176,7 +173,7 @@ export const NOCFeeTable = ({
                         </td>
                       ))}
                     </tr>
-                    {/* Updated By Row */}
+
                     <tr>
                       <td className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator" : "custom-fix-fee-history-table-cell-separator-last"}>{t("BPA_UPDATED_BY_LABEL")}</td>
                       {feeTypes.map((feeType) => (

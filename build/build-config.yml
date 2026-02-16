@@ -935,6 +935,6 @@ config:
     build:
       - work-dir: "core-services/egov-gisintegration"
         image-name: "egov-gisintegration"
-        dockerfile: "build/Dockerfile"
-      - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-gisintegration/db"
         image-name: "egov-gisintegration-db"

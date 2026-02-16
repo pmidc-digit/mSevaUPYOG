@@ -624,6 +624,39 @@ public class EstimationService {
 
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
 		BigDecimal formFee = BigDecimal.ZERO;
+		
+		 // ----- create estimates list -----
+	    List<TaxHeadEstimate> estimates = new ArrayList<>();
+
+	 // ========= NEW LOGIC FOR DISCONNECTION ===========
+	    String applicationType = criteria.getWaterConnection().getApplicationType();
+	    if ("DISCONNECT_WATER_CONNECTION".equalsIgnoreCase(applicationType)) {
+	    	log.info("Available Masters in masterData map: {}", masterData.keySet());
+
+	        JSONArray disConnMaster = (JSONArray) masterData
+	                .getOrDefault(WSCalculationConstant.WC_DISCONNECTION_MASTER, null);
+	        
+
+	        if (disConnMaster == null || disConnMaster.isEmpty())
+	            throw new CustomException("DISCONNECTION_FEE_NOT_FOUND",
+	                    "Disconnection Fee not found!");
+
+
+	        JSONObject disConnObj = mapper.convertValue(disConnMaster.get(0), JSONObject.class);
+
+	     // Use a different variable name
+	     Object disconnFeeObj = disConnObj.get("disconnectionFee");
+	     BigDecimal disconnectionFee = (disconnFeeObj != null) ? new BigDecimal(disconnFeeObj.toString()) : BigDecimal.ZERO;
+
+	     // ADD TAX HEAD
+	     estimates.add(TaxHeadEstimate.builder()
+	             .taxHeadCode(WSCalculationConstant.WS_DISCONNECTION_FEE)
+	             .estimateAmount(disconnectionFee.setScale(2, 2))
+	             .category(TaxHeadCategory.FEE)
+	             .build());
+
+	     return estimates; // stop further fee processing
+	    }
 
 		if (feeObj.get(WSCalculationConstant.FORM_FEE_CONST) != null) {
 			formFee = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.FORM_FEE_CONST).toString());
@@ -798,7 +831,6 @@ public class EstimationService {
 //				.add(roadPlotCharge).add(usageTypeCharge);
 		BigDecimal totalCharge = formFee.add(securityCharge).add(meterTestingFee).add(roadCuttingCharge);
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(WSCalculationConstant.HUNDRED));
-		List<TaxHeadEstimate> estimates = new ArrayList<>();
 		//
 		
 		/*

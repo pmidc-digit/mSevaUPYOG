@@ -36,6 +36,8 @@ public class WSCalculationConstant {
 
 	public static final String MDMS_FINANCIALYEAR = "FinancialYear";
 	public static final String MDMS_NO_FILTER_TAXPERIOD = "$.MdmsRes.BillingService.TaxPeriod.*";
+	
+	public static final String WS_DISCONNECTION_FEE = "WS_DISCONNECTION_FEE";
 	/*
 	 * Module names
 	 */
@@ -227,6 +229,8 @@ public class WSCalculationConstant {
 	public static final String WC_FEESLAB_MASTER = "FeeSlab";
 	
 	public static final String WC_ROADTYPE_MASTER = "RoadType";
+	
+	public static final String WC_DISCONNECTION_MASTER = "DisconnectionFee";
 	
 	public static final String SUCCESS = "Success";
 
@@ -448,6 +452,7 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 	public static final String MODIFY_WATER_CONNECTION = "MODIFY_WATER_CONNECTION";
 
 	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_WATER_CONNECTION";
+	
 
 	public static final String FAILURE = "Failure";
 	

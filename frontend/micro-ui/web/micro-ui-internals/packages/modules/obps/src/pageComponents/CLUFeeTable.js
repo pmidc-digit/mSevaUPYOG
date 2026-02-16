@@ -144,7 +144,7 @@ export const CLUFeeTable = ({
             <table className="custom-fix-fee-history-table">
               <thead>
                 <tr>
-                  <th className="custom-fix-fee-history-table-header">Details</th>
+                  <th className="custom-fix-fee-history-table-header">{t("BPA_FEE_HISTORY_DETAILS")}</th>
                   {feeTypes.map((feeType) => (
                     <th key={feeType} className="custom-fix-fee-history-table-header-fee">
                       {t(feeType)}
@@ -255,7 +255,7 @@ export const CLUFeeTable = ({
 
             {row?.taxHeadCode === "CLU_TOTAL" && (
               <div className="custom-fee-card-total-content">
-                <div className="custom-fee-card-total-label">Total Amount :</div>
+                <div className="custom-fee-card-total-label">{t("BPA_TOTAL_AMOUNT_LABEL")}</div>
                 <div className="custom-fee-card-total-value">
                   <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                 </div>

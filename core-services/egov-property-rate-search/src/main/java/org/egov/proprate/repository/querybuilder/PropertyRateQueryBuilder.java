@@ -84,7 +84,7 @@ public class PropertyRateQueryBuilder {
     	     "SELECT DISTINCT ON (p.propertyid) p.propertyid, p.tenantid, add.locality AS localityCode, " +
     	     "STRING_AGG(o.userid, ',') OVER (PARTITION BY p.propertyid) AS ownerUuid, " +
     	     "STRING_AGG(CAST(o.ownerShipPercentage AS TEXT), ',') OVER (PARTITION BY p.propertyid) AS ownerPercentages, " +
-    	     "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
+    	     "p.landarea,p.nooffloors, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
     	     "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
     	     "FROM eg_pt_property p " +
     	     "LEFT JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
@@ -98,7 +98,7 @@ public class PropertyRateQueryBuilder {
             "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, " +
             "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, r.rate," + // Added IDs here
             "dm.district_name, tm.tehsil_name, vm.village_name, " + 
-            "p.propertyid, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
+            "p.propertyid,p.nooffloors, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
             "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
             "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
             "FROM eg_pt_property p " +

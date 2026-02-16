@@ -93,7 +93,7 @@ const EmployeeApp = ({ path }) => {
   const CLUEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("CLUEmployeeApplicationDetails");
   const LayoutEmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("LayoutEmployeeApplicationDetails");
   const CLUResponse = Digit?.ComponentRegistryService?.getComponent("CLUResponse"); 
-
+  const CLUEsignResponse = Digit?.ComponentRegistryService?.getComponent("CLUEsignResponse"); 
 
   return (
     <Fragment>
@@ -121,6 +121,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />
         </Switch>
       </div>
     </Fragment>

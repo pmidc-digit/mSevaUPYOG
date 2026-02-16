@@ -348,7 +348,7 @@ const handleDownloadPdf = async () => {
       const ulbType = site?.ulbType;
       const ulbName = site?.ulbName?.city?.name || site?.ulbName;
 
-      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , searchChecklistData);
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , false, searchChecklistData);
       setTimeout(() => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);

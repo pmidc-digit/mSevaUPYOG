@@ -1,31 +1,15 @@
 package com.mseva.gisintegration.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Column;
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.Id;
-import java.util.UUID;
-
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 
 @Entity
-@Table(name = "property")
+@Table(name = "propertytax_backup") // You can change this to your preferred table name
 public class Property {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-        name = "UUID",
-        strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "uuid", updatable = false, nullable = false)
-    private UUID uuid;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "sno")
+    private Integer sno;
 
     private String tenantid;
 
@@ -37,6 +21,7 @@ public class Property {
 
     private String firmbusinessname;
 
+    @Column(columnDefinition = "TEXT")
     private String address;
 
     private String localitycode;
@@ -59,216 +44,68 @@ public class Property {
 
     private String receiptnumber;
 
-    private String amountpaid;
+    private String amoutpaid; // Named 'amoutpaid' to match your image typo exactly
 
     private String assessmentyear;
-
-    private String billamount;
-
-    private String service;
-
-    @Column(name = "createdtime", updatable = false)
-    private Long createdtime;
-
-    @Column(name = "lastmodifiedtime")
-    private Long lastmodifiedtime;
 
     public Property() {
     }
 
-    public Long getCreatedtime() {
-        return createdtime;
-    }
+    // Standard Getters and Setters
+    public Integer getSno() { return sno; }
+    public void setSno(Integer sno) { this.sno = sno; }
 
-    public void setCreatedtime(Long createdtime) {
-        this.createdtime = createdtime;
-    }
+    public String getTenantid() { return tenantid; }
+    public void setTenantid(String tenantid) { this.tenantid = tenantid; }
 
-    public Long getLastmodifiedtime() {
-        return lastmodifiedtime;
-    }
+    public String getPropertyid() { return propertyid; }
+    public void setPropertyid(String propertyid) { this.propertyid = propertyid; }
 
-    public void setLastmodifiedtime(Long lastmodifiedtime) {
-        this.lastmodifiedtime = lastmodifiedtime;
-    }
+    public String getSurveyid() { return surveyid; }
+    public void setSurveyid(String surveyid) { this.surveyid = surveyid; }
 
-    public String getBillamount() {
-        return billamount;
-    }
+    public String getOldpropertyid() { return oldpropertyid; }
+    public void setOldpropertyid(String oldpropertyid) { this.oldpropertyid = oldpropertyid; }
 
-    public void setBillamount(String billamount) {
-        this.billamount = billamount;
-    }
+    public String getFirmbusinessname() { return firmbusinessname; }
+    public void setFirmbusinessname(String firmbusinessname) { this.firmbusinessname = firmbusinessname; }
 
-    public UUID getUuid() {
-        return uuid;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
+    public String getLocalitycode() { return localitycode; }
+    public void setLocalitycode(String localitycode) { this.localitycode = localitycode; }
 
-    public String getTenantid() {
-        return tenantid;
-    }
+    public String getLocalityname() { return localityname; }
+    public void setLocalityname(String localityname) { this.localityname = localityname; }
 
-    public void setTenantid(String tenantid) {
-        this.tenantid = tenantid;
-    }
+    public String getBlockname() { return blockname; }
+    public void setBlockname(String blockname) { this.blockname = blockname; }
 
-    public String getPropertyid() {
-        return propertyid;
-    }
+    public String getZonename() { return zonename; }
+    public void setZonename(String zonename) { this.zonename = zonename; }
 
-    public void setPropertyid(String propertyid) {
-        this.propertyid = propertyid;
-    }
+    public String getPlotsize() { return plotsize; }
+    public void setPlotsize(String plotsize) { this.plotsize = plotsize; }
 
-    public String getSurveyid() {
-        return surveyid;
-    }
+    public String getPropertyusagetype() { return propertyusagetype; }
+    public void setPropertyusagetype(String propertyusagetype) { this.propertyusagetype = propertyusagetype; }
 
-    public void setSurveyid(String surveyid) {
-        this.surveyid = surveyid;
-    }
+    public String getPropertytype() { return propertytype; }
+    public void setPropertytype(String propertytype) { this.propertytype = propertytype; }
 
-    public String getOldpropertyid() {
-        return oldpropertyid;
-    }
+    public String getOwnershipcategory() { return ownershipcategory; }
+    public void setOwnershipcategory(String ownershipcategory) { this.ownershipcategory = ownershipcategory; }
 
-    public void setOldpropertyid(String oldpropertyid) {
-        this.oldpropertyid = oldpropertyid;
-    }
+    public String getPaymentdate() { return paymentdate; }
+    public void setPaymentdate(String paymentdate) { this.paymentdate = paymentdate; }
 
-    public String getFirmbusinessname() {
-        return firmbusinessname;
-    }
+    public String getReceiptnumber() { return receiptnumber; }
+    public void setReceiptnumber(String receiptnumber) { this.receiptnumber = receiptnumber; }
 
-    public void setFirmbusinessname(String firmbusinessname) {
-        this.firmbusinessname = firmbusinessname;
-    }
+    public String getAmoutpaid() { return amoutpaid; }
+    public void setAmoutpaid(String amoutpaid) { this.amoutpaid = amoutpaid; }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getLocalitycode() {
-        return localitycode;
-    }
-
-    public void setLocalitycode(String localitycode) {
-        this.localitycode = localitycode;
-    }
-
-    public String getLocalityname() {
-        return localityname;
-    }
-
-    public void setLocalityname(String localityname) {
-        this.localityname = localityname;
-    }
-
-    public String getBlockname() {
-        return blockname;
-    }
-
-    public void setBlockname(String blockname) {
-        this.blockname = blockname;
-    }
-
-    public String getZonename() {
-        return zonename;
-    }
-
-    public void setZonename(String zonename) {
-        this.zonename = zonename;
-    }
-
-    public String getPlotsize() {
-        return plotsize;
-    }
-
-    public void setPlotsize(String plotsize) {
-        this.plotsize = plotsize;
-    }
-
-    public String getPropertyusagetype() {
-        return propertyusagetype;
-    }
-
-    public void setPropertyusagetype(String propertyusagetype) {
-        this.propertyusagetype = propertyusagetype;
-    }
-
-    public String getPropertytype() {
-        return propertytype;
-    }
-
-    public void setPropertytype(String propertytype) {
-        this.propertytype = propertytype;
-    }
-
-    public String getOwnershipcategory() {
-        return ownershipcategory;
-    }
-
-    public void setOwnershipcategory(String ownershipcategory) {
-        this.ownershipcategory = ownershipcategory;
-    }
-
-    public String getPaymentdate() {
-        return paymentdate;
-    }
-
-    public void setPaymentdate(String paymentdate) {
-        this.paymentdate = paymentdate;
-    }
-
-    public String getReceiptnumber() {
-        return receiptnumber;
-    }
-
-    public void setReceiptnumber(String receiptnumber) {
-        this.receiptnumber = receiptnumber;
-    }
-
-    public String getAmountpaid() {
-        return amountpaid;
-    }
-
-    public void setAmountpaid(String amountpaid) {
-        this.amountpaid = amountpaid;
-    }
-
-    public String getAssessmentyear() {
-        return assessmentyear;
-    }
-
-    public void setAssessmentyear(String assessmentyear) {
-        this.assessmentyear = assessmentyear;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        long now = System.currentTimeMillis();
-        this.createdtime = now;
-        this.lastmodifiedtime = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.lastmodifiedtime = System.currentTimeMillis();
-    }
-
-    public String getService() {
-        return service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
-    }
+    public String getAssessmentyear() { return assessmentyear; }
+    public void setAssessmentyear(String assessmentyear) { this.assessmentyear = assessmentyear; }
 }

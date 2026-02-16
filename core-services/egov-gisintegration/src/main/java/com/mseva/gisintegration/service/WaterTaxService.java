@@ -1,15 +1,22 @@
 package com.mseva.gisintegration.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mseva.gisintegration.model.WaterTax;
 import com.mseva.gisintegration.repository.WaterTaxRepository;
+import com.mseva.gisintegration.repository.ServiceRequestRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import org.egov.common.contract.request.RequestInfo; // Now this will resolve
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class WaterTaxService {
@@ -19,21 +26,132 @@ public class WaterTaxService {
     @Autowired
     private WaterTaxRepository waterTaxRepository;
 
+    @Autowired
+    private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private ObjectMapper mapper;
+
+    @Value("${egov.waterservice.host}")
+    private String waterHost;
+
+    @Value("${egov.waterservice.search.endpoint}")
+    private String waterSearchEndpoint;
+
+    @Value("${egov.propertyservice.host}")
+    private String propertyHost;
+
+    @Value("${egov.propertyservice.search.endpoint}")
+    private String propertySearchEndpoint;
+
+    /**
+     * Entry point for Consumer: Maps A-Z data using external API calls.
+     */
+    public void processPayment(JsonNode detail, JsonNode payment, RequestInfo requestInfo ) {
+        WaterTax waterTax = new WaterTax();
+        String connectionNo = detail.path("bill").path("consumerCode").asText();
+        String tenantId = detail.path("tenantId").asText();
+        
+        // Extract RequestInfo from the incoming payload for authentication
+
+        try {
+            // Step 1: Call Water Service to get propertyid using Connection Number
+            String propertyId = fetchPropertyIdFromWaterService(connectionNo, tenantId, requestInfo);
+            
+            if (propertyId != null && !propertyId.isEmpty()) {
+                waterTax.setPropertyid(propertyId);
+                
+                // Step 2: Call Property Service to get GIS Master Data using Property ID
+                JsonNode propertyNode = fetchPropertyData(propertyId, tenantId, requestInfo);
+                if (propertyNode != null) {
+                    mapGisFields(waterTax, propertyNode);
+                }
+            }
+
+            // Step 3: Map Transactional Data from the Kafka message
+            mapTransactionalFields(waterTax, detail);
+            
+            // Step 4: Persist to database
+            this.createOrUpdateWaterTax(waterTax);
+
+        } catch (Exception e) {
+            logger.error("Error enriching WaterTax for connection: " + connectionNo, e);
+        }
+    }
+
+    private String fetchPropertyIdFromWaterService(String connectionNo, String tenantId, RequestInfo requestInfo) {
+        StringBuilder url = new StringBuilder(waterHost)
+                .append(waterSearchEndpoint)
+                .append("?searchType=CONNECTION&connectionNumber=")
+                .append(connectionNo)
+                .append("&tenantId=").append(tenantId);
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        // Making POST call to WS-Services
+        JsonNode response = mapper.valueToTree(serviceRequestRepository.fetchResult(url, request));
+        JsonNode connections = response.path("WaterConnection");
+        
+        return (connections.isArray() && connections.size() > 0) 
+                ? connections.get(0).path("propertyId").asText() : null;
+    }
+
+    private JsonNode fetchPropertyData(String propertyId, String tenantId, RequestInfo requestInfo) {
+        StringBuilder url = new StringBuilder(propertyHost)
+                .append(propertySearchEndpoint)
+                .append("?tenantId=").append(tenantId)
+                .append("&propertyIds=").append(propertyId);
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        // Making POST call to Property-Services
+        JsonNode response = mapper.valueToTree(serviceRequestRepository.fetchResult(url, request));
+        JsonNode properties = response.path("Properties");
+
+        return (properties.isArray() && properties.size() > 0) ? properties.get(0) : null;
+    }
+
+    private void mapGisFields(WaterTax w, JsonNode p) {
+        // Mapping strictly based on the field list provided
+        w.setSurveyid(p.path("surveyId").asText());
+        w.setProperty_id(p.path("propertyId").asText());
+        w.setOldpropertyid(p.path("oldPropertyId").asText());
+        w.setPropertytype(p.path("propertyType").asText());
+        w.setOwnershipcategory(p.path("ownershipCategory").asText());
+        w.setPropertyusagetype(p.path("usageCategory").asText());
+        w.setNooffloors(p.path("noOfFloors").asText());
+        w.setPlotsize(p.path("landArea").asText());
+        w.setSuperbuilduparea(p.path("superBuiltUpArea").asText());
+        
+        JsonNode addr = p.path("address");
+        String fullAddress = String.format("%s, %s, %s", 
+                addr.path("doorNo").asText(""), 
+                addr.path("street").asText(""), 
+                addr.path("locality").path("name").asText(""));
+        
+        w.setAddress(fullAddress);
+        w.setLocalityname(addr.path("locality").path("name").asText());
+        w.setBlockname(addr.path("locality").path("name").asText());
+    }
+
+    private void mapTransactionalFields(WaterTax w, JsonNode detail) {
+        w.setTenantid(detail.path("tenantId").asText());
+        w.setConnectionno(detail.path("bill").path("consumerCode").asText());
+        
+        JsonNode billDetails = detail.path("bill").path("billDetails");
+        if (billDetails.isArray() && billDetails.size() > 0) {
+            long fromPeriod = billDetails.get(0).path("fromPeriod").asLong();
+            int year = Instant.ofEpochMilli(fromPeriod).atZone(ZoneId.systemDefault()).toLocalDate().getYear();
+            w.setAssessmentyear(year + "-" + String.valueOf(year + 1).substring(2));
+        }
+    }
+
+    // --- RETAINED METHODS ---
+
     public WaterTax insertWaterTax(WaterTax waterTax) {
-        logger.info("Inserting WaterTax: {}", waterTax);
         return waterTaxRepository.save(waterTax);
-    }
-
-    public List<WaterTax> findByPropertyid(String propertyid) {
-        return waterTaxRepository.findByPropertyid(propertyid);
-    }
-
-    public List<WaterTax> findBySurveyid(String surveyid) {
-        return waterTaxRepository.findBySurveyid(surveyid);
-    }
-
-    public List<WaterTax> findBySurveyidAndPropertyid(String surveyid, String propertyid) {
-        return waterTaxRepository.findBySurveyidAndPropertyid(surveyid, propertyid);
     }
 
     public List<WaterTax> findByConnectionno(String connectionno) {
@@ -42,96 +160,27 @@ public class WaterTaxService {
 
     public Map<String, Object> createOrUpdateWaterTax(WaterTax waterTax) {
         Map<String, Object> response = new HashMap<>();
-        Map<String, String> responseInfo = new HashMap<>();
-        responseInfo.put("status", "successful");
+        List<WaterTax> existing = findByConnectionno(waterTax.getConnectionno());
+        
+        WaterTax match = existing.stream()
+                .filter(t -> waterTax.getAssessmentyear() != null && waterTax.getAssessmentyear().equals(t.getAssessmentyear()))
+                .findFirst().orElse(null);
 
-        List<WaterTax> existingWaterTaxes = null;
-        if (waterTax.getConnectionno() != null && !waterTax.getConnectionno().isEmpty()) {
-            existingWaterTaxes = waterTaxRepository.findByConnectionno(waterTax.getConnectionno());
-        }
-
-        if (existingWaterTaxes == null || existingWaterTaxes.isEmpty()) {
-            long now = System.currentTimeMillis();
-            waterTax.setCreatedtime(now);
-            waterTax.setLastmodifiedtime(now);
-           System.out.println(waterTax.toString());
-            WaterTax savedWaterTax = insertWaterTax(waterTax);
-            responseInfo.put("method", "create");
-            response.put("ResponseInfo", responseInfo);
-            response.put("WaterTax", savedWaterTax);
-            return response;
+        if (match == null) {
+            response.put("WaterTax", insertWaterTax(waterTax));
         } else {
-            boolean createNew = false;
-            boolean yearExists = false;
-            for (WaterTax existingWaterTax : existingWaterTaxes) {
-                if (waterTax.getAssessmentyear() != null && waterTax.getAssessmentyear().equals(existingWaterTax.getAssessmentyear())) {
-                    yearExists = true;
-                    break;
-                }
-            }
-            if (!yearExists) {
-                createNew = true;
-            }
-            if (createNew) {
-                long now = System.currentTimeMillis();
-                waterTax.setCreatedtime(now);
-                waterTax.setLastmodifiedtime(now);
-                WaterTax savedWaterTax = insertWaterTax(waterTax);
-                responseInfo.put("method", "create");
-                response.put("ResponseInfo", responseInfo);
-                response.put("WaterTax", savedWaterTax);
-                return response;
-            } else {
-                for (WaterTax existingWaterTax : existingWaterTaxes) {
-                    if (waterTax.getAssessmentyear() != null && waterTax.getAssessmentyear().equals(existingWaterTax.getAssessmentyear())) {
-            if (waterTax.getTenantid() != null)
-                existingWaterTax.setTenantid(waterTax.getTenantid());
-            if (waterTax.getPropertyid() != null)
-                existingWaterTax.setPropertyid(waterTax.getPropertyid());
-            if (waterTax.getSurveyid() != null)
-                existingWaterTax.setSurveyid(waterTax.getSurveyid());
-            if (waterTax.getOldpropertyid() != null)
-                existingWaterTax.setOldpropertyid(waterTax.getOldpropertyid());
-            if (waterTax.getPropertytype() != null)
-                existingWaterTax.setPropertytype(waterTax.getPropertytype());
-            if (waterTax.getOwnershipcategory() != null)
-                existingWaterTax.setOwnershipcategory(waterTax.getOwnershipcategory());
-            if (waterTax.getPropertyusagetype() != null)
-                existingWaterTax.setPropertyusagetype(waterTax.getPropertyusagetype());
-            if (waterTax.getNooffloors() != null)
-                existingWaterTax.setNooffloors(waterTax.getNooffloors());
-            if (waterTax.getPlotsize() != null)
-                existingWaterTax.setPlotsize(waterTax.getPlotsize());
-            if (waterTax.getSuperbuilduparea() != null)
-                existingWaterTax.setSuperbuilduparea(waterTax.getSuperbuilduparea());
-            if (waterTax.getAddress() != null)
-                existingWaterTax.setAddress(waterTax.getAddress());
-            if (waterTax.getLocalityname() != null)
-                existingWaterTax.setLocalityname(waterTax.getLocalityname());
-            if (waterTax.getBlockname() != null)
-                existingWaterTax.setBlockname(waterTax.getBlockname());
-            if (waterTax.getAssessmentyear() != null)
-                existingWaterTax.setAssessmentyear(waterTax.getAssessmentyear());
-            if (waterTax.getBillamount() != null)
-                existingWaterTax.setBillamount(waterTax.getBillamount());
-            if (waterTax.getAmountpaid() != null)
-                existingWaterTax.setAmountpaid(waterTax.getAmountpaid());
-                        long now = System.currentTimeMillis();
-                        existingWaterTax.setLastmodifiedtime(now);
-                        WaterTax savedWaterTax = insertWaterTax(existingWaterTax);
-                        responseInfo.put("method", "update");
-                        response.put("ResponseInfo", responseInfo);
-                        response.put("WaterTax", savedWaterTax);
-                        return response;
-                    }
-                }
-                long now = System.currentTimeMillis();
-                WaterTax savedWaterTax = insertWaterTax(waterTax);
-                responseInfo.put("method", "create");
-                response.put("ResponseInfo", responseInfo);
-                response.put("WaterTax", savedWaterTax);
-                return response;
-            }
+            updateFields(match, waterTax);
+            response.put("WaterTax", waterTaxRepository.save(match));
         }
+        return response;
+    }
+
+    private void updateFields(WaterTax existing, WaterTax source) {
+        if (source.getTenantid() != null) existing.setTenantid(source.getTenantid());
+        if (source.getSurveyid() != null) existing.setSurveyid(source.getSurveyid());
+        if (source.getAddress() != null) existing.setAddress(source.getAddress());
+        if (source.getAssessmentyear() != null) existing.setAssessmentyear(source.getAssessmentyear());
+        if (source.getPropertyid() != null) existing.setPropertyid(source.getPropertyid());
+        if (source.getPlotsize() != null) existing.setPlotsize(source.getPlotsize());
     }
 }

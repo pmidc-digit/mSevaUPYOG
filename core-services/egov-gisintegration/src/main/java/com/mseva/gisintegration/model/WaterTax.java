@@ -1,30 +1,15 @@
 package com.mseva.gisintegration.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import org.hibernate.annotations.GenericGenerator;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import java.util.UUID;
-
-import java.math.BigDecimal;
+import javax.persistence.*;
 
 @Entity
-@Table(name = "watertax")
+@Table(name = "watertax_backup") // Updated to a standard table name
 public class WaterTax {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-        name = "UUID",
-        strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "sno", updatable = false, nullable = false)
-    private UUID sno;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "sno")
+    private Integer sno; // Changed from UUID to Integer per specification
 
     private String tenantid;
 
@@ -59,83 +44,16 @@ public class WaterTax {
 
     private String assessmentyear;
 
-    private BigDecimal billamount;
-
-    private BigDecimal amountpaid;
-
-    @Column(name = "createdtime", updatable = false)
-    private Long createdtime;
-
-    @Column(name = "lastmodifiedtime")
-    private Long lastmodifiedtime;
-
-    @Override
-    public String toString() {
-        return "WaterTax{" +
-                "sno=" + sno +
-                ", tenantid='" + tenantid + '\'' +
-                ", connectionno='" + connectionno + '\'' +
-                ", property_id='" + property_id + '\'' +
-                ", propertyid='" + propertyid + '\'' +
-                ", surveyid='" + surveyid + '\'' +
-                ", oldpropertyid='" + oldpropertyid + '\'' +
-                ", propertytype='" + propertytype + '\'' +
-                ", ownershipcategory='" + ownershipcategory + '\'' +
-                ", propertyusagetype='" + propertyusagetype + '\'' +
-                ", nooffloors='" + nooffloors + '\'' +
-                ", plotsize='" + plotsize + '\'' +
-                ", superbuilduparea='" + superbuilduparea + '\'' +
-                ", address='" + address + '\'' +
-                ", localityname='" + localityname + '\'' +
-                ", blockname='" + blockname + '\'' +
-                ", assessmentyear='" + assessmentyear + '\'' +
-                ", billamount=" + billamount +
-                ", amountpaid=" + amountpaid +
-                ", createdtime=" + createdtime +
-                ", lastmodifiedtime=" + lastmodifiedtime +
-                '}';
-    }
-
     public WaterTax() {
     }
 
-    public BigDecimal getBillamount() {
-        return billamount;
-    }
+    // --- Getters and Setters ---
 
-    public void setBillamount(BigDecimal billamount) {
-        this.billamount = billamount;
-    }
-
-    public BigDecimal getAmountpaid() {
-        return amountpaid;
-    }
-
-    public void setAmountpaid(BigDecimal amountpaid) {
-        this.amountpaid = amountpaid;
-    }
-
-    public Long getCreatedtime() {
-        return createdtime;
-    }
-
-    public void setCreatedtime(Long createdtime) {
-        this.createdtime = createdtime;
-    }
-
-    public Long getLastmodifiedtime() {
-        return lastmodifiedtime;
-    }
-
-    public void setLastmodifiedtime(Long lastmodifiedtime) {
-        this.lastmodifiedtime = lastmodifiedtime;
-    }
-
-    public UUID getSno() {
+    public Integer getSno() {
         return sno;
     }
 
-    public void setSno(UUID sno) {
+    public void setSno(Integer sno) {
         this.sno = sno;
     }
 
@@ -267,15 +185,15 @@ public class WaterTax {
         this.assessmentyear = assessmentyear;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        long now = System.currentTimeMillis();
-        this.createdtime = now;
-        this.lastmodifiedtime = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.lastmodifiedtime = System.currentTimeMillis();
+    @Override
+    public String toString() {
+        return "WaterTax{" +
+                "sno=" + sno +
+                ", tenantid='" + tenantid + '\'' +
+                ", connectionno='" + connectionno + '\'' +
+                ", property_id='" + property_id + '\'' +
+                ", propertyid='" + propertyid + '\'' +
+                ", assessmentyear='" + assessmentyear + '\'' +
+                '}';
     }
 }

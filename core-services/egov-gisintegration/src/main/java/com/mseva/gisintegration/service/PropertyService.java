@@ -1,213 +1,204 @@
 package com.mseva.gisintegration.service;
 
-import com.mseva.gisintegration.exception.DuplicatePropertyException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mseva.gisintegration.model.Property;
 import com.mseva.gisintegration.repository.PropertyRepository;
+import com.mseva.gisintegration.repository.ServiceRequestRepository;
+import org.egov.common.contract.request.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class PropertyService {
 
-	private static final Logger log = LoggerFactory.getLogger(PropertyService.class);
+    private static final Logger log = LoggerFactory.getLogger(PropertyService.class);
 
-	@Autowired
-	private PropertyRepository propertyRepository;
+    @Autowired
+    private PropertyRepository propertyRepository;
 
-	public Property insertProperty(Property property) {
-		log.info("Inserting property with details: {}", property);
-		// Ensure service field is handled if needed (usually it will be part of property object)
-		// No special handling needed here unless additional logic is required
-		return propertyRepository.save(property);
-	}
+    @Autowired
+    private ServiceRequestRepository serviceRequestRepository;
 
-	public List<Property> findByPropertyid(String propertyid, String tenantid) {
-		return propertyRepository.findByPropertyid(propertyid, tenantid);
-	}
+    @Autowired
+    private ObjectMapper mapper;
 
-	public List<Property> findBySurveyid(String surveyid, String tenantid) {
-		return propertyRepository.findBySurveyid(surveyid, tenantid);
-	}
+    @Value("${egov.propertyservice.host}")
+    private String propertyHost;
 
-	public java.util.List<Property> findBySurveyidAndPropertyid(String surveyid, String propertyid, String tenantid) {
-		return propertyRepository.findBySurveyidAndPropertyid(surveyid, propertyid, tenantid);
-	}
+    @Value("${egov.propertyservice.search.endpoint}")
+    private String propertySearchEndpoint;
 
-	public java.util.Map<String, Object> createOrUpdateProperty(Property property) {
-		java.util.Map<String, Object> response = new java.util.HashMap<>();
-		java.util.Map<String, String> responseInfo = new java.util.HashMap<>();
-		responseInfo.put("status", "successful");
+    /**
+     * Entry point for Assessment Topic Consumer.
+     */
+    public void handleAssessmentSync(JsonNode assessment, RequestInfo requestInfo) {
+        String propertyId = assessment.path("propertyId").asText();
+        String tenantId = assessment.path("tenantId").asText();
+        String financialYear = assessment.path("financialYear").asText();
 
-		List<Property> existingProperties = null;
-		if ((property.getSurveyid() != null && !property.getSurveyid().isEmpty())
-				&& (property.getPropertyid() != null && !property.getPropertyid().isEmpty())) {
-			log.info("Searching property by surveyid and propertyid: {}, {}", property.getSurveyid(),
-					property.getPropertyid());
-			existingProperties = propertyRepository.findBySurveyidAndPropertyid(property.getSurveyid(),
-					property.getPropertyid(), property.getTenantid());
-		} else if (property.getSurveyid() != null && !property.getSurveyid().isEmpty()) {
-			log.info("Searching property by surveyid: {}", property.getSurveyid());
-			existingProperties = propertyRepository.findBySurveyid(property.getSurveyid(), property.getTenantid());
-		} else if (property.getPropertyid() != null && !property.getPropertyid().isEmpty()) {
-			log.info("Searching property by propertyid: {}", property.getPropertyid());
-			existingProperties = propertyRepository.findByPropertyid(property.getPropertyid(), property.getTenantid());
-		}
+        log.info("Syncing Assessment for Property: {} Year: {}", propertyId, financialYear);
 
-		if (existingProperties == null || existingProperties.isEmpty()) {
-			// Check if surveyid exists in DB but propertyid does not
-			if (property.getSurveyid() != null && !property.getSurveyid().isEmpty()) {
-				List<Property> propertiesBySurveyId = propertyRepository.findBySurveyid(property.getSurveyid(), property.getTenantid());
-				if (propertiesBySurveyId != null && !propertiesBySurveyId.isEmpty()) {
-					// Update the property with surveyid
-					Property existingProperty = propertiesBySurveyId.get(0);
-					log.info(
-							"Property id is new but survey id {} is already present in DB, updating property with id: {}",
-							property.getSurveyid(), existingProperty.getUuid());
-					if (property.getTenantid() != null)
-						existingProperty.setTenantid(property.getTenantid());
-					if (property.getPropertyid() != null)
-						existingProperty.setPropertyid(property.getPropertyid());
-					if (property.getSurveyid() != null)
-						existingProperty.setSurveyid(property.getSurveyid());
-					if (property.getOldpropertyid() != null)
-						existingProperty.setOldpropertyid(property.getOldpropertyid());
-					if (property.getFirmbusinessname() != null)
-						existingProperty.setFirmbusinessname(property.getFirmbusinessname());
-					if (property.getAddress() != null)
-						existingProperty.setAddress(property.getAddress());
-					if (property.getLocalitycode() != null)
-						existingProperty.setLocalitycode(property.getLocalitycode());
-					if (property.getLocalityname() != null)
-						existingProperty.setLocalityname(property.getLocalityname());
-					if (property.getBlockname() != null)
-						existingProperty.setBlockname(property.getBlockname());
-					if (property.getZonename() != null)
-						existingProperty.setZonename(property.getZonename());
-					if (property.getPlotsize() != null)
-						existingProperty.setPlotsize(property.getPlotsize());
-					if (property.getPropertyusagetype() != null)
-						existingProperty.setPropertyusagetype(property.getPropertyusagetype());
-					if (property.getPropertytype() != null)
-						existingProperty.setPropertytype(property.getPropertytype());
-					if (property.getOwnershipcategory() != null)
-						existingProperty.setOwnershipcategory(property.getOwnershipcategory());
-					if (property.getPaymentdate() != null)
-						existingProperty.setPaymentdate(property.getPaymentdate());
-					if (property.getReceiptnumber() != null)
-						existingProperty.setReceiptnumber(property.getReceiptnumber());
-					if (property.getAmountpaid() != null)
-						existingProperty.setAmountpaid(property.getAmountpaid());
-					if (property.getAssessmentyear() != null)
-						existingProperty.setAssessmentyear(property.getAssessmentyear());
-                    if (property.getBillamount() != null)
-                        existingProperty.setBillamount(property.getBillamount());
-                    long now = System.currentTimeMillis();
-                    existingProperty.setLastmodifiedtime(now);
-                    Property savedProperty = propertyRepository.save(existingProperty);
-                    responseInfo.put("method", "update");
-                    response.put("ResponseInfo", responseInfo);
-                    response.put("Property", savedProperty);
-                    return response;
-				}
-			}
-			log.info("Property with surveyid or propertyid does not exist, creating new property");
-            long now = System.currentTimeMillis();
-            property.setCreatedtime(now);
-            property.setLastmodifiedtime(now);
-            Property savedProperty = insertProperty(property);
+        try {
+            // Step 1: Search Property Service for full master data
+            JsonNode propertyNode = fetchPropertyDataFromService(propertyId, tenantId, requestInfo);
+
+            if (propertyNode != null) {
+                Property p = new Property();
+                
+                // Step 2: Map GIS Master Data (Survey ID, Address, etc.)
+                mapGisFields(p, propertyNode);
+                
+                // Step 3: Map Assessment-specific data
+                p.setTenantid(tenantId);
+                p.setPropertyid(propertyId);
+                p.setAssessmentyear(financialYear);
+                
+                // Since this is just an assessment, we set payment fields to empty/zero
+                p.setAmoutpaid("0");
+                p.setReceiptnumber("ASSESSMENT_PENDING");
+
+                // Step 4: Persist
+                this.createOrUpdateProperty(p);
+            }
+        } catch (Exception e) {
+            log.error("Error in handleAssessmentSync for propertyId: " + propertyId, e);
+        }
+    }
+
+    /**
+     * Entry point for Payment Consumer.
+     */
+    public void processPayment(JsonNode detail, JsonNode payment, RequestInfo requestInfo) {
+        String propertyId = detail.path("bill").path("consumerCode").asText();
+        String tenantId = detail.path("tenantId").asText();
+
+        try {
+            JsonNode propertyNode = fetchPropertyDataFromService(propertyId, tenantId, requestInfo);
+            
+            if (propertyNode != null) {
+                Property p = new Property();
+                mapGisFields(p, propertyNode);
+                mapTransactionalFields(p, detail, payment);
+                this.createOrUpdateProperty(p);
+            }
+        } catch (Exception e) {
+            log.error("Error in processPayment for propertyId: " + propertyId, e);
+        }
+    }
+
+    // --- HELPER METHODS ---
+
+    private JsonNode fetchPropertyDataFromService(String propertyId, String tenantId, RequestInfo requestInfo) {
+        StringBuilder url = new StringBuilder(propertyHost)
+                .append(propertySearchEndpoint)
+                .append("?tenantId=").append(tenantId)
+                .append("&propertyIds=").append(propertyId);
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        Object response = serviceRequestRepository.fetchResult(url, request);
+        JsonNode root = mapper.valueToTree(response);
+        JsonNode properties = root.path("Properties");
+
+        return (properties.isArray() && properties.size() > 0) ? properties.get(0) : null;
+    }
+
+    private void mapGisFields(Property p, JsonNode node) {
+        p.setPropertyid(node.path("propertyId").asText());
+        p.setSurveyid(node.path("surveyId").asText());
+        p.setOldpropertyid(node.path("oldPropertyId").asText());
+        
+        // Handling potentially missing owners node
+        JsonNode owners = node.path("owners");
+        if (owners.isArray() && owners.size() > 0) {
+            p.setFirmbusinessname(owners.get(0).path("name").asText());
+        }
+
+        p.setPropertytype(node.path("propertyType").asText());
+        p.setPropertyusagetype(node.path("usageCategory").asText());
+        p.setOwnershipcategory(node.path("ownershipCategory").asText());
+        p.setPlotsize(node.path("landArea").asText());
+        
+        JsonNode addr = node.path("address");
+        String fullAddress = String.format("%s, %s, %s", 
+                addr.path("doorNo").asText(""), 
+                addr.path("street").asText(""), 
+                addr.path("locality").path("name").asText(""));
+        
+        p.setAddress(fullAddress);
+        p.setLocalityname(addr.path("locality").path("name").asText());
+        p.setLocalitycode(addr.path("locality").path("code").asText());
+        p.setBlockname(addr.path("locality").path("name").asText());
+        p.setZonename(addr.path("city").asText());
+    }
+
+    private void mapTransactionalFields(Property p, JsonNode detail, JsonNode payment) {
+        p.setTenantid(detail.path("tenantId").asText());
+        p.setReceiptnumber(detail.path("receiptNumber").asText());
+        p.setAmoutpaid(detail.path("totalAmountPaid").asText());
+        p.setPaymentdate(payment.path("transactionDate").asText());
+
+        JsonNode billDetails = detail.path("bill").path("billDetails");
+        if (billDetails.isArray() && billDetails.size() > 0) {
+            long fromPeriod = billDetails.get(0).path("fromPeriod").asLong();
+            int year = Instant.ofEpochMilli(fromPeriod).atZone(ZoneId.systemDefault()).toLocalDate().getYear();
+            p.setAssessmentyear(year + "-" + String.valueOf(year + 1).substring(2));
+        }
+    }
+
+    // --- REPOSITORY LOGIC ---
+
+    public Map<String, Object> createOrUpdateProperty(Property property) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> responseInfo = new HashMap<>();
+        responseInfo.put("status", "successful");
+
+        List<Property> existing = propertyRepository.findByPropertyid(property.getPropertyid(), property.getTenantid());
+
+        Property match = null;
+        if (existing != null) {
+            match = existing.stream()
+                    .filter(e -> property.getAssessmentyear() != null && property.getAssessmentyear().equals(e.getAssessmentyear()))
+                    .findFirst().orElse(null);
+        }
+
+        if (match != null) {
+            updateFields(match, property);
+            response.put("Property", propertyRepository.save(match));
+            responseInfo.put("method", "update");
+        } else {
+            response.put("Property", propertyRepository.save(property));
             responseInfo.put("method", "create");
-            response.put("ResponseInfo", responseInfo);
-            response.put("Property", savedProperty);
-            return response;
-		} else {
-			// New feature: check financial year difference
-			boolean createNew = false;
-			boolean yearExists = false;
-			for (Property existingProperty : existingProperties) {
-				if (property.getAssessmentyear() != null && property.getAssessmentyear().equals(existingProperty.getAssessmentyear())) {
-					yearExists = true;
-					break;
-				}
-			}
-			if (!yearExists) {
-				createNew = true;
-			}
-			if (createNew) {
-				log.info("Financial year differs, creating new property");
-				long now = System.currentTimeMillis();
-				property.setCreatedtime(now);
-				property.setLastmodifiedtime(now);
-				Property savedProperty = insertProperty(property);
-				responseInfo.put("method", "create");
-				response.put("ResponseInfo", responseInfo);
-				response.put("Property", savedProperty);
-				return response;
-			} else {
-				// Update existing property with non-null fields
-				for (Property existingProperty : existingProperties) {
-					if (property.getAssessmentyear() != null && property.getAssessmentyear().equals(existingProperty.getAssessmentyear())) {
-						log.info("Updating existing property with id: {}", existingProperty.getUuid());
-						if (property.getTenantid() != null)
-							existingProperty.setTenantid(property.getTenantid());
-						if (property.getPropertyid() != null)
-							existingProperty.setPropertyid(property.getPropertyid());
-						if (property.getSurveyid() != null)
-							existingProperty.setSurveyid(property.getSurveyid());
-						if (property.getOldpropertyid() != null)
-							existingProperty.setOldpropertyid(property.getOldpropertyid());
-						if (property.getFirmbusinessname() != null)
-							existingProperty.setFirmbusinessname(property.getFirmbusinessname());
-						if (property.getAddress() != null)
-							existingProperty.setAddress(property.getAddress());
-						if (property.getLocalitycode() != null)
-							existingProperty.setLocalitycode(property.getLocalitycode());
-						if (property.getLocalityname() != null)
-							existingProperty.setLocalityname(property.getLocalityname());
-						if (property.getBlockname() != null)
-							existingProperty.setBlockname(property.getBlockname());
-						if (property.getZonename() != null)
-							existingProperty.setZonename(property.getZonename());
-						if (property.getPlotsize() != null)
-							existingProperty.setPlotsize(property.getPlotsize());
-						if (property.getPropertyusagetype() != null)
-							existingProperty.setPropertyusagetype(property.getPropertyusagetype());
-						if (property.getPropertytype() != null)
-							existingProperty.setPropertytype(property.getPropertytype());
-						if (property.getOwnershipcategory() != null)
-							existingProperty.setOwnershipcategory(property.getOwnershipcategory());
-						if (property.getPaymentdate() != null)
-							existingProperty.setPaymentdate(property.getPaymentdate());
-						if (property.getReceiptnumber() != null)
-							existingProperty.setReceiptnumber(property.getReceiptnumber());
-						if (property.getAmountpaid() != null)
-							existingProperty.setAmountpaid(property.getAmountpaid());
-						if (property.getAssessmentyear() != null)
-							existingProperty.setAssessmentyear(property.getAssessmentyear());
-                        if (property.getBillamount() != null)
-                            existingProperty.setBillamount(property.getBillamount());
-                        if (property.getService() != null)
-                            existingProperty.setService(property.getService());
-                        long now = System.currentTimeMillis();
-                        existingProperty.setLastmodifiedtime(now);
-                        Property savedProperty = propertyRepository.save(existingProperty);
-                        responseInfo.put("method", "update");
-                        response.put("ResponseInfo", responseInfo);
-                        response.put("Property", savedProperty);
-                        return response;
-					}
-				}
-				// No matching property found, create new
-				log.info("No matching property found, creating new property");
-				Property savedProperty = insertProperty(property);
-				responseInfo.put("method", "create");
-				response.put("ResponseInfo", responseInfo);
-				response.put("Property", savedProperty);
-				return response;
-			}
-		}
-	}
+        }
+        
+        response.put("ResponseInfo", responseInfo);
+        return response;
+    }
+
+    private void updateFields(Property existing, Property source) {
+        if (source.getTenantid() != null) existing.setTenantid(source.getTenantid());
+        if (source.getSurveyid() != null) existing.setSurveyid(source.getSurveyid());
+        if (source.getAddress() != null) existing.setAddress(source.getAddress());
+        if (source.getPlotsize() != null) existing.setPlotsize(source.getPlotsize());
+        
+        // Only update payment fields if they aren't default "0" or "PENDING"
+        if (source.getAmoutpaid() != null && !source.getAmoutpaid().equals("0")) {
+            existing.setAmoutpaid(source.getAmoutpaid());
+        }
+        if (source.getReceiptnumber() != null && !source.getReceiptnumber().equals("ASSESSMENT_PENDING")) {
+            existing.setReceiptnumber(source.getReceiptnumber());
+        }
+        if (source.getPaymentdate() != null) existing.setPaymentdate(source.getPaymentdate());
+    }
 }

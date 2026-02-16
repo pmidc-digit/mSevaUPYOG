@@ -165,9 +165,12 @@ public class ADVInboxFilterService {
 //        	        searchCriteria.put("status", statusKeys);
         		 List<String> bookingStatuskey = new ArrayList<>(StatusIdNameMap.keySet());
          	    searchCriteria.put("status", bookingStatuskey);
-        		 List<String> bookingStatusValues = new ArrayList<>(StatusIdNameMap.values());
-         	    searchCriteria.put("bookingStatus", bookingStatusValues);
+//        		 List<String> bookingStatusValues = new ArrayList<>(StatusIdNameMap.values());
+//         	    searchCriteria.put("bookingStatus", bookingStatusValues);
         	    }
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("bookingStatus")) {
+            searchCriteria.put("bookingStatus", moduleSearchCriteria.get("bookingStatus"));
         }
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {

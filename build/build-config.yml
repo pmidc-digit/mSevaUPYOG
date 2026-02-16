@@ -954,3 +954,9 @@ config:
         dockerfile: "build/maven/Dockerfile"
      # - work-dir: "core-services/egov-esign/src/main/resources/db"
       #  image-name: "egov-esign-db"
+
+  - name: "builds/upyog/utilities/search-api"
+    build:
+      - work-dir: "utilities/search-api"
+        image-name: "search-api"
+        dockerfile: 'build/Dockerfile'

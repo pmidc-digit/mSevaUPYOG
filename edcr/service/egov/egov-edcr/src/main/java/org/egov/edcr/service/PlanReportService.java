@@ -776,7 +776,7 @@ public class PlanReportService {
             drb.addConcatenatedReport(createHeaderSubreport(BLOCK_WISE_SUMMARY, BLOCK_WISE_SUMMARY));
             valuesMap.put(BLOCK_WISE_SUMMARY, blockSummary);
 
-            // Add existing block details
+             // Add existing block details
             if (existingBlockDetails != null && !existingBlockDetails.isEmpty()) {
                 for (DcrReportBlockDetail existingBlockDetail : existingBlockDetails) {
                     blockDetails.add(existingBlockDetail);
@@ -806,9 +806,11 @@ public class PlanReportService {
             DcrReportPlanDetail dcrReportPlanDetail = new DcrReportPlanDetail();
             dcrReportPlanDetail.setVirtualBuildingReport(virtualBuildingReport);
             dcrReportPlanDetail.setDcrReportBlockDetailList(blockDetails);
+        //Scrutinty have to remove
+            
+         if(!ApplicationType.LAYOUT_PLAN_SCRUTINY.equals(dcrApplication.getApplicationType())) {
 
-            List<ScrutinyDetail> scrutinyDetails = plan.getReportOutput().getScrutinyDetails();
-
+            List<ScrutinyDetail> scrutinyDetails = plan.getReportOutput().getScrutinyDetails();           
             Set<String> common = new TreeSet<>();
             Map<String, ScrutinyDetail> allMap = new HashMap<>();
             Map<String, Set<String>> blocks = new TreeMap<>();
@@ -834,6 +836,8 @@ public class PlanReportService {
                     allMap.put(split[1] + split[2], sd);
                 }
             }
+            
+                 
             int i = 0;
             List<String> cmnHeading = new ArrayList<>();
             cmnHeading.add("Common");
@@ -1422,6 +1426,7 @@ public class PlanReportService {
 				} else {
 				    LOG.warn("Common list or allMap is null / empty. Skipping final report status check.");
 				}            	}
+            	
 			}catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -1436,7 +1441,7 @@ public class PlanReportService {
                         }
                     }
                 }
-
+         }
         } else {
             /*
              * List<PlanRule> planRules = planRuleService.findRulesByPlanDetail(planDetail); for (PlanRule pl : planRules) {
@@ -1447,7 +1452,7 @@ public class PlanReportService {
              * ruleName + "Since rule cannot be injected"); } }
              */
         }
-
+//      }
         if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType())
                 && StringUtils.isNotBlank(dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber())) {
             plan.setMainDcrPassed(finalReportStatus);

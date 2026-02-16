@@ -224,6 +224,7 @@ public class RestEdcrApplicationController {
         if (!isValidJson(edcrRequest) || (userInfo != null && !isValidJson(userInfo))) {
             ErrorResponse error = new ErrorResponse(INCORRECT_REQUEST, INVALID_JSON_FORMAT,
                     HttpStatus.BAD_REQUEST);
+            System.out.println("aaaaaaaaa----------");
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
         try {
@@ -253,7 +254,8 @@ public class RestEdcrApplicationController {
             Map<String, List<Object>> masterData = new HashMap<>();
             Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
             if (mdmsEnabled != null && mdmsEnabled) {
-            	Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), ApplicationThreadLocals.getStateName());
+            	Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), "pb");//ApplicationThreadLocals.getStateName());
+            	System.out.println("mdmsData---"+mdmsData.toString());
                 HashMap<String, String> data = new HashMap<>();
                 data.put("applicationType", applicationType);
                 data.put("serviceType", serviceType);
@@ -276,7 +278,7 @@ public class RestEdcrApplicationController {
             	    if (validateEdcrRequest != null)
                        errorResponses = Arrays.asList(validateEdcrRequest);
 
-                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                    edcr.setAppliactionType(ApplicationType.LAYOUT_PLAN_SCRUTINY.toString());
                     System.out.println(edcr+"layoutplan scuritny mdms enabled");
                     
                     
@@ -297,10 +299,11 @@ public class RestEdcrApplicationController {
                 	ErrorDetail validateEdcrRequest = edcrRestService.layoutPlanValidateRequest(edcr, planFile);
                     if (validateEdcrRequest != null)
                         errorResponses = Arrays.asList(validateEdcrRequest);
-                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());	
+                    edcr.setAppliactionType(ApplicationType.LAYOUT_PLAN_SCRUTINY.toString());	
                 }
             }
 
+            System.out.println("Alllllllllllllllll");
             if (!errorResponses.isEmpty())
             	
             	

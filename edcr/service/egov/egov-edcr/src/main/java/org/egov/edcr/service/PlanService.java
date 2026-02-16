@@ -113,8 +113,8 @@ public class PlanService {
         plan = applyRules(plan, amd, cityDetails);
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
-        if (ApplicationType.PERMIT.getApplicationTypeVal()
-                .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+        if (ApplicationType.LAYOUT_PLAN_SCRUTINY.getApplicationTypeVal().equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+            	|| ApplicationType.PERMIT.getApplicationTypeVal().equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                 || (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                         && StringUtils.isBlank(comparisonDcrNumber))) {
@@ -330,8 +330,8 @@ public class PlanService {
 //        plan = applyRules(plan, amd, cityDetails);
         if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB")) {
         	
-        }else {
-        	plan = applyRules(plan, amd, cityDetails,features);
+        }else {    	
+        	plan = applyRules(dcrApplication,plan, amd, cityDetails,features);
         }
         
         LOG.info("Competency Role Checked successfully ");
@@ -556,7 +556,7 @@ public class PlanService {
 //        return plan;
 //    }
     
-    private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
+    private Plan applyRules(EdcrApplication dcrApplication,Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
     try {
         int index = -1;
         AmendmentDetails[] amendmentArray = null;
@@ -587,15 +587,18 @@ public class PlanService {
 
                     // When amendments are NOT present
                     if (amd == null || amd.getDetails() == null || amd.getDetails().isEmpty() || index == -1) {
-                        rule = (FeatureProcess) specificRuleService.find(featureName);
-                    }
+                    	if(!dcrApplication.getApplicationType().equals(ApplicationType.LAYOUT_PLAN_SCRUTINY)){
+                            rule = (FeatureProcess) specificRuleService.find(featureName);
+                        }
+                     }
                     // When amendments ARE present
                     else {
                         for (int i = index; i < length; i++) {
                             if (amendmentArray[i].getChanges().containsKey(featureName)) {
                                 String amendedBean = beanName + "_" + amendmentArray[i].getDateOfBylawString();
-                                rule = (FeatureProcess) specificRuleService.find(amendedBean);
-
+                                if(!dcrApplication.getApplicationType().equals(ApplicationType.LAYOUT_PLAN_SCRUTINY)){
+                                  rule = (FeatureProcess) specificRuleService.find(amendedBean);
+                                }
                                 if (rule != null) {
                                     break;
                                 }
@@ -604,13 +607,17 @@ public class PlanService {
 
                         // Fallback to default rule
                         if (rule == null) {
-                            rule = (FeatureProcess) specificRuleService.find(featureName);
+                        	if(!dcrApplication.getApplicationType().equals(ApplicationType.LAYOUT_PLAN_SCRUTINY)){
+                                rule = (FeatureProcess) specificRuleService.find(featureName);
+                        	}
                         }
                     }
 
                     if (rule != null) {
                         LOG.info("Processing rule {}", rule.getClass().getSimpleName());
-                        rule.process(plan);
+                        if(!dcrApplication.getApplicationType().equals(ApplicationType.LAYOUT_PLAN_SCRUTINY)){
+                           rule.process(plan);
+                        }
                         LOG.info("Completed rule {} at {}", rule.getClass().getSimpleName(), new Date());
                     }
 

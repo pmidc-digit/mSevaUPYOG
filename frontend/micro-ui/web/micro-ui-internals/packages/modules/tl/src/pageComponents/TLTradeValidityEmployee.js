@@ -29,6 +29,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
     // if (!Array.isArray(tradeUnits) || tradeUnits.length === 0) {
     //   return []
     // };
+    console.log("tradeUnits_for_validity", tradeUnits,"\n Array.isArray", !Array.isArray(tradeUnits), "\n tradeUnits.length", tradeUnits.length === 0,"\n tradeSubType", tradeUnits[0]?.tradeSubType === "");
     if (!Array.isArray(tradeUnits) || tradeUnits.length === 0 || tradeUnits[0]?.tradeSubType === "") {
       return []
     };
@@ -37,6 +38,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
       setSelectedValue({});
     }
     const years = hasHazardous ? [1] : [1, 2, 3];
+    console.log("tradeUnits", tradeUnits)
     // const years = [1, 2, 3];
     return years.map((val) => ({
       code: val,
@@ -46,6 +48,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
 
   useEffect(() => {
     onSelect(config.key, selectedValue);
+    console.log("selectedValue", selectedValue);
   }, [selectedValue]);
 
   const onChange = (e) => {
@@ -54,6 +57,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
 
 
   // useEffect(() => {
+  //   console.log("selectedValue", selectedValue);
   // }, [selectedValue])
 
   // useEffect(() => {
@@ -74,7 +78,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
     <React.Fragment>
       <div className="clu-doc-required-card no-width">
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_TRADE_VALIDITY_NO_OF_YEAR")}`}<span className="requiredField">*</span></CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("TL_TRADE_VALIDITY_NO_OF_YEAR")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             name={"validityYears"}
             control={control}

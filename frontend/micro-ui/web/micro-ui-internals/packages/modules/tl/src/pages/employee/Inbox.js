@@ -11,16 +11,16 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates?.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates?.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationDate", desc: true }]);
+  const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationDate", desc: false }]);
   const [setSearchFieldsBackToOriginalState, setSetSearchFieldsBackToOriginalState] = useState(false);
   const [searchParams, setSearchParams] = useState(initialStates?.searchParams || {});
-  const [totalRecords, setTotalRecords] = useState(undefined);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const ttID = localStorage.getItem("punjab-tenantId");
   const tenantIdCheck = ttID || tenantId;
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
- 
+  console.log("localities in TL: ", localities);
 
   let isMobile = window.Digit.Utils.browser.isMobile();
   let paginationParams = isMobile
@@ -33,17 +33,18 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
     config: {},
   });
 
-  // useEffect(() => {
-  //   (async () => {
-  //     // debugger;
-  //     // const applicationStatus = searchParams?.filters?.tlfilters?.applicationStatus?.map((e) => e.code).join(",");
-  //     // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
-  //     // let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-  //     // if (response?.count) {
-  //     //   setTotalRecords(response.count);
-  //     // }
-  //   })();
-  // }, [searchParams, pageOffset, pageSize]);
+  useEffect(() => {
+    (async () => {
+      // debugger;
+      console.log("searchParams here ", searchParams);
+      // const applicationStatus = searchParams?.filters?.tlfilters?.applicationStatus?.map((e) => e.code).join(",");
+      // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
+      // let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      // if (response?.count) {
+      //   setTotalRecords(response.count);
+      // }
+    })();
+  }, [searchParams, pageOffset, pageSize]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -61,13 +62,8 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
     setSearchParams({ ...searchParams, search: params });
   };
 
-  // const handleSort = useCallback((args) => {
-  //   if (args.length === 0) return;
-  //   setSortParams(args);
-  // }, []);
-
   const handleSort = useCallback((args) => {
-    if (args?.length === 0) return;
+    if (args.length === 0) return;
     setSortParams(args);
   }, []);
 

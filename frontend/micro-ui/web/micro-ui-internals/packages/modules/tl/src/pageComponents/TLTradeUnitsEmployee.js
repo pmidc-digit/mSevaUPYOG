@@ -414,7 +414,7 @@ const TradeUnitForm = (_props) => {
             </div>
           ) : null}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {`${t("TRADELICENSE_TRADECATEGORY_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -465,7 +465,7 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {`${t("TRADELICENSE_TRADETYPE_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -501,6 +501,7 @@ const TradeUnitForm = (_props) => {
                       setValue("uomValue", "");
                       setTradeSubTypeOptionsList(filterTradeSubTypeList);
                     }
+                    console.log("tradeType", e);
                     props.onChange(e);
                   }}
                   optionKey="i18nKey"
@@ -513,7 +514,7 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -543,7 +544,7 @@ const TradeUnitForm = (_props) => {
                     if (e?.code != props?.value?.code && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
                     setValue("uom", e?.uom ? e?.uom : "");
                     setValue("uomValue", "");
-                    
+                    console.log("tradeSubType", e);
                     props.onChange(e);
                   }}
                   optionKey="i18nKey"
@@ -561,7 +562,7 @@ const TradeUnitForm = (_props) => {
               : ""}{" "}
           </CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}`}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>
@@ -591,7 +592,7 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>

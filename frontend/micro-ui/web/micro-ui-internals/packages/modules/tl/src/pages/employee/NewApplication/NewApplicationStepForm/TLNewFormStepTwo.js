@@ -13,13 +13,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
   // delete
-  // const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
+  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-  const [propertyId, setPropertyId] = useState(
-    new URLSearchParams(useLocation().search).get("propertyId")
-    || formData?.TraidDetails?.cpt?.details?.propertyId
-    || ""
-  );
   const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
   // const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
   // const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");

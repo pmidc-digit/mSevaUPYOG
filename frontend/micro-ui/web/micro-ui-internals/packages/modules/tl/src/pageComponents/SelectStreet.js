@@ -106,7 +106,7 @@ const SelectStreet = ({ t, config, onSelect, userType, formData, formState, setE
     return inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller hrms-text-transform-none">
+          <CardLabel className="card-label-smaller">
             {t(input.label)}
             {config.isMandatory ? " * " : null}
           </CardLabel>

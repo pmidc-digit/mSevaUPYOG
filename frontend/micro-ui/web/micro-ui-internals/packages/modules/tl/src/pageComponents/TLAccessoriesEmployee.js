@@ -288,6 +288,7 @@ const AccessoriersForm = (_props) => {
   const errorStyle = {
     // width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px"
   };
+  //console.log("allAccessoriesList",accessor)
   return (
     <React.Fragment>
       <div>
@@ -312,7 +313,7 @@ const AccessoriersForm = (_props) => {
             </div>
           ) : null}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_ACC_LABEL")} `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_ACC_LABEL")} `}</CardLabel>
             <Controller
               control={control}
               name={"accessoryCategory"}
@@ -345,7 +346,7 @@ const AccessoriersForm = (_props) => {
           </LabelFieldPair>
           {/* <CardLabelError style={errorStyle}>{localFormState.touched.accessoryCategory ? errors?.name?.message : ""}</CardLabelError> */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {getValues("uom") ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} `}
               <span className={getValues("uom") ? "requiredField" : ""}>{getValues("uom") ? "*" : ""}</span>
             </CardLabel>
@@ -375,7 +376,7 @@ const AccessoriersForm = (_props) => {
           </LabelFieldPair>
           {/* <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError> */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {accessor?.accessoryCategory?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}  `}
               <span className={accessor?.accessoryCategory?.uom ? "requiredField" : ""}>{accessor?.accessoryCategory?.uom ? "*" : ""}</span>
             </CardLabel>
@@ -416,7 +417,7 @@ const AccessoriersForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.uomValue ? errors?.uomValue?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")}` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}
               <span className={accessor?.accessoryCategory?.code ? "requiredField" : ""}>{accessor?.accessoryCategory?.code ? "*" : ""}</span>
             </CardLabel>

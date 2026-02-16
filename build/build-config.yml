@@ -930,3 +930,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
+
+  - name: "builds/upyog/core-services/egov-gisintegration"
+    build:
+      - work-dir: "core-services/egov-gisintegration"
+        image-name: "egov-gisintegration"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
+        image-name: "egov-gisintegration-db"

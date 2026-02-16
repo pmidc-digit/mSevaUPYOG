@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-rentandlease",
-  "version": "1.0.51-dev.1",
+  "version": "1.0.51-dev.1.1",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

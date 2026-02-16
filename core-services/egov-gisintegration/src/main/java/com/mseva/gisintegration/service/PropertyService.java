@@ -38,6 +38,22 @@ public class PropertyService {
     @Value("${egov.propertyservice.search.endpoint}")
     private String propertySearchEndpoint;
 
+    
+    /**
+     * Searches local backup for a property by survey ID.
+     */
+    public List<Property> findBySurveyid(String surveyid, String tenantid) {
+        log.info("Controller request: Searching for surveyid: {} in tenant: {}", surveyid, tenantid);
+        return propertyRepository.findBySurveyid(surveyid, tenantid);
+    }
+
+    /**
+     * Searches local backup for a property by property ID.
+     */
+    public List<Property> findByPropertyid(String propertyid, String tenantid) {
+        log.info("Controller request: Searching for propertyid: {} in tenant: {}", propertyid, tenantid);
+        return propertyRepository.findByPropertyid(propertyid, tenantid);
+    }
     /**
      * Entry point for Assessment Topic Consumer.
      */

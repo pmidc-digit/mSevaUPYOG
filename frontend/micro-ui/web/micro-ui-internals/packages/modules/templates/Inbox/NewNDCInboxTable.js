@@ -3,23 +3,25 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
-const NewNDCInboxTable = ({ rows = [], parentRoute, searchQuery = "", statusFilter = "ALL" }) => {
+const NewNDCInboxTable = ({ rows = [], parentRoute, searchQuery = "", statusFilter = [] }) => {
   const { t } = useTranslation();
+
+  const normalize = (value) => String(value || "").replace(/[\s-_]+/g, "").toLowerCase();
 
   const data = useMemo(() => {
     const list = rows || [];
-    const query = String(searchQuery || "").toLowerCase().trim();
-    const filter = String(statusFilter || "ALL").toLowerCase().trim();
+    const query = String(searchQuery || "").trim().toLowerCase();
+    const statusFilters = Array.isArray(statusFilter) ? statusFilter : [statusFilter];
+    const normalizedFilters = statusFilters.map(normalize).filter(Boolean);
 
     return list.filter((row) => {
-      const status = String(row?.status || row?.applicationStatus || "").toLowerCase();
-      const appId = String(row?.applicationId || row?.applicationNo || "").toLowerCase();
-      const owner = String(row?.applicantName || row?.ownerName || row?.applicant || "").toLowerCase();
-
-      const matchesStatus = filter === "all" ? true : status.includes(filter);
-      const matchesQuery = !query ? true : appId.includes(query) || owner.includes(query);
-
-      return matchesStatus && matchesQuery;
+      const applicationId = String(row?.applicationId || row?.applicationNo || "").toLowerCase();
+      const statusValue = normalize(row?.status || row?.applicationStatus || "");
+      const matchesQuery = query ? applicationId.includes(query) : true;
+      const matchesStatus = normalizedFilters.length
+        ? normalizedFilters.some((filterValue) => statusValue.includes(filterValue))
+        : true;
+      return matchesQuery && matchesStatus;
     });
   }, [rows, searchQuery, statusFilter]);
 

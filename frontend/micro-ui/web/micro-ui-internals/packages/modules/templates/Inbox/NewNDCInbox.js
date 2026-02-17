@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useReducer, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useReducer, useState, useEffect, useRef } from "react";
 import {
   InboxComposer,
   ComplaintIcon,
@@ -14,7 +14,7 @@ import NewNDCInboxTable from "./NewNDCInboxTable";
 import useNewInboxTableConfig from "./useNewInboxTableConfig";
 import useNewInboxMobileCardsData from "./useNewInboxMobileCardsData";
 import { businessServiceList } from "../../ndc/src/utils";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 const NewNDCInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -24,22 +24,29 @@ const NewNDCInbox = ({ parentRoute }) => {
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 
-  const searchFormDefaultValues = {};
+  const businessServices = useMemo(() => businessServiceList(true) || [], []);
+  const searchFormDefaultValues = useMemo(() => ({}), []);
 
-  const filterFormDefaultValues = {
-    moduleName: "ndc-services",
-    applicationStatus: [],
-    businessService: null,
-    locality: [],
-    assignee: "ASSIGNED_TO_ALL",
-    businessServiceArray: businessServiceList(true) || [],
-  };
-  const tableOrderFormDefaultValues = {
-    sortBy: "",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
-    offset: 0,
-    sortOrder: "DESC",
-  };
+  const filterFormDefaultValues = useMemo(
+    () => ({
+      moduleName: "ndc-services",
+      applicationStatus: [],
+      businessService: null,
+      locality: [],
+      assignee: "ASSIGNED_TO_ALL",
+      businessServiceArray: businessServices,
+    }),
+    [businessServices]
+  );
+  const tableOrderFormDefaultValues = useMemo(
+    () => ({
+      sortBy: "",
+      limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+      offset: 0,
+      sortOrder: "DESC",
+    }),
+    []
+  );
 
   function formReducer(state, payload) {
     switch (payload.action) {
@@ -138,9 +145,54 @@ const NewNDCInbox = ({ parentRoute }) => {
     setFilter(filterStatus);
   };
 
+  const {
+    register: registerFilterFormField,
+    control: controlFilterForm,
+    handleSubmit: handleFilterFormSubmit,
+    setValue: setFilterFormValue,
+    getValues: getFilterFormValue,
+    reset: resetFilterForm,
+  } = useForm({
+    defaultValues: { ...filterFormDefaultValues },
+  });
+
+  const filterValues = useWatch({
+    control: controlFilterForm,
+    name: ["moduleName", "applicationStatus", "businessService", "locality", "assignee"],
+  });
+  const derivedFilterValues = useMemo(
+    () => ({
+      moduleName: filterValues?.[0] ?? "ndc-services",
+      applicationStatus: Array.isArray(filterValues?.[1]) ? filterValues?.[1] : [],
+      businessService: filterValues?.[2] ?? null,
+      locality: Array.isArray(filterValues?.[3]) ? filterValues?.[3] : [],
+      assignee: filterValues?.[4] ?? "ASSIGNED_TO_ALL",
+      businessServiceArray: filterFormDefaultValues.businessServiceArray,
+    }),
+    [filterValues, filterFormDefaultValues]
+  );
+  const derivedGetFilter = useMemo(
+    () => ({
+      applicationStatus: (derivedFilterValues?.applicationStatus || []).map((code) => ({ code })),
+    }),
+    [derivedFilterValues]
+  );
+  const prevFilterRef = useRef("");
+  const searchDebounceRef = useRef(null);
+  const hasInitializedFilterForm = useRef(false);
+
+  const inboxFilters = useMemo(
+    () => ({
+      ...formState,
+      filterForm: derivedFilterValues,
+      getFilter: derivedGetFilter,
+    }),
+    [formState, derivedFilterValues, derivedGetFilter]
+  );
+
   const { isLoading: isInboxLoading, data } = Digit.Hooks.ndc.useInbox({
     tenantId,
-    filters: { ...formState, getFilter },
+    filters: inboxFilters,
   });
 
   const [table, setTable] = useState([]);
@@ -228,24 +280,56 @@ const NewNDCInbox = ({ parentRoute }) => {
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
-  const {
-    register: registerFilterFormField,
-    control: controlFilterForm,
-    handleSubmit: handleFilterFormSubmit,
-    setValue: setFilterFormValue,
-    getValues: getFilterFormValue,
-    reset: resetFilterForm,
-  } = useForm({
-    defaultValues: { ...filterFormDefaultValues },
-  });
+  useEffect(() => {
+    const serialized = JSON.stringify(derivedFilterValues || {});
+    if (prevFilterRef.current === serialized) return;
+    prevFilterRef.current = serialized;
+    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
+    dispatch({ action: "mutateFilterForm", data: derivedFilterValues || {} });
+  }, [derivedFilterValues, tableOrderFormDefaultValues]);
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      const value = String(topBarSearch || "").trim();
+      const nextSearchForm = value ? { applicationNo: value } : {};
+      dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
+      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
+    }, 400);
+    return () => clearTimeout(searchDebounceRef.current);
+  }, [topBarSearch, tableOrderFormDefaultValues]);
 
   const onResetFilterForm = () => {
     onFilterFormReset(setFilterFormValue);
   };
 
+  const normalizeStatus = useCallback((value) => String(value || "").replace(/[\s-_]+/g, "").toUpperCase(), []);
+
+  const onStatusTabClick = useCallback(
+    (label) => {
+      setActiveStatusTab(label);
+      if (label === "ALL") {
+        setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true });
+        return;
+      }
+      const normalizedLabel = normalizeStatus(label);
+      const matchedStatus = (statuses || []).find(
+        (status) => normalizeStatus(status?.applicationstatus) === normalizedLabel
+      );
+      const fuzzyStatus = (statuses || []).find((status) =>
+        normalizeStatus(status?.applicationstatus).includes(normalizedLabel)
+      );
+      const statusCode = matchedStatus?.applicationstatus || fuzzyStatus?.applicationstatus || label;
+      setFilterFormValue("applicationStatus", [statusCode], { shouldDirty: true, shouldTouch: true });
+    },
+    [normalizeStatus, setFilterFormValue, statuses]
+  );
+
   useEffect(() => {
+    if (hasInitializedFilterForm.current) return;
     if (resetFilterForm && formState) {
       resetFilterForm(formState?.filterForm);
+      hasInitializedFilterForm.current = true;
     }
   }, [formState, resetFilterForm]);
 
@@ -300,13 +384,7 @@ const NewNDCInbox = ({ parentRoute }) => {
           font-size: 12px;
           font-weight: 700;
         }
-        .ndc-new-inbox .ndc-new-inbox-filter-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
-          border-radius: 12px;
-          padding: 18px;
-        }
+  
         .ndc-new-inbox .ndc-new-filter-card-grid {
           display: grid;
           grid-template-columns: repeat(6, 1fr);
@@ -336,7 +414,7 @@ const NewNDCInbox = ({ parentRoute }) => {
         .ndc-new-inbox .ndc-new-filter-option-subtitle {
           font-size: 12px;
           margin-top: 6px;
-          color: #64748b;
+          color: white;
         }
         .ndc-new-inbox .ndc-new-filter-status-grid {
           display: grid;
@@ -426,10 +504,6 @@ const NewNDCInbox = ({ parentRoute }) => {
         }
         .ndc-new-inbox .ndc-new-filter-show-more {
           margin-top: 12px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 8px 12px;
           cursor: pointer;
           font-weight: 600;
           font-size: 12px;
@@ -439,6 +513,17 @@ const NewNDCInbox = ({ parentRoute }) => {
           gap: 6px;
           transition: all 0.2s ease;
         }
+        .ndc-new-inbox .ndc-new-filter-show-more-icon {
+          width: 28px;
+          height: 28px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          color: #457fff;
+          background: #eff6ff;
+        }
         .ndc-new-inbox .ndc-new-filter-show-more:hover {
           background: #eff6ff;
           border-color: #bfdbfe;
@@ -447,6 +532,10 @@ const NewNDCInbox = ({ parentRoute }) => {
           display: block;
         }
         .ndc-new-inbox .filter-card .heading {
+          display: none;
+        }
+        .ndc-new-inbox .filter-card .submit-bar,
+        .ndc-new-inbox .filter-card button[type="submit"] {
           display: none;
         }
         .ndc-new-inbox .ndc-new-top-filters {
@@ -695,12 +784,12 @@ const NewNDCInbox = ({ parentRoute }) => {
         </div>
         <div className="ndc-new-table-topbar">
           <div className="ndc-new-tabs">
-            {["ALL", "DRAFT","PENDINGPAYMENT", "PENDING APPROVAL", "APPROVED", "REJECTED"].map((label) => (
+            {["ALL", "PENDINGPAYMENT", "PENDING APPROVAL", "APPROVED", "REJECTED"].map((label) => (
               <button
                 key={label}
                 type="button"
                 className={`ndc-new-tab ${activeStatusTab === label ? "active" : ""}`}
-                onClick={() => setActiveStatusTab(label)}
+                onClick={() => onStatusTabClick(label)}
               >
                 {label}
               </button>
@@ -716,12 +805,17 @@ const NewNDCInbox = ({ parentRoute }) => {
             />
           </div>
         </div>
-        {isInboxLoading ? (
+          {isInboxLoading ? (
           <Loader />
         ) : table?.length < 1 ? (
           <Card className="margin-unset text-align-center">{t("CS_MYAPPLICATIONS_NO_APPLICATION")}</Card>
         ) : (
-          <NewNDCInboxTable rows={table} parentRoute={parentRoute} searchQuery={topBarSearch} statusFilter={activeStatusTab} />
+            <NewNDCInboxTable
+              rows={table}
+              parentRoute={parentRoute}
+              searchQuery={topBarSearch}
+              statusFilter={activeStatusTab === "ALL" ? derivedFilterValues?.applicationStatus : [activeStatusTab]}
+            />
         )}
         {totalCount > 0 ? (
           <div className="ndc-new-pagination">

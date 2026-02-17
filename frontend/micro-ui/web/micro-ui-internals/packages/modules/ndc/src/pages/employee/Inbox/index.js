@@ -7,6 +7,7 @@ import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { businessServiceList } from "../../../utils";
 import CreateNDCApplicationStep from "../createNDCApplication";
+import NewNDCInbox from "../../../../../templates/Inbox/NewNDCInbox";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -236,6 +237,9 @@ const Inbox = ({ parentRoute }) => {
             formState,
           }}
         />
+      </div>
+      <div className="ndc-new-ui-preview">
+        <NewNDCInbox parentRoute={parentRoute} />
       </div>
     </>
   );

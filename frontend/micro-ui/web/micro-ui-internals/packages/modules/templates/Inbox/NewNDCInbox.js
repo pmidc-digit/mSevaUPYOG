@@ -305,21 +305,24 @@ const NewNDCInbox = ({ parentRoute }) => {
           border: 1px solid #e2e8f0;
           box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
           border-radius: 12px;
-          padding: 16px;
+          padding: 18px;
         }
         .ndc-new-inbox .ndc-new-filter-card-grid {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 12px;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 14px;
         }
         .ndc-new-inbox .ndc-new-filter-option-card {
           background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 12px 14px;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 16px;
+          min-height: 88px;
           text-align: left;
           cursor: pointer;
           transition: all 0.2s ease;
+          position: relative;
+          overflow: hidden;
         }
         .ndc-new-inbox .ndc-new-filter-option-card.active {
           background: #e0f2fe;
@@ -327,27 +330,32 @@ const NewNDCInbox = ({ parentRoute }) => {
           box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
         }
         .ndc-new-inbox .ndc-new-filter-option-title {
-          font-weight: 600;
+          font-weight: 700;
+          font-size: 14px;
         }
         .ndc-new-inbox .ndc-new-filter-option-subtitle {
           font-size: 12px;
-          margin-top: 4px;
+          margin-top: 6px;
+          color: #64748b;
         }
         .ndc-new-inbox .ndc-new-filter-status-grid {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 10px;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 14px;
         }
         .ndc-new-inbox .ndc-new-filter-status-card {
           background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 12px 14px;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 16px;
+          min-height: 88px;
           text-align: left;
           cursor: pointer;
           transition: all 0.2s ease;
           width: 100%;
           box-sizing: border-box;
+          position: relative;
+          overflow: hidden;
         }
         .ndc-new-inbox .ndc-new-filter-status-card.active {
           background: #e0f2fe;
@@ -355,71 +363,132 @@ const NewNDCInbox = ({ parentRoute }) => {
           box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
         }
         .ndc-new-inbox .ndc-new-filter-status-title {
-          font-weight: 600;
+          font-weight: 700;
+          font-size: 14px;
         }
         .ndc-new-inbox .ndc-new-filter-status-count {
-          font-size: 12px;
-          margin-top: 6px;
+          font-size: 22px;
+          font-weight: 700;
+          margin-top: 8px;
+          color: inherit;
+        }
+        .ndc-new-inbox .ndc-new-filter-card-icon {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          width: 36px;
+          height: 36px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.2);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          font-size: 16px;
+        }
+        .ndc-new-inbox .ndc-new-filter-card {
+          color: #ffffff;
+          border-color: transparent;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.primary {
+          background: #2563eb;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.success {
+          background: #16a34a;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.warning {
+          background: #ea580c;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.info {
+          background: #7c3aed;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.danger {
+          background: #dc2626;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.indigo {
+          background: #4f46e5;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.teal {
+          background: #0f766e;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.pink {
+          background: #db2777;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.amber {
+          background: #d97706;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.slate {
+          background: #475569;
+        }
+        .ndc-new-inbox .ndc-new-filter-card.active {
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+          transform: translateY(-1px);
         }
         .ndc-new-inbox .ndc-new-filter-show-more {
           margin-top: 12px;
-          background: #f1f5f9;
-          border: 1px dashed #94a3b8;
-          border-radius: 999px;
-          padding: 8px 14px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 8px 12px;
           cursor: pointer;
           font-weight: 600;
           font-size: 12px;
-          color: #0f172a;
+          color: #2563eb;
           display: inline-flex;
           align-items: center;
           gap: 6px;
           transition: all 0.2s ease;
         }
         .ndc-new-inbox .ndc-new-filter-show-more:hover {
-          background: #e2e8f0;
-          border-color: #64748b;
+          background: #eff6ff;
+          border-color: #bfdbfe;
         }
         .ndc-new-inbox .ndc-new-layout {
-          display: grid;
-          grid-template-columns: 300px 1fr;
-          gap: 20px;
+          display: block;
         }
         .ndc-new-inbox .filter-card .heading {
           display: none;
         }
-        .ndc-new-inbox .ndc-new-filters-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 8px;
-          padding: 12px 14px;
-          border-radius: 12px;
-          border: 1px solid #e2e8f0;
+        .ndc-new-inbox .ndc-new-top-filters {
+          margin: 12px 0 16px;
           background: #ffffff;
-          margin-bottom: 12px;
-          font-weight: 700;
-        }
-        .ndc-new-inbox .ndc-new-filters-title {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .ndc-new-inbox .ndc-new-refresh {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 28px;
-          height: 28px;
-          border-radius: 8px;
           border: 1px solid #e2e8f0;
-          background: #f8fafc;
-          color: #64748b;
+          border-radius: 16px;
+          padding: 18px;
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
         }
-        .ndc-new-inbox .ndc-new-filters-scroll {
-          max-height: 70vh;
-          overflow-y: auto;
-          padding-right: 6px;
+        .ndc-new-inbox .ndc-new-inbox-filter-card {
+          margin: 0;
+        }
+        .ndc-new-inbox .ndc-new-filter-card-grid {
+          grid-template-columns: repeat(6, 1fr);
+        }
+        .ndc-new-inbox .ndc-new-filter-status-grid {
+          grid-template-columns: repeat(6, 1fr);
+        }
+        @media (max-width: 1400px) {
+          .ndc-new-inbox .ndc-new-filter-card-grid,
+          .ndc-new-inbox .ndc-new-filter-status-grid {
+            grid-template-columns: repeat(4, minmax(140px, 1fr));
+          }
+        }
+        @media (max-width: 1100px) {
+          .ndc-new-inbox .ndc-new-filter-card-grid,
+          .ndc-new-inbox .ndc-new-filter-status-grid {
+            grid-template-columns: repeat(3, minmax(140px, 1fr));
+          }
+        }
+        @media (max-width: 900px) {
+          .ndc-new-inbox .ndc-new-filter-card-grid,
+          .ndc-new-inbox .ndc-new-filter-status-grid {
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+          }
+        }
+        @media (max-width: 640px) {
+          .ndc-new-inbox .ndc-new-filter-card-grid,
+          .ndc-new-inbox .ndc-new-filter-status-grid {
+            grid-template-columns: 1fr;
+          }
         }
         .ndc-new-inbox .ndc-new-table-card {
           margin-top: 16px;
@@ -615,11 +684,7 @@ const NewNDCInbox = ({ parentRoute }) => {
         {totalCount ? <span className="ndc-new-count-pill">{totalCount}</span> : null}
       </div>
       <div className="ndc-new-layout">
-        <div className="filters-container ndc-new-filters-scroll">
-          <div className="ndc-new-filters-header">
-            <span className="ndc-new-filters-title">🔍 Filters:</span>
-            <span className="ndc-new-refresh">⟳</span>
-          </div>
+        <div className="ndc-new-top-filters">
           <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
             <NewFilterFormFieldsComponent
               registerRef={registerFilterFormField}
@@ -628,62 +693,60 @@ const NewNDCInbox = ({ parentRoute }) => {
             />
           </FilterForm>
         </div>
-        <div>
-          <div className="ndc-new-table-topbar">
-            <div className="ndc-new-tabs">
-              {["ALL", "DRAFT", "PENDING APPROVAL", "APPROVED", "REJECTED"].map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  className={`ndc-new-tab ${activeStatusTab === label ? "active" : ""}`}
-                  onClick={() => setActiveStatusTab(label)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="ndc-new-search">
-              <span aria-hidden="true">🔍</span>
-              <input
-                type="text"
-                value={topBarSearch}
-                onChange={(e) => setTopBarSearch(e.target.value)}
-                placeholder="Search by name or ID..."
-              />
-            </div>
-          </div>
-          {isInboxLoading ? (
-            <Loader />
-          ) : table?.length < 1 ? (
-            <Card className="margin-unset text-align-center">{t("CS_MYAPPLICATIONS_NO_APPLICATION")}</Card>
-          ) : (
-            <NewNDCInboxTable rows={table} parentRoute={parentRoute} searchQuery={topBarSearch} statusFilter={activeStatusTab} />
-          )}
-          {totalCount > 0 ? (
-            <div className="ndc-new-pagination">
-              {t("CS_COMMON_ROWS_PER_PAGE")}:
-              <select value={formState.tableForm?.limit} onChange={onPageSizeChange}>
-                {[10, 20, 30, 40, 50].map((pageSize) => (
-                  <option key={pageSize} value={pageSize}>
-                    {pageSize}
-                  </option>
-                ))}
-              </select>
-              <span>
-                {formState.tableForm?.offset + 1}-{Math.min(formState.tableForm?.offset + formState.tableForm?.limit, totalCount)} of {totalCount}
-              </span>
-              <button onClick={onPrevPage} disabled={formState.tableForm?.offset <= 0}>
-                ‹
-              </button>
+        <div className="ndc-new-table-topbar">
+          <div className="ndc-new-tabs">
+            {["ALL", "DRAFT","PENDINGPAYMENT", "PENDING APPROVAL", "APPROVED", "REJECTED"].map((label) => (
               <button
-                onClick={onNextPage}
-                disabled={formState.tableForm?.offset + formState.tableForm?.limit >= totalCount}
+                key={label}
+                type="button"
+                className={`ndc-new-tab ${activeStatusTab === label ? "active" : ""}`}
+                onClick={() => setActiveStatusTab(label)}
               >
-                ›
+                {label}
               </button>
-            </div>
-          ) : null}
+            ))}
+          </div>
+          <div className="ndc-new-search">
+            <span aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              value={topBarSearch}
+              onChange={(e) => setTopBarSearch(e.target.value)}
+              placeholder="Search by application no..."
+            />
+          </div>
         </div>
+        {isInboxLoading ? (
+          <Loader />
+        ) : table?.length < 1 ? (
+          <Card className="margin-unset text-align-center">{t("CS_MYAPPLICATIONS_NO_APPLICATION")}</Card>
+        ) : (
+          <NewNDCInboxTable rows={table} parentRoute={parentRoute} searchQuery={topBarSearch} statusFilter={activeStatusTab} />
+        )}
+        {totalCount > 0 ? (
+          <div className="ndc-new-pagination">
+            {t("CS_COMMON_ROWS_PER_PAGE")}:
+            <select value={formState.tableForm?.limit} onChange={onPageSizeChange}>
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+            <span>
+              {formState.tableForm?.offset + 1}-{Math.min(formState.tableForm?.offset + formState.tableForm?.limit, totalCount)} of {totalCount}
+            </span>
+            <button onClick={onPrevPage} disabled={formState.tableForm?.offset <= 0}>
+              ‹
+            </button>
+            <button
+              onClick={onNextPage}
+              disabled={formState.tableForm?.offset + formState.tableForm?.limit >= totalCount}
+            >
+              ›
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FilterFormField, Card } from "@mseva/digit-ui-react-components";
+import { FilterFormField } from "@mseva/digit-ui-react-components";
 import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -27,23 +27,44 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     type.i18nKey = t(`WF_BPA_${type.code}`);
   });
 
+  const getVariantFromCode = (code) => {
+    const value = String(code || "").toLowerCase();
+    if (value.includes("approved")) return "success";
+    if (value.includes("rejected")) return "danger";
+    if (value.includes("pending")) return "warning";
+    if (value.includes("inbox")) return "primary";
+    if (value.includes("assigned")) return "primary";
+    return "info";
+  };
+
+  const colorVariants = ["primary", "success", "warning", "danger", "info", "indigo", "teal", "pink", "amber", "slate"];
+  const getVariantByIndex = (index, fallback) => colorVariants[index % colorVariants.length] || fallback;
+
   return (
-    <Card className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
+    <div className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
       <FilterFormField>
         <Controller
           name="assignee"
           control={controlFilterForm}
           render={(props) => (
             <div className="ndc-new-filter-card-grid">
-              {availableOptions.map((option) => (
+              {availableOptions.map((option, index) => (
                 <button
                   key={option.code}
                   type="button"
-                  className={`ndc-new-filter-option-card ${props.value === option.code ? "active" : ""}`}
+                  className={`ndc-new-filter-option-card ndc-new-filter-card ${getVariantByIndex(
+                    index,
+                    getVariantFromCode(option.code)
+                  )} ${
+                    props.value === option.code ? "active" : ""
+                  }`}
                   onClick={() => props.onChange(option.code)}
                 >
                   <div className="ndc-new-filter-option-title">{option.name}</div>
                   <div className="ndc-new-filter-option-subtitle">{t("ES_INBOX_ASSIGNED")}</div>
+                  <span className="ndc-new-filter-card-icon" aria-hidden="true">
+                    <span>⌂</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -65,20 +86,26 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
               }
             };
 
-            const visibleStatuses = showAllStatuses ? statuses : statuses?.slice(0, 3);
+            const visibleStatuses = showAllStatuses ? statuses : statuses?.slice(0, 6);
 
             return (
               <div className="ndc-new-filter-status-wrapper">
                 <div className="ndc-new-filter-status-grid">
-                  {visibleStatuses?.map((status) => (
+                  {visibleStatuses?.map((status, index) => (
                     <button
                       key={status.applicationstatus}
                       type="button"
-                      className={`ndc-new-filter-status-card ${props.value.includes(status.applicationstatus) ? "active" : ""}`}
+                      className={`ndc-new-filter-status-card ndc-new-filter-card ${getVariantByIndex(
+                        index,
+                        getVariantFromCode(status.applicationstatus)
+                      )} ${props.value.includes(status.applicationstatus) ? "active" : ""}`}
                       onClick={() => toggleStatus(status.applicationstatus)}
                     >
                       <div className="ndc-new-filter-status-title">{t(status.applicationstatus)}</div>
                       <div className="ndc-new-filter-status-count">{status.count}</div>
+                      <span className="ndc-new-filter-card-icon" aria-hidden="true">
+                        <span>◎</span>
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -96,7 +123,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
           }}
         />
       </FilterFormField>
-    </Card>
+    </div>
   );
 };
 

@@ -40,7 +40,7 @@ const TimelineDocument = React.memo(({ value, Code, index }) => {
   );
 });
 
-export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj }) {
+export default function NewApplicationTimeline({ workflowDetails, t, tenantId = Digit.ULBService.getCurrentTenantId(), timeObj, empUserName = null, handleSetEmpDesignation= ()=>{} }) {
   const { isLoading, data: docData } = Digit.Hooks.ads.useADSDocumentSearch(
     { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
     { value: workflowDetails?.data?.timeline?.flatMap((item) => item?.wfDocuments) || [] },
@@ -132,6 +132,10 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
     const translationKey = `COMMON_MASTERS_DESIGNATION_${assignment?.designation}`;
     deptMap[emp?.code] = translationKey;
   });
+
+  if(employeeData && empUserName){
+    handleSetEmpDesignation(t(deptMap[empUserName]));
+  }
 
   if (isLoading) return <Loader />;
   return (

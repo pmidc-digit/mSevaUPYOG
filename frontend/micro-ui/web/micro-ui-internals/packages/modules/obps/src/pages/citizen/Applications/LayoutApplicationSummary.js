@@ -18,17 +18,16 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
-  DisplayPhotos,
+  CheckBox
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
-import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
-import NOCDocumentTableView from "../../../../../noc/src/pageComponents/NOCDocumentTableView";
-import { useLayoutSearchApplication } from "@mseva/digit-ui-libraries/src/hooks/obps/useSearchApplication";
+
+
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
-import LayoutDocumentView from "./LayoutDocumentView";
+// import LayoutDocumentView from "../../../pageComponents/LayoutDocumentView";
+import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
@@ -66,14 +65,14 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
     name: checkpoint?.assigner?.name,
     mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
-  }
+  };
 
   return (
     <div>
@@ -84,20 +83,10 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         </div>
       )}
 
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            const fullImage = thumbnailsToShow.fullImage?.[idx] || src
-            Digit.Utils.zoomImage(fullImage)
-          }}
-        />
-      )}
-
       {wfDocuments?.length > 0 && (
         <div>
           <div>
-            <NOCDocument value={{ workflowDocs: wfDocuments }} index={index} />
+            <LayoutDocumentTableView documents={wfDocuments} index={index} />
           </div>
         </div>
       )}
@@ -110,80 +99,71 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
       </div>
     </div>
-  )
-}
+  );
+};
 
-
-const LayoutApplicationOverview = () => {
-  const { id } = useParams()
-  const { t } = useTranslation()
-  const history = useHistory()
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
-  const stateCode = Digit.ULBService.getStateId();
-const [viewTimeline, setViewTimeline] = useState(false);
-  const [displayData, setDisplayData] = useState({})
+const LayoutApplicationSummary = () => {
+  const { id } = useParams();
+  const { t } = useTranslation();
+  const history = useHistory();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const [displayData, setDisplayData] = useState({});
   const [loading, setLoading] = useState(false);
-  const state = Digit.ULBService.getStateId()
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
 
-// const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
-  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
-  const applicationDetails = data?.resData
-  const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
+  const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId);
+  const applicationDetails = data?.resData;
 
-  // Helper function to find document by type and owner index
-  // Searches in both API documents (documents array) and owner's additionalDetails
-  const findOwnerDocument = (ownerIndex, docType) => {
-    // First try to find from documents array
-    if (layoutDocuments && layoutDocuments.length > 0) {
-      let documentTypeKey = "";
-      if (ownerIndex === 0) {
-        documentTypeKey = `OWNER.${docType}`;
-      } else {
-        documentTypeKey = `OWNER.${docType}_${ownerIndex}`;
-      }
-      
-      const doc = layoutDocuments.find((d) => d.documentType === documentTypeKey);
-      if (doc?.uuid || doc?.fileStoreId) {
-        return doc?.uuid || doc?.fileStoreId;
-      }
-    }
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
 
-    // Then check owner's additionalDetails (same keys as LayoutSummary.js)
-    const owners = applicationDetails?.Layout?.[0]?.owners || [];
-    if (owners && owners[ownerIndex]?.additionalDetails) {
-      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
-        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
-      }
-      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
-        return owners[ownerIndex]?.additionalDetails?.documentFile;
-      }
-    }
-
-    return null;
-  };
-
-  console.log("=== LayoutApplicationSummary Debug ===")
-  console.log("Raw data from hook:", data)
-  console.log("applicationDetails (data?.resData):", applicationDetails)
-  console.log("Layout array:", applicationDetails?.Layout)
-  console.log("First Layout object:", applicationDetails?.Layout?.[0])
-  console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
-  console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
-  console.log("=== End Debug ===")
-  const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
-
-  const { data: storeData } = Digit.Hooks.useStore.getInitData()
-  const { tenants } = storeData || {}
-
-  let user = Digit.UserService.getUser()
+  let user = Digit.UserService.getUser();
 
   if (window.location.href.includes("/obps") || window.location.href.includes("/layout")) {
-    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject")
-    const userInfo = userInfos ? JSON.parse(userInfos) : {}
-    user = userInfo?.value
+    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+    const userInfo = userInfos ? JSON.parse(userInfos) : {};
+    user = userInfo?.value;
   }
 
-  const userRoles = user?.info?.roles?.map((e) => e.code)
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  // Statuses where fee table should not be shown
+  const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"];
+
+  // Handle both array and single object for Layout data
+  const layoutData = applicationDetails?.Layout?.[0] || applicationDetails?.Layout;
+
+  useEffect(() => {
+    if (layoutData) {
+      const applicantDetails = layoutData?.layoutDetails?.additionalDetails?.applicationDetails;
+      const siteDetails = layoutData?.layoutDetails?.additionalDetails?.siteDetails;
+      const coordinates = layoutData?.layoutDetails?.additionalDetails?.coordinates;
+      const Documents = layoutData?.documents || [];
+      const ownerPhotoList = layoutData?.owners?.map((owner, idx) => ({
+        filestoreId: owner?.additionalDetails?.ownerPhoto,
+        ownerName: owner?.name,
+        index: idx,
+      })) || [];
+
+      const finalDisplayData = {
+        applicantDetails: applicantDetails ? [applicantDetails] : [],
+        siteDetails: siteDetails ? [siteDetails] : [],
+        coordinates: coordinates ? [coordinates] : [],
+        Documents: Documents.length > 0 ? Documents : [],
+        ownerPhotoList: ownerPhotoList,
+        owners: layoutData?.owners || [],
+      };
+
+      setDisplayData(finalDisplayData);
+    }
+  }, [layoutData]);
+
+  useEffect(() => {
+    const latestCalc = layoutData?.layoutDetails?.additionalDetails?.calculations?.find((c) => c?.isLatest);
+    if (latestCalc?.taxHeadEstimates) {
+      setFeeAdjustments(latestCalc.taxHeadEstimates);
+    }
+  }, [layoutData]);
 
   const handleDownloadPdf = async () => {
     try {
@@ -200,63 +180,18 @@ const [viewTimeline, setViewTimeline] = useState(false);
     }
   };
 
-  useEffect(() => {
-    const layoutObject = applicationDetails?.Layout?.[0]
-
-    console.log("=== useEffect for displayData ===")
-    console.log("layoutObject:", layoutObject)
-    console.log("layoutObject?.documents:", layoutObject?.documents)
-
-    if (layoutObject) {
-      const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
-      const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails
-      const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
-      const Documents = layoutObject?.documents || []
-
-      console.log("Documents array:", Documents)
-      console.log("Documents length:", Documents.length)
-
-      const finalDisplayData = {
-        applicantDetails: applicantDetails ? [applicantDetails] : [],
-        siteDetails: siteDetails ? [siteDetails] : [],
-        coordinates: coordinates ? [coordinates] : [],
-        Documents: Documents.length > 0 ? Documents : [],
-      }
-
-      console.log("finalDisplayData:", finalDisplayData)
-      setDisplayData(finalDisplayData)
-    }
-  }, [applicationDetails?.Layout])
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "layout", // Changed from Layout_mcUp to LAYOUT to match employee side
+      businessService: "layout",
       consumerCodes: id,
       isEmployee: false,
     },
-    { enabled: id ? true : false },
-  )
+    { enabled: id ? true : false }
+  );
 
-  const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
-
-    const downloadSanctionLetter = async () => {
-    const application = applicationDetails?.Layout?.[0];
-    try {
-      if (!application) {
-        throw new Error("Layout Application data is missing");
-      }
-      //we will add sanctionLetter also
-      //await getNOCSanctionLetter(application, t, amountPaid);
-    } catch (error) {
-      console.error("Sanction Letter download error:", error);
-    }
-  };
-
-
-  const dowloadOptions = []
-  if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
-
+  const dowloadOptions = [];
+  if (layoutData?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
@@ -265,228 +200,164 @@ const [viewTimeline, setViewTimeline] = useState(false);
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: state, payments: reciept_data?.Payments[0] }),
+        onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0] }),
       });
     }
   }
 
-  const getFloorLabel = (index) => {
-    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL")
+  const [showToast, setShowToast] = useState(null);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
 
-    const floorNumber = index
-    const lastDigit = floorNumber % 10
-    const lastTwoDigits = floorNumber % 100
-
-    let suffix = "th"
-    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-      if (lastDigit === 1) suffix = "st"
-      else if (lastDigit === 2) suffix = "nd"
-      else if (lastDigit === 3) suffix = "rd"
-    }
-
-    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`
-  }
-
-  const [showToast, setShowToast] = useState(null)
-  const [displayMenu, setDisplayMenu] = useState(false)
-  const [selectedAction, setSelectedAction] = useState(null)
-  const [showOptions, setShowOptions] = useState(false)
-
-  const menuRef = useRef()
+  const menuRef = useRef();
 
   const closeToast = () => {
-    setShowToast(null)
-  }
+    setShowToast(null);
+  };
 
   const closeMenu = () => {
-    setDisplayMenu(false)
-  }
+    setDisplayMenu(false);
+  };
 
-  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
-  const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
+  const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode,
-  })
+  });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
-    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions]
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-    workflowDetails.data.initialActionState =
-      workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {}
-    workflowDetails.data.actionState = { ...workflowDetails.data }
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
   useEffect(() => {
     if (workflowDetails) {
-      workflowDetails.revalidate()
+      workflowDetails.revalidate();
     }
 
     if (data) {
-      data.revalidate()
+      data.revalidate();
     }
-  }, [])
+  }, []);
 
-  const actions =
+  let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles
-    })
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
 
   function onActionSelect(action) {
-    const appNo = applicationDetails?.Layout?.[0]?.applicationNo
+    console.log("selected action", action);
+    const appNo = layoutData?.applicationNo;
+    const applicationStatus = layoutData?.applicationStatus;
 
     const payload = {
       Licenses: [action],
-    }
+    };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/obps/layout/edit-application/${appNo}`)
+      history.push(`/digit-ui/citizen/obps/layout/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" })
+      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+      setTimeout(()=>{setShowToast(null);},3000)
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
-      submitAction(payload)
+      submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/citizen/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`) // Changed from Layout_mcUp to LAYOUT
+      const code = applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "LAYOUT.PAY1" : "LAYOUT.PAY2";
+      history.push(`/digit-ui/citizen/payment/collect/${code}/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
-      setSelectedAction(action)
+      setSelectedAction(action);
     }
   }
 
   const submitAction = async (data) => {
-    const payloadData = applicationDetails?.Layout?.[0] || {}
-    console.log("payload data======> ",payloadData);
-
-
+    const payloadData = layoutData || {};
 
     const updatedApplicant = {
       ...payloadData,
-      
       workflow: {},
-    }
+    };
 
-    const filtData = data?.Licenses?.[0]
+    const filtData = data?.Licenses?.[0];
 
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData?.assignee,
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
-    }
+    };
 
     const finalPayload = {
       Layout: { ...updatedApplicant },
-    }
+    };
 
     try {
-      const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload })
+      const response = await Digit.OBPSService.LayoutUpdate({ tenantId, ...finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
-          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" })
-          workflowDetails.revalidate()
-          setSelectedAction(null)
+          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
         } else {
           history.replace({
             pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
-          })
+          });
         }
       } else {
-        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" })
-        setSelectedAction(null)
+        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+        setSelectedAction(null);
       }
     } catch (err) {
-      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" })
-    }
-  }
-
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    try {
-      setLoading(true);
-      let response = null;
-      const fee = payments?.totalAmountPaid;
-      console.log("fee here here", fee);
-      const amountinwords = amountToWords(fee);
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, amountinwords, usage }] }, "layout-receipt");
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    } catch (error) {
-      console.error("Sanction Letter download error:", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     } finally {
-      setLoading(false);
+      setTimeout(()=>{setShowToast(null);},3000);
     }
-  }
+  };
 
-  const getTimelineCaptions = (checkpoint, index, arr) => {
-    const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
-    const caption = {
-      date: checkpoint?.auditDetails?.lastModified,
-      time: checkpoint?.auditDetails?.timing,
-      name: checkpoint?.assigner?.name,
-      mobileNumber: checkpoint?.assigner?.mobileNumber,
-      source: checkpoint?.assigner?.source,
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  // Helper function to render label-value pairs only when value exists
+  const renderLabel = (label, value) => {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
+      return null;
+    }
+    
+    // Extract value from object if it has 'name' property
+    let displayValue = value;
+    if (typeof value === 'object' && value !== null) {
+      displayValue = value?.name || value?.code || JSON.stringify(value);
     }
 
     return (
-      <div>
-        {comment?.length > 0 && (
-          <div className="TLComments">
-            <h3>{t("WF_COMMON_COMMENTS")}</h3>
-            <p style={{ overflowX: "scroll" }}>{comment}</p>
-          </div>
-        )}
-
-        {thumbnailsToShow?.thumbs?.length > 0 && (
-          <DisplayPhotos
-            srcs={thumbnailsToShow.thumbs}
-            onClick={(src, idx) => {
-              const fullImage = thumbnailsToShow.fullImage?.[idx] || src
-              Digit.Utils.zoomImage(fullImage)
-            }}
-          />
-        )}
-
-        {wfDocuments?.length > 0 && (
-          <div>
-            <div>
-              <NOCDocument value={{ workflowDocs: wfDocuments }} index={index} />
-            </div>
-          </div>
-        )}
-
-        <div style={{ marginTop: "8px" }}>
-          {caption.time && <p>{caption.time}</p>}
-          {caption.date && <p>{caption.date}</p>}
-          {caption.name && <p>{caption.name}</p>}
-          {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
-          {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-        </div>
-      </div>
-    )
-  }
-
-
-    const handleViewTimeline = () => {
-    setViewTimeline(true);
-    const timelineSection = document.getElementById("timeline");
-    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+      <Row 
+        label={label} 
+        text={displayValue} 
+      />
+    );
   };
 
-  const RenderRow = ({ label, value }) => {
-  if (!value) return null;
-  return <Row label={label} text={value} />;
-};
+  const coordinates = layoutData?.layoutDetails?.additionalDetails?.coordinates;
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
+  const ownersList = displayData?.owners?.map((item)=> item.name);
+  const combinedOwnersName = ownersList?.join(", ");
 
   if (isLoading || loading) {
     return <LoaderNew page={true} />;
@@ -495,213 +366,242 @@ const [viewTimeline, setViewTimeline] = useState(false);
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
-         <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
         {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
-          <div>
-
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-
-           </div>
         )}
       </div>
-       
 
-    {/* -------------------- APPLICANTS/OWNERS DETAILS -------------------- */}
-    {applicationDetails?.Layout?.[0]?.owners && applicationDetails?.Layout?.[0]?.owners?.length > 0 && (
-      <Card>
-        <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader>
-        {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
-              <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
-              <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
-              <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
-              <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
-              <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
-              <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
-              <Row label={t("Photo") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
-              <Row label={t("ID Proof") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-            </StatusTable>
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "24px",
+        padding: window.innerWidth > 768 ? "24px" : "0",
+      }}>
+
+      {/* APPLICATION INFO */}
+      <div>
+      
+        <StatusTable>
+          <Row label={t("Application No")} text={layoutData?.applicationNo || "N/A"} />
+          <Row label={t("Application Status")} text={layoutData?.applicationStatus || "N/A"} />
+        </StatusTable>
+      </div>
+
+{console.log("displayData", displayData)}
+      {/* APPLICANT DETAILS */}
+      <div>
+        <CardSubHeader>{t("Applicant Details")}</CardSubHeader>
+        <StatusTable>
+          {displayData?.owners?.map((owner, idx) => (
+            <React.Fragment key={idx}>
+              {renderLabel(idx === 0 ? t("BPA_PRIMARY_OWNER") : `${t("OWNER")} ${idx + 1}`, owner?.name)}
+              {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
+              {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+              {renderLabel("PAN Number", owner?.pan)}
+              {renderLabel("Gender", owner?.gender)}
+              {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress)}
+              
+
+              
+              {idx < displayData?.owners?.length - 1 && <hr style={{ margin: "10px 0" }} />}
+            </React.Fragment>
+          ))}
+        </StatusTable>
+      </div>
+
+      {/* PROFESSIONAL DETAILS */}
+      {displayData?.applicantDetails?.[0]?.professionalName && (
+        <div>
+          <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
+          <StatusTable>
+            {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), displayData?.applicantDetails?.[0]?.professionalName)}
+            {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), displayData?.applicantDetails?.[0]?.professionalEmailId)}
+            {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), displayData?.applicantDetails?.[0]?.professionalRegId)}
+            {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), displayData?.applicantDetails?.[0]?.professionalMobileNumber)}
+            {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), displayData?.applicantDetails?.[0]?.professionalAddress)}
+            {renderLabel("Professional Registration Validity", displayData?.applicantDetails?.[0]?.professionalRegistrationValidity)}
+            {renderLabel("PAN Number", displayData?.applicantDetails?.[0]?.panNumber)}
+          </StatusTable>
+        </div>
+      )}
+
+      {/* APPLICANT AND PROFESSIONAL DOCUMENTS */}
+      {(() => {
+        const applicantDocuments = [];
+        
+        // Collect owner documents
+        displayData?.owners?.forEach((owner, ownerIdx) => {
+          if (owner?.additionalDetails?.panDocument) {
+            applicantDocuments.push({
+              documentType: "OWNER_PAN_DOCUMENT",
+              documentUid: owner?.additionalDetails?.panDocument,
+              filestoreId: owner?.additionalDetails?.panDocument,
+            });
+          }
+          if (owner?.additionalDetails?.documentFile) {
+            applicantDocuments.push({
+              documentType: "OWNER_PRIMARY_DOCUMENT",
+              documentUid: owner?.additionalDetails?.documentFile,
+              filestoreId: owner?.additionalDetails?.documentFile,
+            });
+          }
+          if (owner?.additionalDetails?.ownerPhoto) {
+            applicantDocuments.push({
+              documentType: "OWNER_PHOTO",
+              documentUid: owner?.additionalDetails?.ownerPhoto,
+              filestoreId: owner?.additionalDetails?.ownerPhoto,
+            });
+          }
+        });
+        
+        // Collect professional documents
+        if (displayData?.applicantDetails?.[0]?.primaryOwnerDocument) {
+          applicantDocuments.push({
+            documentType: "PROFESSIONAL_DOCUMENT",
+            documentUid: displayData?.applicantDetails?.[0]?.primaryOwnerDocument,
+            filestoreId: displayData?.applicantDetails?.[0]?.primaryOwnerDocument,
+          });
+        }
+        if (displayData?.applicantDetails?.[0]?.primaryOwnerPhoto) {
+          applicantDocuments.push({
+            documentType: "PROFESSIONAL_PHOTO",
+            documentUid: displayData?.applicantDetails?.[0]?.primaryOwnerPhoto,
+            filestoreId: displayData?.applicantDetails?.[0]?.primaryOwnerPhoto,
+          });
+        }
+
+        return applicantDocuments?.length > 0 && (
+          <div>
+            <CardSubHeader>{t("Applicant and Professional Documents")}</CardSubHeader>
+            <LayoutDocumentTableView documents={applicantDocuments} />
           </div>
-        ))}
-      </Card>
-    )}
+        );
+      })()}
 
- {/* -------------------- APPLICANT DETAILS -------------------- */}
-    <Card>
-      <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
-      {displayData?.applicantDetails?.map((detail, index) => (
-        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-          <StatusTable>
+      {/* SITE DETAILS */}
+      <div>
+        <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
+        <StatusTable>
+          {displayData?.siteDetails?.[0] && (
+            <>
+              {renderLabel(t("BPA_PLOT_NO_LABEL"), displayData?.siteDetails?.[0]?.plotNo)}
+              {renderLabel(t("BPA_PLOT_AREA_LABEL"), displayData?.siteDetails?.[0]?.specificationPlotArea)}
+              {renderLabel("Net Total Area", displayData?.siteDetails?.[0]?.netTotalArea)}
+              {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), displayData?.siteDetails?.[0]?.proposedSiteAddress)}
+              {renderLabel(t("BPA_ULB_NAME_LABEL"), displayData?.siteDetails?.[0]?.ulbName?.name || displayData?.siteDetails?.[0]?.ulbName)}
+              {renderLabel("ULB Type", displayData?.siteDetails?.[0]?.ulbType)}
+              {renderLabel(t("BPA_KHASRA_NO_LABEL"), displayData?.siteDetails?.[0]?.khasraNo)}
+              {renderLabel("Khanuti No", displayData?.siteDetails?.[0]?.khanutiNo)}
+              {renderLabel(t("BPA_HADBAST_NO_LABEL"), displayData?.siteDetails?.[0]?.hadbastNo)}
+              {renderLabel(t("BPA_ROAD_TYPE_LABEL"), displayData?.siteDetails?.[0]?.roadType?.name || displayData?.siteDetails?.[0]?.roadType)}
+              {renderLabel("Road Width at Site (m)", displayData?.siteDetails?.[0]?.roadWidthAtSite)}
+              {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), displayData?.siteDetails?.[0]?.areaLeftForRoadWidening)}
+              {renderLabel(t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), displayData?.siteDetails?.[0]?.netPlotAreaAfterWidening)}
+              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), displayData?.siteDetails?.[0]?.wardNo)}
+              {renderLabel(t("BPA_DISTRICT_LABEL"), displayData?.siteDetails?.[0]?.district?.name || displayData?.siteDetails?.[0]?.district)}
+              {renderLabel(t("BPA_ZONE_LABEL"), displayData?.siteDetails?.[0]?.zone)}
+              {renderLabel(t("BPA_SITE_VASIKA_NO_LABEL"), displayData?.siteDetails?.[0]?.vasikaNumber)}
+              {renderLabel(t("BPA_SITE_VASIKA_DATE_LABEL"), formatDate(displayData?.siteDetails?.[0]?.vasikaDate))}
+              {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), displayData?.siteDetails?.[0]?.villageName)}
+              
+              {/* Additional Site Details */}
+              {renderLabel("CLU Type", displayData?.siteDetails?.[0]?.cluType)}
+              {renderLabel("CLU Number", displayData?.siteDetails?.[0]?.cluNumber)}
+              {renderLabel("CLU is Approved", displayData?.siteDetails?.[0]?.cluIsApproved?.name || displayData?.siteDetails?.[0]?.cluIsApproved?.code)}
+              {renderLabel("CLU Approval Date", formatDate(displayData?.siteDetails?.[0]?.cluApprovalDate))}
+              {renderLabel("Is CLU Required", displayData?.siteDetails?.[0]?.isCluRequired)}
+              {renderLabel("Residential Type", displayData?.siteDetails?.[0]?.residentialType?.name || displayData?.siteDetails?.[0]?.residentialType)}
+              {renderLabel("Building Category", displayData?.siteDetails?.[0]?.buildingCategory?.name || displayData?.siteDetails?.[0]?.buildingCategory)}
+              {renderLabel("Building Status", displayData?.siteDetails?.[0]?.buildingStatus)}
+              {renderLabel("Layout Area Type", displayData?.siteDetails?.[0]?.layoutAreaType?.name || displayData?.siteDetails?.[0]?.layoutAreaType)}
+              {renderLabel("Layout Scheme Name", displayData?.siteDetails?.[0]?.layoutSchemeName)}
+              {renderLabel("Type of Application", displayData?.siteDetails?.[0]?.typeOfApplication?.name || displayData?.siteDetails?.[0]?.typeOfApplication)}
+              {renderLabel("Is Area Under Master Plan", displayData?.siteDetails?.[0]?.isAreaUnderMasterPlan?.name || displayData?.siteDetails?.[0]?.isAreaUnderMasterPlan?.code)}
+              
+              {/* Area Breakdown */}
+              {renderLabel("Area Under EWS (Sq.M)", displayData?.siteDetails?.[0]?.areaUnderEWS)}
+              {renderLabel("Area Under Road (Sq.M)", displayData?.siteDetails?.[0]?.areaUnderRoadInSqM)}
+              {renderLabel("Area Under Road (%)", displayData?.siteDetails?.[0]?.areaUnderRoadInPct)}
+              {renderLabel("Area Under Park (Sq.M)", displayData?.siteDetails?.[0]?.areaUnderParkInSqM)}
+              {renderLabel("Area Under Park (%)", displayData?.siteDetails?.[0]?.areaUnderParkInPct)}
+              {renderLabel("Area Under Parking (Sq.M)", displayData?.siteDetails?.[0]?.areaUnderParkingInSqM)}
+              {renderLabel("Area Under Parking (%)", displayData?.siteDetails?.[0]?.areaUnderParkingInPct)}
+              {renderLabel("Area Under Other Amenities (Sq.M)", displayData?.siteDetails?.[0]?.areaUnderOtherAmenitiesInSqM)}
+              {renderLabel("Area Under Other Amenities (%)", displayData?.siteDetails?.[0]?.areaUnderOtherAmenitiesInPct)}
+              {renderLabel("Area Under Residential Use (Sq.M)", displayData?.siteDetails?.[0]?.areaUnderResidentialUseInSqM)}
+              {renderLabel("Area Under Residential Use (%)", displayData?.siteDetails?.[0]?.areaUnderResidentialUseInPct)}
+              
+              {/* Floor Area Details */}
+              {displayData?.siteDetails?.[0]?.floorArea && displayData?.siteDetails?.[0]?.floorArea?.length > 0 && (
+                <React.Fragment>
+                  {displayData?.siteDetails?.[0]?.floorArea?.map((floor, idx) => 
+                    renderLabel(`Floor ${idx + 1} Area (Sq.M)`, floor?.value)
+                  )}
+                </React.Fragment>
+              )}
+            </>
+          )}
+        </StatusTable>
+      </div>
 
-            <RenderRow label={t("NOC_FIRM_OWNER_NAME_LABEL")} value={detail?.applicantOwnerOrFirmName} />
-            <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={detail?.applicantEmailId} />
-            <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={detail?.applicantFatherHusbandName} />
-            <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={detail?.applicantMobileNumber} />
-            <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={detail?.applicantDateOfBirth} />
-            <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={detail?.applicantGender?.code || detail?.applicantGender} />
-            <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={detail?.applicantAddress} />
-            <RenderRow label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} value={detail?.applicantPropertyId} />
-
-          </StatusTable>
+      {/* SITE PHOTOGRAPHS */}
+      {sitePhotographs?.length > 0 && (
+        <div>
+          <CardSubHeader>{t("Uploaded Site Photographs")}</CardSubHeader>
+          <LayoutSitePhotographs documents={sitePhotographs} coordinates={coordinates} />
         </div>
-      ))}
-    </Card>
+      )}
 
-    {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
-    {displayData?.applicantDetails?.[0]?.professionalName &&
-      displayData?.applicantDetails?.map((detail, index) => (
-        <Card key={index}>
-          <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-          <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-
-              <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
-              <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
-              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
-              <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
-              <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-              <RenderRow label={t("Registration Date")} value={detail?.professionalRegistrationValidity} />
-
-            </StatusTable>
-          </div>
-        </Card>
-      ))}
-
-    {/* -------------------- SITE DETAILS -------------------- */}
-    <Card>
-      <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
-      {displayData?.siteDetails?.map((detail, index) => (
-        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-          <StatusTable>
-
-            <RenderRow label={t("NOC_PLOT_NO_LABEL")} value={detail?.plotNo} />
-            <RenderRow label={t("NOC_PROPOSED_SITE_ADDRESS")} value={detail?.proposedSiteAddress} />
-            <RenderRow label={t("NOC_ULB_NAME_LABEL")} value={detail?.ulbName?.name || detail?.ulbName} />
-            <RenderRow label={t("NOC_ULB_TYPE_LABEL")} value={detail?.ulbType} />
-            <RenderRow label={t("NOC_KHASRA_NO_LABEL")} value={detail?.khasraNo} />
-            <RenderRow label={t("NOC_HADBAST_NO_LABEL")} value={detail?.hadbastNo} />
-            <RenderRow label={t("NOC_ROAD_TYPE_LABEL")} value={detail?.roadType?.name || detail?.roadType} />
-            <RenderRow label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} value={detail?.areaLeftForRoadWidening} />
-            <RenderRow label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} value={detail?.netPlotAreaAfterWidening} />
-            <RenderRow label={t("NOC_NET_TOTAL_AREA_LABEL")} value={detail?.netTotalArea} />
-            <RenderRow label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} value={detail?.roadWidthAtSite} />
-
-            {/* Building Status */}
-            <RenderRow label={t("NOC_BUILDING_STATUS_LABEL")} value={detail?.buildingStatus?.name || detail?.buildingStatus} />
-
-            {/* Basement Availability */}
-            <RenderRow label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} value={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable} />
-
-            {/* Basement Area */}
-            {detail?.buildingStatus === "Built Up" && (
-              <RenderRow label={t("NOC_BASEMENT_AREA_LABEL")} value={detail?.basementArea} />
-            )}
-
-            {/* Floor Areas */}
-            {detail?.buildingStatus === "Built Up" &&
-              detail?.floorArea?.map((floor, idx) => (
-                <RenderRow key={idx} label={getFloorLabel(idx)} value={floor?.value} />
-              ))}
-
-            {/* Total Floor Area */}
-            {detail?.buildingStatus === "Built Up" && (
-              <RenderRow label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} value={detail?.totalFloorArea} />
-            )}
-
-            <RenderRow label={t("NOC_DISTRICT_LABEL")} value={detail?.district?.name || detail?.district} />
-            <RenderRow label={t("NOC_ZONE_LABEL")} value={detail?.zone?.name || detail?.zone} />
-            <RenderRow label={t("NOC_SITE_WARD_NO_LABEL")} value={detail?.wardNo} />
-            <RenderRow label={t("NOC_SITE_VILLAGE_NAME_LABEL")} value={detail?.villageName} />
-            <RenderRow label={t("NOC_SITE_COLONY_NAME_LABEL")} value={detail?.colonyName} />
-            <RenderRow label={t("NOC_SITE_VASIKA_NO_LABEL")} value={detail?.vasikaNumber} />
-            <RenderRow label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} value={detail?.khewatAndKhatuniNo} />
-
-          </StatusTable>
+      {/* DOCUMENTS */}
+      {displayData?.Documents?.length > 0 && (
+        <div>
+          <CardSubHeader>{t("Documents Uploaded")}</CardSubHeader>
+          <LayoutDocumentTableView documents={displayData?.Documents} />
         </div>
-      ))}
-    </Card>
+      )}
 
-    {/* -------------------- SPECIFICATIONS -------------------- */}
-    <Card>
-      <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
-      {displayData?.siteDetails?.map((detail, index) => (
-        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-          <StatusTable>
-
-            <RenderRow label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
-            <RenderRow label={t("NOC_BUILDING_CATEGORY_LABEL")} value={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory} />
-            <RenderRow label={t("LAYOUT_TYPE_LABEL")} value={detail?.specificationLayoutType?.name || detail?.specificationLayoutType} />
-            <RenderRow label={t("NOC_RESTRICTED_AREA_LABEL")} value={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea} />
-            <RenderRow label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan} />
-
-          </StatusTable>
+      {/* FEE DETAILS */}
+      {layoutData?.layoutDetails && (
+        <div>
+          <CardSubHeader>{t("Fee Details")}</CardSubHeader>
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: { ...layoutData?.layoutDetails?.additionalDetails?.applicationDetails },
+              siteDetails: { ...layoutData?.layoutDetails?.additionalDetails?.siteDetails },
+            }}
+            feeType="PAY1"
+          />
         </div>
-      ))}
-    </Card>
+      )}
 
-        {/* 1️⃣ SITE COORDINATES CARD */}
-        {displayData?.coordinates && displayData.coordinates.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
-
-            {displayData.coordinates.map((detail, index) => (
-              <div
-                key={index}
-                style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-              >
-                <StatusTable>
-                  <RenderRow label={t("COMMON_LATITUDE1_LABEL")} value={detail?.Latitude1} />
-                  <RenderRow label={t("COMMON_LONGITUDE1_LABEL")} value={detail?.Longitude1} />
-                  <RenderRow label={t("COMMON_LATITUDE2_LABEL")} value={detail?.Latitude2} />
-                  <RenderRow label={t("COMMON_LONGITUDE2_LABEL")} value={detail?.Longitude2} />
-                  <RenderRow label={t("COMMON_LATITUDE3_LABEL")} value={detail?.Latitude3} />
-                  <RenderRow label={t("COMMON_LONGITUDE3_LABEL")} value={detail?.Longitude3} />
-                  <RenderRow label={t("COMMON_LATITUDE4_LABEL")} value={detail?.Latitude4} />
-                  <RenderRow label={t("COMMON_LONGITUDE4_LABEL")} value={detail?.Longitude4} />
-                </StatusTable>
-              </div>
-            ))}
-          </Card>
-        )}
-
-        {/* 2️⃣ DOCUMENTS CARD */}
-        {displayData?.Documents && displayData.Documents.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
-            <StatusTable>
-              <LayoutDocumentView documents={displayData.Documents} />
-            </StatusTable>
-          </Card>
-        )}
-
-        {/* 3️⃣ FEE DETAILS CARD */}
-        {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
-          <Card>
-            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-
-            <LayoutFeeEstimationDetails
+      {/* FEE DETAILS TABLE - Only show if status is not in disableFeeTable */}
+      {layoutData?.applicationStatus && !disableFeeTable?.includes(layoutData?.applicationStatus) &&
+        <div>
+          <CardSubHeader>{t("Fee Details Table")}</CardSubHeader>
+          {layoutData?.layoutDetails && (
+            <LayoutFeeEstimationDetailsTable
               formData={{
                 apiData: { ...applicationDetails },
-                applicationDetails: {
-                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-                },
-                siteDetails: {
-                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-                },
+                applicationDetails: { ...layoutData?.layoutDetails?.additionalDetails?.applicationDetails },
+                siteDetails: { ...layoutData?.layoutDetails?.additionalDetails?.siteDetails },
+                calculations: layoutData?.layoutDetails?.additionalDetails?.calculations || []
               }}
+              feeType="PAY2"
+              feeAdjustments={feeAdjustments}
+              setFeeAdjustments={setFeeAdjustments}
+              disable="true"
             />
-          </Card>
-        )}
-
+          )}
+        </div>
+      }
 
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
@@ -709,7 +609,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"LAYOUT"}`}
+              localeKeyPrefix={`WF_EMPLOYEE_LAYOUT`}
               options={actions}
               optionKey={"action"}
               t={t}
@@ -721,16 +621,11 @@ const [viewTimeline, setViewTimeline] = useState(false);
       )}
 
       {showToast && (
-        <Toast
-          error={showToast?.error}
-          warning={showToast?.warning}
-          label={t(showToast?.message)}
-          isDleteBtn={true}
-          onClose={closeToast}
-        />
+        <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default LayoutApplicationOverview
+export default LayoutApplicationSummary;

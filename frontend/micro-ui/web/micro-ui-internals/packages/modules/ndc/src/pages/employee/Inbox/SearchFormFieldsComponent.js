@@ -11,9 +11,9 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
   if (!isMobile) {
     return (
       <React.Fragment>
-        <div className="search-container" style={{ width: "100%", marginLeft: "24px" }}>
+        <div className="search-container ndc-search-container-custom" >
           <div className="search-complaint-container">
-            <div className="complaint-input-container" style={{ textAlign: "start" }}>
+            <div className="complaint-input-container ndc-complaint-input-container" >
               <SearchField>
                 <label>{t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
                 <TextInput name="applicationNo" inputRef={registerRef({})} />
@@ -22,7 +22,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
                 <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
                 <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
-              <div className="search-action-wrapper" style={{ width: "100%" }}>
+              <div className="search-action-wrapper ndc-search-action-wrapper" >
                 {searchFieldComponents}
               </div>
             </div>

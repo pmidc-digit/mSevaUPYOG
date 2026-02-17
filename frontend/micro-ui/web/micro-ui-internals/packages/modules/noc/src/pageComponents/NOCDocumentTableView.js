@@ -5,6 +5,16 @@ import { useTranslation } from "react-i18next";
 const NOCDocumentTableView = ({documents}) => {
   const { t } = useTranslation();
 
+  const srNoStyle = `
+    .noc-document-table-view table tbody tr td:first-child,
+    .noc-document-table-view table thead tr th:first-child {
+      width: 100px !important;
+      max-width: 100px !important;
+      min-width: 100px !important;
+      flex: 0 0 100px !important;
+    }
+  `;
+
   function routeTo(jumpTo) {
     window.open(jumpTo, "_blank");
   }
@@ -13,8 +23,7 @@ const NOCDocumentTableView = ({documents}) => {
         {
           Header: t("SR_NO"),
           accessor: "srNo",
-          width:"20px",
-          Cell: ({ row }) => <div style={{width: "20px"}}>{row.index + 1}</div>,
+          Cell: ({ row }) => <div style={{textAlign: "center"}}>{row.index + 1}</div>,
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),
@@ -74,21 +83,25 @@ const NOCDocumentTableView = ({documents}) => {
     }, [mappedDocuments]);
 
   return (
-    <div>
-      {documentsData && (
-        <Table
-          className="customTable table-border-style"
-          t={t}
-          data={documentsData}
-          columns={documentsColumns}
-          getCellProps={(cellInfo) => (cellInfo.column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
-          getHeaderProps={(column) => (column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
-          disableSort={true}
-          autoSort={false}
-          manualPagination={false}
-          isPaginationRequired={false}
-        />
-      )}
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
+      <style>{srNoStyle}</style>
+      <div className="noc-document-table-view">
+        {documentsData && (
+          <Table
+            className="customTable table-border-style"
+            t={t}
+            data={documentsData}
+            columns={documentsColumns}
+            getCellProps={() => ({})}
+            getHeaderProps={() => ({})}
+            style={{ width: "100%", tableLayout: "fixed" }}
+            disableSort={true}
+            autoSort={false}
+            manualPagination={false}
+            isPaginationRequired={false}
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -1,14 +1,20 @@
 import { TENANT_IDS } from "../../../../constants/constants";
 
 export const onSubmit = (data, tenantId, setShowToast, history) => {
-  console.log(`In onSubmit: \n tenantId: ${tenantId}`, "\n data:", data);
-  //
-  console.log("onSubmit create employee: ", data);
-  const hasNoAccess = (tenantId !== TENANT_IDS.PUNJAB) && data.Jurisdictions.filter((juris) => juris.tenantId == tenantId).length == 0;
-  if (hasNoAccess) {
-    setShowToast({ key: true, label: "ERR_BASE_TENANT_MANDATORY" });
+
+  
+  // Safety check for Jurisdictions
+  if (!data.Jurisdictions || !Array.isArray(data.Jurisdictions) || data.Jurisdictions.length === 0) {
+    setShowToast({ key: true, label: "ERR_NO_JURISDICTIONS" });
     return;
   }
+  
+  const hasNoAccess = (tenantId !== TENANT_IDS.PUNJAB) && data.Jurisdictions.filter((juris) => juris.tenantId == tenantId).length == 0;
+  
+  // if (hasNoAccess) {
+  //   setShowToast({ key: true, label: "ERR_BASE_TENANT_MANDATORY" });
+  //   return;
+  // }
   if (
     !Object.values(
       data.Jurisdictions.reduce((acc, sum) => {
@@ -24,15 +30,27 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
   }
   let roles = data?.Jurisdictions?.map((ele) => {
     return ele.roles?.map((item) => {
-      item["tenantId"] = ele.boundary;
+      item["tenantId"] = ele.tenantId;
       return item;
     });
   });
 
   const mappedroles = [].concat.apply([], roles);
+  
+  // Calculate baseTenantId based on user type
+  const currentUserTenantId = tenantId;
+  let employeeTenantId;
+  if (currentUserTenantId === TENANT_IDS.PUNJAB) {
+    // Punjab state user can create employees for any ULB
+    employeeTenantId = data.Jurisdictions[0].tenantId;
+  } else {
+    // ULB user creates employees for their own tenant only
+    employeeTenantId = currentUserTenantId;
+  }
+
   let Employees = [
     {
-      tenantId: tenantId,
+      tenantId: employeeTenantId,
       employeeStatus: data?.SelectEmploymentStatus?.code,
       assignments: data?.Assignments,
       code: data?.SelectEmployeeId?.code ? data?.SelectEmployeeId?.code : undefined,
@@ -48,7 +66,7 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
         gender: data?.SelectEmployeeGender?.gender.code,
         dob: new Date(data?.SelectDateofBirthEmployment?.dob).getTime(),
         roles: mappedroles,
-        tenantId: tenantId,
+        tenantId: employeeTenantId,
       },
       serviceHistory: [],
       education: [],
@@ -59,15 +77,21 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
   /* use customiseCreateFormData hook to make some chnages to the Employee object */
   Employees = Digit?.Customizations?.HRMS?.customiseCreateFormData ? Digit.Customizations.HRMS.customiseCreateFormData(data, Employees) : Employees;
 
+  // Safety fallback — primary ID uniqueness check is now in EmployeeDetails step (Next button)
   if (data?.SelectEmployeeId?.code && data?.SelectEmployeeId?.code?.trim().length > 0) {
-    Digit.HRMSService.search(tenantId, null, { codes: data?.SelectEmployeeId?.code }).then((result, err) => {
-      if (result.Employees.length > 0) {
+    Digit.HRMSService.search(employeeTenantId, null, { codes: data?.SelectEmployeeId?.code })
+      .then((result) => {
+        if (result?.Employees?.length > 0) {
+          setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
+          return;
+        } else {
+          navigateToAcknowledgement(Employees, history);
+        }
+      })
+      .catch((e) => {
+        console.error("HRMS ID check error:", e);
         setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
-        return;
-      } else {
-        navigateToAcknowledgement(Employees, history);
-      }
-    });
+      });
   } else {
     navigateToAcknowledgement(Employees, history);
   }

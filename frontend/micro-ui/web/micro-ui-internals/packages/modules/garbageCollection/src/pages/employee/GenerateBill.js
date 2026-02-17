@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown } from "@mseva/digit-ui-react-components";
+import { CardLabel, ActionBar, SubmitBar, CardSubHeader, Dropdown, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -16,6 +16,13 @@ const GenerateBill = () => {
 
   const [loader, setLoader] = useState(false);
   const [getData, setData] = useState();
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+  const [getLable, setLable] = useState(false);
+
+  const { data: FreqType = [], isLoading: FreqTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [
+    { name: "GarbageCollectionFrequency" },
+  ]);
 
   const {
     control,
@@ -28,10 +35,38 @@ const GenerateBill = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    console.log("data===", data);
+    setLoader(true);
+    const payload = {
+      billScheduler: {
+        tenantId: tenantId,
+        locality: data?.batch?.code || data?.locality?.code,
+        billingcycleStartdate: 0,
+        transactionType: data?.frequency?.name,
+        billingcycleEnddate: 0,
+        isBatch: data?.batchOrLocality?.name == "Batch" ? true : false,
+        isGroup: false,
+      },
+    };
+    // console.log("payload===", payload);
+    // return;
+    try {
+      const response = await Digit.GCService.schedulerCreate(payload);
+      setLoader(false);
+      setLable("Bill Generated Successfully");
+      setError(false);
+      setShowToast(true);
+      console.log("response", response);
+    } catch (error) {
+      setLoader(false);
+      // setShowToast(true);
+      // setError(error.response.data?.Errors?.[0]?.message);
+    }
   };
 
-  const ConnectionType = [{ name: "Garbage", code: "GARBAGE" }];
+  const closeToast = () => {
+    setShowToast(null);
+  };
+
   const batchLocality = [
     { name: "Batch", code: "Block" },
     { name: "Locality", code: "Locality" },
@@ -68,38 +103,6 @@ const GenerateBill = () => {
             width: "100%",
           }}
         >
-          {/* connection type */}
-          {/* <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
-          >
-            <CardLabel>
-              {`${t("Connection Type")}`} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <Controller
-              //   style={{  }}
-              control={control}
-              name={"connectionType"}
-              rules={{ required: t("GC_CONNECTION_TYPE_REQUIRED") }}
-              render={(props) => (
-                <Dropdown
-                  style={{ marginBottom: 0, width: "100%" }}
-                  className="form-field"
-                  select={(e) => {
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={ConnectionType}
-                  optionKey="name"
-                  t={t}
-                />
-              )}
-            />
-            {errors?.connectionType && <p style={{ color: "red" }}>{errors.connectionType.message}</p>}
-          </div> */}
-
           {/* boundaryType */}
           <div
             style={{
@@ -113,7 +116,7 @@ const GenerateBill = () => {
             <Controller
               control={control}
               name={"batchOrLocality"}
-              rules={{ required: t("GC_BATCH_LOCALITY_REQUIRED") }}
+              rules={{ required: t("This field is required") }}
               render={(props) => (
                 <Dropdown
                   style={{ marginBottom: 0, width: "100%" }}
@@ -198,6 +201,35 @@ const GenerateBill = () => {
             </div>
           )}
 
+          {/* frequency type  */}
+          <div
+            style={{
+              flex: "0 0 20%", // 2 items per row
+              maxWidth: "20%",
+            }}
+          >
+            <CardLabel>{`${t("GC_FREQUENCY")}`}*</CardLabel>
+            <Controller
+              control={control}
+              name={"frequency"}
+              rules={{ required: t("GC_FREQUENCY_REQUIRED") }}
+              render={(props) => (
+                <Dropdown
+                  style={{ marginBottom: 0, width: "100%" }}
+                  className="form-field"
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors?.frequency && <p style={{ color: "red" }}>{errors.frequency.message}</p>}
+          </div>
+
           {/* group */}
           {/* <div
             style={{
@@ -233,7 +265,9 @@ const GenerateBill = () => {
           <SubmitBar label="Generate Bill" submit="submit" />
         </ActionBar>
       </form>
-      {loader && <Loader page={true} />}
+      {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
+
+      {(loader || FreqTypeLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

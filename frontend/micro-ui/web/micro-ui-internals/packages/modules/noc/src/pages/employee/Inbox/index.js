@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
-import { InboxComposer, ComplaintIcon, Header } from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, Loader  } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
@@ -9,6 +9,10 @@ import { businessServiceList } from "../../../utils";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeRole, setEmployeeRole] = useState("");
+
+  
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -23,7 +27,7 @@ const Inbox = ({ parentRoute }) => {
     applicationStatus: [],
     businessService: "obpas_noc",
     locality: [],
-    assignee: "ASSIGNED_TO_ALL",
+    assignee: "ASSIGNED_TO_ME",
     businessServiceArray: businessServiceList(true) || [],
   };
   const tableOrderFormDefaultValues = {
@@ -110,6 +114,27 @@ const Inbox = ({ parentRoute }) => {
     {},
     t
   );
+  const user = Digit.UserService.getUser();
+
+  // console.log('user', user)
+
+  const {data: employeeData , isLoading} = Digit.Hooks.useEmployeeSearch(tenantId, { codes: user?.info?.userName, isActive: true }, { enabled: !!user?.info?.userName });
+  console.log('employeeData', employeeData)
+
+
+
+
+    useEffect(() => {
+      if (!isLoading && employeeData) {
+        const code=  employeeData?.Employees?.[0]?.user?.name || "";
+        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation || ""
+        setEmployeeName(code);
+        setEmployeeRole(desig);
+      }
+  }, [employeeData]);
+
+  console.log('employeeName, employeeRole', employeeName, employeeRole)
+
 
   const { isLoading: isInboxLoading, data} = Digit.Hooks.noc.useInbox({
     tenantId,
@@ -211,11 +236,17 @@ const Inbox = ({ parentRoute }) => {
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
+  if (isLoading) {
+      return <Loader />;
+    }
   return (
     <>
       <Header>
-        {t("ES_COMMON_INBOX")}
-        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+        {employeeData &&
+          !isLoading &&
+          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+        
+        <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
       </Header>
       <InboxComposer
         {...{

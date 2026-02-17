@@ -41,7 +41,7 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo type here", userInfo?.info?.type);
 
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  const errorStyle = { color: "red", marginTop: "4px", marginBottom: "0" };
 
   const {
     control,
@@ -63,12 +63,21 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
       gender: null,
       dateOfBirth: "",
       address: "",
+      ownershipInPct: ""
      }
     ]
    }
   });
 
   const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, reset,useFieldArray, watch, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
+
+  function checkOwnershipSumVaildation(data){
+    const ownersArr= data?.owners || [];
+    const ownershipPctArr = ownersArr?.map((owner)=> parseFloat(owner?.ownershipInPct));
+    const totalOwnershipSum= ownershipPctArr?.reduce((acc,curr)=>acc+curr,0);
+
+    return totalOwnershipSum == 100 ? true : false;
+  }
 
   function checkValidation(data) {
 
@@ -80,7 +89,14 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
   const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;
 
-  if (ownersCount !== ownerPhotoCount) {
+  if(!checkOwnershipSumVaildation(data)){
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
+    setShowToast({ key: "true", error: true, message: t("TOTAL_OWNERSHIP_SUM_VALIDATION_MESSAGE") });
+    return false;
+  }
+  else if (ownersCount !== ownerPhotoCount) {
     setTimeout(()=>{
       setShowToast(null);
     },3000);

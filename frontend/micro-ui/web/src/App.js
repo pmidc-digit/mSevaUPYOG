@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect} from "react";
 import { initPGRComponents, PGRReducers } from "@mseva/digit-ui-module-pgr";
 import {
   initSWACHComponents,
@@ -226,6 +226,17 @@ const moduleReducers = (initData) => ({
 });
 
 function App() {
+    useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js";
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+  
   const stateCode =
     window.globalConfigs?.getConfig("STATE_LEVEL_TENANT_ID") ||
     process.env.REACT_APP_STATE_LEVEL_TENANT_ID;

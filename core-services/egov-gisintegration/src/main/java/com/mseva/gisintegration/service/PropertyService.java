@@ -137,11 +137,12 @@ public class PropertyService {
         p.setSurveyid(node.path("surveyId").asText());
         p.setOldpropertyid(node.path("oldPropertyId").asText());
         
-        // Handling potentially missing owners node
-        JsonNode owners = node.path("owners");
-        if (owners.isArray() && owners.size() > 0) {
-            p.setFirmbusinessname(owners.get(0).path("name").asText());
-        }
+        p.setFirmbusinessname(
+                node.path("address")
+                    .path("buildingName")
+                    .asText()
+        );
+
 
         p.setPropertytype(node.path("propertyType").asText());
         p.setPropertyusagetype(node.path("usageCategory").asText());

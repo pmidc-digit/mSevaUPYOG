@@ -119,6 +119,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [displayData, setDisplayData] = useState({});
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const [empDesignation,setEmpDesignation] = useState(null);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -820,6 +821,21 @@ const CLUEmployeeApplicationDetails = () => {
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
 
+  const siteInspectionEmp = useMemo(() => {
+    return workflowDetails?.data?.processInstances
+      ?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")
+      ?.assigner;
+  }, [workflowDetails]);
+
+  
+  const empUserName = siteInspectionEmp?.userName ?? "";
+  const empName = siteInspectionEmp?.name ?? "";
+
+  const handleSetEmpDesignation = (key)=>{
+    setEmpDesignation(key);
+  }
+
+
   if (isLoading) {
     return <Loader />;
   }
@@ -972,7 +988,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
-          <CardSubHeader>{t("BPA_FIELD_INSPECTION_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+          <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable>
             <CLUSitePhotographs documents={siteImages.documents} />
           </StatusTable>

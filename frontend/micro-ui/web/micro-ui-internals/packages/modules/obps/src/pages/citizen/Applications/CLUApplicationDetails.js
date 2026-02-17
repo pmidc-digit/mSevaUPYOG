@@ -93,6 +93,7 @@ const CLUApplicationDetails = () => {
   const [loading, setLoading] = useState(false);
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const [empDesignation,setEmpDesignation] = useState(null);
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
@@ -503,6 +504,20 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
   const combinedOwnersName = ownersList?.join(", ");
   //console.log("combinerOwnersName", combinedOwnersName);
 
+  const siteInspectionEmp = useMemo(() => {
+      return workflowDetails?.data?.processInstances
+        ?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")
+        ?.assigner;
+  }, [workflowDetails]);
+  
+    
+  const empUserName = siteInspectionEmp?.userName ?? "";
+  const empName = siteInspectionEmp?.name ?? "";
+  
+  const handleSetEmpDesignation = (key)=>{
+      setEmpDesignation(key);
+  }
+
   if (isLoading) {
     return <Loader />;
   }
@@ -678,9 +693,9 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
       {
         applicationDetails?.Clu?.[0]?.applicationStatus && !disableSiteInspectionImage?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && siteImages?.documents?.length > 0 &&
         <Card>
-          <CardSubHeader>{t("BPA_FIELD_INSPECTION_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+          <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable>
-          <CLUSitePhotographs documents={siteImages.documents} />
+          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
           </StatusTable>
           {   geoLocations?.length > 0 &&
               <React.Fragment>
@@ -765,7 +780,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
         </Card>
       )} */}
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
 
       {actions && actions.length > 0 && (
         <ActionBar>

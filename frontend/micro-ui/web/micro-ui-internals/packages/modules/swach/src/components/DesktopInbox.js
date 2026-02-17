@@ -34,13 +34,13 @@ const DesktopInbox = ({
     // );
     if (value < 0) {
       return (
-        <span className="sla-cell-error p-0 swach-red-color" >
+        <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
           {Math.abs(value)} hours overdue
         </span>
       );
     } else {
       return (
-        <span className="sla-cell-success p-0">
+        <span className="sla-cell-success" style={{ padding: 0 }}>
           {value} hour left
         </span>
       );
@@ -128,7 +128,7 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_CREATED_DATE"),
         Cell: ({ row }) => {
-          return <div className="swach-width-250">{GetDateSlaCell(row.original["createdDate"])}</div>;
+          return <div style={{ width: "250px" }}>{GetDateSlaCell(row.original["createdDate"])}</div>;
         },
       },
     ],
@@ -140,11 +140,11 @@ const DesktopInbox = ({
     result = <Loader />;
   } else if (data && data?.length === 0) {
     result = (
-      <Card className="swach-margin-top-16">
+      <Card style={{ marginTop: 20 }}>
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} className="swach-text-align">
+            <p key={index} style={{ textAlign: "center" }}>
               {text}
             </p>
           ))}
@@ -176,11 +176,11 @@ const DesktopInbox = ({
     );
   } else {
     result = (
-      <Card className="swach-margin-top-16">
+      <Card style={{ marginTop: 20 }}>
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index} className="swach-text-align">
+            <p key={index} style={{ textAlign: "center" }}>
               {text}
             </p>
           ))}
@@ -198,7 +198,7 @@ const DesktopInbox = ({
       </div>
       <div style={{ flex: 1 }}>
         <SearchComplaint onSearch={onSearch} type="desktop" />
-        <div className="swach-desktop-result">{result}</div>
+        <div style={{ marginTop: "24px", marginTop: "24px", marginLeft: "24px", flex: 1 }}>{result}</div>
       </div>
     </div>
   );

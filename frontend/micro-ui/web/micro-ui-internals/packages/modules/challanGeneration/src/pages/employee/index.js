@@ -57,7 +57,7 @@ const EmployeeApp = ({ path, url, userType }) => {
       <React.Fragment>
         <div className="ground-container">
           <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
-            <Link to="/digit-ui/employee" className="challan-link-href" >
+            <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
               {t("ES_COMMON_HOME")}
             </Link>{" "}
             / <span>{t("CHALLAN_MODULE")}</span>

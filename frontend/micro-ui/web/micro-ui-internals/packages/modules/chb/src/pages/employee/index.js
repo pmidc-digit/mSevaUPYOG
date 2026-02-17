@@ -7,33 +7,6 @@ import Inbox from "./Inbox";
 // import PaymentDetails from "./PaymentDetails";
 import SearchApp from "./SearchApp";
 
-const CHBBreadCrumbs = ({ location, t }) => {
-  const crumbs = [
-    {
-      path: "/digit-ui/employee",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: "/digit-ui/employee/chb/inbox",
-      content: t("CS_COMMON_INBOX"),
-      show: location.pathname.includes("/chb/inbox") ? true : false,
-    },
-    {
-      path: "/digit-ui/employee/chb/bookHall",
-      content: "Book Hall",
-      show: location.pathname.includes("/chb/bookHall") ? true : false,
-    },
-    {
-      path: "/digit-ui/employee/chb/applicationsearch/application-details",
-      content: "Application Overview",
-      show: location.pathname.includes("/chb/applicationsearch/application-details") ? true : false,
-    },
-  ];
-
-  return <BreadCrumb crumbs={crumbs} />;
-};
-
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -52,6 +25,27 @@ const EmployeeApp = ({ path, url, userType }) => {
     },
   };
 
+  // const CHBBreadCrumbs = ({ location }) => {
+  //   const { t } = useTranslation();
+  //   const search = useLocation().search;
+  //   const fromScreen = new URLSearchParams(search).get("from") || null;
+  //   const { from : fromScreen2 } = Digit.Hooks.useQueryParams();
+  //   const crumbs = [
+  //     {
+  //       path: "/digit-ui/employee",
+  //       content: t("ES_COMMON_HOME"),
+  //       show: true,
+  //     },
+  //     // {
+  //     //   path: "/digit-ui/employee/chb/inbox",
+  //     //   content: t("ES_TITLE_INBOX"),
+  //     //   show: location.pathname.includes("chb/inbox") ? true : false,
+  //     // }
+  //   ];
+
+  //   return <BreadCrumb style={isMobile?{display:"flex"}:{margin: "0 0 4px", color:"#000000"}}  spanStyle={{maxWidth:"min-content"}} crumbs={crumbs} />;
+  // }
+
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
 
   // const EditApplication = Digit?.ComponentRegistryService?.getComponent("PTEditApplication");
@@ -65,9 +59,22 @@ const EmployeeApp = ({ path, url, userType }) => {
     window.location.href.includes("modify-application") ||
     window.location.href.includes("chb/application-details");
   return (
-    <React.Fragment>
-      <div className="ground-container">
-        {!isRes ? <div style={{ marginLeft: "10px" }}><CHBBreadCrumbs location={location} t={t} /></div> : null}
+    <Switch>
+      <AppContainer>
+        <React.Fragment>
+          <div className="ground-container">
+            {!isRes ? (
+              <div
+                style={
+                  isNewRegistration
+                    ? { marginLeft: "12px", display: "flex", alignItems: "center" }
+                    : { marginLeft: "-4px", display: "flex", alignItems: "center" }
+                }
+              >
+                <BackButton location={location} />
+                {/* <CHBBreadCrumbs location={location} /> */}
+              </div>
+            ) : null}
             <PrivateRoute exact path={`${path}/`} component={() => <CHBLinks matchPath={path} userType={userType} />} />
             <PrivateRoute
               path={`${path}/inbox`}
@@ -103,7 +110,9 @@ const EmployeeApp = ({ path, url, userType }) => {
             <PrivateRoute path={`${path}/my-applications`} component={(props) => <SearchApp {...props} parentRoute={path} />} />
           </div>
         </React.Fragment>
-      );
-    };
+      </AppContainer>
+    </Switch>
+  );
+};
 
 export default EmployeeApp;

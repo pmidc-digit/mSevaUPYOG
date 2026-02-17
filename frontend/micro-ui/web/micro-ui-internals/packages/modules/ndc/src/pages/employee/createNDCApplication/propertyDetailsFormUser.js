@@ -63,7 +63,7 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="surveydetailsform-wrapper">
             <label>
-              Property ID <span className="requiredField">*</span>
+              Property ID <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="propertyID"
@@ -77,14 +77,14 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
               })}
             />
 
-            {errors.propertyID && <p className="requiredField">{errors.propertyID.message}</p>}
+            {errors.propertyID && <p style={{ color: "red" }}>{errors.propertyID.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Water Connection Number <span className="requiredField">*</span>
+              Water Connection Number <span style={{ color: "red" }}>*</span>
             </label>
             {waterFields.map((field, index) => (
-              <div key={field.id} className="dynamic-field">
+              <div key={field.id} className="dynamic-field" style={{ display: "flex", gap: "10px" }}>
                 <TextInput {...register(`waterConnectionNumbers.${index}.value`, { required: "This field is required" })} />
                 {index > 0 && (
                   <button type="button" onClick={() => removeWater(index)}>
@@ -99,10 +99,10 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Sewage Connection Number <span className="requiredField">*</span>
+              Sewage Connection Number <span style={{ color: "red" }}>*</span>
             </label>
             {sewageFields.map((field, index) => (
-              <div key={field.id} className="dynamic-field" >
+              <div key={field.id} className="dynamic-field" style={{ display: "flex", gap: "10px" }}>
                 <TextInput {...register(`sewageConnectionNumbers.${index}.value`, { required: "This field is required" })} />
                 {index > 0 && (
                   <button type="button" onClick={() => removeSewage(index)}>
@@ -117,7 +117,7 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Property Type <span className="requiredField">*</span>
+              Property Type <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="address"
@@ -130,11 +130,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.propertyType && <p className="requiredField">{errors.propertyType.message}</p>}
+            {errors.propertyType && <p style={{ color: "red" }}>{errors.propertyType.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Property Usage Type <span className="requiredField">*</span>
+              Property Usage Type <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="address"
@@ -147,11 +147,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.propertyUsageType && <p className="requiredField">{errors.propertyUsageType.message}</p>}
+            {errors.propertyUsageType && <p style={{ color: "red" }}>{errors.propertyUsageType.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Property Location Type <span className="requiredField">*</span>
+              Property Location Type <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="address"
@@ -164,11 +164,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.propertyLocationType && <p className="requiredField">{errors.propertyLocationType.message}</p>}
+            {errors.propertyLocationType && <p style={{ color: "red" }}>{errors.propertyLocationType.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              No of Floors <span className="requiredField">*</span>
+              No of Floors <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="numberOfFloors"
@@ -181,12 +181,12 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.numberOfFloors && <p className="requiredField">{errors.numberOfFloors.message}</p>}
+            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
           </div>
           <div>Upload Files</div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Copy of Property Registry <span className="requiredField">*</span>
+              Copy of Property Registry <span style={{ color: "red" }}>*</span>
             </label>
             <input
               name="numberOfFloors"
@@ -199,11 +199,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.numberOfFloors && <p className="requiredField">{errors.numberOfFloors.message}</p>}
+            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Approved Building Plan <span className="requiredField">*</span>
+              Approved Building Plan <span style={{ color: "red" }}>*</span>
             </label>
             <input
               name="numberOfFloors"
@@ -216,11 +216,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.numberOfFloors && <p className="requiredField">{errors.numberOfFloors.message}</p>}
+            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Last Water Tax Receipt <span className="requiredField">*</span>
+              Last Water Tax Receipt <span style={{ color: "red" }}>*</span>
             </label>
             <input
               name="numberOfFloors"
@@ -233,11 +233,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.numberOfFloors && <p className="requiredField">{errors.numberOfFloors.message}</p>}
+            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Last Property Tax Receipt <span className="requiredField">*</span>
+              Last Property Tax Receipt <span style={{ color: "red" }}>*</span>
             </label>
             <input
               name="numberOfFloors"
@@ -250,7 +250,7 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
                 },
               })}
             />
-            {errors.numberOfFloors && <p className="requiredField">{errors.numberOfFloors.message}</p>}
+            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
           </div>
           <ActionBar>
             <SubmitBar label="Submit" submit="submit" />

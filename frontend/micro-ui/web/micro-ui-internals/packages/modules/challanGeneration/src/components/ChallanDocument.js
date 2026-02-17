@@ -30,7 +30,7 @@ function ChallanDocument({ value = {}, Code, index }) {
       <React.Fragment>
         <div className="document-grid">
           {data?.pdfFiles && (
-            <div className="challan-doc-modal" >
+            <div style={{ display: "flex", flexWrap: "wrap" }}>
               {documents?.map((document, index) => {
                 let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
                 return (

@@ -99,9 +99,9 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div style={{ width: "50%" }}>
-          {/* <div  >
+          {/* <div style={{ marginBottom: "20px" }}>
             <CardLabel>
-              {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -115,7 +115,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <TextInput
-                  
+                  style={{ marginBottom: 0 }}
                   value={props.value}
                   onChange={(e) => {
                     props.onChange(e.target.value);
@@ -127,12 +127,12 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
                 />
               )}
             />
-            {errors?.emailId && <p className="requiredField">{errors.emailId.message}</p>}
+            {errors?.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
           </div> */}
 
-          <div className="challan-bottom-style"  >
+          <div style={{ marginBottom: "20px" }}>
             <CardLabel>
-              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -146,7 +146,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <MobileNumber
-                  
+                  style={{ marginBottom: 0 }}
                   value={props.value}
                   onChange={props.onChange} // ✅ don't wrap it
                   onBlur={props.onBlur}
@@ -154,12 +154,12 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
                 />
               )}
             />
-            {errors?.mobileNumber && <p className="requiredField">{errors.mobileNumber.message}</p>}
+            {errors?.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
           </div>
 
-          <div className="challan-bottom-style"  >
+          <div style={{ marginBottom: "20px" }}>
             <CardLabel>
-              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span className="requiredField">*</span>
+              {`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -170,7 +170,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <TextInput
-                  
+                  style={{ marginBottom: 0 }}
                   value={props.value}
                   error={errors?.name?.message}
                   onChange={(e) => {
@@ -183,12 +183,12 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
                 />
               )}
             />
-            {errors?.name && <p className="requiredField">{errors.name.message}</p>}
+            {errors?.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
           </div>
 
-          <div className="challan-bottom-style"  >
+          <div style={{ marginBottom: "20px" }}>
             <CardLabel>
-              {`${t("PT_COMMON_COL_ADDRESS")}`} <span className="requiredField">*</span>
+              {`${t("PT_COMMON_COL_ADDRESS")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -199,7 +199,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
               }}
               render={(props) => (
                 <TextArea
-                  
+                  style={{ marginBottom: 0 }}
                   name="address"
                   value={props.value}
                   onChange={(e) => {
@@ -212,7 +212,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
                 />
               )}
             />
-            {errors?.address && <p className="requiredField">{errors.address.message}</p>}
+            {errors?.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
           </div>
         </div>
 

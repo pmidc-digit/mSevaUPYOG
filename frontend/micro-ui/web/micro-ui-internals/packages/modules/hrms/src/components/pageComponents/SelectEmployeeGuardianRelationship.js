@@ -13,14 +13,14 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
     { code: "Father", active: true },
     { code: "Husband", active: true },
   ];
-  const [relationship, setRelationship] = useState(formData?.SelectEmployeeGuardianRelationship);
-  function SelectRelationship(value) {
-    setRelationship(value);
+  const [employeeType, setemployeeType] = useState(formData?.SelectEmployeeType);
+  function SelectEmployeeType(value) {
+    setemployeeType(value);
   }
 
   useEffect(() => {
-    onSelect(config.key, relationship);
-  }, [relationship]);
+    onSelect(config.key, employeeType);
+  }, [employeeType]);
   const inputs = [
     {
       label: "HR_RELATIONSHIP_LABEL",
@@ -29,7 +29,7 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
       validation: {
         //isRequired: true,
       },
-      isMandatory: true,
+      //isMandatory: true,
     },
   ];
 
@@ -37,22 +37,23 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
   //   return <Loader />;
   // }
 
+  //console.log("Employment Types: ", Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "EmployeeType"));
+  // console.log("EmployeeTypes: ", EmployeeTypes);
 
   return inputs?.map((input, index) => {
     return (
       <LabelFieldPair key={index}>
-        <CardLabel className="card-label-smaller hrms-text-transform-none">
+        <CardLabel className="card-label-smaller">
           {t(input.label)}
-          {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
+          {input.isMandatory ? " * " : null}
         </CardLabel>
         <Dropdown
           className="form-field"
-          selected={relationship}
+          selected={employeeType}
           // option={EmployeeTypes?.["egov-hrms"]?.EmployeeType}
           option={Relationships}
-          select={SelectRelationship}
+          select={SelectEmployeeType}
           optionKey="code"
-          placeholder={t("HR_RELATIONSHIP_PLACEHOLDER")}
           defaultValue={undefined}
           t={t}
         />

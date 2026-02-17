@@ -9,7 +9,6 @@ const SelectEmployeeCorrespondenceAddress = ({ t, config, onSelect, formData = {
       label: "HR_CORRESPONDENCE_ADDRESS_LABEL",
       type: "text",
       name: "correspondenceAddress",
-      placeHolder: "HR_CORRESPONDENCE_ADDRESS_PLACEHOLDER",
       validation: {
         pattern: Digit.Utils.getPattern('Address'),
         isRequired: true,
@@ -30,9 +29,9 @@ const SelectEmployeeCorrespondenceAddress = ({ t, config, onSelect, formData = {
         return(<React.Fragment key={index}>
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {t(input.label)}
-              {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
+              {input.isMandatory ? " * " : null}
             </CardLabel>
             <div className="field">
               <TextInput
@@ -40,11 +39,10 @@ const SelectEmployeeCorrespondenceAddress = ({ t, config, onSelect, formData = {
                 value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                 onChange={(e) => setValue(e.target.value, input.name)}
                 disable={false}
-                placeholder={t(input.placeHolder)}
                 defaultValue={undefined}
                 {...input.validation}
               />
-               {currentValue&&currentValue.length>0&&!currentValue.match(Digit.Utils.getPattern('Address'))&&<CardLabelError className="w-full -mt-3.5 text-base mb-3">{t("CORE_COMMON_APPLICANT_ADDRESS_INVALID")}</CardLabelError>}
+               {currentValue&&currentValue.length>0&&!currentValue.match(Digit.Utils.getPattern('Address'))&&<CardLabelError style={{ width: "100%", marginTop: '-15px', fontSize: '16px', marginBottom: '12px'}}>{t("CORE_COMMON_APPLICANT_ADDRESS_INVALID")}</CardLabelError>}
             </div>
           </LabelFieldPair>
         </React.Fragment>

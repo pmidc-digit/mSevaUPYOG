@@ -9,13 +9,12 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
       label: "HR_GUARDIAN_NAME_LABEL",
       type: "text",
       name: "employeeGuardianName",
-      placeHolder: "HR_GUARDIAN_NAME_PLACEHOLDER",
       validation: {
         isRequired: true,
         pattern: Digit.Utils.getPattern("Name"),
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
-      isMandatory: true,
+      isMandatory: false,
     },
   ];
 
@@ -31,9 +30,9 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
           <React.Fragment key={index}>
             {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller hrms-text-transform-none">
+              <CardLabel className="card-label-smaller">
                 {t(input.label)}
-                {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
+                {input.isMandatory ? " * " : null}
               </CardLabel>
               <div className="field">
                 <TextInput
@@ -41,7 +40,6 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
                   value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                   onChange={(e) => setValue(e.target.value, input.name)}
                   disable={false}
-                  placeholder={t(input.placeHolder)}
                   defaultValue={undefined}
                   {...input.validation}
                 />
@@ -49,7 +47,7 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
               </div>
             </LabelFieldPair>
              {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern("Name")) && (
-                  <CardLabelError className="w-full -mt-3.5 text-base mb-3">
+                  <CardLabelError style={{ width: "100%", marginTop: "-15px", fontSize: "16px", marginBottom: "12px" }}>
                     {t("CORE_COMMON_APPLICANT_NAME_INVALID")}
                   </CardLabelError>
                 )}

@@ -118,7 +118,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-      <div className={`search-container ads-search-container ${isInboxPage ? 'ads-search-container--inbox' : 'ads-search-container--revert'}`}>
+        <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header">
@@ -161,7 +161,8 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
                       <span
-                        className="inbox-search-form-error ads-search-error"
+                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
+                        className="inbox-search-form-error"
                       >
                         {formState?.errors?.[input.name]?.message}
                       </span>

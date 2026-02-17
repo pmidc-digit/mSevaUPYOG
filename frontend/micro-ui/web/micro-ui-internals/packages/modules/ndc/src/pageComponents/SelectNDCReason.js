@@ -19,11 +19,16 @@ import isUndefined from "lodash/isUndefined";
 
 function SelectNDCReason({ config, onSelect, userType, formData, setError, formState, clearErrors }) {
   const [ndcReason, setNDCReason] = useState(formData?.NDCReason || {});
-  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
-    {
-      defaultValues: formData?.NDCReason || {},
-    }
-  );
+  const {
+    control,
+    formState: localFormState,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    trigger,
+    getValues,
+  } = useForm();
   const { t } = useTranslation();
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   // const firstTimeRef = useRef(true);
@@ -52,21 +57,9 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
       console.log("check apiDataCheck", apiDataCheck);
       // find the matching option from MDMS
       const matchedOption = ndcReasonOptions.find((opt) => opt?.code === apiDataCheck?.[0]?.reason);
-
-      // Only update from API if formData doesn't already have a value (prevents overwriting on back navigation)
-      if (matchedOption && (_.isEmpty(formData?.NDCReason) || !formData?.NDCReason?.code)) {
-        let updatedOption = { ...matchedOption };
-
-        // Handle "OTHERS" case with custom reason
-        if (matchedOption.code === "OTHERS") {
-          const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
-          if (ptDetail?.additionalDetails?.reason) {
-            updatedOption.reason = ptDetail.additionalDetails.reason;
-          }
-        }
-
-        setNDCReason(updatedOption);
-        setValue("NDCReason", updatedOption); // update react-hook-form value
+      if (matchedOption) {
+        setNDCReason(matchedOption);
+        setValue("NDCReason", matchedOption); // update react-hook-form value
       }
     }
   }, [apiDataCheck, ndcReasonOptions]);
@@ -75,8 +68,9 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
     return <Loader />;
   }
 
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-    <div>
+    <div style={{ paddingBottom: "16px" }}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_NEW_NDC_APPLICATION_NDC_REASON")} * `}</CardLabel>
         <Controller
@@ -100,39 +94,7 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
           )}
         />
       </LabelFieldPair>
-      <CardLabelError className="ndc-card-label-error">{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
-      {/* Reason */}
-      {watch("NDCReason")?.code == "OTHERS" && (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Reason")}`}</CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              name={"reason"}
-              defaultValue={ndcReason?.reason || ""}
-              render={(props) => (
-                <TextInput
-                  value={props.value}
-                  onChange={(e) => {
-                    console.log("config.key", config.key);
-                    console.log("formData", formData);
-                    // onSelect("NDCValue", { checkReason: "tese" });
-
-                    onSelect("NDCReason", { ...formData?.NDCReason, reason: e.target.value }, config);
-
-                    // onSelect("reason", e.target.value, config);
-                    // setPropertyDetails((prev) => ({ ...prev, reason: e.target.value }));
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-      )}
+      <CardLabelError style={errorStyle}>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
     </div>
   );
 }

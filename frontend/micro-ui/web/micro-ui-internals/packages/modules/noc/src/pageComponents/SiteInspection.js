@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, CardSubHeader , DeleteIcon, ImageUploadHandler, SubmitBar, StatusTable, Row } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, ImageUploadHandler, SubmitBar, StatusTable, Row } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -57,7 +57,7 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
     return (
         <div>
             <React.Fragment>
-                <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>                               
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INPECTION_IMAGES")}</CardSectionHeader>                               
                 {/* <CustomImageUploadHandler tenantId={stateId} uploadedImages={siteImages || null} onPhotoChange={(ids) => {handleUpload(ids)}} geoLocations={geoLocations} setGeoLocations={setGeoLocations} />                 */}
                 <div style={{ marginTop: "20px" }}>
                     <SelectNDCDocuments
@@ -78,7 +78,7 @@ export const SiteInspection = ({ siteImages, setSiteImages, customOpen }) => {
 
                 {geoLocations?.length > 0 &&
                 <React.Fragment>
-                <CardSubHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSubHeader>
+                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
                 <CustomLocationSearch position={geoLocations}/>
                 </React.Fragment>
                 }

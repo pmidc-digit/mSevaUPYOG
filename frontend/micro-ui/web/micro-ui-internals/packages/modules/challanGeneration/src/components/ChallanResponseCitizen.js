@@ -167,7 +167,7 @@ const ChallanResponseCitizen = (props) => {
             </>
           )}
         </div>
-        <ActionBar className="challan-response-action-bar" >
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: " 20px" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CHALLAN_PAY_LATER")} onSubmit={payLater} />
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handlePayment} />

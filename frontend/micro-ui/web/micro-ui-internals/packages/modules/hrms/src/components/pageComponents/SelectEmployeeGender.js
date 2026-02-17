@@ -40,13 +40,13 @@ const SelectEmployeeGender = ({ t, config, onSelect, formData = {}, userType, re
         <React.Fragment key={index}>
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {t(input.label)}
-              {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
+              {input.isMandatory ? " * " : null}
             </CardLabel>
             <div className="field">
               <RadioButtons
-                className="flex justify-between"
+                style={{ display: "flex", justifyContent: "space-between" }}
                 /*options={[
                   {
                     code: "MALE",

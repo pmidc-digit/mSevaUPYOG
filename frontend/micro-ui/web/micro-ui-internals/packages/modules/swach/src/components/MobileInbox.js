@@ -17,13 +17,13 @@ const GetSlaCell = (value) => {
   // );
   if (value < 0) {
     return (
-      <span className="sla-cell-error p-0 swach-red-color" >
+      <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
         {Math.abs(value)} hours overdue
       </span>
     );
   } else {
     return (
-      <span className="sla-cell-success p-0">
+      <span className="sla-cell-success" style={{ padding: 0 }}>
         {value} hour left
       </span>
     );
@@ -121,7 +121,7 @@ const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams, 
   }
 
   return (
-    <div className="p-0">
+    <div style={{ padding: 0 }}>
       <div className="inbox-container">
       {/* <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} /> */}
         <div className="filters-container">

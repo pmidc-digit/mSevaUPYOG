@@ -68,7 +68,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   // Responsive styles using BPA summary classes
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
-      <CardLabel className="bpa-summary-bold-label swach-search-container">{label}</CardLabel>
+      <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
       <div>{value || "NA"}</div>
     </div>
   );
@@ -120,22 +120,22 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   //   color: "#333",
   // };
 
-  // const documentsContainerStyle = {
-  //   display: "flex",
-  //   flexWrap: "wrap",
-  //   gap: "1rem",
-  // };
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+  };
 
-  // const documentCardStyle = {
-  //   flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
-  //   minWidth: "200px", // keeps it from shrinking too small
-  //   maxWidth: "250px", // prevents oversized stretching on big screens
-  //   backgroundColor: "#fdfdfd",
-  //   padding: "0.75rem",
-  //   border: "1px solid #e0e0e0",
-  //   borderRadius: "6px",
-  //   boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-  // };
+  const documentCardStyle = {
+    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+    minWidth: "200px", // keeps it from shrinking too small
+    maxWidth: "250px", // prevents oversized stretching on big screens
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
 
   // const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
@@ -182,7 +182,13 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         data={slotlistRows}
         columns={columns}
         getCellProps={(cellInfo) => ({
-          className: "chb-table-cell-summary"
+          style: {
+            minWidth: "100px",
+            padding: "8px",
+            fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+            paddingLeft: "10px",
+            wordBreak: "break-word"
+          },
         })}
         isPaginationRequired={false}
         totalRecords={slotlistRows.length}
@@ -190,7 +196,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
 
       <CardSubHeader className="bpa-summary-heading">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable >
-        <div className="bpa-summary-section chb-documents-container">
+        <div className="bpa-summary-section" style={{display: "flex", flexWrap: "wrap", gap: "16px"}}>
           {docs?.length > 0 ? (
             docs?.map((doc, index) => (
               <div key={index}>

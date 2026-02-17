@@ -11,8 +11,6 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
   const [stream, setStream] = useState(null);
   const [location, setLocation] = useState(null);
   const [error, setError] = useState("");
-  const [gpsReady, setGpsReady] = useState(false);
-
 
   const stopCamera = () => {
     if (streamRef.current) {
@@ -83,7 +81,6 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
                         lng: pos.coords.longitude.toFixed(6),
                         accuracy
                     });
-                     setGpsReady(true);
                 // }
             },
             (err) => {
@@ -106,13 +103,6 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
 
   /* ------------------ CAPTURE IMAGE ------------------ */
   const capturePhoto = () => {
-
-    if (!location || !location.lat || !location.lng) {
-      setError("Location not available yet. Please wait.");
-      setTimeout(() => setError(""), 3000);
-      return;
-    }
-
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -196,7 +186,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
           )}
 
       <div style={{display: "flex",justifyContent: "center",gap: "12px", marginTop: "16px"}}>
-        {!error && <SubmitBar label={gpsReady ? t("CAPTURE_IMAGE") : t("WAITING_FOR_GPS")} onSubmit={capturePhoto} />}
+        {!error && <SubmitBar label={t("CAPTURE_IMAGE")} onSubmit={capturePhoto} />}
         <SubmitBar label={t("CANCEL")} onSubmit={handleCancel} />
       </div>
     </div>

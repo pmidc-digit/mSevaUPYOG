@@ -1,71 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import _ from "lodash";
 //
 import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
 import { updateEmployeeForm } from "../../redux/actions/employeeFormActions";
 
 const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
-  const [canSubmit, setCanSubmit] = useState(false);
-  const dispatch = useDispatch();
-
-  const currentStepData = useSelector(function (state) {
-    return state.hrms.employeeForm.formData && state.hrms.employeeForm.formData[config.key] 
-        ? state.hrms.employeeForm.formData[config.key] 
-        : {};
-  });
-
-  // Validation function for Administrative Details
-  const validateAdminData = (formData) => {
-
-    if (!formData) {
-      setCanSubmit(false);
-      return;
-    }
-
-    // Validate Jurisdictions
-    let isJurisdictionsValid = false;
-    if (formData.Jurisdictions && formData.Jurisdictions.length > 0) {
-      isJurisdictionsValid = formData.Jurisdictions.every(jurisdiction => {
-        return (
-          jurisdiction?.boundary &&
-          jurisdiction?.boundaryType &&
-          jurisdiction?.hierarchy &&
-          jurisdiction?.tenantId &&
-          jurisdiction?.roles?.length > 0
-        );
-      });
-    }
-
-    // Validate Assignments with checkbox logic
-    let isAssignmentsValid = false;
-    if (formData.Assignments && formData.Assignments.length > 0) {
-      isAssignmentsValid = formData.Assignments.every(assignment => {
-        const hasBasicFields = assignment.department && 
-                              assignment.designation && 
-                              assignment.fromDate;
-        
-        // If "isCurrentAssignment" checkbox is checked, toDate is not mandatory
-        const hasValidToDate = assignment.isCurrentAssignment || assignment.toDate;
-        
-        // If "isHOD" (Head of Department) checkbox is checked, reportingTo field is not mandatory
-        const hasValidReportingTo = assignment.isHOD || assignment.reportingTo;
-        
-        return hasBasicFields && hasValidToDate && hasValidReportingTo;
-      });
-    }
-
-    // Enable submit if all validations pass
-    const isValid = isJurisdictionsValid && isAssignmentsValid;
-    setCanSubmit(isValid);
-  };
-
-  // Validate on mount and when currentStepData changes
-  useEffect(() => {
-    validateAdminData(currentStepData);
-  }, [currentStepData]);
-
   function goNext(data) {
+    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
   }
 
@@ -74,14 +15,20 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-  
+    console.log("onFormValueChange data in AdministrativeDetails: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateEmployeeForm(config.key, data));
     }
-    
-    // Validate on every form change
-    validateAdminData(data);
   };
+
+  const currentStepData = useSelector(function (state) {
+    return state.hrms.employeeForm.formData && state.hrms.employeeForm.formData[config.key] 
+        ? state.hrms.employeeForm.formData[config.key] 
+        : {};
+});
+  const dispatch = useDispatch();
+
+ // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>
@@ -91,7 +38,7 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
         config={config.currStepConfig}
         onSubmit={goNext}
         onFormValueChange={onFormValueChange}
-        isDisabled={!canSubmit}
+        //isDisabled={!canSubmit}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}

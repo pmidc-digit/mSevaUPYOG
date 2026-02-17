@@ -1,4 +1,4 @@
-import { UPDATE_EMPLOYEE_FORM, SET_EMPLOYEE_STEP, SET_EMPLOYEE_VALIDITY, RESET_EMPLOYEE_FORM } from "./types";
+import { UPDATE_EMPLOYEE_FORM, SET_EMPLOYEE_STEP, SET_EMPLOYEE_VALIDITY } from "./types";
 
 export const updateEmployeeForm = (key, value) => ({
   type: UPDATE_EMPLOYEE_FORM,
@@ -13,8 +13,4 @@ export const setEmployeeStep = (step) => ({
 export const setEmployeeValidity = (isValid) => ({
   type: SET_EMPLOYEE_VALIDITY,
   payload: isValid,
-});
-
-export const resetEmployeeForm = () => ({
-  type: RESET_EMPLOYEE_FORM,
 });

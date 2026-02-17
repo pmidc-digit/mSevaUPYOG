@@ -67,10 +67,10 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   };
 
   return (
-    <div className="mychallan-custom">
+    <div style={{ marginTop: "16px" }}>
       <div>
         {header && (
-          <Header >
+          <Header style={{ marginLeft: "8px" }}>
             {t(header)} ({getChallanData?.challans?.length})
           </Header>
         )}
@@ -106,11 +106,11 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
         })}
 
         {getChallanData?.challans?.length === 0 && !loader && (
-          <p className="challan-load-message">{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>
+          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>
         )}
 
         {getChallanData?.challans?.length !== 0 && getChallanData?.totalCount > t1 && (
-          <div className="challan-load-message" >
+          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
             <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}
             </span>

@@ -147,7 +147,7 @@ const Attendence = (props) => {
     <React.Fragment>
       {toast.show && <Toast error={toast.type === "error"} label={toast.message} onClose={() => setToast({ ...toast, show: false })} />}
       <div className="complaint-summary">
-        <div className="swach-attendance-header-wrapper"></div>
+        <div style={{ display: "flex", justifyContent: "space-between", maxWidth: "960px" }}></div>
 
         <Card>
           <CardSubHeader>{`Attendence`}</CardSubHeader>
@@ -158,12 +158,12 @@ const Attendence = (props) => {
             <Row label="Current Address" text={address} />
             <Row label="Current Time" text={currentTime} />
           </StatusTable>
-          <div className="swach-attendance-image-container">
+          <div style={{ margin: "16px 0" }}>
             {isImageLoading ? (
               // <Loader />
-              <div className="swach-attendance-loader-wrapper">
+              <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Loader />
-                <p className="swach-attendance-processing-text">Processing image...</p>
+                <p style={{ textAlign: "center", marginTop: "8px" }}>Processing image...</p>
               </div>
             ) : (
               <SelectImages

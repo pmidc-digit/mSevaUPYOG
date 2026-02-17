@@ -3,37 +3,36 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 
-import { Loader } from "@mseva/digit-ui-react-components";
+import { Loader} from "@mseva/digit-ui-react-components";
 
 export const GISIntegration = () => {
-  const history = useHistory();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location?.search);
+    const history = useHistory();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location?.search);
 
-  useEffect(() => {
-    const surveyId = queryParams.get("surveyid");
-    const floor = queryParams.get("floor");
-    const useType = queryParams.get("use");
-    const area = queryParams.get("area");
 
-    const state = {
-      surveyId: surveyId,
-      floor: floor,
-      useType: useType,
-      area: area,
-    };
+    useEffect(() => {
+        const surveyId = queryParams.get("surveyid");
+        const floor = queryParams.get("floor");
+        const useType = queryParams.get("use");
+        const area = queryParams.get("area");
 
-    console.log("queryParams====", queryParams);
+        const state = {
+            surveyId: surveyId,
+            floor: floor,
+            useType: useType,
+            area: area
+        }
 
-    // history.push({
-    //   pathname: "/digit-ui/citizen/pt/property/create-application",
-    //   state: state,
-    // });
-  }, []);
+        history.push({
+            pathname: "/digit-ui/citizen/pt/property/create-application",
+            state : state
+        })
+    },[])
 
-  return (
+    return (
     <React.Fragment>
-      <Loader />
+        <Loader />
     </React.Fragment>
-  );
-};
+    );
+}

@@ -1,5 +1,4 @@
 import {
-  CardSectionHeader,
   Header,
   Row,
   StatusTable,
@@ -14,27 +13,17 @@ import {
   CheckPoint,
   MultiLink,
   LinkButton,
-  CheckBox,
-  Modal,
 } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, useRef, Fragment, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import LayoutModal from "../../../pageComponents/LayoutModal";
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
-import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
-import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentTableView";
-import LayoutSitePhotographs from "../../../components/LayoutSitePhotographs";
-import LayoutDocumentChecklist from "../../../components/LayoutDocumentChecklist";
-import InspectionReport from "../../../pageComponents/InspectionReport";
-import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import NOCDocument from "../../../../../noc/src/pageComponents/NOCDocument";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import LayoutDocumentView from "../../citizen/Applications/LayoutDocumentView";
 import { Loader } from "../../../config/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
-import CustomLocationSearch from "../../../components/CustomLocationSearch";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -112,44 +101,20 @@ const LayoutEmployeeApplicationOverview = () => {
   const [billData, setBillData] = useState(null);
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 
-  // States for site inspection images
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [imageUrl, setImageUrl] = useState(null);
-  const [siteImages, setSiteImages] = useState({});
-
-  // States for field inspection
-  const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
-  const [checklistRemarks, setChecklistRemarks] = useState({});
-  const [feeAdjustments, setFeeAdjustments] = useState([]);
-
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
   });
   const applicationDetails = data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
-  // Fetch layout checklist data - only if not on first DM submission
-  // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
-  // For other statuses, checklist should already exist from previous submissions
-  const shouldFetchChecklist = applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM";
-  
-  const { data: checklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useLayoutCheckListSearch(
-    { applicationNo: id }, 
-    tenantId,
-    { enabled: shouldFetchChecklist }
-  );
-  console.log("DEBUG: Checklist data fetched:", checklistData, "Fetch enabled:", shouldFetchChecklist);
-
-  const isMobile = window?.Digit?.Utils?.browser?.isMobile();
-
-  const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId,
-    id: id,
-    moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
-  });
+const workflowDetails = Digit.Hooks.useWorkflowDetails({
+  tenantId: tenantId,
+  id: id,
+  moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
+});
 
   console.log("workflowDetails here=>", workflowDetails);
-  console.log("next employee ======>", data, applicationDetails, applicationDetails?.businessService);
+  console.log("next employee ======>", data,applicationDetails,applicationDetails?.businessService);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -159,40 +124,32 @@ const LayoutEmployeeApplicationOverview = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-  useEffect(() => {
-    let WorkflowService = null;
-    const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
-
-    console.log("  Business service:", businessService);
-    console.log("  Tenant ID:", tenantId);
-
-    if (businessService && tenantId) {
-      (async () => {
-        setLoader(true);
-        try {
-          WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
-          const states = WorkflowService?.BusinessServices?.[0]?.states || [];
-          console.log("  Setting workflowService state with", states.length, "states");
-          setWorkflowService(states);
-        } catch (error) {
-          console.error("  Error fetching workflow service:", error);
-        } finally {
-          setLoader(false);
-        }
-      })();
-    } else {
-      console.log("  Skipping workflow load - missing business service or tenant");
-    }
-  }, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
+useEffect(() => {
+  let WorkflowService = null;
+  const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
+  
+  console.log("  Business service:", businessService);
+  console.log("  Tenant ID:", tenantId);
+  
+  if (businessService && tenantId) {
+    (async () => {
+      setLoader(true);
+      try {
+        WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
+        const states = WorkflowService?.BusinessServices?.[0]?.states || [];
+        console.log("  Setting workflowService state with", states.length, "states");
+        setWorkflowService(states);
+      } catch (error) {
+        console.error("  Error fetching workflow service:", error);
+      } finally {
+        setLoader(false);
+      }
+    })();
+  } else {
+    console.log("  Skipping workflow load - missing business service or tenant");
+  }
+}, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
   let user = Digit.UserService.getUser();
-
-  // Check if user has field inspection roles
-  const hasRole = user?.info?.roles?.some((role) => role?.code === "OBPAS_LAYOUT_JE" || role?.code === "OBPAS_LAYOUT_BI");
-
-  // Role-based status checks
-  const isFeeDisabled = applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
-  const isDocPending = applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY";
-
   const menuRef = useRef();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -207,10 +164,7 @@ const LayoutEmployeeApplicationOverview = () => {
   if (window.location.href.includes("/obps") || window.location.href.includes("/layout")) {
     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
-    // Keep employee user from Digit.UserService, don't overwrite with sessionStorage data
-    if (!user?.info?.roles) {
-      user = userInfo?.value;
-    }
+    user = userInfo?.value;
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
@@ -230,16 +184,12 @@ const LayoutEmployeeApplicationOverview = () => {
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
-      const owners = layoutObject?.owners || [];
       const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails;
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
 
-      console.log("DEBUG: Documents array with remarks:", Documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
-
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
-        owners: owners.length > 0 ? owners : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
@@ -248,82 +198,6 @@ const LayoutEmployeeApplicationOverview = () => {
       setDisplayData(finalDisplayData);
     }
   }, [applicationDetails?.Layout]);
-
-  // Initialize site images and field inspection data from application details
-  useEffect(() => {
-    const layoutObject = applicationDetails?.Layout?.[0];
-    if (layoutObject) {
-      const siteImagesFromData = layoutObject?.layoutDetails?.additionalDetails?.siteImages;
-      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
-      setFieldInspectionPending(layoutObject?.layoutDetails?.additionalDetails?.fieldinspection_pending || []);
-    }
-  }, [applicationDetails?.Layout]);
-
-  // Initialize checklist remarks from API data
-  useEffect(() => {
-    if (checklistData?.checkList?.length > 0 && Object.keys(checklistRemarks).length === 0) {
-      const remarksMap = {};
-      checklistData.checkList.forEach(item => {
-        remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
-      });
-      console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
-      setChecklistRemarks(remarksMap);
-    }
-  }, [checklistData]);
-
-  // Show warning toast if desktop user is on FIELDINSPECTION_INPROGRESS status
-  useEffect(() => {
-    if (
-      applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
-      hasRole &&
-      !isMobile
-    ) {
-     console.log("Field_Inspection_Only_Available_On_Mobile");
-    }
-  }, [applicationDetails?.Layout?.[0]?.applicationStatus, hasRole, isMobile]);
-
-  // Filter site photographs and remaining documents
-  const coordinates = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.coordinates;
-  const sitePhotos = displayData?.Documents?.filter(
-    (doc) =>
-      doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
-      doc.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
-      doc.documentType === "SITE.PHOTOGRAPHONE" ||
-      doc.documentType === "SITE.PHOTOGRAPHTWO"
-  );
-  const remainingDocs = displayData?.Documents?.filter(
-    (doc) =>
-      !(
-        doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
-        doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
-        doc?.documentType === "SITE.PHOTOGRAPHONE" ||
-        doc?.documentType === "SITE.PHOTOGRAPHTWO"
-      )
-  );
-
-  // Calculate geo locations from site images
-  const geoLocations = useMemo(() => {
-    if (siteImages?.documents && siteImages?.documents.length > 0) {
-      return siteImages?.documents?.map((img) => {
-        return {
-          latitude: img?.latitude || "",
-          longitude: img?.longitude || "",
-        };
-      });
-    }
-  }, [siteImages]);
-
-  // Format document data for display
-  const documentData = useMemo(
-    () =>
-      siteImages?.documents?.map((value, index) => ({
-        title: value?.documentType,
-        fileStoreId: value?.filestoreId,
-        latitude: value?.latitude,
-        longitude: value?.longitude,
-      })),
-    [siteImages]
-  );
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -352,25 +226,6 @@ const LayoutEmployeeApplicationOverview = () => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
-  function routeToImage(filestoreId) {
-    getUrlForDocumentView(filestoreId);
-  }
-
-  const getUrlForDocumentView = async (filestoreId) => {
-    if (filestoreId?.length === 0) return;
-    try {
-      const result = await Digit.UploadServices.Filefetch([filestoreId], state);
-      if (result?.data) {
-        const fileUrl = result.data[filestoreId];
-        if (fileUrl) {
-          window.open(fileUrl, "_blank");
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching document:", error);
-    }
-  };
-
   const dowloadOptions = [];
   if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
     dowloadOptions.push({
@@ -398,20 +253,6 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   }, [id]);
 
-  // Helper function to get remark entries from inspection report
-  function getRemarkEntries(record) {
-    return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
-  }
-
-  // Helper function to check if all remarks are filled
-  function areAllRemarksFilled(record) {
-    const remarkEntries = getRemarkEntries(record);
-    return (
-      remarkEntries.length > 0 &&
-      remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
-    );
-  }
-
   const submitAction = async (data) => {
     console.log(" submitAction called with data:", data);
     setIsSubmitting(true);
@@ -437,92 +278,8 @@ const LayoutEmployeeApplicationOverview = () => {
         return;
       }
 
-      // Validation For Site Inspection Report AT JE/BI Level
-      if (applicationDetails?.Layout?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
-        if (fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0) {
-          closeModal();
-          setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENIDNG_VALIDATION_LABEL" });
-          setIsSubmitting(false);
-          return;
-        } else {
-          const record = fieldInspectionPending?.[0] ?? {};
-          const allRemarksFilled = areAllRemarksFilled(record);
-
-          if (!allRemarksFilled) {
-            closeModal();
-            setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENDING_QUESTION_VALIDATION_LABEL" });
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      }
-
-      // Validation For Document Remarks AT DM Level
-      if (applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM") {
-        const isDM = user?.info?.roles?.some(role => role.code === "OBPAS_LAYOUT_DM");
-        if (isDM && remainingDocs?.length > 0) {
-          // Check if all documents have remarks filled
-          const allRemarksFilledForDocuments = remainingDocs.every(doc => {
-            const remark = checklistRemarks[doc.documentUid || doc.uuid];
-            return remark && typeof remark === 'string' && remark.trim().length > 0;
-          });
-
-          if (!allRemarksFilledForDocuments) {
-            closeModal();
-            setShowToast({ key: "true", error: true, message: "Please Give Remarks for all documents" });
-            setIsSubmitting(false);
-            return;
-          }
-        }
-      }
-
-      // Build new calculation object from current fee adjustments
-      const newCalculation = {
-        isLatest: true,
-        updatedBy: Digit.UserService.getUser()?.info?.name,
-        taxHeadEstimates: feeAdjustments
-          .filter((row) => row.taxHeadCode !== "LAYOUT_TOTAL") // exclude UI-only total row
-          .map((row) => ({
-            taxHeadCode: row.taxHeadCode,
-            estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
-            category: row.category,
-            remarks: row.remark || null,
-            filestoreId: row.filestoreId || null,
-          })),
-      };
-
-      // Get old calculations and mark them as not latest
-      const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
-
-      // Update documents with remarks from checklistRemarks
-      const updatedDocuments = displayData?.Documents?.map(doc => ({
-        ...doc,
-        remarks: checklistRemarks[doc.documentUid || doc.uuid] || doc.remarks || "",
-      })) || [];
-
-      // Ensure all nested data is properly preserved
       const updatedApplicant = {
         ...layoutObject,
-        documents: updatedDocuments,
-        layoutDetails: {
-          vasikaNumber: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber,
-          vasikaDate: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaDate,
-          ...layoutObject?.layoutDetails,
-          additionalDetails: {
-            ...layoutObject?.layoutDetails?.additionalDetails,
-            applicationDetails: {
-              ...layoutObject?.layoutDetails?.additionalDetails?.applicationDetails,
-            },
-            siteDetails: {
-              ...layoutObject?.layoutDetails?.additionalDetails?.siteDetails,
-              vasikaNumber: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaNumber,
-              vasikaDate: layoutObject?.layoutDetails?.additionalDetails?.siteDetails?.vasikaDate,
-            },
-            siteImages: siteImages?.documents || [],
-            fieldinspection_pending: fieldInspectionPending,
-            calculations: [...oldCalculations, newCalculation],
-          },
-        },
         workflow: {
           action: filtData.action,
           assignes: filtData?.assignee,
@@ -539,55 +296,6 @@ const LayoutEmployeeApplicationOverview = () => {
 
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
       console.log(" API response:", response);
-
-      // Also send checklist update/create for document remarks
-      // CHECK: If on DM role (shouldFetchChecklist === false), CREATE checklist. Otherwise UPDATE if data exists
-      if (response?.ResponseInfo?.status === "successful" && Object.keys(checklistRemarks).length > 0) {
-        try {
-          // At DM level: shouldFetchChecklist is false, so we ALWAYS CREATE on first DM submit
-          // At other levels: shouldFetchChecklist is true, so checklistData contains existing records, and we UPDATE
-          if (!shouldFetchChecklist) {
-            // DM ROLE: CREATE checklist on first submit
-            const checklistPayload = {
-              checkList: (displayData?.Documents || []).map(doc => ({
-                documentUid: doc.documentUid || doc.uuid,
-                applicationNo: id,
-                tenantId: tenantId,
-                action: "INITIATE",
-                remarks: checklistRemarks[doc.documentUid || doc.uuid] || "",
-              })),
-            };
-            console.log("DEBUG: DM ROLE - Sending checklist CREATE payload:", checklistPayload);
-            const checklistResponse = await Digit.OBPSService.LayoutCheckListCreate({ details: checklistPayload, filters: {} });
-            console.log("DEBUG: Checklist create response:", checklistResponse);
-            // Refetch checklist after creation
-            refetchChecklist();
-          } else if (checklistData?.checkList?.length > 0) {
-            // OTHER ROLES: UPDATE existing checklist records
-            const checklistPayload = {
-              checkList: (displayData?.Documents || []).map(doc => {
-                const existing = checklistData.checkList.find(c => c.documentUid === doc.documentUid || c.documentuid === doc.documentUid);
-                return {
-                  id: existing?.id,
-                  documentUid: doc.documentUid || doc.uuid,
-                  applicationNo: id,
-                  tenantId: tenantId,
-                  action: "update",
-                  remarks: checklistRemarks[doc.documentUid || doc.uuid] || "",
-                };
-              }),
-            };
-            console.log("DEBUG: OTHER ROLES - Sending checklist UPDATE payload:", checklistPayload);
-            const checklistResponse = await Digit.OBPSService.LayoutCheckListUpdate({ details: checklistPayload, filters: { tenantId } });
-            console.log("DEBUG: Checklist update response:", checklistResponse);
-          } else {
-            console.warn("DEBUG: Checklist data not available at non-DM roles - may need to search first");
-          }
-        } catch (checklistErr) {
-          console.error("DEBUG: Error updating/creating checklist:", checklistErr);
-          // Don't fail the main operation if checklist update fails
-        }
-      }
 
       if (response?.ResponseInfo?.status === "successful") {
         if (filtData?.action === "CANCEL") {
@@ -630,10 +338,11 @@ const LayoutEmployeeApplicationOverview = () => {
       console.error(" Error message:", err?.message);
       console.error(" Error stack:", err?.stack);
       setShowToast({ key: "true", error: true, message: err?.response?.data?.Errors?.[0]?.message });
-    } finally {
-      // <CHANGE> Stop loading when submit completes (success or error)
-      setIsSubmitting(false);
-    }
+      
+    }finally {
+    // <CHANGE> Stop loading when submit completes (success or error)
+    setIsSubmitting(false);
+  }
   };
 
   const closeModal = () => {
@@ -676,48 +385,44 @@ const LayoutEmployeeApplicationOverview = () => {
   //   }
   // }
 
-  function onActionSelect(action) {
-    const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-    console.log("check action === ", action);
+function onActionSelect(action) {
+  const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-    const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-    console.log("check filterNexState=== ", filterNexState[0]?.nextState);
+  console.log("check action === ", action);
 
-    const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
+  const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
+  console.log("check filterNexState=== ", filterNexState[0]?.nextState );
 
-    console.log("check getWorkflowService === ", getWorkflowService);
-    console.log(filterRoles, "filterRoles");
+  const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    // <CHANGE> Added detailed logging and fallback to empty array
-    const nextStateRoles = filterRoles?.[0]?.actions || [];
-    console.log("  Next state roles to filter employees:", nextStateRoles);
-    setEmployees(nextStateRoles);
+  console.log("check getWorkflowService === ", getWorkflowService);
+  console.log(filterRoles, "filterRoles");
+  
+  // <CHANGE> Added detailed logging and fallback to empty array
+  const nextStateRoles = filterRoles?.[0]?.actions || [];
+  console.log("  Next state roles to filter employees:", nextStateRoles);
+  setEmployees(nextStateRoles);
 
-    const payload = {
-      Licenses: [action],
-    };
+  const payload = {
+    Licenses: [action],
+  };
 
-    if (action?.action == "EDIT") {
-      history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
-    } else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
-      submitAction(payload);
-    } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {
-      // Validation: Prevent forwarding without required site images during field inspection
-      if(applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
-        setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
-        return;
-      }
-      // <CHANGE> Log before opening modal to verify employees are set
-      console.log("  Opening modal with filtered employees:", nextStateRoles);
-      setShowModal(true);
-      setSelectedAction(action);
-    }
+  if (action?.action == "EDIT") {
+    history.push(`/digit-ui/employee/obps/layout/edit-application/${appNo}`);
+  } else if (action?.action == "DRAFT") {
+    setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
+  } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+    submitAction(payload);
+  } else if (action?.action == "PAY") {
+    history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
+  } else {
+    // <CHANGE> Log before opening modal to verify employees are set
+    console.log("  Opening modal with filtered employees:", nextStateRoles);
+    setShowModal(true);
+    setSelectedAction(action);
   }
+}
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -736,38 +441,12 @@ const LayoutEmployeeApplicationOverview = () => {
     return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
-
-  // Helper function to render label-value pairs only when value exists
-  const renderLabel = (label, value) => {
-    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
-      return null;
-    }
-
-    // Extract value from object if it has 'name' property
-    let displayValue = value;
-    if (typeof value === "object" && value !== null) {
-      displayValue = value?.name || value?.code || JSON.stringify(value);
-    }
-
-    return <Row label={label} text={displayValue} />;
-  };
-
   console.log("displayData here", displayData);
 
   const handleViewTimeline = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const onChangeReport = (key, value) => {
-    console.log("key,value", key, value);
-    setFieldInspectionPending(value);
   };
 
   const RenderRow = ({ label, value }) => {
@@ -805,42 +484,59 @@ const LayoutEmployeeApplicationOverview = () => {
 
       {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
 
-      {displayData?.applicantDetails?.[0]?.professionalName && (
-        <Card>
-          <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-          <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalRegId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
-              <Row label={t("BPA_CERTIFICATE_EXPIRY_DATE")} text={displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A"} />
-            </StatusTable>
-          </div>
-        </Card>
-      )}
-
-      {/* -------------------- OWNERS / APPLICANTS DETAILS -------------------- */}
-      {displayData?.owners &&
-        displayData?.owners.length > 0 &&
-        displayData?.owners.map((detail, index) => (
+      {displayData?.applicantDetails?.professionalName &&
+        displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment key={index}>
             <Card>
-              <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
+              <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.name || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.dob ? new Date(detail?.dob).toLocaleDateString() : "N/A"} />
-                  <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.permanentAddress || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
+                  <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
             </Card>
           </React.Fragment>
+        ))}
+
+      {/* -------------------- APPLICANT DETAILS -------------------- */}
+      <Card>
+        <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
+        {displayData?.applicantDetails?.map((detail, index) => (
+          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <StatusTable>
+              <RenderRow label={t("NOC_FIRM_OWNER_NAME_LABEL")} value={detail?.applicantOwnerOrFirmName} />
+              <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={detail?.applicantEmailId} />
+              <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={detail?.applicantFatherHusbandName} />
+              <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={detail?.applicantMobileNumber} />
+              <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={detail?.applicantDateOfBirth} />
+              <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={detail?.applicantGender?.code || detail?.applicantGender} />
+              <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={detail?.applicantAddress} />
+              <RenderRow label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} value={detail?.applicantPropertyId} />
+            </StatusTable>
+          </div>
+        ))}
+      </Card>
+
+      {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
+      {displayData?.applicantDetails?.[0]?.professionalName &&
+        displayData?.applicantDetails?.map((detail, index) => (
+          <Card key={index}>
+            <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
+            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
+                <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
+                <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
+                <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
+                <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
+                <RenderRow label={t("BPA_CERTIFICATE_EXPIRY_DATE")} value={detail?.professionalRegistrationValidity} />
+              </StatusTable>
+            </div>
+          </Card>
         ))}
 
       {/* -------------------- SITE DETAILS -------------------- */}
@@ -849,57 +545,44 @@ const LayoutEmployeeApplicationOverview = () => {
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              {renderLabel(t("NOC_PLOT_NO_LABEL"), detail?.plotNo)}
-              {renderLabel(t("BPA_PLOT_AREA_LABEL"), detail?.specificationPlotArea)}
-              {renderLabel("Net Total Area", detail?.netTotalArea)}
-              {renderLabel(t("NOC_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
-              {renderLabel(t("NOC_ULB_NAME_LABEL"), detail?.ulbName?.name || detail?.ulbName)}
-              {renderLabel("ULB Type", detail?.ulbType)}
-              {renderLabel(t("NOC_KHASRA_NO_LABEL"), detail?.khasraNo)}
-              {renderLabel("Khanuti No", detail?.khanutiNo)}
-              {renderLabel(t("NOC_HADBAST_NO_LABEL"), detail?.hadbastNo)}
-              {renderLabel(t("NOC_ROAD_TYPE_LABEL"), detail?.roadType?.name || detail?.roadType)}
-              {renderLabel("Road Width at Site (m)", detail?.roadWidthAtSite)}
-              {renderLabel(t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
-              {renderLabel(t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
-              {renderLabel(t("NOC_SITE_WARD_NO_LABEL"), detail?.wardNo)}
-              {renderLabel(t("NOC_DISTRICT_LABEL"), detail?.district?.name || detail?.district)}
-              {renderLabel(t("NOC_ZONE_LABEL"), detail?.zone)}
-              {renderLabel(t("NOC_SITE_VASIKA_NO_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("NOC_SITE_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
-              {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+              <RenderRow label={t("NOC_PLOT_NO_LABEL")} value={detail?.plotNo} />
+              <RenderRow label={t("NOC_PROPOSED_SITE_ADDRESS")} value={detail?.proposedSiteAddress} />
+              <RenderRow label={t("NOC_ULB_NAME_LABEL")} value={detail?.ulbName?.name || detail?.ulbName} />
+              <RenderRow label={t("NOC_ULB_TYPE_LABEL")} value={detail?.ulbType} />
+              <RenderRow label={t("NOC_KHASRA_NO_LABEL")} value={detail?.khasraNo} />
+              <RenderRow label={t("NOC_HADBAST_NO_LABEL")} value={detail?.hadbastNo} />
+              <RenderRow label={t("NOC_ROAD_TYPE_LABEL")} value={detail?.roadType?.name || detail?.roadType} />
+              <RenderRow label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} value={detail?.areaLeftForRoadWidening} />
+              <RenderRow label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} value={detail?.netPlotAreaAfterWidening} />
+              <RenderRow label={t("NOC_NET_TOTAL_AREA_LABEL")} value={detail?.netTotalArea} />
+              <RenderRow label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} value={detail?.roadWidthAtSite} />
 
-              {/* Additional Site Details */}
-              {renderLabel("CLU Type", detail?.cluType)}
-              {renderLabel("CLU Number", detail?.cluNumber)}
-              {renderLabel("CLU is Approved", detail?.cluIsApproved?.name || detail?.cluIsApproved?.code)}
-              {renderLabel("CLU Approval Date", formatDate(detail?.cluApprovalDate))}
-              {renderLabel("Is CLU Required", detail?.isCluRequired)}
-              {renderLabel("Residential Type", detail?.residentialType?.name || detail?.residentialType)}
-              {renderLabel("Building Category", detail?.buildingCategory?.name || detail?.buildingCategory)}
-              {renderLabel("Building Status", detail?.buildingStatus)}
-              {renderLabel("Layout Area Type", detail?.layoutAreaType?.name || detail?.layoutAreaType)}
-              {renderLabel("Layout Scheme Name", detail?.layoutSchemeName)}
-              {renderLabel("Type of Application", detail?.typeOfApplication?.name || detail?.typeOfApplication)}
-              {renderLabel("Is Area Under Master Plan", detail?.isAreaUnderMasterPlan?.name || detail?.isAreaUnderMasterPlan?.code)}
+              {/* Building Status */}
+              <RenderRow label={t("NOC_BUILDING_STATUS_LABEL")} value={detail?.buildingStatus?.name || detail?.buildingStatus} />
 
-              {/* Area Breakdown */}
-              {renderLabel("Area Under EWS (Sq.M)", detail?.areaUnderEWS)}
-              {renderLabel("Area Under Road (Sq.M)", detail?.areaUnderRoadInSqM)}
-              {renderLabel("Area Under Road (%)", detail?.areaUnderRoadInPct)}
-              {renderLabel("Area Under Park (Sq.M)", detail?.areaUnderParkInSqM)}
-              {renderLabel("Area Under Park (%)", detail?.areaUnderParkInPct)}
-              {renderLabel("Area Under Parking (Sq.M)", detail?.areaUnderParkingInSqM)}
-              {renderLabel("Area Under Parking (%)", detail?.areaUnderParkingInPct)}
-              {renderLabel("Area Under Other Amenities (Sq.M)", detail?.areaUnderOtherAmenitiesInSqM)}
-              {renderLabel("Area Under Other Amenities (%)", detail?.areaUnderOtherAmenitiesInPct)}
-              {renderLabel("Area Under Residential Use (Sq.M)", detail?.areaUnderResidentialUseInSqM)}
-              {renderLabel("Area Under Residential Use (%)", detail?.areaUnderResidentialUseInPct)}
+              {/* Basement Availability */}
+              <RenderRow
+                label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")}
+                value={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable}
+              />
 
-              {/* Floor Area Details */}
-              {detail?.floorArea && detail?.floorArea?.length > 0 && (
-                <>{detail?.floorArea?.map((floor, idx) => renderLabel(`Floor ${idx + 1} Area (Sq.M)`, floor?.value))}</>
-              )}
+              {/* Basement Area */}
+              {detail?.buildingStatus === "Built Up" && <RenderRow label={t("NOC_BASEMENT_AREA_LABEL")} value={detail?.basementArea} />}
+
+              {/* Floor Areas */}
+              {detail?.buildingStatus === "Built Up" &&
+                detail?.floorArea?.map((floor, idx) => <RenderRow key={idx} label={getFloorLabel(idx)} value={floor?.value} />)}
+
+              {/* Total Floor Area */}
+              {detail?.buildingStatus === "Built Up" && <RenderRow label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} value={detail?.totalFloorArea} />}
+
+              <RenderRow label={t("NOC_DISTRICT_LABEL")} value={detail?.district?.name || detail?.district} />
+              <RenderRow label={t("NOC_ZONE_LABEL")} value={detail?.zone?.name || detail?.zone} />
+              <RenderRow label={t("NOC_SITE_WARD_NO_LABEL")} value={detail?.wardNo} />
+              <RenderRow label={t("NOC_SITE_VILLAGE_NAME_LABEL")} value={detail?.villageName} />
+              <RenderRow label={t("NOC_SITE_COLONY_NAME_LABEL")} value={detail?.colonyName} />
+              <RenderRow label={t("NOC_SITE_VASIKA_NO_LABEL")} value={detail?.vasikaNumber} />
+              <RenderRow label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} value={detail?.khewatAndKhatuniNo} />
             </StatusTable>
           </div>
         ))}
@@ -952,185 +635,37 @@ const LayoutEmployeeApplicationOverview = () => {
         </Card>
       )}
 
-      <Card>
-        <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .reverse()
-              .map((doc) => (
-                <LayoutSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
-        </StatusTable>
-      </Card>
-
-      {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
-      {
-        applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" &&
+      {/* 2️⃣ DOCUMENTS CARD */}
+      {displayData?.Documents && displayData.Documents.length > 0 && (
         <Card>
-          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
-            tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly="true" />}</StatusTable>
-        </Card>
-      }
-
-      {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
-      {
-        applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" && (user?.info?.roles.filter(role => role.code === "OBPAS_LAYOUT_DM")?.length > 0) &&
-        <Card>
-          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
-            tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
-        </Card>
-      }
-
-      {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
-        <Card>
-          <div id="fieldInspection"></div>
-          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-        </Card>
-      )}
-
-      {/* FIELD INSPECTION UPLOADED DOCUMENTS - Display when not in progress */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
-        <Card>
-          <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
-          <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
-          >
-            {documentData?.length > 0 &&
-              documentData.map((doc) => (
-                <LayoutSitePhotographs
-                  key={doc?.fileStoreId || doc?.uuid}
-                  filestoreId={doc?.fileStoreId || doc?.uuid}
-                  documentType={doc?.title}
-                  coordinates={{
-                    latitude: doc?.latitude,
-                    longitude: doc?.longitude,
-                  }}
-                />
-              ))}
+          <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
+          <StatusTable>
+            <LayoutDocumentView documents={displayData.Documents} />
           </StatusTable>
-
-          {geoLocations?.length > 0 && (
-            <Fragment>
-              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-              <CustomLocationSearch position={geoLocations} />
-            </Fragment>
-          )}
         </Card>
       )}
 
-      {/* INSPECTION REPORT SECTION */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
+      {/* 3️⃣ FEE DETAILS CARD */}
+      {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
         <Card>
-          <div id="fieldInspection"></div>
-          <InspectionReport
-            isCitizen={true}
-            fiReport={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending || []}
-            onSelect={onChangeReport}
-            applicationStatus={applicationDetails?.Layout?.[0]?.applicationStatus}
-          />
-        </Card>
-      )}
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
 
-      {/* INSPECTION REPORT DISPLAY SECTION */}
-      {applicationDetails?.Layout?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
-        applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
-          <Card>
-            <div id="fieldInspection"></div>
-            <InspectionReportDisplay fiReport={applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.fieldinspection_pending} />
-          </Card>
-        )}
-
-      {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
-      <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
-        {applicationDetails?.Layout?.[0]?.layoutDetails && (
           <LayoutFeeEstimationDetails
             formData={{
               apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
             }}
-            feeType="PAY1"
-            disable={isFeeDisabled}
           />
-        )}
-      </Card>
-
-      {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
-      <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
-        {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetailsTable
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
-            }}
-            feeType="PAY2"
-            feeAdjustments={feeAdjustments}
-            setFeeAdjustments={setFeeAdjustments}
-            disable={isFeeDisabled}
-          />
-        )}
-      </Card>
-
-      {siteImages?.documents?.length > 0 && (
-        <Card>
-          <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
-          <StatusTable
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
-          >
-            {siteImages?.documents?.length > 0 &&
-              [...siteImages.documents].reverse().map((doc) => (
-                <LayoutSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={{
-                    latitude: doc?.latitude,
-                    longitude: doc?.longitude,
-                  }}
-                />
-              ))}
-          </StatusTable>
         </Card>
       )}
 
-      <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant. I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
-        checked="true"
-      />
-      <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-      </div>
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
@@ -1173,7 +708,7 @@ const LayoutEmployeeApplicationOverview = () => {
       )}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}
-      {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
+       {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}
     </div>
   );
 };

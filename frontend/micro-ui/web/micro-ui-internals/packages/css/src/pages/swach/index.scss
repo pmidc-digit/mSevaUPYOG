@@ -52,6 +52,7 @@
   .location-card .card-header {
     margin-left: 10px;
     font-size: 20px;
+    /* background-color: red; */
     line-height: 40px;
   }
 }
@@ -69,7 +70,12 @@
     margin-top: 20px;
     margin-bottom: 40px;
   }
-
+  /* .swach .location-card .card-header {
+      margin-left: 10px;
+      font-size: 15px;
+      line-height: 40px;
+    
+  } */
 }
 
 @media (min-width: 320px) and (max-width: 425px) {
@@ -79,7 +85,13 @@
   .swach textarea[name="description"] {
     max-width: 490px;
   }
- 
+  /* .swach .location-card {
+    .card-header {
+      margin-left: 10px;
+      font-size: 15px;
+      line-height: 40px;
+    }
+  } */
 }
 
 @media (min-width: 426px) and (max-width: 768px) {
@@ -90,7 +102,13 @@
   .swach textarea[name="description"] {
     width: 540px;
   }
-
+  /* .swach .location-card {
+    .card-header {
+      margin-left: 10px;
+      font-size: 18px;
+      line-height: 40px;
+    }
+  } */
 }
 
 .citizen-home-container .select-active {
@@ -99,6 +117,21 @@
   }
 }
 
+/* @media (min-width: 768px) {
+  .swach .location-card .card-header {
+    margin-left: 10px;
+    font-size: 20px;
+    line-height: 40px;
+  }
+} */
+
+/* @media (min-width: 768px) {
+  .swach .location-card .card-header {
+    margin-left: 10px;
+    font-size: 20px;
+    line-height: 40px;
+  }
+} */
 .mandatory-asterisk {
   color: red;
   font-weight: bold;
@@ -139,94 +172,4 @@
 .swachempfilter{
   background-color: red;
   padding-bottom: 90px !important;
-}
-
-.swach-comp-detils-header{
- display: flex;
- justify-content: space-between;
- align-items: center;
-}
-.swach-comp-detils-citizen-header{
- display: flex;
- justify-content: space-between;
-  max-width: 960px;
-}
-
-.swach-comp-detils-overflow{
-overflow-y: scroll;
-}
-
-.swach-comp-detils-maps-link{
-  color: blue;
-   font-weight: bolder;
-}
-
-.swach-attendance-header-wrapper{
-  display: flex;
-  justify-content: space-between;
-  max-width: 960px;
-}
-
-.swach-attendance-image-container{
-  margin: 16px 0;
-}
-
-.swach-attendance-loader-wrapper{
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center
-}
-
-.swach-attendance-processing-text{
-  text-align: center;
-  margin-top: 8px;
-}
-
-.swach-search-form{
-  margin-left: 24px;
-}
-
-.swach-search-container{
-  width: auto;
-}
-
-.swach-search-error-text{
-  color: red;
-  font-size: 12px;
-}
-
-.swach-search-action-full{
-  width: 100% !important;
-}
-
-.swach-search-clear-padding{
-  padding-top: 9px;
-}
-
-.swach-red-color{
-   color: #a82227;
-}
-
-.swach-text-align{
-  text-align: center;
-}
-.swach-desktop-result{
-  margin-top: 24px;
-  margin-left: 24px;
-  flex: 1;
-
-}
-
-.swach-margin-top-16{
-  margin-top: 20 !important;
-}
-.swach-width-250{
-  width: 250px !important;
-}
-
-@media only screen and (min-width: 768px) {
-  .swach-link-card {
-    padding: 0 !important;
-  }
 }

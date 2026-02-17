@@ -361,6 +361,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
       const items = groups[key];
 
       const sorted = items.slice().sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
+      console.log("sorted", sorted);
       const GAP = 7;
 
       const dateRanges = [];

@@ -175,7 +175,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     let address = {};
     if (TraidDetails?.cpt?.details?.address) {
-      address.city = TraidDetails.cpt.details.address.tenantId || null;
+      address.city = TraidDetails.cpt.details.address.city || null;
       address.locality = { code: TraidDetails.cpt.details.address.locality?.code || null };
       if (TraidDetails.cpt.details.address.doorNo || TraidDetails.address?.doorNo)
         address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address.doorNo || null;
@@ -269,8 +269,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     if (TraidDetails?.cpt) {
-      // formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
-      formData.propertyId = TraidDetails.cpt.details?.propertyId;
+      formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
       formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
     }
 

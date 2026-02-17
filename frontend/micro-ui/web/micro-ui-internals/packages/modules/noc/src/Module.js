@@ -12,7 +12,6 @@ import getRootReducer from "./redux/reducer";
 import { NOCFeeTable } from "./pageComponents/NOCFeeTable";
 import CitizenApp from "./pages/citizen";
 import NOCResponseCitizen from "./pages/citizen/NOCResponseCitizen";
-import NOCEsignResponse from "./pages/employee/NOCEsignResponse";
 
 import NewNOCStepperForm from "./pageComponents/NewNOCStepper/NewNOCStepperForm";
 import NewNOCStepFormOne from "./pageComponents/NewNOCStepper/NewNOCStepFormOne";
@@ -104,7 +103,6 @@ const componentsToRegister = {
   NOCSummary,
   NOCDocumentWithLatLong,
   NOCResponseCitizen,
-  NOCEsignResponse,
   NOCCitizenMyApplications: MyApplications,
   NOCCitizenApplicationOverview: CitizenApplicationOverview,
   NOCEmployeeApplicationOverview,

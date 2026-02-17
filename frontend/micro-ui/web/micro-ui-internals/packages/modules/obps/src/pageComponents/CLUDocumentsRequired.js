@@ -57,23 +57,20 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const onSkip = () => onSelect();
   function onAdd() {}
 
-  const isCluAppliedCategoryIndustry = currentStepData?.siteDetails?.appliedCluCategory?.code === "INDUSTRY_GODOWN_WAREHOUSING_COLD_STORE" || false;
-  console.log("isCluAppliedCategoryIndustry==>", isCluAppliedCategoryIndustry);
+  useEffect(() => {
+    let count = 0;
+    data?.PetService?.Documents?.map((doc) => {
+      doc.hasDropdown = true;
 
-
- const mdmsDocuments = useMemo(() => {
-  const docs = data?.CLU?.Documents;
-  
-  if (!Array.isArray(docs) || docs.length === 0) return [];
-
-  return docs.map((item) => {
-    if (item?.code === "OWNER.INDUSTRYCATEGORYSUPPORTINGDOCUMENT") {
-      return { ...item, required: isCluAppliedCategoryIndustry ? true : false };
-    }
-    return item;
-  });
- }, [isCluAppliedCategoryIndustry, data?.CLU?.Documents]);
-
+      let isRequired = false;
+      documents?.map((data) => {
+        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
+      });
+      if (!isRequired && doc.required) count = count + 1;
+    });
+    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
+    else setEnableSubmit(true);
+  }, [documents, checkRequiredFields]);
 
   //logic for preview image feature
   const documentObj = {
@@ -99,7 +96,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {mdmsDocuments?.map((document, index) => {
+          {data?.CLU?.Documents?.map((document, index) => {
             return (
               <div className="bpa-doc-required-card">
               <CLUSelectDocument

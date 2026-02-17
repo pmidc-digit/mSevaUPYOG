@@ -1,22 +1,13 @@
 .search-icon{
     position: relative;
     z-index: 100;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 50px;
+    margin-top: -55px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    margin-left: -30px;
-    margin-top: 23px;
 
     @media (min-width:780px) {
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      left: auto;
-      margin-top: 23px;
+      right: 35px;
+      margin-top: -24px;
+      left:auto;
     }
 }

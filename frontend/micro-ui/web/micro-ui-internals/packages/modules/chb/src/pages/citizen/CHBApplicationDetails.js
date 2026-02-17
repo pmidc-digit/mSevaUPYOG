@@ -350,7 +350,12 @@ const CHBApplicationDetails = () => {
             data={slotlistRows}
             columns={columns}
             getCellProps={(cellInfo) => ({
-              className: "chb-table-cell-details"
+              style: {
+                minWidth: "150px",
+                padding: "10px",
+                fontSize: "16px",
+                paddingLeft: "20px",
+              },
             })}
             isPaginationRequired={false}
             totalRecords={slotlistRows.length}
@@ -362,7 +367,7 @@ const CHBApplicationDetails = () => {
               {t("CS_COMMON_DOCUMENTS")}
             </div>
             {docs?.length > 0 ? (
-              <div className="chb-documents-flex">
+              <div style={{display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "16px"}}>
                 {docs?.map((doc, index) => (
                   <React.Fragment key={index}>
                    

@@ -1,4 +1,4 @@
-import React, { use, useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { quickServiceModules } from "../../../constants/quickServiceData";
 import { Link } from "react-router-dom";
@@ -24,29 +24,7 @@ import {
 import { update } from "lodash";
 const EmployeeQuickServicesCard = ({ moduleData }) => {
   const { t } = useTranslation()
-  // const userRoles = Digit.UserService.getUser().info.roles
-  const [userInfoData, setUserInfoData] = useState(() => JSON.parse(sessionStorage.getItem("userInfoData") || "{}"));
-  const userRoles = userInfoData?.roles || [];
-
-  useEffect(() => {
-    if (userInfoData?.roles) return; // Already loaded, skip
-
-    const interval = setInterval(() => {
-      const stored = JSON.parse(sessionStorage.getItem("userInfoData") || "{}");
-      if (stored?.roles) {
-        setUserInfoData(stored);
-        clearInterval(interval);
-      }
-    }, 500);
-
-    // Auto-stop after 3 seconds max
-    const timeout = setTimeout(() => clearInterval(interval), 3000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, []);
+  const userRoles = Digit.UserService.getUser().info.roles
 
   const [isHovered, setIsHovered] = useState(false)
 

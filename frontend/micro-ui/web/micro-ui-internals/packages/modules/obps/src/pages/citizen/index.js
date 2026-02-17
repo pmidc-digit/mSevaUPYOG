@@ -124,7 +124,7 @@ const App = ({ path }) => {
   return (
     <span className={"ws-citizen-wrapper"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       {!isResponse && !window.location.href.includes("/stepper") ? (
-        <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
+        <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
           <OBPSBreadCrumbs location={location} />
         </div>
       ) : null}

@@ -194,7 +194,7 @@ console.log('calculatorData', calculatorData)
             buildingStatus: nocFormData?.siteDetails?.buildingStatus?.name || "",
             isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
             district: nocFormData?.siteDetails?.district || "",
-            zone: nocFormData?.siteDetails?.zone?.code || "",
+            zone: nocFormData?.siteDetails?.zone?.name || "",
             vasikaDate: nocFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.vasikaDate) : "",
 
             specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",
@@ -209,42 +209,6 @@ console.log('calculatorData', calculatorData)
       },
       documents: [],
     };
-
-    let outerOwners = updatedApplication?.owners || [];
-    const innerOwners = updatedApplication?.nocDetails?.additionalDetails?.applicationDetails?.owners || [];
-
-    outerOwners = outerOwners.map((outerOwner, index) => {
-      const innerOwner = innerOwners[index];
-      if (innerOwner) {
-        if (outerOwner?.mobileNumber !== innerOwner?.mobileNumber) {
-          outerOwner.status = false; // mark status false if mismatch
-        }
-      }
-      return outerOwner;
-    });
-    const transformedInnerOwners = (innerOwners ?? []).map((item, index) => ({
-      mobileNumber: item?.mobileNumber || "",
-      name: item?.ownerOrFirmName || "",
-      emailId: item?.emailId || "",
-      userName: item?.mobileNumber || "",
-      fatherOrHusbandName: item?.fatherOrHusbandName || "",
-      permanentAddress: item?.address || "",
-      gender: item?.gender?.code || "",
-      dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
-      additionalDetails: {
-        ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
-        ownerId: {...ownerIds?.ownerIdList?.[index]}
-      },
-    }));
-
-  // Final owners array = outer owners + transformed inner owners
-    const newInnerOwners = transformedInnerOwners.filter(inner => { 
-      return !outerOwners.find(outer => outer.mobileNumber === inner.mobileNumber); 
-    });
-
-    outerOwners  = [...outerOwners, ...newInnerOwners];
-
-
 
     const docsArrayFromRedux = nocFormData?.documents?.documents?.documents || [];
 
@@ -294,7 +258,7 @@ console.log('calculatorData', calculatorData)
     }
 
     const payload = {
-      Noc: { ...updatedApplication , owners: outerOwners },
+      Noc: { ...updatedApplication },
     };
 
     return payload;

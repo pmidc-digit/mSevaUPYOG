@@ -30,7 +30,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
        floorArea: [{ value: "" }] ,
        vasikaNumber: "",
        vasikaDate: ""
-      }
+  }
 });
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
@@ -81,14 +81,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
  }; 
   
  function checkValidation(data){
-    //Validation for Jamabandi Area Must Be Equal To Total plot Area in sq mt (A)
-
-    console.log(data,"data in onsubmit sitedetails")
+    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
     const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
-    // Pick whichever is valid: propertyPlotAreaNum or landArea
-   
-
-   
 
     const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
 
@@ -131,7 +125,6 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
  };
 
   const onSubmit = async (data) => {
-    console.log('data in onsubmit', data)
   trigger();
   if (!checkValidation(data)) return;
 
@@ -187,7 +180,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
           isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
           district: formData?.siteDetails?.district || "",
-          zone: formData?.siteDetails?.zone?.code || "",
+          zone: formData?.siteDetails?.zone?.name || "",
           vasikaDate: formData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) : "",
           specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
           specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
@@ -265,7 +258,6 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
 
   function goNext(data) {
-    console.log(data, "data is gonext step 2")
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     onGoNext();
   }

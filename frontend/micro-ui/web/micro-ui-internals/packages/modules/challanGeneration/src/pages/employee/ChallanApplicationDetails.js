@@ -341,9 +341,9 @@ const ChallanApplicationDetails = () => {
 
   return (
     <React.Fragment>
-      <div className="challan-application-details">
-        <div className="cardHeaderWithOptions">
-          <Header className="challan-custom-header-font">{t("CHALLAN_DETAILS")}</Header>
+      <div>
+        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+          <Header styles={{ fontSize: "32px" }}>{t("CHALLAN_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -354,7 +354,7 @@ const ChallanApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <CardSubHeader className="challan-custom-subheader-font">{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_OFFENDER_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CORE_COMMON_NAME")} text={getChallanData?.citizen?.name || t("CS_NA")} />
             <Row className="border-none" label={t("CHALLAN_OWNER_MOBILE_NUMBER")} text={getChallanData?.citizen?.mobileNumber || t("CS_NA")} />
@@ -362,7 +362,7 @@ const ChallanApplicationDetails = () => {
             {/* <Row className="border-none" label={t("CORE_EMAIL_ID")} text={getChallanData?.citizen?.emailId || t("CS_NA")} /> */}
           </StatusTable>
 
-          <CardSubHeader className="challan-custom-subheader-font">{t("CHALLAN_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHALLAN_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CHALLAN_NUMBER")} text={t(getChallanData?.challanNo) || t("CS_NA")} />
             <Row className="border-none" label={t("reports.mcollect.status")} text={t(getChallanData?.challanStatus) || t("CS_NA")} />
@@ -376,15 +376,15 @@ const ChallanApplicationDetails = () => {
             {getChallanData?.feeWaiver && <Row className="border-none" label={t("FEE_WAIVER_AMOUNT")} text={getChallanData?.feeWaiver} />}
           </StatusTable>
 
-          <CardSubHeader className="challan-custom-header">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card className="challan-custom-card">
+            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
               {getChallanData?.documents?.length > 0 ? (
                 getChallanData?.documents?.map((doc, index) => (
                   <React.Fragment key={index}>
                     <div>
                       <CHBDocument value={getChallanData?.documents} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader>{t(doc?.documentType)}</CardSectionHeader>
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
                     </div>
                   </React.Fragment>
                 ))

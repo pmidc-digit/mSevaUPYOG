@@ -212,7 +212,7 @@ const OwnerForm1 = (_props) => {
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
     <div style={isMobile?{}:{marginTop:"-50px"}}>
-      <div>
+      <div style={{ marginBottom: "16px"}}>
         <div>
           <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
           <LabelFieldPair>
@@ -351,7 +351,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>     
       </div>
       </div>
-       <hr className="challan-hr-linebreak"  />
+       <hr style={{ width: "100%", border: "1px solid #D6D5D4", marginTop: "50px", marginBottom: "40px" }} />
     </div>
   );
 };

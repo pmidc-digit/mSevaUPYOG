@@ -211,7 +211,6 @@ import useScrutinyDetails from "./obps/useScrutinyDetails";
 import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
-import useNocCreateAPI from "./noc/useNocCreateAPI";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
 import useOBPSDocumentSearch from "./obps/useOBPSDocumentSearch";
 import useObpsAPI from "./obps/useObpsAPI";
@@ -410,7 +409,7 @@ import useLayoutBuildingType from "./obps/useLayoutBuildingType";
 import useLayoutBuildingCategory from "./obps/useLayoutBuildingCategory";
 import useLayoutRoadType from "./obps/useLayoutRoadType";
 import useLayoutType from "./obps/useLayoutType";
-import { useLayoutSearchApplication, useLayoutCheckListSearch } from "./obps/useSearchApplication";
+import { useLayoutSearchApplication } from "./obps/useSearchApplication";
 import { useLayoutCitizenSearchApplication, useLayoutSearchApplicationByIdOrMobile } from "./obps/useLayoutCitizenSearchApplication";
 import useLayoutDocumentSearch from "./obps/useLayoutDocumentSearch";
 // GC
@@ -422,7 +421,7 @@ import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchAp
 import useCLUInbox from "./obps/useCLUInbox";
 import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
 import useBathindaPropertySearch from "./pt/useBathindaPropertySearch";
-import useCLUCreateAPI from "./obps/useCLUCreateAPI";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -647,14 +646,12 @@ const obps = {
   useLayoutRoadType,
   useLayoutType,
   useLayoutSearchApplication,
-  useLayoutCheckListSearch,
   useLayoutBuildingType,
   useLayoutBuildingCategory,
   useLayoutRoadType,
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
   useCLUFeeCalculator,
-  useCLUCreateAPI,
   useCLUSearchApplication,
   useCLUCitizenSearchApplication,
   useCLUSearchApplicationByIdOrMobile,
@@ -774,8 +771,7 @@ const noc = {
   useNocType,
   useNOCFeeCalculator,
   useNOCSearchApplicationByIdOrMobile,
-  useNOCCheckListSearch,
-  useNocCreateAPI
+  useNOCCheckListSearch
 };
 
 const ndc = {

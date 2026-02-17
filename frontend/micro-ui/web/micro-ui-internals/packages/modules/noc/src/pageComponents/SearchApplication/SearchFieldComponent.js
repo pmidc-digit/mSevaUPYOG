@@ -30,7 +30,8 @@ const SearchFormFieldsComponent = (props) => {
       
       <SearchField>
         <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
-        <TextInput
+        <MobileNumber
+         className="fields"
           name="mobileNumber"
           inputRef={register({
             minLength: {

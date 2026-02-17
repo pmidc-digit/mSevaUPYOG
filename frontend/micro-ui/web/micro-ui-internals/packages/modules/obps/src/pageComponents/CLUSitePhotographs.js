@@ -5,11 +5,6 @@ import EXIF from "exif-js";
 
 const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   const { t } = useTranslation();
-  const [imageZoom, setImageZoom] = useState(null);
-
-  const onCloseImageZoom = () => {
-    setImageZoom(null);
-  };
 
   const documentObj = {
     value: {
@@ -66,36 +61,35 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   //   img.src = fileUrl;
   // };
 
-
   return (
-    <div className="bpa-site-photograph-container">
+    <div style={{ padding: "50px 0px", display: "flex", justifyContent: "space-evenly" }}>
       {documentsData?.map((item, index) => (
-        <div className="bpa-site-photograph-item">
+        <div key={index} style={{ display: "flex", flexDirection: "column", width: "200px", height: "200px", alignItems: "center" }}>
+          {/* <CardSectionHeader>{t(item?.documentType?.replaceAll(".", "_"))}</CardSectionHeader> */}
           <CardSectionHeader>{item?.title}</CardSectionHeader>
 
-          <div className="bpa-site-photograph-photo-wrapper">
+          <div style={{ margin: "5px" }}>
             <img
               src={item.fileUrl}
               alt={item.title}
-              className="bpa-site-photograph-photo"
-              onClick={()=> setImageZoom(item.fileUrl)}
+              style={{ width: "120px", height: "120px", objectFit: "fill", borderRadius: "10%", cursor: "pointer" }}
+              onClick={() => window.open(item.fileUrl, "_blank")}
             />
           </div>
 
           {item?.latitude && <div>Lat: {item.latitude}</div>}
           {item?.longitude && <div>Long: {item.longitude}</div>}
+          {/* <div>Date Taken: {extractExifDate(item.fileUrl)}</div> */}
 
           {item.documentType === "OWNER.SITEPHOTOGRAPHONE" && <div>Latitude - {coordinates?.Latitude1}</div>}
           {item.documentType === "OWNER.SITEPHOTOGRAPHONE" && <div>Longitude - {coordinates?.Longitude1}</div>}
           {item.documentType === "OWNER.SITEPHOTOGRAPHTWO" && <div>Latitude - {coordinates?.Latitude2}</div>}
           {item.documentType === "OWNER.SITEPHOTOGRAPHTWO" && <div>Longitude - {coordinates?.Longitude2}</div>}
 
-          {imageZoom && <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} />}
-
+          {/* <div>Latitude - {item.documentType === "OWNER.SITEPHOTOGRAPHONE" ? coordinates?.Latitude1 : coordinates?.Latitude2}</div>
+          <div>Longitude - {item.documentType === "OWNER.SITEPHOTOGRAPHONE" ? coordinates?.Longitude1 : coordinates?.Longitude2}</div> */}
         </div>
       ))}
-
-      
     </div>
   );
 };

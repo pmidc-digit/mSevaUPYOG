@@ -22,7 +22,7 @@ import getChbAcknowledgementData from "../../getChbAcknowledgementData";
 import CHBWFApplicationTimeline from "../../pageComponents/CHBWFApplicationTimeline";
 import CHBDocument from "../../pageComponents/CHBDocument";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
-import { pdfDownloadLink, formatDate } from "../../utils";
+import { pdfDownloadLink,formatDate } from "../../utils";
 import NDCDocumentTimline from "../../components/NDCDocument";
 import NDCModal from "../../pageComponents/NDCModal";
 import { Loader } from "../../components/Loader";
@@ -120,9 +120,9 @@ const CHBApplicationDetails = () => {
 
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
-  const isCemp = user?.info?.roles.filter((role) => role.code === "CEMP");
+  const isCemp = user?.info?.roles.filter(role => role.code === "CEMP")
 
-  console.log("isCemp", isCemp);
+  console.log('isCemp', isCemp)
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   let actions =
@@ -229,11 +229,13 @@ const CHBApplicationDetails = () => {
       history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
-    } else {
+    }
+    else {
       setShowModal(true);
       setSelectedAction(action);
     }
   }
+
 
   const fetchBillData = async () => {
     setLoading(true);
@@ -293,87 +295,86 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    console.log("payments", payments);
-    try {
-      setLoading(true);
-      let application = {
-        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
-          return {
-            ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
-              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
-              .map((slot) => ({
-                ...slot,
-                bookingDate: formatDate(slot.bookingDate),
-                bookingEndDate: formatDate(slot.bookingEndDate),
-              })),
-          };
-        }),
-      };
-      console.log("application", application);
-      let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
-        const updatedApplication = {
-          ...data?.hallsBookingApplication[0],
-          paymentReceiptFilestoreId: response?.filestoreIds[0],
+      console.log('payments', payments)
+      try {
+        setLoading(true);
+        let application = {
+          hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+            return {
+              ...app,
+              bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+                .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+                .map((slot) => ({
+                  ...slot,
+                  bookingDate: formatDate(slot.bookingDate),
+                  bookingEndDate: formatDate(slot.bookingEndDate),
+                })),
+            };
+          }),
         };
-        await mutation.mutateAsync({
-          hallsBookingApplication: updatedApplication,
-        });
-        fileStoreId = response?.filestoreIds[0];
-        refetch();
+        console.log('application', application)
+        let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
+        if (!fileStoreId) {
+          const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chbservice-receipt");
+          const updatedApplication = {
+            ...data?.hallsBookingApplication[0],
+            paymentReceiptFilestoreId: response?.filestoreIds[0],
+          };
+          await mutation.mutateAsync({
+            hallsBookingApplication: updatedApplication,
+          });
+          fileStoreId = response?.filestoreIds[0];
+          refetch();
+        }
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+        window.open(fileStore[fileStoreId], "_blank");
+      } catch (error) {
+        console.error("Sanction Letter download error:", error);
+      } finally {
+        setLoading(false);
       }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } catch (error) {
-      console.error("Sanction Letter download error:", error);
-    } finally {
-      setLoading(false);
     }
-  }
-
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    try {
-      setLoading(true);
-      let application = {
-        hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
-          return {
-            ...app,
-            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
-              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
-              .map((slot) => ({
-                ...slot,
-                bookingDate: formatDate(slot.bookingDate),
-                bookingEndDate: formatDate(slot.bookingEndDate),
-              })),
-          };
-        }),
-      };
-
-      let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-      console.log("fileStoreId bef create", fileStoreId);
-      if (!fileStoreId) {
-        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
-
-        const updatedApplication = {
-          ...data?.hallsBookingApplication[0],
-          permissionLetterFilestoreId: response?.filestoreIds[0],
+      try {
+        setLoading(true);
+        let application = {
+          hallsBookingApplication: (data?.hallsBookingApplication || []).map((app) => {
+            return {
+              ...app,
+              bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+                .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+                .map((slot) => ({
+                  ...slot,
+                  bookingDate: formatDate(slot.bookingDate),
+                  bookingEndDate: formatDate(slot.bookingEndDate),
+                })),
+            };
+          }),
         };
-        await mutation.mutateAsync({
-          hallsBookingApplication: updatedApplication,
-        });
-        fileStoreId = response?.filestoreIds[0];
-        refetch();
+  
+        let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+        console.log('fileStoreId bef create', fileStoreId)
+        if (!fileStoreId) {
+          const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "chb-permissionletter");
+          
+          const updatedApplication = {
+            ...data?.hallsBookingApplication[0],
+            permissionLetterFilestoreId: response?.filestoreIds[0],
+          };
+          await mutation.mutateAsync({
+            hallsBookingApplication: updatedApplication,
+          });
+          fileStoreId = response?.filestoreIds[0];
+          refetch()
+        }
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+        window.open(fileStore[fileStoreId], "_blank");
+      } catch (error) {
+        console.error("Sanction Letter download error:", error);
+      } finally {
+        setLoading(false);
       }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } catch (error) {
-      console.error("Sanction Letter download error:", error);
-    } finally {
-      setLoading(false);
     }
-  }
 
   let dowloadOptions = [];
 
@@ -460,6 +461,8 @@ const CHBApplicationDetails = () => {
       },
     };
 
+    // return;
+
     try {
       const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
 
@@ -489,17 +492,17 @@ const CHBApplicationDetails = () => {
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
-          {loading && <Loader />}
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
-        </div>
+                  <Header styles={{ fontSize: "32px" }}>{t("CHB_BOOKING_DETAILS")}</Header>
+                  {loading && <Loader />}
+                  {dowloadOptions && dowloadOptions.length > 0 && (
+                    <MultiLink
+                      className="multilinkWrapper"
+                      onHeadClick={() => setShowOptions(!showOptions)}
+                      displayOptions={showOptions}
+                      options={dowloadOptions}
+                    />
+                  )}
+                </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>

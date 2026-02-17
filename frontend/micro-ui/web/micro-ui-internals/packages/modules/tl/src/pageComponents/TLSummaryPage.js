@@ -12,10 +12,11 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const formData = reduxFormData || propsFormData || {};
   
   const createdResponse = formData?.CreatedResponse || {};
-  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory, propertyId} = createdResponse;
+  const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory} = createdResponse;
   const [isChecked, setIsChecked] = useState(false);
 
   const owners = tradeLicenseDetail?.owners || [];
+  console.log("ownersPage:+++ ", owners);
   const tradeUnits = tradeLicenseDetail?.tradeUnits || [];
   const accessories = tradeLicenseDetail?.accessories || [];
   const address = tradeLicenseDetail?.address || {};
@@ -37,8 +38,9 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const formatted = tradeType.replace(/\./g, '_').replace(/-/g, '_');
   return `TRADELICENSE_TRADETYPE_${formatted}`;
 };
-const ownershipCategory = tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]?.toUpperCase() || "NA";
-const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.split(".")[1]?.toUpperCase() || "NA"
+console.log("subOwnerShipCategory:+++ ", tradeLicenseDetail?.subOwnerShipCategory);
+const ownershipCategory =tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]?.toUpperCase();
+const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.split(".")[1]?.toUpperCase()
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
       <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
@@ -97,8 +99,7 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
 
       <h2 className="bpa-summary-heading">{t("Property Address")}</h2>
       <div className="bpa-summary-section">
-        {renderLabel(t("Property Id"), propertyId || "NA")}
-        {renderLabel(t("City"), address?.city?.split(".")[1]?.toUpperCase() || "NA")}
+        {renderLabel(t("City"), address?.city?.split(".")[1].toUpperCase())}
         {renderLabel(t("Door/House No."), address?.doorNo)}
         {renderLabel(t("Building/Colony Name"), address?.buildingName)}
         {renderLabel(t("Street Name"), address?.street)}

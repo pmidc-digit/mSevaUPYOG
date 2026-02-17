@@ -49,11 +49,11 @@ export const ApplicationCard = ({
   let result;
   if (!data || data?.length === 0) {
     result = (
-      <Card className="chb-margin-top-20">
+      <Card style={{ marginTop: 20 }}>
         {t("CS_MYAPPLICATIONS_NO_APPLICATION")
           .split("\\n")
           .map((text, index) => (
-            <p key={index} className="text-center">
+            <p key={index} style={{ textAlign: "center" }}>
               {text}
             </p>
           ))}

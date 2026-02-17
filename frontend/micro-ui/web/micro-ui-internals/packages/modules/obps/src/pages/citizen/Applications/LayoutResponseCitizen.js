@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Banner, Card, ActionBar, SubmitBar,Loader } from "@mseva/digit-ui-react-components"
 import { useTranslation } from "react-i18next"
 import { useHistory, useLocation } from "react-router-dom"
@@ -12,82 +12,18 @@ const LayoutResponseCitizen = (props) => {
   const { t } = useTranslation()
   const history = useHistory()
   const [pdfError, setPdfError] = useState(null)
-  const [downloading, setDownloading] = useState(false)
-  const [calculatedAmount, setCalculatedAmount] = useState(0)
+  const [downloading, setDownloading] = useState(false);
   
 
   const layoutData = state?.data?.Layout?.[0]
   console.log("layoutData in response page", layoutData)
 
-  let tenantId;
-  if(window.location.pathname.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
-  else {
-    tenantId = window.localStorage.getItem("Employee.tenant-id");
-  }
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
   const { tenants } = storeData || {}
 
   const applicationNo = pathname.split("/").pop()
-
-  // Fetch calculated amount when component mounts
-  useEffect(() => {
-    const fetchCalculatedAmount = async () => {
-      try {
-        if (!layoutData) return;
-        
-        const siteDetails = layoutData?.layoutDetails?.additionalDetails?.siteDetails || {};
-        const applicationDetails = layoutData?.layoutDetails?.additionalDetails?.applicationDetails || {};
-        
-        // Format siteDetails fields for calculator
-        const formattedSiteDetails = { ...siteDetails };
-        if (siteDetails.zone && typeof siteDetails.zone === 'string') {
-          formattedSiteDetails.zone = { code: siteDetails.zone, name: siteDetails.zone };
-        }
-        if (siteDetails.buildingStatus && typeof siteDetails.buildingStatus === 'string') {
-          formattedSiteDetails.buildingStatus = { code: siteDetails.buildingStatus, name: siteDetails.buildingStatus };
-        }
-        if (siteDetails.buildingCategory && typeof siteDetails.buildingCategory === 'string') {
-          formattedSiteDetails.buildingCategory = { code: siteDetails.buildingCategory, name: siteDetails.buildingCategory };
-        }
-        if (siteDetails.roadType && typeof siteDetails.roadType === 'string') {
-          formattedSiteDetails.roadType = { code: siteDetails.roadType, name: siteDetails.roadType };
-        }
-        if (siteDetails.layoutAreaType && typeof siteDetails.layoutAreaType === 'string') {
-          formattedSiteDetails.layoutAreaType = { code: siteDetails.layoutAreaType, name: siteDetails.layoutAreaType };
-        }
-        
-        const payload = {
-          CalculationCriteria: [{
-            applicationNumber: layoutData?.applicationNo,
-            tenantId: layoutData?.tenantId,
-            feeType: layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "PAY1" : "PAY2",
-            Layout: {
-              ...layoutData,
-              layoutDetails: {
-                ...layoutData?.layoutDetails,
-                additionalDetails: {
-                  ...layoutData?.layoutDetails?.additionalDetails,
-                  siteDetails: formattedSiteDetails,
-                  applicationDetails: applicationDetails,
-                }
-              }
-            }
-          }]
-        };
-        
-        const response = await Digit.OBPSService.LayoutCalculator({ details: payload, filters: { getCalculationOnly: "true" } });
-        if (response?.Calculation?.[0]?.taxHeadEstimates) {
-          const total = response.Calculation[0].taxHeadEstimates.reduce((sum, tax) => sum + (parseFloat(tax.estimateAmount) || 0), 0);
-          setCalculatedAmount(total);
-        }
-      } catch (error) {
-        console.error("Error calculating amount:", error);
-      }
-    };
-    
-    fetchCalculatedAmount();
-  }, [layoutData]);
 
   const onSubmit = () => {
     history.push(`/digit-ui/citizen`)
@@ -102,14 +38,6 @@ const LayoutResponseCitizen = (props) => {
   const onGoToSearchApplication = () => {
     history.push(`/digit-ui/citizen/obps/layout/search-application`)
   }
-
-  const handlePayment = () => {
-    const code = layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? "LAYOUT.PAY1" : "LAYOUT.PAY2";
-    history.push(
-      `/digit-ui/citizen/payment/collect/${code}/${applicationNo}/${tenantId}?tenantId=${tenantId}`,
-      { paymentAmount: calculatedAmount, tenantId }
-    );
-  };
 
   const handleDownloadPdf = async () => {
     try{
@@ -143,9 +71,9 @@ const LayoutResponseCitizen = (props) => {
         />
         {downloading && <Loader />}
         {layoutData?.applicationStatus !== "REJECTED" ? (
-          <div style={{display:"flex", justifyContent:"space-evenly"}}>
+          <div>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
-            {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
+            {pdfError && <div style={{ color: "red", padding: "10px", marginTop: "10px" }}>{pdfError}</div>}
           </div>
         ) : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
@@ -160,4 +88,3 @@ const LayoutResponseCitizen = (props) => {
 }
 
 export default LayoutResponseCitizen
-

@@ -66,10 +66,9 @@ const CLUSpecificationDetails = (_props) => {
                 />
               )}
             />
-            <p style={errorStyle}>{errors?.specificationPlotArea?.message}</p>
           </div>
         </LabelFieldPair>
-        {/* <CardLabelError style={errorStyle}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError> */}
+        <CardLabelError style={errorStyle}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError>
       </div>
     </React.Fragment>
   );

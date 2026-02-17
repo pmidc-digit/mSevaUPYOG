@@ -118,6 +118,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   }, [pincode]);
 
   useEffect(() => {
+    console.log("UseEffect Called");
     setComplaintType({ name: "SWACHBHARATCATEGORY.SWACHCATEGORY", key: "SwachCategory" });
     selectedType();
   }, []);
@@ -125,6 +126,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   async function selectedType() {
     const value = await serviceDefinitions.getSubMenu(tenantId, { name: "SWACHBHARATCATEGORY.SWACHCATEGORY", key: "SwachCategory" }, t);
     setSubTypeMenu(value);
+    console.log("setSubTypeMenu value", value);
   }
   // async function selectedType(value) {
   //   if (value.key !== complaintType.key) {
@@ -159,6 +161,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   function selectLocality(locality) {
+    console.log("ddddddddd", locality);
     setSelectedLocality(locality);
   }
 
@@ -222,32 +225,28 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   const handlePincode = (event) => {
-    if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
-    setPincode(value || "");
+    const { value } = event.target;
+    setPincode(value);
     if (!value) {
       setPincodeNotValid(false);
     }
   };
   const handleMobileNumber = (event) => {
-    if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
-    setMobileNumber(value || "");
+    const { value } = event.target;
+    console.log("handleMobileNumber", value);
+    setMobileNumber(value);
   };
   const handleName = (event) => {
-    if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
-    setFullName(value || "");
+    const { value } = event.target;
+    setFullName(value);
   };
   const handleEmail = (event) => {
-    if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
-    setEmail(value || "");
+    const { value } = event.target;
+    setEmail(value);
   };
   const handleDescription = (event) => {
-    if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
-    setDescription(value || "");
+    const { value } = event.target;
+    setDescription(value);
   };
 
   const isPincodeValid = () => !pincodeNotValid;
@@ -408,6 +407,7 @@ export const CreateComplaint = ({ parentUrl }) => {
               <SelectGeolocation
                 t={t}
                 onSelect={() => {
+                  console.log("tempLocation", tempLocation);
                   if (tempLocation?.current?.location?.longitude !== 76.76504 && tempLocation?.current?.location?.latitude !== 30.730048) {
                     setGeoLocation(tempLocation.current);
                   } else {
@@ -469,13 +469,16 @@ export const CreateComplaint = ({ parentUrl }) => {
     },
   ];
   useEffect(() => {
+    console.log("heloo world", propetyData);
     if (propetyData !== "undefined" && propetyData !== null) {
       let data = JSON.parse(propetyData);
+      console.log("stp 1", propetyData);
       setPropertyData(data);
       setPropertyId(data?.propertyId);
     }
   }, []);
   useEffect(() => {
+    console.log("step 2", propetyData, property, typeof propetyData);
     if (property !== "undefined" && property !== null) {
       let data = property;
 
@@ -486,17 +489,16 @@ export const CreateComplaint = ({ parentUrl }) => {
       });
       setSelectedLocality(b?.[0]);
       setDescription(data?.propertyId);
+      console.log("swachProperty", localities, data?.propertyId, data);
     }
   }, [propertyId]);
   return (
-    <div className="card pgr-create-complaint-wrapper">
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}
       onSubmit={wrapperSubmit}
       isDisabled={!canSubmit && !submitted}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
-      />
-    </div>
+    />
   );
 };

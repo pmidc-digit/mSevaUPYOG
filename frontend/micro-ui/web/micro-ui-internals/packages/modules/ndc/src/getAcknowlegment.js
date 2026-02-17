@@ -62,16 +62,13 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
   const add = ndc?.additionalDetails || {};
   const approvalDate = appData?.auditDetails?.lastModifiedTime ? new Date(appData.auditDetails?.lastModifiedTime).toLocaleDateString("en-GB"): "N/A"
-  const designationCode = empData?.officer?.designation; // e.g. "DESIG_68"
-  const designationKey = designationCode ? `COMMON_MASTERS_DESIGNATION_${designationCode}` : null;
-  const designation = designationKey ? t(designationKey, { defaultValue: designationCode }) : "NA";
-
+                       
   const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
   const ptObj = appData?.NdcDetails?.find(item => item.businessService === 'PT');
@@ -82,8 +79,6 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA";
-  const remarks = appData?.NdcDetails?.[0]?.additionalDetails?.remarks || null;
-
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
@@ -147,12 +142,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
       { text: `• This certificate is only for the purpose of municipal dues and this certificate is not a proof of ownership. `, bold: true , fontSize: 9 },
       { text: `${t("NDC_OWNERSHIP_NOTE_PB")}\n`, bold: false , fontSize: 9 }
     ]
-  },
-  remarks && remarks.trim() !== "" && {
-    text: [
-      { text: `• Remarks:  ${remarks}\n`, bold: true, fontSize: 9 }
-    ]
-  },
+  }
 ];
 
 
@@ -162,7 +152,6 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
     t,
     approvalDate,
     approver,
-    designation,
     ulbType,
     tenantId: appData?.tenantId,
     // Use readable city dynamically

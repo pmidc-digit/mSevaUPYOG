@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
+import { TextInput, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
@@ -29,42 +29,37 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   };
 
   return (
-    <div className="checklist-document-table-wrapper" style ={{fontWeight: "bold"}}>
-      <table className="customTable table-border-style checklist-document-table">
+    <div className="noc-table-container">
+      <table className="customTable table-border-style">
         <thead>
           <tr>
-            <th className="checklist-table-header checklist-table-header-srno">{t("SR_NO")}</th>
-            <th className="checklist-table-header checklist-table-header-doc-name">{t("BPA_DOCUMENT_NAME")}</th>
-            <th className="checklist-table-header checklist-table-header-doc-file">{t("BPA_DOCUMENT_FILE")}</th>
-            <th className="checklist-table-header checklist-table-header-remark">{t("BPA_DOCUMENT_REMARK")}</th>
+            <th style={{ width: "60px", textAlign: "center" }}>{t("SR_NO")}</th>
+            <th>{t("BPA_DOCUMENT_NAME")}</th>
+            <th>{t("BPA_DOCUMENT_FILE")}</th>
+            <th>{t("BPA_DOCUMENT_REMARK")}</th>
           </tr>
         </thead>
         <tbody>
           {documents?.map((doc, i) => {
-            const url = urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
+            const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
-                <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
-                <td className="checklist-table-cell checklist-table-cell-file">
+                 <td style={{ width: "60px", textAlign: "center" }}>{i + 1}</td>
+                <td>{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
+                <td>
                   {url ? (
                     <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
                   ) : t("CS_NA")}
                 </td>
-                <td className="checklist-table-cell checklist-table-cell-remark">
-                  <TextArea
+                <td>
+                  <TextInput
                     t={t}
-                    value={localRemarks[doc?.documentUid] ?? ""}
-                    onChange={(e) => {
-                      if (!readOnly) {
-                        const value = e.target.value;
-                        setLocalRemarks(prev => ({ ...prev, [doc?.documentUid]: value }));
-                        onRemarksChange({ ...localRemarks, [doc?.documentUid]: value });
-                      }
-                    }}
-                    onBlur={(e) => !readOnly && handleBlur(doc?.documentUid, e.target.value)}
+                    type="text"
+                    value={localRemarks[doc.documentUid] ?? ""}
+                    onChange={(e) => !readOnly && setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }))}
+                    onBlur={(e) => !readOnly && handleBlur(doc.documentUid, e.target.value)}
                     disabled={readOnly}
-                    className="checklist-table-textarea"
+                    style={{ width: "100%", padding: "4px", border: "1px solid #ccc", borderRadius: "4px" }}
                   />
                 </td>
               </tr>

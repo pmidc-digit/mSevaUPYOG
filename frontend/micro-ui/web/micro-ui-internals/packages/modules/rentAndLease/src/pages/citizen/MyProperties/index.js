@@ -168,6 +168,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
         )}
 
         {getPropertiesData?.map((property, index) => {
+          console.log("property", property);
           return (
             <Card key={index}>
               {property?.registrationNumber && <KeyNote keyValue={t("RAL_REGISTRATION_NUMBER")} note={property?.registrationNumber || t("CS_NA")} />}
@@ -175,10 +176,8 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
               <KeyNote
                 keyValue={t("RAL_ALLOTMENT_TYPE")}
                 note={
-                  (Array.isArray(property?.additionalDetails?.propertyDetails)
-                    ? property?.additionalDetails?.propertyDetails[0]
-                    : property?.additionalDetails?.propertyDetails
-                  )?.allotmentType || t("CS_NA")
+                  (Array.isArray(property?.additionalDetails) ? property?.additionalDetails[0] : property?.additionalDetails)?.allotmentType ||
+                  t("CS_NA")
                 }
               />
               <KeyNote keyValue={t("STATUS")} note={t(property?.expireFlag ? "Renewed" : property.status)} />
@@ -191,10 +190,8 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
               <KeyNote
                 keyValue={t("RENT_LEASE_PROPERTY_NAME")}
                 note={
-                  (Array.isArray(property?.additionalDetails?.propertyDetails)
-                    ? property?.additionalDetails?.propertyDetails[0]
-                    : property?.additionalDetails?.propertyDetails
-                  )?.propertyName || t("CS_NA")
+                  (Array.isArray(property?.additionalDetails) ? property?.additionalDetails[0] : property?.additionalDetails)?.propertyName ||
+                  t("CS_NA")
                 }
               />
 

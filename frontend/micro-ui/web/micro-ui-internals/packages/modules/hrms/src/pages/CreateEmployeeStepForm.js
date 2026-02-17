@@ -34,16 +34,16 @@ const createEmployeeConfig = [
     key: "administrativeDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
     },
   },
   {
     head: "HR_SUMMARY",
     stepLabel: "HR_SUMMARY_STEP_LABEL",
     stepNumber: 3,
-    isStepEnabled: true,
+    isStepEnabled: false,
     type: "component",
-    component: "SummaryStep",
+    component: "Summary",
     key: "summary",
     withoutLabel: true,
     texts: {
@@ -81,6 +81,7 @@ const CreateEmployeeStepForm = () => {
     onSubmit(data, tenantId, setShowToast, history);
   };
 
+  console.log("formState: ",formState);
   return (
     <div className="card">
       <CardHeader className="hrms-card-header" divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>

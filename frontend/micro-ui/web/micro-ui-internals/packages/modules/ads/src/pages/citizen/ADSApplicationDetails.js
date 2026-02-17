@@ -55,6 +55,7 @@ const ADSApplicationDetails = () => {
     filters: { bookingNo: acknowledgementIds },
   });
   const new_data = transformBookingResponseToBookingData(adsData);
+  console.log("new_data my here", new_data);
 
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 

@@ -53,12 +53,10 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [getLoader, setLoader] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [error, setError] = useState("");
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
+   const [showToast, setShowToast] = useState(false);
   useEffect(() => {
     Digit.TLService.fetch_bill({
       tenantId: tenantId,
@@ -66,50 +64,21 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     });
   }, []);
 
-  // Monitor checkbox state and enable/disable button
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (window.declarationChecked) {
-        setIsButtonDisabled(false);
-      } else {
-        setIsButtonDisabled(true);
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Auto-close toast after 3 seconds
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(false);
-        setError("");
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
-
   // Function to handle the "Next" button click
-  const goNext = async (data) => {
+  const goNext = (data) => {
     console.log("Full form data submitted: ", formData);
 
-    // Validate checkbox
-    if (!window.declarationChecked) {
-      setError("Please accept the declaration to proceed");
-      setShowToast(true);
-      return;
-    }
-
-    const res = await onSubmit(formData?.CreatedResponse);
+    const res = onSubmit(formData?.CreatedResponse);
+    // console.log("API response: ", res);
 
     if (res) {
       console.log("Submission successful, moving to next step.");
-      history.replace(`/digit-ui/employee/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
+      // history.replace(`/digit-ui/employee/tl/application-details/${formData?.CreatedResponse?.applicationNumber}`);
+       history.replace(`/digit-ui/employee/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {
       console.error("Submission failed, not moving to next step.");
-      setError("Submission failed. Please try again.");
-      setShowToast(true);
     }
+    // onGoNext();
   };
 
   const onSubmit = async (data) => {
@@ -127,7 +96,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {
       setLoader(false);
-      return false;
+      return error;
     }
 
     // console.log("onSubmit data in step 4: ", formdata);
@@ -158,26 +127,15 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={formData}
-        config={config.currStepConfig}
-        onSubmit={goNext}
-        label={t(`${config.texts.submitBarLabel}`)}
-        currentStep={config.currStepNumber}
-        onBackClick={onGoBack}
-        isDisabled={isButtonDisabled}
+        defaultValues={formData} // Pass the entire formData as default values
+        config={config.currStepConfig} // Configuration for the current step
+        onSubmit={goNext} // Handle form submission
+        // onFormValueChange={onFormValueChange} // Handle form value changes
+        label={t(`${config.texts.submitBarLabel}`)} // Submit button label
+        currentStep={config.currStepNumber} // Current step number
+        onBackClick={onGoBack} // Handle back button click
       />
       {getLoader && <Loader page={true} />}
-      {showToast && (
-        <Toast
-          error={true}
-          label={error}
-          isDleteBtn={true}
-          onClose={() => {
-            setShowToast(false);
-            setError("");
-          }}
-        />
-      )}
     </React.Fragment>
   );
 };

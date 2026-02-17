@@ -37,6 +37,7 @@ export const ApplicationCard = ({
   }, [type]);
 
   const handlePopupClose = () => {
+    console.log("here comingf");
     setPopup(false);
     setType("");
     setSortParams(sortParams);
@@ -79,6 +80,7 @@ export const ApplicationCard = ({
           <FilterAction
             text="FILTER"
             handleActionClick={() => {
+              console.log("here yes");
               setType("FILTER");
               setPopup(true);
             }}

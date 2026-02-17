@@ -75,7 +75,7 @@ const EmployeeApp = ({ path, url, userType }) => {
       <React.Fragment>
         <div className="ground-container">
           {!isRes ? (
-              <div className={`${isNewRegistration ? 'ads-registration-row--new' : 'ads-registration-row--existing'}`}>
+            <div style={isNewRegistration ? { marginLeft: "12px" } : { marginLeft: "-4px" }}>
               <PETBreadCrumbs location={location} />
             </div>
           ) : null}

@@ -14,6 +14,7 @@ const SelectEmployeeType = ({ t, config, onSelect, formData = {}, userType }) =>
     setEmployeeType(value);
   }
 
+  console.log("EmployeeTypes", EmployeeTypes);
 
   useEffect(() => {
     onSelect(config.key, employeeType);
@@ -37,9 +38,9 @@ const SelectEmployeeType = ({ t, config, onSelect, formData = {}, userType }) =>
   return inputs?.map((input, index) => {
     return (
       <LabelFieldPair key={index}>
-        <CardLabel className="card-label-smaller hrms-text-transform-none">
+        <CardLabel className="card-label-smaller">
           {t(input.label)}
-          {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
+          {input.isMandatory ? " * " : null}
         </CardLabel>
         <Dropdown
           className="form-field"
@@ -47,7 +48,6 @@ const SelectEmployeeType = ({ t, config, onSelect, formData = {}, userType }) =>
           option={EmployeeTypes?.["egov-hrms"]?.EmployeeType}
           select={SelectEmployeeType}
           optionKey="code"
-          placeholder={t("HR_EMPLOYMENT_TYPE_PLACEHOLDER")}
           defaultValue={undefined}
           t={t}
         />

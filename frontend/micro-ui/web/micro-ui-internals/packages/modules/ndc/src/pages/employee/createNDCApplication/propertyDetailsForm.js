@@ -50,7 +50,7 @@ const PropertyDetailsForm = ({ onGoNext }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="surveydetailsform-wrapper">
             <label>
-              First Name <span  className="requiredField">*</span>
+              First Name <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="firstName"
@@ -63,11 +63,11 @@ const PropertyDetailsForm = ({ onGoNext }) => {
                 },
               })}
             />
-            {errors.firstName && <p  className="requiredField">{errors.firstName.message}</p>}
+            {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Last Name <span  className="requiredField">*</span>
+              Last Name <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="lastName"
@@ -80,11 +80,11 @@ const PropertyDetailsForm = ({ onGoNext }) => {
                 },
               })}
             />
-            {errors.lastName && <p  className="requiredField">{errors.lastName.message}</p>}
+            {errors.lastName && <p style={{ color: "red" }}>{errors.lastName.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Email <span  className="requiredField">*</span>
+              Email <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="email"
@@ -97,11 +97,11 @@ const PropertyDetailsForm = ({ onGoNext }) => {
                 },
               })}
             />
-            {errors.email && <p  className="requiredField">{errors.email.message}</p>}
+            {errors.email && <p style={{ color: "red" }}>{errors.email.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
             <label>
-              Address <span  className="requiredField">*</span>
+              Address <span style={{ color: "red" }}>*</span>
             </label>
             <TextInput
               name="address"
@@ -114,7 +114,7 @@ const PropertyDetailsForm = ({ onGoNext }) => {
                 },
               })}
             />
-            {errors.address && <p  className="requiredField">{errors.address.message}</p>}
+            {errors.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
           </div>
           <ActionBar>
             <SubmitBar label="Next" submit="submit" />

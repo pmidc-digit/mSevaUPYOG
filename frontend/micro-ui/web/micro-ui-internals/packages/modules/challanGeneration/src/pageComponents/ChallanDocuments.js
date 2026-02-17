@@ -275,10 +275,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
   console.log("doc===", doc);
   return (
-    <div className="challan-documents">
-      <LabelFieldPair className="challan-label-field" >
-        <CardLabel className="challan-card-label" >
-          {t(doc?.code)} <span className="requiredField"> {doc?.required && " *"}</span>
+    <div style={{ marginBottom: "24px" }}>
+      <LabelFieldPair style={{ display: "inline" }}>
+        <CardLabel style={{ marginBottom: "8px", width: "auto" }}>
+          {t(doc?.code)} <span style={{ color: "red" }}> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field" style={{ width: "100%" }}>
           <UploadFile
@@ -296,8 +296,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           />
           {console.log("documents", documents)}
           {doc?.code == "CHALLAN.EVIDENCE_IMAGE" && (
-            <span className="challan-note-green" >
-              <span className="challan-note-red" >Note:</span>
+            <span style={{ color: "green", fontSize: "14px" }}>
+              <span style={{ color: "red", paddingRight: "3px" }}>Note:</span>
               Please upload a picture **clicked with location enabled**.
             </span>
           )}
@@ -305,9 +305,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             documents
               ?.filter((item) => item.documentType == "CHALLAN.EVIDENCE_IMAGE")
               ?.map((item, index) => (
-                <div key={index}>
+                <div key={index} style={{ marginTop: "10px" }}>
                   {/* Latitude & Longitude */}
-                  <div className="challan-lat-long" >
+                  <div style={{ marginTop: "5px", fontSize: "14px", color: "#333" }}>
                     <div>
                       <b>Latitude:</b> {item.latitude}
                     </div>

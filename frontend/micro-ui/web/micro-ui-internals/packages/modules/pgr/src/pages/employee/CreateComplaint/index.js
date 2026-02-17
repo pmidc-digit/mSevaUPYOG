@@ -158,37 +158,29 @@ export const CreateComplaint = ({ parentUrl }) => {
     setSelectedLocality(locality);
   }
 
-  const handlePincode = (value) => {
-    if (value === undefined || value === null) return;
-    const inputValue = typeof value === 'object' && value?.target ? value.target.value : value;
-    setPincode(inputValue || "");
-    if (!inputValue) {
+  const handlePincode = (event) => {
+    const { value } = event.target;
+    setPincode(value);
+    if (!value) {
       setPincodeNotValid(false);
     }
   };
-  const handleMobileNumber = (value) => {
-    if (value === undefined || value === null) return;
-    const inputValue = typeof value === 'object' && value?.target ? value.target.value : value;
-    setMobileNumber(inputValue || "");
-    sessionStorage.setItem("mobileNumber", inputValue || "");
+  const handleMobileNumber = (event) => {
+    const { value } = event.target;
+
+    setMobileNumber(value);
   };
-  const handleName = (value) => {
-    if (value === undefined || value === null) return;
-    const inputValue = typeof value === 'object' && value?.target ? value.target.value : value;
-    setFullName(inputValue || "");
-    sessionStorage.setItem("name", inputValue || "");
+  const handleName = (event) => {
+    const { value } = event.target;
+    setFullName(value);
   };
-  const handleEmail = (value) => {
-    if (value === undefined || value === null) return;
-    const inputValue = typeof value === 'object' && value?.target ? value.target.value : value;
-    setEmail(inputValue || "");
-    sessionStorage.setItem("emailId", inputValue || "");
+  const handleEmail = (event) => {
+    const { value } = event.target;
+    setEmail(value);
   };
-  const handleDescription = (value) => {
-    if (value === undefined || value === null) return;
-    const inputValue = typeof value === 'object' && value?.target ? value.target.value : value;
-    setDescription(inputValue || "");
-    sessionStorage.setItem("description", inputValue || "");
+  const handleDescription = (event) => {
+    const { value } = event.target;
+    setDescription(value);
   };
 
   const isPincodeValid = () => !pincodeNotValid;
@@ -201,9 +193,9 @@ export const CreateComplaint = ({ parentUrl }) => {
           label: t("ES_CREATECOMPLAINT_COMPLAINT_NAME"),
           isMandatory: true,
           type: "text",
+          value: fullName,
           populators: {
             name: "name",
-            value: fullName,
             placeholder: "Enter Citizen Name",
             onChange: handleName,
             validation: {
@@ -212,14 +204,16 @@ export const CreateComplaint = ({ parentUrl }) => {
             },
             error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
           },
+           placeholder: t("ES_CREATECOMPLAINT_COMPLAINT_NAME_PLACEHOLDER"),
         },
         {
           label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
           isMandatory: true,
           type: "text",
+          value: mobileNumber,
+          onChange: handleMobileNumber,
           populators: {
             name: "mobileNumber",
-            value: mobileNumber,
             onChange: handleMobileNumber,
             validation: {
               required: true,
@@ -439,7 +433,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
 
   return (
-    <div className="card pgr-create-complaint-wrapper">
+    <>
     {/* {!location.pathname.includes("/response") && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} */}
     <FormComposer
      key={location.pathname} 
@@ -449,6 +443,6 @@ export const CreateComplaint = ({ parentUrl }) => {
       isDisabled={!canSubmit && !submitted}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
       />
-    </div>
+    </>
   );
 };

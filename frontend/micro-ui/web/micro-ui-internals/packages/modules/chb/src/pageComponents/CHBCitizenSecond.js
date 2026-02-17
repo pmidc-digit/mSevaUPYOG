@@ -205,16 +205,17 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           {/* SELECT_HALL_NAME */}
           <div className="label-field-pair">
             <CardLabel>
-              {t("SELECT_HALL_NAME")} <span className="mandatory-asterisk">*</span>
+              {t("SELECT_HALL_NAME")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div className="form-field w-fullwidth">
+            <div className="form-field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name={"siteId"}
                 rules={{ required: t("HALL_NAME_REQ") }}
                 render={(props) => (
                   <Dropdown
-                    className="form-field chb-form-field-margin"
+                    style={{ marginBottom: 0 }}
+                    className="form-field"
                     select={(e) => {
                       props.onChange(e);
                       fiterHalls(e);
@@ -231,27 +232,27 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.siteId && <p className="chb-error-text">{errors.siteId.message}</p>}
+              {errors.siteId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.siteId.message}</p>}
             </div>
           </div>
 
           {/* SELECT_DATE */}
-          <div className="label-field-pair chb-margin-top-20">
+          <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
-              {t("SELECT_DATE")} <span className="mandatory-asterisk">*</span>
+              {t("SELECT_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div className="form-field w-fullwidth">
+            <div className="form-field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name={"startDate"}
                 rules={{ required: t("START_DATE_REQ") }}
                 render={(props) => (
                   <TextInput
+                    style={{ marginBottom: 0 }}
                     type={"date"}
-                    className="form-field chb-form-field-margin"
+                    className="form-field"
                     value={props.value}
-                    // min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       setValue("endDate", "");
@@ -263,16 +264,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.startDate && <p className="chb-error-text">{errors.startDate.message}</p>}
+              {errors.startDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.startDate.message}</p>}
             </div>
           </div>
 
           {/* SELECT End DATE */}
-          <div className="label-field-pair chb-margin-top-20">
+          <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
-              {t("SELECT_END_DATE")} <span className="mandatory-asterisk">*</span>
+              {t("SELECT_END_DATE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div className="form-field w-fullwidth">
+            <div className="form-field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name={"endDate"}
@@ -284,24 +285,20 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
                     const start = new Date(startDate);
                     const end = new Date(value);
+                    const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
-                    const diffDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
-
-                    if (diffDays < 0) {
-                      return t("END_DATE_BEFORE_START"); // end before start ❌
+                    if (daysDiff > 5) {
+                      return t("END_DATE_MAX_5_DAYS");
                     }
 
-                    if (diffDays > 5) {
-                      return t("END_DATE_MAX_5_DAYS"); // more than 5 days ❌
-                    }
-
-                    return true; // 0–5 days ✅
+                    return true;
                   },
                 }}
                 render={(props) => (
                   <TextInput
+                    style={{ marginBottom: 0 }}
                     type={"date"}
-                    className="form-field chb-form-field-margin"
+                    className="form-field"
                     value={props.value}
                     // min={
                     //   startDate
@@ -309,6 +306,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     //     : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                     // }
                     min={startDate || new Date().toISOString().split("T")[0]}
+                    // max={startDate ? new Date(new Date(startDate).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       trigger("endDate");
@@ -320,23 +318,24 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.endDate && <p className="chb-error-text">{errors.endDate.message}</p>}
+              {errors.endDate && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.endDate.message}</p>}
             </div>
           </div>
 
           {/* HALL_CODE */}
-          <div className="label-field-pair chb-margin-top-20">
+          <div className="label-field-pair" style={{ marginTop: "20px" }}>
             <CardLabel>
-              {t("HALL_CODE")} <span className="mandatory-asterisk">*</span>
+              {t("HALL_CODE")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
-            <div className="form-field w-fullwidth">
+            <div className="form-field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name={"hallCode"}
                 rules={{ required: t("HALL_CODE_REQ") }}
                 render={(props) => (
                   <Dropdown
-                    className="form-field chb-form-field-margin"
+                    style={{ marginBottom: 0 }}
+                    className="form-field"
                     select={(e) => {
                       props.onChange(e);
                       slotsSearch(e);
@@ -348,17 +347,17 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   />
                 )}
               />
-              {errors.hallCode && <p className="chb-error-text">{errors.hallCode.message}</p>}
+              {errors.hallCode && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.hallCode.message}</p>}
             </div>
           </div>
 
           {/* AVAILABLE_SLOTS */}
           {getSlots?.length > 0 && (
-            <div className="label-field-pair chb-margin-top-20 chb-margin-bottom-20">
+            <div className="label-field-pair" style={{ marginTop: "20px", marginBottom: "20px" }}>
               <CardLabel>
-                {t("AVAILABLE_SLOTS")} <span className="mandatory-asterisk">*</span>
+                {t("AVAILABLE_SLOTS")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="form-field w-fullwidth">
+              <div className="form-field" style={{ width: "100%" }}>
                 <Controller
                   control={control}
                   name="slots"
@@ -371,7 +370,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     },
                   }}
                   render={(field) => (
-                    <div className="chb-slot-grid">
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                        gap: "16px",
+                        width: "100%",
+                      }}
+                    >
                       {getSlots?.map((slot, idx) => {
                         const slotKey = `${slot.hallCode}-${slot.bookingDate}-${slot.fromTime || ""}-${slot.toTime || ""}`;
                         const isChecked = field.value?.some(
@@ -384,7 +390,20 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         const isAvailable = slot.slotStaus?.toLowerCase() === "available";
 
                         return (
-                          <label key={slotKey} className={`chb-slot-card ${!isAvailable ? "chb-slot-card--unavailable" : ""}`}>
+                          <label
+                            key={slotKey}
+                            style={{
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              backgroundColor: isAvailable ? "#e6ffed" : "#ffe6e6",
+                              cursor: isAvailable ? "pointer" : "not-allowed",
+                              opacity: isAvailable ? 1 : 0.6,
+                              // display: "flex",
+                              flexDirection: "column",
+                              gap: "6px",
+                            }}
+                          >
                             {/* <input
                             type="checkbox"
                             checked={isChecked}
@@ -462,9 +481,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                                 }
                               }}
                             />
-                            <span className="chb-slot-text">
+                            <span style={{ marginLeft: "10px" }}>
                               {slot.bookingDate} ({slot.hallCode}) –{" "}
-                              <span className={`chb-slot-status ${slot.slotStaus !== "AVAILABLE" ? "chb-slot-status--unavailable" : ""}`}>
+                              <span
+                                style={{
+                                  color: slot.slotStaus === "AVAILABLE" ? "green" : "red",
+                                  fontWeight: "bold",
+                                }}
+                              >
                                 {slot.slotStaus ? slot.slotStaus.charAt(0).toUpperCase() + slot.slotStaus.slice(1).toLowerCase() : ""}
                               </span>
                             </span>
@@ -474,18 +498,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     </div>
                   )}
                 />
-                {errors.slots && <p className="chb-error-text">{errors.slots.message}</p>}
+                {errors.slots && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.slots.message}</p>}
               </div>
             </div>
           )}
 
           <div style={{ display: showInfo ? "block" : "none" }}>
             {/* CHB_PURPOSE */}
-            <div className="label-field-pair chb-margin-top-20">
+            <div className="label-field-pair" style={{ marginTop: "20px" }}>
               <CardLabel>
-                {t("CHB_PURPOSE")} <span className="mandatory-asterisk">*</span>
+                {t("CHB_PURPOSE")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="form-field w-fullwidth">
+              <div className="form-field" style={{ width: "100%" }}>
                 <Controller
                   control={control}
                   name={"purpose"}
@@ -493,7 +517,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   rules={{ required: t("CHB_PURPOSE_REQUIRED") }}
                   render={(props) => (
                     <Dropdown
-                      className="form-field chb-form-field-margin"
+                      style={{ marginBottom: 0 }}
+                      className="form-field"
                       select={props.onChange}
                       selected={props.value}
                       option={CHBPurpose?.CHB?.Purpose}
@@ -501,16 +526,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.purpose && <p className="chb-error-text">{errors.purpose.message}</p>}
+                {errors.purpose && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purpose.message}</p>}
               </div>
             </div>
 
             {/* CHB_SPECIAL_CATEGORY */}
-            <div className="label-field-pair chb-margin-top-20">
+            <div className="label-field-pair" style={{ marginTop: "20px" }}>
               <CardLabel>
-                {t("CHB_SPECIAL_CATEGORY")} <span className="mandatory-asterisk">*</span>
+                {t("CHB_SPECIAL_CATEGORY")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="form-field w-fullwidth">
+              <div className="form-field" style={{ width: "100%" }}>
                 <Controller
                   control={control}
                   name={"specialCategory"}
@@ -518,7 +543,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   rules={{ required: t("CHB_SPECIAL_CATEGORY_REQUIRED") }}
                   render={(props) => (
                     <Dropdown
-                      className="form-field chb-form-field-margin"
+                      style={{ marginBottom: 0 }}
+                      className="form-field"
                       select={props.onChange}
                       selected={props.value}
                       option={SpecialCategory?.CHB?.SpecialCategory}
@@ -526,16 +552,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.specialCategory && <p className="chb-error-text">{errors.specialCategory.message}</p>}
+                {errors.specialCategory && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.specialCategory.message}</p>}
               </div>
             </div>
 
             {/* CHB_PURPOSE_DESCRIPTION */}
-            <div className="label-field-pair chb-margin-top-20">
+            <div className="label-field-pair" style={{ marginTop: "20px" }}>
               <CardLabel>
-                {t("CHB_PURPOSE_DESCRIPTION")} <span className="mandatory-asterisk">*</span>
+                {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
               </CardLabel>
-              <div className="form-field w-fullwidth">
+              <div className="form-field" style={{ width: "100%" }}>
                 <Controller
                   control={control}
                   name={"purposeDescription"}
@@ -546,7 +572,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   }}
                   render={(props) => (
                     <TextArea
-                      className="chb-form-field-margin"
+                      style={{ marginBottom: 0, marginTop: 0 }}
                       type={"textarea"}
                       value={props.value}
                       onChange={(e) => {
@@ -558,14 +584,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     />
                   )}
                 />
-                {errors.purposeDescription && <p className="chb-error-text">{errors.purposeDescription.message}</p>}
+                {errors.purposeDescription && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.purposeDescription.message}</p>
+                )}
               </div>
             </div>
 
             {!isCitizen && (
               <React.Fragment>
                 {/* Discount Amount */}
-                <div className="label-field-pair chb-margin-top-20">
+                <div className="label-field-pair" style={{ marginTop: "20px" }}>
                   <CardLabel>{`${t("CHB_DISCOUNT_AMOUNT")}`}</CardLabel>
                   <Controller
                     control={control}
@@ -573,7 +601,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     render={(props) => (
                       <TextInput
                         type="number"
-                        className="chb-form-field-margin w-fullwidth"
+                        style={{ marginBottom: 0, width: "100%" }}
                         value={props.value}
                         error={errors?.name?.message}
                         onChange={(e) => {
@@ -589,7 +617,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
 
                 {/* Discount Reason */}
-                <div className="label-field-pair chb-margin-top-20">
+                <div className="label-field-pair" style={{ marginTop: "20px" }}>
                   <CardLabel>{t("CHB_DISCOUNT_REASON")}</CardLabel>
                   <Controller
                     control={control}
@@ -597,7 +625,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     render={(props) => (
                       <TextInput
                         type="text"
-                        className="chb-form-field-margin w-fullwidth"
+                        style={{ marginBottom: 0, width: "100%" }}
                         value={props.value}
                         error={errors?.name?.message}
                         onChange={(e) => {

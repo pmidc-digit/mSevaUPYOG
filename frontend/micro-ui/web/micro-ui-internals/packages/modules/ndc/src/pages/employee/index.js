@@ -55,16 +55,18 @@ const EmployeeApp = ({ path }) => {
 
   return (
     <Fragment>
-      <div className="ground-container">
-        {!isResponse ? <NDCBreadCrumbs location={location} /> : null}
-        <Switch>
-          <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
-          <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
-          <Route path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/create`} component={(props) => <NewNDCStepForm {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/response/:id`} component={Response} />
-        </Switch>
-      </div>
+      {!isResponse ? (
+        <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+          <NDCBreadCrumbs location={location} />
+        </div>
+      ) : null}
+      <Switch>
+        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
+        <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
+        <Route path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/create`} component={(props) => <NewNDCStepForm {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/response/:id`} component={Response} />
+      </Switch>
     </Fragment>
   );
 };

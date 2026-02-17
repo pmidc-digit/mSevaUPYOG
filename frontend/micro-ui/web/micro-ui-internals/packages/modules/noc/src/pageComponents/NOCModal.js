@@ -67,8 +67,6 @@ const NOCModal = ({
        //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       roles: allRolesNew?.map((role) => ({ code: role })),
       isActive: true,
-      zones: applicationData?.[0]?.nocDetails?.additionalDetails?.siteDetails?.zone
-
     },
     { enabled: !action?.isTerminateState }
   );
@@ -101,7 +99,7 @@ const NOCModal = ({
         approverData?.Employees?.map((employee) => {
           const deptCode = employee?.assignments?.[0]?.department;
           const matchedDept = departments?.find((d) => d?.code === deptCode);
-          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}`  };
+          return { uuid: employee?.uuid, name: `${employee?.user?.name}` };
         })
       );
     }
@@ -160,7 +158,7 @@ const NOCModal = ({
     const conditionalText = data?.conditionalComments?.trim();
     let finalComments = commentsText;
     if (action?.action === "APPROVE" && conditionalText) {
-      finalComments = `${commentsText}[#?..**]${conditionalText}`;
+      finalComments = `${commentsText} , ${conditionalText}`;
     }
 
     if (action?.action !== "APPROVE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {

@@ -10,7 +10,6 @@ const SelectEmployeeId = ({ t, config, onSelect, formData = {}, userType, regist
       label: "HR_EMP_ID_LABEL",
       type: "text",
       name: "code",
-      placeHolder: "HR_EMP_ID_PLACEHOLDER",
       validation: {
         isRequired: true,
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
@@ -29,9 +28,9 @@ const SelectEmployeeId = ({ t, config, onSelect, formData = {}, userType, regist
         <React.Fragment key={index}>
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none">
+            <CardLabel className="card-label-smaller">
               {t(input.label)}
-              {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
+              {input.isMandatory ? " * " : null}
             </CardLabel>
             <div className="field">
               <TextInput
@@ -39,7 +38,6 @@ const SelectEmployeeId = ({ t, config, onSelect, formData = {}, userType, regist
                 value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                 onChange={(e) => setValue(e.target.value, input.name)}
                 disable={isEdit}
-                placeholder={t(input.placeHolder)}
                 defaultValue={undefined}
                 {...input.validation}
               />

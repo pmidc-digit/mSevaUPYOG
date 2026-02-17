@@ -67,7 +67,7 @@ const TLCaption = ({ data, comments }) => {
       {comments?.map((e) => (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p className="swach-comp-detils-overflow">{e}</p>
+          <p style={{ overflowX: "scroll" }}>{e}</p>
         </div>
       ))}
     </div>
@@ -501,7 +501,7 @@ export const ComplaintDetails = (props) => {
             {comment?.map((e) => (
               <div className="TLComments">
                 <h3>{t("WF_COMMON_COMMENTS")}</h3>
-                <p className="swach-comp-detils-overflow">{e}</p>
+                <p style={{ overflowX: "scroll" }}>{e}</p>
               </div>
             ))}
           </div>
@@ -530,11 +530,11 @@ export const ComplaintDetails = (props) => {
   return (
     <React.Fragment>
       <Card>
-        <div className="swach-comp-detils-header">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <CardSubHeader>{t(`CS_HEADER_COMPLAINT_SUMMARY`)}</CardSubHeader>
-          <LinkButton label={t("VIEW_TIMELINE")}  onClick={handleViewTimeline}></LinkButton>
+          <LinkButton label={t("VIEW_TIMELINE")} style={{ marginLeft: "auto", color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
         </div>
-        <CardLabel>{t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)}</CardLabel>
+        <CardLabel style={{ fontWeight: "700" }}>{t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)}</CardLabel>
         {isLoading ? (
           <Loader />
         ) : (
@@ -568,7 +568,7 @@ export const ComplaintDetails = (props) => {
             )}
           </StatusTable>
         )}
-        <h1 className="swach-comp-detils-maps-link">
+        <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
           <a
             href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
             rel="noopener noreferrer"

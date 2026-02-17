@@ -30,10 +30,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
-  console.log('ownerIds', ownerIds)
-  console.log('ownerPhotos', ownerPhotos)
   useEffect(()=>{
-     console.log("useffect 8");
       if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);
   
       if (!_.isEqual(ownerPhotoList, ownerPhotos)) setOwnerPhotoList(ownerPhotos?.ownerPhotoList);
@@ -53,7 +50,6 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     trigger,
     watch,
     reset,
-    getValues,
   } = useForm({
     defaultValues: {
       owners: [
@@ -78,55 +74,43 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     },
   });
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
+  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
 
   function checkValidation(data) {
-    console.log("data in check val", data);
-    const owners = data?.owners ?? [];
 
-    console.log("ownerPhotoList", ownerPhotoList);
-    // Filter photos/ids to only those that match current owners by mobileNumber
+  const ownerPhotoCount = ownerPhotoList?.length ?? 0;        
+  const ownerIdCount  = ownerIdList?.length ?? 0;  
+  
+  const ownersCount = data?.owners?.length ?? 0;
+  
+  const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
+  const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;
 
-    const ownerPhotoCount = ownerPhotoList?.length ?? 0;
-    const ownerIdCount = ownerIdList?.length ?? 0;
-    console.log("ownerPhotoCount", ownerPhotoCount);
-    const ownersCount = owners?.length;
-    console.log("ownersCount", ownersCount);
-    const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
-    const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
-
-    if (data.isPropertyAvailable?.value) {
-      if (!data.owners[0]?.propertyId?.trim()) {
-        setTimeout(() => {
-          setShowToast(null);
-        }, 3000);
-        setShowToast({ key: "true", error: true, message: t("Noc propertyid required if property registered is selected yes") }); // Use your NOC-specific translation key if different from BPA
-        return false;
-      }
-    }
-
-    if (ownersCount !== ownerPhotoCount) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
-      return false;
-    } else if (ownersCount !== ownerIdCount) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
-      return false;
-    } else if (isDuplicateOwner) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
-      return false;
-    } else {
-      return true;
-    }
+  if (ownersCount !== ownerPhotoCount) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
+    setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
+    return false;
   }
+  else if (ownersCount !== ownerIdCount) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
+    setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
+    return false;
+  }
+  else if (isDuplicateOwner) {
+    setTimeout(()=>{
+      setShowToast(null);
+    },3000);
+    setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
+    return false;
+  }
+  else{
+      return true;
+  }
+ }
 
   const onSubmit = (data) => {
     //console.log("data in first step", data);
@@ -138,7 +122,6 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function goNext(data) {
-
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     dispatch(UPDATE_NOC_OwnerIds("ownerIdList",ownerIdList));
     dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList",ownerPhotoList));
@@ -167,9 +150,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   );
 
     useEffect(() => {
-       
       if (!stakeHolderDetailsLoading) {
-        console.log("useffect 9");
         let roles = [];
         stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
           type?.role?.map((role) => {
@@ -188,9 +169,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     }, [stakeHolderDetailsLoading]);
 
   useEffect(() => {
-     
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {
-      console.log("useffect 10");
      setValue("isRegisteredStakeHolder", "true");
     }
   }, []);

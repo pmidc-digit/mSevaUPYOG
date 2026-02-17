@@ -8,26 +8,18 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   const [selectedRoles, onSelectFilterRolessetSelectedRole] = useState(null);
   const { t } = useTranslation();
   
+  // Fetch all tenants from API
   const storedTenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
   const { data: tenantsData, isLoading: tenantsLoading } = Digit.Hooks.useTenants();
   const cityChange = Digit.SessionStorage.get("Employee.tenantId");
   
+  // Use fetched tenants or fallback to stored ones
   const tenantIds = React.useMemo(() => {
     if (tenantsData && tenantsData.length > 0) {
       return tenantsData;
     }
     return storedTenantIds || [];
   }, [tenantsData, storedTenantIds]);
-
-  const mappedTenantOptions = React.useMemo(() => {
-    if (!tenantIds || tenantIds.length === 0) return [];
-    
-    const sortedCities = [...tenantIds].sort((x, y) => x?.name?.localeCompare(y?.name));
-    return sortedCities.map(city => ({ 
-      ...city, 
-      i18text: Digit.Utils.locale.getCityLocale(city.code) || city.name || city.code 
-    }));
-  }, [tenantIds]);
 
   function onSelectRoles(value, type) {
     if (!ifExists(filters.role, value)) {
@@ -52,32 +44,37 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
   
   const [tenantId, settenantId] = useState(() => {
     const currentTenantId = searchParams?.tenantId || Digit.ULBService.getCurrentTenantId();
-    
+    if (!tenantIds || tenantIds.length === 0) {
+      return { code: currentTenantId, name: currentTenantId };
+    }
     let targetCode = currentTenantId;
+    // Handle Punjab as special case - default to Amritsar
     if (currentTenantId === "pb.punjab") {
       targetCode = Digit.SessionStorage.get("punjab-tenantId") || "pb.amritsar";
+      Digit.SessionStorage.set("punjab-tenantId", targetCode);
     }
-    return { code: targetCode };
+    return tenantIds.find(ele => ele.code === targetCode) || tenantIds[0];
   });
   
-  
+  // Update tenantId when tenantIds are loaded or cityChange occurs
   useEffect(() => {
-    if (mappedTenantOptions && mappedTenantOptions.length > 0) {
+    if (tenantIds && tenantIds.length > 0) {
       const currentTenantId = Digit.ULBService.getCurrentTenantId();
       const changeCity = cityChange || currentTenantId;
       
       let targetCode = changeCity;
+      // Handle Punjab as special case - default to Amritsar
       if (changeCity === "pb.punjab") {
         targetCode = Digit.SessionStorage.get("punjab-tenantId") || "pb.amritsar";
         Digit.SessionStorage.set("punjab-tenantId", targetCode);
       }
       
-      const matchingTenant = mappedTenantOptions.find(ele => ele.code === targetCode);
-      if (matchingTenant && (!tenantId.i18text || matchingTenant.code !== tenantId.code)) {
+      const matchingTenant = tenantIds.find(ele => ele.code === targetCode);
+      if (matchingTenant && matchingTenant.code !== tenantId?.code) {
         settenantId(matchingTenant);
       }
     }
-  }, [mappedTenantOptions, cityChange]);
+  }, [tenantIds, cityChange]);
   
   const { isLoading, isError, errors, data: data, ...rest } = Digit.Hooks.hrms.useHrmsMDMS(
     tenantId ? tenantId.code : searchParams?.tenantId,
@@ -145,26 +142,13 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
     setDepartments(null);
     setRoles(null);
     setIsactive(null);
-    onSelectFilterRoles({ role: [] });
-    
-    const currentTenantId = Digit.ULBService.getCurrentTenantId();
-    let targetCode = currentTenantId;
-    if (currentTenantId === "pb.punjab") {
-      targetCode = "pb.amritsar";
-    }
-    
-    const resetTenant = mappedTenantOptions.find(ele => ele.code === targetCode);
-    if (resetTenant) {
-      settenantId(resetTenant);
-    }
-    
     props?.onClose?.();
+    onSelectFilterRoles({ role: [] });
+    // Keep tenantId as is, don't reset it
   };
 
-  const isStateLevelTenant = Digit.ULBService.getCurrentTenantId() === "pb.punjab";
-
+  // Handle tenant selection
   const onSelectTenants = (value) => {
-    if (!isStateLevelTenant) return;
     if (value) {
       Digit.SessionStorage.set("punjab-tenantId", value.code);
       settenantId(value);
@@ -186,26 +170,8 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
       </div>
     );
   };
-      const getRoleDisplayName = (role, t) => {
-      if (!role) return "N/A";
-      
-      // Try labelKey first
-      if (role.labelKey) {
-        const translated = t(role.labelKey);
-        if (translated !== role.labelKey) return translated;
-      }
-      
-      // Try translating code with underscore format
-      if (role.code) {
-        const normalizedCode = role.code.replace(/\s+/g, "_").toUpperCase();
-        const translationKey = `ACCESSCONTROL_ROLES_ROLES_${normalizedCode}`;
-        const translated = t(translationKey);
-        if (translated !== translationKey) return translated;
-      }
-      // Fallback to name or code
-      return role.name || role.code || "N/A";
-    };
-      
+  
+  // Show loading state while fetching tenants
   if (tenantsLoading) {
     return (
       <div className="filter">
@@ -223,7 +189,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
       <div className="filter">
         <div className="filter-card">
           <div className="heading">
-            <div className="filter-label">
+            <div className="filter-label" style={{ display: "flex", alignItems: "center" }}>
               <span>
                 <svg width="17" height="17" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -234,11 +200,11 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
               </span>
               <span>{t("HR_COMMON_FILTER")}:</span>{" "}
             </div>
-            <div className="clear-search" onClick={clearAll}>
+            <div className="clearAll" onClick={clearAll}>
               {t("HR_COMMON_CLEAR_ALL")}
             </div>
-            {/* {props.type === "desktop" && (
-              <span className="clear-search hrms-filter__clear-search-icon" onClick={clearAll}>
+            {props.type === "desktop" && (
+              <span className="clear-search" onClick={clearAll} style={{ border: "1px solid #e0e0e0", padding: "6px" }}>
                 <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M8 5V8L12 4L8 0V3C3.58 3 0 6.58 0 11C0 12.57 0.46 14.03 1.24 15.26L2.7 13.8C2.25 12.97 2 12.01 2 11C2 7.69 4.69 5 8 5ZM14.76 6.74L13.3 8.2C13.74 9.04 14 9.99 14 11C14 14.31 11.31 17 8 17V14L4 18L8 22V19C12.42 19 16 15.42 16 11C16 9.43 15.54 7.97 14.76 6.74Z"
@@ -246,7 +212,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
                   />
                 </svg>
               </span>
-            )} */}
+            )}
             {props.type === "mobile" && (
               <span onClick={props.onClose}>
                 <CloseSvg />
@@ -257,12 +223,23 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
             <div>
               <div className="filter-label">{t("HR_CITY_LABEL") || t("HR_ULB_LABEL")}</div>
               <Dropdown
-                option={mappedTenantOptions}
+                option={(() => {
+                  // Show all tenants without filtering by user permissions
+                  // Backend will handle permission-based filtering of results
+                  const sortedCities = tenantIds?.sort((x, y) => x?.name?.localeCompare(y?.name));
+                  
+                  const mappedOptions = sortedCities?.map(city => ({ 
+                    ...city, 
+                    i18text: Digit.Utils.locale.getCityLocale(city.code) || city.name || city.code 
+                  }));
+                  
+                  return (tenantIds && tenantIds.length > 0) ? mappedOptions : [];
+                })()}
                 selected={tenantId}
                 select={onSelectTenants}
                 optionKey={"i18text"}
                 t={t}
-                disable={!isStateLevelTenant}
+                disable={false}
               />
             </div>
             <div>
@@ -276,25 +253,10 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
               />
             </div>
             <div>
-              {/* <div>
-                {GetSelectOptions(
-                  t("HR_COMMON_TABLE_COL_ROLE"),
-                  Digit.Utils.locale.convertToLocaleData(data?.MdmsRes["ACCESSCONTROL-ROLES"]?.roles, 'ACCESSCONTROL_ROLES_ROLES', t),
-                  selectedRoles,
-                  onSelectRoles,
-                  "i18text",
-                  onRemove,
-                  "role"
-                )}
-              </div> */}
               <div>
                 {GetSelectOptions(
                   t("HR_COMMON_TABLE_COL_ROLE"),
-                  (data?.MdmsRes["ACCESSCONTROL-ROLES"]?.roles || []).map(role => ({
-                    ...role,
-                    i18text: getRoleDisplayName(role, t),  
-                    code: role.code
-                  })),
+                  Digit.Utils.locale.convertToLocaleData(data?.MdmsRes["ACCESSCONTROL-ROLES"]?.roles, 'ACCESSCONTROL_ROLES_ROLES', t),
                   selectedRoles,
                   onSelectRoles,
                   "i18text",
@@ -333,7 +295,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
               onFilterChange(_searchParams)
               props?.onClose?.()
             }}
-            className="hrms-filter__apply-bar"
+            style={{ flex: 1 }}
           />
         </ActionBar>
       )}

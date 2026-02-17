@@ -95,7 +95,7 @@ export const NewNDCStepForm = () => {
 
   return (
     <div className="employeeCard" >
-      <CardHeader className="ndc-step-form"  divider={true}>
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("ndc_header_application")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

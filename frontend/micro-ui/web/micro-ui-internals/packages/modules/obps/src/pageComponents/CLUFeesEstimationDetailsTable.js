@@ -5,7 +5,7 @@ import _ from "lodash";
 import { CLUFeeTable } from "./CLUFeeTable";
 import { buildFeeHistoryByTax } from "../utils";
 
-const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable, applicationStatus }) => {
+const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
@@ -25,10 +25,7 @@ const handleAdjustedAmountChange = (index, value) => {
   const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
   const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
   if (normalizedValue !== null && normalizedValue < 0) {
-    setTimeout(()=>{
-      setShowToast(null);
-    },3000)
-    setShowToast({ error: true, message: "BPA_AMOUNT_CANNOT_BE_NEGATIVE_LABEL" });
+    setShowToast({ error: true, message: "Adjusted_Amount_More_Than_Ammount" });
     return;
   }
   setFeeAdjustments((prev) =>
@@ -239,22 +236,16 @@ const handleAdjustedAmountChange = (index, value) => {
 
   if (cluCalculatorLoading) return <Loader />;
 
-  //console.log("applicationStatus ===========>", applicationStatus);
-
-  if (applicationStatus === "FIELDINSPECTION_INPROGRESS") {
-      return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
-  }
-
   return (
-    <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+    <div>
       {cluCalculatorLoading ? (
         <Loader />
       ) : (
-        <div style={{ width: "100%" }}>
+        <div>
           <CLUFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}
-            readOnly={disable}
+            disable={disable}
             isEmployee={!disable}
             handleAdjustedAmountChange={handleAdjustedAmountChange}
             handleRemarkChange={handleRemarkChange}

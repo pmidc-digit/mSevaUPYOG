@@ -7,8 +7,7 @@ import Stepper from "../../../../../react-components/src/customComponents/Steppe
 import { stepperConfig } from "../../config/Create/stepperConfig";
 import { SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM, 
   UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos } from "../../redux/action/NOCNewApplicationActions";
-import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
-import { Loader } from "../../components/Loader";
+import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -80,7 +79,6 @@ const EditApplication = () => {
   const formState = useSelector((state) => state.noc.NOCNewApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
-  const [hydrated, setHydrated] = useState(false);
 
   //Makesure to pass tenantId correctly
   let tenantId;
@@ -89,14 +87,14 @@ const EditApplication = () => {
   }else{
    tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  // console.log("tenantId here", tenantId);
+  console.log("tenantId here", tenantId);
 
   const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
   
   const nocObject = applicationDetails?.Noc?.[0] || {};
-  // console.log('vasikadate in edit', formatDateForInput(nocObject?.vasikaDate))
+  console.log('vasikadate in edit', formatDateForInput(nocObject?.vasikaDate))
   const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
   const documents = nocObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
@@ -119,18 +117,12 @@ const EditApplication = () => {
   const options = [
     {code: "YES",i18nKey: "YES",}, {code: "NO",i18nKey: "NO",},
   ];
-  const { data: fetchedLocalities, isLoading: isBoundaryLoading } = Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", {}, t);
 
   const ulbListOptions = ulbList?.map((city) => ({
     ...city,
     displayName: t(city.i18nKey),
   }));
 
-  console.log('fetchedLocalities', fetchedLocalities)
-
-  let localityAreaType = fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null
-         
- console.log('localityAreaType', localityAreaType)
   const { isGenderLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
   let menu = [];
@@ -152,7 +144,7 @@ const EditApplication = () => {
 
  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
-//  console.log("zoneOptions==>", zoneOptions);
+ console.log("zoneOptions==>", zoneOptions);
 //   useEffect(() => {
 //   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
 //     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
@@ -169,23 +161,10 @@ const EditApplication = () => {
 //   }
 // }, [fetchedLocalities, siteDetails?.zone]);
 
-useEffect(() => {
 
-  setHydrated(false);
-
-}, [id]);
-
-const ready =
-  !isLoading &&
-  !isBuildingTypeLoading &&
-  !isZoneListLoading &&
-  !isNocTypeLoading &&
-  !isUlbListLoading &&
-  applicationDetails?.Noc?.length > 0;
   useEffect(() => {
-    console.log(' edit useffect 1')
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    if(ready){
+    if(!isLoading && !isBuildingTypeLoading && nocObject?.nocDetails  && !isUlbListLoading &&  !isZoneListLoading && !isNocTypeLoading){
         const formattedDocuments = {
        documents: {
         documents: documents?.map((doc) => ({
@@ -210,39 +189,30 @@ const ready =
           ...applicantDetails,
             owners: applicantDetails.owners?.map(owner => ({
               ...owner,
+              propertyVasikaNo: nocObject?.vasikaNumber,
+              propertyVasikaDate : formatDateForInput(nocObject?.vasikaDate)
             })) || [],
           //applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
         
-        const updatedSiteDetails = {
+        const updatedSiteDetails=
+        {
           ...siteDetails,
-          ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
-          roadType: roadType?.find((obj) => obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType),
-          buildingStatus: buildingType?.find((obj) => obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus),
-          isBasementAreaAvailable: options?.find(
-            (obj) => obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable
-          ),
+          ulbName: ulbListOptions?.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
+          roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
+          buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
+          isBasementAreaAvailable: options?.find((obj) => (obj.code === siteDetails?.isBasementAreaAvailable?.code || obj.code === siteDetails?.isBasementAreaAvailable)),
           vasikaNumber: nocObject?.vasikaNumber,
-          vasikaDate: formatDateForInput(nocObject?.vasikaDate),
+          vasikaDate : formatDateForInput(nocObject?.vasikaDate),
 
-          zone: zoneOptions?.find((obj) => obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone),
-          localityAreaType:
-            fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null,
-          specificationBuildingCategory: buildingCategory?.find(
-            (obj) => obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory
-          ),
-          specificationNocType: nocType?.find(
-            (obj) => obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType
-          ),
-          specificationRestrictedArea: options?.find(
-            (obj) => obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea
-          ),
-          specificationIsSiteUnderMasterPlan: options?.find(
-            (obj) =>
-              obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan
-          ),
-        };
+          zone: zoneOptions?.find((obj)=> (obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone)),
+
+          specificationBuildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
+          specificationNocType: nocType?.find((obj) => (obj.name === siteDetails?.specificationNocType?.name || obj.name === siteDetails?.specificationNocType)),
+          specificationRestrictedArea: options?.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea)),
+          specificationIsSiteUnderMasterPlan: options?.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan)),
+        }
       
         dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", updatedApplicantDetails));
         dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", updatedSiteDetails));
@@ -250,28 +220,15 @@ const ready =
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
         
     }
-  }, [ready]);
-
-  
-
-useEffect(() => {
-  if (ready && !hydrated) {
-    setHydrated(true);
-  }
-}, [ready, hydrated]);
-
+  }, [isLoading, applicationDetails, isBuildingTypeLoading, isZoneListLoading, isNocTypeLoading]);
 
 
   const handleSubmit = (dataGet) => {
     
   };
-// console.log('formState outside loader', formState)
-//     console.log('formData outsode loader', formData)
+
   
-   if (isLoading || !hydrated) {
-    // console.log('formState in loader', formState)
-    // console.log('formData in loader', formData)
-    // console.log('formData?.applicationDetails in edit', formData?.applicationDetails)
+   if (isLoading || !formData.applicationDetails) {
     return <div><Loader/></div>; // or a spinner component
    }
 

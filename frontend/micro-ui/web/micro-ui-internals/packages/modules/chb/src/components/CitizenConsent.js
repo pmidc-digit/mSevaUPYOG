@@ -371,7 +371,11 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       >
         <div>
           <div
-            className="break-words text-justify font-roboto"
+            style={{
+              wordWrap: "break-word",
+              textAlign: "justify",
+              fontFamily: "Roboto, serif",
+            }}
           >
             <div dangerouslySetInnerHTML={{ __html: selfdeclarationform }} />
           </div>

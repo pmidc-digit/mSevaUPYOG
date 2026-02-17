@@ -229,37 +229,6 @@ export const OBPSService = {
       params: { tenantId, ...filters },
     }),
 
-  LayoutCheckListCreate: ({ filters, details }) => 
-    Request({
-      url: Urls.obps.layoutCheckListCreate,
-      useCache: true,
-      method: "POST",
-      auth: true,
-      userService: true,
-      data: details,
-      params:filters
-    }),
-
-  LayoutCheckListUpdate: ({ filters, details }) => 
-    Request({
-      url: Urls.obps.layoutCheckListUpdate,
-      useCache: true,
-      method: "POST",
-      auth: true,
-      userService: true,
-      data: details,
-      params:filters
-    }),
-  LayoutCheckListSearch: ({ tenantId, filters }) =>
-    Request({
-      url: Urls.obps.layoutCheckListSearch,
-      useCache: false,
-      method: "POST",
-      auth: true,
-      userService: false,
-      params: { tenantId, ...filters },
-    }),
-
   LayoutCalculator: ({ filters, details }) => 
     Request({
       url: Urls.obps.layoutCalculator,

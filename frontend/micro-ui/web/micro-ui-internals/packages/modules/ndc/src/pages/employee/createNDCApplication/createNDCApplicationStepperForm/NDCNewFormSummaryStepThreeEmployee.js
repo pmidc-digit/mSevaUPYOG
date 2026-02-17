@@ -53,7 +53,6 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
     // Clone and modify workflow action
-    // Clone and modify workflow action
     const updatedApplication = {
       ...baseApplication,
       workflow: {
@@ -61,21 +60,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
         action: actionStatus,
       },
       owners: owners,
-      // Map over NdcDetails to update PT details with latest form data
-      NdcDetails: baseApplication?.NdcDetails?.map((detail) => {
-        if (detail.businessService === "PT") {
-          return {
-            ...detail,
-            additionalDetails: {
-              ...detail.additionalDetails,
-              reason: formData?.NDCDetails?.NDCReason?.reason, // Update custom reason text from correct path
-              remarks: formData?.NDCDetails?.PropertyDetails?.remarks, // Update remarks from correct path
-            },
-          };
-        }
-        return detail;
-      }),
-      reason: formData?.NDCDetails?.NDCReason?.code, // Update selected reason code from correct path
+      NdcDetails: baseApplication?.NdcDetails,
       Documents: [], // We'll populate below
     };
 

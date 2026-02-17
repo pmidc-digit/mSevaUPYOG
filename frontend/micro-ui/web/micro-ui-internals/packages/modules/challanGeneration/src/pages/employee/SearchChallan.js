@@ -139,8 +139,51 @@ const SearchChallan = (props) => {
 
   return (
     <React.Fragment>
+      <style>
+        {`
+          .formWrapperNDC {
+            // padding: 20px;
+            // background: #fff;
+            // border-radius: 10px;
+            max-width: 1200px;
+            // margin: auto;
+            // box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
 
-      <div className={"employee-application-details"} >
+          .ndcFormCard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+          }
+
+          .surveydetailsform-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+          }
+          .surveydetailsform-wrapper p {
+            color: red;
+            font-size: 14px;
+          }
+
+          .citizen-card-input{
+            margin-bottom: 0 !important;
+         }
+
+          @media (max-width: 1024px) {
+            .ndcFormCard {
+              grid-template-columns: repeat(2, 1fr);
+            }
+          }
+
+          @media (max-width: 768px) {
+            .ndcFormCard {
+              grid-template-columns: 1fr;
+            }
+          }
+        `}
+      </style>
+      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
         <Header>Search Challan</Header>
       </div>
 
@@ -159,7 +202,7 @@ const SearchChallan = (props) => {
                     },
                   })}
                 />
-                {errors.challanNo && <p className="requiredField">{errors.challanNo.message}</p>}
+                {errors.challanNo && <p style={{ color: "red" }}>{errors.challanNo.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Service Type</label>
@@ -180,7 +223,7 @@ const SearchChallan = (props) => {
                   )}
                 />
 
-                {errors.businessService && <p className="requiredField">{errors.businessService.message}</p>}
+                {errors.businessService && <p style={{ color: "red" }}>{errors.businessService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
@@ -206,7 +249,7 @@ const SearchChallan = (props) => {
                       },
                     })}
                   />
-                  {errors.mobileNumber && <p className="requiredField">{errors.mobileNumber.message}</p>}
+                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
@@ -215,7 +258,7 @@ const SearchChallan = (props) => {
         </FormProvider>
 
         {tableData?.length > 0 && (
-          <div className="challan-search-table" >
+          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
             <Table
               t={t}
               data={tableData}

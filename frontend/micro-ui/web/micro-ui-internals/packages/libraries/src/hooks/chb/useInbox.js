@@ -53,7 +53,7 @@ const useCHBInbox = ({ tenantId, filters, config = {} }) => {
             businessService: dataForm?.businessService,
             locality: `${dataRes?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
             status: `${dataRes.bookingStatus}`,
-            owner: dataRes?.applicantDetail?.applicantName || "-",
+            owner: dataRes?.applicantDetail?.name || "-",
           };
         });
 

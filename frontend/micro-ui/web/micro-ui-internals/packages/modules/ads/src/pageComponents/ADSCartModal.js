@@ -41,16 +41,16 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
       <div className="ads-cart-modal">
         {/* Header */}
         <div className="ads-cart-header">
-          <h2 className="ads-availibility-for-title">{t("ADS_YOUR_CART")}</h2>
+          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>{t("ADS_YOUR_CART")}</h2>
           <button onClick={onClose} className="ads-cart-close">
             ✖
           </button>
         </div>
 
         {/* Cart grouped by Ad */}
-        <div className="ads-cart-modal-body">
+        <div style={{ flex: 1, overflowY: "auto" }}>
           {cartSlots?.length === 0 ? (
-            <p className="ads-cart-empty-text">{t("ADS_NO_ITEMS_IN_CART")}</p>
+            <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ITEMS_IN_CART")}</p>
           ) : (
             cartSlots?.map((item, idx) => {
               // const isOpen = expanded?.includes(item.ad.id);
@@ -60,11 +60,11 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                 <div key={key} className="ads-cart-item">
                   {/* Ad Header (clickable + remove button) */}
                   <div className="ads-cart-item-header">
-                    <div onClick={() => toggleExpand(key)} className="ads-cart-item-header-info">
+                    <div onClick={() => toggleExpand(key)} style={{ cursor: "pointer", flex: 1 }}>
                       {item?.ad?.name}
                       {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
                       {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
-                      <span className="ads-cart-item-toggle-modal">{isOpen ? "▾" : "▸"}</span>
+                      <span style={{ fontSize: "18px", marginLeft: "8px" }}>{isOpen ? "▾" : "▸"}</span>
                     </div>
                     <button
                       onClick={() =>

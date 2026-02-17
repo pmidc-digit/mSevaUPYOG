@@ -7,6 +7,7 @@ import {
   StatusTable,
   LabelFieldPair,
   CardLabel,
+  Loader,
   Card,
   CardSubHeader,
   ActionBar,
@@ -27,8 +28,6 @@ import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import { EmployeeData } from "../../../utils";
-import { Loader } from "../../../components/Loader";
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
@@ -42,7 +41,6 @@ const CitizenApplicationOverview = () => {
 
   const [ndcDatils, setNdcDetails] = useState([]);
   const [displayData, setDisplayData] = useState({});
-  const [getLoader, setLoader] = useState(false);
 
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -68,11 +66,7 @@ const CitizenApplicationOverview = () => {
     }
   }, [workflowDetails]);
 
-  const empData = EmployeeData(tenantId, approver);
-
   console.log("approver for ndc", approver);
-
-  console.log("officerData", empData);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -142,32 +136,20 @@ const CitizenApplicationOverview = () => {
   }, [applicationDetails]);
 
   const handleDownloadPdf = async () => {
-    try {
-      setLoader(true);
-      const Property = applicationDetails;
-      const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
-      const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+    const Property = applicationDetails;
+    const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+    const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
 
-      Property.propertyOwnerNames = propertyOwnerNames;
+    Property.propertyOwnerNames = propertyOwnerNames;
 
-      console.log("propertyOwnerNames", propertyOwnerNames);
-      const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-      console.log("tenantInfo", tenantInfo);
-      const ulbType = tenantInfo?.city?.ulbType;
-      let acknowledgementData;
+    console.log("propertyOwnerNames", propertyOwnerNames);
+    const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
+    console.log("tenantInfo", tenantInfo);
+    const ulbType = tenantInfo?.city?.ulbType;
+    const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
 
-      if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
-      }
-      console.log("acknowledgementData", acknowledgementData);
-      setTimeout(() => {
-        Digit.Utils.pdf.generateNDC(acknowledgementData);
-      }, 0);
-    } catch (error) {
-      console.error("Error generating acknowledgement:", error);
-    } finally {
-      setLoader(false);
-    }
+    console.log("acknowledgementData", acknowledgementData);
+    Digit.Utils.pdf.generateNDC(acknowledgementData);
   };
 
   const [getPropertyId, setPropertyId] = useState(null);
@@ -219,19 +201,14 @@ const CitizenApplicationOverview = () => {
     ?.filter(Boolean)
     ?.join(", ");
 
-  console.log("applicationDetails?.[0]", applicationDetails?.Applications?.[0]);
-
   return (
     <div className={"employee-main-application-details"}>
-      <div className="ndc-application-overview">
+      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
         {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
-        <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-          {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
-            <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
-          )}
-        </div>
-
+        {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
+        )}
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
           applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
           <ActionBar>
@@ -272,10 +249,9 @@ const CitizenApplicationOverview = () => {
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
         {displayData?.NdcDetails?.map((detail, index) => {
-          console.log("detail", detail);
           const isRed = detail.dueAmount > 0;
           return (
-            <div className="ndc-application-overview-table" key={index}>
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
@@ -300,17 +276,6 @@ const CitizenApplicationOverview = () => {
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
                   <>
-                    <Row
-                      label={t("CHB_DISCOUNT_REASON")}
-                      text={t(
-                        `${
-                          applicationDetails?.Applications?.[0]?.reason === "OTHERS"
-                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                                ?.reason
-                            : applicationDetails?.Applications?.[0]?.reason
-                        }`
-                      )}
-                    />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />
@@ -322,13 +287,6 @@ const CitizenApplicationOverview = () => {
                     <Row
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
-                    />
-                    <Row
-                      label={t("Remarks")}
-                      text={
-                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
-                          ?.remarks || "N/A"
-                      }
                     />
                   </>
                 )}
@@ -358,7 +316,6 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
-      {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
     </div>
   );
 };

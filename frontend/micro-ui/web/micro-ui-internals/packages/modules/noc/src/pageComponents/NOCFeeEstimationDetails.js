@@ -34,10 +34,10 @@ const getOriginals = (taxHeadCode) => {
 
 
 const handleAdjustedAmountChange = (index, value) => {
-  const normalizedValue = value === "" ? 0 : Number(value);
+  const normalizedValue = value === "" ? null : Number(value);
   const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
   const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
-  if (normalizedValue !== 0 && normalizedValue < 0) {
+  if (normalizedValue !== null && normalizedValue < 0) {
     setShowToast({ error: true, message: "Adjusted_Amount_More_Than_Ammount" });
     return;
   }
@@ -45,7 +45,7 @@ const handleAdjustedAmountChange = (index, value) => {
     (prev || []).map((item, i) => {
       if (i !== index) return item;
       const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
-      const isReverted = normalizedValue === 0 ? originalEstimate === 0 : normalizedValue === originalEstimate;
+      const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
       if (isReverted) {
         return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
       }

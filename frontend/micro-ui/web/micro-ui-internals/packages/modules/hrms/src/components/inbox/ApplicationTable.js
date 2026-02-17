@@ -3,7 +3,6 @@ import { Table } from "@mseva/digit-ui-react-components";
 
 const ApplicationTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage, currentPage, totalRecords, pageSizeLimit, onPageSizeChange }) => (
   <Table
-    key={pageSizeLimit}
     t={t}
     data={data}
     columns={columns}

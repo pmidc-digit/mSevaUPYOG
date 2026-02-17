@@ -126,10 +126,24 @@ public class WaterTaxService {
         w.setSuperbuilduparea(p.path("superBuiltUpArea").asText());
         
         JsonNode addr = p.path("address");
-        String fullAddress = String.format("%s, %s, %s", 
-                addr.path("doorNo").asText(""), 
-                addr.path("street").asText(""), 
-                addr.path("locality").path("name").asText(""));
+        JsonNode loc = addr.path("locality");
+
+        // Collect all potential address components from the JSON
+        String[] addressParts = {
+            addr.path("doorNo").asText(""),
+            addr.path("plotNo").asText(""),
+            addr.path("buildingName").asText(""),
+            addr.path("street").asText(""),
+            addr.path("landmark").asText(""),
+            loc.path("name").asText(""), // Locality Name
+            addr.path("city").asText(""),
+            addr.path("pincode").asText("")
+        };
+
+        // Filter out empty/null/whitespace strings and join with clean commas
+        String fullAddress = java.util.Arrays.stream(addressParts)
+                .filter(part -> part != null && !part.trim().isEmpty() && !part.equalsIgnoreCase("null"))
+                .collect(java.util.stream.Collectors.joining(", "));
         
         w.setAddress(fullAddress);
         w.setLocalityname(addr.path("locality").path("name").asText());

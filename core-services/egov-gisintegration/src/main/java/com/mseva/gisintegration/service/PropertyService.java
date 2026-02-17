@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PropertyService {
@@ -81,7 +83,7 @@ public class PropertyService {
                 
                 // Since this is just an assessment, we set payment fields to empty/zero
                 p.setAmoutpaid("0");
-                p.setReceiptnumber("ASSESSMENT_PENDING");
+                p.setReceiptnumber("ASSESSMENT_DONE");
 
                 // Step 4: Persist
                 this.createOrUpdateProperty(p);
@@ -147,11 +149,25 @@ public class PropertyService {
         p.setPlotsize(node.path("landArea").asText());
         
         JsonNode addr = node.path("address");
-        String fullAddress = String.format("%s, %s, %s", 
-                addr.path("doorNo").asText(""), 
-                addr.path("street").asText(""), 
-                addr.path("locality").path("name").asText(""));
-        
+        JsonNode loc = addr.path("locality");
+
+        // Collect all parts in an array to join them cleanly
+        String[] addressParts = {
+            addr.path("doorNo").asText(""),
+            addr.path("plotNo").asText(""),
+            addr.path("buildingName").asText(""),
+            addr.path("street").asText(""),
+            addr.path("landmark").asText(""),
+            loc.path("name").asText(""), // Locality Name
+            addr.path("city").asText(""),
+            addr.path("pincode").asText("")
+        };
+
+        // Filter out empties/nulls and join with commas
+        String fullAddress = Arrays.stream(addressParts)
+                .filter(s -> s != null && !s.trim().isEmpty() && !s.equalsIgnoreCase("null"))
+                .collect(Collectors.joining(", "));
+
         p.setAddress(fullAddress);
         p.setLocalityname(addr.path("locality").path("name").asText());
         p.setLocalitycode(addr.path("locality").path("code").asText());
@@ -163,8 +179,17 @@ public class PropertyService {
         p.setTenantid(detail.path("tenantId").asText());
         p.setReceiptnumber(detail.path("receiptNumber").asText());
         p.setAmoutpaid(detail.path("totalAmountPaid").asText());
-        p.setPaymentdate(payment.path("transactionDate").asText());
+     // 1. Get the epoch as long
+        long epoch = payment.path("transactionDate").asLong();
 
+        // 2. Convert and Format to IST
+        if (epoch > 0) {
+            String readableDate = java.time.Instant.ofEpochMilli(epoch)
+                    .atZone(java.time.ZoneId.of("Asia/Kolkata"))
+                    .format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                    
+            p.setPaymentdate(readableDate);
+        }
         JsonNode billDetails = detail.path("bill").path("billDetails");
         if (billDetails.isArray() && billDetails.size() > 0) {
             long fromPeriod = billDetails.get(0).path("fromPeriod").asLong();
@@ -212,7 +237,7 @@ public class PropertyService {
         if (source.getAmoutpaid() != null && !source.getAmoutpaid().equals("0")) {
             existing.setAmoutpaid(source.getAmoutpaid());
         }
-        if (source.getReceiptnumber() != null && !source.getReceiptnumber().equals("ASSESSMENT_PENDING")) {
+        if (source.getReceiptnumber() != null && !source.getReceiptnumber().equals("ASSESSMENT_DONE")) {
             existing.setReceiptnumber(source.getReceiptnumber());
         }
         if (source.getPaymentdate() != null) existing.setPaymentdate(source.getPaymentdate());

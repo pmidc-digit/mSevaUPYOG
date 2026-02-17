@@ -243,4 +243,65 @@ public class PropertyService {
         }
         if (source.getPaymentdate() != null) existing.setPaymentdate(source.getPaymentdate());
     }
+    
+    
+    /**
+     * Maps data directly from the update-property-registry topic.
+     * firmbusinessname is now mapped to buildingName.
+     */
+    public void syncPropertyMaster(JsonNode propertyNode, RequestInfo requestInfo) {
+        try {
+            Property p = new Property();
+            
+            // Step 1: Map GIS and Master Fields
+            p.setPropertyid(propertyNode.path("propertyId").asText());
+            p.setSurveyid(propertyNode.path("surveyId").asText());
+            p.setOldpropertyid(propertyNode.path("oldPropertyId").asText());
+            p.setTenantid(propertyNode.path("tenantId").asText());
+            
+            // MAPPING CHANGE: buildingName -> firmbusinessname
+            p.setFirmbusinessname(propertyNode.path("address").path("buildingName").asText());
+
+            p.setPropertytype(propertyNode.path("propertyType").asText());
+            p.setOwnershipcategory(propertyNode.path("ownershipCategory").asText());
+            p.setPropertyusagetype(propertyNode.path("usageCategory").asText());
+            p.setPlotsize(String.valueOf(propertyNode.path("landArea").asDouble()));
+            
+            // Step 2: Map Address & Locality details
+            JsonNode addr = propertyNode.path("address");
+            p.setLocalitycode(addr.path("locality").path("code").asText());
+            p.setLocalityname(addr.path("locality").path("name").asText());
+            p.setBlockname(addr.path("locality").path("name").asText());
+            p.setZonename(addr.path("city").asText());
+            
+            JsonNode loc = addr.path("locality");
+
+            // Collect all parts in an array to join them cleanly
+            String[] addressParts = {
+                addr.path("doorNo").asText(""),
+                addr.path("plotNo").asText(""),
+                addr.path("buildingName").asText(""),
+                addr.path("street").asText(""),
+                addr.path("landmark").asText(""),
+                loc.path("name").asText(""), // Locality Name
+                addr.path("city").asText(""),
+                addr.path("pincode").asText("")
+            };
+
+            // Filter out empties/nulls and join with commas
+            String fullAddress = Arrays.stream(addressParts)
+                    .filter(s -> s != null && !s.trim().isEmpty() && !s.equalsIgnoreCase("null"))
+                    .collect(Collectors.joining(", "));
+
+            p.setAddress(fullAddress);
+            // Defaulting assessment year for registry updates
+            p.setAssessmentyear("N/A");
+            // Step 3: Persist to DB (Create/Update logic)
+            this.createOrUpdateProperty(p);
+            log.info("Successfully synced Property Registry for ID: {}", p.getPropertyid());
+            
+        } catch (Exception e) {
+            log.error("Error mapping Property Master from Registry topic", e);
+        }
+    }
 }

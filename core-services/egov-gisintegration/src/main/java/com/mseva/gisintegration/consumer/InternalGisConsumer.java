@@ -53,7 +53,28 @@ public class InternalGisConsumer {
             log.error("Error processing Receipt message", e);
         }
     }
-
+    /**
+     * Consumes data from the property-update-registry topic.
+     * Maps the property master data directly from the message.
+     */
+    @KafkaListener(topics = { "${egov.gis.property.update.topic}" })
+    public void listenPropertyUpdate(Map<String, Object> record) {
+        try {
+            JsonNode root = mapper.valueToTree(record);
+            JsonNode propertyNode = root.path("Property");
+            
+            if (!propertyNode.isMissingNode()) {
+                log.info("Incoming Property Update for Property ID: {}", propertyNode.path("propertyId").asText());
+                
+                RequestInfo requestInfo = mapper.treeToValue(root.path("RequestInfo"), RequestInfo.class);
+                
+                // Route to PropertyService for direct sync
+                propertyService.syncPropertyMaster(propertyNode, requestInfo);
+            }
+        } catch (Exception e) {
+            log.error("Error processing Property Update message", e);
+        }
+    }
     /**
      * NEW: Consumes data from the Assessment topic.
      * Routes strictly to PropertyService for master data enrichment.

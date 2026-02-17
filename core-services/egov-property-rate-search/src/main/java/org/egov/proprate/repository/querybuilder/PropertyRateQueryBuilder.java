@@ -94,23 +94,26 @@ public class PropertyRateQueryBuilder {
     	     "AND (r.propertyid IS NULL) ";
 
     private static final String MAPPED_PROPERTIES =
-            "SELECT DISTINCT ON (p.propertyid) " +
-            "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, " +
-            "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, r.rate," + // Added IDs here
-            "dm.district_name, tm.tehsil_name, vm.village_name, " + 
-            "p.propertyid,p.nooffloors, p.tenantid, add.locality AS localityCode, o.userid AS ownerUuid, " +
-            "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
-            "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " + 
-            "FROM eg_pt_property p " +
-            "INNER JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
-            "LEFT JOIN revenue_district_master dm ON r.districtid::integer = dm.district_id " +
-            "LEFT JOIN revenue_tehsil_master tm ON r.tehsilid::integer = tm.tehsil_id " +
-            "LEFT JOIN revenue_village_master vm ON r.village_id::integer = vm.village_id " + 
-            "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
-            "LEFT JOIN public.eg_pt_owner o ON o.propertyid = p.id " +
-            "WHERE p.status = 'ACTIVE' " +
-            "AND r.propertyid IS NOT NULL AND r.is_verified = false ";
-
+    	    "SELECT DISTINCT ON (p.propertyid) " +
+    	    "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, " +
+    	    "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, r.rate, " +
+    	    "dm.district_name, tm.tehsil_name, vm.village_name, " + 
+    	    "p.propertyid, p.nooffloors, p.tenantid, add.locality AS localityCode, " +
+    	    "(SELECT STRING_AGG(o.userid, ',') FROM public.eg_pt_owner o WHERE o.propertyid = p.id) AS ownerUuid, " +
+    	    "(SELECT STRING_AGG(CAST(o.ownerShipPercentage AS TEXT), ',') FROM public.eg_pt_owner o WHERE o.propertyid = p.id) AS ownerPercentages, " +
+    	    "p.landarea, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
+    	    "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, " +
+    	    "add.district, add.state, add.latitude, add.longitude " + 
+    	    "FROM eg_pt_property p " +
+    	    "INNER JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
+    	    "LEFT JOIN revenue_district_master dm ON r.districtid::integer = dm.district_id " +
+    	    "LEFT JOIN revenue_tehsil_master tm ON r.tehsilid::integer = tm.tehsil_id " +
+    	    "LEFT JOIN revenue_village_master vm ON r.village_id::integer = vm.village_id " + 
+    	    "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
+    	    "WHERE p.status = 'ACTIVE' " +
+    	    "AND r.propertyid IS NOT NULL " +
+    	    "AND r.is_verified = false "; // Stopped here so filters can be appended
+    
     /* =========================
        MAIN QUERY BUILDER
        ========================= */

@@ -108,6 +108,7 @@ export const CLUFeeTable = ({
             disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
+            style={{ height: "50px" }}
           />
         );
       },

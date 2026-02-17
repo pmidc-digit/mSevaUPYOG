@@ -101,6 +101,11 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                   }`}
                   onClick={() => (card.type === "assignee" ? assigneeField.onChange(card.code) : toggleStatus(card.code))}
                 >
+                  {isActive ? (
+                    <span className="ndc-new-filter-card-check" aria-hidden="true">
+                      ✓
+                    </span>
+                  ) : null}
                   <div className="ndc-new-filter-status-title ndc-new-filter-option-title">{card.label}</div>
                   {card.subtitle ? (
                     <div className="ndc-new-filter-option-subtitle">{card.subtitle}</div>

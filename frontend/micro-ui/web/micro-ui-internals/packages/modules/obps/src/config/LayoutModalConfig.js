@@ -19,7 +19,8 @@ export const LayoutModalConfig = ({
     action?.action == "SENDBACKTOCITIZEN" ||
     action?.action == "APPROVE" ||
     action?.action == "REJECT" ||
-    action?.action == "SENDBACK" || action?.action == "SENDBACKTOPROFESSIONAL"
+    action?.action == "SENDBACK" || action?.action == "SENDBACKTOPROFESSIONAL" ||
+    action?.action == "SEND_FOR_INSPECTION_REPORT"
   )
     checkCondtions = false
   if (action.isTerminateState) checkCondtions = false

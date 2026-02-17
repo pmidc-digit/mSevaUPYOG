@@ -6,6 +6,7 @@ import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
 import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
 import { ProfessionalSignUpdate } from "../../pageComponents/ProfessionalSignUpdate";
 import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../constants/constants";
+import { LoaderNew } from "../../components/LoaderNew";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
   const userInfo = Digit.UserService.getUser();
@@ -33,6 +34,9 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const uuid = user?.info?.uuid;
   const stateId = Digit.ULBService.getStateId();
   const { data: userDetails, isLoading: isUserLoading, refetch } = Digit.Hooks.useUserSearch(stateId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
+  const { data: obpsHomePageUI, isLoading: isOBPSHomePageUILoading } = Digit.Hooks.useCustomMDMS(state, "BPA", [{ name: "OBPSHomePageUI" }]);
+
+  console.log("obpsHomePageUI", obpsHomePageUI, isOBPSHomePageUILoading)
   
   useEffect(() => {
     console.log("userDetails", userDetails, isUserRegistered)
@@ -160,94 +164,127 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
     setShowModal(false);
   }
 
-  const homeDetails = [
-    {
-      Icon: <BPAHomeIcon />,
-      moduleName: t("ACTION_TEST_BPA_STAKE_HOLDER_HOME"),
-      name: "employeeCard",
-      isCitizen: true,
-      kpis: [
-        // {
-        //   count: !(bpaLoading || isEDCRInboxLoading) && totalCount && edcrCount ? totalCount + edcrCount : "-",
-        //   label: t("BPA_PDF_TOTAL"),
-        //   link: `/digit-ui/citizen/obps/bpa/inbox`,
-        // },
-      ],
-      links: [
-        {
-          count: !bpaLoading ? totalCount : "-",
-          label: t("ES_COMMON_OBPS_INBOX_LABEL"),
-          link: `/digit-ui/citizen/obps/bpa/inbox`,
-        },
-        {
-          count: !isEDCRInboxLoading ? edcrCount : "-",
-          label: t("ES_COMMON_EDCR_INBOX_LABEL"),
-          link: `/digit-ui/citizen/obps/edcr/inbox`,
-        },
-      ],
-      className: "CitizenHomeCard",
+  // const homeDetails = [
+  //   {
+  //     Icon: <BPAHomeIcon />,
+  //     moduleName: t("ACTION_TEST_BPA_STAKE_HOLDER_HOME"),
+  //     name: "employeeCard",
+  //     isCitizen: true,
+  //     kpis: [
+  //       // {
+  //       //   count: !(bpaLoading || isEDCRInboxLoading) && totalCount && edcrCount ? totalCount + edcrCount : "-",
+  //       //   label: t("BPA_PDF_TOTAL"),
+  //       //   link: `/digit-ui/citizen/obps/bpa/inbox`,
+  //       // },
+  //     ],
+  //     links: [
+  //       {
+  //         count: !bpaLoading ? totalCount : "-",
+  //         label: t("ES_COMMON_OBPS_INBOX_LABEL"),
+  //         link: `/digit-ui/citizen/obps/bpa/inbox`,
+  //       },
+  //       {
+  //         count: !isEDCRInboxLoading ? edcrCount : "-",
+  //         label: t("ES_COMMON_EDCR_INBOX_LABEL"),
+  //         link: `/digit-ui/citizen/obps/edcr/inbox`,
+  //       },
+  //     ],
+  //     className: "CitizenHomeCard",
     
-    },
-    {
-      title: t("ACTION_TEST_EDCR_SCRUTINY"),
-      Icon: <EDCRIcon className="fill-path-primary-main" />,
-      links: [
-        {
-          link: `edcrscrutiny/apply`,
-          i18nKey: t("BPA_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
-        },
-        {
-          link: `edcrscrutiny/oc-apply`,
-          i18nKey: t("BPA_OC_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
-        },
-      ],
+  //   },
+  //   {
+  //     title: t("ACTION_TEST_EDCR_SCRUTINY"),
+  //     Icon: <EDCRIcon className="fill-path-primary-main" />,
+  //     links: [
+  //       {
+  //         link: `edcrscrutiny/apply`,
+  //         i18nKey: t("BPA_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
+  //       },
+  //       {
+  //         link: `edcrscrutiny/oc-apply`,
+  //         i18nKey: t("BPA_OC_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
+  //       },
+  //     ],
     
-    },
-    {
-      title: t("ACTION_TEST_BPA_STAKE_HOLDER_HOME"),
-      Icon: <BPAIcon className="fill-path-primary-main" />,
-      links: bpaLinks,
+  //   },
+  //   {
+  //     title: t("ACTION_TEST_BPA_STAKE_HOLDER_HOME"),
+  //     Icon: <BPAIcon className="fill-path-primary-main" />,
+  //     links: bpaLinks,
      
-    },
-    {
-      title: t("ACTION_TEST_LAYOUT_HOME"),
-      Icon: <EDCRIcon className="fill-path-primary-main" />,
-      links: [
-        {
-          link: `layout/apply`,
-          i18nKey: t("BPA_LAYOUT_LABEL"),
-        },
-         {
-          link: `layout/my-applications`,
-          i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
-        },
-                {
-          link: `layout/search-application`,
-          i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
-        },
-      ],
+  //   },
+  //   {
+  //     title: t("ACTION_TEST_LAYOUT_HOME"),
+  //     Icon: <EDCRIcon className="fill-path-primary-main" />,
+  //     links: [
+  //       {
+  //         link: `layout/apply`,
+  //         i18nKey: t("BPA_LAYOUT_LABEL"),
+  //       },
+  //        {
+  //         link: `layout/my-applications`,
+  //         i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
+  //       },
+  //               {
+  //         link: `layout/search-application`,
+  //         i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
+  //       },
+  //     ],
      
-    },
-    {
-      title: t("ACTION_TEST_CLU_HOME"),
-      Icon: <EDCRIcon className="fill-path-primary-main" />,
-      links: [
-        {
-          link: `clu/apply`,
-          i18nKey: t("BPA_CHANGE_OF_LAND_USE_LABEL"),
-        },
-                {
-          link: `clu/my-applications`,
-          i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
-        },
-        {
-          link: `search/clu-application`,
-          i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
-        },
-      ],
+  //   },
+  //   {
+  //     title: t("ACTION_TEST_CLU_HOME"),
+  //     Icon: <EDCRIcon className="fill-path-primary-main" />,
+  //     links: [
+  //       {
+  //         link: `clu/apply`,
+  //         i18nKey: t("BPA_CHANGE_OF_LAND_USE_LABEL"),
+  //       },
+  //               {
+  //         link: `clu/my-applications`,
+  //         i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
+  //       },
+  //       {
+  //         link: `search/clu-application`,
+  //         i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
+  //       },
+  //     ],
      
-    },
-  ];
+  //   },
+  //   {
+  //     title: t("ACTION_TEST_NOC"),
+  //     Icon: <EDCRIcon className="fill-path-primary-main" />,
+  //     links: [
+  //       {
+  //         link: `/digit-ui/citizen/noc/new-application`,
+  //         i18nKey: t("NOC_NEW_APPLICATION"),
+  //       },
+  //               {
+  //         link: `/digit-ui/citizen/noc/my-application`,
+  //         i18nKey: t("BPA_MY_APPLICATIONS_LABEL"),
+  //       },
+  //       {
+  //         link: `/digit-ui/citizen/noc/search-application`,
+  //         i18nKey: t("BPA_SEARCH_APPLICATIONS_LABEL"),
+  //       },
+  //     ],
+     
+  //   },
+  // ];
+  const homeDetails = obpsHomePageUI?.BPA?.OBPSHomePageUI?.length > 0 ? obpsHomePageUI?.BPA?.OBPSHomePageUI?.map((data) => {
+    if(data?.title === "ACTION_TEST_BPA_STAKE_HOLDER_HOME"){
+      return {
+        ...data,
+        links: data?.links?.length > 0 ? data?.links : bpaLinks
+      }
+    }else{
+      return data
+    }
+  }) : []
+
+  if(isOBPSHomePageUILoading){
+    return <LoaderNew page={true} />
+  }
 
   const homeScreen = (
     <div className="mainContent">

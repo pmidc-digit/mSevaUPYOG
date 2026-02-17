@@ -171,7 +171,7 @@ t,
     // Do NOT require assignee when SEND BACK TO PROFESSIONAL
 if (
   action?.action !== "APPROVE" &&
-  action?.action !== "SENDBACKTOPROFESSIONAL" &&
+  action?.action !== "SENDBACKTOPROFESSIONAL"  && action?.action !== "SEND_FOR_INSPECTION_REPORT" &&
   !selectedApprover?.uuid
 ) {
   setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })

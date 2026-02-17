@@ -123,38 +123,7 @@ const initTokens = (stateCode) => {
 
   if (employeeTenantId && employeeTenantId.length) window.Digit.SessionStorage.set("Employee.tenantId", employeeTenantId);
 };
-const loadBhashiniSafely = () => {
-  if (window.__BHASHINI_LOADED__) return;
-  window.__BHASHINI_LOADED__ = true;
 
-  // 1️⃣ Patch getElementById defensively
-  const originalGetElementById = document.getElementById.bind(document);
-
-  document.getElementById = function (id) {
-    const el = originalGetElementById(id);
-    if (el) return el;
-
-    // Create a safe fallback node
-    const fallback = document.createElement("div");
-    fallback.id = id;
-    fallback.style.display = "none";
-    document.body.appendChild(fallback);
-    return fallback;
-  };
-
-  // 2️⃣ Load script AFTER window load
-  window.addEventListener("load", () => {
-    if (document.getElementById("bhashini-script")) return;
-
-    const script = document.createElement("script");
-    script.id = "bhashini-script";
-    script.src =
-      "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js";
-    script.async = true;
-
-    document.body.appendChild(script);
-  });
-};
 const initDigitUI = () => {
   window?.Digit.ComponentRegistryService.setupRegistry({
     ...pgrComponents,
@@ -253,7 +222,6 @@ const initDigitUI = () => {
 
   const registry = window?.Digit.ComponentRegistryService.getRegistry();
   ReactDOM.render(<DigitUI stateCode={stateCode} enabledModules={enabledModules} moduleReducers={moduleReducers} />, document.getElementById("root"));
-    loadBhashiniSafely();
 };
 
 initLibraries().then(() => {

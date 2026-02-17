@@ -154,12 +154,46 @@ public class CycleWorkflowService {
 		processInstance.setAction(action);
 		processInstance.setModuleName(RLConstants.RL_SERVICE_NAME);
 		processInstance.setTenantId(tenantId);
-		processInstance.setBusinessService(RLConstants.RL_WORKFLOW_NAME);
+		
+		// Determine correct workflow based on application type
+		String workflowName = getWorkflowName(allotmentRequest.getAllotment().get(0));
+		processInstance.setBusinessService(workflowName);
+		
 		processInstance.setDocuments(null);
 		processInstance.setComment(null);
 		processInstance.setAssignes(null);
 
 		return processInstance;
+	}
+
+	/**
+	 * Determines the workflow name based on applicationType.
+	 * If applicationType is "Legacy", returns RENT_AND_LEASE_LG workflow.
+	 * Otherwise, returns the default RENT_N_LEASE_NEW workflow.
+	 *
+	 * @param allotmentDetails The AllotmentDetails containing applicationType
+	 * @return The appropriate workflow name
+	 */
+	private String getWorkflowName(AllotmentDetails allotmentDetails) {
+		String applicationType = allotmentDetails.getApplicationType();
+		if (RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(applicationType)) {
+			log.info("Using Legacy workflow for application: {}", allotmentDetails.getApplicationNumber());
+			return RLConstants.RL_WORKFLOW_NAME_LEGACY;
+		}
+		
+		// Also check additionalDetails for applicationType (for backwards compatibility)
+		if (allotmentDetails.getAdditionalDetails() != null) {
+			com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+			if (additionalDetails.has("applicationType")) {
+				String additionalAppType = additionalDetails.get("applicationType").asText();
+				if (RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(additionalAppType)) {
+					log.info("Using Legacy workflow (from additionalDetails) for application: {}", allotmentDetails.getApplicationNumber());
+					return RLConstants.RL_WORKFLOW_NAME_LEGACY;
+				}
+			}
+		}
+		
+		return RLConstants.RL_WORKFLOW_NAME;
 	}
 
 	/**

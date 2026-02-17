@@ -13,6 +13,8 @@ public class RLConstants {
     public static final String NEW_RL_APPLICATION = "NEW";
     
     public static final String RL_WORKFLOW_NAME = "RENT_N_LEASE_NEW";
+    
+    public static final String RL_WORKFLOW_NAME_LEGACY = "RENT_AND_LEASE_LG";
 
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";
 	
@@ -39,6 +41,11 @@ public class RLConstants {
 
     public static final String RL_ARREAR_FEE = "RL_ARREAR_FEE";
     public static final String APPLICATION_TYPE_LEGACY = "Legacy";
+    
+    // Legacy arrear keys for additionalDetails
+    public static final String LEGACY_ARREAR_KEY = "arrear";
+    public static final String LEGACY_ARREAR_START_DATE_KEY = "arrearStartDate";
+    public static final String LEGACY_ARREAR_END_DATE_KEY = "arrearEndDate";
 
 	public static final String CGST_FEE_RL_APPLICATION = "RL_CGST_FEE";
 	

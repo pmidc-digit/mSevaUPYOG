@@ -210,17 +210,59 @@ public class PaymentNotificationService {
 			return null;
 		}
 
+		// Determine the correct workflow based on application type
+		String workflowName = getWorkflowNameForApplication(consumerCode, tenantId);
+
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(consumerCode);
 		processInstance.setAction(action);
 		processInstance.setModuleName(RLConstants.RL_SERVICE_NAME);
 		processInstance.setTenantId(tenantId);
-		processInstance.setBusinessService(RLConstants.RL_WORKFLOW_NAME);
+		processInstance.setBusinessService(workflowName);
 		processInstance.setDocuments(null);
 		processInstance.setComment(null);
 		processInstance.setAssignes(null);
 
 		return processInstance;
+	}
+
+	/**
+	 * Determines the workflow name based on additionalDetails.applicationType.
+	 * If applicationType is "Legacy", returns RENT_AND_LEASE_LG workflow.
+	 * Otherwise, returns the default RENT_N_LEASE_NEW workflow.
+	 *
+	 * @param consumerCode The application number
+	 * @param tenantId The tenant ID
+	 * @return The appropriate workflow name
+	 */
+	private String getWorkflowNameForApplication(String consumerCode, String tenantId) {
+		try {
+			AllotmentCriteria criteria = AllotmentCriteria.builder()
+					.applicationNumbers(Collections.singleton(consumerCode))
+					.tenantId(tenantId)
+					.build();
+			List<AllotmentDetails> applications = allotmentRepository.getAllotmentSearch(criteria);
+			
+			if (applications != null && !applications.isEmpty()) {
+				AllotmentDetails application = applications.get(0);
+				
+				// Check additionalDetails for applicationType
+				if (application.getAdditionalDetails() != null) {
+					com.fasterxml.jackson.databind.JsonNode additionalDetails = application.getAdditionalDetails();
+					if (additionalDetails.has("applicationType")) {
+						String applicationType = additionalDetails.get("applicationType").asText();
+						if (RLConstants.APPLICATION_TYPE_LEGACY.equals(applicationType)) {
+							log.info("Using Legacy workflow for payment of application: {}", consumerCode);
+							return RLConstants.RL_WORKFLOW_NAME_LEGACY;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error determining workflow name for application: {}, using default workflow. Error: {}", 
+					consumerCode, e.getMessage());
+		}
+		return RLConstants.RL_WORKFLOW_NAME;
 	}
 
 	/**

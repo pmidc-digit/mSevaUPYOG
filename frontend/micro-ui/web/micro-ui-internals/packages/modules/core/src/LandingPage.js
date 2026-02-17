@@ -18,13 +18,6 @@ const LandingPage = () => {
     history.push('/digit-ui/citizen');
   };
 
-   useEffect(() => {
-      console.log("Bhashini Translation Plugin loaded in footer.js");
-   const script = document.createElement("script");
- script.src = " https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
- script.async = true;
- document.body.appendChild(script);
-  }, []);
 
   return (
     <div className="landing-page">

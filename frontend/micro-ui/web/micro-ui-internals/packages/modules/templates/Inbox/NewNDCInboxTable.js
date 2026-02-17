@@ -3,27 +3,10 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
-const NewNDCInboxTable = ({ rows = [], parentRoute, searchQuery = "", statusFilter = [] }) => {
+const NewNDCInboxTable = ({ rows = [], parentRoute }) => {
   const { t } = useTranslation();
 
-  const normalize = (value) => String(value || "").replace(/[\s-_]+/g, "").toLowerCase();
-
-  const data = useMemo(() => {
-    const list = rows || [];
-    const query = String(searchQuery || "").trim().toLowerCase();
-    const statusFilters = Array.isArray(statusFilter) ? statusFilter : [statusFilter];
-    const normalizedFilters = statusFilters.map(normalize).filter(Boolean);
-
-    return list.filter((row) => {
-      const applicationId = String(row?.applicationId || row?.applicationNo || "").toLowerCase();
-      const statusValue = normalize(row?.status || row?.applicationStatus || "");
-      const matchesQuery = query ? applicationId.includes(query) : true;
-      const matchesStatus = normalizedFilters.length
-        ? normalizedFilters.some((filterValue) => statusValue.includes(filterValue))
-        : true;
-      return matchesQuery && matchesStatus;
-    });
-  }, [rows, searchQuery, statusFilter]);
+  const data = useMemo(() => rows || [], [rows]);
 
   const getDate = (value) => {
     if (!value) return "-";

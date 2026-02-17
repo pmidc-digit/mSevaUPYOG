@@ -449,7 +449,7 @@ const InspectionReportForm = (_props) => {
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
                                                         className="checklist-table-textarea"
-                                                        style={{ overflow: "hidden" }}
+                                                        style={{ overflow: "hidden",maxHeight:"1500px" }}
                                                     />
                                                 )}
                                             />

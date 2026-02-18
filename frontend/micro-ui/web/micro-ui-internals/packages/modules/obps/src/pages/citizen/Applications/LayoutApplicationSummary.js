@@ -31,6 +31,7 @@ import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimat
 import LayoutDocumentView from "./LayoutDocumentView";
 import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import { LoaderNew } from "../../../components/LoaderNew";
 
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -186,11 +187,12 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   const handleDownloadPdf = async () => {
     try {
+      setLoading(true);
       const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
-      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -486,8 +488,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
 };
 
 
-  if (isLoading) {
-    return <Loader />
+  if (isLoading || loading) {
+    return <LoaderNew page={true} />;
   }
 
   return (

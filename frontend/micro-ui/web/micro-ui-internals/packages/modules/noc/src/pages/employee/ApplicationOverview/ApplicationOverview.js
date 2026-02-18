@@ -1165,15 +1165,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 
@@ -1219,12 +1218,12 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
         <Card>
           <CardSubHeader>
-              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${
-                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                  }`
-                : t("BPA_FI_REPORT")}
-            </CardSubHeader>
+            {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+              ? `${t("BPA_FI_REPORT")} - Verified by ${
+                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
+              : t("BPA_FI_REPORT")}
+          </CardSubHeader>
 
           <div id="fieldInspection"></div>
           <InspectionReport
@@ -1236,7 +1235,10 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           />
         </Card>
       )}
-      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ? (
+        <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div>
+      ) : (
+        applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
             <CardSubHeader>
@@ -1253,7 +1255,8 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
               InspectionReportVerifier={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier}
             />
           </Card>
-        )}
+        )
+      )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
@@ -1304,8 +1307,11 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"}
-            applicationStatus ={applicationDetails?.Noc?.[0]?.applicationStatus}
+            disable={
+              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
+              applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"
+            }
+            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
       </Card>

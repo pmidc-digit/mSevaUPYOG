@@ -10,10 +10,9 @@ COPY ${WORK_DIR} .
 RUN ls -lah
 
 #RUN node web/envs.js
-
+#    &&  chmod 777 install-deps.sh \
+#    &&  ./install-deps.sh \
 RUN cd web/ \
-    &&  chmod 777 install-deps.sh \
-    &&  ./install-deps.sh \
     && yarn install \
     && yarn build:webpack 
 

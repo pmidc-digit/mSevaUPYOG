@@ -1,24 +1,20 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
-import { Link } from "react-router-dom";
 
-const NewNDCInboxTable = ({ rows = [], parentRoute }) => {
+const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
   const { t } = useTranslation();
 
   const data = useMemo(() => rows || [], [rows]);
+  const resolvedColumns = useMemo(() => columns || [], [columns]);
 
-  const getDate = (value) => {
-    if (!value) return "-";
-    try {
-      return format(new Date(value), "yyyy-MM-dd");
-    } catch (e) {
-      return "-";
+  const getAccessorValue = (row, accessor) => {
+    if (!accessor) return "";
+    if (typeof accessor === "function") return accessor(row);
+    if (typeof accessor === "string") {
+      return accessor.split(".").reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), row);
     }
+    return "";
   };
-
-  const getType = (row) => row?.applicationType || row?.type || row?.serviceType || "-";
-  const getStage = (row) => row?.currentStage || row?.wfStatus || row?.status || "-";
 
   const getStatusClass = (status) => {
     const value = String(status || "").toLowerCase();
@@ -60,53 +56,105 @@ const NewNDCInboxTable = ({ rows = [], parentRoute }) => {
 
   return (
     <div className="ndc-new-table-card">
-      <div className="ndc-new-table-header">{t("Assigned Applications")}</div>
+      <div className="ndc-new-table-header">{title || t("Assigned Applications")}</div>
       <div className="ndc-new-table-wrapper">
         <table className="ndc-new-table">
           <thead>
             <tr>
-              <th>APPLICATION NO</th>
-            
-              <th>DATE</th>
-              <th>STATUS</th>
-              {/* <th>CURRENT STAGE</th> */}
-              <th className="ndc-new-table-action">ACTION</th>
+              {resolvedColumns.map((column, index) => (
+                <th
+                  key={column.id || column.accessor || index}
+                  className={column.headerClassName || (column.type === "action" ? "ndc-new-table-action" : "")}
+                >
+                  {typeof column.Header === "function" ? column.Header() : column.Header}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {data?.map((row) => {
-              const status = row?.status || row?.applicationStatus || "-";
-              const statusLabel = String(status || "-").toLowerCase();
-              const statusClass = getStatusClass(status);
+              const rowStatus = row?.status || row?.applicationStatus || "";
+              const rowStatusClass = getStatusClass(rowStatus);
               return (
-                <tr key={row?.applicationId || row?.uuid || row?.id} className={`ndc-new-row ${statusClass}`}>
-                  <td className="ndc-new-table-app">
-                    <Link to={`${parentRoute}/inbox/application-overview/${row?.applicationId}`} className="ndc-new-app-link">
-                      {row?.applicationId || row?.applicationNo || "-"}
-                    </Link>
-                  </td>
-                 
-                  <td>{getDate(row?.date || row?.createdTime)}</td>
-                  <td>
-                    <span className={`ndc-new-status-pill ${statusClass}`}>
-                      {renderStatusIcon(statusClass)}
-                      <span>{statusLabel}</span>
-                    </span>
-                  </td>
-                  {/* <td>{getStage(row)}</td> */}
-                  <td className="ndc-new-table-action">
-                    <span className="ndc-new-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 12h4l2-4 4 8 2-4h6" />
-                      </svg>
-                    </span>
-                    <span className="ndc-new-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    </span>
-                  </td>
+                <tr key={row?.applicationId || row?.uuid || row?.id} className={`ndc-new-row ${rowStatusClass}`}>
+                  {resolvedColumns.map((column, index) => {
+                    const value = getAccessorValue(row, column.accessor);
+                    if (column.Cell) {
+                      const secondaryValue = column.subAccessor
+                        ? getAccessorValue(row, column.subAccessor)
+                        : undefined;
+                      const secondaryDisplayValue = column.subFormatter
+                        ? column.subFormatter(secondaryValue, row)
+                        : secondaryValue;
+
+                      if (column.subAccessor || column.subFormatter) {
+                        return (
+                          <td
+                            key={column.id || column.accessor || index}
+                            className={column.className || (column.type === "action" ? "ndc-new-table-action" : "")}
+                          >
+                            <div className="ndc-new-cell-stack">
+                              <div className="ndc-new-cell-primary">
+                                {column.Cell({ row: { original: row }, value, parentRoute })}
+                              </div>
+                              {/* {secondaryDisplayValue ? (
+                                <div className="ndc-new-cell-secondary">{secondaryDisplayValue}</div>
+                              ) : null} */}
+                            </div>
+                          </td>
+                        );
+                      }
+                      return (
+                        <td
+                          key={column.id || column.accessor || index}
+                          className={column.className || (column.type === "action" ? "ndc-new-table-action" : "")}
+                        >
+                          {column.Cell({ row: { original: row }, value, parentRoute })}
+                        </td>
+                      );
+                    }
+
+                    if (column.type === "status") {
+                      const statusValue = value || row?.status || row?.applicationStatus || "-";
+                      const statusLabel = String(statusValue || "-").toLowerCase();
+                      const statusClass = getStatusClass(statusValue);
+                      return (
+                        <td key={column.id || column.accessor || index}>
+                          <span className={`ndc-new-status-pill ${statusClass}`}>
+                            {renderStatusIcon(statusClass)}
+                            <span>{statusLabel}</span>
+                          </span>
+                        </td>
+                      );
+                    }
+
+                    const displayValue = column.formatter ? column.formatter(value, row) : value;
+                    const secondaryValue = column.subAccessor
+                      ? getAccessorValue(row, column.subAccessor)
+                      : undefined;
+                    const secondaryDisplayValue = column.subFormatter
+                      ? column.subFormatter(secondaryValue, row)
+                      : secondaryValue;
+
+                    if (column.subAccessor || column.subFormatter) {
+                      return (
+                        <td key={column.id || column.accessor || index} className={column.className}>
+                          <div className="ndc-new-cell-stack">
+                            <div className="ndc-new-cell-primary">{displayValue ?? "-"}</div>
+                            {/* {secondaryDisplayValue ? (
+                              <div className="ndc-new-cell-secondary">{secondaryDisplayValue}</div>
+                            ) : null} */}
+                          </div>
+                        </td>
+                      );
+                    }
+
+                    return (
+                      <td key={column.id || column.accessor || index} className={column.className}>
+                        {displayValue ?? "-"}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })}

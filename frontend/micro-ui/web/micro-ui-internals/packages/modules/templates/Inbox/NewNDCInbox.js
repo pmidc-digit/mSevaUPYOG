@@ -1,13 +1,7 @@
 import React, { useCallback, useMemo, useReducer, useState, useEffect, useRef } from "react";
-import {
-  InboxComposer,
-  ComplaintIcon,
-  Header,
-  FilterForm,
-  Loader,
-  Card,
-} from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, FilterForm, Loader, Card } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import NewSearchFormFieldsComponent from "./NewSearchFormFieldsComponent";
 import NewFilterFormFieldsComponent from "./NewFilterFormFieldsComponent";
 import NewNDCInboxTable from "./NewNDCInboxTable";
@@ -15,8 +9,9 @@ import useNewInboxTableConfig from "./useNewInboxTableConfig";
 import useNewInboxMobileCardsData from "./useNewInboxMobileCardsData";
 import { businessServiceList } from "../../ndc/src/utils";
 import { useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 
-const NewNDCInbox = ({ parentRoute }) => {
+const NewNDCInbox = ({ parentRoute, tableColumns }) => {
   const { t } = useTranslation();
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -244,11 +239,65 @@ const NewNDCInbox = ({ parentRoute }) => {
     onFilterFormReset,
   };
 
-  const propsForInboxTable = useNewInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } });
+  const propsForInboxTable = useNewInboxTableConfig({
+    ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData },
+  });
 
   const propsForInboxMobileCards = useNewInboxMobileCardsData({ parentRoute, table });
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
+
+  const defaultTableColumns = useMemo(
+    () => [
+      {
+        Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
+        accessor: "applicationId",
+        className: "ndc-new-table-app",
+        subAccessor: "locality",
+        Cell: ({ row }) => (
+          <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
+            {row.original?.applicationId || row.original?.applicationNo || "-"}
+          </Link>
+        ),
+      },
+      {
+        Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
+        accessor: "date",
+        formatter: (value, row) => {
+          const dateValue = value || row?.createdTime;
+          return dateValue ? format(new Date(dateValue), "dd/MM/yyyy") : "-";
+        },
+      },
+      {
+        Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
+        accessor: "status",
+        type: "status",
+      },
+      {
+        Header: t("CS_COMMON_ACTION"),
+        accessor: "action",
+        type: "action",
+        className: "ndc-new-table-action",
+        Cell: ({ row }) => (
+          <span className="ndc-new-action-group">
+            <Link
+              to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}
+              className="ndc-new-icon ndc-new-icon-link"
+              aria-label={t("ES_COMMON_VIEW")}
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </Link>
+          </span>
+        ),
+      },
+    ],
+    [parentRoute, t]
+  );
+
+  const resolvedTableColumns = tableColumns || defaultTableColumns;
 
   useEffect(() => {
     const serialized = JSON.stringify(formState?.filterForm || {});
@@ -271,30 +320,31 @@ const NewNDCInbox = ({ parentRoute }) => {
     onFilterFormReset(setFilterFormValue);
   };
 
-  const normalizeStatus = useCallback((value) => String(value || "").replace(/[\s-_]+/g, "").toUpperCase(), []);
+  const normalizeStatus = useCallback(
+    (value) =>
+      String(value || "")
+        .replace(/[\s-_]+/g, "")
+        .toUpperCase(),
+    []
+  );
 
   const onStatusTabClick = useCallback(
-    (label) => {
-      setActiveStatusTab(label);
+    (label, statusCode) => {
+      setActiveStatusTab(statusCode || label);
       if (label === "CLEAR") {
         setTopBarSearch("");
         return;
       }
       if (label === "ALL") {
         setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true });
+        handleFilterFormSubmit(onFilterFormSubmit)();
         return;
       }
-      const normalizedLabel = normalizeStatus(label);
-      const matchedStatus = (statuses || []).find(
-        (status) => normalizeStatus(status?.applicationstatus) === normalizedLabel
-      );
-      const fuzzyStatus = (statuses || []).find((status) =>
-        normalizeStatus(status?.applicationstatus).includes(normalizedLabel)
-      );
-      const statusCode = matchedStatus?.applicationstatus || fuzzyStatus?.applicationstatus || label;
-      setFilterFormValue("applicationStatus", [statusCode], { shouldDirty: true, shouldTouch: true });
+      const resolvedCode = statusCode || label;
+      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true });
+      handleFilterFormSubmit(onFilterFormSubmit)();
     },
-    [normalizeStatus, setFilterFormValue, statuses]
+    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
   );
 
   useEffect(() => {
@@ -588,17 +638,26 @@ const NewNDCInbox = ({ parentRoute }) => {
         }
         .ndc-new-inbox .ndc-new-tabs {
           display: flex;
-          flex-wrap: wrap;
           gap: 8px;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          max-width: calc(100% - 280px);
+          padding-bottom: 4px;
+          scrollbar-width: none;
+        }
+        .ndc-new-inbox .ndc-new-tabs::-webkit-scrollbar {
+          width: 0;
+          height: 0;
         }
         .ndc-new-inbox .ndc-new-tab {
-          padding: 8px 14px;
+          padding: 6px 10px;
           border-radius: 999px;
           border: 1px solid #e5e7eb;
           background: #f8fafc;
           font-weight: 600;
-          font-size: 12px;
+          font-size: 11px;
           cursor: pointer;
+          white-space: nowrap;
         }
         .ndc-new-inbox .ndc-new-tab.active {
           background: #2563eb;
@@ -612,7 +671,7 @@ const NewNDCInbox = ({ parentRoute }) => {
           gap: 8px;
           padding: 10px 14px;
           border: 1px solid #e2e8f0;
-          border-radius: 999px;
+          border-radius: 10px;
           min-width: 260px;
           background: #f8fafc;
           color: #6b7280;
@@ -654,6 +713,19 @@ const NewNDCInbox = ({ parentRoute }) => {
           font-size: 14px;
           color: #334155;
         }
+        .ndc-new-inbox .ndc-new-cell-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .ndc-new-inbox .ndc-new-cell-primary {
+          font-weight: 600;
+          color: #111827;
+        }
+        .ndc-new-inbox .ndc-new-cell-secondary {
+          font-size: 12px;
+          color: #64748b;
+        }
         .ndc-new-inbox .ndc-new-row.pending {
           background: #fff7ed;
         }
@@ -668,7 +740,7 @@ const NewNDCInbox = ({ parentRoute }) => {
           color: #111827;
         }
         .ndc-new-inbox .ndc-new-table-action {
-          text-align: right;
+          text-align: left;
           white-space: nowrap;
         }
         .ndc-new-inbox .ndc-new-status-pill {
@@ -721,6 +793,14 @@ const NewNDCInbox = ({ parentRoute }) => {
           border: 1px solid #e5e7eb;
           color: #94a3b8;
         }
+        .ndc-new-inbox .ndc-new-action-group {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .ndc-new-inbox .ndc-new-icon-link {
+          text-decoration: none;
+        }
         .ndc-new-inbox .ndc-new-app-link {
           color: #2563eb;
           text-decoration: none;
@@ -755,24 +835,48 @@ const NewNDCInbox = ({ parentRoute }) => {
           padding: 4px 8px;
           background: #ffffff;
         }
-        .ndc-new-inbox .ndc-new-filter-actions {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 8px;
+        @media (max-width: 768px) {
+          .ndc-new-inbox .ndc-new-top-filters {
+            padding: 0;
+          }
+          .ndc-new-inbox .ndc-new-table-topbar {
+            flex-wrap: wrap;
+          }
+          .ndc-new-inbox .ndc-new-tabs {
+            max-width: 100%;
+            overflow-x: visible;
+            flex-wrap: wrap;
+          }
+          .ndc-new-inbox .ndc-new-search {
+            width: 100%;
+            min-width: 0;
+          }
+          .ndc-new-inbox .ndc-new-table-header {
+            font-size: 16px;
+            padding: 14px 16px;
+          }
+          .ndc-new-inbox .ndc-new-table th,
+          .ndc-new-inbox .ndc-new-table td {
+            padding: 12px 14px;
+            font-size: 12px;
+          }
+          .ndc-new-inbox .ndc-new-status-pill {
+            font-size: 11px;
+            padding: 3px 8px;
+          }
         }
-        .ndc-new-inbox .ndc-new-filter-apply {
-          border: none;
-          background: #2563eb;
+        .ndc-new-inbox .ndc-new-tab-count {
+          margin-left: 6px;
+          padding: 2px 6px;
+          border-radius: 999px;
+          background: #e2e8f0;
+          color: #475569;
+          font-size: 11px;
+          font-weight: 700;
+        }
+        .ndc-new-inbox .ndc-new-tab.active .ndc-new-tab-count {
+          background: rgba(255, 255, 255, 0.2);
           color: #ffffff;
-          font-size: 14px;
-          font-weight: 600;
-          padding: 8px 16px;
-          border-radius: 8px;
-          cursor: pointer;
-          box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
-        }
-        .ndc-new-inbox .ndc-new-filter-apply:hover {
-          background: #1d4ed8;
         }
       `}</style>
       <div className="ndc-new-header">
@@ -786,47 +890,48 @@ const NewNDCInbox = ({ parentRoute }) => {
               registerRef={registerFilterFormField}
               {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue, statuses }}
               handleFilter={handleFilter}
+              onApplyFilters={handleFilterFormSubmit(onFilterFormSubmit)}
             />
-            <div className="ndc-new-filter-actions">
-              <button
-                type="button"
-                className="ndc-new-filter-apply"
-                onClick={handleFilterFormSubmit(onFilterFormSubmit)}
-              >
-                {t("ES_COMMON_APPLY")}
-              </button>
-            </div>
           </FilterForm>
         </div>
         <div className="ndc-new-table-topbar">
           <div className="ndc-new-tabs">
-            {["ALL", "PENDINGPAYMENT", "PENDING APPROVAL", "APPROVED", "REJECTED", "CLEAR"].map((label) => (
+            <button type="button" className={`ndc-new-tab ${activeStatusTab === "ALL" ? "active" : ""}`} onClick={() => onStatusTabClick("ALL")}>
+              {t("ALL")}
+              <span className="ndc-new-tab-count">{totalCount || 0}</span>
+            </button>
+            {(statuses || []).map((status) => (
               <button
-                key={label}
+                key={status?.applicationstatus}
                 type="button"
-                className={`ndc-new-tab ${activeStatusTab === label ? "active" : ""}`}
-                onClick={() => onStatusTabClick(label)}
+                className={`ndc-new-tab ${activeStatusTab === status?.applicationstatus ? "active" : ""}`}
+                onClick={() => onStatusTabClick(status?.applicationstatus, status?.applicationstatus)}
               >
-                {label}
+                {t(status?.applicationstatus)}
+                <span className="ndc-new-tab-count">{status?.count ?? 0}</span>
               </button>
             ))}
+            <button type="button" className={`ndc-new-tab ${activeStatusTab === "CLEAR" ? "active" : ""}`} onClick={() => onStatusTabClick("CLEAR")}>
+              {t("CLEAR")}
+            </button>
           </div>
           <div className="ndc-new-search">
-            <span aria-hidden="true">🔍</span>
-            <input
-              type="text"
-              value={topBarSearch}
-              onChange={(e) => setTopBarSearch(e.target.value)}
-              placeholder="Search by application no..."
-            />
+            <span aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="11" cy="11" r="7" stroke="#6B7280" strokeWidth="2" />
+                <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </span>
+
+            <input type="text" value={topBarSearch} onChange={(e) => setTopBarSearch(e.target.value)} placeholder="Search by application no..." />
           </div>
         </div>
-          {isInboxLoading ? (
+        {isInboxLoading ? (
           <Loader />
         ) : table?.length < 1 ? (
           <Card className="margin-unset text-align-center">{t("CS_MYAPPLICATIONS_NO_APPLICATION")}</Card>
         ) : (
-            <NewNDCInboxTable rows={table} parentRoute={parentRoute} />
+          <NewNDCInboxTable rows={table} parentRoute={parentRoute} columns={resolvedTableColumns} />
         )}
         {totalCount > 0 ? (
           <div className="ndc-new-pagination">
@@ -844,10 +949,7 @@ const NewNDCInbox = ({ parentRoute }) => {
             <button onClick={onPrevPage} disabled={formState.tableForm?.offset <= 0}>
               ‹
             </button>
-            <button
-              onClick={onNextPage}
-              disabled={formState.tableForm?.offset + formState.tableForm?.limit >= totalCount}
-            >
+            <button onClick={onNextPage} disabled={formState.tableForm?.offset + formState.tableForm?.limit >= totalCount}>
               ›
             </button>
           </div>

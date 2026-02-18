@@ -49,10 +49,10 @@ public class ScorecardSurveyController {
     }
 
     @PostMapping("/survey/active/_update")
-    public ResponseEntity<?> updateActiveSurvey(@Valid @RequestBody UpdateSurveyActiveRequest request) {
+    public ResponseEntity<?> updateSurvey(@Valid @RequestBody UpdateSurveyActiveRequest request) {
         try {
-            surveyService.updateSurveyActive(request);
-            return ResponseEntity.ok().body(Collections.singletonMap("message", "Survey active status updated successfully!"));
+            surveyService.updateSurvey(request);
+            return ResponseEntity.ok().body(Collections.singletonMap("message", "Survey updated successfully!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }

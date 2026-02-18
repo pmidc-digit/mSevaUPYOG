@@ -136,16 +136,15 @@ public class ScorecardSurveyService {
         return new ArrayList<>();
     }
 
-	public void updateSurveyActive(@Valid UpdateSurveyActiveRequest request) {
+    public void updateSurvey(@Valid UpdateSurveyActiveRequest request) {
 		// Validate UUID
 	    if (request.getUuid() == null || request.getUuid().trim().isEmpty()) {
 	        throw new IllegalArgumentException("UUID must not be null or empty");
 	    }
 
-	    // Validate Active status
-	    if (request.getActive() == null) {
-	        throw new IllegalArgumentException("Active status must not be null");
-	    }
+        if (request.getActive() == null && request.getStartDate() == null && request.getEndDate() == null) {
+            throw new IllegalArgumentException("At least one of active/startDate/endDate must be provided");
+        }
 		ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
 
 		//check uuid is present in database
@@ -156,6 +155,28 @@ public class ScorecardSurveyService {
 			throw new IllegalArgumentException("UUID does not exist in database, Update failed!");
 		}
 		else {
+            ScorecardSurveyEntity existingSurvey = surveyEntities.get(0);
+
+            if (request.getActive() == null) {
+                request.setActive(existingSurvey.getActive());
+            }
+
+            if (request.getStartDate() == null) {
+                request.setStartDate(existingSurvey.getStartDate());
+            }
+
+            if (request.getEndDate() == null) {
+                request.setEndDate(existingSurvey.getEndDate());
+            }
+
+            if (request.getStartDate() == null || request.getEndDate() == null) {
+                throw new IllegalArgumentException("Start date and end date must not be null");
+            }
+
+            if (request.getStartDate() >= request.getEndDate()) {
+                throw new IllegalArgumentException("Start date must be before end date");
+            }
+
 			request.setLastModifiedTime(System.currentTimeMillis());
 			request.setLastModifiedBy(request.getRequestInfo().getUserInfo().getUuid());
 			producer.push(applicationProperties.getUpdateActiveSurveyTopic(), request);

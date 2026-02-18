@@ -250,9 +250,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         consumerCode: consumercodes,
       });
       setPropertyLoader(false);
+      const amount = result?.Bill[0]?.totalAmount ?? 0;
 
       if (result?.Bill?.length > 0) {
-        if (result?.Bill[0]?.totalAmount > 0) {
+        if (amount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
         } else {
           setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });

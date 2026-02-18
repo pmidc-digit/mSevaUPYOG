@@ -2,7 +2,7 @@
 FROM node:14.1.0-alpine AS build
 #FROM ghcr.io/egovernments/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
-RUN apt update && apt install git -y
+RUN RUN apk update && apk add --no-cache git
 RUN apk add --no-cache git>2.30.0
 ARG WORK_DIR
 WORKDIR /app
@@ -13,6 +13,7 @@ RUN ls -lah
 
 #RUN node web/envs.js
 RUN cd web/ \
+    && chmod +x workbench/install-deps.sh \
     && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(1024*1024))' \
     && node -e 'console.log("workbench only")' \
     && cd workbench/ \

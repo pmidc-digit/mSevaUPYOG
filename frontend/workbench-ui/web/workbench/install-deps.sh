@@ -1,8 +1,8 @@
 #!/bin/sh
 
-BRANCH="$(git branch --show-current)"
+#BRANCH="$(git branch --show-current)"
 
-echo "Main Branch: $BRANCH"
+#echo "Main Branch: $BRANCH"
 
 INTERNALS="micro-ui-internals"
 cd ..

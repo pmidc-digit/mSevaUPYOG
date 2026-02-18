@@ -606,6 +606,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     }
   }, [applicationDetails?.Noc]);
 
+
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId)
   }
@@ -1303,7 +1304,8 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"}
+            applicationStatus ={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
       </Card>

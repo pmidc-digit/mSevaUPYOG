@@ -208,13 +208,19 @@ public class DemandService {
 
         log.info("Legacy demand - final amountPayable: {}", amountPayable);
 
+        // Subtract 1 millisecond from arrear taxPeriodFrom to ensure it differs from rent demand's taxPeriodFrom
+        // This prevents billing service's filterMultipleActiveDemands from overwriting one demand with another
+        // since it groups demands by taxPeriodFrom
+        Long arrearTaxPeriodFrom = arrearStartDate - 1;
+        log.info("Legacy demand - Using arrearTaxPeriodFrom: {} (original: {}) to avoid conflict with rent demand", arrearTaxPeriodFrom, arrearStartDate);
+
         Demand demand = Demand.builder()
                 .consumerCode(consumerCode)
                 .demandDetails(demandDetails)
                 .payer(payerUser)
                 .minimumAmountPayable(amountPayable)
                 .tenantId(tenantId)
-                .taxPeriodFrom(arrearStartDate)
+                .taxPeriodFrom(arrearTaxPeriodFrom)
                 .taxPeriodTo(arrearEndDate)
                 .billExpiryTime(arrearEndDate)
                 .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)

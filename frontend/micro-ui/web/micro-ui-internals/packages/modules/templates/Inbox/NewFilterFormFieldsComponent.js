@@ -3,7 +3,7 @@ import { FilterFormField } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter }) => {
+const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter, onApplyFilters }) => {
   const { t } = useTranslation();
 
   const [showAllStatuses, setShowAllStatuses] = useState(false);
@@ -35,12 +35,19 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
   const { field: statusField } = useController({ name: "applicationStatus", control: controlFilterForm, defaultValue: [] });
 
   const statusValues = Array.isArray(statusField.value) ? statusField.value : [];
+  const triggerApply = () => {
+    if (typeof onApplyFilters === "function") {
+      setTimeout(() => onApplyFilters(), 0);
+    }
+  };
+
   const toggleStatus = (statusCode) => {
     if (statusValues.includes(statusCode)) {
       statusField.onChange(statusValues.filter((code) => code !== statusCode));
     } else {
       statusField.onChange([...statusValues, statusCode]);
     }
+    triggerApply();
   };
 
   const derivedFilters = useMemo(
@@ -99,7 +106,14 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                   className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
                     isActive ? "active" : ""
                   }`}
-                  onClick={() => (card.type === "assignee" ? assigneeField.onChange(card.code) : toggleStatus(card.code))}
+                  onClick={() => {
+                    if (card.type === "assignee") {
+                      assigneeField.onChange(card.code);
+                      triggerApply();
+                    } else {
+                      toggleStatus(card.code);
+                    }
+                  }}
                 >
                   {isActive ? (
                     <span className="ndc-new-filter-card-check" aria-hidden="true">

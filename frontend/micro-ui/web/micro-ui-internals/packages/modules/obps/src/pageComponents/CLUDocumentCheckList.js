@@ -68,10 +68,15 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                   ) : (
                     <TextArea
                       value={localRemarks[doc.documentUid] ?? ""}
-                      onChange={(e) => handleRemarkChange(doc.documentUid, e.target.value)}
+                      onChange={(e) => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = e.target.scrollHeight + "px";
+                        handleRemarkChange(doc.documentUid, e.target.value);
+                      }}
                       disabled={false}
                       className="checklist-table-textarea"
                       placeholder="Enter remarks"
+                      style={{ overflow: "hidden" }}
                     />
                   )}
                 </div>
@@ -118,10 +123,15 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                       ) : (
                         <TextArea
                           value={localRemarks[doc.documentUid] ?? ""}
-                          onChange={(e) => handleRemarkChange(doc.documentUid, e.target.value)}
+                          onChange={(e) => {
+                            e.target.style.height = "auto";
+                            e.target.style.height = e.target.scrollHeight + "px";
+                            handleRemarkChange(doc.documentUid, e.target.value);
+                          }}
                           disabled={false}
                           className="checklist-table-textarea"
                           placeholder="Enter remarks"
+                          style={{ overflow: "hidden" }}
                         />
                       )}
                     </td>

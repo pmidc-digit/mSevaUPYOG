@@ -41,6 +41,7 @@ import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { amountToWords } from "../../../utils";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -139,6 +140,10 @@ const CLUEmployeeApplicationDetails = () => {
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
   //console.log("businessService here", businessServiceCode, siteImages);
   
+const stateId = Digit.ULBService.getStateId();
+  const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
+  
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -159,6 +164,25 @@ const CLUEmployeeApplicationDetails = () => {
     },
     { enabled: id ? true : false }
   );
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+
+  const hasPayments = combinedPayments.length > 0;
+
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -845,7 +869,7 @@ const CLUEmployeeApplicationDetails = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-        {(isLoading || recieptDataLoading2) && <Loader />}
+        {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
         {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
           <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
         )}
@@ -990,7 +1014,7 @@ const CLUEmployeeApplicationDetails = () => {
         <Card>
           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable>
-            <CLUSitePhotographs documents={siteImages.documents} />
+          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
           </StatusTable>
           {geoLocations?.length > 0 && (
             <React.Fragment>
@@ -1069,10 +1093,24 @@ const CLUEmployeeApplicationDetails = () => {
             feeType="PAY1"
           />
         )}
+        {reciept_data1?.Payments?.length > 0 && (
+          <StatusTable>
+            <Row label={t("BPA_STATUS_LABEL")} text={t("BPA_PAID_LABEL")} textStyle={{ color: "green", fontWeight: "bold" }} />
+          </StatusTable>
+        )}
+        {hasPayments && <PaymentHistory payments={combinedPayments} />}
       </Card>
 
       <div className="employeeCard">
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
+            <LinkButton
+              label={t("BPA_DOWNLOAD_FEE_NOTIFICATION")}
+              onClick={() => routeToImage(feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId)}
+            />
+          )}
+        </div>
 
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
@@ -1125,7 +1163,7 @@ const CLUEmployeeApplicationDetails = () => {
         )}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
       </div>
 
       {actions?.length > 0 && (
@@ -1185,7 +1223,7 @@ const CLUEmployeeApplicationDetails = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}
     </div>
   );
 };

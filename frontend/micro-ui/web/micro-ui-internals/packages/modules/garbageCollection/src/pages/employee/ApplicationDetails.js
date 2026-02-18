@@ -258,6 +258,46 @@ const ChallanApplicationDetails = () => {
     }
   };
 
+  console.log("getChallanData", getChallanData);
+
+  const handleDiscontinue = async (data) => {
+    console.log("data", data);
+    // return;
+    setLoader(true);
+    const payload = {
+      GarbageConnection: {
+        ...data,
+        applicationType: "DISCONNECT_GARBAGE_CONNECTION",
+        processInstance: {
+          ...data?.processInstance,
+          action: "INITIATE",
+        },
+      },
+      disconnectRequest: true,
+    };
+    console.log("payload===", payload);
+
+    try {
+      const response = await Digit.GCService.create(payload);
+      console.log("response", response);
+      setLable("Connection Disconnected Successfully");
+      setError(false);
+      setShowToast(true);
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/garbagecollection/inbox");
+        window.location.reload();
+      }, 2000);
+      // updateApplication(response?.GarbageConnection[0]);
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const hideStatuses = ["INITIATED", "CONNECTION_ACTIVATED", "APPROVED"];
+
   return (
     <React.Fragment>
       <div>
@@ -336,7 +376,7 @@ const ChallanApplicationDetails = () => {
         )} */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-        {getChallanData?.applicationStatus != "INITIATED" && actions && (
+        {!hideStatuses.includes(getChallanData?.applicationStatus) && actions && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu localeKeyPrefix={`WF_GC`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
@@ -353,6 +393,17 @@ const ChallanApplicationDetails = () => {
                 const id = getChallanData?.applicationNo;
                 history.push(`/digit-ui/employee/garbagecollection/create-application/${id}`);
               }}
+            />
+          </ActionBar>
+        )}
+
+        {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && (
+          <ActionBar>
+            <SubmitBar
+              style={{ width: "200px" }}
+              label={t("GC_DISCONTINUE_SERVICE")}
+              onSubmit={() => handleDiscontinue(getChallanData)}
+              disabled={loader}
             />
           </ActionBar>
         )}

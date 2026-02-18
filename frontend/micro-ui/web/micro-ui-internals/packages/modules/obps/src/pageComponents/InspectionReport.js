@@ -439,8 +439,7 @@ const InspectionReportForm = (_props) => {
                                     const cleanedQuestion = questionText.replace(/^[\d\s.:]+/, '').trim();
                                     return (
                                     <tr key={ind}>
-                                        <td style={{width:"100px"}}>{ind + 1}</td>
-                                        <td>{cleanedQuestion}</td>
+                                        <td>{(t(ob?.question) || t("CS_NA")).replace(/^(\d+)(?!\.)\s/, "$1. ")}</td>
                                         <td>
                                             <Controller
                                                 control={control}
@@ -449,10 +448,15 @@ const InspectionReportForm = (_props) => {
                                                 render={(props) => (
                                                     <TextArea
                                                         value={props.value}
-                                                        onChange={(e) => props.onChange(e.target.value)}
+                                                        onChange={(e) => {
+                                                            e.target.style.height = "auto";
+                                                            e.target.style.height = e.target.scrollHeight + "px";
+                                                            props.onChange(e.target.value);
+                                                        }}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
                                                         className="checklist-table-textarea"
+                                                        style={{ overflow: "hidden",maxHeight:"1500px" }}
                                                     />
                                                 )}
                                             />
@@ -478,10 +482,15 @@ const InspectionReportForm = (_props) => {
                                             render={(props) => (                                                
                                                 <TextArea 
                                                     value={props.value}
-                                                    onChange={(e) => props.onChange(e.target.value)}
+                                                    onChange={(e) => {
+                                                        e.target.style.height = "auto";
+                                                        e.target.style.height = e.target.scrollHeight + "px";
+                                                        props.onChange(e.target.value);
+                                                    }}
                                                     placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
                                                     onBlur={props.onBlur}
                                                     className="checklist-table-textarea"
+                                                    style={{ overflow: "hidden" }}
                                                 />
                                             )}
                                         />

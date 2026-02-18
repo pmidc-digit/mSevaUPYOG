@@ -2101,7 +2101,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
                 }
 			}
 
-			if (isResidentialOcc &&   !"MIXED".equalsIgnoreCase(usageMajor) && floorNoInt==1) {
+			if (isResidentialOcc &&   !"MIXED".equalsIgnoreCase(usageMajor)) {
 				if (totalUnitAreaSy <= slab1AreaMax  && landArea <= slab1LandMax) {
 					PT_TAX = slab1Tax;
 				} else if (totalUnitAreaSy <= slab2AreaMax && landArea <= slab2LandMax) {

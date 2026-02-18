@@ -14,6 +14,7 @@ import org.egov.wscalculation.repository.builder.WSCalculatorQueryBuilder;
 import org.egov.wscalculation.web.models.MeterConnectionRequests;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMapper;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMappers;
+import org.egov.wscalculation.repository.rowmapper.BulkMeterReadingRowMapper;
 import org.egov.wscalculation.repository.rowmapper.DemandSchedulerRowMapper;
 import org.egov.wscalculation.repository.rowmapper.Demandcancelwrapper;
 import org.egov.wscalculation.repository.rowmapper.MeterReadingCurrentReadingRowMapper;
@@ -55,6 +56,9 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 
 	@Autowired
 	private MeterReadingRowMapper meterReadingRowMapper;
+	
+	@Autowired
+	private BulkMeterReadingRowMapper bulkMeterReadingRowMapper;
 
 	@Autowired
 	private MeterReadingCurrentReadingRowMapper currentMeterReadingRowMapper;
@@ -513,6 +517,22 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	        log.error("Error executing query", e);
 	        throw e; 
 	    }
+	}
+	
+	/**
+	 * 
+	 * @param criteria would be meter reading criteria
+	 * @return List of meter readings based on criteria
+	 */
+	@Override
+	public List<MeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria) {
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getSearchQueryString(criteria, preparedStatement);
+		if (query == null)
+			return Collections.emptyList();
+		log.debug("Query: " + query);
+		log.debug("Prepared Statement" + preparedStatement.toString());
+		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
 	}
 
 

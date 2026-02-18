@@ -490,7 +490,7 @@ const InspectionReportForm = (_props) => {
                             <TextArea
                               value={props.value}
                               onChange={(e) => props.onChange(e.target.value)}
-                              placeholder={t("BPA_ENTER_REMARKS")}
+                            //   placeholder={t("BPA_ENTER_REMARKS")}
                               onBlur={props.onBlur}
                               disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
                             />

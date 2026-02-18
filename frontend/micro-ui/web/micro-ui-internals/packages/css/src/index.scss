@@ -1770,6 +1770,99 @@ input[type="date"] {
   margin-right: 4px;
 }
 
+/* Fee History Desktop View - NOC/CLU */
+.custom-fix-fee-history-wrapper {
+  margin-top: 16px;
+}
+
+.custom-fix-fee-history-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.custom-fix-fee-history-toggle-text {
+  font-weight: bold;
+  font-size: 16px;
+  flex: 1;
+}
+
+.custom-fix-fee-history-toggle-icon {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.custom-fix-fee-history-table-container {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.custom-fix-fee-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.custom-fix-fee-history-table-header {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+  background-color: #1f3a9f;
+  color: #fff;
+  min-width: 140px;
+}
+
+.custom-fix-fee-history-table-header-fee {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+  background-color: #1f3a9f;
+  color: #fff;
+  min-width: 150px;
+}
+
+.custom-fix-fee-history-table-cell-label {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+  background-color: #f9f9f9;
+}
+
+.custom-fix-fee-history-table-cell-value {
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.custom-fix-fee-history-table-cell-separator {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+  background-color: #f9f9f9;
+  border-bottom: 3px solid #999999;
+}
+
+.custom-fix-fee-history-table-cell-separator-value {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-bottom: 3px solid #999999;
+}
+
+.custom-fix-fee-history-table-cell-separator-last {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-weight: bold;
+  background-color: #f9f9f9;
+  border-bottom: none;
+}
+
+.custom-fix-fee-history-table-cell-separator-value-last {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-bottom: none;
+}
+
 
 .custom-fee-table-input {
   width: 100%;

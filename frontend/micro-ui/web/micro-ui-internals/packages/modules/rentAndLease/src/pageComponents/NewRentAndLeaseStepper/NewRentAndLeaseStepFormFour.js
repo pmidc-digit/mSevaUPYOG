@@ -146,6 +146,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               propertyType: updatedPropertyDetails?.propertySpecific?.code || originalAdditionalDetails?.propertyType,
               locationType: updatedPropertyDetails?.locationType?.code || originalAdditionalDetails?.locationType,
               applicationType: applicationType,
+              securityDeposit: null,
             }
           : null;
 
@@ -167,6 +168,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         OwnerInfo: mergedOwnerInfo,
         ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
+        ...(applicationType === "Legacy" && { securityDeposit: null }),
         Document: updatedDocuments.map((doc) => {
           const originalDoc =
             (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(

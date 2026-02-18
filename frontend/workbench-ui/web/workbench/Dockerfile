@@ -2,7 +2,7 @@
 FROM node:14.1.0-alpine AS build
 #FROM ghcr.io/egovernments/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
-RUN RUN apk update && apk add --no-cache git
+RUN  apk update && apk add --no-cache git
 RUN apk add --no-cache git>2.30.0
 ARG WORK_DIR
 WORKDIR /app

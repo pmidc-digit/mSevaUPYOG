@@ -1,3 +1,5 @@
+
+
 import React, { use, useEffect, useState, useMemo } from "react";
 import {
   CardLabel,
@@ -59,40 +61,104 @@ const LayoutDocumentsRequired = ({
   console.log("geocoordinates", geocoordinates)
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  const applicationNo = currentStepData?.apiData?.Layout?.[0]?.applicationNo || ""
+  const applicationNo = currentStepData?.apiData?.Layout?.applicationNo || ""
   const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false
   
-  // Get CLU approval status from siteDetails
-  const isCluApproved = currentStepData?.siteDetails?.cluIsApproved?.code === "YES" || false
+  // Get CLU approval status from siteDetails - Check multiple possible locations
+  const cluApprovedValue = currentStepData?.siteDetails?.cluIsApproved?.code || currentStepData?.siteDetails?.cluIsApproved
+  const isCluApproved = cluApprovedValue === "YES" || cluApprovedValue === true || false
+  
+  const isRestrictedArea = currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES" || false
+  const isUnderMasterPlan = currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES" || false
 
-  console.log("CLU Approved Status:", isCluApproved, currentStepData?.siteDetails?.cluIsApproved)
+  // Get road type to check if National Highway
+  const roadType = currentStepData?.siteDetails?.roadType?.name || currentStepData?.siteDetails?.roadType || ""
+  const isNationalHighway = roadType?.toLowerCase().includes("national") || roadType?.toLowerCase().includes("nh")
 
-  // Filter documents based on building status and CLU approval
+  // Get building category to check if Institution
+  const buildingCategory = currentStepData?.siteDetails?.buildingCategory?.code || currentStepData?.siteDetails?.buildingCategory || ""
+  const isInstitution = buildingCategory?.toLowerCase().includes("institution") || buildingCategory === "INSTITUTION"
+
+  console.log("🔍 CLU Status Check:")
+  console.log("  cluIsApproved value:", currentStepData?.siteDetails?.cluIsApproved)
+  console.log("  Extracted cluApprovedValue:", cluApprovedValue)
+  console.log("  isCluApproved boolean:", isCluApproved)
+  console.log("Restricted Area:", isRestrictedArea, currentStepData?.siteDetails?.specificationRestrictedArea)
+  console.log("Under Master Plan:", isUnderMasterPlan, currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan)
+
+
+  // NOTE: Document requirements are now determined by backend config:
+  // - If cluRequired: true → document mandatory only when CLU = YES
+  // - If required: true → document always mandatory (unless overridden by condition)
+  // - Hardcoded arrays below kept for reference only (using backend config instead)
+
+  const cluYesMandatoryDocs = [
+    "OWNER.REVENUEPLANAKSHSHAJRA",           // Revenue Plan / Aksh Shajra
+    "OWNER.SITEMARKEDONLATHAPARTPLAN",      // Site marked on Latha Part Plan
+    "OWNER.SITEMARKEDONMASTERPLAN",         // Site marked on Master Plan
+    "OWNER.SITEMARKEDONSATELLITEPLAN",      // Site marked on Satellite Plan
+    "OWNER.MUSTARKALANDAFFIDAVIT",          // Mustarka Land (Kabja) Affidavit
+  ]
+
+  const cluNoMandatoryDocs = [
+    "OWNER.LAYOUTDRAWINGWITHSUPERIMPOSEDKHASRNO",  // Layout Drawing with Superimposed Khasra no.
+    "OWNER.CIRCLEREVENUEOFFICERREPORT",             // Circle Revenue Officer report
+    "OWNER.NONENCUMBRANCECERTIFICATEFROMTEHSILDAR", // NON-Encumbrance certificate from Tehsildar
+    "OWNER.REVENUEPLAN",                            // Revenue Plan
+    "OWNER.SITEMARKEDONPLAN",                       // Site marked on Google Plan in Case of non-scheme Areas and Part Layout in case of Scheme Areas
+  ]
+
+  // Filter documents based on building status, CLU approval, road type, and category
   const filteredDocuments = useMemo(() => {
+    console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
     let docs = data?.LAYOUT?.LayoutDocuments || []
     
-    // Filter out building drawing if vacant
-    if (isVacant) {
-      docs = docs.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING")
-    }
+    console.log("=== FILTER DEBUG ===")
+    console.log("Initial docs count:", docs.length)
+    console.log("isCluApproved:", isCluApproved)
+    console.log("isNationalHighway:", isNationalHighway)
+    console.log("isInstitution:", isInstitution)
     
-    // Filter CLU-related documents based on CLU approval status
-    // Documents with cluRequired: true will only show if CLU is approved
-    // Documents with cluRequired: false or undefined will always show
-    docs = docs.filter((doc) => {
-      // If document has cluRequired flag
-      if (doc.cluRequired === true) {
-        return isCluApproved // Only show if CLU is approved
-      }
-      // If document has cluNotRequired flag (show only when CLU is NOT approved)
-      if (doc.cluNotRequired === true) {
-        return !isCluApproved // Only show if CLU is NOT approved
-      }
-      return true // Show all other documents
-    })
+    // Filter and process documents
+    const processedDocs = docs
+      .map((doc) => {
+        // Set default required status based on backend config
+        let isRequired = doc.required || false
+        
+        // Override required status based on conditions
+        
+        // Site photographs are ALWAYS mandatory (regardless of CLU)
+        if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
+          isRequired = true
+        }
+        // National Highway NOC is mandatory only when it's a National Highway
+        else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
+          isRequired = isNationalHighway
+        }
+        // When CLU = YES: Make specific CLU documents mandatory
+        else if (isCluApproved && doc.cluRequired) {
+          isRequired = true
+        }
+        // When CLU = NO: CLU-required docs become NOT mandatory, but regular required docs stay mandatory
+        else if (!isCluApproved && doc.cluRequired) {
+          isRequired = false
+        }
+        
+        // Filter out building drawing if vacant
+        if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+          return null
+        }
+        
+        return { ...doc, required: isRequired }
+      })
+      .filter(doc => doc !== null)
     
-    return docs
-  }, [data?.LAYOUT?.LayoutDocuments, isVacant, isCluApproved])
+    console.log("Final docs count:", processedDocs.length)
+    console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
+    console.log("=== END DEBUG ===")
+    
+    return processedDocs
+  }, [isVacant, isCluApproved, isNationalHighway, isInstitution, data?.LAYOUT?.LayoutDocuments?.length])
 
   const handleSubmit = () => {
     const document = formData.documents
@@ -398,7 +464,7 @@ function LayoutSelectDocument({
       {getLoading && <Loader />}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
-            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"} 
+            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>} 
           </CardLabel>
 
       <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
@@ -412,7 +478,7 @@ function LayoutSelectDocument({
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            accept=".jpg, .jpeg, .png"
+            accept=".pdf, .jpeg, .jpg, .png"
           />
         ):(
           <CustomUploadFile
@@ -438,3 +504,4 @@ function LayoutSelectDocument({
 }
 
 export default LayoutDocumentsRequired
+

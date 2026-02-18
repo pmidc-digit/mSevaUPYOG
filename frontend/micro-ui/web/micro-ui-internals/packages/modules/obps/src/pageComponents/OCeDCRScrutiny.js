@@ -11,7 +11,8 @@ import {
     SubmitBar,
     StatusTable,
     Row,
-    PDFSvg
+    PDFSvg,
+    Loader
 } from "@mseva/digit-ui-react-components";
 import { getPattern, convertDateToEpoch, convertEpochToDate } from "../utils";
 
@@ -22,6 +23,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
     const [permitDate, setPermitDate] = useState(formData?.ScrutinyDetails?.ocPermitdate);
     const [permitEdcrData, setPermitEdcrData] = useState(formData?.ScrutinyDetails);
     const [showToast, setShowToast] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     let validation = {};
 
@@ -48,6 +50,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
             permitDate: convertDateToEpoch(permitDate),
             approvalNo: permitNumber
         };
+        setLoading(true);
         Digit.OBPSService.BPASearch(tenantId, queryObj)
             .then((result, err) => {
                 if (result?.BPA?.length > 0) {
@@ -67,21 +70,27 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                                         response.edcrDetail[0].appliedBy = architectName
                                         setPermitEdcrData(response?.edcrDetail?.[0]);
                                     }
+                                    setLoading(false)
                                 })
                                 .catch((e) => {
+                                    setLoading(false)
                                     setShowToast({ key: "error", error: true, message: e?.response?.data?.Errors[0]?.message || null });
                                 });
                         }).catch((e) => {
+                            setLoading(false)
                             setShowToast({ key: "error", error: true, message: e?.response?.data?.Errors[0]?.message || null });
                         });
                     } else {
+                        setLoading(false)
                         setShowToast({ key: "error", warning: true, message: t("ERR_FILL_EDCR_PERMIT_INCORRECT_DATE") });
                     }
                 } else if (result?.BPA?.length == 0) {
+                    setLoading(false)
                     setShowToast({ key: "error", error: true, message: t("BPA_NO_REC_FOUND_LABEL") });
                 }
             })
             .catch((e) => {
+                setLoading(false)
                 setShowToast({ key: "error", error: true, message: e?.response?.data?.Errors[0]?.message || null });
             });
     };
@@ -122,6 +131,8 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                 <DatePicker
                     date={permitDate}
                     name="permitDate"
+                    min="1900-01-01"
+                    max={new Date().toISOString().split("T")[0]}
                     onChange={setOCPermitDate}
                 />
                 <div onClick={getSearchResults}>
@@ -136,6 +147,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                         onClose={() => { setShowToast(null) }} 
                     />}
             </FormStep>
+            {loading && <Loader />}
             {permitEdcrData?.edcrNumber ?
                 <FormStep
                     t={t}

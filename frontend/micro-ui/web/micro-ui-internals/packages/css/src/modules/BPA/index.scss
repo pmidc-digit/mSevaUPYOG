@@ -1,0 +1,98 @@
+.zero-margin-padding {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.auto-height-box-43 {
+  height: auto;
+  min-height: 40px;
+  max-height: 40px;
+  width: 43%;
+  margin: 5px;
+  padding: 0;
+}
+
+.center-flex-desktop {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  width: 46%;
+}
+
+.center-flex-mobile {
+  display: flex;
+  justify-content: center;
+  width: 80%;
+  margin-bottom: 10px;
+}
+
+.video-preview {
+  width: 100%;
+  border-radius: 8px;
+  background: #000;
+}
+
+/* Layout */
+.upload-container-flex {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+}
+
+/* Upload wrapper */
+.upload-file-min-height {
+  min-height: 50px;
+}
+
+/* Button */
+.upload-file-button {
+  height: auto;
+  min-height: 40px;
+  max-height: 40px;
+  width: 43%;
+  padding: 0;
+}
+
+/* Hide elements */
+.upload-hidden {
+  display: none;
+}
+
+/* Tag container */
+.upload-tag-container {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  width: 46%;
+}
+
+/* View document container */
+.view-doc-container {
+  margin-bottom: 10px;
+}
+
+/* File input */
+.upload-file-input {
+  width: 43%;
+  min-height: 42px;
+  max-height: 42px;
+  top: 5px;
+  left: 5px;
+}
+
+/* Error text */
+.error-text {
+  color: red;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .upload-tag-container {
+    width: 80%;
+  }
+}

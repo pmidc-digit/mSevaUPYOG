@@ -5,6 +5,7 @@ import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFieldsComponents";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileDataCard";
+import DateExtend from "../../../../components/DateExtend";
 // import { useHistory } from "react-router-dom";
 
 //Keep below values from localisation:
@@ -14,6 +15,8 @@ const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   // const history = useHistory()
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [getData, setData] = useState([]);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const userInfo = Digit.UserService.getUser().info;
@@ -111,8 +114,6 @@ const Inbox = ({ parentRoute }) => {
     }
   }, [Surveys]);
   const PropsForInboxLinks = {
-    logoIcon: <DocumentIcon />,
-    headerText: "CS_COMMON_SURVEYS",
     links: [
       {
         // text: t("CS_COMMON_NEW_SURVEY"),
@@ -215,6 +216,8 @@ const Inbox = ({ parentRoute }) => {
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       setShowToast,
       onSortingByData,
+      setShowTermsPopup,
+      setData,
     },
   });
 
@@ -282,6 +285,20 @@ const Inbox = ({ parentRoute }) => {
           warning={showToast.warning}
           isWarningButtons={showToast.isWarningButtons}
           style={{ padding: "16px" }}
+        />
+      )}
+      <h1 onClick={() => setShowTermsPopup(true)}>Show modal</h1>
+      {showTermsPopup && (
+        <DateExtend
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getData={getData}
+          // getModalData={getModalData}
+          // getUser={getUser}
+          // getShowOtp={getShowOtp}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
         />
       )}
     </Fragment>

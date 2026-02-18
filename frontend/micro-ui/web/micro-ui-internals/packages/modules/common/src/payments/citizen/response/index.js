@@ -1362,7 +1362,8 @@ const WrapPaymentComponent = (props) => {
           business_service === "adv-services" ||
           business_service === "chb-services" ||
           business_service === "NDC" ||
-          business_service === "Challan_Generation"
+          business_service === "Challan_Generation"||
+          business_service === "rl-services"
         ) && (
           <div
             style={{

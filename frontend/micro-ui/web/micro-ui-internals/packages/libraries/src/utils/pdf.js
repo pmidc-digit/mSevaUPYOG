@@ -371,6 +371,7 @@ const jsPdfGeneratorNDC = async ({
   applicationNumber,
   approvalDate,
   approver,
+  designation,
   ulbType,
   t = (text) => text,
   imageURL,
@@ -397,7 +398,6 @@ const jsPdfGeneratorNDC = async ({
       : email?.length <= 60
       ? -100
       : -60;
-
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
   qrCodeDataUrl = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
@@ -429,19 +429,20 @@ const jsPdfGeneratorNDC = async ({
       },
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
-        text: [
+        stack: [
           { text: "Approved By  ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
-          { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
+          { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
+          { text: designation, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
         ],
-        alignment: "left",
-        margin: [9, 10, 20, 0],
+        alignment: "right",
+        margin: [9, 5, 20, 5],
       },
       {
         stack: [
           { text: "Issuing Authority", font: "Hind", fontSize: 11, bold: true, margin: [0, -10, 0, 0] },
           {
-            text: [
-              { text: ulbType + " ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0],bold: true },
+            stack: [
+              { text: ulbType, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0],bold: true },
               { text: ulb, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true }
 
             ]
@@ -479,6 +480,7 @@ const jsPdfGeneratorNDC = async ({
   const generatedPDF = pdfMake.createPdf(dd);
   downloadPDFFileUsingBase64(generatedPDF, "ndc_certificate.pdf");
 };
+
 
 const jsPdfGeneratorBPAREG = async ({
   breakPageLimit = null,

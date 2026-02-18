@@ -40,7 +40,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const inboxInitialState = {
     searchParams: {
       uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
-      services: ["RENT_N_LEASE_NEW"],
+      services: ["RENT_N_LEASE_NEW", "RENT_AND_LEASE_LG"],
       applicationStatus: [],
       locality: [],
     },
@@ -52,7 +52,9 @@ const EmployeeApp = ({ path, url, userType }) => {
   return (
     <React.Fragment>
       <div className="ground-container">
-        <div style={{ marginLeft: "10px" }}><RALBreadCrumbs location={location} t={t} /></div>
+        <div style={{ marginLeft: "10px" }}>
+          <RALBreadCrumbs location={location} t={t} />
+        </div>
         <PrivateRoute exact path={`${path}/`} component={() => <RentAndLeaseModule matchPath={path} userType={userType} />} />
         <PrivateRoute
           path={`${path}/inbox`}
@@ -60,7 +62,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             <Inbox
               useNewInboxAPI={true}
               parentRoute={path}
-              businessService="RENT_N_LEASE_NEW"
+              businessService="RENT_N_LEASE_NEW,RENT_AND_LEASE_LG"
               moduleCode="RAL"
               filterComponent="RAL_INBOX_FILTER"
               initialStates={inboxInitialState}

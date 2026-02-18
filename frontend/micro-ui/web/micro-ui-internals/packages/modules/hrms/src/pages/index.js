@@ -125,7 +125,6 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const crumbs = getBreadcrumbs();
 
-  //console.log("Path in hrms: ", path);
   return (
     <Switch>
       <React.Fragment>

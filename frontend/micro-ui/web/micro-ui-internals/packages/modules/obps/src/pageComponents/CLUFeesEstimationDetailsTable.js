@@ -5,7 +5,7 @@ import _ from "lodash";
 import { CLUFeeTable } from "./CLUFeeTable";
 import { buildFeeHistoryByTax } from "../utils";
 
-const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable }) => {
+const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable, applicationStatus }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
@@ -239,16 +239,22 @@ const handleAdjustedAmountChange = (index, value) => {
 
   if (cluCalculatorLoading) return <Loader />;
 
+  //console.log("applicationStatus ===========>", applicationStatus);
+
+  if (applicationStatus === "FIELDINSPECTION_INPROGRESS") {
+      return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
+  }
+
   return (
-    <div>
+    <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       {cluCalculatorLoading ? (
         <Loader />
       ) : (
-        <div>
+        <div style={{ width: "100%" }}>
           <CLUFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
             feeData={feeAdjustments}
-            disable={disable}
+            readOnly={disable}
             isEmployee={!disable}
             handleAdjustedAmountChange={handleAdjustedAmountChange}
             handleRemarkChange={handleRemarkChange}

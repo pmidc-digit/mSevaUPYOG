@@ -23,6 +23,7 @@ export const useLayoutCitizenSearchApplication = (params, tenantId, config = {},
 
   const result = useQuery(["LAYOUT_APPLICATIONS_LIST", params], useLayoutSearch(params, tenantId, config), {
     staleTime: Number.POSITIVE_INFINITY,
+    ...config,
     select: (data) => {
       const applications = data?.data?.Layout || []
       const count = data?.data?.count || 0

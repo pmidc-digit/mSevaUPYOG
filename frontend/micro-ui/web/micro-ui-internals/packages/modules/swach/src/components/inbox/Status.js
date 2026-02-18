@@ -18,6 +18,7 @@ const Status = ({ complaints, onAssignmentChange, swachfilters, type }) => {
   const complaintsWithCount = [
     { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" },
     { name: "Pending At LME", code: "PENDINGATLME" },
+    { name: "Pending For Re-Assignment", code: "PENDINGFORREASSIGNMENT" },
     { name: "Resolved", code: "RESOLVED" },
   ];
   let hasFilters = swachfilters?.applicationStatus?.length;

@@ -297,7 +297,8 @@ const jsPdfGeneratorFormattedNOC = async ({
   t = (text) => text,
   imageURL,
   ulbType,
-  ulbName
+  ulbName,
+  openInNewTab = false 
 }) => {
   console.log("ulbType",ulbType)
   const baseUrl = window.location.origin;
@@ -354,7 +355,14 @@ background: [
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
-  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+   if (openInNewTab) {
+    generatedPDF.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    });
+  } else {
+    downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+  }
 };
 
 
@@ -371,6 +379,7 @@ const jsPdfGeneratorNDC = async ({
   applicationNumber,
   approvalDate,
   approver,
+  designation,
   ulbType,
   t = (text) => text,
   imageURL,
@@ -397,7 +406,6 @@ const jsPdfGeneratorNDC = async ({
       : email?.length <= 60
       ? -100
       : -60;
-
   const baseUrl = window.location.origin;
   let qrCodeDataUrl = "";
   qrCodeDataUrl = await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/ndc/search/application-overview/${applicationNumber}`);
@@ -429,19 +437,20 @@ const jsPdfGeneratorNDC = async ({
       },
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
-        text: [
+        stack: [
           { text: "Approved By  ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
-          { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
+          { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
+          { text: designation, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
         ],
-        alignment: "left",
-        margin: [9, 10, 20, 0],
+        alignment: "right",
+        margin: [9, 5, 20, 5],
       },
       {
         stack: [
           { text: "Issuing Authority", font: "Hind", fontSize: 11, bold: true, margin: [0, -10, 0, 0] },
           {
-            text: [
-              { text: ulbType + " ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0],bold: true },
+            stack: [
+              { text: ulbType, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0],bold: true },
               { text: ulb, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true }
 
             ]
@@ -915,13 +924,14 @@ const generateTimelinePDF = async (data) => {
                           text: row.comment && row.comment !== '-'
                             ? [
                                 { text: 'Note: ', bold: true },
-                                { text: row.comment }
+                                { text: row.comment.split('').join('\u200B') }
                               ]
                             : { text: 'No Comments', color: '#777' },
                           fontSize: 11,
                           color: row.comment && row.comment !== '-' ? '#222' : '#777',
                           margin: [0, 5, 0, 0],
-                          lineHeight: 1.5
+                          lineHeight: 1.5,
+                          width: '*'
                         },
 
                         ...(row.hasDocuments ? [

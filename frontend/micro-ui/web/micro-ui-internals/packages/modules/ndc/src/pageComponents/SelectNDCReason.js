@@ -19,16 +19,11 @@ import isUndefined from "lodash/isUndefined";
 
 function SelectNDCReason({ config, onSelect, userType, formData, setError, formState, clearErrors }) {
   const [ndcReason, setNDCReason] = useState(formData?.NDCReason || {});
-  const {
-    control,
-    formState: localFormState,
-    watch,
-    setError: setLocalError,
-    clearErrors: clearLocalErrors,
-    setValue,
-    trigger,
-    getValues,
-  } = useForm();
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
+    {
+      defaultValues: formData?.NDCReason || {},
+    }
+  );
   const { t } = useTranslation();
   const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   // const firstTimeRef = useRef(true);
@@ -57,9 +52,21 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
       console.log("check apiDataCheck", apiDataCheck);
       // find the matching option from MDMS
       const matchedOption = ndcReasonOptions.find((opt) => opt?.code === apiDataCheck?.[0]?.reason);
-      if (matchedOption) {
-        setNDCReason(matchedOption);
-        setValue("NDCReason", matchedOption); // update react-hook-form value
+
+      // Only update from API if formData doesn't already have a value (prevents overwriting on back navigation)
+      if (matchedOption && (_.isEmpty(formData?.NDCReason) || !formData?.NDCReason?.code)) {
+        let updatedOption = { ...matchedOption };
+
+        // Handle "OTHERS" case with custom reason
+        if (matchedOption.code === "OTHERS") {
+          const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
+          if (ptDetail?.additionalDetails?.reason) {
+            updatedOption.reason = ptDetail.additionalDetails.reason;
+          }
+        }
+
+        setNDCReason(updatedOption);
+        setValue("NDCReason", updatedOption); // update react-hook-form value
       }
     }
   }, [apiDataCheck, ndcReasonOptions]);
@@ -102,8 +109,10 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
             <Controller
               control={control}
               name={"reason"}
+              defaultValue={ndcReason?.reason || ""}
               render={(props) => (
                 <TextInput
+                  value={props.value}
                   onChange={(e) => {
                     console.log("config.key", config.key);
                     console.log("formData", formData);

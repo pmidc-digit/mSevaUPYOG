@@ -23,7 +23,7 @@ const OCBuildingPermit = () => {
   sessionStorage.removeItem("BPA_SUBMIT_APP");
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT", state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT", state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber, ocPermitNumber: state?.permitNumber } } } : {});
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);

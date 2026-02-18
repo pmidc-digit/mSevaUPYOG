@@ -42,6 +42,7 @@ import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
+import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -105,7 +106,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [approverComment , setApproverComment] = useState(null);
-
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
@@ -113,6 +115,7 @@ const NOCEmployeeApplicationOverview = () => {
   const { isLoading, data, refetch  } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
+  console.log('applicationDetails', applicationDetails)
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const [checklistRemarks, setChecklistRemarks] = useState({});
@@ -125,7 +128,9 @@ const NOCEmployeeApplicationOverview = () => {
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
+  const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
 
+  
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
@@ -150,16 +155,18 @@ const NOCEmployeeApplicationOverview = () => {
 
  const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
+ console.log('searchChecklistData', searchChecklistData)
 
   useEffect(() => {
       if (eSignError) {
         setShowToast({
-          key: "error",
+          key: "true",
           error: true,
-          label: eSignError.message || "eSign process failed. Please try again.",
+          message: "eSign process failed. Please try again.",
         });
       }
     }, [eSignError]);
+
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -179,27 +186,27 @@ const NOCEmployeeApplicationOverview = () => {
     longitude: value?.longitude,
   })), [siteImages])
 
-  const documentsColumnsSiteImage = [
-    {
-      Header: t("BPA_SITES"),
-      accessor: "title",
-      Cell: ({ value }) => t(value) || t("CS_NA"),
-    },
-    {
-      Header: t(" "),
-      accessor: "fileStoreId",
-      Cell: ({ value }) => {
-        return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
-            label={t("View")}
-            onClick={() => routeToImage(value)}
-          />
-        ) : (
-          t("CS_NA")
-        )
-      },
-    }
-  ];
+  // const documentsColumnsSiteImage = [
+  //   {
+  //     Header: t("BPA_SITES"),
+  //     accessor: "title",
+  //     Cell: ({ value }) => t(value) || t("CS_NA"),
+  //   },
+  //   {
+  //     Header: t(" "),
+  //     accessor: "fileStoreId",
+  //     Cell: ({ value }) => {
+  //       return value ? (
+  //         <LinkButton style={{ float: "right", display: "inline" }}
+  //           label={t("View")}
+  //           onClick={() => routeToImage(value)}
+  //         />
+  //       ) : (
+  //         t("CS_NA")
+  //       )
+  //     },
+  //   }
+  // ];
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -240,61 +247,181 @@ const NOCEmployeeApplicationOverview = () => {
         }
       })();
   }, [tenantId, businessServiceCode, isLoading]);
-  useEffect(()=>{
-      if(workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
-        const commentsobj = workflowDetails?.data?.timeline
-          ?.filter((item) => item?.performedAction === "APPROVE")
-          ?.flatMap((item) => item?.wfComment || []);
-        const approvercomments = commentsobj?.[0];
-        const finalComment = commentsobj ? `The above approval is subjected to the following conditions: ${approvercomments}` : "";
-        setApproverComment(finalComment);
-      }
-    },[workflowDetails])
+  // useEffect(() => {
+  //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+  //     const commentsobj = workflowDetails?.data?.timeline
+  //       ?.filter((item) => item?.performedAction === "APPROVE")
+  //       ?.flatMap((item) => item?.wfComment || []);
+      
+  //     const approvercomments = commentsobj?.[0];
+  
+  //     // Extract only the part after [#?..**]
+  //     let conditionText = "";
+  //     if (approvercomments?.includes("[#?..**]")) {
+  //       conditionText = approvercomments.split("[#?..**]")[1] || "";
+  //     }
+  
+  //     const finalComment = conditionText
+  //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+  //       : "";
+  
+  //     setApproverComment(finalComment);
+  //   }
+  // }, [workflowDetails]);
+  
+
+  const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
+    }
+
+    const commentsobj = workflowDetails.data.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+
+    const approvercomments = commentsobj?.[0];
+
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }
+
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
+      : "";
+  }, [workflowDetails]);
+
 
   
-  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
-    const application = applicationDetails?.Noc?.[0];
+  // async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
+  //   const application = applicationDetails?.Noc?.[0];
+  //   try {
+  //     setLoader(true);
+  //     if (!application) {
+  //       throw new Error("Noc Application data is missing");
+  //     }
+  //     const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData,approverComment);
+  //     const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
+  //     const fileStoreId = response?.filestoreIds?.[0]; 
+  //     if (!fileStoreId) throw new Error("Failed to generate filestoreId");
+  //      return fileStoreId;    
+  //   }catch (error) {
+  //     console.error("Sanction Letter download error:", error);
+  //   } finally {
+  //     setLoader(false);
+  //   }
+  // }
+
+  async function openSanctionLetterPopup({ tenantId, EmpData }) {
+  try {
+    setLoader(true);
+
+    // Get filestoreId from sanction letter function
+    const fileStoreId = await getSanctionLetterReceipt({ tenantId, payments : reciept_data?.Payments[0], EmpData });
+
+    if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
+
+    // Use printReciept to fetch the actual file URL
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+
+    // Open in new tab/popup
+    window.open(fileStore[fileStoreId], "_blank");
+
+  } catch (error) {
+    console.error("Sanction Letter popup error:", error);
+  } finally {
+    setLoader(false);
+  }
+}
+
+const handleDownloadPdf = async () => {
     try {
       setLoader(true);
-      if (!application) {
-        throw new Error("Noc Application data is missing");
+      const Property = applicationDetails?.Noc?.[0];
+      //console.log("tenants", tenants);
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , false, searchChecklistData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoader(false);
+    }
+  };
+
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+    try {
+      setLoader(true);
+
+      let application = applicationDetails?.Noc?.[0];
+      let fileStoreId = application?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+
+      if (!fileStoreId) {
+        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
+
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
+
+        fileStoreId = response?.filestoreIds[0];
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData,approverComment);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
-      const fileStoreId = response?.filestoreIds?.[0]; 
-      if (!fileStoreId) throw new Error("Failed to generate filestoreId");
-       return fileStoreId;    
-    }catch (error) {
+
+      return fileStoreId;
+    } catch (error) {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoader(false);
     }
   }
+
   const printCertificateWithESign = async () => {
     try {
-      console.log("🎯 Starting certificate eSign process with custom hook...");
+      console.log("🎯 Starting certificate eSign process...");
 
-      // Reuse existing certificate data or generate if not available
-      const fileStoreId = await getRecieptSearch({
+      const fileStoreId = await getSanctionLetterReceipt({
         tenantId: reciept_data?.Payments[0]?.tenantId,
         payments: reciept_data?.Payments[0],
-        pdfkey: "noc-sanctionletter",
         EmpData,
       });
 
-      // Use custom hook for eSign
+      // Update application with sanctionLetterFilestoreId here
+      const application = applicationDetails?.Noc?.[0];
+      // const updatedApplication = {
+      //   ...application,
+      //   workflow: { action: "ESIGN" },
+      //   nocDetails: {
+      //     ...application?.nocDetails,
+      //     additionalDetails: {
+      //       ...application?.nocDetails?.additionalDetails,
+      //       sanctionLetterFilestoreId: fileStoreId,
+      //     },
+      //   },
+      // };
+
+      // await mutation.mutateAsync({ Noc: updatedApplication });
+      // refetch();
+
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
+
+      // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId },
+        { fileStoreId, tenantId, callbackUrl },
         {
-          onSuccess: () => {
-            console.log("✅ eSign process initiated successfully");
-          },
+          onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
-            console.error("❌ Certificate eSign failed:", error);
+            console.error("❌ eSign failed:", error);
             setShowToast({
-              key: "error",
+              key: "true",
               error: true,
-              label: error.message || "Failed to initiate digital signing process",
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
             });
           },
         }
@@ -302,26 +429,31 @@ const NOCEmployeeApplicationOverview = () => {
     } catch (error) {
       console.error("❌ Certificate preparation failed:", error);
       setShowToast({
-        key: "error",
+        key: "true",
         error: true,
-        label: error.message || "Failed to prepare certificate for eSign",
+        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
       });
     }
   };
+
 
   
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-        onClick: printCertificateWithESign,
-        disabled: eSignLoading,
-      });
-    }
-  }
+  dowloadOptions.push({
+      label: t("Application Form"),
+      onClick: handleDownloadPdf,
+    });
+  // if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
+  //   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  //     dowloadOptions.push({
+  //       label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+  //       onClick: printCertificateWithESign,
+  //       disabled: eSignLoading,
+  //     });
+  //   }
+  // }
  useEffect(() => {
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
   const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -362,6 +494,10 @@ const NOCEmployeeApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
 
+  const [documentVerifier, setDocumentVerifier] = useState("");
+const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
+
+
   const closeMenu = () => {
     setDisplayMenu(false);
   };
@@ -379,6 +515,22 @@ const NOCEmployeeApplicationOverview = () => {
 
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
+
+
+  console.log('user', user)
+
+  useEffect(() => {
+  const status = applicationDetails?.Noc?.[0]?.applicationStatus;
+  const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
+  console.log('additionalDetails', additionalDetails)
+  if (status === "DOCUMENTVERIFY") { 
+     setDocumentVerifier( 
+      additionalDetails?.documentVerifier || user?.info?.name || "" ); 
+    } else if (status === "INSPECTION_REPORT_PENDING") { 
+       setInspectionReportVerifier( additionalDetails?.InspectionReportVerifier || user?.info?.name || "" ); 
+      }
+}, [applicationDetails?.Noc?.[0]?.applicationStatus, user?.info?.name]);
+
 
   const hasRole = user?.info?.roles?.some(
   role => role?.code === "OBPAS_NOC_JE" || role?.code === "OBPAS_NOC_BI"
@@ -413,7 +565,7 @@ const NOCEmployeeApplicationOverview = () => {
 
   console.log("actions here", actions);
 
-  useEffect(() => {
+  useEffect(() => {    
     const nocObject = applicationDetails?.Noc?.[0];
 
     if (nocObject) {
@@ -449,9 +601,11 @@ const NOCEmployeeApplicationOverview = () => {
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      console.log('nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending', nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending)
       setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
+
 
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId)
@@ -521,6 +675,9 @@ const NOCEmployeeApplicationOverview = () => {
       setTimeout(() => {
         setShowToast(null);
       }, 3000);
+    } else if (action?.action == "ESIGN") {
+      // Automatically trigger the eSign process for the certificate
+      printCertificateWithESign();
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -547,11 +704,13 @@ const NOCEmployeeApplicationOverview = () => {
     console.log("payloadData", payloadData);
     const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
-
+    
     // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
     // Check if remarks are mandatory when status is DOCUMENTVERIFY
     if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
-      const allRemarksFilled = Object.values(checklistRemarks).every((remark) => remark && remark.trim() !== "");
+      const allRemarksFilled = remainingDocs.every(
+        (doc) => checklistRemarks[doc.documentUid] && typeof checklistRemarks[doc.documentUid] === "string" && checklistRemarks[doc.documentUid].trim() !== ""
+      );
       if (!allRemarksFilled) {
         setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
         return;
@@ -576,10 +735,22 @@ const NOCEmployeeApplicationOverview = () => {
           return;
         }
       }
+      const additionalRemarks = fieldInspectionPending?.[0]?.["Remarks_19"];
+
+      if (additionalRemarks && additionalRemarks.trim().split(/\s+/).filter(Boolean).length < 20) {
+        closeModal();
+        setShowToast({
+          key: "true",
+          error: true,
+          message: "Additional remarks must be at least 20 words long",
+        });
+        return;
+      }
+
     }
 
     if (!isFeeDisabled) {
-      const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.adjustedAmount ?? 0) > 0);
+      const hasNonZeroFee = (feeAdjustments || []).filter((row) => row.taxHeadCode !== "NOC_COMPOUNDING_FEES").every((row) => (row.adjustedAmount ?? 0) > 0);
 
       const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || []).find((c) => c.isLatest);
       const allRemarksFilled = (feeAdjustments || []).every((row) => {
@@ -588,13 +759,20 @@ const NOCEmployeeApplicationOverview = () => {
         // Find the original estimate for this taxHeadCode
         const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
 
-        console.log("originalRemark", originalRemark);
+        const adjustedAmount = row.adjustedAmount ?? 0;
 
-        const isremarksSame = row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
-        console.log("isremarksSame", isremarksSame);
-        // Require remark to be non-empty AND different from the original
-        return row.remark && row.remark.trim() !== "" && row.remark.trim() !== originalRemark.trim();
+        if (row?.taxHeadCode === "NOC_COMPOUNDING_FEES") {
+          // Special case: only require remark if changed to non-zero
+          if (adjustedAmount > 0) {
+            return row?.remark && row?.remark.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+          }
+          return true; // no remark needed if set to 0/null
+        } else {
+          // Default logic for all other fees
+          return row?.remark && row?.remark?.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+        }
       });
+
       if (!hasNonZeroFee) {
         setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
         return;
@@ -635,6 +813,8 @@ const NOCEmployeeApplicationOverview = () => {
           calculations: [...oldCalculations, newCalculation],
           siteImages: siteImages?.documents || [],
           fieldinspection_pending: fieldInspectionPending,
+          documentVerifier: documentVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier,
+          InspectionReportVerifier : InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
         },
       },
     };
@@ -645,7 +825,9 @@ const NOCEmployeeApplicationOverview = () => {
 
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData?.assignee,
+       assignes: applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+    ? [Digit.UserService.getUser()?.info?.uuid]   
+    : filtData?.assignee,                        
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
     };
@@ -710,7 +892,7 @@ const NOCEmployeeApplicationOverview = () => {
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
-            history.push("/digit-ui/employee/noc/inbox");
+            window.location.href = "/digit-ui/employee/noc/inbox";
           }, 3000);
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
@@ -727,8 +909,8 @@ const NOCEmployeeApplicationOverview = () => {
           setFeeAdjustments((prev) => (prev || []).map((p) => ({ ...p, edited: false })));
           setSelectedAction(null);
           refetchChecklist();
-          setTimeout(() => {
-            history.push("/digit-ui/employee/noc/inbox");
+           setTimeout(() => {
+            window.location.href = "/digit-ui/employee/noc/inbox";
           }, 3000);
         }
       } else {
@@ -788,9 +970,16 @@ const NOCEmployeeApplicationOverview = () => {
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
   console.log("displayData here", displayData);
+  const order = {
+    "OWNER.SITEPHOTOGRAPHONE": 1,
+    "OWNER.SITEPHOTOGRAPHTWO": 2,
+  };
+
   const sitePhotos = displayData?.Documents?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+  )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
+
+  console.log('sitePhotos', sitePhotos)
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
@@ -806,6 +995,17 @@ const NOCEmployeeApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
+        {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Noc?.[0]?.applicationStatus) && (
+          <SubmitBar
+            label={t("OPEN_SANCTION_LETTER")}
+            onSubmit={() =>
+              openSanctionLetterPopup({
+                tenantId,
+                EmpData,
+              })
+            }
+          />
+        )}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
@@ -857,10 +1057,6 @@ const NOCEmployeeApplicationOverview = () => {
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
-            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
           </StatusTable>
         </Card>
       )}
@@ -891,6 +1087,9 @@ const NOCEmployeeApplicationOverview = () => {
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -918,8 +1117,6 @@ const NOCEmployeeApplicationOverview = () => {
                 <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"} />
               )}
 
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
@@ -969,7 +1166,6 @@ const NOCEmployeeApplicationOverview = () => {
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos]
-              .reverse()
               .map((doc) => (
                 <NocSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}
@@ -981,7 +1177,6 @@ const NOCEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
         <Card>
           <div id="fieldInspection"></div>
@@ -1021,22 +1216,42 @@ const NOCEmployeeApplicationOverview = () => {
         </Card>
       )}
 
-{applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
         <Card>
+          <CardSubHeader>
+              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                ? `${t("BPA_FI_REPORT")} - Verified by ${
+                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                  }`
+                : t("BPA_FI_REPORT")}
+            </CardSubHeader>
+
           <div id="fieldInspection"></div>
           <InspectionReport
             isCitizen={true}
             fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || []}
             onSelect={onChangeReport} //nocDetails?.additionalDetails?.fieldinspection_pending
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
+            InspectionReportVerifier={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier}
           />
         </Card>
       )}
       {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
+            <CardSubHeader>
+              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                ? `${t("BPA_FI_REPORT")} - Verified by ${
+                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                  }`
+                : t("BPA_FI_REPORT")}
+            </CardSubHeader>
+
             <div id="fieldInspection"></div>
-            <InspectionReportDisplay fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending} />
+            <InspectionReportDisplay
+              fiReport={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending}
+              InspectionReportVerifier={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier}
+            />
           </Card>
         )}
 
@@ -1050,18 +1265,31 @@ const NOCEmployeeApplicationOverview = () => {
       </Card>
 
       <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>
-          {remainingDocs?.length > 0 && (
-            <NOCDocumentChecklist
-              documents={remainingDocs}
-              applicationNo={id}
-              tenantId={tenantId}
-              onRemarksChange={setChecklistRemarks}
-              readOnly={!isDocPending}
-            />
-          )}
-        </StatusTable>
+        <CardSubHeader>
+          {documentVerifier || applicationDetails?.documentVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
+            ? `Document Checklist Verified by - ${
+                documentVerifier ||
+                applicationDetails?.documentVerifier ||
+                applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
+              }`
+            : "Documents Uploaded"}
+        </CardSubHeader>
+        {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
+        applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
+          <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+        ) : (
+          <>
+            {remainingDocs?.length > 0 && (
+              <NOCDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                readOnly={!isDocPending}
+              />
+            )}
+          </>
+        )}
       </Card>
 
       <Card>
@@ -1076,7 +1304,8 @@ const NOCEmployeeApplicationOverview = () => {
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"}
+            applicationStatus ={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
       </Card>

@@ -22,6 +22,7 @@ import NDCModal from "../../../pageComponents/NDCModal";
 import { Loader } from "../../../components/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import getAcknowledgementData from "../../../getAcknowlegment";
+import { EmployeeData } from "../../../utils";
 const availableOptions = [
   { code: "yes", name: "Yes" },
   { code: "no", name: "No" },
@@ -52,7 +53,6 @@ const ApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
-
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
       const updated = { ...prev, [consumerCode]: value === "yes" };
@@ -132,6 +132,12 @@ const ApplicationOverview = () => {
     })();
   }, [tenantId]);
 
+  const empData = EmployeeData(tenantId, approver);
+
+  console.log("approver for ndc", approver);
+
+  console.log("officerData", empData);
+
   // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
 
   // console.log("WorkflowService====", WorkflowService);
@@ -144,7 +150,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const isCemp = user?.info?.roles.filter((role) => role.code === "CEMP");
+  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -233,8 +239,11 @@ const ApplicationOverview = () => {
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       console.log("tenantInfo", tenantInfo);
       const ulbType = tenantInfo?.city?.ulbType;
-      const acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType);
+      let acknowledgementData;
 
+      if (empData) {
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
+      }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
@@ -458,7 +467,9 @@ const ApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-        {isCemp && <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>}
+        {isCemp && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
+        )}
       </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
@@ -494,16 +505,6 @@ const ApplicationOverview = () => {
           return (
             <div key={index} className="ndc-emp-app-overview">
               <StatusTable>
-                <Row
-                  label={t("CHB_DISCOUNT_REASON")}
-                  text={t(
-                    `${
-                      applicationDetails?.Applications?.[0]?.reason == "OTHERS"
-                        ? applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.reason
-                        : applicationDetails?.Applications?.[0]?.reason
-                    }`
-                  )}
-                />
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
@@ -567,6 +568,17 @@ const ApplicationOverview = () => {
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {isPT && propertyDetailsFetch?.Properties && (
                   <>
+                    <Row
+                      label={t("CHB_DISCOUNT_REASON")}
+                      text={t(
+                        `${
+                          applicationDetails?.Applications?.[0]?.reason == "OTHERS"
+                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                                ?.reason
+                            : applicationDetails?.Applications?.[0]?.reason
+                        }`
+                      )}
+                    />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
@@ -579,7 +591,13 @@ const ApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
-                    <Row label={t("Remarks")} text={applicationDetails?.Applications?.[0]?.NdcDetails?.[0]?.additionalDetails?.remarks || "N/A"} />
+                    <Row
+                      label={t("Remarks")}
+                      text={
+                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                          ?.remarks || "N/A"
+                      }
+                    />
                   </>
                 )}
               </StatusTable>
@@ -625,7 +643,7 @@ const ApplicationOverview = () => {
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (
+      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu

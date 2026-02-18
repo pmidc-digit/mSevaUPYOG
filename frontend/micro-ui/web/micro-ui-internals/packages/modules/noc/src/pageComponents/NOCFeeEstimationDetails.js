@@ -7,7 +7,7 @@ import {NOCFeeTable} from './NOCFeeTable'
 import { buildFeeHistoryByTax } from "../utils";
 import { formatDuration } from "../utils";
 
-const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustments = () => {} , disable = false}) => {
+const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustments = () => {} , disable = false, applicationStatus = null}) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
@@ -34,18 +34,18 @@ const getOriginals = (taxHeadCode) => {
 
 
 const handleAdjustedAmountChange = (index, value) => {
-  const normalizedValue = value === "" ? null : Number(value);
+  const normalizedValue = value === "" ? 0 : Number(value);
   const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
   const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
-  if (normalizedValue !== null && normalizedValue < 0) {
-    setShowToast({ error: true, message: "Adjusted_Amount_More_Than_Ammount" });
+  if (normalizedValue !== 0 && normalizedValue < 0) {
+    setShowToast({ error: true, message: "Amount_less_Than_Zero" });
     return;
   }
   setFeeAdjustments((prev) =>
     (prev || []).map((item, i) => {
       if (i !== index) return item;
       const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
-      const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
+      const isReverted = normalizedValue === 0 ? originalEstimate === 0 : normalizedValue === originalEstimate;
       if (isReverted) {
         return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
       }
@@ -297,6 +297,9 @@ const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
 
   if (nocCalculatorLoading) return <Loader />;
 
+  if (applicationStatus === "FIELDINSPECTION_INPROGRESS") {
+      return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
+  }
   return (
     <div>
       {nocCalculatorLoading ? (
@@ -317,7 +320,6 @@ const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
             timeObj={timeObj}
-
           />
           {showToast && (
             <Toast

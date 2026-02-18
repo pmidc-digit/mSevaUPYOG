@@ -30,11 +30,39 @@ import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimat
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import LayoutImageView from "../../../pageComponents/LayoutImageView";
-import LayoutSitePhotographs from "../../../pageComponents/LayoutSitePhotographs";
-import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
-import { convertToDDMMYYYY } from "../../../utils/index";
-import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
+import { LoaderNew } from "../../../components/LoaderNew";
+
+// Component to render document link for owner documents
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
+
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
+  return (
+    <LinkButton
+     
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
+  );
+};
+
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -139,11 +167,12 @@ const LayoutApplicationSummary = () => {
 
   const handleDownloadPdf = async () => {
     try {
-      const Property = layoutData;
+      setLoading(true);
+      const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
-      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -330,8 +359,8 @@ const LayoutApplicationSummary = () => {
   const ownersList = displayData?.owners?.map((item)=> item.name);
   const combinedOwnersName = ownersList?.join(", ");
 
-  if (isLoading) {
-    return <Loader />;
+  if (isLoading || loading) {
+    return <LoaderNew page={true} />;
   }
 
   return (

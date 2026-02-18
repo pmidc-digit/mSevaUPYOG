@@ -64,7 +64,7 @@ export const CLUFeeTable = ({
             t={t}
             type="number"
             isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0
+            value={feeData[row.index]?.adjustedAmount === null
               ? ""
               : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
             onChange={(e) => {
@@ -102,12 +102,15 @@ export const CLUFeeTable = ({
         return (
           <TextArea
             value={feeData[row.index]?.remark || ""}
-            onChange={(e) =>
-              handleRemarkChange(row.index, e.target.value, row.amount)
-            }
+            onChange={(e) => {
+              e.target.style.height = "auto";
+              e.target.style.height = e.target.scrollHeight + "px";
+              handleRemarkChange(row.index, e.target.value, row.amount);
+            }}
             disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
+            style={{ height: "50px", overflow: "hidden" }}
           />
         );
       },
@@ -177,11 +180,9 @@ export const CLUFeeTable = ({
                     {/* Updated By Row */}
                     <tr>
                       <td className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator" : "custom-fix-fee-history-table-cell-separator-last"}>{t("BPA_UPDATED_BY_LABEL")}</td>
-                      {feeTypes.map((feeType) => (
-                        <td key={`${feeType}-updatedby-${entryIndex}`} className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator-value" : "custom-fix-fee-history-table-cell-separator-value-last"}>
-                          {feeHistory[feeType]?.[entryIndex]?.who || t("UNKNOWN")}
-                        </td>
-                      ))}
+                      <td colSpan={feeTypes.length} className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator-value" : "custom-fix-fee-history-table-cell-separator-value-last"}>
+                        {feeTypes.map(ft => feeHistory[ft]?.[entryIndex]?.who).find(who => who) || t("UNKNOWN")}
+                      </td>
                     </tr>
                   </React.Fragment>
                 ))}
@@ -219,7 +220,7 @@ export const CLUFeeTable = ({
                       type="number"
                       isMandatory={false}
                       value={
-                        feeData[row.index]?.adjustedAmount === 0
+                        feeData[row.index]?.adjustedAmount === null
                           ? ""
                           : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
                       }
@@ -242,10 +243,15 @@ export const CLUFeeTable = ({
                     <label className="custom-fee-card-label">{t("BPA_REMARK_LABEL")}</label>
                     <TextArea
                       value={feeData[row.index]?.remark || ""}
-                      onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
+                      onChange={(e) => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = e.target.scrollHeight + "px";
+                        handleRemarkChange(row.index, e.target.value, row.amount);
+                      }}
                       disabled={readOnly}
                       className="custom-fee-table-textarea"
                       placeholder="Enter remarks..."
+                      style={{ overflow: "hidden" }}
                     />
                   </div>
                 </div>

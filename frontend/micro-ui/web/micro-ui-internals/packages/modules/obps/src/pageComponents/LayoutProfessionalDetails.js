@@ -63,6 +63,9 @@ const LayoutProfessionalDetails = (_props) => {
         setGetCounsilNo(councilNo);
         if (councilNo) {
           setValue("professionalRegId", councilNo);
+        }else if (bpaData?.licenseNumber) {
+          setGetCounsilNo(bpaData?.licenseNumber);
+          setValue("professionalRegId", bpaData?.licenseNumber);
         }
         console.log(bpaData, "BPA DATA - APPROVED");
 

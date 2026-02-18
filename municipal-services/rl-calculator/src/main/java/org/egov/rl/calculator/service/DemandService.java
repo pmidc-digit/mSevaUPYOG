@@ -148,6 +148,7 @@ public class DemandService {
      * Demand is generated when the application is approved with arrear details.
      */
     public DemandResponse createLegacyArrearDemand(CalculationReq calculationReq) {
+        log.info("Creating legacy arrear demand - START");
         List<Demand> demands = new ArrayList<>();
         CalculationCriteria criteria = calculationReq.getCalculationCriteria().get(0);
         AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
@@ -156,21 +157,28 @@ public class DemandService {
         String tenantId = allotmentDetails.getTenantId();
         String consumerCode = allotmentDetails.getApplicationNumber();
 
+        log.info("Legacy demand - consumerCode: {}, tenantId: {}", consumerCode, tenantId);
+
         // Get arrear details from calculation criteria (passed from rl-services)
         BigDecimal arrearAmount = criteria.getArrearAmount();
         Long arrearStartDate = criteria.getFromDate();
         Long arrearEndDate = criteria.getToDate();
 
+        log.info("Legacy demand - arrearAmount: {}, fromDate: {}, toDate: {}", arrearAmount, arrearStartDate, arrearEndDate);
+
         // If arrear amount is not provided in criteria, it will be ZERO
         if (arrearAmount == null) {
+            log.warn("Arrear amount is null, setting to ZERO");
             arrearAmount = BigDecimal.ZERO;
         }
 
         // Use current time if dates are not provided
         if (arrearStartDate == null) {
+            log.warn("Arrear start date is null, using current time");
             arrearStartDate = System.currentTimeMillis();
         }
         if (arrearEndDate == null) {
+            log.warn("Arrear end date is null, using current time");
             arrearEndDate = System.currentTimeMillis();
         }
 
@@ -198,6 +206,8 @@ public class DemandService {
                 .map(DemandDetail::getTaxAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        log.info("Legacy demand - final amountPayable: {}", amountPayable);
+
         Demand demand = Demand.builder()
                 .consumerCode(consumerCode)
                 .demandDetails(demandDetails)
@@ -214,8 +224,10 @@ public class DemandService {
 
         demands.add(demand);
 
+        log.info("Saving legacy demand to billing service for application: {}", consumerCode);
         List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
-        log.info("Legacy arrear demand created for application: {} with amount: {}", consumerCode, arrearAmount);
+        log.info("Legacy arrear demand created successfully for application: {} with amount: {}, demandId: {}", 
+                consumerCode, arrearAmount, savedDemands.isEmpty() ? "NONE" : savedDemands.get(0).getId());
         return DemandResponse.builder().demands(savedDemands).build();
     }
 

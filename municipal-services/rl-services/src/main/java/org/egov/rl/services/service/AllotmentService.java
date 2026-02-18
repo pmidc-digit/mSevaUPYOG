@@ -116,11 +116,18 @@ public class AllotmentService {
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
 
+		log.info("Processing update for application: {}, action: {}, isApprove: {}, isLegacy: {}, applicationType: {}", 
+				allotmentDetails.getApplicationNumber(), action, isApprove, isLegacyApplication, applicationType);
+
         if (isApprove && isLegacyApplication) {
             // For legacy applications, generate demand based on arrear details from additionalDetails
+            log.info("Creating legacy arrear demand for application: {}", allotmentDetails.getApplicationNumber());
             try {
-                callCalculatorServiceForLegacy(allotmentRequest);
+                String demandId = callCalculatorServiceForLegacy(allotmentRequest);
+                log.info("Legacy arrear demand created successfully with demandId: {} for application: {}", 
+                        demandId, allotmentDetails.getApplicationNumber());
             } catch (Exception e) {
+                log.error("Error creating legacy demand for application: {}", allotmentDetails.getApplicationNumber(), e);
                 e.printStackTrace();
                 throw new CustomException("CREATE_DEMAND_ERROR",
                         "Error occurred while generating demand for legacy application.");
@@ -181,13 +188,28 @@ public class AllotmentService {
      * @return true if applicationType in additionalDetails is "Legacy"
      */
     private boolean isLegacyApplication(AllotmentDetails allotmentDetails) {
-        if (allotmentDetails.getAdditionalDetails() != null) {
-            com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
-            if (additionalDetails.has("applicationType")) {
-                String applicationType = additionalDetails.get("applicationType").asText();
-                return RLConstants.APPLICATION_TYPE_LEGACY.equals(applicationType);
-            }
+        if (allotmentDetails == null) {
+            log.warn("AllotmentDetails is null, cannot determine if legacy application");
+            return false;
         }
+        
+        com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+        if (additionalDetails == null) {
+            log.warn("AdditionalDetails is null for application: {}", allotmentDetails.getApplicationNumber());
+            return false;
+        }
+        
+        if (additionalDetails.has("applicationType")) {
+            String applicationType = additionalDetails.get("applicationType").asText();
+            log.info("Checking legacy application - applicationNumber: {}, additionalDetails.applicationType: {}", 
+                    allotmentDetails.getApplicationNumber(), applicationType);
+            boolean isLegacy = RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(applicationType);
+            log.info("Is legacy application: {}", isLegacy);
+            return isLegacy;
+        }
+        
+        log.warn("applicationType key not found in additionalDetails for application: {}", 
+                allotmentDetails.getApplicationNumber());
         return false;
     }
 

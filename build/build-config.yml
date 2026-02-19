@@ -275,7 +275,7 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/ndc-services/src/main/resources/db"
         image-name: "ndc-services-db"
-
+        
   - name: "builds/upyog/municipal-services/ndc-calculator"
     build:
       - work-dir: "municipal-services/ndc-calculator"
@@ -283,7 +283,7 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/ndc-calculator/src/main/resources/db"
         image-name: "ndc-calculator-db"
-
+  
   - name: "builds/upyog/core-services/service-request"
     build:
       - work-dir: "core-services/service-request"
@@ -424,14 +424,13 @@ config:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-
-
+  
   - name: "builds/upyog/core-services/nlp-engine"
     build:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-
+  
   - name: "builds/upyog/core-services/xstate-chatbot"
     build:
       - work-dir: "core-services/xstate-chatbot/nodejs"
@@ -615,10 +614,9 @@ config:
     build:
       - work-dir: "municipal-services/noc-calculator"
         image-name: "noc-calculator"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/noc-calculator/src/main/resources/db"
+      - work-dir: "municipal-services/noc-calculator/migration"
         image-name: "noc-calculator-db"
-
+        
   - name: "builds/upyog/municipal-services/echallan-services"
     build:
       - work-dir: "municipal-services/echallan-services"
@@ -865,23 +863,7 @@ config:
         image-name: "pet-services"
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/pet-services/src/main/resources/db"
-        image-name: "pet-services-db"
-
-  - name: "builds/upyog/municipal-services/challan-generation"
-    build:
-      - work-dir: "municipal-services/challan-generation"
-        image-name: "challan-generation"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/challan-generation/src/main/resources/db"
-        image-name: "challan-generation-db"
-
-  - name: "builds/upyog/municipal-services/challan-generation-calculator"
-    build:
-      - work-dir: "municipal-services/challan-generation-calculator"
-        image-name: "challan-generation-calculator"
-        dockerfile: "build/maven/Dockerfile"
-        #  - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
-        #   image-name: "challan_generation-calculator-db"
+        image-name: "pet-services-db"        
   
   - name: "builds/upyog/municipal-services/chb-services"
     build:
@@ -930,11 +912,171 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
+  #NIUA 
+  - name: "builds/upyog/municipal-services/sv-services"
+    build:
+      - work-dir: "municipal-services/street-vending"
+        image-name: "sv-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/street-vending/src/main/resources/db"
+        image-name: "sv-services-db"
+  
+  - name: builds/upyog/frontend/sv-ui
+    build:
+      - work-dir: frontend/sv-ui/
+        dockerfile: frontend/sv-ui/web/docker/Dockerfile
+        image-name: sv-ui
+  
+  - name: "builds/upyog/municipal-services/asset-services"
+    build:
+      - work-dir: "municipal-services/asset-services"
+        image-name: "asset-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/asset-services/src/main/resources/db"
+        image-name: "asset-services-db"
+  
+  - name: "builds/upyog/municipal-services/asset-calculator"
+    build:
+      - work-dir: "municipal-services/asset-calculator"
+        image-name: "asset-calculator"
+        dockerfile: "build/maven/Dockerfile"  
+      - work-dir: "municipal-services/asset-calculator/src/main/resources/db"
+        image-name: "asset-calculator-db"      
+  
+  - name: 'builds/upyog/municipal-services/pgr-ai-services'
+    build:
+      - work-dir: 'municipal-services/pgr-ai-services'
+        image-name: 'pgr-ai-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/pgr-ai-services/src/main/resources/db"
+        image-name: "pgr-ai-services-db"
+
+  - name: "builds/upyog/core-services/egov-esign"
+    build:
+      - work-dir: "core-services/egov-esign"
+        image-name: "egov-esign"
+        dockerfile: "build/maven/Dockerfile"
+     # - work-dir: "core-services/egov-esign/src/main/resources/db"
+      #  image-name: "egov-esign-db"
 
   - name: "builds/upyog/core-services/egov-gisintegration"
     build:
       - work-dir: "core-services/egov-gisintegration"
         image-name: "egov-gisintegration"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "core-services/egov-gisintegration/db"
+      - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
         image-name: "egov-gisintegration-db"
+
+  - name: "builds/upyog/municipal-services/challan-generation"
+    build:
+      - work-dir: "municipal-services/challan-generation"
+        image-name: "challan-generation"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/challan-generation/src/main/resources/db"
+        image-name: "challan-generation-db"
+        
+  - name: "builds/upyog/municipal-services/challan-generation-calculator"
+    build:
+      - work-dir: "municipal-services/challan-generation-calculator"
+        image-name: "challan-generation-calculator"
+        dockerfile: "build/maven/Dockerfile"
+     # - work-dir: "municipal-services/challan_generation-calculator/src/main/resources/db"
+      #  image-name: "challan_generation-calculator-db"
+
+  - name: 'builds/upyog/municipal-services/layout-services'
+    build:
+      - work-dir: 'municipal-services/layout-services'
+        image-name: 'layout-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/layout-services/src/main/resources/db"
+        image-name: "layout-services-db"
+
+  - name: "builds/upyog/municipal-services/layout-calculator"
+    build:
+      - work-dir: "municipal-services/layout-calculator"
+        image-name: "layout-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/layout-calculator/migration"
+    #    image-name: "layout-calculator-db"
+
+  - name: 'builds/upyog/municipal-services/clu-services'
+    build:
+      - work-dir: 'municipal-services/clu-services'
+        image-name: 'clu-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/clu-services/src/main/resources/db"
+        image-name: "clu-services-db"
+
+  - name: "builds/upyog/municipal-services/clu-calculator"
+    build:
+      - work-dir: "municipal-services/clu-calculator"
+        image-name: "clu-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/clu-calculator/migration"
+    #    image-name: "clu-calculator-db"
+
+  - name: "builds/upyog/municipal-services/gc-calculator"
+    build:
+      - work-dir: "municipal-services/gc-calculator"
+        image-name: "gc-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/gc-calculator/src/main/resources/db"
+        image-name: "gc-calculator-db"
+
+  - name: "builds/upyog/municipal-services/gc-services"
+    build:
+      - work-dir: "municipal-services/gc-services"
+        image-name: "gc-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/gc-services/src/main/resources/db"
+        image-name: "gc-services-db"
+
+  - name: "builds/upyog/municipal-services/rl-services"
+    build:
+      - work-dir: "municipal-services/rl-services"
+        image-name: "rl-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/rl-services/src/main/resources/db"
+        image-name: "rl-services-db"
+
+  - name: "builds/upyog/municipal-services/rl-calculator"
+    build:
+      - work-dir: "municipal-services/rl-calculator"
+        image-name: "rl-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/rl-calculator/src/main/resources/db"
+        image-name: "rl-calculator-db"
+        
+  - name: "builds/upyog/utilities/ticketing-module"
+    build:
+      - work-dir: "utilities/ticketing-module"
+        image-name: "ticketing-module"
+        dockerfile: 'build/maven/maven2/Dockerfile'
+
+  - name: "builds/upyog/utilities/search-api"
+    build:
+      - work-dir: "utilities/search-api"
+        image-name: "search-api"
+        dockerfile: 'build/Dockerfile'
+
+  - name: "builds/upyog/core-services/egov-property-rate-search"
+    build:
+      - work-dir: "core-services/egov-property-rate-search"
+        image-name: "egov-property-rate-search"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-property-rate-search/src/main/resources/db"
+        image-name: "egov-property-rate-search-db"
+
+  - name: "builds/upyog/core-services/egov-indexer-v2"
+    build:
+      - work-dir: "core-services/egov-indexer-v2"
+        image-name: "egov-indexer-v2"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-indexer-v2/src/main/resources/db"
+        image-name: "egov-indexer-v2-db"
+
+  - name: "builds/upyog/utilities/search-api"
+    build:
+      - work-dir: "utilities/search-api"
+        image-name: "search-api"
+        dockerfile: 'build/Dockerfile'

@@ -140,7 +140,7 @@ const ActiveAndOpenSurveys = (props) => {
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
     const paths = {
       employee: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
-      citizen: `/digit-ui/citizen/engagement/surveys/fill-survey/${encodedUUID}`,
+      citizen: `/digit-ui/citizen/engagement/surveys/fill-survey`,
     };
 
     const newPath = paths[userType.toLowerCase()] || "";

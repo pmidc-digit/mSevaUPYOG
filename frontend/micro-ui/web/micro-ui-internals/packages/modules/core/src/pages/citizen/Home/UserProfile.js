@@ -422,7 +422,14 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       } else if (responseInfo?.status && responseInfo.status === "200") {
         showToast("success", t("CORE_COMMON_PROFILE_UPDATE_SUCCESS"), 5000);
         if (location?.state?.from.includes("/engagement/surveys")) {
-          history.push(location?.state?.from);
+          history.push({
+            pathname: location.state.from,
+            state: {
+              surveyDetails: location.state.surveyDetails,
+              userInfo: location.state.userInfo,
+              userType: location.state.userType,
+            },
+          });
         }
       }
       // http://localhost:3000/digit-ui/citizen/engagement/surveys/fill-survey

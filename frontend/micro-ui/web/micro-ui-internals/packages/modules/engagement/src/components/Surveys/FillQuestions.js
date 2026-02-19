@@ -14,7 +14,7 @@ import {
   Loader,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import Dialog from "../Modal/Dialog";
 
 const FillQuestions = (props) => {
@@ -25,6 +25,7 @@ const FillQuestions = (props) => {
 
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [city, setCity] = useState(null);
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const userInfo = Digit.UserService.getUser()?.info || {};
 
@@ -790,16 +791,6 @@ const FillQuestions = (props) => {
       case "MULTIPLE_ANSWER_TYPE":
         return (
           <>
-            {/* <select
-                                    name="multipleChoice"
-                                    value={formData.section2.multipleChoice}
-                                    onChange={(e) => handleInputChange('section2', e)}
-                                >
-                                    <option value="">Select an option</option>
-                                    <option value="choice1">Choice 1</option>
-                                    <option value="choice2">Choice 2</option>
-                                </select> */}
-
             <div style={{ display: "flex", flexDirection: "column" }}>
               {question.options.map((option) => (
                 <h4 key={option?.uuid} style={{ display: "flex", alignItems: "center", marginBottom: "10px", fontSize: "18px" }}>
@@ -835,15 +826,9 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
-            //style={{fontWeight:'bold'}}
-            >
-              {" "}
-              {"Add Suggestions/Comments"}
-            </div>
+            <div> {"Add Suggestions/Comments"}</div>
             <TextArea
               name={question.uuid}
-              // disabled={formDisabled}
               value={formData[section.uuid]?.[question.uuid]?.comments}
               maxLength={500}
               style={{ maxWidth: "none", marginBottom: "0px" }}
@@ -860,33 +845,6 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
             )}
-            {/* <RadioButtons
-                  
-                  onSelect={(e)=>handleInputChange(section.uuid, question.uuid, e)}
-                  selectedOption={formData[section.uuid]?.[question.uuid] || ''}
-                  optionsKey=""
-                  options={[...question.options]}
-                 
-                /> */}
-            {/* <Controller
-                  control={control}
-                  name={question.uuid}
-                  
-                  rules={{ required: question.required }}
-                  render={({ onChange, value }) => (
-                    <RadioButtons
-                  
-                      onSelect={onChange}
-                      selectedOption={value}
-                      optionsKey=""
-                      options={[...question.options]}
-                     
-                    />
-                  )}
-                />
-                {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-                  <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
-                )} */}
           </>
         );
       case "CHECKBOX_ANSWER_TYPE":
@@ -962,67 +920,9 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
             )}
-            {/* <Controller
-                  control={control}
-                  name={question.uuid}
-                  
-                  rules={{ required:question.required }}
-                  render={({ onChange, value }) => {
-                    return (
-                    <div className="align-columns">
-                      {question.options.map((option) => {
-                        return (
-                          <CheckBox
-                         
-                            key={option}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                onChange([option,...value?value:[]]);             
-                              } else {
-                                value && onChange(value?.filter((item) => item !== option));
-                              }
-                            }}
-                            checked={typeof value === "string" ? !!([value]?.find(e => e === option)) : !!value?.find(e => e === option)}
-                            label={option}
-                            checkboxWidth = {{width:"34px",height:"34px"}}
-                            style={{marginTop:"5px", overflowWrap:"break-word"}}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}}
-                />
-                {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type ==="required" && (
-                  <CardLabelError style={{marginTop:"20px"}}>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>
-                )} */}
           </>
         );
-      // case "CHECKBOX_ANSWER_TYPE":
-      //   return (
-      //     <>
-      //     {question.options.map((option,index) => (
-      //     <div>
-      //       <label for="checkbox">
-      //         <input
-      //         control={control}
-      //         id={option}
-      //         type="checkbox"
-      //         name={option}
-      //         value={option}
-      //         ref={register({
-      //           required:false,
-      //         })}
-      //       />
-      //         {option}</label>
 
-      //     </div>
-      //     ))}
-
-      //       {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type ==="required" && (
-      //         <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>
-      //       )}
-      //     </>
-      //   );
       case "DATE_ANSWER_TYPE":
         return (
           <>
@@ -1079,26 +979,7 @@ const FillQuestions = (props) => {
             )}
           </>
         );
-      // return (
-      //   <>
-      //    <Controller
-      //           control={control}
-      //           name={question.uuid}
-      //           //defaultValue=
-      //           rules={{
-      //             required: question.required,
-      //             // validate: { isValidToDate }
-      //           }}
 
-      //           render={({ onChange, value }) => <TextInput
-      //           // disabled={formDisabled}
-      //             type="date"  onChange={onChange} defaultValue={value} />}
-      //         />
-      //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-      //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
-      //         )}
-      //  </>
-      // );
       case "TIME_ANSWER_TYPE":
         return (
           <>
@@ -1155,25 +1036,6 @@ const FillQuestions = (props) => {
             )}
           </>
         );
-      //     return (
-      //       <>
-      //         <Controller
-      //           control={control}
-      //           name={question.uuid}
-      //           //defaultValue={surveyFormState?.toTime}
-      //           rules={{
-      //             required: question.required,
-      //             // validate: { isValidToTime }
-      //           }}
-      //           render={({ onChange, value }) => <TextInput type="time"
-      //           //disabled={formDisabled}
-      //            onChange={onChange} defaultValue={value} />}
-      //         />
-      //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-      //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
-      //         )}
-      //       </>
-      //     );
 
       default:
         return (
@@ -1233,205 +1095,174 @@ const FillQuestions = (props) => {
   console.log("check prevProps", prevProps);
   console.log("userInfo", userInfo);
 
-  return (
-    // <div>
-    submitted === true && openQuesDetailsDialog ? (
-      <Dialog
-        onSelect={handleOnSubmitDialog}
-        onCancel={handleOnCancelDialog}
-        onDismiss={handleOnCancelDialog}
-        heading="Survey already Submitted!"
-        actionCancel={false}
-        content={questionDetailsContent}
-        hideSubmit={true}
-      />
-    ) : userInfo?.type?.toUpperCase() === "EMPLOYEE" ||
-      prevProps?.citizenFill ||
-      (userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === true) ? (
-      <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
-        <div className="category-card">
-          <div>
-            <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
-              Survey Name: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyTitle}</span>
-            </h2>
-            <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
-              Survey Description: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyDescription}</span>
-            </h2>
-          </div>
-          {userInfo?.type?.toUpperCase() === "EMPLOYEE" ? (
-            <>
-              <CardLabel>
-                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
-              <select
-                id="dropdown"
-                value={locality}
-                onChange={(e) => {
-                  handleLocalityChangeCitizen(e);
-                }}
-              >
-                <option value="">--Please choose a locality--</option>
-                {localityList !== null && (
-                  <>
-                    {localityList.map((option, index) => (
-                      <option key={index} value={option.name}>
-                        {option?.name}
-                      </option>
-                    ))}
-                  </>
-                )}
-              </select>
-              {errors && errors["locality"] && (
-                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
-                  {errors?.["locality"].answerRequired}
-                </CardLabelError>
+  return submitted === true && openQuesDetailsDialog ? (
+    <Dialog
+      onSelect={handleOnSubmitDialog}
+      onCancel={handleOnCancelDialog}
+      onDismiss={handleOnCancelDialog}
+      heading="Survey already Submitted!"
+      actionCancel={false}
+      content={questionDetailsContent}
+      hideSubmit={true}
+    />
+  ) : userInfo?.type?.toUpperCase() === "EMPLOYEE" ||
+    prevProps?.citizenFill ||
+    (userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === true) ? (
+    <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+      <div className="category-card">
+        <div>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
+            Survey Name: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyTitle}</span>
+          </h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
+            Survey Description: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyDescription}</span>
+          </h2>
+        </div>
+        {userInfo?.type?.toUpperCase() === "EMPLOYEE" ? (
+          <>
+            <CardLabel>
+              {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <select
+              id="dropdown"
+              value={locality}
+              onChange={(e) => {
+                handleLocalityChangeCitizen(e);
+              }}
+            >
+              <option value="">--Please choose a locality--</option>
+              {localityList !== null && (
+                <>
+                  {localityList.map((option, index) => (
+                    <option key={index} value={option.name}>
+                      {option?.name}
+                    </option>
+                  ))}
+                </>
               )}
-            </>
-          ) : (
-            <>
-              <CardLabel>
-                {`${t("CITY")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
-              {/* <Dropdown
-                  required={true}
-                  id="city"
-                  name="city"
-                  option={cities}
-                  className="cityCss"
-                  select={(e) => handleCityChange(e)}
-                  placeholder={"Select City"}
-                  optionKey="i18nKey"
-                  t={t}
-                  selected={city || null}
-                /> */}
-              <select
-                id="dropdown"
-                value={city}
-                // value={localStorage.getItem("CITIZEN.CITY")}
-                // value={formData[section.uuid]?.[question.uuid]?.answer}
-                onChange={(e) => {
-                  handleCityChange(e);
-                }}
-                disabled={localStorage.getItem("CITIZEN.CITY") === "pb.punjab" ? false : true}
-              >
-                <option value="">--Please choose a city--</option>
-                {cities.map((option, index) => (
-                  <option key={index} value={option.code}>
-                    {option?.name}
-                  </option>
-                ))}
-              </select>
+            </select>
+            {errors && errors["locality"] && (
+              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                {errors?.["locality"].answerRequired}
+              </CardLabelError>
+            )}
+          </>
+        ) : (
+          <>
+            <CardLabel>
+              {`${t("CITY")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
 
-              {errors && errors["city"] && (
-                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
-                  {errors?.["city"].answerRequired}
-                </CardLabelError>
+            <select
+              id="dropdown"
+              value={city}
+              onChange={(e) => {
+                handleCityChange(e);
+              }}
+              disabled={localStorage.getItem("CITIZEN.CITY") === "pb.punjab" ? false : true}
+            >
+              <option value="">--Please choose a city--</option>
+              {cities.map((option, index) => (
+                <option key={index} value={option.code}>
+                  {option?.name}
+                </option>
+              ))}
+            </select>
+
+            {errors && errors["city"] && (
+              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                {errors?.["city"].answerRequired}
+              </CardLabelError>
+            )}
+
+            <CardLabel>
+              {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+
+            <select
+              id="dropdown"
+              value={locality}
+              onChange={(e) => {
+                handleLocalityChangeCitizen(e);
+              }}
+            >
+              <option value="">--Please choose a locality--</option>
+              {city !== null && localityList !== null && (
+                <>
+                  {localityList.map((option, index) => (
+                    <option key={index} value={option.name}>
+                      {option?.name}
+                    </option>
+                  ))}
+                </>
               )}
-
-              <CardLabel>
-                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
-
-              <select
-                id="dropdown"
-                value={locality}
-                onChange={(e) => {
-                  handleLocalityChangeCitizen(e);
-                }}
-              >
-                <option value="">--Please choose a locality--</option>
-                {city !== null && localityList !== null && (
-                  <>
-                    {localityList.map((option, index) => (
-                      <option key={index} value={option.name}>
-                        {option?.name}
-                      </option>
-                    ))}
-                  </>
-                )}
-              </select>
-              {errors && errors["locality"] && (
-                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
-                  {errors?.["locality"].answerRequired}
-                </CardLabelError>
-              )}
-            </>
-          )}
-          <form onSubmit={handleSubmit}>
-            {data.sections?.length > 0
-              ? data.sections.map((section) => (
-                  <div>
-                    <h2>{section.title}</h2>
-                    {section.questions.map((question, index) => (
-                      <div>
-                        <h3>{question.questionStatement}</h3>
-                        <div className="surveyQuestion-wrapper">
-                          <div style={{ display: "inline" }}>
-                            {index + 1}. {question.question.questionStatement} {question?.required && <span style={{ color: "red" }}>*</span>}
-                          </div>
-                          {displayAnswerField(question.question.type, question.question, section)}
-                          {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
-                          <div></div>
+            </select>
+            {errors && errors["locality"] && (
+              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                {errors?.["locality"].answerRequired}
+              </CardLabelError>
+            )}
+          </>
+        )}
+        <form onSubmit={handleSubmit}>
+          {data.sections?.length > 0
+            ? data.sections.map((section) => (
+                <div>
+                  <h2>{section.title}</h2>
+                  {section.questions.map((question, index) => (
+                    <div>
+                      <h3>{question.questionStatement}</h3>
+                      <div className="surveyQuestion-wrapper">
+                        <div style={{ display: "inline" }}>
+                          {index + 1}. {question.question.questionStatement} {question?.required && <span style={{ color: "red" }}>*</span>}
                         </div>
+                        {displayAnswerField(question.question.type, question.question, section)}
+                        {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
+                        <div></div>
                       </div>
-                    ))}
-                  </div>
-                ))
-              : null}
-            {/* <button
-            onClick={
-              () => history.goBack()
-              // history.push("/digit-ui/employee/engagement/surveys/fill-citizen-details-survey")
-            }
-          >
-            Back
-          </button> */}
-            <button type="submit" style={{ marginLeft: "10px" }}>
-              Submit
-            </button>
-          </form>
-        </div>
-        {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
-
-        <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
-          <h3 style={{ color: "red", fontSize: "20px" }}>Please fill in your basic details to proceed with the survey</h3>
-          <h4 style={{ fontSize: "16px" }}>Click on below button to fill in your details</h4>
-          <button
-            onClick={() =>
-              history.push({
-                pathname: "/digit-ui/citizen/user/profile",
-                state: { from: `/digit-ui/citizen/engagement/surveys/fill-survey/${uuid}` },
-              })
-            }
-            style={{
-              padding: "10px 20px",
-              border: "none",
-              borderRadius: "4px",
-              backgroundColor: "#007bff",
-              color: "white",
-              marginTop: "10px",
-              //cursor: "pointer"
-            }}
-          >
-            Fill your details : Name, Gender, DOB and Email are required
+                    </div>
+                  ))}
+                </div>
+              ))
+            : null}
+          <button type="submit" style={{ marginLeft: "10px" }}>
+            Submit
           </button>
-          {loading && <Loader />}
-        </div>
+        </form>
       </div>
-    ) : userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === false ? null : //       borderRadius: "4px", //       border: "none", //       padding: "10px 20px", //     style={{ //     } //       }) //         state: { from: "/digit-ui/citizen/engagement/surveys/fill-survey" }, //         pathname: "/digit-ui/citizen/user/profile", //       history.push({ //     onClick={() => //   <button //   <h4 style={{ fontSize: "16px" }}>Click on below button to fill in your details</h4> //   <h3 style={{ color: "red", fontSize: "20px" }}>Please fill in your basic details to proceed with the survey</h3> // <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
-    //       backgroundColor: "#007bff",
-    //       color: "white",
-    //       marginTop: "10px",
-    //       //cursor: "pointer"
-    //     }}
-    //   >
-    //     Fill your details : Name, Gender, DOB and Email are required
-    //   </button>
-    //   {loading && <Loader />}
-    // </div>
-    null
-    // </div>
-  );
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
+    </div>
+  ) : userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === false ? (
+    <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+      <h3 style={{ color: "red", fontSize: "20px" }}>Please fill in your basic details to proceed with the survey</h3>
+      <h4 style={{ fontSize: "16px" }}>Click on below button to fill in your details</h4>
+      <button
+        onClick={() => {
+          history.push({
+            pathname: "/digit-ui/citizen/user/profile",
+            state: {
+              from: `/digit-ui/citizen/engagement/surveys/fill-survey`,
+              surveyDetails: location.state?.surveyDetails,
+              userInfo: location.state?.userInfo,
+              userType: location.state?.userType,
+            },
+          });
+        }}
+        style={{
+          padding: "10px 20px",
+          border: "none",
+          borderRadius: "4px",
+          backgroundColor: "#007bff",
+          color: "white",
+          marginTop: "10px",
+          //cursor: "pointer"
+        }}
+      >
+        Fill your details : Name, Gender, DOB and Email are required
+      </button>
+      {loading && <Loader />}
+    </div>
+  ) : null;
 };
 
 export default FillQuestions;

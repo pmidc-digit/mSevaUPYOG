@@ -61,7 +61,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           {/* <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) =>  /> */}
           {/* New Development */}
           <PrivateRoute path={`${path}/surveys/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
-          <PrivateRoute path={`${path}/surveys/fill-survey/:uuid`} component={(props) => <FillQuestions {...props} userType={userType} />} />
+          <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType} />} />
           <PrivateRoute path={`${path}/surveys/submit-survey-response`} component={(props) => <SubmitResponse {...props} />} />
         </Switch>
       </div>

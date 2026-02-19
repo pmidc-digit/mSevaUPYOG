@@ -105,6 +105,7 @@ const BpaApplicationDetail = () => {
   const cities = Digit.Hooks.useTenants();
   const applicationType = data?.edcrDetails?.appliactionType
   const isOCApplication = applicationType === "BUILDING_OC_PLAN_SCRUTINY";
+  const isBPA = data?.applicationData?.businessService === "BPA_LOW"
 
 
 
@@ -937,7 +938,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     // }
     const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
     console.log("SelectedAction", action, isCitizenConsentIncluded, isUserCitizen, path)
-    if (isCitizenConsentIncluded && !isOCApplication) {
+    if (isCitizenConsentIncluded && !isOCApplication && isBPA) {
       if (!agree) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1012,7 +1013,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         return true
       }
     }
-    else if(action === "APPROVE_AND_PAY" && !isOCApplication){
+    else if(action === "APPROVE_AND_PAY" && !isOCApplication && isBPA){
       if (!isTocAccepted) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1280,7 +1281,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     );
     let updatedDocuments
     let additionalDetails
-    if(!isOCApplication){
+    if(!isOCApplication && isBPA){
     if (!isTocAccepted) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1289,7 +1290,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         });
         return;
     }
-    if (isCitizenConsentIncluded && !isOCApplication) {
+    if (isCitizenConsentIncluded && !isOCApplication && isBPA) {
       if (!agree) {
         setIsEnableLoader(false);
         setShowToast({
@@ -1668,6 +1669,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
 
         {data?.applicationDetails
           ?.filter((ob) => Object.keys(ob)?.length > 0)
+          ?.filter((ob) => !ob?.isFieldInspection)
           .map((detail, index, arr) => {
             console.log("detailforme", detail)
             return (
@@ -2062,27 +2064,99 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
 
                 {/* to get Timeline values */}
                 {index === arr?.length - 1 && (
+                  <div>{<Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+                    <FeeEstimation
+                      currentStepData={{
+                        createdResponse: {
+                          ...(data?.applicationData || {})
+                        }
+                      }}
+                      disable={true}
+                      development={development}
+                      otherCharges={otherCharges}
+                      lessAdjusment={lessAdjusment}
+                      otherChargesDisc={otherChargesDisc}
+                      labourCess={labourCess}
+                      gaushalaFees={gaushalaFees}
+                      malbafees={malbafees}
+                      waterCharges={waterCharges}
+                      errorFile={errorFile}
+                      setError={setError}
+                      adjustedAmounts={adjustedAmounts}
+                      setAdjustedAmounts={setAdjustedAmounts}
+                    />
+                  </Card>}
+
+                    {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && !isOCApplication && isBPA && (
+                      <div>
+                        <Card>
+                          <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
+                          <React.Fragment>
+                            <div>
+                              <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
+                              <br></br>
+                            </div>
+                            {!workflowDetails?.isLoading &&
+                              workflowDetails?.data?.newNextAction?.length > 0 &&
+                              !isFromSendBack &&
+                              checkBoxVisible && (
+                                <CheckBox
+                                  styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                                  checked={isTocAccepted}
+                                  label={getCheckBoxLable()}
+                                  // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
+                                  onChange={() => {
+                                    setIsTocAccepted(!isTocAccepted)
+                                    isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
+                                  }}
+                                />
+                              )}
+                            <br></br>
+
+                            <div>
+                              <CheckBox
+                                label={checkLabels()}
+                                onChange={setdeclarationhandler}
+                                styles={{ height: "auto" }}
+                                //disabled={!agree}
+                                checked={agree}
+                              />
+
+                              {showTermsPopup && (
+                                <CitizenConsent
+                                  showTermsPopupOwner={showTermsPopup}
+                                  setShowTermsPopupOwner={setShowTermsPopup}
+                                  otpVerifiedTimestamp={otpVerifiedTimestamp} // Pass timestamp as a prop
+                                  bpaData={data?.applicationData} // Pass the complete BPA application data
+                                  tenantId={tenantId} // Pass tenant ID for API calls
+                                />
+                              )}
+                            </div>
+                          </React.Fragment>
+                        </Card>
+                      </div>
+                    )}
+
+                    {workflowDetails?.data?.actionState?.applicationStatus === "INPROGRESS" && !isUserCitizen && (
+                      !workflowDetails?.isLoading &&
+                      workflowDetails?.data?.newNextAction?.length > 0 &&
+                      !isFromSendBack &&
+                      checkBoxVisible && (
+                        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
+                          <CheckBox
+                            styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                            checked={isTocAccepted}
+                            label={getCheckBoxLable()}
+                            // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
+                            onChange={() => {
+                              setIsTocAccepted(!isTocAccepted)
+                              isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
+                            }}
+                          />
+                        </Card>
+                      ))}
                   <Card>
                     <Fragment>
-                      <div id="timeline">
-                        {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
-                        <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
-                        {/* {!workflowDetails?.isLoading &&
-                          workflowDetails?.data?.newNextAction?.length > 0 &&
-                          !isFromSendBack &&
-                          checkBoxVisible && (
-                            <CheckBox
-                              styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
-                              checked={isTocAccepted}
-                              label={getCheckBoxLable()}
-                              // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
-                              onChange={() => {
-                                setIsTocAccepted(!isTocAccepted)
-                                isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
-                              }}
-                            />
-                          )} */}
-                      </div>
                       {((workflowDetails?.data?.actionState?.applicationStatus === "CITIZEN_APPROVAL_INPROCESS" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_SANC_FEE_PAYMENT" || workflowDetails?.data?.actionState?.applicationStatus === "PENDING_APPL_FEE") && !isArchitect) &&
                         <div>{!workflowDetails?.isLoading && workflowDetails?.data?.newNextAction?.length > 1 && (
                         //removed this styles to fix the action button in application details UM-5347
@@ -2186,219 +2260,32 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                       )}
                         </div>
                       }
+                      <div id="timeline">
+                        {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
+                        <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
+                        {/* {!workflowDetails?.isLoading &&
+                          workflowDetails?.data?.newNextAction?.length > 0 &&
+                          !isFromSendBack &&
+                          checkBoxVisible && (
+                            <CheckBox
+                              styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                              checked={isTocAccepted}
+                              label={getCheckBoxLable()}
+                              // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
+                              onChange={() => {
+                                setIsTocAccepted(!isTocAccepted)
+                                isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
+                              }}
+                            />
+                          )} */}
+                      </div>                      
                     </Fragment>
                   </Card>
-                )}
+                </div>)}
               </div>
             )
           })}
-
-        {
-        // workflowDetails?.data?.actionState?.state === "INPROGRESS" && !isUserCitizen &&
-         <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-          {/* <CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
-          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-          <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="development"
-            defaultValue={data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES}
-            value={development}
-            onChange={(e) => {
-              setDevelopmentVal(e.target.value);
-            }}
-            {...{ required: true, pattern: "^[0-9]*$" }}
-          />
-          <CardLabel>{t("BPA_COMMON_OTHER_AMT")}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="otherCharges"
-            defaultValue={data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES}
-            value={otherCharges}
-            onChange={(e) => {
-              setOtherChargesVal(e.target.value);
-            }}
-            {...{ required: true, pattern: /^[0-9]*$/ }}
-          />
-          {parseInt(otherCharges) > 0 ? (
-            <div>
-              <CardLabel>{t("BPA_COMMON_OTHER_AMT_DISCRIPTION")}</CardLabel>
-              <TextArea
-                t={t}
-                type={"text"}
-                name="otherChargesDiscription"
-                defaultValue={data?.applicationData?.additionalDetails?.otherFeesDiscription}
-                value={otherChargesDisc}
-                onChange={(e) => {
-                  setOtherChargesDis(e.target.value);
-                }}
-                {...{ required: true }}
-              />
-            </div>
-          ) : null}
-          <CardLabel>{t("BPA_COMMON_LESS_AMT")}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="lessAdjusment"
-            defaultValue={data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT}
-            value={lessAdjusment}
-            onChange={(e) => {
-              setLessAdjusmentVal(e.target.value);
-            }}
-            {...{ required: true, pattern: "^[0-9]*$" }}
-          />
-          {parseInt(lessAdjusment) > 0 ? (
-            <div>
-              <CardLabel>{t("BPA_COMMON_LESS_AMT_FILE")}</CardLabel>
-              <UploadFile
-                id={"noc-doc"}
-                style={{ marginBottom: "200px" }}
-                onUpload={selectfile}
-                onDelete={() => {
-                  setUploadedFile(null);
-                  setFile("");
-                }}
-                message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={errorFile}
-              // uploadMessage={uploadMessage}
-              />
-            </div>
-          ) : null} */}
-          <FeeEstimation                    
-            currentStepData={{
-              createdResponse: {
-                ...(data?.applicationData || {})
-              }
-            }}
-            disable = {true}
-            development={development}
-            otherCharges={otherCharges}
-            lessAdjusment={lessAdjusment}
-            otherChargesDisc={otherChargesDisc}
-            labourCess={labourCess}                  
-            gaushalaFees={gaushalaFees}                 
-            malbafees={malbafees}                    
-            waterCharges={waterCharges}                 
-            errorFile={errorFile}
-            setError={setError}
-            adjustedAmounts={adjustedAmounts}
-            setAdjustedAmounts={setAdjustedAmounts}
-          />
-        </Card>}
-
-        {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && !isOCApplication && (
-          <div>
-            <Card>
-              <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
-              <React.Fragment>
-                <div>
-                  <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-                  {/* <LinkButton label={t("BPA_VERIFY_BUTTON")} onClick={handleVerifyClick} /> */}
-                  <br></br>
-                  {/* {showMobileInput && (
-                    <React.Fragment>
-                      <br></br>
-                      <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
-                      <TextInput
-                        t={t}
-                        type="tel"
-                        isMandatory={true}
-                        optionKey="i18nKey"
-                        name="mobileNumber"
-                        value={mobileNumber}
-                        disable={true}
-                        onChange={handleMobileNumberChange}
-                        {...{
-                          required: true,
-                          pattern: "[0-9]{10}",
-                          type: "tel",
-                          title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-                        }}
-                      />
-
-                      <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
-                    </React.Fragment>
-                  )} */}
-                  {/* {showOTPInput && (
-                    <React.Fragment>
-                      <br></br>
-                      <CardLabel>{t("BPA_OTP")}</CardLabel>                    
-                      <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
-
-                      <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
-                      {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
-                      {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
-                    </React.Fragment>
-                  )} */}
-                </div>
-                {!workflowDetails?.isLoading &&
-                  workflowDetails?.data?.newNextAction?.length > 0 &&
-                  !isFromSendBack &&
-                  checkBoxVisible && (
-                    <CheckBox
-                      styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
-                      checked={isTocAccepted}
-                      label={getCheckBoxLable()}
-                      // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
-                      onChange={() => {
-                        setIsTocAccepted(!isTocAccepted)
-                        isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
-                      }}
-                    />
-                  )}
-                <br></br>
-
-                <div>
-                  <CheckBox
-                    label={checkLabels()}
-                    onChange={setdeclarationhandler}
-                    styles={{ height: "auto" }}
-                    //disabled={!agree}
-                    checked={agree}
-                  />
-
-                  {showTermsPopup && (
-                    <CitizenConsent
-                      showTermsPopupOwner={showTermsPopup}
-                      setShowTermsPopupOwner={setShowTermsPopup}
-                      otpVerifiedTimestamp={otpVerifiedTimestamp} // Pass timestamp as a prop
-                      bpaData={data?.applicationData} // Pass the complete BPA application data
-                      tenantId={tenantId} // Pass tenant ID for API calls
-                    />
-                  )}
-                </div>
-              </React.Fragment>
-            </Card>
-          </div>
-        )}
-
-        {workflowDetails?.data?.actionState?.applicationStatus === "INPROGRESS" && !isUserCitizen && (
-          !workflowDetails?.isLoading &&
-          workflowDetails?.data?.newNextAction?.length > 0 &&
-          !isFromSendBack &&
-          checkBoxVisible && (
-            <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-            <CheckBox
-              styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
-              checked={isTocAccepted}
-              label={getCheckBoxLable()}
-              // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
-              onChange={() => {
-                setIsTocAccepted(!isTocAccepted)
-                isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
-              }}
-            />
-            </Card>
-          ))}
+        
 
         {showTermsModal ? (
           <ActionModal

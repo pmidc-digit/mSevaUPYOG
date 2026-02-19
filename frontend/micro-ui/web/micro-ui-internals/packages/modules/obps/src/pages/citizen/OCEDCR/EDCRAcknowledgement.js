@@ -42,13 +42,16 @@ const EDCRAcknowledgement = (props) => {
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(state, "BPA", ["homePageUrlLinks"]);
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(state, "BPA", ["RiskTypeComputation"]);
 
+  console.log("edcrData", props?.data);
+
   useEffect(() => {
     if (!homePageUrlLinksLoading && homePageUrlLinks?.BPA?.homePageUrlLinks?.length > 0) {
       homePageUrlLinks?.BPA?.homePageUrlLinks?.map(linkData => {
         if (linkData?.applicationType === edcrData?.appliactionType && linkData?.serviceType === edcrData?.applicationSubType) {
           setBpaLinks({
             linkData: linkData,
-            edcrNumber: edcrData?.edcrNumber
+            edcrNumber: edcrData?.edcrNumber,
+            permitNumber: edcrData?.permitNumber,
           });
         }
       });
@@ -83,14 +86,12 @@ const EDCRAcknowledgement = (props) => {
             </svg>
             {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
           </div>
-          <div style={{padding: "0px 10px"}}>
-          <Link to={{pathname: `/digit-ui/citizen/obps/${bpaLinks?.linkData?.flow?.toLowerCase()}/${edcrData?.appliactionType?.toLowerCase()}/${edcrData?.applicationSubType?.toLowerCase()}/docs-required`, state: bpaLinks}} replace >
+          <div style={{padding: "10px 20px", display: "flex", gap: "10px"}}>
+            <Link to={{pathname: `/digit-ui/citizen/obps/${bpaLinks?.linkData?.flow?.toLowerCase()}/${edcrData?.appliactionType?.toLowerCase()}/${edcrData?.applicationSubType?.toLowerCase()}/docs-required`, state: bpaLinks}} replace >
               <SubmitBar label={t("BPA_APPLY_OC_FOR_BPA_LABEL")} className={"oc-aknowledgement-screen"} onSubmit={() => (sessionStorage.setItem("clickOnBPAApplyAfterEDCR",true))}/>
-            </Link>
-          </div>
-          <div style={{marginTop: "12px", paddingBottom: "10px", paddingLeft: "10px"}}>
+            </Link>          
             <Link to={`/digit-ui/citizen`} >
-              <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
           </div>
         </Card> :

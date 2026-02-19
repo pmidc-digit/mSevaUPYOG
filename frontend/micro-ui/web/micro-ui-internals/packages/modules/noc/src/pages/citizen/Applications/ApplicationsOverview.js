@@ -20,7 +20,7 @@ import {
   MultiLink,
   CheckBox
 } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useEffect, useState, useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
@@ -35,6 +35,9 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { convertToDDMMYYYY,formatDuration } from "../../../utils/index";
+import CustomLocationSearch from "../../../components/CustomLocationSearch";
+import NocUploadedDocument from "../../../components/NocUploadedDocument";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -97,13 +100,18 @@ const CitizenApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data , refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [timeObj , setTimeObj] = useState(null);
+
+  const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
+  const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
+       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+   } : {})
   
   console.log('applicationD', applicationDetails)
  const [approverComment , setApproverComment] = useState(null);
-  const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
+  // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -117,6 +125,25 @@ const CitizenApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  const geoLocations = useMemo(() => {
+      if (siteImages?.documents && siteImages?.documents.length > 0) {
+        return siteImages?.documents?.map((img) => {
+          return {
+            latitude: img?.latitude || "",
+            longitude: img?.longitude || "",
+          }
+        })
+      }
+    }, [siteImages]);
+
+
+     const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+        title: value?.documentType,
+        fileStoreId: value?.filestoreId,
+        latitude: value?.latitude,
+        longitude: value?.longitude,
+      })), [siteImages])
 
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
@@ -149,6 +176,10 @@ const CitizenApplicationOverview = () => {
       const time = formatDuration(totalTime)
       
       setTimeObj(time);
+      const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
+
+      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+
     }
   }, [applicationDetails?.Noc]);
 
@@ -165,17 +196,25 @@ const CitizenApplicationOverview = () => {
   );
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails?.Noc?.[0];
-    //console.log("tenants", tenants);
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    try {
+      setLoading(true);
+      const Property = applicationDetails?.Noc?.[0];
+      //console.log("tenants", tenants);
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
-    const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-    const ulbType = site?.ulbType;
-    const ulbName = site?.ulbName?.city?.name ||site?.ulbName;
+      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
 
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
-
-    Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -185,7 +224,7 @@ const CitizenApplicationOverview = () => {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -196,22 +235,84 @@ const CitizenApplicationOverview = () => {
     }
   }
 
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+  try {
+    setLoading(true);
+
+    let application = applicationDetails?.Noc?.[0]
+
+    let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+    console.log("fileStoreId before create", fileStoreId);
+
+    if (!fileStoreId) {
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
+        pdfkey
+      );
+
+      const updatedApplication = {
+        ...application,
+        workflow: {
+          action: "ESIGN",
+        },
+        nocDetails: {
+          ...application?.nocDetails,
+          additionalDetails: {
+            ...application?.nocDetails?.additionalDetails,
+            sanctionLetterFilestoreId: response?.filestoreIds[0],
+          },
+        },
+      };
+
+      await mutation.mutateAsync({
+        Noc: updatedApplication,
+      });
+
+
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
+    }
+
+    // Print receipt
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
+
+  } catch (error) {
+    console.error("Sanction Letter download error:", error);
+  } finally {
+    setLoading(false);
+  }
+}
+
+
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
+  dowloadOptions.push({
       label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" ) {
+
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }
+  }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED" ) {
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
-          getRecieptSearch({
+          getSanctionLetterReceipt({
             tenantId: reciept_data?.Payments[0]?.tenantId,
             payments: reciept_data?.Payments[0],
-            pdfkey: "noc-sanctionletter",
             EmpData,
           }),
       });
@@ -298,16 +399,53 @@ const CitizenApplicationOverview = () => {
 
   console.log("actions here", actions);
 
-  useEffect(()=>{
-    if(workflowDetails && workflowDetails.data && !workflowDetails.isLoading){
-      const commentsobj = workflowDetails?.data?.timeline
-        ?.filter((item) => item?.performedAction === "APPROVE")
-        ?.flatMap((item) => item?.wfComment || []);
-      const approvercomments = commentsobj?.[0];
-      const finalComment = commentsobj ? `The above approval is subjected to the following conditions: ${approvercomments}` : "";
-      setApproverComment(finalComment);
+//   useEffect(() => {
+//   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+//     const commentsobj = workflowDetails?.data?.timeline
+//       ?.filter((item) => item?.performedAction === "APPROVE")
+//       ?.flatMap((item) => item?.wfComment || []);
+    
+//     const approvercomments = commentsobj?.[0];
+
+//     // Extract only the part after [#?..**]
+//     let conditionText = "";
+//     if (approvercomments?.includes("[#?..**]")) {
+//       conditionText = approvercomments.split("[#?..**]")[1] || "";
+//     }
+
+//     const finalComment = conditionText
+//       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+//       : "";
+
+//     setApproverComment(finalComment);
+//   }
+// }, [workflowDetails]);
+
+
+const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
     }
-  },[workflowDetails])
+
+    const commentsobj = workflowDetails.data.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+
+    const approvercomments = commentsobj?.[0];
+
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }
+
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
+      : "";
+  }, [workflowDetails]);
+
 
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -337,16 +475,16 @@ const CitizenApplicationOverview = () => {
     // setSelectedAction(null);
     const payloadData = applicationDetails?.Noc?.[0] || {};
 
-   const vasikaNumber =  payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
-   const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
-      
+    const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+    const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
+
     const updatedApplicant = {
       ...payloadData,
       vasikaNumber, // add vasikaNumber
       vasikaDate, // add vasikaDate
       workflow: {},
     };
-    console.log('updatedApplicant', updatedApplicant)
+    console.log("updatedApplicant", updatedApplicant);
     const filtData = data?.Licenses?.[0];
     //console.log("filtData", filtData);
 
@@ -409,14 +547,16 @@ const CitizenApplicationOverview = () => {
   };
   console.log("displayData=>", displayData);
   const sitePhotos = displayData?.Documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
-console.log('remainingDocs', remainingDocs)
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  );
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+  );
+  console.log("remainingDocs", remainingDocs);
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
-const propertyId =displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
+  const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
-const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
   console.log("combinerOwnersName", combinedOwnersName);
 
@@ -447,11 +587,11 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
       {id.length > 0 && (
         <React.Fragment>
           <Card>
-            <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+          
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
-            </div>
+          
           </Card>
         </React.Fragment>
       )}
@@ -500,10 +640,6 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_NAME")} text={primaryOwner?.PropertyOwnerName || "N/A"} />
-            <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={primaryOwner?.PropertyOwnerMobileNumber || "N/A"} />
-            <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={primaryOwner?.PropertyOwnerAddress || "N/A"} />
-            <Row label={t("PROPERTY_PLOT_AREA")} text={primaryOwner?.PropertyOwnerPlotArea || "N/A"} />
           </StatusTable>
         </Card>
       )}
@@ -517,6 +653,8 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -540,8 +678,6 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
 
               {detail?.buildingStatus == "Built Up" && <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"} />}
 
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
@@ -627,7 +763,7 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
+            [...sitePhotos].reverse()
               .map((doc) => (
                 <NocSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}
@@ -638,6 +774,39 @@ const ownersList= applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.ap
               ))}
         </StatusTable>
       </Card>
+
+       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+              <Card>
+                <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+                <StatusTable
+                  style={{
+                    display: "flex",
+                    gap: "20px",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  {documentData?.length > 0 &&
+                    documentData.map((doc) => (
+                      <NocUploadedDocument
+                        key={doc?.fileStoreId || doc?.uuid}
+                        filestoreId={doc?.fileStoreId || doc?.uuid}
+                        documentType={doc?.title}
+                        documentName={doc?.title}
+                        latitude={doc?.latitude}
+                        longitude={doc?.longitude}
+                      />
+                    ))}
+                </StatusTable>
+      
+                {geoLocations?.length > 0 && (
+                  <>
+                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+                    <CustomLocationSearch position={geoLocations} />
+                  </>
+                )}
+              </Card>
+            )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>

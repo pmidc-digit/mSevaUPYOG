@@ -24,6 +24,12 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     { name: "connectionCategory" },
   ]);
 
+  const { data: amountData = [], isLoading: amountDataLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-calculation", [
+    { name: "GCBillingSlab" },
+  ]);
+
+  console.log("amountData", amountData?.["gc-services-calculation"]?.GCBillingSlab);
+
   const {
     control,
     handleSubmit,
@@ -260,6 +266,13 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return Array.from(map.values());
   }, [selectedFloorUnits]);
 
+  const filterAmountData = (freq, propertyType) => {
+    const filterData = amountData?.["gc-services-calculation"]?.GCBillingSlab;
+    const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType);
+    console.log("finalData", finalData[0]);
+    setValue("defAmount", finalData[0]?.minimumCharge);
+  };
+
   return (
     <React.Fragment>
       <form style={{ paddingBottom: "150px" }} onSubmit={handleSubmit(onSubmit)}>
@@ -291,7 +304,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                 </div>
-                <button className="submit-bar" type="button" onClick={searchProperty}>
+                <button className="submit-bar gcButton" type="button" onClick={searchProperty}>
                   {`${t("PT_SEARCH")}`}
                 </button>
               </div>
@@ -397,6 +410,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         className="form-field"
                         select={(e) => {
                           props.onChange(e);
+                          console.log("frequency", e?.name);
+                          console.log("property type", watch("propertyType")?.code);
+                          filterAmountData(e?.name, watch("propertyType")?.code);
                         }}
                         selected={props.value}
                         option={FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency}
@@ -405,6 +421,29 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                   {errors?.frequency && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.frequency.message}</p>}
+                </div>
+              </LabelFieldPair>
+
+              {/* amount */}
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">{`${t("Amount")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name="defAmount"
+                    render={(props) => (
+                      <TextInput
+                        style={{ marginBottom: 0 }}
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        disabled={true}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
                 </div>
               </LabelFieldPair>
 
@@ -531,7 +570,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       </form>
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
 
-      {(loader || isLoading || GCLoading || WasteTypeLoading || FreqTypeLoading || connectionCategoryLoading) && <Loader page={true} />}
+      {(amountDataLoading || loader || isLoading || GCLoading || WasteTypeLoading || FreqTypeLoading || connectionCategoryLoading) && (
+        <Loader page={true} />
+      )}
     </React.Fragment>
   );
 };

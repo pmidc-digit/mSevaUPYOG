@@ -81,6 +81,7 @@
 
 import React from "react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next";
 
 export const EmployeeModuleCard = ({
   Icon,
@@ -94,6 +95,7 @@ export const EmployeeModuleCard = ({
 }) => {
   const [isHovered, setIsHovered] = React.useState(false)
   const [hoveredKpi, setHoveredKpi] = React.useState(null)
+  const { t } = useTranslation()
 
   const cardContainerStyle = {
     background: "#ffffff",
@@ -216,7 +218,7 @@ export const EmployeeModuleCard = ({
   return (
     <div style={cardContainerStyle} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>{moduleName}</h1>
+        <h1 style={titleStyle}>{t(moduleName)}</h1>
         {/* <p style={subtitleStyle}>{moduleName.toUpperCase()}_SUBTITLE</p> */}
       </div>
 
@@ -235,10 +237,10 @@ export const EmployeeModuleCard = ({
                   <span style={kpiLabelStyle}>
                     {link ? (
                       <Link to={link} style={{ color: "inherit", textDecoration: "none" }}>
-                        {label}
+                        {t(label)}
                       </Link>
                     ) : (
-                      label
+                      t(label)
                     )}
                   </span>
                   <span style={kpiValueStyle}>{count || "-"}</span>
@@ -255,7 +257,7 @@ export const EmployeeModuleCard = ({
                   {link ? (
                     <React.Fragment>
                       <Link to={link} style={linkStyle}>
-                        {label}
+                        {t(label)}
                       </Link>
                       {index !== links.length - 1 && <span style={dividerStyle}>|</span>}
                     </React.Fragment>

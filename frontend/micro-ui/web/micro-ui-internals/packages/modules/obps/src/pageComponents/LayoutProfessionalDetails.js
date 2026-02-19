@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import {
   LabelFieldPair,
@@ -10,6 +12,7 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 
 const LayoutProfessionalDetails = (_props) => {
@@ -60,6 +63,9 @@ const LayoutProfessionalDetails = (_props) => {
         setGetCounsilNo(councilNo);
         if (councilNo) {
           setValue("professionalRegId", councilNo);
+        }else if (bpaData?.licenseNumber) {
+          setGetCounsilNo(bpaData?.licenseNumber);
+          setValue("professionalRegId", bpaData?.licenseNumber);
         }
         console.log(bpaData, "BPA DATA - APPROVED");
 
@@ -74,8 +80,10 @@ const LayoutProfessionalDetails = (_props) => {
           console.log("  Formatted date:", formattedDate);
         }
 
-        if (bpaData.address) {
-          setValue("professionalAddress", bpaData.address);
+        if (bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress) {
+          console.log("ProfessionalsAddress",bpaData)
+          const professionalAddress = bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress;
+          setValue("professionalAddress", professionalAddress);
         }
       } else if (expiredLicense) {
         setLicenseStatus("EXPIRED");
@@ -98,8 +106,9 @@ const LayoutProfessionalDetails = (_props) => {
           setValue("professionalRegistrationValidity", "");
         }
 
-        if (bpaData.address) {
-          setValue("professionalAddress", bpaData.address);
+        if (bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress) {
+          const professionalAddress = bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress;
+          setValue("professionalAddress", professionalAddress);
         }
       } else {
         console.log("No APPROVED or EXPIRED license found");
@@ -141,12 +150,76 @@ const LayoutProfessionalDetails = (_props) => {
     }
   }, [currentStepData?.applicationDetails, setValue]);
   console.log("first page");
+
+  const [userPhoto, setUserPhoto] = useState(null);
+  const [documents, setDocuments] = useState({});
+
+  // Fetch professional photo from license data
+  useEffect(() => {
+    if (data?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.photo) {
+      const photoFileStoreId = data?.Licenses[0]?.tradeLicenseDetail?.owners[0]?.photo;
+      console.log("photoFileStoreId:", photoFileStoreId);
+      Digit.UploadServices.Filefetch([photoFileStoreId], tenantId.split(".")[0]).then((res) => {
+        console.log("Photo fetch response:", res);
+        setDocuments(res?.data);
+        if (res?.data?.[photoFileStoreId]) {
+          const photoUrl = res.data[photoFileStoreId]?.split(",")[0];
+          console.log("Setting photo URL:", photoUrl);
+          setUserPhoto(photoUrl);
+        }
+      }).catch((err) => {
+        console.error("Error fetching photo:", err);
+      });
+    }
+  }, [data, tenantId]);
+
+  console.log("VVVVVVV", userInfo);
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
+      {/* <div>
 
+  
+      {userPhoto && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "30px", marginTop: "20px" }}>
+          <div style={{ position: "relative", width: "120px" }}>
+            <img
+              src={userPhoto}
+              alt="Professional Photo"
+              style={{
+                width: "120px",
+                height: "120px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #ccc",
+                display: "block",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: "-30px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                fontSize: "14px",
+                fontWeight: "500",
+                width: "150px",
+                textAlign: "center",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {userInfo?.info?.name}
+            </div>
+          </div>
+        </div>
+      )}
+          </div> */}
+
+      {isLoading? <Loader /> : <div>
       <LabelFieldPair>
-        <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}*</CardLabel>
+        <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -182,7 +255,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalName.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -214,7 +287,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalEmailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalEmailId.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -235,7 +308,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalRegId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalRegId.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -255,7 +328,7 @@ const LayoutProfessionalDetails = (_props) => {
       {errors?.professionalMobileNumber && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.professionalMobileNumber.message}</p>}
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -281,6 +354,7 @@ const LayoutProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />
@@ -289,7 +363,7 @@ const LayoutProfessionalDetails = (_props) => {
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REG_VALIDITY_LABEL")}`}*</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REG_VALIDITY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
             control={control}
@@ -323,8 +397,10 @@ const LayoutProfessionalDetails = (_props) => {
         </span>
       )}
       */}
+      </div>}
     </React.Fragment>
   );
 };
 
 export default LayoutProfessionalDetails;
+

@@ -3,18 +3,21 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import ReservationTimer from "../../../pageComponents/ADSReservationsTimer";
+import ADSCancelBooking from "../../../components/ADSCancelBooking";
 
 const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const handleMakePayment = () => {
     history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}`);
     // history.push(`/digit-ui/citizen/payment/my-bills/adv-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
   };
 
-  const handleCancelBooking = async () => {
+  const submitCancelBooking = async () => {
+    setShowModal(false);
     const formData = {
       tenantId: application?.tenantId,
       ...application,
@@ -48,44 +51,59 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
   const [expired, setExpired] = useState(false);
 
   return (
-    <Card>
-      {application.bookingStatus === "PENDING_FOR_PAYMENT" && application?.auditDetails?.createdTime && (
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <ReservationTimer
-            t={t}
-            createTime={application?.auditDetails?.createdTime} // supply when reservation created
-            onExpire={(val) => setExpired(val)}
-          />
-        </div>
-      )}
-      <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
-      <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
-      {/* <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} /> */}
-      <KeyNote keyValue={t("CS_APPLICATION_DETAILS_APPLICATION_DATE")} note={appDate} />
-      <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
-
-      <div className="action-button-myapplication">
-        <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
-          <SubmitBar label={buttonLabel} />
-        </Link>
-        {/* application.bookingStatus === "BOOKING_CREATED" */}
-        {(application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} disabled={expired} />
+    <React.Fragment>
+      <Card>
+        {application.bookingStatus === "PENDING_FOR_PAYMENT" && application?.auditDetails?.createdTime && (
+          <div className="ads-reservation-wrapper">
+            <ReservationTimer
+              t={t}
+              createTime={application?.auditDetails?.createdTime} // supply when reservation created
+              onExpire={(val) => setExpired(val)}
+            />
+          </div>
         )}
-        {application.bookingStatus === "BOOKED" && <SubmitBar label={t("ADS_CANCEL_BOOKING")} onSubmit={handleCancelBooking} disabled={expired} />}
-      </div>
+        <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
+        <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
+        {/* <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} /> */}
+        <KeyNote keyValue={t("CS_APPLICATION_DETAILS_APPLICATION_DATE")} note={appDate} />
+        <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
 
-      {showToast && (
-        <Toast
-          error={showToast.error}
-          warning={showToast.warning}
-          label={t(showToast.label)}
-          onClose={() => {
-            setShowToast(null);
-          }}
+        <div className="action-button-myapplication">
+          <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
+            <SubmitBar label={buttonLabel} />
+          </Link>
+          {/* application.bookingStatus === "BOOKING_CREATED" */}
+          {(application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
+            <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} disabled={expired} />
+          )}
+          {application.bookingStatus === "BOOKED" && (
+            <SubmitBar label={t("ADS_CANCEL_BOOKING")} onSubmit={() => setShowModal(true)} disabled={expired} />
+          )}
+        </div>
+
+        {showToast && (
+          <Toast
+            error={showToast.error}
+            warning={showToast.warning}
+            label={t(showToast.label)}
+            onClose={() => {
+              setShowToast(null);
+            }}
+          />
+        )}
+      </Card>
+      {showModal && (
+        <ADSCancelBooking
+          t={t}
+          closeModal={() => setShowModal(false)}
+          actionCancelLabel="BACK"
+          actionCancelOnSubmit={() => setShowModal(false)}
+          actionSaveLabel="ADS_CANCEL"
+          actionSaveOnSubmit={submitCancelBooking}
+          onSubmit={submitCancelBooking}
         />
       )}
-    </Card>
+    </React.Fragment>
   );
 };
 

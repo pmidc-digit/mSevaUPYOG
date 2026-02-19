@@ -12,6 +12,34 @@ import Inbox from "./Inbox";
 // const Response = Digit?.ComponentRegistryService?.getComponent("ADSResponse"); //TODO
 
 // to do, ApplicationDetail page pending
+
+const ADSBreadCrumbs = ({ location, t }) => {
+  const crumbs = [
+    {
+      path: "/digit-ui/employee",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/employee/ads/inbox",
+      content: t("CS_COMMON_INBOX"),
+      show: location.pathname.includes("/ads/inbox") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/ads/bookad",
+      content: "Book",
+      show: location.pathname.includes("/ads/bookad") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/ads/applicationsearch/application-details",
+      content: "Application Overview",
+      show: location.pathname.includes("/ads/applicationsearch/application-details") ? true : false,
+    },
+  ];
+
+  return <BreadCrumb crumbs={crumbs} />;
+};
+
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -40,18 +68,9 @@ const EmployeeApp = ({ path, url, userType }) => {
     },
   };
   return (
-    <Switch>
-      <AppContainer>
-        <React.Fragment>
-          <div className="ground-container">
-            {!isRes ? (
-              <div
-                className={`ads-registration-row ${ isNewRegistration ? "ads-registration-row--new" : "ads-registration-row--existing" }`}
-              >
-                <BackButton location={location} />
-                {/* <CHBBreadCrumbs location={location} /> */}
-              </div>
-            ) : null}
+    <React.Fragment>
+      <div className="ground-container">
+        {!isRes ? <div style={{ marginLeft: "10px" }}><ADSBreadCrumbs location={location} t={t} /></div> : null}
 
             <PrivateRoute path={`${path}/bookad`} component={(props) => <ADSCreate {...props} userType={userType} />} />
             <PrivateRoute path={`${path}/my-applications`} component={(props) => <SearchApp {...props} userType="employee" parentRoute={path} />} />
@@ -92,9 +111,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             {/* <PrivateRoute path={`${path}/application-overview/:bookingNo`} component={() => <ApplicationOverview />} /> */}
           </div>
         </React.Fragment>
-      </AppContainer>
-    </Switch>
-  );
-};
+      );
+    };
 
 export default EmployeeApp;

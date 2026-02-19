@@ -23,14 +23,14 @@ const CLUInbox = ({ parentRoute }) => {
     moduleName: "clu-service",
     applicationStatus: [],
     businessService: "clu_mcl",// it is dynamic as it  consists of two businessServices
-    assignee: "ASSIGNED_TO_ALL",
+    assignee: "ASSIGNED_TO_ME",
   }
 
   const tableOrderFormDefaultValues = {
     sortBy: "",
     limit: Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
-    sortOrder: "DESC",
+    sortOrder: "ASC",
   }
 
   function formReducer(state, payload) {
@@ -65,7 +65,7 @@ const CLUInbox = ({ parentRoute }) => {
   }
 
   const onSortFormReset = (setSortFormValue) => {
-    setSortFormValue("sortOrder", "DESC")
+    setSortFormValue("sortOrder", "ASC")
     dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues })
   }
 
@@ -212,11 +212,31 @@ const CLUInbox = ({ parentRoute }) => {
     ],
   }
 
+  const user = Digit.UserService.getUser();
+  const {data: employeeData , isLoading: isEmployeeLoading} = Digit.Hooks.useEmployeeSearch(tenantId, { codes: user?.info?.userName, isActive: true }, { enabled: !!user?.info?.userName });
+
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeRole, setEmployeeRole] = useState("");
+
+  useEffect(() => {
+      if (!isEmployeeLoading && employeeData) {
+        const code=  employeeData?.Employees?.[0]?.user?.name || "";
+        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation || ""
+        setEmployeeName(code);
+        setEmployeeRole(desig);
+      }
+  }, [employeeData, isEmployeeLoading]);
+
   return (
     <>
       <Header>
-        {t("ES_COMMON_INBOX")}
-        {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null}
+        {employeeData &&
+          !isEmployeeLoading &&
+          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+          <div>
+            {t("ES_COMMON_INBOX")}
+            {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null}
+        </div>
       </Header>
       <InboxComposer
         {...{

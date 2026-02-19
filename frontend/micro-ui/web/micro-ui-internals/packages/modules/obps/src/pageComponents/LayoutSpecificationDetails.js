@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { LabelFieldPair, TextInput, CardLabel, BreakLine, CardSectionHeader, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 
@@ -12,30 +13,30 @@ const LayoutSpecificationDetails = (_props) => {
         setValue(key, value)
       })
 
-      if (formattedData.netTotalArea) {
-        setValue("specificationPlotArea", formattedData.netTotalArea, { shouldValidate: true })
+      if (formattedData.areaLeftForRoadWidening) {
+        setValue("specificationPlotArea", formattedData.areaLeftForRoadWidening, { shouldValidate: true })
       }
     }
   }, [currentStepData, setValue])
 
   const specificationPlotAreaValue = watch ? watch("specificationPlotArea") : ""
-  const netTotalArea = currentStepData?.siteDetails?.netTotalArea
+  const areaLeftForRoadWidening = currentStepData?.siteDetails?.areaLeftForRoadWidening
 
   useEffect(() => {
-    if (specificationPlotAreaValue && netTotalArea) {
+    if (specificationPlotAreaValue && areaLeftForRoadWidening) {
       const plotArea = Number.parseFloat(specificationPlotAreaValue)
-      const totalArea = Number.parseFloat(netTotalArea)
+      const fieldA = Number.parseFloat(areaLeftForRoadWidening)
 
-      if (!isNaN(plotArea) && !isNaN(totalArea) && plotArea !== totalArea) {
+      if (!isNaN(plotArea) && !isNaN(fieldA) && plotArea !== fieldA) {
         setShowToast({
           error: true,
-          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)",
+          label: "Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)",
         })
       } else {
         setShowToast(null)
       }
     }
-  }, [specificationPlotAreaValue, netTotalArea])
+  }, [specificationPlotAreaValue, areaLeftForRoadWidening])
 
   return (
     <React.Fragment>
@@ -43,7 +44,7 @@ const LayoutSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -55,11 +56,11 @@ const LayoutSpecificationDetails = (_props) => {
                   message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
                 },
                 validate: (value) => {
-                  if (!netTotalArea) return true
+                  if (!areaLeftForRoadWidening) return true
                   const plotArea = Number.parseFloat(value)
-                  const totalArea = Number.parseFloat(netTotalArea)
-                  if (isNaN(plotArea) || isNaN(totalArea)) return true
-                  return plotArea === totalArea || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Area in sq mt (A+B)")
+                  const fieldA = Number.parseFloat(areaLeftForRoadWidening)
+                  if (isNaN(plotArea) || isNaN(fieldA)) return true
+                  return plotArea === fieldA || t("Net Plot Area As Per Jamabandi Must Be Equal To Total Plot Area (Field A)")
                 },
               }}
               render={(props) => (
@@ -99,3 +100,4 @@ const LayoutSpecificationDetails = (_props) => {
 }
 
 export default LayoutSpecificationDetails
+

@@ -131,6 +131,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       billData: formData?.PropertyDetails?.propertyBillData?.billData || {},
     };
 
+    // Extract remarks from PT NdcDetails
+    const ptDetail = apiDataCheck?.[0]?.NdcDetails?.find((detail) => detail.businessService === "PT");
+
+    // Only update remarks from API if formData doesn't already have them (prevents overwriting on back navigation)
+    if (ptDetail?.additionalDetails?.remarks && !formData?.PropertyDetails?.remarks) {
+      combinedObject.remarks = ptDetail.additionalDetails.remarks;
+    }
+
     setPropertyDetails((prev) => {
       return {
         ...prev,
@@ -242,9 +250,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         consumerCode: consumercodes,
       });
       setPropertyLoader(false);
+      const amount = result?.Bill[0]?.totalAmount ?? 0;
 
       if (result?.Bill?.length > 0) {
-        if (result?.Bill[0]?.totalAmount > 0) {
+        if (amount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
         } else {
           setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
@@ -777,6 +786,35 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           )}
         </div>
       )}
+
+      {/* remarks */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Remarks")}`}</CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name={"remarks"}
+            defaultValue={propertyDetails?.remarks || ""}
+            rules={{
+              required: t("REQUIRED_FIELD"),
+            }}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.remarks || ""}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, remarks: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      {/* tl number */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
         <div className="form-field">

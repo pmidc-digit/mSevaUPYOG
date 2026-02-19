@@ -43,6 +43,7 @@
 .selector-button-primary {
   @extend .selector-button;
   background-color: #2947a3 !important;
+  width: 100%;
 
   &:hover {
     background-color: #1e3a8a !important;
@@ -80,12 +81,9 @@
   justify-content: center;
   height: auto;
   min-height: 40px;
-  width: 100%;
   margin: 0;
+  width: 100%;
 
-  @media (min-width: 768px) {
-    width: 30%;
-  }
 
   &:hover {
     background-color: #1e3a8a !important;
@@ -143,5 +141,4 @@
   flex-wrap: wrap;
   margin-top: 10px;
 }
-
 

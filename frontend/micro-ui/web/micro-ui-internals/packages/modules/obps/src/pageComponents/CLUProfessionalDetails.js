@@ -82,7 +82,7 @@ const CLUProfessionalDetails = (_props) => {
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>
 
-      <LabelFieldPair>
+      <LabelFieldPair style={{ marginBottom: "20px" }}>
         <CardLabel>{`${t("BPA_PROFESSIONAL_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -114,11 +114,11 @@ const CLUProfessionalDetails = (_props) => {
               />
             )}
           />
+          <p style={errorStyle}>{errors?.professionalName?.message}</p>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalName ? errors.professionalName.message : ""}</CardLabelError>
 
-      <LabelFieldPair>
+      <LabelFieldPair style={{ marginBottom: "20px" }}>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -146,11 +146,11 @@ const CLUProfessionalDetails = (_props) => {
               />
             )}
           />
+          <p style={errorStyle}>{errors?.professionalEmailId?.message}</p>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalEmailId?.message || ""}</CardLabelError>
 
-      <LabelFieldPair>
+      <LabelFieldPair style={{ marginBottom: "20px" }}>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -177,11 +177,11 @@ const CLUProfessionalDetails = (_props) => {
               />
             )}
           />
+          <p style={errorStyle}>{errors?.professionalRegId?.message}</p>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalRegId?.message || ""}</CardLabelError>
 
-      <LabelFieldPair>
+      <LabelFieldPair style={{ marginBottom: "20px" }}>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -208,11 +208,11 @@ const CLUProfessionalDetails = (_props) => {
               />
             )}
           />
+          <p style={errorStyle}>{errors?.professionalRegIdValidity?.message}</p>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalRegIdValidity?.message || ""}</CardLabelError>
 
-      <LabelFieldPair>
+      <LabelFieldPair style={{ marginBottom: "20px" }}>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
         <div className="field">
           <Controller
@@ -228,9 +228,9 @@ const CLUProfessionalDetails = (_props) => {
             }}
             render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true"/>}
           />
+          <p style={errorStyle}>{errors?.professionalMobileNumber?.message}</p>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalMobileNumber?.message || ""}</CardLabelError>
 
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{`${t("BPA_PROFESSIONAL_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -264,9 +264,10 @@ const CLUProfessionalDetails = (_props) => {
               />
             )}
           />
+          <p style={errorStyle}>{errors?.professionalAddress?.message}</p>
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{errors?.professionalAddress?.message || ""}</CardLabelError>
+      <BreakLine />
     </React.Fragment>
   );
 };

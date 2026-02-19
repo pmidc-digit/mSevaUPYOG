@@ -12,7 +12,17 @@ function RentAndLeaseSummary({ t }) {
     : [];
 
   const property = formData?.propertyDetails || {};
-  const docs = formData?.documents?.documents?.documents || [];
+  const standardDocs = formData?.documents?.documents?.documents || [];
+  const arrearDoc = property.arrearDoc ? [{ documentType: "Arrear Doc", fileStoreId: property.arrearDoc }] : [];
+  const docs = [...standardDocs, ...arrearDoc];
+
+  const mergedDocsObject = {
+    ...formData?.documents,
+    documents: {
+      ...formData?.documents?.documents,
+      documents: docs,
+    },
+  };
 
   const renderRow = (label, value) => (
     <div className="ral-summary-row">
@@ -35,11 +45,14 @@ function RentAndLeaseSummary({ t }) {
     tax_applicable: t("GST_APPLICABLE"),
     refundApplicableOnDiscontinuation: t("REFUND_APPLICABLE"),
     penaltyType: t("PENALTY_TYPE"),
+    startDate: t("RAL_START_DATE"),
+    endDate: t("RAL_END_DATE"),
     // latePayment: t("LATE_PAYMENT_PERCENT"),
   };
 
   return (
     <div className="application-summary">
+      {/* Citizen Details Section */}
       <Card className="summary-section">
         <div>
           <div className="ral-summary-header-row">
@@ -69,29 +82,61 @@ function RentAndLeaseSummary({ t }) {
         </div>
       </Card>
 
+      {/* Property Details Section */}
       <Card className="summary-section">
         <div>
           <div className="ral-summary-header-row">
             <h3 className="ral-summary-heading">{t("Properties Details")}</h3>
           </div>
-          {Object.entries(propertyLabels).map(([key, label]) => {
-            let value = property?.selectedProperty?.[key] || property?.[key];
-            if (value?.name) value = value.name;
-            else if (value?.code) value = value.code;
+          {Object.entries(propertyLabels)
+            .filter(([key]) => property?.applicationType?.code !== "Legacy" || key !== "securityDeposit")
+            .map(([key, label]) => {
+              let value = property?.selectedProperty?.[key] || property?.[key];
+              if (value?.name) value = value.name;
+              else if (value?.code) value = value.code;
 
-            // Special handling for booleans
-            if (key === "refundApplicableOnDiscontinuation") {
-              value = value === true ? t("YES") : t("NO");
-            }
-            if (key === "tax_applicable") {
-              value = value === true ? t("YES") : t("NO");
-            }
+              // Special handling for booleans
+              if (key === "refundApplicableOnDiscontinuation") {
+                value = value === true ? t("YES") : t("NO");
+              }
+              if (key === "tax_applicable") {
+                value = value === true ? t("YES") : t("NO");
+              }
 
-            return renderRow(label, value || "NA");
-          })}
+              if (typeof value === "number" && (key === "startDate" || key === "endDate")) {
+                value = Digit.DateUtils.ConvertEpochToDate(value);
+              }
+
+              return renderRow(label, value || "NA");
+            })}
         </div>
       </Card>
 
+      {/* Additional Details (Arrear Details) - Only for Legacy */}
+      {property?.applicationType?.code === "Legacy" && (
+        <Card className="summary-section">
+          <div>
+            <div className="ral-summary-header-row">
+              <h3 className="ral-summary-heading">{t("Additional Details")}</h3>
+            </div>
+            {renderRow(t("Arrears"), property?.arrear)}
+            {property?.arrearStartDate &&
+              renderRow(
+                t("RAL_START_DATE"),
+                typeof property.arrearStartDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearStartDate) : property.arrearStartDate
+              )}
+            {property?.arrearEndDate &&
+              renderRow(
+                t("RAL_END_DATE"),
+                typeof property.arrearEndDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearEndDate) : property.arrearEndDate
+              )}
+            {property?.arrearReason?.name && renderRow(t("Reason"), property?.arrearReason?.name)}
+            {property?.remarks && renderRow(t("Remarks"), property?.remarks)}
+          </div>
+        </Card>
+      )}
+
+      {/* Document Details Section */}
       <Card className="summary-section">
         <div>
           <div className="ral-summary-header-row">
@@ -103,8 +148,7 @@ function RentAndLeaseSummary({ t }) {
               <div className="ral-summary-docs-container">
                 {docs?.map((doc, index) => (
                   <div key={index} className="ral-summary-doc-card">
-                    <RALDocuments value={formData?.documents} Code={doc?.documentType} index={index} />
-                   
+                    <RALDocuments value={mergedDocsObject} Code={doc?.documentType} index={index} />
                   </div>
                 ))}
               </div>

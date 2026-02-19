@@ -10,6 +10,7 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
       label: "HR_EMAIL_LABEL",
       type: "email",
       name: "emailId",
+      placeHolder: "HR_EMAIL_PLACEHOLDER",
       validation: {
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
@@ -39,6 +40,7 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
                   value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                   onChange={(e) => setValue(e.target.value, input.name)}
                   disable={false}
+                  placeholder={t(input.placeHolder)}
                   defaultValue={undefined}
                   {...input.validation}
                 />
@@ -46,7 +48,7 @@ const SelectEmployeeEmailId = ({ t, config, onSelect, formData = {}, userType, r
               </div>
             </LabelFieldPair>
               {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern("Email")) && (
-                  <CardLabelError style={{ width: "100%", marginTop: "-15px", fontSize: "16px", marginBottom: "12px" }}>
+                  <CardLabelError className="w-full -mt-3.5 text-base mb-3">
                     {t("CS_PROFILE_EMAIL_ERRORMSG")}
                   </CardLabelError>
                 )}

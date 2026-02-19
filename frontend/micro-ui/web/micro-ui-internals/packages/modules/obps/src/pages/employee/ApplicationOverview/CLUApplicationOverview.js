@@ -40,7 +40,8 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-
+import { amountToWords } from "../../../utils";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -119,6 +120,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [displayData, setDisplayData] = useState({});
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const [empDesignation,setEmpDesignation] = useState(null);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -126,6 +128,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
+  const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
@@ -137,6 +140,10 @@ const CLUEmployeeApplicationDetails = () => {
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
   //console.log("businessService here", businessServiceCode, siteImages);
   
+const stateId = Digit.ULBService.getStateId();
+  const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
+  
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -147,6 +154,34 @@ const CLUEmployeeApplicationDetails = () => {
 
   const { data: searchChecklistData } =  Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo: id }, tenantId);
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
+
+  const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY2",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+
+  const hasPayments = combinedPayments.length > 0;
 
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -159,6 +194,137 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }, [siteImages]);
 
+  useEffect(() => {
+        if (eSignError) {
+          setShowToast({
+            key: "true",
+            error: true,
+            message: "eSign process failed. Please try again.",
+          });
+        }
+      }, [eSignError]);
+  
+  let approveComments = []
+  let approvalDate ,approvalTime= ""
+  // Assuming workflowDetails.timeline exists
+  if (workflowDetails?.data && !workflowDetails.isLoading) {
+    approveComments = workflowDetails?.data?.timeline?.filter((item) => item?.performedAction === "APPROVE")?.flatMap((item) => item?.wfComment || []);
+    approvalDate = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.lastModified || "";
+    approvalTime = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.timing || "";
+
+  }
+
+  async function openSanctionLetterPopup() {
+  try {
+    setLoader(true);
+
+    // Get filestoreId from sanction letter function
+    const fileStoreId = await getRecieptSearch({
+      tenantId: reciept_data2?.Payments[0]?.tenantId,
+      payments: reciept_data2?.Payments[0],
+      pdfkey: "clu-sanctionletter",
+    });
+
+    if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
+
+    // Use printReciept to fetch the actual file URL
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+
+    // Open in new tab/popup
+    window.open(fileStore[fileStoreId], "_blank");
+
+  } catch (error) {
+    console.error("Sanction Letter popup error:", error);
+  } finally {
+    setLoader(false);
+  }
+}
+
+  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
+      
+       try {
+        setLoader(true);
+          const application = applicationDetails?.Clu;
+          const approvecomments = approveComments?.[0];
+          let conditionText = "";
+          let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
+          console.log('fileStoreId HERE', fileStoreId)
+        if (approvecomments?.includes("[#?..**]")) {
+          conditionText = approvecomments.split("[#?..**]")[1] || "";
+        }
+         const finalComment = conditionText
+          ? `The above approval is subjected to the following conditions: ${conditionText}`
+          : "";
+        console.log('application', application)
+        if (!application) {
+          throw new Error("CLU Application data is missing");
+        }
+        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        if (!fileStoreId){
+          const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
+          fileStoreId = response?.filestoreIds[0];
+        }
+        return fileStoreId;  
+      } catch (error) {
+        console.error("Sanction Letter download error:", error);
+        }
+        finally { setLoader(false); }
+      }
+  const printCertificateWithESign = async () => {
+    try {
+      console.log("🎯 Starting certificate eSign process...");
+
+      const fileStoreId = await getRecieptSearch({
+        tenantId: reciept_data2?.Payments[0]?.tenantId,
+        payments: reciept_data2?.Payments[0],
+        pdfkey:"clu-sanctionletter",
+      });
+
+      // Update application with sanctionLetterFilestoreId here
+      const application = applicationDetails?.Noc?.[0];
+      // const updatedApplication = {
+      //   ...application,
+      //   workflow: { action: "ESIGN" },
+      //   nocDetails: {
+      //     ...application?.nocDetails,
+      //     additionalDetails: {
+      //       ...application?.nocDetails?.additionalDetails,
+      //       sanctionLetterFilestoreId: fileStoreId,
+      //     },
+      //   },
+      // };
+
+      // await mutation.mutateAsync({ Noc: updatedApplication });
+      // refetch();
+
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${id}`;
+
+      // Trigger eSign
+      eSignCertificate(
+        { fileStoreId, tenantId, callbackUrl },
+        {
+          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onError: (error) => {
+            console.error("❌ eSign failed:", error);
+            setShowToast({
+              key: "true",
+              error: true,
+              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
+            });
+          },
+        }
+      );
+    } catch (error) {
+      console.error("❌ Certificate preparation failed:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
+      });
+    }
+  };
   const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
     title: value?.documentType,
     fileStoreId: value?.filestoreId,
@@ -237,8 +403,8 @@ const CLUEmployeeApplicationDetails = () => {
       const isEdited = !!prevItem.edited;
 
       return {
-        taxHeadCode: tax.taxHeadCode,
-        category: tax.category,
+        taxHeadCode: tax?.taxHeadCode,
+        category: tax?.category,
         adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
         remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
         filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
@@ -258,6 +424,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
 
   const closeToast = () => {
     setShowToast(null);
@@ -322,7 +489,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       setDisplayData(finalDisplayData);
 
-      const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages
+      const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
 
@@ -395,7 +562,10 @@ const CLUEmployeeApplicationDetails = () => {
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(()=>{setShowToast(null);},3000);
-    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+    } else if (action?.action == "ESIGN") {
+      // Automatically trigger the eSign process for the certificate
+      printCertificateWithESign();
+    }else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
@@ -433,13 +603,25 @@ const CLUEmployeeApplicationDetails = () => {
 
   function areAllRemarksFilledForDocumentCheckList(record){
     const entries = Object.entries(record);
-    //console.log("entries==>", entries);
+    console.log("entries==>", entries);
+    console.log("remainingDocs?.length==>", remainingDocs?.length);
+    console.log("checklistRemarks state==>", checklistRemarks);
     
     // Rule 1: Must have exact entries equal to remainingDocs
-    if (entries.length !== remainingDocs?.length) return false;
+    if (entries.length !== remainingDocs?.length) {
+      console.log("Entries length mismatch: entries=", entries.length, "remainingDocs=", remainingDocs?.length);
+      return false;
+    }
 
    // Rule 2: Every value must be a non-empty string (trimmed)
-    return entries.every(([, value]) => typeof value === 'string' && value.trim().length > 0);
+    const allFilled = entries.every(([key, value]) => {
+      const isFilled = typeof value === 'string' && value.trim().length > 0;
+      if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
+      return isFilled;
+    });
+    
+    console.log("allFilled==>", allFilled);
+    return allFilled;
 
   }
 
@@ -477,6 +659,9 @@ const CLUEmployeeApplicationDetails = () => {
 
     //Validation for Document CheckList At DM Level
     if(applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
+      console.log("Validating document checklist remarks...");
+      console.log("Current checklistRemarks:", checklistRemarks);
+      console.log("remainingDocs:", remainingDocs);
       const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
       console.log("allRemarks at DM Level", allRemarksFilled);
 
@@ -640,11 +825,18 @@ const CLUEmployeeApplicationDetails = () => {
   return `${day}/${month}/${year}`;
   };
 
+  const handleViewTimeline = () => {
+    setViewTimeline(true);
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
+  };
+
   console.log("displayData here", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
   //console.log("coordinates==>", coordinates);
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
+
   const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
 
   //console.log("sitePhotoGrahphs==>", sitePhotographs);
@@ -652,6 +844,21 @@ const CLUEmployeeApplicationDetails = () => {
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
+
+  const siteInspectionEmp = useMemo(() => {
+    return workflowDetails?.data?.processInstances
+      ?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")
+      ?.assigner;
+  }, [workflowDetails]);
+
+  
+  const empUserName = siteInspectionEmp?.userName ?? "";
+  const empName = siteInspectionEmp?.name ?? "";
+
+  const handleSetEmpDesignation = (key)=>{
+    setEmpDesignation(key);
+  }
+
 
   if (isLoading) {
     return <Loader />;
@@ -661,33 +868,48 @@ const CLUEmployeeApplicationDetails = () => {
     <div className={"employee-main-application-details"}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
+        <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
+        {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
+          <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
+        )}
       </div>
 
       <Card>
         <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+        <CLUImageView
+          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+        />
       </Card>
 
-      {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
-      <React.Fragment>
-        <Card>
-          <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
+      <Card>
+        <StatusTable>
+          <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
+        </StatusTable>
+      </Card>
+
+      {displayData?.applicantDetails?.[0]?.owners?.map((detail, index) => (
+        <React.Fragment>
+          <Card>
+            <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
-              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
-              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
-              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+                <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+                <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+                <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+                <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
+                <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
+                <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+                <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
               </StatusTable>
             </div>
-        </Card>
+          </Card>
         </React.Fragment>
       ))}
 
-      {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
+      {displayData?.applicantDetails?.some((detail) => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
             <Card>
@@ -714,26 +936,12 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_AREA_TYPE_LABEL")} text={detail?.localityAreaType?.name || "N/A"} />
 
               {detail?.localityAreaType?.code === "SCHEME_AREA" && (
-                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "APPROVED_COLONY" && (
-                <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={detail?.localityApprovedColonyName || "N/A"} />
-              )}
-              {detail?.localityAreaType?.code === "NON_SCHEME" && (
-                <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={detail?.localityNonSchemeType?.name || "N/A"} />
-              )}
-
-              <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={detail?.localityNoticeIssued?.code || "N/A"} />
-
-              {detail?.localityNoticeIssued?.code === "YES" && (
-                <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={detail?.localityNoticeNumber || "N/A"} />
-              )}
-
-              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
                 <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={detail?.localityColonyType?.name || "N/A"} />
               )}
 
-              <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={detail?.localityTransferredSchemeType?.name || "N/A"} />
+              {detail?.localityAreaType?.code === "SCHEME_AREA" && (
+                <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
+              )}
             </StatusTable>
           </div>
         ))}
@@ -745,14 +953,16 @@ const CLUEmployeeApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("BPA_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
-
-              <Row label={t("BPA_PLOT_AREA_LABEL")} text={detail?.plotArea || "N/A"} />
               <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={detail?.khewatOrKhatuniNo || "N/A"} />
               <Row label={t("BPA_CORE_AREA_LABEL")} text={detail?.coreArea?.code || "N/A"} />
 
               <Row label={t("BPA_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
               <Row label={t("BPA_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("BPA_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
+
+              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
+
               <Row label={t("BPA_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("BPA_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("BPA_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
@@ -763,14 +973,12 @@ const CLUEmployeeApplicationDetails = () => {
               <Row label={t("BPA_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
 
               <Row label={t("BPA_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
-              <Row label={t("BPA_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
-              <Row label={t("BPA_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
 
               <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
               <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(detail?.vasikaDate) || "N/A"} />
               <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
-              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
+              {/* <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} /> */}
               <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={detail?.proposedRoadWidthAfterWidening || "N/A"} />
 
               <Row label={t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")} text={detail?.appliedCluCategory?.name || "N/A"} />
@@ -797,70 +1005,80 @@ const CLUEmployeeApplicationDetails = () => {
         ))}
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("BPA_SITE_COORDINATES_LABEL")}</CardSubHeader>
-        {displayData?.coordinates?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
-
-              <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
-              <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
-            </StatusTable>
-          </div>
-        ))}
-      </Card> */}
-
       <Card>
-      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-      <StatusTable>
-        {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
-      </StatusTable>
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable>{sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates} />}</StatusTable>
       </Card>
+
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
+          <StatusTable>
+          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
+          </StatusTable>
+          {geoLocations?.length > 0 && (
+            <React.Fragment>
+              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CustomLocationSearch position={geoLocations} />
+            </React.Fragment>
+          )}
+        </Card>
+      )}
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
-        <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
+        <StatusTable>
+          {applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && (
+            <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />
+          )}
+        </StatusTable>
       </Card>
 
-      {/* <Card>
-        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0  && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
-      </Card> */}
-
-      {/*Document CheckList At DM Level */}
-     {
-      applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0)  ? 
-      <Card>
-        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
-          tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
-      </Card> 
-      : 
-      <Card>
-        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentChecklist documents={remainingDocs} applicationNo={id}
-          tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly="true" />}</StatusTable>
-      </Card>
-     }
-
-      {
-        applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 ?
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (
         <Card>
+          <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
+        </Card>
+      )}
+
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "DOC_VERIFICATION_PENDING" && (
+        <Card>
+          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+          <StatusTable>
+            {remainingDocs?.length > 0 && (
+              <CLUDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                readOnly="true"
+              />
+            )}
+          </StatusTable>
+        </Card>
+      )}
+
+      {applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" &&
+        (user?.info?.roles.filter((role) => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 && (
+          <Card>
             <InspectionReport
               isCitizen={true}
               fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending}
               onSelect={onChangeReport}
             />
-        </Card>
-        :
-         <Card>
-            <InspectionReportDisplay
-              fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending}                                
-            />
-         </Card>
-      }
+          </Card>
+        )}
+
+      {applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" &&
+        user?.info?.roles.filter((role) => role.code === "OBPAS_CLU_DM")?.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+            <StatusTable>
+              {remainingDocs?.length > 0 && (
+                <CLUDocumentChecklist documents={remainingDocs} applicationNo={id} tenantId={tenantId} onRemarksChange={setChecklistRemarks} />
+              )}
+            </StatusTable>
+          </Card>
+        )}
 
       <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
@@ -870,38 +1088,51 @@ const CLUEmployeeApplicationDetails = () => {
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || []
+              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY1"
           />
         )}
+        {reciept_data1?.Payments?.length > 0 && (
+          <StatusTable>
+            <Row label={t("BPA_STATUS_LABEL")} text={t("BPA_PAID_LABEL")} textStyle={{ color: "green", fontWeight: "bold" }} />
+          </StatusTable>
+        )}
+        {hasPayments && <PaymentHistory payments={combinedPayments} />}
       </Card>
 
-      <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+      <div className="employeeCard">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
+            <LinkButton
+              label={t("BPA_DOWNLOAD_FEE_NOTIFICATION")}
+              onClick={() => routeToImage(feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId)}
+            />
+          )}
+        </div>
+
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
             formData={{
               apiData: { ...applicationDetails },
               applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
               siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || []
+              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY2"
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
-
+            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
           />
         )}
-      </Card>
+      </div>
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-          combinedOwnersName
-        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
-      /> 
+      />
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>
@@ -923,59 +1154,23 @@ const CLUEmployeeApplicationDetails = () => {
         </Card>
       )} */}
 
-      {
-        applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (user?.info?.roles.filter(role => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 &&
-        <Card>
-          <div id="fieldInspection"></div>
-          <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
-        </Card>
-      }
-      {/* {
-          applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && <Card>
-            <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSectionHeader>
-            <Table
-              className="customTable table-border-style"
-              t={t}
-              data={documentData}
-              columns={documentsColumnsSiteImage}
-              getCellProps={() => ({ style: {} })}
-              disableSort={false}
-              autoSort={true}
-              manualPagination={false}
-              isPaginationRequired={false}
-            />
-            {geoLocations?.length > 0 &&
-                <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                <CustomLocationSearch position={geoLocations}/>
-                </React.Fragment>
-            }
+      {applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+        (user?.info?.roles.filter((role) => role.code === "OBPAS_CLU_JE" || role.code === "OBPAS_CLU_BI")).length > 0 && (
+          <Card>
+            <div id="fieldInspection"></div>
+            <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
           </Card>
-      } */}
-      {
-        applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 &&
-        <Card>
-          <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
-          <StatusTable>
-          {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={siteImages.documents} />}
-          {/* <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} /> */}
-          </StatusTable>
-          {   geoLocations?.length > 0 &&
-              <React.Fragment>
-                <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                <CustomLocationSearch position={geoLocations}/>
-              </React.Fragment>
-          }
-        </Card>
-      }
+        )}
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      <div id="timeline">
+       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
+      </div>
 
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix= "WF_EMPLOYEE_BPA"
+              localeKeyPrefix="WF_EMPLOYEE_BPA"
               options={actions}
               optionKey={"action"}
               t={t}
@@ -987,20 +1182,18 @@ const CLUEmployeeApplicationDetails = () => {
         </ActionBar>
       )}
 
-      {showImageModal && <Modal
-        headerBarEnd={<CloseBtn onClick={closeImageModal} />}
-      >
-        {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
-        {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-          <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">{t("CS_VIEW_DOCUMENT")}</a>
-        ) : (
-          <img
-            src={imageUrl}
-            alt="Preview"
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-          />
-        )}
-      </Modal>}
+      {showImageModal && (
+        <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
+          {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
+          {imageUrl?.toLowerCase().endsWith(".pdf") ? (
+            <a style={{ color: "blue" }} href={imageUrl} target="_blank" rel="noopener noreferrer">
+              {t("CS_VIEW_DOCUMENT")}
+            </a>
+          ) : (
+            <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          )}
+        </Modal>
+      )}
 
       {showModal ? (
         <CLUModal
@@ -1030,7 +1223,7 @@ const CLUEmployeeApplicationDetails = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}
     </div>
   );
 };

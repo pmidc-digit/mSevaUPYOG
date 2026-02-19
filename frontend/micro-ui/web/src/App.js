@@ -239,13 +239,13 @@ const loadBhashiniSafely = () => {
     // Create a safe fallback node
     const fallback = document.createElement("div");
     fallback.id = id;
-    fallback.style.display = "none";
+    fallback.style.display = "block";
     document.body.appendChild(fallback);
     return fallback;
   };
 
-  // 2️⃣ Load script AFTER window load
-  window.addEventListener("load", () => {
+  // 2️⃣ Load script - check if window is already loaded
+  const loadScript = () => {
     if (document.getElementById("bhashini-script")) return;
 
     const script = document.createElement("script");
@@ -255,15 +255,26 @@ const loadBhashiniSafely = () => {
     script.async = true;
 
     document.body.appendChild(script);
-  });
+  };
+
+  // If window is already loaded, load immediately, otherwise wait for load event
+  if (document.readyState === 'complete') {
+    loadScript();
+  } else {
+    window.addEventListener("load", loadScript);
+  }
 };
 
 
 function App() {
 
 
-   useEffect(() => {
-    loadBhashiniSafely();
+    useEffect(() => {
+    // Load Bhashini after 5 seconds (one time only)
+    const timerId = setTimeout(() => {
+      loadBhashiniSafely();
+    }, 5000);
+
   }, []);
 
   const stateCode =

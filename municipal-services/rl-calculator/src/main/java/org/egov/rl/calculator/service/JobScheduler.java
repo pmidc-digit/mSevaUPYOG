@@ -42,7 +42,7 @@ public class JobScheduler {
 	private Configurations config;
 
 	
-	@Scheduled(fixedRate = 60000, zone = RLConstants.TIME_ZONE)
+	@Scheduled(initialDelay = 60000, fixedRate = 300000, zone = RLConstants.TIME_ZONE)
 //	@Scheduled(cron = "0 30 3 * * *", zone = RLConstants.TIME_ZONE)
 	public void bulkDemandGenerationCronJob() {
 		log.info("Scheduler Start Every day at 03:30 AM");
@@ -53,7 +53,7 @@ public class JobScheduler {
 	}
 	
 //	@Scheduled(cron = "0 30 10 * * *", zone = RLConstants.TIME_ZONE)
-	@Scheduled(fixedRate = 60000, zone = RLConstants.TIME_ZONE)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000, zone = RLConstants.TIME_ZONE)
 	public void sendNotificationAndUpdateDemandCronJob() {
 		log.info("Scheduler Start Every day at 10:30 PM");
 		

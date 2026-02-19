@@ -68,8 +68,8 @@ public class CalculationService {
 				
 				fee = new BigDecimal(amount.getBaseRent());
 				AllotmentDetails allotmentDetails=allotmentRequest.getAllotment().get(0);
-				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
-				String cycle = property.path("feesPeriodCycle").asText();
+				JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+				String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
 				BillingPeriod billingPeriod = billingPeriods.stream()

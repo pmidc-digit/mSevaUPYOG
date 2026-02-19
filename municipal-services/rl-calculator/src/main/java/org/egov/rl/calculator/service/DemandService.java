@@ -107,8 +107,8 @@ public class DemandService {
 				BigDecimal amountPayable = new BigDecimal(0);
 				String applicationType = allotmentRequest.getAllotment().get(0).getApplicationType();
 
-				JsonNode property = allotmentDetails.getAdditionalDetails().get(0);
-				String cycle = property.path("feesPeriodCycle").asText();
+				JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+				String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 				BillingPeriod billingPeriod = billingPeriods.stream()
@@ -148,6 +148,7 @@ public class DemandService {
      * Demand is generated when the application is approved with arrear details.
      */
     public DemandResponse createLegacyArrearDemand(CalculationReq calculationReq) {
+        log.info("Creating legacy arrear demand - START");
         List<Demand> demands = new ArrayList<>();
         CalculationCriteria criteria = calculationReq.getCalculationCriteria().get(0);
         AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
@@ -156,21 +157,28 @@ public class DemandService {
         String tenantId = allotmentDetails.getTenantId();
         String consumerCode = allotmentDetails.getApplicationNumber();
 
+        log.info("Legacy demand - consumerCode: {}, tenantId: {}", consumerCode, tenantId);
+
         // Get arrear details from calculation criteria (passed from rl-services)
         BigDecimal arrearAmount = criteria.getArrearAmount();
         Long arrearStartDate = criteria.getFromDate();
         Long arrearEndDate = criteria.getToDate();
 
+        log.info("Legacy demand - arrearAmount: {}, fromDate: {}, toDate: {}", arrearAmount, arrearStartDate, arrearEndDate);
+
         // If arrear amount is not provided in criteria, it will be ZERO
         if (arrearAmount == null) {
+            log.warn("Arrear amount is null, setting to ZERO");
             arrearAmount = BigDecimal.ZERO;
         }
 
         // Use current time if dates are not provided
         if (arrearStartDate == null) {
+            log.warn("Arrear start date is null, using current time");
             arrearStartDate = System.currentTimeMillis();
         }
         if (arrearEndDate == null) {
+            log.warn("Arrear end date is null, using current time");
             arrearEndDate = System.currentTimeMillis();
         }
 
@@ -198,13 +206,21 @@ public class DemandService {
                 .map(DemandDetail::getTaxAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        log.info("Legacy demand - final amountPayable: {}", amountPayable);
+
+        // Subtract 1 millisecond from arrear taxPeriodFrom to ensure it differs from rent demand's taxPeriodFrom
+        // This prevents billing service's filterMultipleActiveDemands from overwriting one demand with another
+        // since it groups demands by taxPeriodFrom
+        Long arrearTaxPeriodFrom = arrearStartDate - 1;
+        log.info("Legacy demand - Using arrearTaxPeriodFrom: {} (original: {}) to avoid conflict with rent demand", arrearTaxPeriodFrom, arrearStartDate);
+
         Demand demand = Demand.builder()
                 .consumerCode(consumerCode)
                 .demandDetails(demandDetails)
                 .payer(payerUser)
                 .minimumAmountPayable(amountPayable)
                 .tenantId(tenantId)
-                .taxPeriodFrom(arrearStartDate)
+                .taxPeriodFrom(arrearTaxPeriodFrom)
                 .taxPeriodTo(arrearEndDate)
                 .billExpiryTime(arrearEndDate)
                 .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
@@ -214,8 +230,10 @@ public class DemandService {
 
         demands.add(demand);
 
+        log.info("Saving legacy demand to billing service for application: {}", consumerCode);
         List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
-        log.info("Legacy arrear demand created for application: {} with amount: {}", consumerCode, arrearAmount);
+        log.info("Legacy arrear demand created successfully for application: {} with amount: {}, demandId: {}", 
+                consumerCode, arrearAmount, savedDemands.isEmpty() ? "NONE" : savedDemands.get(0).getId());
         return DemandResponse.builder().demands(savedDemands).build();
     }
 
@@ -227,8 +245,8 @@ public class DemandService {
 		String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 				.getTenantId();
 
-		JsonNode property = allotmentRequest.getAllotment().get(0).getAdditionalDetails().get(0);
-		String cycle = property.path("feesPeriodCycle").asText();
+		JsonNode additionalDetails = allotmentRequest.getAllotment().get(0).getAdditionalDetails();
+		String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 		BillingPeriod billingPeriod = billingPeriods.stream().filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
@@ -499,8 +517,8 @@ public class DemandService {
 						List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
 						list.forEach(d -> {
-							JsonNode property = d.getAdditionalDetails().get(0);
-							String cycle = property.path("feesPeriodCycle").asText();
+							JsonNode additionalDetails = d.getAdditionalDetails();
+							String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
 
 							List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo,
 									tenantId);

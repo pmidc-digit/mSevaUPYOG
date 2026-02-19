@@ -19,7 +19,7 @@ import NDCDocumentTimline from "../../components/ChallanDocument";
 import { useParams, useHistory } from "react-router-dom";
 import get from "lodash/get";
 import { Loader } from "../../components/Loader";
-import { ChallanData } from "../../utils/index";
+import { ChallanData, getAcknowledgementData } from "../../utils/index";
 import CHBDocument from "../../components/ChallanDocument";
 import NDCModal from "../../pageComponents/NDCModal";
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
@@ -92,6 +92,9 @@ const ChallanApplicationDetails = () => {
   const [getEmployees, setEmployees] = useState([]);
   const [errorOne, setErrorOne] = useState(null);
   const menuRef = useRef();
+  const [showOptions, setShowOptions] = useState(false);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
 
   const fetchChallans = async (filters) => {
     setLoader(true);
@@ -160,7 +163,65 @@ const ChallanApplicationDetails = () => {
   let user = Digit.UserService.getUser();
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isCemp = user?.info?.roles.find((role) => role.code === "GC_CEMP")?.code;
 
+  const getAcknowledgement = async () => {
+      setLoader(true);
+      try {
+        const applications = getChallanData;
+        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+        setTimeout(() => {
+          Digit.Utils.pdf.generate(acknowldgementDataAPI);
+          setLoader(false);
+        }, 0);
+      } catch (error) {
+        console.error("Error generating acknowledgement:", error);
+        setLoader(false);
+      }
+    };
+
+    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "GC.ONE_TIME_FEE",
+      consumerCodes: id,
+      isEmployee: true,
+    },
+    { enabled: id ? true : false }
+  );
+  const dowloadOptions = [];
+
+  dowloadOptions.push({
+    label: t("CHB_DOWNLOAD_ACK_FORM"),
+    onClick: () => getAcknowledgement(),
+  });
+  async function getRecieptSearch({ tenantId, payments, ...params }) {
+    setLoader(true);
+    try {
+      let response = null;
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      }else {
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response.filestoreIds[0],
+      });
+      setLoader(false);
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    } catch (error) {
+      console.error(error);
+      setLoader(false);
+    }
+  }
+
+  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    dowloadOptions.push({
+      label: t("PTR_FEE_RECIEPT"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
+  }
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
@@ -301,6 +362,17 @@ const ChallanApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
+        <div className="cardHeaderWithOptions ral-app-details-header">
+          <Header className="ral-header-32">{t("Application Details")}</Header>
+          {isCemp && (getChallanData?.applicationStatus === "APPROVED" ||getChallanData?.applicationStatus === "CONNECTION_ACTIVATED" ) && dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )}
+        </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
           <StatusTable>

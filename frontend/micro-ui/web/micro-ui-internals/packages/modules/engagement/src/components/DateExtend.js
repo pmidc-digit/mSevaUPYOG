@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import { TextInput, CardLabel, ActionBar, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
+import { Loader } from "./Loader";
 
 const DateExtend = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData }) => {
   const { t } = useTranslation();
@@ -66,23 +67,25 @@ const DateExtend = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData }) =>
   };
 
   const onSubmit = async (data) => {
-    console.log("data", data);
+    setLoader(true);
     const row = getData?.original;
     const payload = {
       uuid: row?.uuid,
-      startDate: data?.startDate,
-      endDate: data?.endDate,
+      startDate: new Date(data?.startDate).getTime(),
+      endDate: new Date(data?.endDate).getTime(),
       active: true,
     };
-    console.log("payload", payload);
-    console.log("row====", row);
 
     Digit.Surveys.updateSurvey(payload)
       .then((response) => {
         setShowToast({ label: "Date has been updated successfully", isDleteBtn: "true" });
-        closeModal();
+        setLoader(false);
+        setTimeout(() => {
+          closeModal();
+        }, 2000);
       })
       .catch((error) => {
+        setLoader(false);
         setShowToast({ label: error?.response?.data?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
       });
   };
@@ -185,6 +188,7 @@ const DateExtend = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData }) =>
           </ActionBar>
         </form>
       </Modal>
+      {loader && <Loader page={true} />}
     </div>
   );
 };

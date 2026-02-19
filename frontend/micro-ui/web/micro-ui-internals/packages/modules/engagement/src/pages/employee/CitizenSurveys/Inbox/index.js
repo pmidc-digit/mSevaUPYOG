@@ -6,6 +6,7 @@ import SearchFormFieldsComponents from "./SearchFieldsComponents";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileDataCard";
 import DateExtend from "../../../../components/DateExtend";
+import { Loader } from "../../../../components/Loader";
 // import { useHistory } from "react-router-dom";
 
 //Keep below values from localisation:
@@ -17,6 +18,7 @@ const Inbox = ({ parentRoute }) => {
   // const history = useHistory()
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [getData, setData] = useState([]);
+  const [loader, setLoader] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const userInfo = Digit.UserService.getUser().info;
@@ -106,6 +108,7 @@ const Inbox = ({ parentRoute }) => {
 
   let { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
   const [sortedSurveys, setSortedSurveys] = useState([]);
+
   useEffect(() => {
     if (Surveys.length > 0) {
       const sorted = [...Surveys].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
@@ -113,6 +116,7 @@ const Inbox = ({ parentRoute }) => {
       setSortedSurveys(sorted);
     }
   }, [Surveys]);
+
   const PropsForInboxLinks = {
     links: [
       {
@@ -229,12 +233,14 @@ const Inbox = ({ parentRoute }) => {
   const onNoToToast = () => {
     setShowToast(null);
   };
+
   //Row will be deleted if yes is clicked
   const onYesToToast = () => {
     handleUpdateSurvey();
   };
 
   const handleUpdateSurvey = () => {
+    setLoader(true);
     const row = showToast.rowData;
     const payload = {
       uuid: row?.uuid,
@@ -243,14 +249,11 @@ const Inbox = ({ parentRoute }) => {
 
     Digit.Surveys.updateSurvey(payload)
       .then((response) => {
-        // if (response?.Surveys?.length > 0) {
-        //   setShowToast({ label: "Survey status updated successfully", isDleteBtn: "true" });
-        // } else {
-        //   setShowToast({ label: response?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
-        // }
+        setLoader(false);
         setShowToast({ label: response?.message, isDleteBtn: "true" });
       })
       .catch((error) => {
+        setLoader(false);
         setShowToast({ label: error?.response?.data?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
       });
   };
@@ -301,6 +304,7 @@ const Inbox = ({ parentRoute }) => {
           tenantId={tenantId} // Pass tenant ID for API calls
         />
       )}
+      {(isInboxLoading || loader) && <Loader page={true} />}
     </Fragment>
   );
 };

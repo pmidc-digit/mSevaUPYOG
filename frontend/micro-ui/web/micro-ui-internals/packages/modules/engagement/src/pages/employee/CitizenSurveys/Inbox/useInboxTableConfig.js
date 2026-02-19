@@ -25,7 +25,6 @@ const useInboxTableConfig = ({
   const userInfo = Digit.UserService.getUser();
 
   const handleUpdateSurveyConfirm = (row) => {
-    console.log("Current row: ", row);
     const currentStatus = row?.original?.active ? "Active" : "Inactive";
     const updatedStatus = row?.original?.active ? "Inactive" : "Active";
     setShowToast({
@@ -74,7 +73,6 @@ const useInboxTableConfig = ({
         Header: <div>{t("EVENTS_STATUS_LABEL")}</div>,
         accessor: "status",
         Cell: ({ row }) => {
-          console.log("row==???", row);
           return <div style={{ wordBreak: "normal" }}>{GetStatusCell(row?.original?.active)}</div>;
         },
         // Cell: ({ row }) => GetStatusCell(row.original?.active),

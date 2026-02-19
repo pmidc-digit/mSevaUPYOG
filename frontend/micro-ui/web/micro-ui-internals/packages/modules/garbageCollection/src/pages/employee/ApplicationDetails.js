@@ -271,6 +271,7 @@ const ChallanApplicationDetails = () => {
         processInstance: {
           ...data?.processInstance,
           action: "INITIATE",
+          businessService: "NewGC",
         },
       },
       disconnectRequest: true,
@@ -420,7 +421,7 @@ const ChallanApplicationDetails = () => {
           </ActionBar>
         )}
 
-        {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && (
+        {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && getChallanData?.status == "Active" && (
           <ActionBar>
             <SubmitBar
               style={{ width: "200px" }}

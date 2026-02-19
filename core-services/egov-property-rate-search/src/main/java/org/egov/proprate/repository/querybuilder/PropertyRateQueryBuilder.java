@@ -26,7 +26,7 @@ public class PropertyRateQueryBuilder {
             "tm.tehsil_name, tm.tehsil_id, " +
             "dm.district_name, dm.district_id, " +
             "sm.segment_name, sm.segment_level_id, " +
-            "uc.usage_category_name, uc.usage_category_id ";
+            "uc.usage_category_name, uc.usage_category_id, un.unit_id, un.unit_name,un.conversion_formula ";
 
     private static final String BASE_FROM =
             "FROM revenue_property_rate_master prm " +
@@ -35,7 +35,8 @@ public class PropertyRateQueryBuilder {
             "INNER JOIN revenue_village_master vm ON sm.village_id = vm.village_id " +
             "INNER JOIN revenue_tehsil_master tm ON vm.tehsil_id = tm.tehsil_id " +
             "INNER JOIN revenue_district_master dm ON tm.district_id = dm.district_id " +
-            "INNER JOIN revenue_usage_category_master uc ON prm.usage_category_id = uc.usage_category_id ";
+            "INNER JOIN revenue_usage_category_master uc ON prm.usage_category_id = uc.usage_category_id "
+            + "INNER JOIN revenue_prop_unit un ON prm.unit::integer = un.unit_id ";
 
     private static final String BASE_WHERE = "WHERE 1=1 ";
 

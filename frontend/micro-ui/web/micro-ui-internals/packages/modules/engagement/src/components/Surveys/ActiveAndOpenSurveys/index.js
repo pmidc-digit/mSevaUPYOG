@@ -133,20 +133,18 @@ const ActiveAndOpenSurveys = (props) => {
   }
 
   console.log("userinfo", userInfo);
+
   const handleStartSurvey = (surveyDetails) => {
-    console.log("Survey Details: ", surveyDetails);
-    // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
     const paths = {
       employee: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
-      citizen: "/digit-ui/citizen/engagement/surveys/fill-survey",
+      citizen: `/digit-ui/citizen/engagement/surveys/fill-survey`,
     };
 
     const newPath = paths[userType.toLowerCase()] || "";
 
     history.push({
       pathname: newPath,
-      //  state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
-      state: { surveyDetails: surveyDetails, userInfo: userInfo, userType: userType },
+      state: { surveyDetails, userInfo, userType },
     });
   };
 

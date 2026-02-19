@@ -252,7 +252,6 @@ const EmployeeApp = ({ path, url, userType, tenants, stateCode }) => {
   return (
     // <div className="ground-container">
     <>
-      <EventsBreadCrumb location={location} />
       <Switch>
         <Route path={`${path}/event/inbox`} exact>
           <Inbox tenants={tenants} parentRoute={path} />

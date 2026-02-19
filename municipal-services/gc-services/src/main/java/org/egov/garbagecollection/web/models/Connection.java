@@ -44,6 +44,10 @@ public class Connection {
 	private String propertyId = null;
 
 	@SafeHtml
+	@JsonProperty("unitId")
+	private String unitId = null;
+
+	@SafeHtml
 	@JsonProperty("applicationNo")
 	private String applicationNo = null;
 

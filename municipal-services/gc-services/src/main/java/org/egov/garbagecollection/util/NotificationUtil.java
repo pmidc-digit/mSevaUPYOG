@@ -124,7 +124,7 @@ public class NotificationUtil {
 				return;
 			}
 			for (SMSRequest smsRequest : smsRequestList) {
-				producer.push(config.getSmsNotifTopic(), smsRequest);
+				producer.push(config.getSmsNotifTopic(),smsRequest.getMobileNumber(), smsRequest);
 				log.info("SMS Sent! Messages: " + smsRequest.getMessage());
 			}
 		}
@@ -226,7 +226,7 @@ public class NotificationUtil {
 	 */
 	public void sendEventNotification(EventRequest request) {
 		log.info("Pushing Event: " + request.toString());
-		producer.push(config.getSaveUserEventsTopic(), request);
+		producer.push(config.getSaveUserEventsTopic(), request.getEvents().get(0).getId(),request);
 	}
 	public List<EmailRequest> createEmailRequest(GarbageConnectionRequest garbageConnectionRequest, String message, Map<String, String> mobileNumberToEmailId) {
 
@@ -260,7 +260,7 @@ public class NotificationUtil {
 			if (CollectionUtils.isEmpty(emailRequestList))
 				log.info("Messages from localization couldn't be fetched!");
 			for (EmailRequest emailRequest : emailRequestList) {
-				producer.push(config.getEmailNotifTopic(), emailRequest);
+				producer.push(config.getEmailNotifTopic(),String.valueOf(emailRequest.getEmail()),emailRequest);
 				log.info("Email Request -> "+emailRequest.toString());
 				log.info("EMAIL notification sent!");
 			}

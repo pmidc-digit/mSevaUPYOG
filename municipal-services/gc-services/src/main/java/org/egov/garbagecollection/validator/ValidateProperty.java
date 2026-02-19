@@ -8,6 +8,7 @@ import org.egov.garbagecollection.web.models.GarbageConnectionRequest;
 import org.egov.tracer.model.CustomException;
 import org.egov.garbagecollection.util.GcServicesUtil;
 import org.egov.garbagecollection.web.models.Property;
+import org.egov.garbagecollection.web.models.Unit;
 import org.egov.garbagecollection.web.models.Status;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,6 +76,48 @@ public class ValidateProperty {
 				response=configArray.getJSONObject(i);
 		}
 		return response;
+	}
+
+	/**
+	 * Validate that unitId is provided and exists in property
+	 * 
+	 * @param garbageConnectionRequest GC connection request
+	 * @param property Property object
+	 */
+	public void validateUnitForConnection(GarbageConnectionRequest garbageConnectionRequest, Property property) {
+		String unitId = garbageConnectionRequest.getGarbageConnection().getUnitId();
+		
+		// Validate unitId is provided
+		if (StringUtils.isEmpty(unitId)) {
+			throw new CustomException("UNIT_ID_REQUIRED", 
+				"Unit ID is mandatory for garbage connection. Please select a unit from the property.");
+		}
+		
+		// Validate property has units
+		if (property.getUnits() == null || property.getUnits().isEmpty()) {
+			throw new CustomException("NO_UNITS_IN_PROPERTY", 
+				"Property " + property.getPropertyId() + " does not have any units defined.");
+		}
+		
+		// Validate unitId exists in property
+		boolean unitExists = property.getUnits().stream()
+			.anyMatch(unit -> unit.getId().equals(unitId));
+			
+		if (!unitExists) {
+			throw new CustomException("INVALID_UNIT_ID", 
+				"Unit ID " + unitId + " does not exist in property " + property.getPropertyId());
+		}
+		
+		// Validate unit has usageCategory
+		Unit selectedUnit = property.getUnits().stream()
+			.filter(unit -> unit.getId().equals(unitId))
+			.findFirst()
+			.orElse(null);
+			
+		if (selectedUnit != null && StringUtils.isEmpty(selectedUnit.getUsageCategory())) {
+			throw new CustomException("UNIT_USAGE_CATEGORY_MISSING", 
+				"Selected unit does not have a usage category defined. Please update the property.");
+		}
 	}
 	
 }

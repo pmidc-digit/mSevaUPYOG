@@ -198,36 +198,89 @@ public class MasterDataService {
 	 * @param criteria - Calculation Criteria
 	 * @param mdmsResponse - MDMS Response
 	 * @param masterMap - MDMS Master Data
+	 * @param connectiontype - Connection Type
+	 * @param frequency - Billing Frequency (Monthly/Quarterly)
 	 * @return master map with date period
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> enrichBillingPeriod(CalculationCriteria criteria, ArrayList<?> mdmsResponse,
-			Map<String, Object> masterMap, String connectiontype) {
+			Map<String, Object> masterMap, String connectiontype, String frequency) {
 		log.info("Billing Frequency Map {}", mdmsResponse.toString());
+		
+		// Default to "Non Metered" if connectiontype is null
+		String effectiveConnectionType = connectiontype != null ? connectiontype : "Non Metered";
+		
+		// Map frequency to billingCycle: null or "Quarterly" -> "quarterly", "Monthly" -> "monthly"
+		String desiredBillingCycle = (frequency != null && frequency.equalsIgnoreCase("Monthly")) 
+				? "monthly" 
+				: "quarterly"; // Default to quarterly
+		
+		log.info("Matching billing period for connectionType: {} and billingCycle: {}", 
+				effectiveConnectionType, desiredBillingCycle);
+		
 		Map<String, Object> master = new HashMap<>();
+		// First, try to find exact match (connectionType + billingCycle)
 		for (Object o : mdmsResponse) {
-			if ((((Map<String, Object>) o).get(GCCalculationConstant.ConnectionType).toString())
-					.equalsIgnoreCase(connectiontype)) {
-				master = (Map<String, Object>) o;
+			Map<String, Object> entry = (Map<String, Object>) o;
+			String entryConnectionType = entry.get(GCCalculationConstant.ConnectionType) != null 
+					? entry.get(GCCalculationConstant.ConnectionType).toString() 
+					: "";
+			String entryBillingCycle = entry.get(GCCalculationConstant.Billing_Cycle_String) != null 
+					? entry.get(GCCalculationConstant.Billing_Cycle_String).toString() 
+					: "";
+			
+			if (entryConnectionType.equalsIgnoreCase(effectiveConnectionType) 
+					&& entryBillingCycle.equalsIgnoreCase(desiredBillingCycle)) {
+				master = entry;
+				log.info("Found exact match for connectionType: {} and billingCycle: {}", 
+						effectiveConnectionType, desiredBillingCycle);
 				break;
 			}
 		}
+		
+		// If no exact match, fallback to connectionType only match
+		if (master.isEmpty()) {
+			for (Object o : mdmsResponse) {
+				Map<String, Object> entry = (Map<String, Object>) o;
+				String entryConnectionType = entry.get(GCCalculationConstant.ConnectionType) != null 
+						? entry.get(GCCalculationConstant.ConnectionType).toString() 
+						: "";
+				
+				if (entryConnectionType.equalsIgnoreCase(effectiveConnectionType)) {
+					master = entry;
+					log.warn("No exact match found, using first entry with connectionType: {}", effectiveConnectionType);
+					break;
+				}
+			}
+		}
+		
+		// If still no match found, default to first entry (should not happen with proper MDMS)
+		if (master.isEmpty() && !mdmsResponse.isEmpty()) {
+			log.warn("No billing period found for connectionType: " + effectiveConnectionType + ", using first entry");
+			master = (Map<String, Object>) mdmsResponse.get(0);
+		}
+		
 		Map<String, Object> billingPeriod = new HashMap<>();
-		if (master.get(GCCalculationConstant.ConnectionType).toString()
+		if (master.get(GCCalculationConstant.ConnectionType) != null 
+				&& master.get(GCCalculationConstant.ConnectionType).toString()
 				.equalsIgnoreCase(GCCalculationConstant.meteredConnectionType)) {
 			billingPeriod.put(GCCalculationConstant.STARTING_DATE_APPLICABLES, criteria.getFrom());
 			billingPeriod.put(GCCalculationConstant.ENDING_DATE_APPLICABLES, criteria.getTo());
 		} else {
-			if (GCCalculationConstant.Monthly_Billing_Period
+			if (master.get(GCCalculationConstant.Billing_Cycle_String) != null 
+					&& GCCalculationConstant.Monthly_Billing_Period
 					.equalsIgnoreCase(master.get(GCCalculationConstant.Billing_Cycle_String).toString())) {
 				estimationService.getMonthStartAndEndDate(billingPeriod);
-			} else if (GCCalculationConstant.Quaterly_Billing_Period
+			} else if (master.get(GCCalculationConstant.Billing_Cycle_String) != null 
+					&& GCCalculationConstant.Quaterly_Billing_Period
 					.equalsIgnoreCase(master.get(GCCalculationConstant.Billing_Cycle_String).toString())) {
 				estimationService.getQuarterStartAndEndDate(billingPeriod);
 			} else {
 				LocalDateTime demandEndDate = LocalDateTime.now();
 				demandEndDate = setCurrentDateValueToStartingOfDay(demandEndDate);
-				Long endDaysMillis = (Long) master.get(GCCalculationConstant.Demand_End_Date_String);
+				Long endDaysMillis = master.get(GCCalculationConstant.Demand_End_Date_String) != null 
+						? (Long) master.get(GCCalculationConstant.Demand_End_Date_String)
+						: 0L;
 
 				billingPeriod.put(GCCalculationConstant.STARTING_DATE_APPLICABLES,
 						Timestamp.valueOf(demandEndDate).getTime() - endDaysMillis);
@@ -237,7 +290,9 @@ public class MasterDataService {
 		}
 		log.info("Demand Expiry Date : {}", master.get(GCCalculationConstant.Demand_Expiry_Date_String));
 		BigInteger expiryDate = new BigInteger(
-				String.valueOf(master.get(GCCalculationConstant.Demand_Expiry_Date_String)));
+				String.valueOf(master.get(GCCalculationConstant.Demand_Expiry_Date_String) != null 
+						? master.get(GCCalculationConstant.Demand_Expiry_Date_String)
+						: "0"));
 		Long demandExpiryDateMillis = expiryDate.longValue();
 		billingPeriod.put(GCCalculationConstant.Demand_Expiry_Date_String, demandExpiryDateMillis);
 		masterMap.put(GCCalculationConstant.BILLING_PERIOD, billingPeriod);

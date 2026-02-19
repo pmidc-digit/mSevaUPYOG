@@ -52,7 +52,7 @@ public class DemandService {
 
 	@Autowired
 	private ServiceRequestRepository repository;
-	
+
 	@Autowired
 	private BillGeneratorDao billGeneratorDao;
 
@@ -103,16 +103,16 @@ public class DemandService {
 
 	@Autowired
 	private NotificationUtil notificationUtil;
-	
+
 	@Autowired
 	private GCCalculationDaoImpl dao;
 
-	
-	
+
+
 
 	/**
 	 * Creates or updates Demand
-	 * 
+	 *
 	 * @param request      The CalculationReq
 	 * @param calculations The Calculation Objects for which demand has to be
 	 *                     generated or updated
@@ -193,7 +193,7 @@ public class DemandService {
 
 	/**
 	 * Creates or updates Demand
-	 * 
+	 *
 	 * @param requestInfo  The RequestInfo of the calculation request
 	 * @param calculations The Calculation Objects for which demand has to be
 	 *                     generated or updated
@@ -261,7 +261,7 @@ public class DemandService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param requestInfo  RequestInfo
 	 * @param calculations List of Calculation
 	 * @param masterMap    Master MDMS Data
@@ -410,7 +410,7 @@ public class DemandService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param calculationReq - calculation request object
 	 * @param calculations   List of Calculation
 	 * @param masterMap      Master MDMS Data
@@ -489,14 +489,14 @@ public class DemandService {
 					.taxPeriodTo(toDate).consumerType("garbageConnection").businessService(businessService)
 					.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
 					.additionalDetails(additionalDetailsMap).build());
-			
-			
+
+
 			/*PI-19231
-			 * 
+			 *
 			 * Sharan_Gakhar
-			 * 
+			 *
 			 * */
-			
+
 //			Object mdmsResponse = null;
 //	        String relatedSwConn = "";
 //	        List<String> matchingUsages = new ArrayList<>();
@@ -537,14 +537,14 @@ public class DemandService {
 //		        }
 //
 //			}
-			
-	        
+
+
 //	        List<String> sewConnectionList = waterCalculatorDao.fetchSewConnection(consumerCode); 
 //	        sewConsumerCode = sewConnectionList.isEmpty() ? "" : sewConnectionList.get(0).toString();
-	        
+
 //	        GCCalculationDaoImpl dao = new GCCalculationDaoImpl();
-	       
-        	
+
+
 //	        if (!matchingUsages.isEmpty() && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 //	        	// For the metered connections demand has to create one by one
 //	 			if (GCCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
@@ -584,7 +584,7 @@ public class DemandService {
 //	        	demandReq.addAll(demands);
 //	        }
 			demandReq.addAll(demands);
-	        
+
 		}
 
 		String billingcycle = calculatorUtils.getBillingCycle(masterMap);
@@ -759,7 +759,7 @@ public class DemandService {
 				: GCCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD;
 
 		addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
-		Demand demand = Demand.builder().consumerCode(waterConnectionRequest.getWaterConnection().getApplicationNo()).demandDetails(demandDetails).payer(owner)
+		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)
 				.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(taxPeriodFrom)
 				.taxPeriodTo(taxPeriodTo).consumerType("garbageConnection").businessService(businessService)
 				.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDaysInmillies).build();
@@ -769,7 +769,7 @@ public class DemandService {
 
 	/**
 	 * Returns the list of new DemandDetail to be added for updating the demand
-	 * 
+	 *
 	 * @param calculation            The calculation object for the update request
 	 * @param demandDetails          The list of demandDetails from the existing
 	 *                               demand
@@ -833,7 +833,7 @@ public class DemandService {
 
 	/**
 	 * Adds roundOff taxHead if decimal values exists
-	 * 
+	 *
 	 * @param tenantId      The tenantId of the demand
 	 * @param demandDetails The list of demandDetail
 	 */
@@ -894,7 +894,7 @@ public class DemandService {
 
 	/**
 	 * Searches demand for the given consumerCode and tenantIDd
-	 * 
+	 *
 	 * @param tenantId      The tenantId of the tradeLicense
 	 * @param consumerCodes The set of consumerCode of the demands
 	 * @param requestInfo   The RequestInfo of the incoming request
@@ -918,7 +918,7 @@ public class DemandService {
 
 	/**
 	 * Creates demand Search url based on tenantId,businessService, and
-	 * 
+	 *
 	 * @return demand search url
 	 */
 	public StringBuilder getDemandSearchURLForDemandId() {
@@ -939,7 +939,7 @@ public class DemandService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param tenantId     TenantId
 	 * @param consumerCode Connection number
 	 * @param requestInfo  - RequestInfo
@@ -963,7 +963,7 @@ public class DemandService {
 	/**
 	 * Creates demand Search url based on tenantId,businessService, period from,
 	 * period to and ConsumerCode
-	 * 
+	 *
 	 * @return demand search url
 	 */
 	public StringBuilder getDemandSearchURL(String tenantId, Set<String> consumerCodes, Long taxPeriodFrom,
@@ -1002,7 +1002,7 @@ public class DemandService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param getBillCriteria    Bill Criteria
 	 * @param requestInfoWrapper contains request info wrapper
 	 * @return updated demand response
@@ -1128,7 +1128,7 @@ public class DemandService {
 
 	/**
 	 * Updates demand for the given list of calculations
-	 * 
+	 *
 	 * @param requestInfo  The RequestInfo of the calculation request
 	 * @param calculations List of calculation object
 	 * @return Demands that are updated
@@ -1195,9 +1195,9 @@ public class DemandService {
 
 	/**
 	 * Applies Penalty/Rebate/Interest to the incoming demands
-	 * 
+	 *
 	 * If applied already then the demand details will be updated
-	 * 
+	 *
 	 * @param demand                      - Demand Object
 	 * @param requestInfoWrapper          RequestInfoWrapper Object
 	 * @param timeBasedExemptionMasterMap - List of TimeBasedExemption details
@@ -1325,7 +1325,7 @@ public class DemandService {
 	/**
 	 * Updates the amount in the latest demandDetail by adding the diff between new
 	 * and old amounts to it
-	 * 
+	 *
 	 * @param newAmount        The new tax amount for the taxHead
 	 * @param latestDetailInfo The latest demandDetail for the particular taxHead
 	 */
@@ -1351,7 +1351,7 @@ public class DemandService {
 
 
 	/**
-	 * 
+	 *
 	 * @param tenantId TenantId for getting master data.
 	 */
 	public void generateDemandForTenantId(String tenantId, RequestInfo requestInfo) {
@@ -1384,7 +1384,7 @@ public class DemandService {
 			ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap
 					.get(GCCalculationConstant.Billing_Period_Master);
 			mstrDataService.enrichBillingPeriod(null, billingFrequencyMap, masterMap,
-					GCCalculationConstant.nonMeterdConnection);
+					GCCalculationConstant.nonMeterdConnection,null);
 
 			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
 					.get(GCCalculationConstant.BILLING_PERIOD);
@@ -1447,7 +1447,7 @@ public class DemandService {
 	/*
 	 * CANCEL BILL
 	 */
-	public CancelDemand cancelDemandForConsumer(CancelDemand cancelDemand) {	
+	public CancelDemand cancelDemandForConsumer(CancelDemand cancelDemand) {
 		  for (CancelList cancelList : cancelDemand.getCancelList()) {
 		        String tenantId = cancelList.gettenantId();
 		        String demandid = cancelList.getdemandid();
@@ -1618,10 +1618,10 @@ public class DemandService {
 			isConnectionValid = false;
 		/*
 		 * if (waterConnection.getConnectionExecutionDate() < taxPeriodFrom) {
-		 * 
+		 *
 		 * isConnectionValid = fetchBill(waterConnection, taxPeriodFrom, taxPeriodTo,
 		 * tenantId, requestInfo);
-		 * 
+		 *
 		 * }
 		 */
 
@@ -1641,7 +1641,7 @@ public class DemandService {
 			ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap
 					.get(GCCalculationConstant.Billing_Period_Master);
 			mstrDataService.enrichBillingPeriod(null, billingFrequencyMap, masterMap,
-					GCCalculationConstant.nonMeterdConnection);
+					GCCalculationConstant.nonMeterdConnection,null);
 
 			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
 					.get(GCCalculationConstant.BILLING_PERIOD);
@@ -1667,96 +1667,147 @@ public class DemandService {
 
 
 	/**
-	 * 
+	 *
 	 * @param master      Master MDMS Data
 	 * @param requestInfo Request Info
 	 * @param tenantId    Tenant Id
 	 */
-	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
-			Long taxPeriodFrom, Long taxPeriodTo) {
-		log.info("generateDemandForULB:: {} taxPeriodFrom:: {} taxPeriodTo {}", tenantId, taxPeriodFrom, taxPeriodTo);
-		try {
-			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
+    public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
+                                     Long taxPeriodFrom, Long taxPeriodTo) {
+        log.info("generateDemandForULB:: {} taxPeriodFrom:: {} taxPeriodTo {}", tenantId, taxPeriodFrom, taxPeriodTo);
+        try {
+            // Determine frequency from requestInfo key
+            String processingFrequency = requestInfo.getKey();
+            boolean isMonthly = "MONTHLY".equals(processingFrequency);
+            boolean isQuarterly = "QUARTERLY".equals(processingFrequency);
 
-			int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
-					.filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
+//			if (!isMonthly && !isQuarterly) {
+//				// Fallback: determine from billing period dates
+//				long periodDays = TimeUnit.MILLISECONDS.toDays(taxPeriodTo - taxPeriodFrom);
+//				isMonthly = (periodDays >= 28 && periodDays <= 31);
+//				isQuarterly = (periodDays >= 89 && periodDays <= 92);
+//			}
 
-			String cone = requestInfo.getKey();
-			log.info("Billing master data values for non metered connection:: {}", master);
+            String targetFrequency = isMonthly ? "Monthly" : "Quarterly";
+            log.info("Processing {} connections for tenant: {}", targetFrequency, tenantId);
 
-			List<GarbageDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
-					GCCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            // Load appropriate tax periods based on frequency
+            List<TaxPeriod> taxPeriods;
+            if (isMonthly) {
+                taxPeriods = calculatorUtils.getMonthlyTaxPeriodsFromMDMS(requestInfo, tenantId);
+                log.info("Loaded {} monthly tax periods", taxPeriods.size());
+            } else {
+                taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
+                log.info("Loaded {} quarterly tax periods", taxPeriods.size());
+            }
 
-			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
-			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
+            int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
+                    .filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
 
-			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
-			int totalRecordsPushedToKafka = 0;
+            String cone = processingFrequency;
+            log.info("Billing master data values for non metered connection:: {}", master);
 
-			for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
-				GarbageDetails waterConnection = connectionNos.get(connectionNosIndex);
-				log.info("Connection Number: {}", waterConnection.getConnectionNo());
+            // Fetch ALL connections for this billing cycle (using getConnection to get full objects with frequency)
+            List<GarbageConnection> allConnections = waterCalculatorDao.getConnection(tenantId,
+                    null, // consumerCode - null to get all
+                    GCCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo);
 
-				try {
-					int startIndex = 0;
-					Long lastDemandFromDate = waterCalculatorDao
-							.searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
+            allConnections = enrichmentService.filterConnections(allConnections);
 
-					if (lastDemandFromDate != null) {
-						startIndex = IntStream.range(0, taxPeriods.size())
-								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-								.orElse(-1);
-						startIndex++; // move to next quarter
-					}
+            // FILTER connections by frequency
+            List<GarbageConnection> connectionNos = allConnections.stream()
+                    .filter(conn -> {
+                        String connFrequency = conn.getFrequency();
+                        if (connFrequency == null || connFrequency.trim().isEmpty()) {
+                            connFrequency = "Quarterly"; // Default to quarterly
+                        }
+                        return connFrequency.equalsIgnoreCase(targetFrequency);
+                    })
+                    .collect(Collectors.toList());
 
-					for (int taxPeriodIndex = startIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
-						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
-						log.info("FromPeriod: {} ToPeriod: {} connectionNo: {}", taxPeriod.getFromDate(),
-								taxPeriod.getToDate(), waterConnection.getConnectionNo());
+            if (connectionNos.isEmpty()) {
+                log.info("No {} connections found for tenant: {} (total connections: {})",
+                        targetFrequency, tenantId, allConnections.size());
+                return;
+            }
 
-						if (isValidBillingCycle(waterConnection, requestInfo, tenantId, taxPeriod.getFromDate(),
-								taxPeriod.getToDate())) {
+            log.info("Filtered {} connections: {} out of {} total connections",
+                    targetFrequency, connectionNos.size(), allConnections.size());
 
-							calculationCriteriaList.add(CalculationCriteria.builder().tenantId(tenantId)
-									.assessmentYear(taxPeriod.getFinancialYear()).from(taxPeriod.getFromDate())
-									.to(taxPeriod.getToDate()).connectionNo(waterConnection.getConnectionNo()).build());
+            int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
+            log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
 
-							// ✅ Push batch when reaching configured size
-							if (calculationCriteriaList.size() == bulkSaveDemandCount) {
-								pushBatchToKafka(calculationCriteriaList, requestInfo);
-							
-									//Thread.sleep(1500000);
+            List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
+            int totalRecordsPushedToKafka = 0;
 
-								
-								totalRecordsPushedToKafka += calculationCriteriaList.size();
-								calculationCriteriaList.clear();
-							}
+            for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
+                GarbageConnection fullConnection = connectionNos.get(connectionNosIndex);
 
-						} else {
-							log.info("Invalid Connection for period {}", taxPeriod.getFinancialYear());
-						}
-					}
+                // Create GarbageDetails for compatibility with isValidBillingCycle()
+                GarbageDetails waterConnection = new GarbageDetails();
+                waterConnection.setConnectionNo(fullConnection.getConnectionNo());
+                waterConnection.setConnectionExecutionDate(fullConnection.getConnectionExecutionDate());
 
-				} catch (Exception e) {
-					log.error("Exception while generating demand for connectionNo: {} tenantId: {} msg: {}",
-							waterConnection.getConnectionNo(), tenantId, e.getMessage(), e);
-				}
-			}
+                try {
+                    int startIndex = 0;
+                    Long lastDemandFromDate = waterCalculatorDao
+                            .searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
+
+                    if (lastDemandFromDate != null) {
+                        startIndex = IntStream.range(0, taxPeriods.size())
+                                .filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
+                                .orElse(-1);
+                        startIndex++; // move to next quarter
+                    }
+
+                    for (int taxPeriodIndex = startIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
+                        TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
+                        log.info("FromPeriod: {} ToPeriod: {} connectionNo: {}", taxPeriod.getFromDate(),
+                                taxPeriod.getToDate(), waterConnection.getConnectionNo());
+
+                        if (isValidBillingCycle(waterConnection, requestInfo, tenantId, taxPeriod.getFromDate(),
+                                taxPeriod.getToDate())) {
+
+                            calculationCriteriaList.add(CalculationCriteria.builder().tenantId(tenantId)
+                                    .assessmentYear(taxPeriod.getFinancialYear()).from(taxPeriod.getFromDate())
+                                    .to(taxPeriod.getToDate()).connectionNo(waterConnection.getConnectionNo()).build());
+
+                            // ✅ Push batch when reaching configured size
+                            if (calculationCriteriaList.size() == bulkSaveDemandCount) {
+                                pushBatchToKafka(calculationCriteriaList, requestInfo);
+
+                                //Thread.sleep(1500000);
+
+
+                                totalRecordsPushedToKafka += calculationCriteriaList.size();
+                                calculationCriteriaList.clear();
+                            }
+
+                        } else {
+                            log.info("Invalid Connection for period {}", taxPeriod.getFinancialYear());
+                        }
+                    }
+
+                } catch (Exception e) {
+                    log.error("Exception while generating demand for connectionNo: {} tenantId: msg: {}",
+                            waterConnection.getConnectionNo(), tenantId, e.getMessage(), e);
+                }
+            }
 
 // ✅ Push leftover records if any
-			if (!calculationCriteriaList.isEmpty()) {
-				pushBatchToKafka(calculationCriteriaList, requestInfo);
-				totalRecordsPushedToKafka += calculationCriteriaList.size();
-				calculationCriteriaList.clear();
-			}
+            if (!calculationCriteriaList.isEmpty()) {
+                pushBatchToKafka(calculationCriteriaList, requestInfo);
+                totalRecordsPushedToKafka += calculationCriteriaList.size();
+                calculationCriteriaList.clear();
+            }
 
-			log.info("totalRecordsPushedToKafka: {}", totalRecordsPushedToKafka);
+            log.info("Completed {} processing for tenant {}: totalRecordsPushedToKafka: {}",
+                    targetFrequency, tenantId, totalRecordsPushedToKafka);
 
-		} catch (Exception e) {
-			log.error("Exception occurred while processing demand generation for tenantId: {}", tenantId, e);
-		}
-	}
-
+        } catch (Exception e) {
+            log.error("Exception occurred while processing demand generation for tenantId: {}", tenantId, e);
+        }
+    }
 	private void pushBatchToKafka(List<CalculationCriteria> calculationCriteriaList, RequestInfo requestInfo) {
 	    CalculationReq calculationReq = CalculationReq.builder()
 	            .calculationCriteria(new ArrayList<>(calculationCriteriaList)) // copy
@@ -1782,10 +1833,10 @@ public class DemandService {
 			isConnectionValid = false;
 		/*
 		 * if (waterConnection.getConnectionExecutionDate() < taxPeriodFrom) {
-		 * 
+		 *
 		 * isConnectionValid = fetchBill(waterConnection, taxPeriodFrom, taxPeriodTo,
 		 * tenantId, requestInfo);
-		 * 
+		 *
 		 * }
 		 */
 
@@ -1819,7 +1870,7 @@ public class DemandService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param billingFrequency Billing Frequency details
 	 * @param dayOfMonth       Day of the given month
 	 * @return true if current day is for generation of demand
@@ -1879,7 +1930,7 @@ public class DemandService {
 
 	    for (String consumerCode : consumerCodes) {
 	        try {
-	        	
+
 	            StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
 
 	            Object result = serviceRequestRepository.fetchResult(
@@ -1890,11 +1941,11 @@ public class DemandService {
 	            BillResponseV2 billResponse = mapper.convertValue(result, BillResponseV2.class);
 	            List<BillV2> bills = billResponse.getBill();
 
-	        	
-	            
+
+
 	            if (bills != null && !bills.isEmpty()) {
-	            	
-	            	
+
+
 	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
 	            			  consumerCode,
 		            		 schedlerId,
@@ -1905,11 +1956,11 @@ public class DemandService {
 	  				      System.currentTimeMillis()
 	  				    );
 
-	            	 
-	            	
+
+
 	                successConsumerCodes.addAll(
 	                    bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList())
-	                
+
 	                		);
 	                log.info("✅ Bill generated successfully for consumerCode: {}", consumerCode);
 	            } else {
@@ -1940,7 +1991,7 @@ public class DemandService {
 
 	            failureCollector.add(consumerCode);
 	            log.error("❌ Fetch Bill failed for consumerCode: {} Exception: {}", consumerCode, ex.getMessage(), ex);
-	            
+
 	        }
 	    }
 
@@ -1987,7 +2038,7 @@ public class DemandService {
 
 	/**
 	 * compare and update the demand details
-	 * 
+	 *
 	 * @param calculation   - Calculation object
 	 * @param demandDetails - List Of Demand Details
 	 * @return combined demand details list
@@ -2036,7 +2087,7 @@ public class DemandService {
 	/**
 	 * Search demand based on demand id and updated the tax heads with new adhoc tax
 	 * heads
-	 * 
+	 *
 	 * @param requestInfo  - Request Info Object
 	 * @param calculations - List of Calculation to update the Demand
 	 * @return List of calculation
@@ -2095,7 +2146,7 @@ public class DemandService {
 
 	/**
 	 * Creates demand
-	 * 
+	 *
 	 * @param requestInfo The RequestInfo of the calculation Request
 	 * @param demands     The demands to be created
 	 * @return The list of demand created
@@ -2147,25 +2198,25 @@ public class DemandService {
 		}
 		return demandList;
 	}
-	
+
 	/*PI-19231
-	 * 
+	 *
 	 * */
-	
+
 	public Object getMdmsResponse(RequestInfo requestInfo, String tenantId ) {
 //		StringBuilder uri = new StringBuilder(calculatorUtils.getMdmsSearchUrl());
 //		MdmsCriteriaReq mdmsCriteriaReq = calculatorUtils.getWsTest(requestInfo ,tenantId);
 		Object response = null;
 		try {
 			response = repository.fetchResult(calculatorUtils.getMdmsSearchUrl(), calculatorUtils.getUsageCategoryFromMdms(requestInfo ,tenantId));
-			log.info("response : " + response);	
+			log.info("response : " + response);
 			return response;
 		}
 		catch(Exception e){
 			log.error("Error fetching result", e);
 		}
 		return response;
-		
-	}	
+
+	}
 
 }

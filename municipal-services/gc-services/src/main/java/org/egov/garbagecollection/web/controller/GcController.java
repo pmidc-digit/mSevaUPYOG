@@ -144,4 +144,64 @@ public class GcController {
 		return new ResponseEntity<>(GCConstants.SUCCESS_DISCONNECT_MSG, HttpStatus.CREATED);
 	}
 
+	/**
+	 * Validate if property/unit can have a new GC connection
+	 * Returns connection availability status for frontend
+	 */
+	@RequestMapping(value = "/_validateConnection", method = RequestMethod.POST)
+	public ResponseEntity<ConnectionValidationResponse> validateConnectionAvailability(
+			@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@RequestParam String propertyId,
+			@RequestParam String unitId,
+			@RequestParam String tenantId) {
+		
+		// Search for existing connections for this property and unit
+		SearchCriteria criteria = SearchCriteria.builder()
+			.propertyId(propertyId)
+			.unitId(unitId)
+			.tenantId(tenantId)
+			.build();
+		
+		List<GarbageConnection> existingConnections = waterService.search(criteria, requestInfoWrapper.getRequestInfo());
+		
+		// Filter active connections only
+		List<GarbageConnection> activeConnections = existingConnections != null ? 
+			existingConnections.stream()
+				.filter(conn -> conn.getStatus() == Connection.StatusEnum.ACTIVE)
+				.collect(java.util.stream.Collectors.toList()) : 
+			new java.util.ArrayList<>();
+		
+		// Check if unit already has a connection
+		boolean unitHasConnection = activeConnections.stream()
+			.anyMatch(conn -> unitId.equals(conn.getUnitId()));
+		
+		// Check if property has reached max connections
+		boolean maxConnectionsReached = activeConnections.size() >= 3;
+		
+		// Build response
+		ConnectionValidationResponse response = ConnectionValidationResponse.builder()
+			.canCreateConnection(!unitHasConnection && !maxConnectionsReached)
+			.unitHasActiveConnection(unitHasConnection)
+			.activeConnectionsCount(activeConnections.size())
+			.maxConnectionsReached(maxConnectionsReached)
+			.propertyId(propertyId)
+			.unitId(unitId)
+			.message(buildValidationMessage(unitHasConnection, maxConnectionsReached, activeConnections.size()))
+			.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(
+				requestInfoWrapper.getRequestInfo(), true))
+			.build();
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	private String buildValidationMessage(boolean unitHasConnection, boolean maxReached, int activeCount) {
+		if (unitHasConnection) {
+			return "This unit already has an active garbage connection";
+		}
+		if (maxReached) {
+			return "Property has reached maximum of 3 active connections";
+		}
+		return "Connection can be created. Property has " + activeCount + " active connection(s)";
+	}
+
 }

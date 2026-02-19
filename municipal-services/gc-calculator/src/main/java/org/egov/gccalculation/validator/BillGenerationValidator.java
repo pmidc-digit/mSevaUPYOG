@@ -24,8 +24,9 @@ public class BillGenerationValidator {
 
 	public void validateBillingCycleDates(BillGenerationReq billGenerationReq, RequestInfo requestInfo) {
 
+		String transactionType = billGenerationReq.getBillScheduler().getTransactionType();
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo,
-				billGenerationReq.getBillScheduler().getTenantId());
+				billGenerationReq.getBillScheduler().getTenantId(), transactionType);
 
 		if (billingMasterData.get("taxPeriodFrom") == null || billingMasterData.get("taxPeriodTo") == null) {
 			throw new CustomException(GCCalculationConstant.WS_NO_BILLING_PERIOD_MSG,
@@ -55,8 +56,9 @@ public class BillGenerationValidator {
 
 	public boolean checkBillingCycleDates(BillGenerationReq billGenerationReq, RequestInfo requestInfo) {
 		 boolean checkBillingStatus = false;
+		String transactionType = billGenerationReq.getBillScheduler().getTransactionType();
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo,
-				billGenerationReq.getBillScheduler().getTenantId());
+				billGenerationReq.getBillScheduler().getTenantId(), transactionType);
 
 		if (billingMasterData.get("taxPeriodFrom") == null || billingMasterData.get("taxPeriodTo") == null) {
 			throw new CustomException(GCCalculationConstant.WS_NO_BILLING_PERIOD_MSG,

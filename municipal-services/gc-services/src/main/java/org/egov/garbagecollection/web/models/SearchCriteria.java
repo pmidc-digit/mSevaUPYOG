@@ -60,6 +60,9 @@ public class SearchCriteria {
 	@JsonProperty("propertyId")
 	private String propertyId;
 
+	@JsonProperty("unitId")
+	private String unitId;
+
 	@JsonIgnore
 	private String accountId;
 
@@ -126,7 +129,8 @@ public class SearchCriteria {
 
 	public boolean isEmpty() {
 		return (StringUtils.isEmpty(this.tenantId) && StringUtils.isEmpty(this.mobileNumber)
-				&& StringUtils.isEmpty(this.propertyId) && CollectionUtils.isEmpty(this.ids)
+				&& StringUtils.isEmpty(this.propertyId) && StringUtils.isEmpty(this.unitId)
+				&& CollectionUtils.isEmpty(this.ids)
 				&& StringUtils.isEmpty(this.oldConnectionNumber) && StringUtils.isEmpty(this.connectionNumber)
 				&& StringUtils.isEmpty(this.status) && StringUtils.isEmpty(this.applicationNumber)
 				&& StringUtils.isEmpty(this.applicationStatus) && StringUtils.isEmpty(this.fromDate)
@@ -139,7 +143,7 @@ public class SearchCriteria {
 		return (this.tenantId != null && this.status == null && this.ids == null && this.applicationNumber == null
 				&& this.connectionNumber == null && this.oldConnectionNumber == null && this.mobileNumber == null
 				&& this.fromDate == null && this.toDate == null && this.ownerIds == null && this.propertyId == null
-				&& this.applicationType == null && this.doorNo == null && this.ownerName == null
+				&& this.unitId == null && this.applicationType == null && this.doorNo == null && this.ownerName == null
 				&& this.assignee == null && this.connectionType == null);
 	}
 

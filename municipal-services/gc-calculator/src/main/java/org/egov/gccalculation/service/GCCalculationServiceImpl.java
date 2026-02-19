@@ -209,8 +209,9 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 
 		@SuppressWarnings("unchecked")
 		List<TaxHeadMaster> ll = ((List<TaxHeadMaster>) masterMap.get(GCCalculationConstant.TAXHEADMASTER_MASTER_KEY));
-		Map<String, TaxHeadCategory> taxHeadCategoryMap = ll.stream().collect(
-				Collectors.toMap(TaxHeadMaster::getCode, TaxHeadMaster::getCategory, (OldValue, NewValue) -> NewValue));
+        Map<String, TaxHeadCategory> taxHeadCategoryMap = ll.stream()
+                .filter(taxHead -> taxHead.getCategory() != null)
+                .collect(Collectors.toMap(TaxHeadMaster::getCode, TaxHeadMaster::getCategory, (OldValue, NewValue) -> NewValue));
 
 		BigDecimal taxAmt = BigDecimal.ZERO;
 		BigDecimal waterCharge = BigDecimal.ZERO;
@@ -349,10 +350,10 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 	            Map<String, List> estimationMap = estimationService.getEstimationMap(criteria, request, masterMap);
 	            ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap.get(GCCalculationConstant.Billing_Period_Master);
 	            masterDataService.enrichBillingPeriod(criteria, billingFrequencyMap, masterMap,
-	                    criteria.getWaterConnection().getConnectionType());
 
-	            Calculation calculation = null;
-
+                    criteria.getWaterConnection().getConnectionType(),
+                    criteria.getWaterConnection().getFrequency());
+                Calculation calculation = null;
 	            if (request.getIsDisconnectionRequest() != null && request.getIsDisconnectionRequest()) {
 	                if (criteria.getApplicationNo().equals(
 	                        request.getCalculationCriteria()
@@ -531,7 +532,13 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 		tenantIds.forEach(tenantId -> {
 			try {
 
-				demandService.generateDemandForTenantId(tenantId, requestInfo);
+                requestInfo.getUserInfo().setTenantId(tenantId);
+                // Generate monthly demands
+                log.info("Generating monthly demands for tenant: {}", tenantId);
+                generateMonthlyDemandsForTenant(tenantId, requestInfo);
+                // Generate quarterly demands
+                log.info("Generating quarterly demands for tenant: {}", tenantId);
+                generateQuarterlyDemandsForTenant(tenantId, requestInfo);
 
 			} catch (Exception e) {
 				log.error("Exception occured while generating demand for tenant: " + tenantId);
@@ -540,7 +547,105 @@ public class GCCalculationServiceImpl implements GCCalculationService {
 		});
 	}
 
-	public List<GarbageConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo,
+    /**
+
+
+
+     * Generate demands for monthly connections in a tenant
+
+
+     */
+
+
+    private void generateMonthlyDemandsForTenant(String tenantId, RequestInfo requestInfo) {
+
+        try {
+            // Load master data (includes billing slabs with both monthly and quarterly cycles)
+            Map<String, Object> masterMap = masterDataService.loadMasterData(requestInfo, tenantId);
+            // Load monthly tax periods from MonthlyTaxPeriods.json
+            List<TaxPeriod> monthlyTaxPeriods = calculatorUtil.getMonthlyTaxPeriodsFromMDMS(requestInfo, tenantId);
+            if (monthlyTaxPeriods == null || monthlyTaxPeriods.isEmpty()) {
+                log.info("No monthly tax periods found for tenant: {}", tenantId);
+                return;
+            }
+            // Get current monthly period (most recent one that hasn't passed)
+            long currentTime = System.currentTimeMillis();
+            TaxPeriod currentPeriod = null;
+            for (TaxPeriod period : monthlyTaxPeriods) {
+                if (period.getFromDate() <= currentTime && period.getToDate() >= currentTime) {
+                    currentPeriod = period;
+                    break;
+                }
+            }
+            // If no current period found, use the next upcoming period
+            if (currentPeriod == null) {
+                for (TaxPeriod period : monthlyTaxPeriods) {
+                    if (period.getFromDate() > currentTime) {
+                        currentPeriod = period;
+                        break;
+                    }
+                }
+            }
+            if (currentPeriod == null) {
+                log.warn("No valid current or upcoming monthly tax period found for tenant: {}", tenantId);
+                return;
+            }
+            Long taxPeriodFrom = currentPeriod.getFromDate();
+            Long taxPeriodTo = currentPeriod.getToDate();
+//			log.info("Monthly billing period for {}: {} from {} to {}",
+//					tenantId, currentPeriod.getPeriodName(), taxPeriodFrom, taxPeriodTo);
+            // Set requestInfo key to indicate monthly processing
+            requestInfo.setKey("MONTHLY");
+            // Generate demands for monthly connections
+            demandService.generateDemandForULB(masterMap, requestInfo, tenantId,
+                    taxPeriodFrom, taxPeriodTo);
+        } catch (Exception e) {
+            log.error("Error generating monthly demands for tenant: {}", tenantId, e);
+        }
+    }
+    
+    /**
+     * Generate demands for quarterly connections in a tenant
+     */
+    private void generateQuarterlyDemandsForTenant(String tenantId, RequestInfo requestInfo) {
+        try {
+            // Load master data (includes billing period and tax periods from billing-service)
+
+            Map<String, Object> masterMap = masterDataService.loadMasterData(requestInfo, tenantId);
+            // Get quarterly billing period configuration from MDMS
+            ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap
+                    .get(GCCalculationConstant.Billing_Period_Master);
+            if (billingFrequencyMap == null || billingFrequencyMap.isEmpty()) {
+                log.warn("No billing frequency map found for tenant: {}", tenantId);
+                return;
+            }
+            // Enrich with quarterly period dates from billing-service
+            // This populates BILLING_PERIOD with tax period dates from billing-service
+            masterDataService.enrichBillingPeriod(null, billingFrequencyMap, masterMap,
+                    GCCalculationConstant.nonMeterdConnection, "quaterly");
+            Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
+                    .get(GCCalculationConstant.BILLING_PERIOD);
+            if (financialYearMaster == null) {
+                log.warn("No financial year master (BILLING_PERIOD) found for tenant: {}", tenantId);
+                return;
+            }
+            Long taxPeriodFrom = (Long) financialYearMaster.get(GCCalculationConstant.STARTING_DATE_APPLICABLES);
+            Long taxPeriodTo = (Long) financialYearMaster.get(GCCalculationConstant.ENDING_DATE_APPLICABLES);
+            if (taxPeriodFrom == null || taxPeriodTo == null || taxPeriodFrom == 0 || taxPeriodTo == 0) {
+                log.warn("No valid quarterly billing periods for tenant: {}", tenantId);
+                return;
+            }
+            log.info("Quarterly billing period for {}: from {} to {}", tenantId, taxPeriodFrom, taxPeriodTo);
+            // Set requestInfo key to indicate quarterly processing
+            requestInfo.setKey("QUARTERLY");
+            // Generate demands for quarterly connections
+            demandService.generateDemandForULB(masterMap, requestInfo, tenantId,
+                    taxPeriodFrom, taxPeriodTo);
+        } catch (Exception e) {
+            log.error("Error generating quarterly demands for tenant: {}", tenantId, e);
+        }
+    }
+    public List<GarbageConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo,
 																   BulkBillCriteria bulkBillCriteria) {
 		return demandService.getConnectionPendingForDemand(requestInfo, bulkBillCriteria.getTenantId());
 	}

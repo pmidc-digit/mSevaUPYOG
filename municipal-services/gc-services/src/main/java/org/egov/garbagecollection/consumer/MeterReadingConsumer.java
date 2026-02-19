@@ -32,7 +32,7 @@ public class MeterReadingConsumer {
 	 * @param record
 	 * @param topic
 	 */
-	@KafkaListener(topics = { "${gc.meterreading.create.topic}" })
+	@KafkaListener(topics = { "${gc.meterreading.create.topic}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			log.info("Received request to add Meter Reading on topic - " + topic);

@@ -110,6 +110,13 @@ public class EnrichmentService {
 		garbageConnectionRequest.getGarbageConnection().setAuditDetails(auditDetails);
 		garbageConnectionRequest.getGarbageConnection().setId(UUID.randomUUID().toString());
 		garbageConnectionRequest.getGarbageConnection().setStatus(StatusEnum.ACTIVE);
+		
+		// Log unit information for tracking
+		if (!StringUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getUnitId())) {
+			log.info("Enriching GC connection for Property: {}, Unit: {}", 
+				garbageConnectionRequest.getGarbageConnection().getPropertyId(),
+				garbageConnectionRequest.getGarbageConnection().getUnitId());
+		}
 		/*
 		 *Changing Hard coded channel and moving hardcoded part to constant
 		 *Moreover adding 3rd party channer config here on the basis  of role if it contains particular role.
@@ -397,6 +404,8 @@ public class EnrichmentService {
 		if (GCConstants.ACTIVATE_CONNECTION
 				.equalsIgnoreCase(garbageConnectionRequest.getGarbageConnection().getProcessInstance().getAction())) {
 			setConnectionNO(garbageConnectionRequest);
+			// Set connection execution date to current time when connection is activated
+			garbageConnectionRequest.getGarbageConnection().setConnectionExecutionDate(System.currentTimeMillis());
 		}
 	}
 
@@ -710,7 +719,7 @@ public class EnrichmentService {
 				auditObject.put("accessBy", requestInfo.getUserInfo().getUuid());
 				auditObject.put("purpose",DOCUMENT_ACCESS_AUDIT_MSG);
 
-				producer.push(config.getDocumentAuditTopic(), auditObject);
+				producer.push(config.getDocumentAuditTopic(),uuid, auditObject);
 			}
 
 

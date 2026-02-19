@@ -259,7 +259,7 @@ public class CalculatorUtil {
 				.append(GCCalculationConstant.SEPARATER).append(GCCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
 				.append(consumerCode).append(GCCalculationConstant.SEPARATER)
 				.append(GCCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-				.append(GCCalculationConstant.WATER_TAX_SERVICE_CODE);
+				.append(GCCalculationConstant.SERVICE_FIELD_VALUE_WS);
 	}
 	public StringBuilder getFetchBillURLForReconnection(String tenantId, String consumerCode) {
 
@@ -338,6 +338,56 @@ public class CalculatorUtil {
 		}
 		List<Map<String, Object>> jsonOutput = JsonPath.read(res, GCCalculationConstant.JSONPATH_ROOT_FOR_BilingPeriod);
 		return jsonOutput.get(0);
+	}
+
+	/**
+	 * Load billing frequency master data filtered by transaction type (monthly/quarterly)
+	 * 
+	 * @param requestInfo Request Info object
+	 * @param tenantId Tenant Id
+	 * @param transactionType Transaction type ("monthly" or "quarterly")
+	 * @return Master For Billing Period matching the transaction type
+	 */
+	public Map<String, Object> loadBillingFrequencyMasterData(RequestInfo requestInfo, String tenantId, String transactionType) {
+		log.info("loadBillingFrequencyMasterData with transactionType: {}", transactionType);
+		MdmsCriteriaReq mdmsCriteriaReq = getBillingFrequencyForScheduler(requestInfo, tenantId);
+		Object res = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+		if (res == null) {
+			throw new CustomException("MDMS_ERROR_FOR_BILLING_FREQUENCY", "ERROR IN FETCHING THE BILLING FREQUENCY");
+		}
+		
+		// Read schedulerBillingPeriod array from MDMS response
+		List<Map<String, Object>> schedulerBillingPeriods = JsonPath.read(res, 
+				"$.MdmsRes.gc-services-masters.billingPeriod[*]");
+		
+		// Default to quarterly if transactionType is null or empty
+		String billingCycle = (transactionType != null && transactionType.equalsIgnoreCase("monthly")) 
+				? "monthly" 
+				: "quarterly";
+		
+		log.info("Filtering for billingCycle: {}", billingCycle);
+		
+		// Find matching billing period based on billingCycle
+		for (Map<String, Object> period : schedulerBillingPeriods) {
+			String periodCycle = (String) period.get("billingCycle");
+			Boolean isActive = (Boolean) period.get("active");
+			if (periodCycle != null && periodCycle.equalsIgnoreCase(billingCycle) && Boolean.TRUE.equals(isActive)) {
+				log.info("Found matching billing period: {}", period);
+				return period;
+			}
+		}
+		
+		// Fallback to first active period if no match found
+		log.warn("No matching billing period found for cycle: {}, using first active period", billingCycle);
+		for (Map<String, Object> period : schedulerBillingPeriods) {
+			Boolean isActive = (Boolean) period.get("active");
+			if (Boolean.TRUE.equals(isActive)) {
+				return period;
+			}
+		}
+		
+		throw new CustomException("NO_BILLING_PERIOD_FOUND", 
+				"No active billing period found for transaction type: " + transactionType);
 	}
 
 	public Map<String, Object> loadBillingFrequencyMasterDatas(SingleDemand singledemand, String tenantId) {
@@ -593,7 +643,7 @@ public class CalculatorUtil {
 				.append(GCCalculationConstant.SERVICE_FIELD_FOR_SEARCH_URL)
 				.append(GCCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD);
 	}
-	
+
 	
 	/*PI-19231
 	 * 
@@ -619,4 +669,53 @@ public class CalculatorUtil {
 		        .mdmsCriteria(mdmsCriteria)
 		        .build();
 	}
+
+    /**
+     * Fetches monthly tax periods from MDMS (gc-services-calculation module)
+     * @param requestInfo RequestInfo object
+     * @param tenantId Tenant ID
+     * @return List of monthly tax periods sorted by fromDate in ascending order
+     */
+    public List<TaxPeriod> getMonthlyTaxPeriodsFromMDMS(RequestInfo requestInfo, String tenantId) {
+        try {
+            // Build MDMS request for monthly tax periods
+            MasterDetail masterDetail = MasterDetail.builder()
+                    .name("MonthlyTaxPeriods")
+                    .build();
+            ModuleDetail moduleDetail = ModuleDetail.builder()
+                    .moduleName("gc-services-calculation")
+                    .masterDetails(Collections.singletonList(masterDetail))
+                    .build();
+            MdmsCriteriaReq mdmsReq = MdmsCriteriaReq.builder()
+                    .requestInfo(requestInfo)
+                    .mdmsCriteria(MdmsCriteria.builder()
+                            .tenantId(tenantId)
+                            .moduleDetails(Collections.singletonList(moduleDetail))
+                            .build())
+                    .build();
+            DocumentContext documentContext = JsonPath.parse(
+                    serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsReq));
+            List<TaxPeriod> monthlyTaxPeriods = mapper.convertValue(
+                    documentContext.read(GCCalculationConstant.MDMS_MONTHLY_TAXPERIOD),
+                    new TypeReference<List<TaxPeriod>>() {});
+            if (monthlyTaxPeriods == null || monthlyTaxPeriods.isEmpty()) {
+                log.warn("No monthly tax periods found in MDMS for tenant: {}", tenantId);
+                throw new CustomException("NO_MONTHLY_TAXPERIOD_FOUND",
+                        "No monthly tax periods configured in MDMS for tenant: " + tenantId);
+            }
+            // Sort by fromDate ascending
+            monthlyTaxPeriods = monthlyTaxPeriods.stream()
+                    .sorted(Comparator.comparing(TaxPeriod::getFromDate))
+                    .collect(Collectors.toList());
+            log.info("Loaded {} monthly tax periods from MDMS for tenant: {}",
+                    monthlyTaxPeriods.size(), tenantId);
+            return monthlyTaxPeriods;
+        } catch (CustomException ce) {
+            throw ce;
+        } catch (Exception e) {
+            log.error("Error while fetching monthly tax periods from MDMS for tenant: {}", tenantId, e);
+            throw new CustomException("NO_MONTHLY_TAXPERIOD_FOUND",
+                    "Exception while getting the monthly tax periods from MDMS service: " + e.getMessage());
+        }
+    }
 }

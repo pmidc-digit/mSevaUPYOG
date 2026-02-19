@@ -55,7 +55,7 @@
 //            log.error("Failed to obtain system user for BulkDemandScheduler: {}", ex.getMessage(), ex);
 //            // Continue with minimal RequestInfo if your downstream allows it.
 //        }
-//
+//j
 //        // 2) Generate dynamic msgId
 //        Locale locale = LocaleContextHolder.getLocale(); // falls back to JVM default if not set
 //        String msgId = generateMsgId(locale);

@@ -297,7 +297,8 @@ public class GcServiceImpl implements GcService {
 	 */
 	public List<GarbageConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
 		List<GarbageConnection> garbageConnectionList;
-		if(StringUtils.isEmpty(criteria.getMobileNumber()) && StringUtils.isEmpty(criteria.getApplicationNumber()) && StringUtils.isEmpty(criteria.getConnectionNumber())){
+		if(StringUtils.isEmpty(criteria.getMobileNumber()) && StringUtils.isEmpty(criteria.getApplicationNumber()) 
+				&& StringUtils.isEmpty(criteria.getConnectionNumber()) && StringUtils.isEmpty(criteria.getPropertyId())){
 
 			criteria.setUserIds(Collections.singleton(requestInfo.getUserInfo().getUuid()));
 		}
@@ -804,7 +805,7 @@ public GarbageConnectionRequest updateConnectionStatusBasedOnActionDisconnection
 	private List<GarbageConnection> getAllWaterApplications(GarbageConnectionRequest waterConnectionRequest) {
 		GarbageConnection waterConnection = waterConnectionRequest.getGarbageConnection();
 		SearchCriteria criteria = SearchCriteria.builder()
-				.applicationNumber(Stream.of(waterConnection.getApplicationNo().toString()).collect(Collectors.toSet()))
+				.connectionNumber(Stream.of(waterConnection.getConnectionNo().toString()).collect(Collectors.toSet()))
 				.build();
 		if (waterConnectionRequest.isDisconnectRequest() || !StringUtils.isEmpty(waterConnection.getConnectionNo()))
 			criteria.setIsInternalCall(true);

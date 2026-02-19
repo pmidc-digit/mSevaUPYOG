@@ -6,7 +6,7 @@ var producer = require("../producer").producer ;
 var logger = require("../logger").logger;
 const uuidv4 = require("uuid/v4");
 const { Pool } = require('pg');
-
+var {createNewJobId} = require("../api")
 var ssl = config.DB_SSL;
 if(typeof ssl =="string")
   ssl = (ssl.toLowerCase() == "true");
@@ -432,8 +432,8 @@ router.post(
       }
 
       var id = uuidv4();
-      var jobid = `${config.pdf.wns_bill}-${new Date().getTime()}-${id}`;
-
+      //var jobid = `${config.pdf.wns_bill}-${new Date().getTime()}-${id}`;
+      var jobid = await createNewJobId(bussinessService);
       var kafkaData = {
         requestinfo: requestinfo,
         tenantId: tenantId,

@@ -323,7 +323,8 @@ async function search_billV2(tenantId, consumerCode, serviceId, requestinfo, hea
 }
 
 async function fetch_bill(tenantId, consumerCode, serviceId, requestinfo, headers) {
-  //console.log("search_billV2 consumerCode--",consumerCode,"tenantId",tenantId,"serviceId",serviceId);
+  console.log("search_billV2 consumerCode--",consumerCode,"tenantId",tenantId,"serviceId",serviceId);
+  console.log("Fecth Bill URL",url.resolve(config.host.mcollectBilling, config.paths.fetch_bill));
   return await axios({
     method: "post",
     url: url.resolve(config.host.mcollectBilling, config.paths.fetch_bill),
@@ -634,16 +635,16 @@ async function create_bulk_pdf(kafkaData){
           {RequestInfo:requestinfo.RequestInfo},
           headers
         );
-
+        console.log("waterBills",waterBills)
         waterBills = waterBills.data.Bills;
         if(waterBills.length>0){
           for(let waterBill of waterBills){
             if(waterBill.status ==='EXPIRED'){
-              var billresponse = await fetch_bill(
-              tenantId, waterBill.consumerCode,
-              waterBill.businessService, {RequestInfo:requestinfo.RequestInfo},headers);
+              // var billresponse = await fetch_bill(
+              // tenantId, waterBill.consumerCode,
+              // waterBill.businessService, {RequestInfo:requestinfo.RequestInfo},headers);
             
-              consolidatedResult.Bill.push(billresponse.data.Bill[0]);
+              // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
             }
             else{
               if(waterBill.status ==='ACTIVE')
@@ -654,7 +655,7 @@ async function create_bulk_pdf(kafkaData){
       }
       catch (ex) {
         if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error(res, `Failed to query bills for water connection`);
+        throw new Error(ex, `Failed to query bills for water connection`);
       }
     }
 
@@ -704,11 +705,11 @@ async function create_bulk_pdf(kafkaData){
         if(sewerageBills.length>0){
           for(let sewerageBill of sewerageBills){
             if(sewerageBill.status ==='EXPIRED'){
-              var billresponse = await fetch_bill(
-              tenantId, sewerageBill.consumerCode,
-              sewerageBill.businessService, {RequestInfo:requestinfo.RequestInfo},headers);
+              // var billresponse = await fetch_bill(
+              // tenantId, sewerageBill.consumerCode,
+              // sewerageBill.businessService, {RequestInfo:requestinfo.RequestInfo},headers);
             
-              consolidatedResult.Bill.push(billresponse.data.Bill[0]);
+              // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
             }
             else{
               if(sewerageBill.status ==='ACTIVE')

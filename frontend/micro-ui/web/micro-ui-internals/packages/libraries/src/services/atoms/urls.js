@@ -145,7 +145,7 @@ const Urls = {
     search: "/rl-services/allotment/v1/_search",
     getReports: "/rl-services/property/_report",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
-    search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
+    search_bill: "/egov-searcher/bill-genie/rentandleasebills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
     download_pdf: "/egov-pdf/download/UC/mcollect-challan",
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",

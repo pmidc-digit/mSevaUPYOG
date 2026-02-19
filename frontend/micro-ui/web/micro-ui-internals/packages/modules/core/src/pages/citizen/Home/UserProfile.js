@@ -501,7 +501,18 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     <div className="user-profile">
       <section className={`user-profile-section-wrapper ${userType === "employee" ? "employee" : ""}`}>
         {userType === "citizen" ? (
-          <BackButton></BackButton>
+          <h6
+            onClick={() => history.push("/digit-ui/citizen")}
+            style={{
+              marginTop: "60px",
+              paddingLeft: "13px",
+              fontSize: "16px",
+              fontWeight: "bolder",
+              cursor: "pointer",
+            }}
+          >
+            Home
+          </h6>
         ) : (
           <BreadCrumb
             crumbs={[
@@ -516,7 +527,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 show: url.includes("/user/profile"),
               },
             ]}
-          ></BreadCrumb>
+          />
         )}
       </section>
       <div className={`user-profile-main-container ${userType === "employee" ? "employee" : ""}`}>
@@ -725,12 +736,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "center" , width: "100%"}}>
-                <button
-                  onClick={updateProfile}
-                  className="selector-button-primary"
-                  style={{ width: "100%", height: "46px", marginTop: "24px" }}
-                >
+              <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                <button onClick={updateProfile} className="selector-button-primary" style={{ width: "100%", height: "46px", marginTop: "24px" }}>
                   {t("CORE_COMMON_SAVE")}
                 </button>
               </div>

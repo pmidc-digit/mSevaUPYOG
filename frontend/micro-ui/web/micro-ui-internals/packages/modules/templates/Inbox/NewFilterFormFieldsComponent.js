@@ -3,9 +3,8 @@ import { FilterFormField } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter, onApplyFilters }) => {
+const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter }) => {
   const { t } = useTranslation();
-
   const [showAllStatuses, setShowAllStatuses] = useState(false);
 
   const availableOptions = [
@@ -35,33 +34,22 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
   const { field: statusField } = useController({ name: "applicationStatus", control: controlFilterForm, defaultValue: [] });
 
   const statusValues = Array.isArray(statusField.value) ? statusField.value : [];
-  const triggerApply = () => {
-    if (typeof onApplyFilters === "function") {
-      setTimeout(() => onApplyFilters(), 0);
-    }
-  };
 
   const toggleStatus = (statusCode) => {
+    let newStatusValues;
     if (statusValues.includes(statusCode)) {
-      statusField.onChange(statusValues.filter((code) => code !== statusCode));
+      newStatusValues = statusValues.filter((code) => code !== statusCode);
     } else {
-      statusField.onChange([...statusValues, statusCode]);
+      newStatusValues = [...statusValues, statusCode];
     }
-    triggerApply();
-  };
-
-  const derivedFilters = useMemo(
-    () => ({
-      applicationStatus: statusValues.map((code) => ({ code })),
-    }),
-    [statusValues]
-  );
-
-  useEffect(() => {
+    statusField.onChange(newStatusValues);
+    // Immediately notify parent of filter change
     if (typeof handleFilter === "function") {
-      handleFilter(derivedFilters);
+      handleFilter({
+        applicationStatus: newStatusValues.map((code) => ({ code })),
+      });
     }
-  }, [derivedFilters, handleFilter]);
+  };
 
   const cards = [
     ...availableOptions.map((option) => ({
@@ -78,7 +66,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
       type: "status",
       label: t(status.applicationstatus),
       subtitle: null,
-      count: status.count,
+      count: status.totalCount ?? status.count ?? status.noOfRecords ?? status.totalRecords ?? status.applicationCount ?? 0,
       code: status.applicationstatus,
       icon: "◎",
     })),
@@ -109,7 +97,13 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                   onClick={() => {
                     if (card.type === "assignee") {
                       assigneeField.onChange(card.code);
-                      triggerApply();
+                      // Notify parent when assignee filter changes
+                      if (typeof handleFilter === "function") {
+                        handleFilter({
+                          assignee: card.code,
+                          applicationStatus: statusValues.map((code) => ({ code })),
+                        });
+                      }
                     } else {
                       toggleStatus(card.code);
                     }
@@ -124,7 +118,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                   {card.subtitle ? (
                     <div className="ndc-new-filter-option-subtitle">{card.subtitle}</div>
                   ) : (
-                    <div className="ndc-new-filter-status-count">{card.count}</div>
+                    <div className="ndc-new-filter-status-count">{card.count !== null && card.count !== undefined ? card.count : ""}</div>
                   )}
                   <span className="ndc-new-filter-card-icon" aria-hidden="true">
                     <span>{card.icon}</span>

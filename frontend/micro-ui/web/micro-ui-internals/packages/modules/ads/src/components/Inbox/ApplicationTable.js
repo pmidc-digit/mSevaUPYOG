@@ -6,7 +6,11 @@ const ApplicationTable = ({
   currentPage,
   columns,
   data,
+  className,
+  styles,
+  customTableWrapperClassName,
   getCellProps,
+  getRowProps,
   disableSort,
   onSort,
   onNextPage,
@@ -22,7 +26,11 @@ const ApplicationTable = ({
       data={data}
       currentPage={currentPage}
       columns={columns}
+      className={className}
+      styles={styles}
+      customTableWrapperClassName={customTableWrapperClassName}
       getCellProps={getCellProps}
+      getRowProps={getRowProps}
       onNextPage={onNextPage}
       onPrevPage={onPrevPage}
       pageSizeLimit={pageSizeLimit}

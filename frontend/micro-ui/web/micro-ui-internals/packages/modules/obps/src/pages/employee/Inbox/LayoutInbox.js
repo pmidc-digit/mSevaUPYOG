@@ -1,7 +1,9 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { InboxComposer, CaseIcon, Header } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState, useRef } from "react";
+import { Loader, Card, Table, CaseIcon } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import LayoutFilterFormFieldsComponent from "./LayoutFilterFormFieldsComponent";
+import { useForm } from "react-hook-form";
+import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
+import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import LayoutSearchFormFields from "./LayoutSearchFormFields"
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import useLayoutTableConfig from "./useLayoutTableConfig";
@@ -11,30 +13,37 @@ import { businessServiceListLayout } from "../../../utils";
 
 
 const LayoutInbox = ({ parentRoute }) => {
-  window.scroll(0, 0)
   const { t } = useTranslation()
 
-  const tenantId = window.localStorage.getItem("Employee.tenant-id")
+  useEffect(() => {
+    window.scroll(0, 0)
+  }, [])
 
-  const searchFormDefaultValues = {
+  const tenantId = window.localStorage.getItem("Employee.tenant-id")
+  const [activeStatusTab, setActiveStatusTab] = useState("ALL")
+  const [topBarSearch, setTopBarSearch] = useState("")
+
+  const searchFormDefaultValues = useMemo(() => ({
     mobileNumber: "",
     applicationNumber: "",
-  }
+  }), [])
 
-  const filterFormDefaultValues = {
+  const filterFormDefaultValues = useMemo(() => ({
     moduleName: "layout-service",
     applicationStatus: [],
     businessService: "Layout_mcUp",
     assignee: "ASSIGNED_TO_ALL",
     // businessServiceArray: businessServiceListLayout(true) || [],
-  }
+  }), [])
 
-  const tableOrderFormDefaultValues = {
+  const isMobileDevice = Digit.Utils.browser.isMobile()
+
+  const tableOrderFormDefaultValues = useMemo(() => ({
     sortBy: "",
-    limit: Digit.Utils.browser.isMobile() ? 50 : 10,
+    limit: isMobileDevice ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
-  }
+  }), [isMobileDevice])
 
   function formReducer(state, payload) {
     switch (payload.action) {
@@ -54,8 +63,6 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("LAYOUT.INBOX")
 
-  console.log(InboxObjectInSessionStorage, "INBOX SESSION");
-
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null)
     setSearchFormValue("applicationNumber", null)
@@ -74,19 +81,29 @@ const LayoutInbox = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues })
   }
 
+  // Merge session storage with defaults to ensure tableForm has correct values
   const formInitValue = useMemo(() => {
-    return (
-      InboxObjectInSessionStorage || {
-        filterForm: filterFormDefaultValues,
-        searchForm: searchFormDefaultValues,
-        tableForm: tableOrderFormDefaultValues,
+    if (InboxObjectInSessionStorage) {
+      const sessionLimit = parseInt(InboxObjectInSessionStorage.tableForm?.limit, 10)
+      const validLimit = [10, 20, 30, 40, 50].includes(sessionLimit) ? sessionLimit : tableOrderFormDefaultValues.limit
+      return {
+        filterForm: InboxObjectInSessionStorage.filterForm || filterFormDefaultValues,
+        searchForm: InboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
+        tableForm: {
+          ...tableOrderFormDefaultValues,
+          ...(InboxObjectInSessionStorage.tableForm || {}),
+          // Ensure limit is a valid number, reset offset to start from first page
+          limit: validLimit,
+          offset: 0,
+        },
       }
-    )
-  }, [
-    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
-    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
-    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
-  ])
+    }
+    return {
+      filterForm: filterFormDefaultValues,
+      searchForm: searchFormDefaultValues,
+      tableForm: tableOrderFormDefaultValues,
+    }
+  }, [InboxObjectInSessionStorage])
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue)
 
@@ -95,32 +112,32 @@ const LayoutInbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([])
   const [totalCountData, setTotalCountData] = useState(0)
 
-  const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
+const memoizedFilters = useMemo(() => {
+  return {
+    filterForm: formState?.filterForm || filterFormDefaultValues,
+    searchForm: formState?.searchForm || searchFormDefaultValues,
+    tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+  }
+}, [formState?.filterForm, formState?.searchForm, formState?.tableForm, filterFormDefaultValues, searchFormDefaultValues, tableOrderFormDefaultValues])
+
+const { isLoading: isInboxLoading, data: inboxData } =
+  Digit.Hooks.obps.useLayoutInbox({
     tenantId,
-    filters: { ...formState },
+    filters: memoizedFilters,
   })
 
-  console.log("  Inbox hook data:", inboxData)
-
-  
 
   useEffect(() => {
     if (inboxData) {
-      console.log("  Setting inbox data:", inboxData)
       setStatusData(inboxData?.statuses || [])
       setTableData(inboxData?.table || [])
       setTotalCountData(inboxData?.totalCount || 0)
     }
   }, [inboxData])
 
-  useEffect(() => {
-    if (inboxData) {
-      inboxData.revalidate()
-    }
-  }, [])
-
   const onPageSizeChange = (e) => {
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } })
+    const newLimit = parseInt(e.target.value, 10)
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: newLimit, offset: 0 } })
   }
 
   const onSortingByData = (e) => {
@@ -143,57 +160,11 @@ const LayoutInbox = ({ parentRoute }) => {
   }
 
 
-  const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, searchFieldComponents }) => (
-      <LayoutSearchFormFields {...{ registerRef, searchFormState, searchFieldComponents }} />
-    ),
-    [],
-  )
-
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
-      <LayoutFilterFormFieldsComponent
-        {...{
-          statuses: statusData,
-          isInboxLoading,
-          registerRef,
-          controlFilterForm,
-          setFilterFormValue,
-          filterFormState: formState?.filterForm,
-          getFilterFormValue,
-
-        }}
-      />
-    ),
-    [statusData, isInboxLoading],
-  )
-
-  const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""]
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } })
-    dispatch({ action: "mutateSearchForm", data })
-  }
-
   const onFilterFormSubmit = (data) => {
     data.hasOwnProperty("") && delete data?.[""]
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } })
+    // Only reset offset when filtering, preserve the current limit
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } })
     dispatch({ action: "mutateFilterForm", data })
-  }
-
-  const propsForSearchForm = {
-    SearchFormFields,
-    onSearchFormSubmit,
-    searchFormDefaultValues: formState?.searchForm,
-    resetSearchFormDefaultValues: searchFormDefaultValues,
-    onSearchFormReset,
-  }
-
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit,
-    filterFormDefaultValues: formState?.filterForm,
-    resetFilterFormDefaultValues: filterFormDefaultValues,
-    onFilterFormReset,
   }
 
   const propsForInboxTable = useLayoutTableConfig({
@@ -206,42 +177,151 @@ const LayoutInbox = ({ parentRoute }) => {
     onSortingByData,
   })
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, tableData })
 
-  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
+  // Setup form with react-hook-form
+  const {
+    register: registerFilterFormField,
+    control: controlFilterForm,
+    handleSubmit: handleFilterFormSubmit,
+    setValue: setFilterFormValue,
+    getValues: getFilterFormValue,
+    reset: resetFilterForm,
+  } = useForm({
+    defaultValues: { ...filterFormDefaultValues },
+  })
 
-  const PropsForInboxLinks = {
-    logoIcon: <CaseIcon />,
-    headerText: "Layout",
-    links: [
-      // {
-      //   text: t(""),
-      //   link: "",
-      // },
-    ],
-  }
 
-  
+  const onResetFilterForm = useCallback(() => {
+    onFilterFormReset(setFilterFormValue)
+  }, [setFilterFormValue])
+
+  const handleFilterChange = useCallback((filterData) => {
+    // Update form values
+    if (filterData.applicationStatus) {
+      setFilterFormValue("applicationStatus", filterData.applicationStatus.map((item) => item.code))
+    }
+    if (filterData.assignee) {
+      setFilterFormValue("assignee", filterData.assignee)
+    }
+    // Dispatch to reducer to trigger data refetch
+    dispatch({ 
+      action: "mutateFilterForm", 
+      data: { 
+        ...formState?.filterForm,
+        applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+        assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ALL"
+      } 
+    })
+  }, [formState?.filterForm, setFilterFormValue])
+
+  const searchDebounceRef = useRef(null)
+  const hasInitializedFilterForm = useRef(false)
+
+  const onNextPage = () =>
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + parseInt(formState.tableForm?.limit) },
+    })
+
+  const onPrevPage = () =>
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit) },
+    })
+
+  // Form sync with reducer state
+  useEffect(() => {
+    if (formState?.filterForm) {
+      setFilterFormValue("moduleName", formState.filterForm.moduleName || "layout-service")
+      setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || [])
+      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ALL")
+      setFilterFormValue("businessService", formState.filterForm.businessService || "Layout_mcUp")
+    }
+  }, [formState?.filterForm?.moduleName, formState?.filterForm?.applicationStatus, formState?.filterForm?.assignee, formState?.filterForm?.businessService, setFilterFormValue])
+
+  // Search debounce
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    searchDebounceRef.current = setTimeout(() => {
+      const value = String(topBarSearch || "").trim()
+      const nextSearchForm = value ? { applicationNumber: value } : {}
+      // Only reset offset when searching, preserve the current limit
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } })
+      dispatch({ action: "mutateSearchForm", data: nextSearchForm })
+    }, 400)
+    return () => clearTimeout(searchDebounceRef.current)
+  }, [topBarSearch])
+
+  // Initialize filter form
+  useEffect(() => {
+    if (hasInitializedFilterForm.current) return
+    if (resetFilterForm && formState) {
+      resetFilterForm(formState?.filterForm)
+      hasInitializedFilterForm.current = true
+    }
+  }, [formState, resetFilterForm])
+
+  const onStatusTabClick = useCallback(
+    (label, statusCode) => {
+      setActiveStatusTab(statusCode || label)
+      if (label === "CLEAR") {
+        setTopBarSearch("")
+        return
+      }
+      if (label === "ALL") {
+        setFilterFormValue("applicationStatus", [], { shouldDirty: true, shouldTouch: true })
+        handleFilterFormSubmit(onFilterFormSubmit)()
+        return
+      }
+      const resolvedCode = statusCode || label
+      setFilterFormValue("applicationStatus", [resolvedCode], { shouldDirty: true, shouldTouch: true })
+      handleFilterFormSubmit(onFilterFormSubmit)()
+    },
+    [handleFilterFormSubmit, onFilterFormSubmit, setFilterFormValue]
+  )
 
   return (
-    <>
-      <Header>
-        {t("ES_COMMON_INBOX")}
-        {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null}
-      </Header>
-      <InboxComposer
-        {...{
-          isInboxLoading,
-          PropsForInboxLinks,
-          ...propsForSearchForm,
-          ...propsForFilterForm,
-          ...propsForMobileSortForm,
-          propsForInboxTable,
-          propsForInboxMobileCards,
-          formState,
-        }}
-      ></InboxComposer>
-    </>
+    <InboxWrapper
+      title={t("ES_COMMON_INBOX")}
+      totalCount={totalCountData}
+      filterSection={
+        <NewFilterFormFieldComponent
+          registerRef={() => {}}
+          controlFilterForm={controlFilterForm}
+          setFilterFormValue={setFilterFormValue}
+          filterFormState={formState?.filterForm}
+          getFilterFormValue={getFilterFormValue}
+          statuses={statusData}
+          isInboxLoading={isInboxLoading}
+          handleFilter={handleFilterChange}
+        />
+      }
+      topBar={
+        <InboxTopBar
+          statuses={statusData}
+          activeTab={activeStatusTab}
+          onTabClick={onStatusTabClick}
+          searchValue={topBarSearch}
+          onSearchChange={(e) => setTopBarSearch(e.target.value)}
+          searchPlaceholder="Search by application number..."
+          totalCount={totalCountData}
+        />
+      }
+      isLoading={isInboxLoading}
+      tableData={tableData}
+      tableProps={propsForInboxTable}
+      tableHeader="ES_INBOX_INBOX"
+      pagination={
+        <InboxPagination
+          offset={formState.tableForm?.offset || 0}
+          limit={formState.tableForm?.limit || 10}
+          totalCount={totalCountData}
+          onPageSizeChange={onPageSizeChange}
+          onNextPage={onNextPage}
+          onPrevPage={onPrevPage}
+        />
+      }
+    />
   )
 }
 

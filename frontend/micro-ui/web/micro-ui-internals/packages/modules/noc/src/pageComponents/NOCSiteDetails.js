@@ -27,7 +27,7 @@ const NOCSiteDetails = (_props) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, trigger, errors, errorStyle, useFieldArray, watch } = _props;
   // console.log('currentStepData herrrrre', currentStepData)
   //logic for Net Plot Area After Widening (A-B)
   const [netPlotArea, setNetPlotArea] = useState("0.00");
@@ -550,6 +550,7 @@ const sortedRoadType = useMemo(
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
+                      trigger("areaLeftForRoadWidening", { shouldFocus: false });
                     }}
                   />
                 )}
@@ -561,7 +562,7 @@ const sortedRoadType = useMemo(
           </LabelFieldPair>
 
           <LabelFieldPair style={{ marginBottom: "20px" }}>
-            <CardLabel className="card-label-smaller">
+            <CardLabel style={{ marginTop: "0" }} className="card-label-smaller">
               {`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>

@@ -71,17 +71,22 @@ public class ResponseFactory {
                     .tehsil(tehObj)
                     .build();
 
-                // 4. Build Final Rate Object
+                // 4. Build Final Rate Object with Unit Details
                 PropertyRate rate = PropertyRate.builder()
                     .rateId(safeString(row.get("rate_id")))
                     .rate(safeDecimal(row.get("property_rate")))
-                    .unit(safeString(row.get("unit")))
+                    // Mapping Unit as a Boundary object to include ID and Name
+                    .unit(Boundary.builder()
+                        .code(safeString(row.get("unit_id")))
+                        .name(safeString(row.get("unit_name")))
+                        .build())
+                    // Mapping conversion formula if supported by your model
+                    .conversionFormula(safeDecimal(row.get("conversion_formula")))
                     .isActive(safeBool(row.get("is_active")))
                     .district(distObj)
                     .category(Boundary.builder()
                         .code(safeString(row.get("usage_category_id")))
                         .name(safeString(row.get("usage_category_name"))).build())
-                    // Added Sub-Category to final rate mapping
                     .subCategory(Boundary.builder()
                         .code(safeString(row.get("sub_category_id")))
                         .name(safeString(row.get("sub_category_name"))).build())
@@ -96,17 +101,14 @@ public class ResponseFactory {
         // SCENARIO 2: Master Data Drill-Down Logic
         // =================================================================
         
-        // New CASE: Fetch Sub-Categories based on selected Usage Category
         else if (!ObjectUtils.isEmpty(c.getUsageCategoryId())) {
             response.setSubCategories(mapToBoundary(results, "sub_category_id", "sub_category_name"));
         }
         
-        // CASE: Fetch Usage Categories (Standalone initial list)
         else if (Boolean.TRUE.equals(c.getGetUsageCategories())) {
              response.setUsageCategories(mapToBoundary(results, "usage_category_id", "usage_category_name"));
         }
         
-        // CASE: Geographical Drill-down Chain
         else if (!ObjectUtils.isEmpty(c.getSegmentId())) {
             response.setSubSegments(mapToBoundary(results, "sub_segment_id", "sub_segment_name"));
         }

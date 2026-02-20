@@ -18,6 +18,7 @@ const LandingPage = () => {
     history.push('/digit-ui/citizen');
   };
 
+
   return (
     <div className="landing-page">
       {/* Hero Section with Login Cards */}

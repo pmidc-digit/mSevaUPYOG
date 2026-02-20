@@ -332,6 +332,7 @@ const ChallanApplicationDetails = () => {
         processInstance: {
           ...data?.processInstance,
           action: "INITIATE",
+          businessService: "NewGC",
         },
       },
       disconnectRequest: true,
@@ -350,8 +351,31 @@ const ChallanApplicationDetails = () => {
         history.push("/digit-ui/employee/garbagecollection/inbox");
         window.location.reload();
       }, 2000);
-      // updateApplication(response?.GarbageConnection[0]);
+      updateApplication(response?.GarbageConnection[0]);
       setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const updateApplication = async (response) => {
+    console.log("uddated response", response);
+    // return;
+    // setLoader(true);
+    const payload = {
+      GarbageConnection: {
+        ...response,
+        processInstance: {
+          ...response?.processInstance,
+          action: "SUBMIT_APPLICATION",
+        },
+      },
+    };
+    console.log("payload===", payload);
+    try {
+      const response = await Digit.GCService.update(payload);
+      console.log("response", response);
+      // setLoader(false);
     } catch (error) {
       setLoader(false);
     }
@@ -469,7 +493,7 @@ const ChallanApplicationDetails = () => {
           </ActionBar>
         )}
 
-        {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && (
+        {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && getChallanData?.status == "Active" && (
           <ActionBar>
             <SubmitBar
               style={{ width: "200px" }}

@@ -127,6 +127,7 @@ export const CLUFeeTable = ({
     if (!feeHistory || Object.keys(feeHistory).length === 0) return null;
 
     const feeTypes = Object.keys(feeHistory);
+
     // Find the maximum number of history entries across all fee types
     const maxHistoryLength = Math.max(...feeTypes.map(ft => feeHistory[ft]?.length || 0));
 
@@ -177,6 +178,17 @@ export const CLUFeeTable = ({
                         </td>
                       ))}
                     </tr>
+                    {/* Last Updated Date Row - Only render if at least one fee type has a date for this entry */}
+                    {feeTypes?.some(ft => feeHistory[ft]?.[entryIndex]?.when) && (
+                      <tr>
+                        <td className="custom-fix-fee-history-table-cell-label">{t("BPA_LAST_UPDATED_DATE_LABEL")}</td>
+                        {feeTypes?.map((feeType) => (
+                          <td key={`${feeType}-date-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
+                            {feeHistory[feeType]?.[entryIndex]?.when ? new Date(feeHistory[feeType][entryIndex].when).toLocaleDateString("en-IN") : t("CS_NA")}
+                          </td>
+                        ))}
+                      </tr>
+                    )}
                     {/* Updated By Row */}
                     <tr>
                       <td className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator" : "custom-fix-fee-history-table-cell-separator-last"}>{t("BPA_UPDATED_BY_LABEL")}</td>
@@ -299,6 +311,11 @@ export const CLUFeeTable = ({
                         <div className="custom-fee-history-item">
                           <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || t("CS_NA")}
                         </div>
+                        {h.when && (
+                          <div className="custom-fee-history-item">
+                            <span className="custom-fee-history-label-bold">{t("BPA_LAST_UPDATED_DATE_LABEL")}:</span> {new Date(h.when).toLocaleDateString("en-IN")}
+                          </div>
+                        )}
                         <div className="custom-fee-history-item">
                           <span className="custom-fee-history-label-bold">{t("BPA_UPDATED_BY_LABEL")}:</span> {h.who || t("UNKNOWN")}
                         </div>

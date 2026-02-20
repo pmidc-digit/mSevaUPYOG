@@ -310,7 +310,7 @@ const getOwnerDetails = async (idx) => {
             </div>
 
             {index === 0 && (
-              <LabelFieldPair>
+              <LabelFieldPair style={{ marginBottom: "20px" }}>
                 <CardLabel className="card-label-smaller">
                   {`${t("NOC_OWNER_TYPE_LABEL")}`}
                   <span className="requiredField">*</span>

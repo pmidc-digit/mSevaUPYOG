@@ -40,7 +40,7 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-import { amountToWords } from "../../../utils";
+import { amountToWords, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -127,6 +127,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
 
@@ -494,6 +495,12 @@ const stateId = Digit.ULBService.getStateId();
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
 
       setFieldInspectionPending(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending);
+
+      const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = cluObject?.auditDetails?.lastModifiedTime;
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = totalTime ? formatDuration(totalTime) : null;
+      setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);
 
@@ -1034,8 +1041,10 @@ const stateId = Digit.ULBService.getStateId();
         </StatusTable>
       </Card>
 
-      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (
+{/* {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0) && (
         <Card>
+          <CardSubHeader>{`${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
         </Card>
       )}
@@ -1091,16 +1100,18 @@ const stateId = Digit.ULBService.getStateId();
               calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY1"
+            hasPayments={hasPayments}
           />
         )}
-        {reciept_data1?.Payments?.length > 0 && (
-          <StatusTable>
-            <Row label={t("BPA_STATUS_LABEL")} text={t("BPA_PAID_LABEL")} textStyle={{ color: "green", fontWeight: "bold" }} />
-          </StatusTable>
+        {hasPayments && (
+          <div style={{ marginTop: "16px" }}>
+            <PaymentHistory payments={combinedPayments} />
+          </div>
         )}
-        {hasPayments && <PaymentHistory payments={combinedPayments} />}
       </Card>
 
+{/* will not be shown on first step(FIELDINSPECTION_INPROGRESS) */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
       <div className="employeeCard">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
@@ -1128,6 +1139,7 @@ const stateId = Digit.ULBService.getStateId();
           />
         )}
       </div>
+      )}
 
       <CheckBox
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
@@ -1163,7 +1175,8 @@ const stateId = Digit.ULBService.getStateId();
         )}
 
       <div id="timeline">
-       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
+         {/* <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/> */}
+       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
       </div>
 
       {actions?.length > 0 && (

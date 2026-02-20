@@ -231,7 +231,7 @@ const EventsBreadCrumb = ({ location }) => {
 
   return (
     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
-      <BreadCrumb crumbs={crumbs} />
+      {/* <BreadCrumb crumbs={crumbs} /> */}
       <p className="breadcrumb">
         <button
           onClick={() => {
@@ -252,7 +252,7 @@ const EmployeeApp = ({ path, url, userType, tenants, stateCode }) => {
   return (
     // <div className="ground-container">
     <>
-      <EventsBreadCrumb location={location} />
+      {/* <EventsBreadCrumb location={location} /> */}
       <Switch>
         <Route path={`${path}/event/inbox`} exact>
           <Inbox tenants={tenants} parentRoute={path} />

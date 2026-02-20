@@ -66,6 +66,8 @@ public class ScorecardSurveyQueryBuilder {
                     "question.createdtime AS question_createdtime, " +
                     "question.lastmodifiedtime AS question_lastmodifiedtime, " +
                     "question.categoryid AS question_categoryid, " +
+                    "questionCategory.label AS question_category_label, " +
+                    "surveyCategory.label AS survey_category_label, " +
                     "question.tenantid AS question_tenantid, " +
 
                     // Question weightage fields
@@ -86,6 +88,8 @@ public class ScorecardSurveyQueryBuilder {
             "ON section.uuid = questionWeightage.sectionuuid " +
             "LEFT JOIN eg_ss_question AS question " +
             "ON questionWeightage.questionuuid = question.uuid "+
+            "LEFT JOIN eg_ss_category questionCategory ON question.categoryid = questionCategory.id " +
+            "LEFT JOIN eg_ss_category surveyCategory ON survey.category = surveyCategory.id " +
             "LEFT JOIN eg_ss_question_option AS questionOption " +
             "ON question.uuid = questionOption.questionuuid ";
 

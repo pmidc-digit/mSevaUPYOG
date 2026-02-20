@@ -97,6 +97,16 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                         .categoryId(rs.getString("question_categoryid"))
                                         .tenantId(rs.getString("question_tenantid"))
                                         .build();
+                                try {
+                                    String qCatId = rs.getString("question_categoryid");
+                                    if (qCatId != null) {
+                                        Category qCat = new Category();
+                                        qCat.setId(qCatId);
+                                        qCat.setLabel(rs.getString("question_category_label"));
+                                        newQuestion.setCategory(qCat);
+                                    }
+                                } catch (SQLException ignored) {
+                                }
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             }

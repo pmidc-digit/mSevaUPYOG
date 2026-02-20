@@ -3,13 +3,14 @@ import React from "react"
 import { useQuery, useQueryClient } from "react-query"
 
 
-const useLayoutFeeCalculator = ({ payload, enabled = true }) => {
+const useLayoutFeeCalculator = ({ payload, feeType, enabled = true }, options = {}) => {
   const client = useQueryClient()
 
   const siteDetails = payload?.CalculationCriteria?.[0]?.Layout?.layoutDetails?.additionalDetails?.siteDetails
 
   const queryKey = [
     "LAYOUT_FEE_CALCULATION",
+    feeType,
     payload?.CalculationCriteria?.[0]?.applicationNumber,
     JSON.stringify(siteDetails), // ensures deep comparison
   ]
@@ -18,11 +19,16 @@ const useLayoutFeeCalculator = ({ payload, enabled = true }) => {
     getCalculationOnly: "true",
   }
 
+  const enabledFlag = options?.enabled !== undefined ? options.enabled : enabled
+
   const result = useQuery(
     queryKey,
-    async () => await Digit.OBPSService.LayoutCalculator({ details: payload, filters: params }),
+    async () => {
+      const response = await Digit.OBPSService.LayoutCalculator({ details: payload, filters: params });
+      return response;
+    },
     {
-      enabled: !!payload && enabled,
+      enabled: !!payload && enabledFlag,
     },
   )
 
@@ -33,3 +39,4 @@ const useLayoutFeeCalculator = ({ payload, enabled = true }) => {
 }
 
 export default useLayoutFeeCalculator
+

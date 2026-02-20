@@ -6,6 +6,20 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
     year: "numeric",
   });
 
+const owners = application?.owners || [];
+let ownersString = "NA";
+
+if(!approverComment){
+  approverComment= " "
+}
+
+if (owners.length > 1) {
+  ownersString = owners.map((o, idx) => o?.name ? o.name : `owner ${idx+1}`).join(", ");
+} else if (owners.length === 1) {
+  ownersString = owners[0]?.name || "owner 1";
+}
+
+  let regularized_label ="";
   const getFloorLabel = (index) => {
       if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
 
@@ -39,8 +53,17 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
       ...f,
       floorNo: getFloorLabel(idx),
     }));
+    regularized_label= t("REGULARIZATION_UNAUTHORIZED")
   } else {
     floorArea = [{ floorNo: "Floor No NA", value: "NA" }];
+    regularized_label= "NA"
+  }
+
+  let areaSummary;
+  if (site?.buildingStatus === "Built Up") {
+    areaSummary = ` ${floorArea.map(f => `${f.floorNo}: ${f.value} sq.mtrs\n`).join(" ")}Basement Area: ${basementArea} sq.mtrs\nTotal Buildup Area (sq.mtrs): ${totalFloorArea} sq.mtrs `;
+  }else{
+    areaSummary = "NA"
   }
 
 
@@ -80,7 +103,10 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
       currentDate,
       sanctionTerms,
       ...EmpData,
-      approverComment
+      approverComment,
+      regularized_label,
+      ownersString,
+      areaSummary
       },
     ],
   };

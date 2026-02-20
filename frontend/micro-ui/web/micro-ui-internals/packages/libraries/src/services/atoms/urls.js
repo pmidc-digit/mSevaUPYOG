@@ -207,6 +207,9 @@ const Urls = {
     cluCheckListCreate: "/clu-services/v1/checklist/_create",
     cluCheckListUpdate: "/clu-services/v1/checklist/_update",
     cluCheckListSearch: "/clu-services/v1/checklist/_search",
+    layoutCheckListCreate: "/layout-services/v1/checklist/_create",
+    layoutCheckListUpdate: "/layout-services/v1/checklist/_update",
+    layoutCheckListSearch: "/layout-services/v1/checklist/_search",
     layoutCalculator: "/layout-calculator/v1/_calculate",
     layoutCollectionSearch: "/collection-services/payments/layout/_search",
   },
@@ -312,10 +315,9 @@ const Urls = {
     nocCreate: "/noc-services/v1/noc/_create",
     update: "/noc-services/v1/noc/_update",
     nocCalculator: "/noc-calculator/v1/_calculate",
-    nocCheckListCreate : "/noc-services/v1/checklist/_create",
-    nocCheckListUpdate : "/noc-services/v1/checklist/_update",
-    nocCheckListSearch : "/noc-services/v1/checklist/_search"
-
+    nocCheckListCreate: "/noc-services/v1/checklist/_create",
+    nocCheckListUpdate: "/noc-services/v1/checklist/_update",
+    nocCheckListSearch: "/noc-services/v1/checklist/_search",
   },
   reports: {
     reportSearch: "/report/",
@@ -383,6 +385,8 @@ const Urls = {
     update: "/gc-services/gc/_update",
     location: "/egov-location/location/v11/boundarys/_search",
     validateConnection: "/gc-services/gc/_validateConnection",
+    scheduler: "/gc-calculator/garbagecharges/scheduler/_create",
+    billGenie: "/egov-searcher/bill-genie/garbagecollectionbills/_get",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

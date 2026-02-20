@@ -297,7 +297,8 @@ const jsPdfGeneratorFormattedNOC = async ({
   t = (text) => text,
   imageURL,
   ulbType,
-  ulbName
+  ulbName,
+  openInNewTab = false 
 }) => {
   console.log("ulbType",ulbType)
   const baseUrl = window.location.origin;
@@ -354,7 +355,14 @@ background: [
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
   pdfMake.fonts = { Hind: { ...Hind } };
   const generatedPDF = pdfMake.createPdf(dd);
-  downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+   if (openInNewTab) {
+    generatedPDF.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    });
+  } else {
+    downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
+  }
 };
 
 

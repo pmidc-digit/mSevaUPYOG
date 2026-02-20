@@ -73,7 +73,6 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
     return documentName;
   };
 
-
   export const EmployeeData = (tenantId, approver) => {
   const employeeDataByCode = Digit.Hooks.useEmployeeSearch(tenantId, { codes: approver, isActive: true }, { enabled: !!approver });
   const employeeDataByName = Digit.Hooks.useEmployeeSearch( tenantId, { names: approver, isActive: true }, { enabled: !!approver && !employeeDataByCode?.data?.Employees?.length } );
@@ -84,7 +83,7 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
 
   const officer = officerRaw
     ? {
-        code: officerRaw?.code, 
+        code: officerRaw?.code,
         id: officerRaw?.id,
         name: officerRaw?.user?.name,
         department: officerAssignment?.department,

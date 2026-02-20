@@ -1,10 +1,9 @@
 import { ActionBar, Card, CardSubHeader, DocumentSVG, Header, Loader, Menu, Row, StatusTable, SubmitBar, Table, Toast } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo,Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import ActionModal from "../components/Modal";
 import { convertEpochFormateToDate, pdfDownloadLink } from "../components/Utils";
-import { LINEAR_BLUE_GRADIENT } from "../utils/empMappingUtils";
 
 // Constants
 const OBPS_GROUP_ID = "025";
@@ -60,6 +59,28 @@ const HRMSEMPMAPDetails = () => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const stateId = Digit.ULBService.getStateId();
 
+  // Fetch MDMS data for BPA Category and SubCategory
+  const { data: mdmsDataBPA, isLoading: isBPALoading } = Digit.Hooks.useCommonMDMS(stateId, "BPA", ["Category", "SubCategory"]);
+
+  // Create lookup maps for categories and subcategories
+  const categoryMap = useMemo(() => {
+    if (!mdmsDataBPA?.BPA?.Category) return {};
+    const map = {};
+    mdmsDataBPA.BPA.Category.forEach(cat => {
+      map[cat.categoryId] = cat.categoryName;
+    });
+    return map;
+  }, [mdmsDataBPA]);
+
+  const subCategoryMap = useMemo(() => {
+    if (!mdmsDataBPA?.BPA?.SubCategory) return {};
+    const map = {};
+    mdmsDataBPA.BPA.SubCategory.forEach(sub => {
+      map[sub.subCategoryId] = sub.subCategoryName;
+    });
+    return map;
+  }, [mdmsDataBPA]);
+
   useEffect(() => {
     setMutationHappened(false);
     clearSuccessData();
@@ -110,8 +131,8 @@ const HRMSEMPMAPDetails = () => {
             displayId: String(pageOffset + index + 1),
             employeeUUID: emp.uuid,
             userUUID: emp.userUUID,
-            category: emp.category || "N/A",
-            subCategory: emp.subcategory || "N/A",
+            category: categoryMap[emp.category] || emp.category || "N/A",
+            subCategory: subCategoryMap[emp.subcategory] || emp.subcategory || "N/A",
             ward: emp.assignedTenantId || "N/A",
             zone: emp.zone || "N/A",
             roles: roleNames, // Same roles for all mappings since it's per employee
@@ -139,10 +160,10 @@ const HRMSEMPMAPDetails = () => {
   };
 
   useEffect(() => {
-    if (data && Object.keys(obpsRoleMap).length > 0) {
+    if (data && Object.keys(obpsRoleMap).length > 0 && Object.keys(categoryMap).length > 0 && Object.keys(subCategoryMap).length > 0) {
       fetchMappingData();
     }
-  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, refreshCounter]);
+  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, categoryMap, subCategoryMap, refreshCounter]);
 
   function onActionSelect(action) {
     setSelectedAction(action);
@@ -179,7 +200,7 @@ const HRMSEMPMAPDetails = () => {
   const submitAction = (data) => { };
    // ==================== MODAL ACTIONS ====================
   const handleDeleteAll = async () => {
-    if (window.confirm(t("HR_CONFIRM_DELETE_ALL_MAPPINGS") || "Are you sure you want to delete ALL mappings for this employee?")) {
+    if (window.confirm("Are you sure you want to delete ALL mappings for this employee?")) {
       try {
         setMappingLoading(true);
         
@@ -305,11 +326,11 @@ const HRMSEMPMAPDetails = () => {
         accessor: "roles",
         Cell: ({ value }) => {
           if (!value || value === "No OBPS Roles") {
-            return <span className="hrms-text-secondary" style={{ fontSize: "13px" }}>{value || "No OBPS Roles"}</span>;
+            return <span className="hrms-text-secondary">{value || "No OBPS Roles"}</span>;
           }
           const roleArray = value.split(", ");
           return (
-            <div className="hrms-flex hrms-flex-wrap" style={{ gap: "4px" }}>
+            <div className="hrms-badge-container">
               {roleArray.map((role, idx) => (
                 <span key={idx} className="hrms-badge hrms-badge--role">
                   {role}
@@ -319,12 +340,14 @@ const HRMSEMPMAPDetails = () => {
           );
         },
       },
-       {
+      {
         Header: t("HR_ACTIONS_LABEL"),
+        accessor: "actions",
+        disableSortBy: true,
         Cell: ({ row }) => (
           <button
             onClick={() => handleDelete(row.original.id, row.original.employeeUUID)}
-            className="hrms-delete-btn"
+            className="hrms-btn hrms-btn--delete"
             disabled={mappingLoading}
           >
             {t("COMMON_DELETE")}
@@ -332,7 +355,7 @@ const HRMSEMPMAPDetails = () => {
         ),
       },
     ],
-    [t]
+    [t, handleDelete, mappingLoading]
   );
 
   useEffect(() => {
@@ -348,13 +371,13 @@ const HRMSEMPMAPDetails = () => {
     }
   }, [selectedAction]);
 
-  if (isLoading) {
+  if (isLoading || isBPALoading) {
     return <Loader />;
   }
 
   return (
     <React.Fragment>
-      <div style={isMobile ? {marginLeft: "-12px", fontFamily: "calibri", color: "#FF0000"} :{ marginLeft: "15px", fontFamily: "calibri", color: "#FF0000" }}>
+      <div className="hrms-emp-mapping__header">
         <Header>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</Header>
       </div>
       {!isLoading && data?.Employees.length > 0 ? (
@@ -389,23 +412,17 @@ const HRMSEMPMAPDetails = () => {
             </StatusTable>
 
             {/* Employee Mapping Table */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "30px", marginBottom: "15px" }}>
+            <div className="hrms-flex hrms-flex--between hrms-flex--center hrms-spacing--mapping-header">
               <CardSubHeader className="card-section-header">{t("HR_EMPLOYEE_CATEGORY_ZONE_MAPPING")}</CardSubHeader>
               
               {/* Page Size Selector */}
               {mappingData.length > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ fontSize: "14px", color: "#666" }}>{t("COMMON_ROWS_PER_PAGE") || "Rows per page:"}:</span>
+                <div className="hrms-page-size">
+                  <span className="hrms-text--secondary">{t("COMMON_ROWS_PER_PAGE") || "Rows per page:"}:</span>
                   <select
                     value={pageSize}
                     onChange={handlePageSizeChange}
-                    style={{
-                      padding: "6px 12px",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                    }}
+                    className="hrms-select"
                   >
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -418,21 +435,11 @@ const HRMSEMPMAPDetails = () => {
             
             {/* Delete All Button */}
             {mappingData.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "15px" }}>
+              <div className="hrms-flex hrms-flex--end hrms-spacing--section-bottom">
                 <button
                   onClick={handleDeleteAll}
                   disabled={mappingLoading}
-                  style={{
-                    background: LINEAR_BLUE_GRADIENT,
-                    color: "white",
-                    border: "none",
-                    padding: "10px 20px",
-                    borderRadius: "4px",
-                    cursor: mappingLoading ? "not-allowed" : "pointer",
-                    fontWeight: "500",
-                    fontSize: "14px",
-                    opacity: mappingLoading ? 0.6 : 1,
-                  }}
+                  className={`hrms-btn hrms-btn--primary ${mappingLoading ? 'disabled' : ''}`}
                 >
                   {t("HR_DELETE_ALL_MAPPINGS") || "Delete All Mappings"}
                 </button>
@@ -442,67 +449,90 @@ const HRMSEMPMAPDetails = () => {
             {mappingLoading ? (
               <Loader />
             ) : mappingData.length > 0 ? (
-              <Table
-                t={t}
-                data={mappingData}
-                columns={mappingColumns}
-                className="customTable table-border-style"
-                manualPagination={true}
-                isPaginationRequired={false}
-                disableSort={false}
-                getCellProps={(cellInfo) => ({
-                  style: {
-                    padding: "12px",
-                    fontSize: "14px",
-                  },
-                })}
-              />
+              <>
+                {/* Mobile Card View */}
+                <div className="hrms-mobile-cards">
+                  {mappingData.map((mapping) => (
+                    <div key={mapping.id} className="hrms-mobile-card">
+                      <div className="hrms-mobile-card__row">
+                        <span className="hrms-mobile-card__label">{t("HR_CATEGORY_LABEL")}:</span>
+                        <span className="hrms-badge hrms-badge--category">{mapping.category}</span>
+                      </div>
+                      <div className="hrms-mobile-card__row">
+                        <span className="hrms-mobile-card__label">{t("HR_SUB_CATEGORY_LABEL")}:</span>
+                        <span className="hrms-badge hrms-badge--subcategory">{mapping.subCategory}</span>
+                      </div>
+                      <div className="hrms-mobile-card__row">
+                        <span className="hrms-mobile-card__label">{t("HR_ZONE_LABEL")}:</span>
+                        <span className="hrms-badge hrms-badge--zone">{mapping.zone}</span>
+                      </div>
+                      <div className="hrms-mobile-card__row hrms-mobile-card__row--full">
+                        <span className="hrms-mobile-card__label">{t("HR_ROLES_LABEL")}:</span>
+                        <div className="hrms-badge-container">
+                          {mapping.roles && mapping.roles !== "No OBPS Roles" ? (
+                            mapping.roles.split(", ").map((role, idx) => (
+                              <span key={idx} className="hrms-badge hrms-badge--role">{role}</span>
+                            ))
+                          ) : (
+                            <span className="hrms-text-secondary">No OBPS Roles</span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDelete(mapping.id, mapping.employeeUUID)}
+                        className="hrms-btn hrms-btn--delete hrms-mobile-card__delete-btn"
+                        disabled={mappingLoading}
+                      >
+                        {t("COMMON_DELETE")}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <Table
+                  t={t}
+                  data={mappingData}
+                  columns={mappingColumns}
+                  getCellProps={(cellInfo) => ({
+                    style: cellInfo.column.style || {},
+                  })}
+                  className="customTable table-border-style hrms-table hrms-desktop-table"
+                  manualPagination={true}
+                  isPaginationRequired={false}
+                  disableSort={false}
+                />
+              </>
             ) : (
-              <div style={{ textAlign: "center", padding: "20px", color: "#666" }}>
+              <div className="hrms-emp-mapping__no-data">
                 <p>{t("COMMON_TABLE_NO_RECORD_FOUND")}</p>
               </div>
             )}
 
             {/* Pagination Controls */}
             {mappingData.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px", padding: "10px 0" }}>
-                <div style={{ fontSize: "14px", color: "#666" }}>
+              <div className="hrms-pagination-container">
+                <div className="hrms-text--secondary">
                   {t("COMMON_SHOWING")} {pageOffset + 1} {t("COMMON_TO")} {Math.min(pageOffset + pageSize, totalRecords)} {t("COMMON_OF")} {totalRecords}
                 </div>
                 
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div className="hrms-flex hrms-flex--gap-10 hrms-flex--center">
                   <button
                     onClick={fetchPrevPage}
                     disabled={pageOffset === 0}
-                    style={{
-                      padding: "8px 16px",
-                      border: "1px solid #ddd",
-                      backgroundColor: pageOffset === 0 ? "#f5f5f5" : "white",
-                      cursor: pageOffset === 0 ? "not-allowed" : "pointer",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      opacity: pageOffset === 0 ? 0.5 : 1,
-                    }}
+                    className={`hrms-btn hrms-btn--pagination ${pageOffset === 0 ? 'disabled' : ''}`}
                   >
                     ← {t("COMMON_PREVIOUS")}
                   </button>
                   
-                  <span style={{ fontSize: "14px", color: "#666" }}>
+                  <span className="hrms-text--secondary">
                     {t("COMMON_PAGE")} {currentPage + 1} {t("COMMON_OF")} {totalPages || 1}
                   </span>
                   
                   <button
                     onClick={fetchNextPage}
                     disabled={pageOffset + pageSize >= totalRecords}
-                    style={{
-                      padding: "8px 16px",
-                      border: "1px solid #ddd",
-                      backgroundColor: pageOffset + pageSize >= totalRecords ? "#f5f5f5" : "white",
-                      cursor: pageOffset + pageSize >= totalRecords ? "not-allowed" : "pointer",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      opacity: pageOffset + pageSize >= totalRecords ? 0.5 : 1,
-                    }}
+                    className={`hrms-btn hrms-btn--pagination ${pageOffset + pageSize >= totalRecords ? 'disabled' : ''}`}
                   >
                     {t("COMMON_NEXT")} →
                   </button>

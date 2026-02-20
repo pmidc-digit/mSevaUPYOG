@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader, TextArea } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -309,6 +309,7 @@ const InspectionReportForm = (_props) => {
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     return (
         <React.Fragment>
+            
             {/* <div>          */}
                     {allFieldReport?.length > 1 ? (
                         <LinkButton
@@ -436,21 +437,46 @@ const InspectionReportForm = (_props) => {
                                             <Controller
                                                 control={control}
                                                 name={`Remarks_${ind}`}
-                                                defaultValue={unit?.uomValue}
+                                                defaultValue={unit[`Remarks_${ind}`] || ""}
                                                 render={(props) => (
-                                                    <TextInput
-                                                        value={getValues(`Remarks_${ind}`)}
-                                                        onChange={(e) => {
-                                                            props.onChange(e);
-                                                        }}
+                                                    <TextArea
+                                                        value={props.value}
+                                                        onChange={(e) => props.onChange(e.target.value)}
                                                         placeholder={t("BPA_ENTER_REMARKS")}
                                                         onBlur={props.onBlur}
+                                                        className="checklist-table-textarea"
                                                     />
                                                 )}
                                             />
                                         </td>
                                     </tr>
                                 ))}
+                                <tr>
+                                    <td>{t("BPA_RECOMMENDATIONS_MIN_MESSAGE")}</td>
+                                    <td>
+                                        <Controller
+                                            control={control}
+                                            name={`Recommendations`}
+                                            defaultValue={unit[`Recommendations`] || ""}
+                                            rules={{
+                                                required: t("REQUIRED_FIELD"),
+                                                minLength: {
+                                                  value: 20,
+                                                  message: t("MIN_20_CHARACTERS_REQUIRED"),
+                                                },
+                                              }}
+                                            render={(props) => (                                                
+                                                <TextArea 
+                                                    value={props.value}
+                                                    onChange={(e) => props.onChange(e.target.value)}
+                                                    placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
+                                                    onBlur={props.onBlur}
+                                                    className="checklist-table-textarea"
+                                                />
+                                            )}
+                                        />
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

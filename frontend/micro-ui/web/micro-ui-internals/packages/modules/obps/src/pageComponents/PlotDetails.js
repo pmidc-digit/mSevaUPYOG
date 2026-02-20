@@ -25,6 +25,7 @@ import { RESET_OBPS_FORM, UPDATE_OBPS_FORM } from "../redux/actions/OBPSActions"
 import { PropertySearchLudhiana } from "./PropertySearchLudhiana";
 import { PropertySearchBathinda } from "./PropertySearchBathinda";
 import { getBase64Img, oldscrutinyDetailsData } from "../utils";
+import { WarningModal } from "../components/WarningModal";
 
 const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
@@ -48,6 +49,15 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [materialused, setMaterialUsed] = useState("");
   const [materialusedinfloor, setMaterialUsedInFloor] = useState("");
   const [materialusedinroofs, setMaterialUsedInRoofs] = useState("");
+  const defaultWarningModalState = {
+    isWarningModalOpen: false,
+    actionLabel: "",
+    actionCancelLabel: "",
+    actionSaveLabel: "",
+    actionHeading: "",
+    option: null
+  }
+  const [warningModal, setWarningModal] = useState(defaultWarningModalState);
   const [estimatedCost, setEstimatedCost] = useState("");
   const [oldEDCR, setOldEDCR] = useState([]);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -116,10 +126,10 @@ console.log("sessionStorageData",currentStepData, userDetails);
   }, [])
 
   useEffect(() => {
-    if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid && tenantId !== LUDHIANA_TENANT){
+    if(!currentStepData?.cpt && currentStepData?.createdResponse?.additionalDetails?.propertyuid && tenantId !== LUDHIANA_TENANT && tenantId !== BATHINDA_TENANT && menuList?.["egov-location"]){
       fetchPropertyDetails(currentStepData?.createdResponse?.additionalDetails?.propertyuid);
     }    
-  }, [currentStepData]);
+  }, [currentStepData, menuList]);
 
   useEffect(()=>{
     if(currentStepData?.BasicDetails && currentStepData?.createdResponse?.edcrNumber && currentStepData?.BasicDetails?.scrutinyNumber?.edcrNumber != currentStepData?.createdResponse?.edcrNumber && ((!currentStepData?.createdResponse?.additionalDetails?.oldEDCR) || (JSON.stringify(oldEDCR) === JSON.stringify(currentStepData?.createdResponse?.additionalDetails?.oldEDCR)))){
@@ -134,10 +144,20 @@ console.log("sessionStorageData",currentStepData, userDetails);
                     propertyIds: propertyId
                 }
             })
-            console.log("fetchedData", fetchedData, propertyId);
             if (fetchedData?.Properties?.length > 0) {
+              const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
+                let ward = {}
+                const zone = boundary?.children?.find(item => item?.children?.some((children) => {
+                    if (children?.children?.some(child => child?.code === fetchedData?.Properties?.[0]?.address?.locality?.code)) {
+                        ward = children
+                        return true
+                    } else {
+                        return false
+                    }
+                }));
+                console.log("fetchedData", zone, boundary);
                 setPtLoading(false)
-                dispatch(UPDATE_OBPS_FORM("cpt", {  details: fetchedData?.Properties?.[0], id: fetchedData?.Properties?.[0]?.propertyId }))
+                dispatch(UPDATE_OBPS_FORM("cpt", {  details: fetchedData?.Properties?.[0], id: fetchedData?.Properties?.[0]?.propertyId, zonalMapping: zone ? { zone, ward } : undefined }))
             }else{
                 setPtLoading(false)
                 return;
@@ -184,7 +204,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //   }
   // }
 
-  console.log("oldEDCR", oldEDCR)
+  console.log("isPropertyAvailable", isPropertyAvailable)
 
   async function addInPreviousEDCR(oldEdcrNumber) {
 
@@ -265,6 +285,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   }, [LicenseData]);
 
   useEffect(() => {
+      console.log("isPropertAvailableValue", isPropertyAvailable);
         if (typeof isPropertyAvailable === "boolean") {
           const plan = common.find((item) => item.value === isPropertyAvailable);
           if (plan) setIsPropertyAvailable(plan);
@@ -272,7 +293,12 @@ console.log("sessionStorageData",currentStepData, userDetails);
           if (currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable) {
             setIsPropertyAvailable(currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable);
           }
-        }
+        } 
+        // else if (isPropertyAvailable?.value === false) {
+          // setIsPropertyAvailable(common?.[1])
+          // setRegistrationDetails("");
+          // dispatch(UPDATE_OBPS_FORM("cpt", {}));
+        // }
   }, [isPropertyAvailable, currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable]);
   
   useEffect(() => {
@@ -417,12 +443,12 @@ useEffect(() => {
   if (currentStepData?.cpt?.zonalMapping?.ward) {
     setWardNumber(currentStepData?.cpt?.zonalMapping?.ward?.code || "");
   }
-  if(currentStepData?.cpt?.details?.address && !currentStepData?.createdResponse?.additionalDetails?.registrationDetails && !registrationDetails){
+  if(currentStepData?.cpt?.details?.address){
     const { doorNo, plotNo, buildingName, street, city, district, state} = currentStepData?.cpt?.details?.address
     const address = [doorNo, plotNo, buildingName, street, city, district, state]?.filter(Boolean)?.join(" ,");
     if(address) setRegistrationDetails(address);
   }
-}, [currentStepData?.cpt]);
+}, [currentStepData]);
 
 
 
@@ -567,13 +593,13 @@ useEffect(() => {
       ...data,
       status: data?.status?.trim() === "ACTIVE"? true : false,
     })) || currentStepData?.createdResponse?.landInfo?.owners || undefined;
-    const landInfo = {
+    const landInfo = isPropertyAvailable?.value ? {
       address,
       ownershipCategory,
       owners,
       tenantId,
       unit: []
-    }
+    } : {};
     const customSelfcertificationRequired = (data?.planDetail?.blocks?.[0]?.building?.buildingHeight < buildingHeightData?.BPA?.BuildingHeight?.[0]?.value)
     const farDetails = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails;
     const roadType = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.roadType;
@@ -792,8 +818,84 @@ useEffect(() => {
     setIsSelfCertification(option)
   }
 
+  console.log("setProperyAvailable option", warningModal);
   function setProperyAvailable(option) {
+    if(isPropertyAvailable?.value === true && option?.value === false && currentStepData?.createdResponse?.applicationNo){
+      setWarningModal({
+        isWarningModalOpen: true,
+        actionLabel: t("BPA_PROPERTY_CHANGED_TITLE"),
+        actionCancelLabel: t("BPA_PROPERTY_CHANGED_CANCEL"),
+        actionSaveLabel: t("BPA_PROPERTY_CHANGED_SAVE"),
+        actionHeading: t("BPA_PROPERTY_CHANGED_TITLE"),
+        option: option
+      })
+    }else{
     setIsPropertyAvailable(option)
+    }
+  }
+
+  function closeWarningModal() {
+    setWarningModal(defaultWarningModalState)
+  }
+
+  async function confirmPropertyChange(option) {
+    const userInfo = Digit.UserService.getUser()
+    const accountId = userInfo?.info?.uuid
+    const workflowAction = "SAVE_AS_DRAFT";
+    const owners = currentStepData?.createdResponse?.landInfo?.owners?.map(val => ({...val, active: false})) || [];
+    const landInfo = {
+      ...currentStepData?.createdResponse?.landInfo,
+      address: {
+        id: currentStepData?.createdResponse?.landInfo?.address?.id || null,
+        city: tenantId,
+        locality: {
+          code: "",
+        },
+        geoLocation: currentStepData?.createdResponse?.landInfo?.address?.geoLocation || null,
+      },
+      ownershipCategory: "INDIVIDUAL.SINGLEOWNER",
+      owners,
+      tenantId,
+      unit: currentStepData?.createdResponse?.landInfo?.unit || []
+    }
+    const additionalDetails = {
+      ...currentStepData?.createdResponse?.additionalDetails,
+    }
+    if(option){
+      additionalDetails.propertyuid = null;
+      additionalDetails.isPropertyAvailable = option?.value;
+      additionalDetails.registrationDetails = "";
+      additionalDetails.wardnumber = "";
+    }
+    console.log("landInfo on property change", landInfo, additionalDetails);
+    try {{
+      setApiLoading(true);
+      const result = await Digit.OBPSService.update({ BPA: {
+        ...currentStepData?.createdResponse,
+        additionalDetails,
+        landInfo,
+        workflow: {
+          action: workflowAction,
+          assignes: [accountId]
+        }
+      } }, tenantId)
+      if(result?.ResponseInfo?.status === "successful"){
+        dispatch(UPDATE_OBPS_FORM("createdResponse", result?.BPA?.[0]))
+        if (option?.value === false) {
+          
+          // setIsPropertyAvailable(option)
+        }
+        setApiLoading(false);        
+      }else{
+        alert(t("BPA_CREATE_APPLICATION_FAILED"));
+        setApiLoading(false);
+      }
+    }}catch(e){
+      console.log("error", e);
+      alert(t("BPA_CREATE_APPLICATION_FAILED"));
+      setApiLoading(false);
+    }    
+    setWarningModal(defaultWarningModalState)
   }
 
   function closeModal() {
@@ -839,13 +941,13 @@ useEffect(() => {
           )}
           {(isPropertyAvailable?.value === false) && <CardLabelError style={{ fontSize: "12px", color: "black" }}>{t("NO_PROPERTY_AVAILABLE_DISCLAIMER")}</CardLabelError>}
           {tenantId === LUDHIANA_TENANT && <div>
-            {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {isPropertyAvailable?.value && <PropertySearchLudhiana formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} confirmPropertyChange={confirmPropertyChange} option={isPropertyAvailable}/>}            
             {errors["propertyuid"] && (
               <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
             )}
           </div>}
           {tenantId === BATHINDA_TENANT && <div>
-            {isPropertyAvailable?.value && <PropertySearchBathinda formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} />}            
+            {isPropertyAvailable?.value && <PropertySearchBathinda formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} confirmPropertyChange={confirmPropertyChange} option={isPropertyAvailable}/>}            
             {errors["propertyuid"] && (
               <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["propertyuid"]}</CardLabelError>
             )}
@@ -853,17 +955,37 @@ useEffect(() => {
           {(tenantId != LUDHIANA_TENANT) && (tenantId != BATHINDA_TENANT) && <div>
           {isPropertyAvailable?.value && <SubmitBar style={{marginBottom:"1rem"}} label={t("PT_SEARCH_PROPERTY")} onSubmit={() => {setShowModal(true)}} />}
           {showModal &&           
-          <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList}/>}
+          <PropertySearchModal  closeModal={closeModal} formData={currentStepData} setApiLoading={setPtLoading} menuList={menuList} confirmPropertyChange={confirmPropertyChange} option={isPropertyAvailable}/>}
+
+          {warningModal?.isWarningModalOpen &&
+            <WarningModal
+              // actionLabel={t("BPA_PROPERTY_CHANGED_TITLE")}
+              // actionCancelLabel={t("BPA_PROPERTY_CHANGED_CANCEL")}
+              // actionSaveLabel={t("BPA_PROPERTY_CHANGED_SAVE")}
+              // actionHeading={t("BPA_PROPERTY_CHANGED_TITLE")}
+              actionLabel={warningModal?.actionLabel}
+              actionCancelLabel={warningModal?.actionCancelLabel}
+              actionSaveLabel={warningModal?.actionSaveLabel}
+              actionHeading={warningModal?.actionHeading}
+              actionCancelOnSubmit={closeWarningModal}
+              actionSaveOnSubmit={confirmPropertyChange}
+              option = {warningModal?.option}
+            />
+          }
 
           {errors["propertyuid"] && (
           <CardLabelError>{errors["propertyuid"]}</CardLabelError>
           )}
 
-          {isPropertyAvailable?.value &&(currentStepData?.createdResponse?.additionalDetails?.propertyuid || currentStepData?.cpt?.id) && <StatusTable style={{marginBottom:"1rem"}} >
+          {isPropertyAvailable?.value &&(currentStepData?.cpt?.id 
+            // || currentStepData?.createdResponse?.additionalDetails?.propertyuid
+          ) && <StatusTable style={{marginBottom:"1rem"}} >
             <Row
               className="border-none"
               label={t(`PROPERTY_ID`)}
-              text={currentStepData?.cpt?.id || currentStepData?.createdResponse?.additionalDetails?.propertyuid || "NA"}
+              text={currentStepData?.cpt?.id || 
+                // currentStepData?.createdResponse?.additionalDetails?.propertyuid||
+              "NA"}
             />
           </StatusTable>}
           </div>}
@@ -899,9 +1021,9 @@ useEffect(() => {
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )}
             
-          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...")}
+          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...", (currentStepData?.cpt?.details?.address && isPropertyAvailable?.value) ? true : false)}
           {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}
-          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", currentStepData?.cpt?.zonalMapping?.ward)}
+          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", (currentStepData?.cpt?.zonalMapping?.ward && isPropertyAvailable?.value) ? true : false)}
           {/* {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number" , currentStepData?.cpt?.zonalMapping?.zone)} */}
           <CardLabel>{`${t("BPA_ZONE_NUMBER_LABEL")} *`}</CardLabel>
           <Dropdown

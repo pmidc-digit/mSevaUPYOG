@@ -138,3 +138,9 @@
 .mobile-number-input-with-prefix {
   padding-left: 45px !important;
 }
+
+@media only screen and (max-width: 768px) {
+  .employee-card-input {
+    font-size: 14px;
+  }
+}

@@ -1,5 +1,5 @@
 import cloneDeep from "lodash/cloneDeep";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 export const getPattern = (type) => {
   switch (type) {
@@ -367,7 +367,7 @@ export const getBPAFormData = async (data, mdmsData, history, t, path) => {
     // history.push(
     //   `/digit-ui/citizen/obps/ocbpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`
     // );
-    history.push(`/digit-ui/citizen/obps/ocbpa/building_plan_scrutiny/new_construction/docs-required`);
+    history.push(`/digit-ui/citizen/obps/ocbpa/building_oc_plan_scrutiny/new_construction/docs-required`);
   } else {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
     history.push(`/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`);
@@ -1027,19 +1027,25 @@ export const convertEpochToDate = (dateEpoch) => {
 //   return "BPA.NC_APP_FEE";
 // };
 
-export const getBusinessServices = (businessService, status) => {
+export const getBusinessServices = (businessService, status, applicationType) => {
   console.log("businessServiceIngetBusinessServices", businessService, status);
   let billBusinessService = "BPA.NC_APP_FEE";
   if (businessService === "BPA_LOW" && status === "PENDING_SANC_FEE_PAYMENT") {
     billBusinessService = "BPA.NC_SAN_FEE";
   } else if (businessService === "BPA") {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
-  } else if (businessService === "BPA_OC") {
+  // } else if (businessService === "BPA_OC") {
+  } else if (applicationType === "BUILDING_OC_PLAN_SCRUTINY") {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
   } else {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
   }
   return billBusinessService;
+};
+
+export const useQueryParam = (key) => {
+  const { search } = useLocation();
+  return new URLSearchParams(search).get(key);
 };
 
 export const downloadPdf = (blob, fileName) => {

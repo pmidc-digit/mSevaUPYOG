@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import {
   LabelFieldPair,
@@ -41,24 +43,11 @@ const LayoutLocalityInfo = (_props) => {
     }
   }, [currentStepData, setValue]);
 
-
-useEffect(() => {
-  if (selectedAreaType?.code === "NON_SCHEME") {
-    setNonSchemeType(nonSchemeTypeOptions);
-  } else {
-    setNonSchemeType(null);
-    // setValue("layoutNonSchemeType", null);
-  }
-}, [selectedAreaType, nonSchemeTypeOptions]);
-
-
   return (
     <React.Fragment>
-      <CardSectionHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSectionHeader>
-
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_AREA_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           {areaTypeOptions.length > 0 && (
             <Controller
               control={control}
@@ -87,12 +76,12 @@ useEffect(() => {
 
         {selectedAreaType?.code === "SCHEME_AREA" && (
           <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_NAME_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_SCHEME_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
               name="layoutSchemeName"
-              defaultValue={currentStepData?.siteDetails?.schemeType.name || ""}
+              defaultValue={currentStepData?.siteDetails?.schemeType?.name || ""}
               rules={{
                 required: t("REQUIRED_FIELD"),
               }}
@@ -118,7 +107,7 @@ useEffect(() => {
 
         {selectedAreaType?.code === "APPROVED_COLONY" && (
           <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPROVED_COLONY_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -148,7 +137,7 @@ useEffect(() => {
 
         {selectedAreaType?.code === "NON_SCHEME" && (
            <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("BPA_NON_SCHEME_TYPE_LABEL")}`}*</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("BPA_NON_SCHEME_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <Controller
                 control={control}
                 name={"layoutNonSchemeType"}
@@ -178,3 +167,4 @@ useEffect(() => {
 };
 
 export default LayoutLocalityInfo;
+

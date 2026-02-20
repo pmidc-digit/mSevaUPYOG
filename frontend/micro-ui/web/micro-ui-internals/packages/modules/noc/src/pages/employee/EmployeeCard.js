@@ -17,7 +17,7 @@ const NOCEmployeeHomeCard = () => {
         moduleName: "noc-services",
         applicationStatus: "",
         locality: [],
-        assignee: "ASSIGNED_TO_ALL",
+        assignee: "ASSIGNED_TO_ME",
         businessServiceArray: businessServiceList(true) || []
     }
 

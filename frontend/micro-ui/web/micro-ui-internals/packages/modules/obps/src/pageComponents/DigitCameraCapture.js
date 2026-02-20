@@ -11,6 +11,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
   const [stream, setStream] = useState(null);
   const [location, setLocation] = useState(null);
   const [error, setError] = useState("");
+  const [gpsReady, setGpsReady] = useState(false);
 
   const stopCamera = () => {
     if (streamRef.current) {
@@ -81,6 +82,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
                         lng: pos.coords.longitude.toFixed(6),
                         accuracy
                     });
+                    setGpsReady(true);
                 // }
             },
             (err) => {
@@ -103,6 +105,14 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
 
   /* ------------------ CAPTURE IMAGE ------------------ */
   const capturePhoto = () => {
+
+    if (!location || !location.lat || !location.lng) {
+      setError("Location not available yet. Please wait.");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -150,17 +160,20 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         ref={videoRef}
         autoPlay
         playsInline
-        style={{
-          width: "100%",
-          borderRadius: "8px",
-          background: "#000"
-        }}
+        className="video-preview"
+        // style={{
+        //   width: "100%",
+        //   borderRadius: "8px",
+        //   background: "#000"
+        // }}
       />
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
 
       {error && (
-        <div style={{ color: "red", marginTop: "8px" }}>
+        <div className="requiredField"
+        // style={{ color: "red", marginTop: "8px" }}
+        >
           {t(error)}
         </div>
       )}
@@ -186,7 +199,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
           )}
 
       <div style={{display: "flex",justifyContent: "center",gap: "12px", marginTop: "16px"}}>
-        {!error && <SubmitBar label={t("CAPTURE_IMAGE")} onSubmit={capturePhoto} />}
+        {!error && <SubmitBar label={gpsReady ? t("CAPTURE_IMAGE") : t("WAITING_FOR_GPS")} onSubmit={capturePhoto} />}
         <SubmitBar label={t("CANCEL")} onSubmit={handleCancel} />
       </div>
     </div>

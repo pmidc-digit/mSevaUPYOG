@@ -65,6 +65,7 @@ function CLUSummary({ currentStepData: formData, t }) {
          <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(owner?.dateOfBirth) || "N/A"}/>   
          <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"}/>
          <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"}/> 
+         <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={owner?.ownershipInPct || "N/A"}/> 
          </StatusTable>
 </div>
     
@@ -94,23 +95,10 @@ function CLUSummary({ currentStepData: formData, t }) {
        <Row label={t("BPA_AREA_TYPE_LABEL")} text={formData?.siteDetails?.localityAreaType?.name|| "N/A"}/> 
 
         {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
-          <Row label={t("BPA_SCHEME_NAME_LABEL")} text={formData?.siteDetails?.localitySchemeName || "N/A"}/>}
-
-        {formData?.siteDetails?.localityAreaType?.code === "APPROVED_COLONY" &&
-          <Row label={t("BPA_APPROVED_COLONY_NAME_LABEL")} text={formData?.siteDetails?.localityApprovedColonyName || "N/A"}/>}
-
-        {formData?.siteDetails?.localityAreaType?.code === "NON_SCHEME" &&
-           <Row label={t("BPA_NON_SCHEME_TYPE_LABEL")} text={formData?.siteDetails?.localityNonSchemeType?.name || "N/A"}/>}
-
-        <Row label={t("BPA_NOTICE_ISSUED_LABEL")} text={formData?.siteDetails?.localityNoticeIssued?.code || "N/A"}/>
-
-        {formData?.siteDetails?.localityNoticeIssued?.code === "YES" &&
-          <Row label={t("BPA_NOTICE_NUMBER_LABEL")} text={formData?.siteDetails?.localityNoticeNumber || "N/A"}/>}
-
-        {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
           <Row label={t("BPA_SCHEME_COLONY_TYPE_LABEL")} text={formData?.siteDetails?.localityColonyType?.name || "N/A"}/>}
 
-        <Row label={t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL")} text={formData?.siteDetails?.localityTransferredSchemeType?.name || "N/A"}/>
+        {formData?.siteDetails?.localityAreaType?.code === "SCHEME_AREA" &&
+          <Row label={t("BPA_SCHEME_NAME_LABEL")} text={formData?.siteDetails?.localitySchemeName || "N/A"}/>}
 
       </StatusTable>
   
@@ -120,13 +108,14 @@ function CLUSummary({ currentStepData: formData, t }) {
       <StatusTable>
 
         <Row label={t("BPA_PLOT_NO_LABEL")} text={formData?.siteDetails?.plotNo || "N/A"}/>
-        <Row label={t("BPA_PLOT_AREA_LABEL")} text={formData?.siteDetails?.plotArea || "N/A"}/>
         <Row label={t("BPA_KHEWAT_KHATUNI_NO_LABEL")} text={formData?.siteDetails?.khewatOrKhatuniNo || "N/A"}/>
         <Row label={t("BPA_CORE_AREA_LABEL")} text={formData?.siteDetails?.coreArea?.code || "N/A"}/> 
 
         <Row label={t("BPA_PROPOSED_SITE_ADDRESS")} text={ formData?.siteDetails?.proposedSiteAddress || "N/A"}/>
         <Row label={t("BPA_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || "N/A"}/>
         <Row label={t("BPA_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"}/>
+        <Row label={t("BPA_DISTRICT_LABEL")} text={formData?.siteDetails?.district?.name || formData?.siteDetails?.district || "N/A"}/> 
+        <Row label={t("BPA_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/> 
         <Row label={t("BPA_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"}/> 
         <Row label={t("BPA_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"}/>
         <Row label={t("BPA_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"}/>
@@ -137,13 +126,11 @@ function CLUSummary({ currentStepData: formData, t }) {
         <Row label={t("BPA_ROAD_WIDTH_AT_SITE_LABEL")} text={formData?.siteDetails?.roadWidthAtSite || "N/A"}/> 
 
         <Row label={t("BPA_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"}/>
-        <Row label={t("BPA_DISTRICT_LABEL")} text={formData?.siteDetails?.district?.name || formData?.siteDetails?.district || "N/A"}/> 
-        <Row label={t("BPA_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"}/> 
 
         <Row label={t("BPA_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"}/>
         <Row label={t("BPA_SITE_VASIKA_DATE_LABEL")} text={formatDate(formData?.siteDetails?.vasikaDate) || "N/A"}/>
         <Row label={t("BPA_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"}/>
-        <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={formData?.siteDetails?.ownershipInPct || "N/A"}/> 
+        {/* <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={formData?.siteDetails?.ownershipInPct || "N/A"}/>  */}
         <Row label={t("BPA_PROPOSED_ROAD_WIDTH_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.proposedRoadWidthAfterWidening || "N/A"}/> 
 
         <Row label={t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL")} text={formData?.siteDetails?.appliedCluCategory?.name || "N/A"}/> 

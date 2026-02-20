@@ -223,7 +223,7 @@ const CitizenApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
+      <div className="ndc-application-overview">
         {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
         <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
@@ -275,7 +275,7 @@ const CitizenApplicationOverview = () => {
           console.log("detail", detail);
           const isRed = detail.dueAmount > 0;
           return (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div className="ndc-application-overview-table" key={index}>
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 {/* <Row label={t("Name")} text={t(`${detail.businessService}`) || detail.businessService} /> */}
@@ -300,6 +300,17 @@ const CitizenApplicationOverview = () => {
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
                   <>
+                    <Row
+                      label={t("CHB_DISCOUNT_REASON")}
+                      text={t(
+                        `${
+                          applicationDetails?.Applications?.[0]?.reason === "OTHERS"
+                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                                ?.reason
+                            : applicationDetails?.Applications?.[0]?.reason
+                        }`
+                      )}
+                    />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city || "N/A"} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo || "N/A"} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName || "N/A"} />
@@ -311,6 +322,13 @@ const CitizenApplicationOverview = () => {
                     <Row
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
+                    />
+                    <Row
+                      label={t("Remarks")}
+                      text={
+                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                          ?.remarks || "N/A"
+                      }
                     />
                   </>
                 )}

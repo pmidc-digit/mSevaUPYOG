@@ -2,8 +2,9 @@ import envVariables from "../envVariables";
 import { httpRequest } from "../utils/api";
 
 export const searchUser = async (requestInfo, userSearchReqCriteria) => {
+ // console.log ()
   let requestBody = { RequestInfo: requestInfo, ...userSearchReqCriteria };
-
+  //console.log("User search request Body: "+JSON.stringify(requestBody))
   var userSearchResponse = await httpRequest({
     hostURL: envVariables.EGOV_USER_HOST,
     endPoint: `${envVariables.EGOV_USER_CONTEXT_PATH}${
@@ -22,6 +23,7 @@ export const searchUser = async (requestInfo, userSearchReqCriteria) => {
 
 export const createUser = async (requestInfo, user) => {
   let requestBody = { RequestInfo: requestInfo, user: user };
+  //console.log("Create USer Req Body"+ JSON.stringify(requestBody))
   user.dob=dobConvetion(user.dob);
   var userCreateResponse = await httpRequest({
     hostURL: envVariables.EGOV_USER_HOST,
@@ -38,9 +40,9 @@ export const createUser = async (requestInfo, user) => {
 };
 
 export const updateUser = async (requestInfo, user) => {
-  // console.log(user);
+   console.log(user);
   user.dob=dobConvetion(user.dob);
-  // console.info(user.dob);
+   console.info(user.dob);
   let requestBody = { RequestInfo: requestInfo, user: user };
   var userUpdateResponse = await httpRequest({
     hostURL: envVariables.EGOV_USER_HOST,
@@ -52,7 +54,7 @@ export const updateUser = async (requestInfo, user) => {
 
   var dobFormat = "yyyy-MM-dd";
   userUpdateResponse = parseResponse(userUpdateResponse, dobFormat);
-
+    //console.log("userUpdateResponse"+JSON.stringify(userUpdateResponse))
   return userUpdateResponse;
 };
 

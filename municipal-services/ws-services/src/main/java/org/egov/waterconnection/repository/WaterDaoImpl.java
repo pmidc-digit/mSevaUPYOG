@@ -239,10 +239,16 @@ public class WaterDaoImpl implements WaterDao {
 		WaterConnectionResponse connectionResponse = new WaterConnectionResponse();
 		if (isOpenSearch) {
 			waterConnectionList = jdbcTemplate.query(query, preparedStatement.toArray(), openWaterRowMapper);
+            for (WaterConnection waterConnection : waterConnectionList) {
+            	convertMeterMakeToString(waterConnection);
+            }
 			connectionResponse = WaterConnectionResponse.builder().waterConnection(waterConnectionList)
 					.totalCount(openWaterRowMapper.getFull_count()).build();
 		} else {
 			waterConnectionList = jdbcTemplate.query(query, preparedStatement.toArray(), waterRowMapper);
+			for (WaterConnection waterConnection : waterConnectionList) {
+				convertMeterMakeToString(waterConnection);
+			}
 			connectionResponse = WaterConnectionResponse.builder().waterConnection(waterConnectionList)
 					.totalCount(waterRowMapper.getFull_count()).build();
 		}
@@ -333,5 +339,58 @@ public class WaterDaoImpl implements WaterDao {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
+	/**
+	 * Convert meterMake to String in additionalDetails if it exists and is not already a String
+	 * Handles both "meterMake" and "metermake" field names
+	 * @param waterConnection The water connection object to process
+	 */
+	private void convertMeterMakeToString(WaterConnection waterConnection) {
+		if (waterConnection == null || waterConnection.getAdditionalDetails() == null) {
+			return;
+		}
+
+		Object additionalDetails = waterConnection.getAdditionalDetails();
+
+		// Handle both Map and ObjectNode types
+		if (additionalDetails instanceof Map) {
+			Map<String, Object> detailsMap = (Map<String, Object>) additionalDetails;
+			// Handle both "meterMake" and "metermake"
+			convertMeterMakeFieldInMap(detailsMap, "meterMake");
+			convertMeterMakeFieldInMap(detailsMap, "metermake");
+		} else if (additionalDetails instanceof com.fasterxml.jackson.databind.node.ObjectNode) {
+			com.fasterxml.jackson.databind.node.ObjectNode detailsNode = (com.fasterxml.jackson.databind.node.ObjectNode) additionalDetails;
+			// Handle both "meterMake" and "metermake"
+			convertMeterMakeFieldInObjectNode(detailsNode, "meterMake");
+			convertMeterMakeFieldInObjectNode(detailsNode, "metermake");
+		}
+	}
+
+	/**
+	 * Convert a specific field to String in a Map
+	 */
+	private void convertMeterMakeFieldInMap(Map<String, Object> detailsMap, String fieldName) {
+		if (detailsMap.containsKey(fieldName)) {
+			Object fieldValue = detailsMap.get(fieldName);
+			if (fieldValue != null && !(fieldValue instanceof String)) {
+				detailsMap.put(fieldName, String.valueOf(fieldValue));
+				log.debug("Converted {} from {} to String: {}", fieldName, fieldValue.getClass().getSimpleName(), fieldValue);
+			}
+		}
+	}
+
+	/**
+	 * Convert a specific field to String in an ObjectNode
+	 */
+	private void convertMeterMakeFieldInObjectNode(com.fasterxml.jackson.databind.node.ObjectNode detailsNode, String fieldName) {
+		if (detailsNode.has(fieldName)) {
+			com.fasterxml.jackson.databind.JsonNode fieldNode = detailsNode.get(fieldName);
+			if (fieldNode != null && !fieldNode.isNull() && !fieldNode.isTextual()) {
+				String fieldValue = fieldNode.asText();
+				detailsNode.put(fieldName, fieldValue);
+				log.debug("Converted {} from {} to String: {}", fieldName, fieldNode.getNodeType(), fieldValue);
+			}
+		}
+	}
+
 }

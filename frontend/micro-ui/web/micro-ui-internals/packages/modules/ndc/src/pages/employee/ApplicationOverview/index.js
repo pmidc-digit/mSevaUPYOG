@@ -12,6 +12,7 @@ import {
   CardLabel,
   TextInput,
   LinkButton,
+  MultiLink
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -53,6 +54,7 @@ const ApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
       const updated = { ...prev, [consumerCode]: value === "yes" };
@@ -142,6 +144,59 @@ const ApplicationOverview = () => {
 
   // console.log("WorkflowService====", WorkflowService);
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "NDC",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  async function getRecieptSearch({ tenantId, payments, ...params }) {
+    setLoader(true);
+    try {
+      let response = null;
+      let application = applicationDetails?.Applications?.[0];
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      }else {
+        response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [
+              {
+                ...(payments || {}),
+                ...application,
+              },
+            ], },
+          "ndc-receipt"
+        );
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response.filestoreIds[0],
+      });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      setLoader(false);
+    } catch (error) {
+      console.error(error);
+      setLoader(false);
+    }
+  }
+  const dowloadOptions = [];
+
+  if(applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"){
+    dowloadOptions.push({
+    label: t("DOWNLOAD_CERTIFICATE"),
+    onClick: () => handleDownloadPdf(),
+  });
+  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    dowloadOptions.push({
+      label: t("PTR_FEE_RECIEPT"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
+  }
+  }
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -457,7 +512,7 @@ const ApplicationOverview = () => {
       .join(", ");
   }
 
-  if (isLoading || isDetailsLoading) {
+  if (isLoading || isDetailsLoading || recieptDataLoading) {
     return <Loader />;
   }
 
@@ -467,8 +522,18 @@ const ApplicationOverview = () => {
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-        {isCemp && applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
-          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
+        {isCemp && (
+          <div className="cardHeaderWithOptions ral-app-details-header">
+            {getLoader && <Loader />}
+            {dowloadOptions && dowloadOptions.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            )}
+          </div>
         )}
       </div>
       <Card>

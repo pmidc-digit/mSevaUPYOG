@@ -1,21 +1,17 @@
 import React, { useCallback, useMemo, useReducer, useState, useEffect, useRef } from "react";
-import { InboxComposer, ComplaintIcon, Header, FilterForm, Loader, Card } from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, FilterForm, Loader, Card, Table } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import NewSearchFormFieldsComponent from "./NewSearchFormFieldsComponent";
 import NewFilterFormFieldsComponent from "./NewFilterFormFieldsComponent";
-import NewNDCInboxTable from "./NewNDCInboxTable";
 import useNewInboxTableConfig from "./useNewInboxTableConfig";
 import useNewInboxMobileCardsData from "./useNewInboxMobileCardsData";
 import { businessServiceList } from "../../ndc/src/utils";
 import { useForm, useWatch } from "react-hook-form";
-import { Link } from "react-router-dom";
 
 const NewNDCInbox = ({ parentRoute, tableColumns }) => {
   const { t } = useTranslation();
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  const [getFilter, setFilter] = useState();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
 
@@ -136,10 +132,6 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
     t
   );
 
-  const handleFilter = (filterStatus) => {
-    setFilter(filterStatus);
-  };
-
   const {
     register: registerFilterFormField,
     control: controlFilterForm,
@@ -151,13 +143,44 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
     defaultValues: { ...filterFormDefaultValues },
   });
 
+  const handleFilter = useCallback((filterData) => {
+    // Update form values
+    if (filterData.applicationStatus) {
+      setFilterFormValue("applicationStatus", filterData.applicationStatus.map((item) => item.code || item))
+    }
+    if (filterData.assignee) {
+      setFilterFormValue("assignee", filterData.assignee)
+    }
+    // Dispatch to reducer to trigger data refetch
+    dispatch({ 
+      action: "mutateFilterForm", 
+      data: { 
+        ...formState?.filterForm,
+        applicationStatus: filterData.applicationStatus?.map((item) => item.code || item) || formState?.filterForm?.applicationStatus || [],
+        assignee: filterData.assignee || formState?.filterForm?.assignee || "ASSIGNED_TO_ALL"
+      } 
+    })
+  }, [formState?.filterForm, setFilterFormValue]);
+
   const prevFilterRef = useRef("");
   const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
+  useEffect(() => {
+    if (formState?.filterForm) {
+      setFilterFormValue("assignee", formState.filterForm.assignee || "ASSIGNED_TO_ALL");
+      setFilterFormValue("applicationStatus", formState.filterForm.applicationStatus || []);
+      setFilterFormValue("moduleName", formState.filterForm.moduleName || "ndc-services");
+    }
+  }, [formState?.filterForm?.assignee, formState?.filterForm?.applicationStatus, formState?.filterForm?.moduleName, setFilterFormValue]);
+
   const { isLoading: isInboxLoading, data } = Digit.Hooks.ndc.useInbox({
     tenantId,
-    filters: { ...formState, getFilter },
+    filters: {
+      filterForm: formState?.filterForm || filterFormDefaultValues,
+      searchForm: formState?.searchForm || searchFormDefaultValues,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+    },
   });
 
   const [table, setTable] = useState([]);
@@ -223,6 +246,7 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
     dispatch({ action: "mutateFilterForm", data });
   };
 
+
   const propsForSearchForm = {
     SearchFormFields,
     onSearchFormSubmit,
@@ -247,57 +271,7 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
-  const defaultTableColumns = useMemo(
-    () => [
-      {
-        Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
-        accessor: "applicationId",
-        className: "ndc-new-table-app",
-        subAccessor: "locality",
-        Cell: ({ row }) => (
-          <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
-            {row.original?.applicationId || row.original?.applicationNo || "-"}
-          </Link>
-        ),
-      },
-      {
-        Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
-        accessor: "date",
-        formatter: (value, row) => {
-          const dateValue = value || row?.createdTime;
-          return dateValue ? format(new Date(dateValue), "dd/MM/yyyy") : "-";
-        },
-      },
-      {
-        Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
-        accessor: "status",
-        type: "status",
-      },
-      {
-        Header: t("CS_COMMON_ACTION"),
-        accessor: "action",
-        type: "action",
-        className: "ndc-new-table-action",
-        Cell: ({ row }) => (
-          <span className="ndc-new-action-group">
-            <Link
-              to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}
-              className="ndc-new-icon ndc-new-icon-link"
-              aria-label={t("ES_COMMON_VIEW")}
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            </Link>
-          </span>
-        ),
-      },
-    ],
-    [parentRoute, t]
-  );
-
-  const resolvedTableColumns = tableColumns || defaultTableColumns;
+  const resolvedTableColumns = tableColumns || propsForInboxTable?.columns;
 
   useEffect(() => {
     const serialized = JSON.stringify(formState?.filterForm || {});
@@ -692,6 +666,7 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
           border-bottom: 1px solid #e2e8f0;
         }
         .ndc-new-inbox .ndc-new-table-wrapper {
+          display: block;
           overflow-x: auto;
         }
         .ndc-new-inbox .ndc-new-table {
@@ -890,7 +865,6 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
               registerRef={registerFilterFormField}
               {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue, statuses }}
               handleFilter={handleFilter}
-              onApplyFilters={handleFilterFormSubmit(onFilterFormSubmit)}
             />
           </FilterForm>
         </div>
@@ -931,7 +905,17 @@ const NewNDCInbox = ({ parentRoute, tableColumns }) => {
         ) : table?.length < 1 ? (
           <Card className="margin-unset text-align-center">{t("CS_MYAPPLICATIONS_NO_APPLICATION")}</Card>
         ) : (
-          <NewNDCInboxTable rows={table} parentRoute={parentRoute} columns={resolvedTableColumns} />
+          <div className="ndc-new-table-card">
+            <div className="ndc-new-table-header">{t("Assigned Applications")}</div>
+            <Table
+              className="ndc-new-table"
+              customTableWrapperClassName="ndc-new-table-wrapper"
+              isPaginationRequired={false}
+              {...propsForInboxTable}
+              columns={resolvedTableColumns}
+              getRowProps={propsForInboxTable?.getRowProps}
+            />
+          </div>
         )}
         {totalCount > 0 ? (
           <div className="ndc-new-pagination">

@@ -88,7 +88,7 @@ public class StorageService {
 
 	private List<Artifact> mapFilesToArtifact(List<MultipartFile> files, String module, String tag, String tenantId) {
 
-		final String folderName = getFolderName(module, tenantId);
+		final String folderName = "ticket".equals(tenantId) ? getTicketFolderName(module, tenantId) : getFolderName(module, tenantId);
 		String inputStreamAsString = null;
 		List<Artifact> artifacts = new ArrayList<>();
 		Artifact artifact = null;
@@ -149,6 +149,11 @@ public class StorageService {
 		Calendar calendar = Calendar.getInstance();
 		return minioConfig.getBucketName() + "/" + getFolderName(module, tenantId, calendar);
 	}
+	
+	private String getTicketFolderName(String module, String tenantId) {
+		return minioConfig.getTicketBucketName() + "/" + tenantId + "/" + module + "/" ;
+	}
+	
 
 	public Resource retrieve(String fileStoreId, String tenantId) throws IOException {
 		return artifactRepository.find(fileStoreId, tenantId);

@@ -47,6 +47,10 @@ RUN cd web/ \
 
 
 FROM nginx:mainline-alpine
+
+# Install fonts for Punjabi / CJK support
+RUN apk add --no-cache font-noto font-noto-cjk
+
 #FROM ghcr.io/egovernments/nginx:mainline-alpine
 ENV WORK_DIR=/var/web/digit-ui
 

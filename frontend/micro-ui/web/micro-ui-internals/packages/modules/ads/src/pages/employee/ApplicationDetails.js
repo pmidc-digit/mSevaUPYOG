@@ -21,6 +21,7 @@ import ADSModal from "../../pageComponents/ADSModal";
 import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
+import ADSCancelBooking from "../../components/ADSCancelBooking";
 import { formatLabel, pdfDownloadLink, transformAdsData, transformBookingResponseToBookingData } from "../../utils";
 import getAcknowledgement from "../../getAcknowledgment";
 import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
@@ -136,6 +137,7 @@ const ApplicationDetails = () => {
   const [showModal, setShowModal] = useState(false);
 
   // ADDED: states & hooks from old file to support downloads
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const mutation = Digit.Hooks.ads?.useADSCreateAPI?.(tenantId, false);
 
@@ -249,6 +251,10 @@ const ApplicationDetails = () => {
 
     // Direct submit for simple actions (same behavior you had)
     if (wfAction.action === "SUBMIT" || wfAction.action === "INITIATE" || wfAction.action === "CANCEL") {
+      if (wfAction.action === "CANCEL") {
+        setShowCancelModal(true);
+        return;
+      }
       const payloadAction = {
         action: wfAction.action,
         comment: wfAction.action || "",
@@ -411,6 +417,15 @@ const ApplicationDetails = () => {
     return <Loader />;
   }
 
+  const handleCancelBooking = async () => {
+    setShowCancelModal(false);
+    const payloadAction = {
+      action: "CANCEL",
+      comment: "CANCEL",
+    };
+    return submitAction({ Licenses: [payloadAction] });
+  };
+
   return (
     <div className={"employee-main-application-details"}>
       {/* Header with MultiLink download dropdown (merged old feature) */}
@@ -555,6 +570,18 @@ const ApplicationDetails = () => {
       ) : null}
 
       {showToast && <Toast error={showToast.key === "error"} label={error} onClose={() => setShowToast(null)} isDleteBtn={true} />}
+
+      {showCancelModal && (
+        <ADSCancelBooking
+          t={t}
+          closeModal={() => setShowCancelModal(false)}
+          actionCancelLabel={"BACK"}
+          actionCancelOnSubmit={() => setShowCancelModal(false)}
+          actionSaveLabel={"ADS_CANCEL"}
+          actionSaveOnSubmit={handleCancelBooking}
+          onSubmit={handleCancelBooking}
+        />
+      )}
 
       {/* OPTIONAL: if you prefer the old template instead of the cards above, uncomment below and pass the correct data shape
       <ApplicationDetailsTemplate

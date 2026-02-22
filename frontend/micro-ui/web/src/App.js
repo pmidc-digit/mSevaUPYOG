@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect} from "react";
 import { initPGRComponents, PGRReducers } from "@mseva/digit-ui-module-pgr";
 import {
   initSWACHComponents,
@@ -225,7 +225,58 @@ const moduleReducers = (initData) => ({
   gc: GarbageReducers(initData),
 });
 
+const loadBhashiniSafely = () => {
+  if (window.__BHASHINI_LOADED__) return;
+  window.__BHASHINI_LOADED__ = true;
+
+  // 1️⃣ Patch getElementById defensively
+  const originalGetElementById = document.getElementById.bind(document);
+
+  document.getElementById = function (id) {
+    const el = originalGetElementById(id);
+    if (el) return el;
+
+    // Create a safe fallback node
+    const fallback = document.createElement("div");
+    fallback.id = id;
+    fallback.style.display = "block";
+    document.body.appendChild(fallback);
+    return fallback;
+  };
+
+  // 2️⃣ Load script - check if window is already loaded
+  const loadScript = () => {
+    if (document.getElementById("bhashini-script")) return;
+
+    const script = document.createElement("script");
+    script.id = "bhashini-script";
+    script.src =
+      "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js";
+    script.async = true;
+
+    document.body.appendChild(script);
+  };
+
+  // If window is already loaded, load immediately, otherwise wait for load event
+  if (document.readyState === 'complete') {
+    loadScript();
+  } else {
+    window.addEventListener("load", loadScript);
+  }
+};
+
+
 function App() {
+
+
+    useEffect(() => {
+    // Load Bhashini after 5 seconds (one time only)
+    const timerId = setTimeout(() => {
+      loadBhashiniSafely();
+    }, 5000);
+
+  }, []);
+
   const stateCode =
     window.globalConfigs?.getConfig("STATE_LEVEL_TENANT_ID") ||
     process.env.REACT_APP_STATE_LEVEL_TENANT_ID;

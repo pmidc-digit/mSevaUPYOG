@@ -88,25 +88,27 @@ function RentAndLeaseSummary({ t }) {
           <div className="ral-summary-header-row">
             <h3 className="ral-summary-heading">{t("Properties Details")}</h3>
           </div>
-          {Object.entries(propertyLabels).map(([key, label]) => {
-            let value = property?.selectedProperty?.[key] || property?.[key];
-            if (value?.name) value = value.name;
-            else if (value?.code) value = value.code;
+          {Object.entries(propertyLabels)
+            .filter(([key]) => property?.applicationType?.code !== "Legacy" || key !== "securityDeposit")
+            .map(([key, label]) => {
+              let value = property?.selectedProperty?.[key] || property?.[key];
+              if (value?.name) value = value.name;
+              else if (value?.code) value = value.code;
 
-            // Special handling for booleans
-            if (key === "refundApplicableOnDiscontinuation") {
-              value = value === true ? t("YES") : t("NO");
-            }
-            if (key === "tax_applicable") {
-              value = value === true ? t("YES") : t("NO");
-            }
+              // Special handling for booleans
+              if (key === "refundApplicableOnDiscontinuation") {
+                value = value === true ? t("YES") : t("NO");
+              }
+              if (key === "tax_applicable") {
+                value = value === true ? t("YES") : t("NO");
+              }
 
-            if (typeof value === "number" && (key === "startDate" || key === "endDate")) {
-              value = Digit.DateUtils.ConvertEpochToDate(value);
-            }
+              if (typeof value === "number" && (key === "startDate" || key === "endDate")) {
+                value = Digit.DateUtils.ConvertEpochToDate(value);
+              }
 
-            return renderRow(label, value || "NA");
-          })}
+              return renderRow(label, value || "NA");
+            })}
         </div>
       </Card>
 

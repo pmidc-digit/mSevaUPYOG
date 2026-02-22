@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useHistory } from 'react-router-dom';
 import AboutSection from './components/AboutSection';
 import HelpSection from './components/HelpSection';
@@ -17,14 +17,22 @@ const LandingPage = () => {
   const navigateToCitizenApp = () => {
     history.push('/digit-ui/citizen');
   };
-
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+    script.async = true;document.body.appendChild(script);
+  }, []);
   return (
     <div className="landing-page">
       {/* Hero Section with Login Cards */}
+      <div className='language-plugin-landing'>
+        <div className="bhashini-plugin-container"></div>
+      </div>
       <section className="landing-hero">
         <div className="landing-hero-overlay"></div>
         <div className="landing-hero-content">
           <div className="landing-hero-text">
+            
             <h1 className="landing-hero-title">
               Welcome to <span>mSeva Punjab</span>
             </h1>

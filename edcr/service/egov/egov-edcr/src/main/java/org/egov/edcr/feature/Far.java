@@ -736,7 +736,9 @@ public class Far extends FeatureProcess {
 					&& DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))
 					|| (mostRestrictiveOccupancyType.getSubtype() != null
 							&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
-									|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())))) {				
+									|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+									|| A_FH.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+									))) {				
 
 				processFarResidential(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs,
 						plotArea);
@@ -749,10 +751,10 @@ public class Far extends FeatureProcess {
 				processFarForGBDOccupancy(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
 						errorMsgs, plotArea);
 			}
-			if (mostRestrictiveOccupancyType.getType() != null
-					&& DxfFileConstants.I.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
-				processFarHaazardous(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs);
-			}
+//			if (mostRestrictiveOccupancyType.getType() != null
+//					&& DxfFileConstants.I.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+//				processFarHaazardous(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs);
+//			}
 			if (mostRestrictiveOccupancyType.getType() != null
 					&& DxfFileConstants.F.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
 //				processFarNonResidential(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
@@ -760,20 +762,25 @@ public class Far extends FeatureProcess {
 				processFarCommercial(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs, plotArea);
 			}
 			if (mostRestrictiveOccupancyType.getType() != null
-					&& DxfFileConstants.C.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+					&& DxfFileConstants.L.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
+				processFarPublicBuilding(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
+						errorMsgs,plotArea);
+			}
+			//if (mostRestrictiveOccupancyType.getType() != null
+				//	&& DxfFileConstants.C.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
 //				processFarHospital(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
 //						errorMsgs,plotArea);
-			}
-			if ((mostRestrictiveOccupancyType.getType() != null
-			        && DxfFileConstants.J.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))
-			    || (mostRestrictiveOccupancyType.getSubtype() != null
-			        && (J_FS.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
-			            || J_FCSS.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
-			            || J_CNG.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())))) {
-
-			    processFarPetrolPump(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
-			            errorMsgs, plotArea);
-			}
+			//}
+//			if ((mostRestrictiveOccupancyType.getType() != null
+//			        && DxfFileConstants.J.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))
+//			    || (mostRestrictiveOccupancyType.getSubtype() != null
+//			        && (J_FS.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+//			            || J_FCSS.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
+//			            || J_CNG.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())))) {
+//
+//			    processFarPetrolPump(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
+//			            errorMsgs, plotArea);
+//			}
 		}
 		
 		//getFarDetailsFromMDMS(pl,mostRestrictiveOccupancyType.getType().getCode());
@@ -1036,8 +1043,9 @@ public class Far extends FeatureProcess {
 		else if (codes.contains(C_MOP))
 			return codesMap.get(C_MOP);
 		
-		else if (codes.contains(G))
-			return codesMap.get(G);
+//		else if (codes.contains(G))
+//			return codesMap.get(G);
+		
 		else if (codes.contains(F))
 			return codesMap.get(F);
 		else if (codes.contains(A))
@@ -1071,16 +1079,79 @@ public class Far extends FeatureProcess {
 			return codesMap.get(A_AF);
 		
 		else if (codes.contains(A_AIF))
-			return codesMap.get(A_AIF);
-		
-		else if (codes.contains(G_GTKS))
-			return codesMap.get(G_GTKS);
-		
-		else if (codes.contains(G_IT))
-			return codesMap.get(G_IT);
-		
+			return codesMap.get(A_AIF);		
+	
+		else if (codes.contains(G_G))
+		    return codesMap.get(G_G);
+
 		else if (codes.contains(G_F))
-			return codesMap.get(G_F);
+		    return codesMap.get(G_F);
+
+		else if (codes.contains(G_S))
+		    return codesMap.get(G_S);
+
+		else if (codes.contains(G_HI))
+		    return codesMap.get(G_HI);
+
+		else if (codes.contains(G_WT))
+		    return codesMap.get(G_WT);
+
+		else if (codes.contains(G_RSI))
+		    return codesMap.get(G_RSI);
+
+		else if (codes.contains(G_GIP))
+		    return codesMap.get(G_GIP);
+
+		else if (codes.contains(G_GIF))
+		    return codesMap.get(G_GIF);
+
+		else if (codes.contains(G_ITP))
+		    return codesMap.get(G_ITP);
+
+		else if (codes.contains(G_ITF))
+		    return codesMap.get(G_ITF);
+
+		else if (codes.contains(G_TI))
+		    return codesMap.get(G_TI);
+
+		else if (codes.contains(G_KI))
+		    return codesMap.get(G_KI);
+
+		else if (codes.contains(G_SI))
+		    return codesMap.get(G_SI);
+		
+		// Public Building (L) Color Codes
+		else if (codes.contains(L_GP))
+		    return codesMap.get(L_GP);
+
+		else if (codes.contains(L_GO))
+		    return codesMap.get(L_GO);
+
+		else if (codes.contains(L_NS))
+		    return codesMap.get(L_NS);
+
+		else if (codes.contains(L_PS))
+		    return codesMap.get(L_PS);
+
+		else if (codes.contains(L_CO))
+		    return codesMap.get(L_CO);
+
+		else if (codes.contains(L_ERC))
+		    return codesMap.get(L_ERC);
+
+		else if (codes.contains(L_MP))
+		    return codesMap.get(L_MP);
+
+		else if (codes.contains(L_NH))
+		    return codesMap.get(L_NH);
+
+		else if (codes.contains(L_C))
+		    return codesMap.get(L_C);
+
+		// Mixed Land Use
+		else if (codes.contains(R_R))
+		    return codesMap.get(R_R);
+
 		
 		else if (codes.contains(F_RB))
 		    return codesMap.get(F_RB);
@@ -1217,6 +1288,13 @@ public class Far extends FeatureProcess {
 		return false;
 	}
 
+	private void processFarPublicBuilding(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far, String typeOfArea,
+			BigDecimal roadWidth, HashMap<String, String> errors, BigDecimal plotArea) {
+		LOG.info("************* Processing FAR (Public Building) **************");
+		LOG.info("Type of area: " + typeOfArea);		
+		getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+	}
+	
 	// Method updated by Bimal Kumar on 14 March 2024
 	private void processFarResidential(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far, String typeOfArea,
 			BigDecimal roadWidth, HashMap<String, String> errors, BigDecimal plotArea) {
@@ -1455,6 +1533,64 @@ public class Far extends FeatureProcess {
 	    if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
 	        buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 	    }
+	}
+	
+	private void processFarCommercialByMBMS(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far,
+	        String typeOfArea, BigDecimal roadWidth, HashMap<String, String> errors,
+	        BigDecimal plotArea) {
+
+	    String expectedResult = StringUtils.EMPTY;
+	    boolean isAccepted = false;
+
+	    /* ---------- Plot Area Validation ---------- */
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	        if (!shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_AREA)) {
+	            errors.put("Plot Area Error", "Plot area must be greater than 0.");
+	            pl.addErrors(errors);
+	        }
+	        return;
+	    }
+
+	    /* ---------- Road Width Validation ---------- */
+	    if (roadWidth == null || roadWidth.compareTo(ROAD_WIDTH_18) < 0) {
+	        errors.put("Road Width Error", "Road width below 18 meters is not permitted for FAR.");
+	        pl.addErrors(errors);
+	        return;
+	    }
+	    
+	    if (occupancyType != null 
+		        && occupancyType.getType() != null 
+		        && occupancyType.getType().getCode() != null) {
+			OccupancyHelperDetail subtype = occupancyType.getSubtype();
+			//occupancyName = subtype.getName();
+			getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+	    }
+
+//	    /* ---------- FAR Determination (Ascending Order) ---------- */
+//	    if (roadWidth.compareTo(ROAD_WIDTH_18) >= 0
+//	            && roadWidth.compareTo(ROAD_WIDTH_24) < 0) {
+//
+//	        expectedResult = "2.0";
+//	        isAccepted = far != null && far.compareTo(FAR_2) <= 0;
+//
+//	    } else if (roadWidth.compareTo(ROAD_WIDTH_24) >= 0
+//	            && roadWidth.compareTo(ROAD_WIDTH_45) < 0) {
+//
+//	        expectedResult = "3.0";
+//	        isAccepted = far != null && far.compareTo(FAR_3) <= 0;
+//
+//	    } else { // roadWidth >= 45
+//
+//	        expectedResult = "UNLIMITED";
+//	        isAccepted = true;
+//	    }
+//
+//	    /* ---------- Build Result ---------- */
+//	    String occupancyName = occupancyType.getType().getName();
+//
+//	    if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
+//	        buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+//	    }
 	}
 
 
@@ -1812,7 +1948,7 @@ public class Far extends FeatureProcess {
 		}
 		
 		if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
-			buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+			//buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 		}
 	}
 

@@ -36,7 +36,7 @@ public class DxfFileConstants {
     public static final int OCCUPANCY_A1_COLOR_CODE = 25;
     public static final int OCCUPANCY_A2_COLOR_CODE = 3;
     public static final int OCCUPANCY_B1_COLOR_CODE = 4;
-    public static final int OCCUPANCY_B2_COLOR_CODE = 14;
+    //public static final int OCCUPANCY_B2_COLOR_CODE = 14;
     public static final int OCCUPANCY_B3_COLOR_CODE = 15;
     public static final int OCCUPANCY_C_COLOR_CODE = 5;
     public static final int OCCUPANCY_D_COLOR_CODE = 6;
@@ -67,11 +67,26 @@ public class DxfFileConstants {
     public static final int OCCUPANCY_F15_COLOR_CODE = 43;
     public static final int OCCUPANCY_F16_COLOR_CODE = 44;
     
- // Color codes for industry as per 2025 byLaws
-    public static final int OCCUPANCY_G_COLOR_CODE = 7;
-    public static final int OCCUPANCY_G1_COLOR_CODE = 47;
-    public static final int OCCUPANCY_G2_COLOR_CODE = 48;
-    public static final int OCCUPANCY_G3_COLOR_CODE = 49;
+// // Color codes for industry as per 2025 byLaws
+//    public static final int OCCUPANCY_G_COLOR_CODE = 7;
+//    public static final int OCCUPANCY_G1_COLOR_CODE = 47;
+//    public static final int OCCUPANCY_G2_COLOR_CODE = 48;
+//    public static final int OCCUPANCY_G3_COLOR_CODE = 49;
+    
+ // Color codes for industry as per 2018 byLaws
+    public static final int OCCUPANCY_G_COLOR_CODE = 14;
+    public static final int OCCUPANCY_G1_COLOR_CODE = 31;
+    public static final int OCCUPANCY_G2_COLOR_CODE = 32;
+    public static final int OCCUPANCY_G3_COLOR_CODE = 33;
+    public static final int OCCUPANCY_G4_COLOR_CODE = 34;
+    public static final int OCCUPANCY_G5_COLOR_CODE = 36;
+    public static final int OCCUPANCY_G6_COLOR_CODE = 46;
+    public static final int OCCUPANCY_G7_COLOR_CODE = 48;
+    public static final int OCCUPANCY_G8_COLOR_CODE = 47;
+    public static final int OCCUPANCY_G9_COLOR_CODE = 38;
+    public static final int OCCUPANCY_G10_COLOR_CODE = 39;
+    public static final int OCCUPANCY_G11_COLOR_CODE = 40;
+    public static final int OCCUPANCY_G12_COLOR_CODE = 15;
 
     
     // Color codes for Petrol Pump
@@ -94,17 +109,33 @@ public class DxfFileConstants {
 
     public static final int OCCUPANCY_K_COLOR_CODE= 18;
     
-    public static final int OCCUPANCY_L_COLOR_CODE= 29;
-    public static final int OCCUPANCY_L1_COLOR_CODE= 60;
-    public static final int OCCUPANCY_L2_COLOR_CODE= 61;
-    public static final int OCCUPANCY_L3_COLOR_CODE= 62;
-    public static final int OCCUPANCY_L4_COLOR_CODE= 63;
-    public static final int OCCUPANCY_L5_COLOR_CODE= 64;
-    public static final int OCCUPANCY_L6_COLOR_CODE= 65;
-    public static final int OCCUPANCY_L7_COLOR_CODE= 66;
+    //Color codes for public building as per 2025 byLaws
+//    public static final int OCCUPANCY_L_COLOR_CODE= 29;
+//    public static final int OCCUPANCY_L1_COLOR_CODE= 60;
+//    public static final int OCCUPANCY_L2_COLOR_CODE= 61;
+//    public static final int OCCUPANCY_L3_COLOR_CODE= 62;
+//    public static final int OCCUPANCY_L4_COLOR_CODE= 63;
+//    public static final int OCCUPANCY_L5_COLOR_CODE= 64;
+//    public static final int OCCUPANCY_L6_COLOR_CODE= 65;
+//    public static final int OCCUPANCY_L7_COLOR_CODE= 66;
+    
+  //Color codes for public building as per 2018 byLaws
+    //public static final int OCCUPANCY_L_COLOR_CODE= 29;
+    public static final int OCCUPANCY_L1_COLOR_CODE= 29;
+    public static final int OCCUPANCY_L2_COLOR_CODE= 60;
+    public static final int OCCUPANCY_L3_COLOR_CODE= 51;
+    public static final int OCCUPANCY_L4_COLOR_CODE= 52;
+    public static final int OCCUPANCY_L5_COLOR_CODE= 53;
+    public static final int OCCUPANCY_L6_COLOR_CODE= 54;
+    public static final int OCCUPANCY_L7_COLOR_CODE= 30;
+    public static final int OCCUPANCY_L8_COLOR_CODE= 56;
+    public static final int OCCUPANCY_L9_COLOR_CODE= 50;
+    
+  //Color codes for Mix land use as per 2018 byLaws
+    public static final int OCCUPANCY_R_COLOR_CODE= 19;
     
     public static final int OCCUPANCY_D1_COLOR_CODE = 16;
-    public static final int OCCUPANCY_A2_BOARDING_COLOR_CODE = 19;
+    //public static final int OCCUPANCY_A2_BOARDING_COLOR_CODE = 19;
     
     //public static final int OCCUPANCY_C2_COLOR_CODE = 20;
     //public static final int OCCUPANCY_C3_COLOR_CODE = 21;

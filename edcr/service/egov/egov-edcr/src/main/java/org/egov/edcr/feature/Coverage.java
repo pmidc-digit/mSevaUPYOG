@@ -257,7 +257,8 @@ public class Coverage extends FeatureProcess {
 //		}
 		if (plotArea.compareTo(BigDecimal.valueOf(0)) > 0 && mostRestrictiveOccupancy != null &&
 				(A.equals(mostRestrictiveOccupancy.getType().getCode())
-				|| A_AF.equals(mostRestrictiveOccupancy.getSubtype().getCode()) 
+				|| A_AF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
+				|| A_FH.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode()))
 		) {
@@ -301,6 +302,13 @@ public class Coverage extends FeatureProcess {
 			}
 			
 		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
+			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
+			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
+				scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
+				permissibleCoverageValue = scOpt.get();
+			}
+		}else if (L.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
 			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
 			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
 				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);

@@ -52,14 +52,29 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum OccupancyType {
 
 	OCCUPANCY_A1("Residential"), // singlefamily,
-	OCCUPANCY_A2("Special Residential"), OCCUPANCY_A3("Hostel Educational"), OCCUPANCY_A4("Apartment/Flat"),
-	OCCUPANCY_A5("Professional Office"), OCCUPANCY_A6("Independent Floor"),  
-	OCCUPANCY_B1("Educational"), OCCUPANCY_B2("Educational HighSchool"),OCCUPANCY_B3("Higher Educational Institute"), 
-	OCCUPANCY_C("Nursing Home/Hospital"), OCCUPANCY_C1("Medical IP"), OCCUPANCY_C2("Medical OP"), OCCUPANCY_C3("Medical Admin"), 
-	OCCUPANCY_D("Assembly"), OCCUPANCY_D1("Assembly Worship"), OCCUPANCY_D2("Bus Terminal"), 
+	OCCUPANCY_A2("Special Residential"), 
+	OCCUPANCY_A3("Hostel Educational"), 
+	OCCUPANCY_A4("Apartment/Flat"),
+	OCCUPANCY_A5("Professional Office"), 
+	OCCUPANCY_A6("Independent Floor"),  
+	
+	OCCUPANCY_B1("Educational"), 
+	OCCUPANCY_B2("Educational HighSchool"),
+	OCCUPANCY_B3("Higher Educational Institute"), 
+	
+	OCCUPANCY_C("Nursing Home/Hospital"), 
+	OCCUPANCY_C1("Medical IP"), 
+	OCCUPANCY_C2("Medical OP"), 
+	OCCUPANCY_C3("Medical Admin"), 
+	
+	OCCUPANCY_D("Assembly"), 
+	OCCUPANCY_D1("Assembly Worship"), 
+	OCCUPANCY_D2("Bus Terminal"), 
+	
 	OCCUPANCY_E("Office/Business"), 
-	OCCUPANCY_F("Commercial"), 
+	 
 	//OCCUPANCY_F1("Commercial Parking Plaza"), OCCUPANCY_F2("Commercial Parking Appurtenant"), OCCUPANCY_F3("Hotels"), OCCUPANCY_F4("Kiosk"),
+	OCCUPANCY_F("Commercial"),
 	OCCUPANCY_F1("Commercial"),
 	OCCUPANCY_F2("Restaurants/ Banquet Halls"),
 	OCCUPANCY_F3("Hotels/Motels"),
@@ -71,25 +86,66 @@ public enum OccupancyType {
 	OCCUPANCY_F9("Cinemas and Auditoriums"),
 	OCCUPANCY_F10("Video Games Parlors"),
 	OCCUPANCY_F11("Boutiques"),
-	OCCUPANCY_F12("IPetrol Filling Station – Four W"),
+	OCCUPANCY_F12("Petrol Filling Station – Four W"),
 	OCCUPANCY_F13("Petrol Filling Station – Two W"),
 	OCCUPANCY_F14("Petrol Filling Station Service"),
 	OCCUPANCY_F15("Petrol Station"),
 	OCCUPANCY_F16("Compressed Natural Gas Station"),	
 	
-	OCCUPANCY_G("Industrial"), OCCUPANCY_G1("Industrial Plotted - General, Textile, Knitwear, Sports"),
-	OCCUPANCY_G2("Industrial Plotted - Information Technology"),OCCUPANCY_G3("Industrial Flatted"),	
+//	OCCUPANCY_G("Industrial"), 
+//	OCCUPANCY_G1("Industrial Plotted - General, Textile, Knitwear, Sports"),
+//	OCCUPANCY_G2("Industrial Plotted - Information Technology"),
+//	OCCUPANCY_G3("Industrial Flatted"),
+	OCCUPANCY_G("Industrial"), 
+	OCCUPANCY_G1("Factory"),
+	OCCUPANCY_G2("Storage"),
+	OCCUPANCY_G3("Hazard Industries"),
+	OCCUPANCY_G4("Retail Service Industry"),
+	OCCUPANCY_G5("General Industry- Industry Plotted"),
+	OCCUPANCY_G6("General industry Flatted"),
+	OCCUPANCY_G7("Informational Technology- Industry Plotted"),
+	OCCUPANCY_G8("Informational Technology- Flatted"),
+	OCCUPANCY_G9("Textile Industry"),
+	OCCUPANCY_G10("Knitwear Industry"),
+	OCCUPANCY_G11("Sports Industry"),
+	OCCUPANCY_G12("Wholesale Trade/ Ware House/ Integrated Freight complex (Standalone)"),
+	
 	OCCUPANCY_H("Storage"),
-	OCCUPANCY_I1("Hazardous (I1)"), OCCUPANCY_I2("Hazardous (I2)"),
-	OCCUPANCY_J("Petrol Pumps"), OCCUPANCY_J1("Filling Station"), OCCUPANCY_J2("Filling Cum Service Station"), 
+	
+	OCCUPANCY_I1("Hazardous (I1)"), 
+	OCCUPANCY_I2("Hazardous (I2)"),
+	
+	OCCUPANCY_J("Petrol Pumps"), 
+	OCCUPANCY_J1("Filling Station"), 
+	OCCUPANCY_J2("Filling Cum Service Station"), 
 	OCCUPANCY_J3("Compressed Natural Gas (CNG) Mother Station"),
+	
 	OCCUPANCY_K("Hotel/Motel"),
-	OCCUPANCY_L("Public Building"), OCCUPANCY_L1("General Public/Semi-public buildings"), 
-	OCCUPANCY_L2("Government Offices / Integrated Office Complex"),
-	OCCUPANCY_L3("Educational Buildings - Nursery School"), OCCUPANCY_L4("Educational Buildings - Primary School"), 
-	OCCUPANCY_L5("Educational Buildings - Higher Secondary School"),
-	OCCUPANCY_L6("Educational Buildings - College"), OCCUPANCY_L7("Education & Research Centre (Large Campus)"),
-	OCCUPANCY_M("Marriage Place")
+	
+//	OCCUPANCY_L("Public Building"), 
+//	OCCUPANCY_L1("General Public/Semi-public buildings"), 
+//	OCCUPANCY_L2("Government Offices / Integrated Office Complex"),
+//	OCCUPANCY_L3("Educational Buildings - Nursery School"), 
+//	OCCUPANCY_L4("Educational Buildings - Primary School"), 
+//	OCCUPANCY_L5("Educational Buildings - Higher Secondary School"),
+//	OCCUPANCY_L6("Educational Buildings - College"), 
+//	OCCUPANCY_L7("Education & Research Centre (Large Campus)"),
+	
+	//OCCUPANCY_L("Public Building"), 
+	OCCUPANCY_L1("General Public / Semi-public buildings"), 
+	OCCUPANCY_L2("Government offices - Integrated office complex buildings"),
+	OCCUPANCY_L3("Educational (Nursery School)"), 
+	OCCUPANCY_L4("Educational (Primary School)"), 
+	OCCUPANCY_L5("Educational (College)"),
+	OCCUPANCY_L6("Education & Research Centre (Large Campus)"), 
+	OCCUPANCY_L7("Marriage Palace"),
+	OCCUPANCY_L8("Nursing Home / Hospital"),
+	OCCUPANCY_L9("Creche / Day Care facilities"),
+	
+	OCCUPANCY_M("Marriage Place"),
+	
+	OCCUPANCY_R("Mixed Land Use")
+	
 	;
 
 	

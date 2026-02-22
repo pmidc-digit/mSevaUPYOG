@@ -1361,12 +1361,12 @@ public class Util {
             occupancy.setType(OccupancyType.OCCUPANCY_A5);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_A2);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_A3);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_A3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_B1);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_B2);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_B2);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_B3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
@@ -1446,12 +1446,12 @@ public class Util {
             return OccupancyType.OCCUPANCY_A6;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_COLOR_CODE)
             return OccupancyType.OCCUPANCY_A2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_A3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_A3;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_B1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B2;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
             return OccupancyType.OCCUPANCY_B3;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
@@ -1525,6 +1525,25 @@ public class Util {
             return OccupancyType.OCCUPANCY_G2;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G3_COLOR_CODE)
             return OccupancyType.OCCUPANCY_G3;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G4_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G4;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G5_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G5;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G6_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G6;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G7_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G7;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G8_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G8;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G9_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G9;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G10_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G10;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G11_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G11;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G12_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G12;
+        
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
             return OccupancyType.OCCUPANCY_H;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
@@ -1541,6 +1560,29 @@ public class Util {
             return OccupancyType.OCCUPANCY_J2;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
             return OccupancyType.OCCUPANCY_J3;
+        
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L1_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L1;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L2_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L2;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L3_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L3;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L4_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L4;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L5_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L5;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L6_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L6;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L7_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L7;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L8_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L8;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L9_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L9;
+        
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_R_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_R;
+        
         
         else
             return null;

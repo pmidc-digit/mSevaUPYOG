@@ -47,18 +47,18 @@
 
 package org.egov.edcr.feature;
 
-import static org.egov.edcr.constants.DxfFileConstants.A;
-import static org.egov.edcr.constants.DxfFileConstants.A_AF;
-import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
-import static org.egov.edcr.constants.DxfFileConstants.A_R;
-import static org.egov.edcr.constants.DxfFileConstants.B;
-import static org.egov.edcr.constants.DxfFileConstants.D;
-import static org.egov.edcr.constants.DxfFileConstants.F;
-import static org.egov.edcr.constants.DxfFileConstants.G;
-import static org.egov.edcr.constants.DxfFileConstants.G_GTKS;
-import static org.egov.edcr.constants.DxfFileConstants.G_IT;
-import static org.egov.edcr.constants.DxfFileConstants.I;
-import static org.egov.edcr.constants.DxfFileConstants.A_PO;
+import static org.egov.edcr.constants.DxfFileConstants.*;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_R;
+//import static org.egov.edcr.constants.DxfFileConstants.B;
+//import static org.egov.edcr.constants.DxfFileConstants.D;
+//import static org.egov.edcr.constants.DxfFileConstants.F;
+//import static org.egov.edcr.constants.DxfFileConstants.G;
+//import static org.egov.edcr.constants.DxfFileConstants.G_GTKS;
+//import static org.egov.edcr.constants.DxfFileConstants.G_IT;
+//import static org.egov.edcr.constants.DxfFileConstants.I;
+//import static org.egov.edcr.constants.DxfFileConstants.A_PO;
 import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.REAR_YARD_DESC;
@@ -150,6 +150,7 @@ public class RearYardService extends GeneralRule {
 	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_418_21 = BigDecimal.valueOf(418.21);
 	
 	private static final double FOUR_MTR = 4;
+	private static final double SIX_MTR = 6;
 
 	private class RearYardResult {
 		String rule;
@@ -222,6 +223,8 @@ public class RearYardService extends GeneralRule {
 										&& (A_R.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_AF.equalsIgnoreCase(
 														occupancy.getTypeHelper().getSubtype().getCode())
+												|| A_FH.equalsIgnoreCase(
+														occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_AIF.equalsIgnoreCase(
 														occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_PO.equalsIgnoreCase(
@@ -260,7 +263,12 @@ public class RearYardService extends GeneralRule {
 									  checkRearYardForIndustrial(setback, block.getBuilding(), pl, block,
 									  setback.getLevel(), plot, REAR_YARD_DESC, min, mean,
 									  occupancy.getTypeHelper(), rearYardResult , buildingHeight); 
-								} else {
+								}else if (L.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {
+									min = setback.getRearYard().getArea();
+									checkRearYardForPublicBuilding(setback, block.getBuilding(), pl, block,
+									  setback.getLevel(), plot, REAR_YARD_DESC, min, mean,
+									  occupancy.getTypeHelper(), rearYardResult , buildingHeight); 
+								}else {
 										min = setback.getRearYard().getArea();
 									  checkRearYardOtherOccupancies(setback, block.getBuilding(), pl, block,
 									  setback.getLevel(), plot, REAR_YARD_DESC, min, mean,
@@ -281,9 +289,11 @@ public class RearYardService extends GeneralRule {
 									rearYardResult.occupancyCode.equalsIgnoreCase("A-R") ||
 									rearYardResult.occupancyCode.equalsIgnoreCase("A-AF") ||
 									rearYardResult.occupancyCode.equalsIgnoreCase("A-AIF")||
-									rearYardResult.occupancyCode.equalsIgnoreCase("G-GTKS") ||
-									rearYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
-									rearYardResult.occupancyCode.equalsIgnoreCase("G-F")
+									rearYardResult.occupancyCode.equalsIgnoreCase("G") ||
+									rearYardResult.occupancyCode.equalsIgnoreCase("L")
+//									rearYardResult.occupancyCode.equalsIgnoreCase("G-GTKS") ||
+//									rearYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
+//									rearYardResult.occupancyCode.equalsIgnoreCase("G-F")
 									) {
 								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
 							    providedValue = rearYardResult.actualMinDistance.toString();
@@ -676,6 +686,22 @@ public class RearYardService extends GeneralRule {
 
 		return valid;
 	}
+	
+	private Boolean checkRearYardForPublicBuilding(SetBack setback, Building building, final Plan pl, Block block,
+			Integer level, final Plot plot, final String rearYardFieldName, final BigDecimal min, final BigDecimal mean,
+			final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, BigDecimal buildingHeight) {
+		String subRule = RULE;
+		String rule = REAR_YARD_DESC;
+		Boolean valid = false;
+		BigDecimal minVal = BigDecimal.valueOf(0);
+		BigDecimal meanVal = BigDecimal.valueOf(0);
+		BigDecimal widthOfPlot = pl.getPlanInformation().getWidthOfPlot();
+
+		valid = processRearYardForPublicBuilding(setback, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult, subRule,
+				rule, minVal, meanVal, pl, widthOfPlot, valid , buildingHeight);
+
+		return valid;
+	}
 
 	private Boolean residentialUptoTwelveMts(Block block, Integer level, final BigDecimal min, final BigDecimal mean,
 			final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, String subRule,
@@ -764,13 +790,44 @@ public class RearYardService extends GeneralRule {
 //		return valid;
 //	}
 	
+	private Boolean processRearYardForPublicBuilding(SetBack setback, Block block, Integer level, final BigDecimal min,
+	        final BigDecimal mean, final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult,
+	        String subRule, String rule, BigDecimal minVal, BigDecimal meanVal, Plan pl,
+	        BigDecimal widthOfPlot, Boolean valid, BigDecimal buildingHeight) {
+		
+	    if(mostRestrictiveOccupancy != null &&
+				(L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
+			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+			            pl.getMdmsMasterData().get("masterMdmsData"),
+			            MdmsFilter.REAR_SETBACK_PATH,
+			            BigDecimal.class
+			    );
+			    if (scOpt.isPresent()) {
+			        BigDecimal mdmsValue = scOpt.get();
+			        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);			        	        
+			        minVal = mdmsValue;		     
+			    }else {
+			    	LOG.error("No value found from mdms for the rear setback");
+			    }
+			}
+		}
+
+		valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
+		compareRearYardResultForPublicBuilding(block.getName(), min, mean, mostRestrictiveOccupancy,
+		            rearYardResult, valid, subRule, rule, minVal, meanVal, level);
+	      
+
+	    return valid;
+	}
+	
 	private Boolean processRearYardForIndustrial(SetBack setback, Block block, Integer level, final BigDecimal min,
 	        final BigDecimal mean, final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult,
 	        String subRule, String rule, BigDecimal minVal, BigDecimal meanVal, Plan pl,
 	        BigDecimal widthOfPlot, Boolean valid, BigDecimal buildingHeight) {
 		Boolean isNbcType=false;
 
-	    String occCode = mostRestrictiveOccupancy != null ? mostRestrictiveOccupancy.getSubtype().getCode() : null;
+	    String occCode = mostRestrictiveOccupancy != null ? mostRestrictiveOccupancy.getType().getCode() : null;
 
 //	    if (occCode != null) {
 //	        switch (occCode) {
@@ -813,9 +870,48 @@ public class RearYardService extends GeneralRule {
 //	        //isNbcType=true;
 //	    }
 
+//	    if(mostRestrictiveOccupancy != null &&
+//				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
+//						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+//			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+//			            pl.getMdmsMasterData().get("masterMdmsData"),
+//			            MdmsFilter.REAR_SETBACK_PATH,
+//			            BigDecimal.class
+//			    );
+//			    if (scOpt.isPresent()) {
+//			        BigDecimal mdmsValue = scOpt.get();
+//			        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);
+//			        BigDecimal oneForthHeight = buildingHeight.divide(
+//			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
+//			        );
+//			        LOG.info("One forth of building height is : " + oneForthHeight);		        
+//			        minVal = oneForthHeight.max(mdmsValue);		     
+//			    }else {
+//			    	LOG.error("No value found from mdms for the side setback");
+//			    }
+//			}
+//		}else {
+//			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+//	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+//	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
+//	        
+//	        if (fullListOpt.isPresent()) {
+//	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+//
+//	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
+//
+//	             requiredSetback.ifPresent(
+//	                 setbackRear -> LOG.info("Setback for Height " + buildingHeight + ": " + setbackRear)
+//	             );
+//	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+//	        }else {
+//	        	LOG.error("No value found from mdms for the side setback");
+//	        }			
+//		}	
+	    
 	    if(mostRestrictiveOccupancy != null &&
-				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
-						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+				(G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
 			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
 			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
 			            pl.getMdmsMasterData().get("masterMdmsData"),
@@ -825,36 +921,19 @@ public class RearYardService extends GeneralRule {
 			    if (scOpt.isPresent()) {
 			        BigDecimal mdmsValue = scOpt.get();
 			        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);
-			        BigDecimal oneForthHeight = buildingHeight.divide(
-			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
+			        BigDecimal oneSixHeight = buildingHeight.divide(
+			                BigDecimal.valueOf(SIX_MTR), 2, RoundingMode.HALF_UP
 			        );
-			        LOG.info("One forth of building height is : " + oneForthHeight);		        
-			        minVal = oneForthHeight.max(mdmsValue);		     
+			        LOG.info("One six of building height is : " + oneSixHeight);		        
+			        minVal = oneSixHeight.max(mdmsValue);		     
 			    }else {
-			    	LOG.error("No value found from mdms for the side setback");
+			    	LOG.error("No value found from mdms for the rear setback");
 			    }
 			}
-		}else {
-			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
-	        
-	        if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
-
-	             requiredSetback.ifPresent(
-	                 setbackRear -> LOG.info("Setback for Height " + buildingHeight + ": " + setbackRear)
-	             );
-	             minVal = requiredSetback.get().abs().stripTrailingZeros();
-	        }else {
-	        	LOG.error("No value found from mdms for the side setback");
-	        }			
-		}	
+		}
 	    
 	    if(!isNbcType) {
-	    	// ✅ Validate using common function
+	    	// Validate using common function
 		    valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
 		    
 		 // Save result
@@ -1146,7 +1225,53 @@ public class RearYardService extends GeneralRule {
 		String occupanyCode;
 		if (mostRestrictiveOccupancy.getSubtype() != null) {
 			occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
-			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+		}else {
+			occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+		}
+		if (minVal.compareTo(rearYardResult.expectedminimumDistance) >= 0) {
+			if (minVal.compareTo(rearYardResult.expectedminimumDistance) == 0) {
+				rearYardResult.rule = rearYardResult.rule != null ? rearYardResult.rule + "," + rule : rule;
+				rearYardResult.occupancy = rearYardResult.occupancy != null
+						? rearYardResult.occupancy + "," + occupancyName
+						: occupancyName;
+				rearYardResult.occupancyCode = rearYardResult.occupancyCode != null
+						? rearYardResult.occupancyCode + "," + occupanyCode
+						: occupanyCode;
+
+				if (meanVal.compareTo(rearYardResult.expectedmeanDistance) >= 0) {
+					rearYardResult.expectedmeanDistance = meanVal;
+					rearYardResult.actualMeanDistance = mean;
+				}
+			} else {
+				rearYardResult.rule = rule;
+				rearYardResult.occupancy = occupancyName;
+				rearYardResult.expectedmeanDistance = meanVal;
+				rearYardResult.actualMeanDistance = mean;
+				rearYardResult.occupancyCode = occupanyCode;
+
+			}
+
+			rearYardResult.subRule = subRule;
+			rearYardResult.blockName = blockName;
+			rearYardResult.level = level;
+			rearYardResult.expectedminimumDistance = minVal;
+			rearYardResult.actualMinDistance = mean;
+			rearYardResult.status = valid;
+			rearYardResult.occupancyCode = occupanyCode;
+
+		}
+	}
+	
+	private void compareRearYardResultForPublicBuilding(String blockName, BigDecimal min, BigDecimal mean,
+			OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, Boolean valid, String subRule,
+			String rule, BigDecimal minVal, BigDecimal meanVal, Integer level) {
+		String occupancyName;
+		String occupanyCode;
+		if (mostRestrictiveOccupancy.getSubtype() != null) {
+			occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
 		}else {
 			occupancyName = mostRestrictiveOccupancy.getType().getName();
 			occupanyCode = mostRestrictiveOccupancy.getType().getCode();

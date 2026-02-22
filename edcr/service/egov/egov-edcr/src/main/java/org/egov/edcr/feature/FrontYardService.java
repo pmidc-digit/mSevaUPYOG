@@ -48,18 +48,18 @@
 
 package org.egov.edcr.feature;
 
-import static org.egov.edcr.constants.DxfFileConstants.A;
-import static org.egov.edcr.constants.DxfFileConstants.A_AF;
-import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
-import static org.egov.edcr.constants.DxfFileConstants.A_R;
-import static org.egov.edcr.constants.DxfFileConstants.B;
-import static org.egov.edcr.constants.DxfFileConstants.D;
-import static org.egov.edcr.constants.DxfFileConstants.F;
-import static org.egov.edcr.constants.DxfFileConstants.I;
-import static org.egov.edcr.constants.DxfFileConstants.A_PO;
-import static org.egov.edcr.constants.DxfFileConstants.G;
-import static org.egov.edcr.constants.DxfFileConstants.G_GTKS;
-import static org.egov.edcr.constants.DxfFileConstants.G_IT;
+import static org.egov.edcr.constants.DxfFileConstants.*;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_R;
+//import static org.egov.edcr.constants.DxfFileConstants.B;
+//import static org.egov.edcr.constants.DxfFileConstants.D;
+//import static org.egov.edcr.constants.DxfFileConstants.F;
+//import static org.egov.edcr.constants.DxfFileConstants.I;
+//import static org.egov.edcr.constants.DxfFileConstants.A_PO;
+//import static org.egov.edcr.constants.DxfFileConstants.G;
+//import static org.egov.edcr.constants.DxfFileConstants.G_GTKS;
+//import static org.egov.edcr.constants.DxfFileConstants.G_IT;
 import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
@@ -166,6 +166,7 @@ public class FrontYardService extends GeneralRule {
 	
 	private static final double FOUR_MTR = 4;
 	private static final double FIVE_MTR = 5;
+	private static final double SIX_MTR = 6;
 
 	
 private class FrontYardResult {
@@ -258,6 +259,7 @@ private class FrontYardResult {
 								if ((occupancy.getTypeHelper().getSubtype() != null
 										&& (A_R.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_AF.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
+												|| A_FH.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_AIF.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())
 												|| A_PO.equalsIgnoreCase(occupancy.getTypeHelper().getSubtype().getCode())))) {
 									//Added by Bimal 18-March-2924 to check front yard based on plotarea not on height
@@ -318,9 +320,11 @@ private class FrontYardResult {
 										frontYardResult.occupancyCode.equalsIgnoreCase("A-R")	||
 										frontYardResult.occupancyCode.equalsIgnoreCase("A-AF") ||
 										frontYardResult.occupancyCode.equalsIgnoreCase("A-AIF") ||
-										frontYardResult.occupancyCode.equalsIgnoreCase("G-GTKS") ||
-										frontYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
-										frontYardResult.occupancyCode.equalsIgnoreCase("G-F")
+										frontYardResult.occupancyCode.equalsIgnoreCase("G") || 
+										frontYardResult.occupancyCode.equalsIgnoreCase("L")
+//										frontYardResult.occupancyCode.equalsIgnoreCase("G-GTKS") ||
+//										frontYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
+//										frontYardResult.occupancyCode.equalsIgnoreCase("G-F")
 										) {
 									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.toString();
 								    providedValue = frontYardResult.actualMinDistance.toString();
@@ -856,6 +860,14 @@ private class FrontYardResult {
 			compareFrontYardResultIndustry(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
 		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
 		}
+		if (mostRestrictiveOccupancy.getType() != null
+				&& L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
+			minVal = getMinValueForPublicBuildingByMDMS(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
+			subRule = RULE_37_TWO_I;
+			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
+			compareFrontYardResultPublicBuilding(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
+		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
+		}
 
 		//valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
 		
@@ -882,6 +894,48 @@ private class FrontYardResult {
 		return valid;
 	}	
 	
+	private void compareFrontYardResultPublicBuilding(String blockName, BigDecimal min, BigDecimal mean,
+			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, Boolean valid,
+			String subRule, String rule, BigDecimal minVal, BigDecimal meanVal, Integer level) {
+		String occupancyName;
+		String occupanyCode;
+		if (mostRestrictiveOccupancy.getSubtype() != null) {
+			occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+		}else {
+			occupancyName = mostRestrictiveOccupancy.getType().getName();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
+		}
+		
+		if (minVal.compareTo(frontYardResult.expectedminimumDistance) >= 0) {
+			if (minVal.compareTo(frontYardResult.expectedminimumDistance) == 0) {
+				frontYardResult.rule = frontYardResult.rule != null ? frontYardResult.rule + "," + rule : rule;
+				frontYardResult.occupancy = frontYardResult.occupancy != null
+						? frontYardResult.occupancy + "," + occupancyName
+						: occupancyName;
+				frontYardResult.occupancyCode = frontYardResult.occupancyCode != null
+						? frontYardResult.occupancyCode + "," + occupanyCode
+						: occupanyCode;
+			} else {
+				frontYardResult.rule = rule;
+				frontYardResult.occupancy = occupancyName;
+				frontYardResult.occupancyCode = occupanyCode;
+			}
+
+			frontYardResult.subRule = subRule;
+			frontYardResult.blockName = blockName;
+			frontYardResult.level = level;
+			frontYardResult.expectedminimumDistance = minVal;
+			frontYardResult.expectedmeanDistance = meanVal;
+			frontYardResult.actualMinDistance = min;
+			frontYardResult.actualMeanDistance = mean;
+			frontYardResult.status = valid;
+			frontYardResult.occupancyCode = occupanyCode;
+			LOG.info("FrontYardResult +" + frontYardResult.toString());
+
+		}
+	}
+	
 	private void compareFrontYardResultIndustry(String blockName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, Boolean valid,
 			String subRule, String rule, BigDecimal minVal, BigDecimal meanVal, Integer level) {
@@ -889,7 +943,7 @@ private class FrontYardResult {
 		String occupanyCode;
 		if (mostRestrictiveOccupancy.getSubtype() != null) {
 			occupancyName = mostRestrictiveOccupancy.getSubtype().getName();
-			occupanyCode = mostRestrictiveOccupancy.getSubtype().getCode();
+			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
 		}else {
 			occupancyName = mostRestrictiveOccupancy.getType().getName();
 			occupanyCode = mostRestrictiveOccupancy.getType().getCode();
@@ -1203,6 +1257,41 @@ private class FrontYardResult {
 	    return minVal.setScale(2, RoundingMode.HALF_UP);
 	}
 	
+	private BigDecimal getMinValueForPublicBuildingByMDMS(Plan pl, BigDecimal plotArea,BigDecimal buildingHeight,
+            OccupancyTypeHelper mostRestrictiveOccupancy, HashMap<String, String> errors, FrontYardResult frontYardResult) {
+
+		LOG.info("getMinValueFor Public building");
+		
+		BigDecimal minVal = BigDecimal.ZERO;
+		
+		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+			errors.put("Plot Area Error", "Plot area must be greater than 0.");
+			pl.addErrors(errors);
+			return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+		}
+		
+		if(mostRestrictiveOccupancy != null &&
+				(L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
+			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+			            pl.getMdmsMasterData().get("masterMdmsData"),
+			            MdmsFilter.FRONT_SETBACK_PATH,
+			            BigDecimal.class
+			    );
+			    if (scOpt.isPresent()) {
+			        BigDecimal mdmsValue = scOpt.get();
+			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);		        
+			        minVal = mdmsValue;	     
+			    }else {
+			    	LOG.error("No value found from mdms for the front setback");
+			    }
+			}
+		}
+		
+		
+		return minVal.setScale(2, RoundingMode.HALF_UP);
+}
+	
 	private BigDecimal getMinValueForIndustrial(Plan pl, BigDecimal plotArea,BigDecimal buildingHeight,
             OccupancyTypeHelper mostRestrictiveOccupancy, HashMap<String, String> errors, FrontYardResult frontYardResult) {
 
@@ -1264,9 +1353,48 @@ private class FrontYardResult {
 //				LOG.warn("No Industrial setback rule defined for subType: {}", subType);
 //		}
 		
+//		if(mostRestrictiveOccupancy != null &&
+//				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
+//						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+//			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+//			            pl.getMdmsMasterData().get("masterMdmsData"),
+//			            MdmsFilter.FRONT_SETBACK_PATH,
+//			            BigDecimal.class
+//			    );
+//			    if (scOpt.isPresent()) {
+//			        BigDecimal mdmsValue = scOpt.get();
+//			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);
+//			        BigDecimal oneForthHeight = buildingHeight.divide(
+//			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
+//			        );
+//			        LOG.info("One forth of building height is : " + oneForthHeight);		        
+//			        minVal = oneForthHeight.max(mdmsValue);		     
+//			    }else {
+//			    	LOG.error("No value found from mdms for the side setback");
+//			    }
+//			}
+//		}else {
+//			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+//	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+//	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
+//	        
+//	        if (fullListOpt.isPresent()) {
+//	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+//
+//	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+//
+//	             requiredSetback.ifPresent(
+//	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
+//	             );
+//	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+//	        }else {
+//	        	LOG.error("No value found from mdms for the side setback");
+//	        }			
+//		}
+		
 		if(mostRestrictiveOccupancy != null &&
-				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
-						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
+				(G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
 			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
 			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
 			            pl.getMdmsMasterData().get("masterMdmsData"),
@@ -1276,34 +1404,16 @@ private class FrontYardResult {
 			    if (scOpt.isPresent()) {
 			        BigDecimal mdmsValue = scOpt.get();
 			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);
-			        BigDecimal oneForthHeight = buildingHeight.divide(
-			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
+			        BigDecimal oneSixHeight = buildingHeight.divide(
+			                BigDecimal.valueOf(SIX_MTR), 2, RoundingMode.HALF_UP
 			        );
-			        LOG.info("One forth of building height is : " + oneForthHeight);		        
-			        minVal = oneForthHeight.max(mdmsValue);		     
+			        LOG.info("One six of building height is : " + oneSixHeight);		        
+			        minVal = oneSixHeight.max(mdmsValue);		     
 			    }else {
-			    	LOG.error("No value found from mdms for the side setback");
+			    	LOG.error("No value found from mdms for the front setback");
 			    }
 			}
-		}else {
-			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
-	        
-	        if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             
-	             // Extraction 1B: Apply the tiered setback logic
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
-
-	             requiredSetback.ifPresent(
-	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
-	             );
-	             minVal = requiredSetback.get().abs().stripTrailingZeros();
-	        }else {
-	        	LOG.error("No value found from mdms for the side setback");
-	        }			
-		}		
+		}
 		
 		
 		return minVal.setScale(2, RoundingMode.HALF_UP);

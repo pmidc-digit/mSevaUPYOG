@@ -70,6 +70,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -477,96 +480,133 @@ public class Parking extends FeatureProcess {
                 HashMap<String, String> errors = new HashMap<>();
                 errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
                 pl.addErrors(errors);
-            } else {
-//                String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-//                BigDecimal divisor = BigDecimal.valueOf(100); // default
-//                int multiplier = 1; // default
-//                boolean ruleFound = true;
-//
-//                switch (subType) {
-//                    case "G-I": // Industrial
-//                    case "G-F": // Factory
-//                    case "G-S": // Storage
-//                    case "G-H": // Hazard
-//                    case "G-T": // Textile
-//                    case "G-K": // Knitwear
-//                    case "G-RS": // Retail
-//                    case "G-SP": // Sports Industry
-//                        divisor = BigDecimal.valueOf(100);
-//                        multiplier = 1;
-//                        break;
-//
-//                    case "G-W": // Warehouse
-//                    case "G-IT": // IT Units
-//                    case "G-GI": // General Industry
-//                        divisor = BigDecimal.valueOf(100);
-//                        multiplier = 2;
-//                        break;
-//
-//                    default:
-//                        ruleFound = false;
-//                        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-//                }
-//
-//                if (!ruleFound) {
-//                    HashMap<String, String> errors = new HashMap<>();
-//                    errors.put("Parking Calculation Error:", 
-//                        "No ECS rule defined for subtype: " + subType);
-//                    pl.addErrors(errors);
-//                } else {
-//                    // Calculate required ECS, always round UP
-//                    BigDecimal requiredParking = plotCoveredArea
-//                            .divide(divisor, 0, RoundingMode.HALF_UP)
-//                            .multiply(BigDecimal.valueOf(multiplier));
-//
-//                    noOfrequiredParking = requiredParking.intValue();
-//                }
-//            }
-            	
+            } else {            	
             	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-
-            	BigDecimal divisor = BigDecimal.valueOf(100); // per 100 sqm
-            	BigDecimal multiplier = BigDecimal.ZERO;
-            	boolean ruleFound = true;
-
-            	switch (subType) {
-
-            	    case "G-GTKS":
-            	        // 0.5 ECS per 100 sqm
-            	        multiplier = BigDecimal.valueOf(0.5);
-            	        break;
-
-            	    case "G-IT":
-            	        // Conditional based on site area
-            	        if (plotCoveredArea.compareTo(BigDecimal.valueOf(8094)) <= 0) {
-            	            multiplier = BigDecimal.ONE;       // 1 ECS per 100 sqm
-            	        } else {
-            	            multiplier = BigDecimal.valueOf(2); // 2 ECS per 100 sqm
-            	        }
-            	        break;
-
-            	    case "G-F":
-            	        // 2 ECS per 100 sqm
-            	        multiplier = BigDecimal.valueOf(2);
-            	        break;
-
-            	    default:
-            	        ruleFound = false;
-            	        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-            	}
-
-            	if (!ruleFound) {
+            	Integer multiplier = getGTypeMultiplier(subType);
+            	if (multiplier == null) {
             	    HashMap<String, String> errors = new HashMap<>();
             	    errors.put("Parking Calculation Error",
             	            "No ECS rule defined for subtype: " + subType);
             	    pl.addErrors(errors);
             	} else {
-            	    // ECS calculation → ALWAYS round UP
-            	    BigDecimal requiredParking = plotCoveredArea
-            	            .divide(divisor, 0, RoundingMode.CEILING)
-            	            .multiply(multiplier);
-            	    noOfrequiredParking = requiredParking.intValue();
+            	    // Divide first and round UP
+            	    int baseEcs = plotCoveredArea
+            	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
+            	            .intValue();
+            	    // Multiply after rounding
+            	    noOfrequiredParking = baseEcs * multiplier;
             	}
+
+            	
+////                String subType = mostRestrictiveOccupancy.getSubtype().getCode();
+////                BigDecimal divisor = BigDecimal.valueOf(100); // default
+////                int multiplier = 1; // default
+////                boolean ruleFound = true;
+////
+////                switch (subType) {
+////                    case "G-I": // Industrial
+////                    case "G-F": // Factory
+////                    case "G-S": // Storage
+////                    case "G-H": // Hazard
+////                    case "G-T": // Textile
+////                    case "G-K": // Knitwear
+////                    case "G-RS": // Retail
+////                    case "G-SP": // Sports Industry
+////                        divisor = BigDecimal.valueOf(100);
+////                        multiplier = 1;
+////                        break;
+////
+////                    case "G-W": // Warehouse
+////                    case "G-IT": // IT Units
+////                    case "G-GI": // General Industry
+////                        divisor = BigDecimal.valueOf(100);
+////                        multiplier = 2;
+////                        break;
+////
+////                    default:
+////                        ruleFound = false;
+////                        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
+////                }
+////
+////                if (!ruleFound) {
+////                    HashMap<String, String> errors = new HashMap<>();
+////                    errors.put("Parking Calculation Error:", 
+////                        "No ECS rule defined for subtype: " + subType);
+////                    pl.addErrors(errors);
+////                } else {
+////                    // Calculate required ECS, always round UP
+////                    BigDecimal requiredParking = plotCoveredArea
+////                            .divide(divisor, 0, RoundingMode.HALF_UP)
+////                            .multiply(BigDecimal.valueOf(multiplier));
+////
+////                    noOfrequiredParking = requiredParking.intValue();
+////                }
+////            }
+//            	
+//            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
+//
+//            	BigDecimal divisor = BigDecimal.valueOf(100); // per 100 sqm
+//            	BigDecimal multiplier = BigDecimal.ZERO;
+//            	boolean ruleFound = true;
+//
+////            	Set<String> oneEcs = new HashSet<String>(Arrays.asList(
+////            	        "G-G","G-F","G-S","G-HI","G-RSI","G-TI","G-KI","G-SI"
+////            	));
+////
+////            	Set<String> twoEcs = new HashSet<String>(Arrays.asList(
+////            	        "G-GIP","G-GIF","G-ITF","G-WT"
+////            	));
+////
+////            	String type = (subType == null) ? "" : subType.trim().toUpperCase();
+////
+////            	if (oneEcs.contains(type)) {
+////            	    multiplier = BigDecimal.ONE;
+////            	}
+////            	else if (twoEcs.contains(type)) {
+////            	    multiplier = BigDecimal.valueOf(2);
+////            	}
+////            	else {
+////            	    ruleFound = false;
+////            	    LOGGER.warn("No ECS rule defined for subtype: {}", subType);
+////            	}
+//
+//            	Map<String, BigDecimal> ECS_RULES = new HashMap<String, BigDecimal>();
+//            	ECS_RULES.put("G-G", BigDecimal.ONE);
+//                ECS_RULES.put("G-F", BigDecimal.ONE);
+//                ECS_RULES.put("G-S", BigDecimal.ONE);
+//                ECS_RULES.put("G-HI", BigDecimal.ONE);
+//                ECS_RULES.put("G-RSI", BigDecimal.ONE);
+//                ECS_RULES.put("G-TI", BigDecimal.ONE);
+//                ECS_RULES.put("G-KI", BigDecimal.ONE);
+//                ECS_RULES.put("G-SI", BigDecimal.ONE);
+//
+//                ECS_RULES.put("G-GIP", BigDecimal.valueOf(2));
+//                ECS_RULES.put("G-GIF", BigDecimal.valueOf(2));
+//                ECS_RULES.put("G-ITF", BigDecimal.valueOf(2));
+//                ECS_RULES.put("G-WT", BigDecimal.valueOf(2));
+//                
+//                String type = (subType == null) ? "" : subType.trim().toUpperCase();
+//
+//                if (ECS_RULES.containsKey(type)) {
+//                    multiplier = ECS_RULES.get(type);
+//                } else {
+//                    ruleFound = false;
+//                    LOGGER.warn("No ECS rule defined for subtype: {}", subType);
+//                }
+//
+//            	if (!ruleFound) {
+//            	    HashMap<String, String> errors = new HashMap<>();
+//            	    errors.put("Parking Calculation Error",
+//            	            "No ECS rule defined for subtype: " + subType);
+//            	    pl.addErrors(errors);
+//            	} else {
+//            	    // ECS calculation → ALWAYS round UP
+//            	    BigDecimal requiredParking = plotCoveredArea
+//            	            .divide(divisor, 0, RoundingMode.CEILING)
+//            	            .multiply(multiplier);
+//            	    noOfrequiredParking = requiredParking.intValue();
+//            	}
+//            }
             }
         }
 
@@ -1074,4 +1114,39 @@ public class Parking extends FeatureProcess {
     public Map<String, Date> getAmendments() {
         return new LinkedHashMap<>();
     }
+    
+    private Integer getGTypeMultiplier(String subType) {
+
+        if (subType == null) {
+            return null;
+        }
+
+        String type = subType.trim().toUpperCase();
+
+        switch (type) {
+
+            // 1 ECS per 100 sqm
+            case "G-G":
+            case "G-F":
+            case "G-S":
+            case "G-HI":
+            case "G-RSI":
+            case "G-TI":
+            case "G-KI":
+            case "G-SI":
+                return 1;
+
+            // 2 ECS per 100 sqm
+            case "G-GIP":
+            case "G-GIF":
+            case "G-ITF":
+            case "G-WT":
+                return 2;
+
+            default:
+                return null;
+        }
+    }
+
+    
 }

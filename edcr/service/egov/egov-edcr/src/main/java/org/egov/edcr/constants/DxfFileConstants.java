@@ -82,21 +82,21 @@ public class DxfFileConstants {
     public static final String F_PS    = "F-PS";   // Petrol Station
     public static final String F_CNGS  = "F-CNGS";   // Compressed Natural Gas Station
 
-    // new Occupancy for Industry as per 2025 byLaws
+//    // new Occupancy for Industry as per 2025 byLaws
     public static final String G_GTKS   = "G-GTKS";    // Industrial Plotted - General, Textile, Knitwear, Sports
     public static final String G_IT   = "G-IT";    // Industrial Plotted (G-IT)
-    public static final String G_F   = "G-F";    // Industrial Flatted (G-F)
-    
-
+//    public static final String G_F   = "G-F";    // Industrial Flatted (G-F)
+//    
+//
     public static final String G_LI = "G-LI";// Large Industrial
-    public static final String G_SI = "G-SI";// Small Industrial
+    //public static final String G_SI = "G-SI";// Small Industrial
     public static final String G_PHI = "G-PHI";// Polluting and hazardous industries
     public static final String G_NPHI = "G-NPHI";// Non-polluting and household industries
  // Industrial Occupancy SubTypes
     public static final String G_SP  = "G-SP";   // Sports Industry
     public static final String G_RS  = "G-RS";   // Retail Service Industry
     public static final String G_H   = "G-H";    // Hazard Industries
-    public static final String G_S   = "G-S";    // Storage
+    //public static final String G_S   = "G-S";    // Storage
     //public static final String G_F   = "G-F";    // Factory
     public static final String G_I   = "G-I";    // Industrial
     public static final String G_K   = "G-K";    // Knitwear Industry
@@ -104,6 +104,22 @@ public class DxfFileConstants {
     //public static final String G_IT  = "G-IT";   // Information Technology
     public static final String G_GI  = "G-GI";   // General Industry
     public static final String G_W   = "G-W";    // Warehouse
+    
+ // new Occupancy for Industry as per 2018 byLaws
+    public static final String G_G   = "G-G";     // Industrial
+    public static final String G_F   = "G-F";     // Factory
+    public static final String G_S   = "G-S";     // Storage
+    public static final String G_HI  = "G-HI";    // Hazard Industries
+    public static final String G_WT  = "G-WT";    // Wholesale Trade / Ware House / Integrated Freight Complex (Standalone)
+    public static final String G_RSI = "G-RSI";   // Retail Service Industry
+    public static final String G_GIP = "G-GIP";   // General Industry - Industry Plotted
+    public static final String G_GIF = "G-GIF";   // General Industry Flatted
+    public static final String G_ITP = "G-ITP";   // Informational Technology - Industry Plotted
+    public static final String G_ITF = "G-ITF";   // Informational Technology - Flatted
+    public static final String G_TI  = "G-TI";    // Textile Industry
+    public static final String G_KI  = "G-KI";    // Knitwear Industry
+    public static final String G_SI  = "G-SI";    // Sports Industry
+
     
     
     public static final String H_PP = "H-PP"; // Petrol Pump
@@ -122,13 +138,25 @@ public class DxfFileConstants {
     public static final String K_H = "K-HM"; // Hotel / Motel
     
     // sub Occupany for Public Building
-    public static final String L_GPB= "L-GPB"; // General Public/Semi-public buildings
-    public static final String L_GO= "L-GO"; // Government Offices / Integrated Office Complex
-    public static final String L_EB_NS= "L-EB-NS"; // Educational Buildings - Nursery School
-    public static final String L_EB_PS= "L-EB-PS"; // Educational Buildings - Primary School
-    public static final String L_EB_HSS= "L-EB-HSS"; // Educational Buildings - Higher Secondary School
-    public static final String L_EB_C= "L-EB-C"; // Educational Buildings - College
-    public static final String L_E_RC= "L-E-RC"; //Education & Research Centre (Large Campus)
+//    public static final String L_GPB= "L-GPB"; // General Public/Semi-public buildings
+//    public static final String L_GO= "L-GO"; // Government Offices / Integrated Office Complex
+//    public static final String L_EB_NS= "L-EB-NS"; // Educational Buildings - Nursery School
+//    public static final String L_EB_PS= "L-EB-PS"; // Educational Buildings - Primary School
+//    public static final String L_EB_HSS= "L-EB-HSS"; // Educational Buildings - Higher Secondary School
+//    public static final String L_EB_C= "L-EB-C"; // Educational Buildings - College
+//    public static final String L_E_RC= "L-E-RC"; //Education & Research Centre (Large Campus)
+    
+    public static final String L_GP = "L-GP"; //General Public / Semi-public buildings
+    public static final String L_GO = "L-GO"; //Government offices - Integrated office complex buildings
+    public static final String L_NS = "L-NS"; //Educational (Nursery School)
+    public static final String L_PS = "L-PS"; //Educational (Primary School)
+    public static final String L_CO = "L-CO"; //Educational (College)
+    public static final String L_ERC = "L-ERC"; //Education and Research Centre (large campus i.e. above 8 Ha./19.75 acres)
+    public static final String L_MP = "L-MP"; //Marriage Palace
+    public static final String L_NH = "L-NH"; //Nursing Home / Hospital
+    public static final String L_C = "L-C"; //Creche / Day Care facilities
+
+    public static final String R_R = "R-R"; //Mix land use    
     
     // sub occupany for Marriage Place
     public static final String M_M = "M-MP"; // Marriage Place

@@ -46,8 +46,16 @@ const EmployeeApp = ({
   sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
   const displayHeader = !window.location.href.includes("/user/language-selection");
+   useEffect(() => {
+        const script = document.createElement("script");
+        script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+        script.async = true;document.body.appendChild(script);
+      }, []);
   return (
     <div className="employee">
+       <div className='language-plugin'>
+        <div className="bhashini-plugin-container"></div>
+      </div>
       <Switch>
         <Route path={`${path}/user`}>
           {isUserProfile ? (

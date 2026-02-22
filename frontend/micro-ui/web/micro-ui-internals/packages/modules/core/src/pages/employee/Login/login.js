@@ -164,7 +164,11 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       ],
     },
   ];
-
+    useEffect(() => {
+      const script = document.createElement("script");
+      script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+      script.async = true;document.body.appendChild(script);
+    }, []);
   return isLoading || isStoreLoading ? (
     <Loader />
   ) : (
@@ -192,6 +196,9 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
 
     // </Background>
     <Background>
+       <div className='language-plugin'>
+        <div className="bhashini-plugin-container"></div>
+      </div>
       <div className="employee-login-container">
         <div className="employee-login-content">
           <div className="employee-login-icon-circle">

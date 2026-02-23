@@ -29,6 +29,8 @@ const ChallanStepperForm = () => {
   const [documentsData, setDocumentsData] = useState({});
   const isCitizen = window.location.href.includes("citizen");
 
+  const [getViolationData, setViolationData] = useState([]);
+
   const handleDocumentsSelect = (key, data) => {
     setDocumentsData(data);
   };
@@ -40,6 +42,9 @@ const ChallanStepperForm = () => {
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
   const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
+
+  console.log("subCategoryData", subCategoryData);
+  console.log("OffenceTypeData", OffenceTypeData);
 
   const {
     control,
@@ -133,6 +138,13 @@ const ChallanStepperForm = () => {
   const handleRates = (val) => {
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
+  };
+
+  const handleViolation = (e) => {
+    console.log("e====", e);
+    const filterData = OffenceTypeData?.Challan?.OffenceType?.filter((item) => item.subCategoryId == e?.id);
+    setViolationData(filterData);
+    console.log("filterData", filterData);
   };
 
   return (
@@ -272,6 +284,7 @@ const ChallanStepperForm = () => {
                   <Dropdown
                     className="form-field"
                     select={(e) => {
+                      handleViolation(e);
                       props.onChange(e);
                     }}
                     selected={props.value}
@@ -303,7 +316,7 @@ const ChallanStepperForm = () => {
                       handleRates(e);
                     }}
                     selected={props.value}
-                    option={OffenceTypeData?.Challan?.OffenceType}
+                    option={getViolationData}
                     optionKey="name"
                     t={t}
                   />

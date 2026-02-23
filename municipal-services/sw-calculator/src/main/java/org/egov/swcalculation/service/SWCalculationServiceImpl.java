@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -544,30 +546,33 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 		return sewerageCess;
 	}
 	
-	public void generateSingleDemand(SingleDemand singledemand) {
-		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		LocalDateTime date = LocalDateTime.now();
-		log.info("Time schedule start for sewerage demand generation on : " + date.format(dateTimeFormatter));
-//		List<String> tenantIds = wSCalculationDao.getTenantId();
-		List<String> tenantIds = new ArrayList<>();
-		String tenat = singledemand.getTenantId();
-		tenantIds.add(tenat);
-		if (tenantIds.isEmpty()) {
-			log.info("No tenants are found for generating demand");
-			return;
-		}
-		log.info("Tenant Ids : " + tenantIds.toString());
-		tenantIds.forEach(tenantId -> {
-			try {
+	public String generateSingleDemand(SingleDemand singledemand) {
+	    String tempvariable = null;
+	    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	    LocalDateTime date = LocalDateTime.now();
+	    log.info("Time schedule start for water demand generation on : " + date.format(dateTimeFormatter));
 
-				demandService.SingleDemandGenerate(tenantId, singledemand);
+	    // Instead of fetching all tenant IDs, we are directly working with the provided tenant ID from the SingleDemand object
+	    String tenantId = singledemand.getTenantId();
+	    
+	    if (tenantId == null || tenantId.isEmpty()) {
+	        log.info("No tenant ID found for generating demand.");
+	        return null;  // Returning early if no tenant ID is found
+	    }
 
-			} catch (Exception e) {
-				log.error("Exception occured while generating demand for tenant: " + tenantId);
-				e.printStackTrace();
-			}
-		});
+	    log.info("Tenant Id : " + tenantId);
+
+	    try {
+	        // Directly generating the demand for the single tenant
+	        tempvariable = demandService.SingleDemandGenerate(tenantId, singledemand);
+	    } catch (Exception e) {
+	        log.error("Exception occurred while generating demand for tenant: " + tenantId);
+	        e.printStackTrace();
+	    }
+	    
+	    return tempvariable;
 	}
+
 	
 	/**
 	 * Generate bill Based on Time (Monthly, Quarterly, Yearly)
@@ -580,18 +585,55 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 		BillGenerationSearchCriteria criteria = new BillGenerationSearchCriteria();
 		criteria.setStatus(SWCalculationConstant.INITIATED_CONST);
 
-		List<BillScheduler> billSchedularList = billGeneratorService.getBillGenerationDetails(criteria);
+		/* Previously, we fetched all localities without filtering by status. Now, we are updating the logic to pick only those localities where the status is "INITIATED".
+		Additionally, from the group-based list for Patiala, we now pick only those entries where: The group is not configured (i.e., group is null or empty), and The status is also "INITIATED".
+		So, both lists are now filtered to include only records with INITIATED status, with an extra condition for Patiala that the group should not be present.  */		
+		  
+				List<BillScheduler> billSchedularLocality = billGeneratorService.getBillGenerationDetails(criteria);
+				List<BillScheduler> billSchedulargrouplist = billGeneratorService.getBillGenerationGroup(criteria);
+				List<BillScheduler> billSchedularList = new ArrayList<>();
+
+				Set<String> seenIds = new HashSet<>();
+
+				for (BillScheduler scheduler : billSchedularLocality) {
+				    if (scheduler.getId() != null && seenIds.add(scheduler.getId())) {
+				        billSchedularList.add(scheduler);
+				    }
+				}
+
+				for (BillScheduler scheduler : billSchedulargrouplist) {
+				    if (scheduler.getId() != null && seenIds.add(scheduler.getId())) {
+				        billSchedularList.add(scheduler);
+				    }
+				}
 		if (billSchedularList != null && billSchedularList.isEmpty())
 			return;
 		log.info("billSchedularList count : " + billSchedularList.size());
 		for (BillScheduler billSchedular : billSchedularList) {
 			try {
 				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+				List<String> connectionNos = null;
 
 				requestInfo.getUserInfo().setTenantId(billSchedular.getTenantId() != null ? billSchedular.getTenantId() : requestInfo.getUserInfo().getTenantId());
 				RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 
-				List<String> connectionNos = sewerageCalculatorDao.getConnectionsNoByLocality( billSchedular.getTenantId(), SWCalculationConstant.nonMeterdConnection, billSchedular.getLocality());
+//				List<String> connectionNos = sewerageCalculatorDao.getConnectionsNoByLocality( billSchedular.getTenantId(), SWCalculationConstant.nonMeterdConnection, billSchedular.getLocality());
+				if ("pb.patiala".equalsIgnoreCase(billSchedular.getTenantId()) &&
+					    billSchedular.getGrup() != null && !billSchedular.getGrup().isEmpty()) {
+					    
+					    connectionNos = sewerageCalculatorDao.getConnectionsNoByGroups(
+					        billSchedular.getTenantId(),
+					        SWCalculationConstant.nonMeterdConnection,
+					        billSchedular.getGrup()
+					    );
+
+					} else {
+					    connectionNos = sewerageCalculatorDao.getConnectionsNoByLocality(
+					        billSchedular.getTenantId(),
+					        SWCalculationConstant.nonMeterdConnection,
+					        billSchedular.getLocality()
+					    );
+					}
 
 				//testing purpose added three consumercodes
 //				connectionNos.add("0603000001");
@@ -618,13 +660,43 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 							.consumerCodes(ImmutableSet.copyOf(conectionNoList))
 							.billSchedular(billSchedular)
 							.build();
+					
+					String localityCode;
 
-					producer.push(configs.getBillGenerateSchedulerTopic(), billGeneraterReq);
+					if (billSchedular.getLocality() != null && !billSchedular.getLocality().trim().isEmpty()) {
+					    localityCode = billSchedular.getLocality();
+					} else if (billSchedular.getGrup() != null && !billSchedular.getGrup().trim().isEmpty()) {
+					    localityCode = billSchedular.getGrup();
+					} else {
+					    localityCode = "NA";
+					}
+					
+					int batchCount = count;       
+					String tenantId = billSchedular.getTenantId();
+					String cityName = "Unknown";
+
+					if (tenantId != null && tenantId.contains(".")) {
+					    cityName = tenantId.substring(tenantId.indexOf('.') + 1); // get part after dot
+					    cityName = cityName.substring(0, 1).toUpperCase() + cityName.substring(1).toLowerCase(); // capitalize
+					}
+
+					String key =cityName+"-"+ localityCode + "-" + batchCount;
+					
+					 billGeneratorDao.insertBillSchedulerConnectionStatus(
+			                    new ArrayList<>(billGeneraterReq.getConsumerCodes()),
+			                    billGeneraterReq.getBillSchedular().getId(),
+			                    billGeneraterReq.getBillSchedular().getLocality(),
+			                    SWCalculationConstant.INITIATED,
+			                    billGeneraterReq.getBillSchedular().getTenantId(),
+			                    SWCalculationConstant.INITIATED,
+			                    System.currentTimeMillis()
+			            );
+					
+					producer.push(configs.getBillGenerateSchedulerTopic(),key, billGeneraterReq);
 					log.info("Bill Scheduler pushed connections size:{} to kafka topic of batch no: ", conectionNoList.size(), count++);
 
 					if(threadSleepCount == 2) {
-						//Pausing controller for every three batches.
-						Thread.sleep(10000);
+						Thread.sleep(2000);
 						threadSleepCount=1;
 					}
 					threadSleepCount++;

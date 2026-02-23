@@ -1,8 +1,7 @@
 package org.egov.tlcalculator.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tlcalculator.config.TLCalculatorConfigs;
 import org.egov.tlcalculator.kafka.broker.TLCalculatorProducer;
@@ -23,6 +22,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -75,6 +75,7 @@ public class CalculationService {
        CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
        if(!isEstimate){
            demandService.generateDemand(calculationReq.getRequestInfo(),calculations,mdmsData,businessService_TL);
+           String key = UUID.randomUUID().toString(); // ✅ UNIQUE KEY
            producer.push(config.getSaveTopic(),calculationRes);
        }
        return calculations;
@@ -123,20 +124,20 @@ public class CalculationService {
      * @return TaxHeadEstimates and the billingSlabs used to calculate it
      */
     private EstimatesAndSlabs getTaxHeadEstimates(CalulationCriteria calulationCriteria, RequestInfo requestInfo,Object mdmsData){
-      List<TaxHeadEstimate> estimates = new LinkedList<>();
-      EstimatesAndSlabs  estimatesAndSlabs = getBaseTax(calulationCriteria,requestInfo,mdmsData);
+    	List<TaxHeadEstimate> estimates = new LinkedList<>();
+        EstimatesAndSlabs  estimatesAndSlabs = getBaseTax(calulationCriteria,requestInfo,mdmsData);
 
-      estimates.addAll(estimatesAndSlabs.getEstimates());
+        estimates.addAll(estimatesAndSlabs.getEstimates());
 
-      if(calulationCriteria.getTradelicense().getTradeLicenseDetail().getAdhocPenalty()!=null)
-          estimates.add(getAdhocPenalty(calulationCriteria));
+        if(calulationCriteria.getTradelicense().getTradeLicenseDetail().getAdhocPenalty()!=null)
+            estimates.add(getAdhocPenalty(calulationCriteria));
 
-      if(calulationCriteria.getTradelicense().getTradeLicenseDetail().getAdhocExemption()!=null)
-          estimates.add(getAdhocExemption(calulationCriteria));
+        if(calulationCriteria.getTradelicense().getTradeLicenseDetail().getAdhocExemption()!=null)
+            estimates.add(getAdhocExemption(calulationCriteria));
 
-      estimatesAndSlabs.setEstimates(estimates);
+        estimatesAndSlabs.setEstimates(estimates);
 
-      return estimatesAndSlabs;
+        return estimatesAndSlabs;
   }
 
 
@@ -147,7 +148,7 @@ public class CalculationService {
      * @return BaseTax taxHeadEstimate and billingSlabs used to calculate it
      */
   private EstimatesAndSlabs getBaseTax(CalulationCriteria calulationCriteria, RequestInfo requestInfo,Object mdmsData){
-      TradeLicense license = calulationCriteria.getTradelicense();
+	  TradeLicense license = calulationCriteria.getTradelicense();
       EstimatesAndSlabs estimatesAndSlabs = new EstimatesAndSlabs();
       BillingSlabSearchCriteria searchCriteria = new BillingSlabSearchCriteria();
       searchCriteria.setTenantId(license.getTenantId());
@@ -179,8 +180,18 @@ public class CalculationService {
 
       if(totalTax.compareTo(BigDecimal.ZERO)==-1)
           throw new CustomException("INVALID AMOUNT","Tax amount is negative");
-
+      JsonNode additionalDetail = license.getTradeLicenseDetail().getAdditionalDetail();
       estimate.setEstimateAmount(totalTax);
+      if (!additionalDetail.isNull() && !ObjectUtils.isEmpty(additionalDetail.get("validityYears"))) {
+          int validityYears = additionalDetail.get("validityYears").asInt();
+          if (validityYears == 1)
+              estimate.setEstimateAmount(totalTax);
+          else if (validityYears == 2)
+              estimate.setEstimateAmount(totalTax.multiply(BigDecimal.valueOf(2)));
+          else if (validityYears == 3)
+              estimate.setEstimateAmount(totalTax.multiply(BigDecimal.valueOf(3)));
+      }
+
       estimate.setCategory(Category.TAX);
       if(license.getApplicationType() != null && license.getApplicationType().toString().equals(TLCalculatorConstants.APPLICATION_TYPE_RENEWAL)){
           estimate.setTaxHeadCode(config.getRenewTaxHead());
@@ -189,6 +200,7 @@ public class CalculationService {
       }else{
           estimate.setTaxHeadCode(config.getBaseTaxHead());
           estimateList.add(estimate);
+          estimateList.addAll(tlRenewal.tlRenewalCalculation(requestInfo,calulationCriteria,mdmsData,totalTax));
       }
 
       estimatesAndSlabs.setEstimates(estimateList);
@@ -234,7 +246,7 @@ public class CalculationService {
      */
   private FeeAndBillingSlabIds getTradeUnitFeeAndBillingSlabIds(TradeLicense license, CalculationType calculationType){
 
-      List<BigDecimal> tradeUnitFees = new LinkedList<>();
+	  List<BigDecimal> tradeUnitFees = new LinkedList<>();
       List<TradeUnit> tradeUnits = license.getTradeLicenseDetail().getTradeUnits();
       List<String> billingSlabIds = new LinkedList<>();
       int i = 0;
@@ -245,7 +257,6 @@ public class CalculationService {
               BillingSlabSearchCriteria searchCriteria = new BillingSlabSearchCriteria();
               searchCriteria.setTenantId(license.getTenantId());
               searchCriteria.setStructureType(license.getTradeLicenseDetail().getStructureType());
-              //searchCriteria.setApplicationType(license.getApplicationType().toString());
               searchCriteria.setLicenseType(license.getLicenseType().toString());
               searchCriteria.setTradeType(tradeUnit.getTradeType());
               if(tradeUnit.getUomValue()!=null)

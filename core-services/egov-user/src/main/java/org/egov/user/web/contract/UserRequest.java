@@ -80,6 +80,20 @@ public class UserRequest {
     private String permanentCity;
 
     @SafeHtml
+    // @Pattern(regexp = UserServiceConstants.PATTERN_CITY)
+    @Size(max = 50)
+    private String permanentState;
+
+
+    @SafeHtml
+    // @Pattern(regexp = UserServiceConstants.PATTERN_CITY)
+    @Size(max = 50)
+    private String permanentDistrict;
+    
+    @Size(max = 10)
+    private String clientId;
+
+    @SafeHtml
   //  @Pattern(regexp = UserServiceConstants.PATTERN_PINCODE)
     @Size(max = 10)
     private String permanentPinCode;
@@ -91,6 +105,15 @@ public class UserRequest {
     //@Pattern(regexp = UserServiceConstants.PATTERN_CITY)
     @Size(max = 50)
     private String correspondenceCity;
+
+    //@Pattern(regexp = UserServiceConstants.PATTERN_CITY)
+    @Size(max = 50)
+    private String correspondenceState;
+
+    @Size(max = 50)
+    private String correspondenceDistrict;
+
+
 
     //@Pattern(regexp = UserServiceConstants.PATTERN_PINCODE)
    // @Size(max = 10)
@@ -153,6 +176,8 @@ public class UserRequest {
     private Date dob;
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private Date pwdExpiryDate;
+    
+    private Boolean isRoleUpdatable = false;
 
     public UserRequest(User user) {
 
@@ -187,8 +212,10 @@ public class UserRequest {
         this.relationship = user.getGuardianRelation();
         this.uuid = user.getUuid();
         this.alternatemobilenumber=user.getAlternateMobileNumber();
+        this.clientId=user.getClientId();
         mapPermanentAddress(user);
         mapCorrespondenceAddress(user);
+        this.isRoleUpdatable = user.getIsRoleUpdatable();
     }
 
     private void mapCorrespondenceAddress(User user) {
@@ -196,6 +223,8 @@ public class UserRequest {
             this.correspondenceAddress = user.getCorrespondenceAddress().getAddress();
             this.correspondenceCity = user.getCorrespondenceAddress().getCity();
             this.correspondencePinCode = user.getCorrespondenceAddress().getPinCode();
+            this.correspondenceDistrict = user.getCorrespondenceAddress().getDistrict();
+            this.correspondenceState = user.getCorrespondenceAddress().getState();
         }
     }
 
@@ -204,6 +233,8 @@ public class UserRequest {
             this.permanentAddress = user.getPermanentAddress().getAddress();
             this.permanentCity = user.getPermanentAddress().getCity();
             this.permanentPinCode = user.getPermanentAddress().getPinCode();
+            this.permanentDistrict = user.getPermanentAddress().getDistrict();
+            this.permanentState = user.getPermanentAddress().getState();
         }
     }
 
@@ -248,6 +279,7 @@ public class UserRequest {
                 .createdDate(new Date())
                 .otpReference(this.otpReference)
                 .tenantId(this.tenantId)
+                .clientId(this.clientId)
                 .password(this.password)
                 .roles(toDomainRoles())
                 .loggedInUserId(loggedInUserId)
@@ -256,6 +288,7 @@ public class UserRequest {
                 .correspondenceAddress(toDomainCorrespondenceAddress())
                 .guardian(fatherOrHusbandName)
                 .guardianRelation(relationship).alternateMobileNumber(this.alternatemobilenumber)
+                .isRoleUpdatable(this.isRoleUpdatable)
                 .build();
     }
 
@@ -278,6 +311,8 @@ public class UserRequest {
                 .type(AddressType.PERMANENT)
                 .city(permanentCity)
                 .pinCode(permanentPinCode)
+                .state(permanentState)
+                .district(permanentDistrict)
                 .address(permanentAddress)
                 .build();
     }
@@ -287,6 +322,8 @@ public class UserRequest {
                 .type(AddressType.CORRESPONDENCE)
                 .city(correspondenceCity)
                 .pinCode(correspondencePinCode)
+                .state(correspondenceState)
+                .district(correspondenceDistrict)
                 .address(correspondenceAddress)
                 .build();
     }

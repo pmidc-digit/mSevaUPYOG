@@ -40,6 +40,8 @@
 package org.egov.user.repository.builder;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.UserSearchCriteria;
 import org.egov.user.persistence.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,16 +61,17 @@ public class UserTypeQueryBuilder {
     @Autowired
     private RoleRepository roleRepository;
 
-    private static final String SELECT_USER_QUERY = "SELECT userdata.title, userdata.salutation, userdata.dob, userdata.locale, userdata.username, userdata" +
-            ".password, userdata.pwdexpirydate,  userdata.mobilenumber, userdata.altcontactnumber, userdata.emailid, userdata.createddate, userdata" +
-            ".lastmodifieddate,  userdata.createdby, userdata.lastmodifiedby, userdata.active, userdata.name, userdata.gender, userdata.pan, userdata.aadhaarnumber, userdata" +
-            ".type,  userdata.version, userdata.guardian, userdata.guardianrelation, userdata.signature, userdata.accountlocked, userdata.accountlockeddate, userdata" +
-            ".bloodgroup, userdata.photo, userdata.identificationmark,  userdata.tenantid, userdata.id, userdata.uuid, userdata.alternatemobilenumber, addr.id as addr_id, addr.type as " +
-            "addr_type, addr .address as addr_address,  addr.city as addr_city, addr.pincode as addr_pincode, addr" +
-            ".tenantid as " +
-            "addr_tenantid, addr.userid as addr_userid, ur.role_code as role_code, ur.role_tenantid as role_tenantid \n" +
-            "\tFROM eg_user userdata LEFT OUTER JOIN eg_user_address addr ON userdata.id = addr.userid AND userdata.tenantid = addr" +
-            ".tenantid LEFT OUTER JOIN eg_userrole_v1 ur ON userdata.id = ur.user_id AND userdata.tenantid = ur.user_tenantid  ";
+    private static final String SELECT_USER_QUERY = "SELECT userdata.title, userdata.salutation, userdata.dob, userdata.locale, userdata.username,"
+    		+ "    userdata.password, userdata.pwdexpirydate,  userdata.mobilenumber, userdata.altcontactnumber,"
+    		+ "    userdata.emailid, userdata.createddate, userdata.lastmodifieddate,  userdata.createdby,"
+    		+ "    userdata.lastmodifiedby, userdata.active, userdata.name, userdata.gender, userdata.pan,"
+    		+ "    userdata.aadhaarnumber, userdata.type,  userdata.version, userdata.guardian, userdata.guardianrelation,"
+    		+ "    userdata.signature, userdata.accountlocked, userdata.accountlockeddate, userdata.bloodgroup,"
+    		+ "    userdata.photo, userdata.identificationmark,  userdata.tenantid, userdata.id, userdata.uuid,"
+    		+ "    userdata.alternatemobilenumber, addr.id as addr_id, addr.type as addr_type,"
+    		+ "    addr .address as addr_address,  addr.city as addr_city, addr.pincode as addr_pincode,addr.district as addr_district,addr.state as addr_state,"
+    		+ "    addr.tenantid as addr_tenantid, addr.userid as addr_userid" 
+    		+ " FROM eg_user userdata LEFT OUTER JOIN eg_user_address addr ON userdata.id = addr.userid ";
 
     private static final String PAGINATION_WRAPPER = "SELECT * FROM " +
             "(SELECT *, DENSE_RANK() OVER (ORDER BY id) offset_ FROM " +
@@ -89,6 +92,8 @@ public class UserTypeQueryBuilder {
             "'false' WHERE user_uuid = :user_uuid";
 
     private static final String SELECT_USER_ROLE_QUERY = "SELECT distinct(user_id) from eg_userrole_v1 ur";
+    
+    private static final String SELECT_USER_ROLES = "select ur.user_id as user_id, ur.role_code as role_code, ur.role_tenantid as role_tenantid from eg_userrole_v1 ur where";
 
     @SuppressWarnings("rawtypes")
     public String getQuery(final UserSearchCriteria userSearchCriteria, final List preparedStatementValues) {
@@ -212,7 +217,7 @@ public class UserTypeQueryBuilder {
 
     private void addOrderByClause(final StringBuilder selectQuery, final UserSearchCriteria userSearchCriteria) {
         final String sortBy = userSearchCriteria.getSort() != null && !userSearchCriteria.getSort().isEmpty()
-                ? " userdata." + userSearchCriteria.getSort().get(0) : "userdata.name";
+                ? " userdata." + userSearchCriteria.getSort().get(0) : "userdata.id";
         selectQuery.append(" ORDER BY ").append(sortBy);
     }
 
@@ -291,6 +296,23 @@ public class UserTypeQueryBuilder {
                 + ":accountlocked,:bloodgroup,:photo,:identificationmark,:createddate,:lastmodifieddate,:createdby,:lastmodifiedby,:alternatemobilenumber) ";
     }
 
+    public String getInsertUserSessionQuery() {
+        return "INSERT INTO user_sessions (" +
+                "id, user_uuid, user_id, username, login_time, logout_time, ip_address,usertype, iscurrentlylogin, isautologout" +
+                ") VALUES (" +
+                ":id, :userUuid, :userId, :username, :loginTime, :logoutTime, :ipAddress, :usertype, :iscurrentlylogin, :isautologout" +
+                ")";
+    }
+
+
+    public String getUpdateUserLogoutSessionQuery() {
+        return "UPDATE user_sessions " +
+               "SET logout_time = :logoutTime,  iscurrentlylogin = :iscurrentlylogin, isautologout = :isautologout " +
+               "WHERE user_uuid = :userUuid AND logout_time IS NULL";
+    }
+
+
+    
     public String getUpdateUserQuery() {
         return "update eg_user set salutation=:Salutation,dob=:Dob,locale=:Locale,password=:Password,pwdexpirydate=:PasswordExpiryDate,mobilenumber=:MobileNumber,altcontactnumber=:AltContactNumber,emailid=:EmailId,active=:Active,name=:Name,gender=:Gender,pan=:Pan,aadhaarnumber=:AadhaarNumber,"
                 + "type=:Type,guardian=:Guardian,guardianrelation=:GuardianRelation,signature=:Signature," +
@@ -302,6 +324,13 @@ public class UserTypeQueryBuilder {
 
     public String getUserPresentByUserNameAndTenant() {
         return "select count(*) from eg_user where username =:userName and tenantId =:tenantId and type = :userType ";
+    }
+    
+    public String getRolesForUSers(List<Long> users, List<Object> preparedStatementValuesForRole) {
+    	final StringBuilder selectQuery = new StringBuilder(SELECT_USER_ROLES);
+    	selectQuery.append(" ur.user_id  IN ( ").append(getQueryForCollection(users,
+    			preparedStatementValuesForRole)).append(" )");
+    	return selectQuery.toString();
     }
 
 }

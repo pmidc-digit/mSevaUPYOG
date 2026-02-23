@@ -12,6 +12,8 @@ public class BPAConstants {
 	public static final String BPA_BusinessService = "BPA";
 
 	public static final String BPA_MODULE_CODE = "BPA";
+	
+	public static final String RISKTYPE = "riskType";
 
 	public static final String BPA_LOW_MODULE_CODE = "BPA_LOW";
 
@@ -112,6 +114,8 @@ public class BPAConstants {
 	public static final String ACTION_APPLY = "APPLY";
 
 	public static final String ACTION_APPROVE = "APPROVE";
+	
+	public static final String ACTION_POST_PAY_APPROVE = "POST_PAYMENT_APPROVE";
 
 	public static final String ACTION_FORWORD = "FORWARD";
 
@@ -126,7 +130,7 @@ public class BPAConstants {
 	public static final String ACTION_NOC_FORWARD = "NOC_FORWARD";
 
 	public static final String ACTION_PENDINGAPPROVAL = "PENDINGAPPROVAL";
-
+	
 	public static final String ACTION_REJECT = "REJECT";
 	public static final String ACTION_REVOCATE = "REVOCATE";
 
@@ -141,16 +145,22 @@ public class BPAConstants {
 	public static final String ACTION_SEND_TO_ARCHITECT = "SEND_TO_ARCHITECT";
 	
 	public static final String ACTION_SEND_TO_CITIZEN = "SEND_TO_CITIZEN";
+	
+	public static final String ACTION_SAVE_AS_DRAFT = "SAVE_AS_DRAFT";
 
 	// BPA Status
 
 	public static final String STATUS_INITIATED = "INPROGRESS";
+	
+	public static final String STATUS_CREATE = "INITIATED";
 
 	public static final String STATUS_APPLIED = "INPROGRESS";
 
 	public static final String STATUS_APPROVED = "APPROVED";
 
 	public static final String STATUS_REJECTED = "REJECTED";
+	
+	public static final String STATUS_CITIZENAPPROVAL = "CITIZEN_APPROVAL_PENDING";
 
 	public static final String STATUS_REVOCATED = "PERMIT REVOCATION";
 
@@ -223,6 +233,8 @@ public class BPAConstants {
 	// OCCUPANCY TYPE
 
 	public static final String RESIDENTIAL_OCCUPANCY = "A";
+	
+	public static final String RESIDENTIAL_GH_SUBOCCUPANCY = "A-AF";
 
 	// CALCULATION FEEe
 	public static final String APPLICATION_FEE_KEY = "ApplicationFee";
@@ -389,6 +401,29 @@ public class BPAConstants {
 	public static final String DOWNLOAD_PERMIT_LINK_PLACEHOLDER = "{DOWNLOAD_PERMIT_LINK}";
 
 	public static final String PAYMENT_LINK_PLACEHOLDER = "{PAYMENT_LINK}";
+	
+	public static final Double MAAX_BUILDING_HEIGHT = 15.01;
+	
+	public static final String BUILDING_HEIGHT = "BuildingHeight";
 
+	public static final String ACTION_VERIFY = "VERIFY";
+	
+	public static final String SYSTEM = "SYSTEM";
+	
+	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
+	
+	public static final String TENANT_MODULE = "tenant";
+
+	public static final String TENANTS = "tenants";
+
+	public static final String PENDINGVERIFICATION_STATE = "PENDINGVERIFICATION";
+	
+	public static final String PENDINGINITIALVERIFICATION_STATE = "PENDINGINITIALVERIFICATION";
+	
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
+	
+	public static final Long DAY_TO_MILLISECOND = 86400000L;
+	
+	public static final String PROPERTY_USAGE = "PropertyUsage";
 
 }

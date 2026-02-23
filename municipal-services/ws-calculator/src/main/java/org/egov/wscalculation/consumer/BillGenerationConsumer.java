@@ -1,8 +1,11 @@
 package org.egov.wscalculation.consumer;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.repository.BillGeneratorDao;
 import org.egov.wscalculation.service.DemandService;
@@ -36,55 +39,55 @@ public class BillGenerationConsumer {
 	 * @param records
 	 *            would be bill generator request.
 	 */
-	@KafkaListener(topics = {
-	"${egov.watercalculatorservice.billgenerate.topic}" }, containerFactory = "kafkaListenerContainerFactoryBatch")
-	public void listen(final List<Message<?>> records) {
-		try {
-			log.info("bill generator consumer received records:  " + records.size());
+	@KafkaListener(
+		    topics = "${egov.watercalculatorservice.billgenerate.topic}",
+		    containerFactory = "kafkaListenerContainerFactoryBatch"
+		)
+		public void listen(final List<ConsumerRecord<String, Object>> records) {
+		    log.info("📥 WS bill generator consumer received batch with {} records", records.size());
 
-			BillGeneratorReq billGeneratorReq = mapper.convertValue(records.get(0).getPayload(), BillGeneratorReq.class);
-			log.info("Number of batch records:  " + billGeneratorReq.getConsumerCodes().size());
+		    for (int i = 0; i < records.size(); i++) {
+		        ConsumerRecord<String, Object> record = records.get(i);
+		        try {
+		            log.info("🔸 [Record {}] key={}, offset={}, partition={}, value={}",
+		                    i + 1, record.key(), record.offset(), record.partition(), record.value());
 
-			if(billGeneratorReq.getConsumerCodes() != null && !billGeneratorReq.getConsumerCodes().isEmpty() && billGeneratorReq.getTenantId() != null) {
-				log.info("Fetch Bill generator initiated for Consumers: {}", billGeneratorReq.getConsumerCodes());
-				
-				List<String> fetchBillSuccessConsumercodes = demandService.fetchBillSchedulerSingle(billGeneratorReq.getConsumerCodes(),billGeneratorReq.getTenantId() ,billGeneratorReq.getRequestInfoWrapper().getRequestInfo());
-				log.info("Fetch Bill generator completed fetchBillConsumers: {}", fetchBillSuccessConsumercodes);
-				long milliseconds = System.currentTimeMillis();
-				
-				if(fetchBillSuccessConsumercodes != null && !fetchBillSuccessConsumercodes.isEmpty()) {
-					
-					billGeneratorDao.insertBillSchedulerConnectionStatus(
-							fetchBillSuccessConsumercodes, 
-							billGeneratorReq.getBillSchedular().getId(), 
-							billGeneratorReq.getBillSchedular().getLocality(), 
-							WSCalculationConstant.SUCCESS, 
-							billGeneratorReq.getBillSchedular().getTenantId(), 
-							WSCalculationConstant.SUCCESS_MESSAGE, milliseconds);
-					
-				} 
-				//Removing the fetch bill success consumercodes from billGenerate
-				billGeneratorReq.getConsumerCodes().removeAll(fetchBillSuccessConsumercodes);
-				if(!billGeneratorReq.getConsumerCodes().isEmpty()) {
-					log.info("Bill generator failure consumercodes: {}", billGeneratorReq.getConsumerCodes());
+		            // Convert record value to BillGeneratorReq
+		            BillGeneratorReq billGeneratorReq = mapper.convertValue(record.value(), BillGeneratorReq.class);
 
-					billGeneratorDao.insertBillSchedulerConnectionStatus(
-							billGeneratorReq.getConsumerCodes().stream().collect(Collectors.toList()), 
-							billGeneratorReq.getBillSchedular().getId(), 
-							billGeneratorReq.getBillSchedular().getLocality(), 
-							WSCalculationConstant.FAILURE, 
-							billGeneratorReq.getBillSchedular().getTenantId(), 
-							WSCalculationConstant.FAILURE_MESSAGE, milliseconds);
-					
-				}
-				
-			}
-		}catch(Exception exception) {
-			log.error("Exception occurred while generating bills in the sw bill generator consumer");
+		            if (billGeneratorReq == null) {
+		                log.warn("⚠️ Skipping record {} — unable to parse BillGeneratorReq", i + 1);
+		                continue;
+		            }
+
+		            log.info("🧾 Parsed Request -> Consumers: {}, TenantId: {}",
+		                    billGeneratorReq.getConsumerCodes(), billGeneratorReq.getTenantId());
+
+		            if (billGeneratorReq.getConsumerCodes() == null ||
+		                billGeneratorReq.getConsumerCodes().isEmpty() ||
+		                billGeneratorReq.getTenantId() == null) {
+		                log.warn("⚠️ Skipping record {} — missing consumerCodes or tenantId", i + 1);
+		                continue;
+		            }
+
+		            log.info("🚀 Fetch Bill generator initiated for Consumers: {}", billGeneratorReq.getConsumerCodes());
+
+		            List<String> failureConsumerCodes = new ArrayList<>();
+
+		            List<String> fetchBillSuccessConsumercodes = demandService.fetchBillSchedulerSingle(
+		                    billGeneratorReq.getConsumerCodes(),
+		                    billGeneratorReq.getTenantId(),
+		                    billGeneratorReq.getRequestInfoWrapper().getRequestInfo(),
+		                    failureConsumerCodes,
+		                    billGeneratorReq.getBillSchedular().getId(),
+		                    billGeneratorReq.getBillSchedular().getLocality()
+		            );
+
+		            log.info("✅ Fetch Bill generator completed for consumers: {}", fetchBillSuccessConsumercodes);
+		        } catch (Exception ex) {
+		            log.error("❌ Exception while processing record {} -> {}", i + 1, ex.getMessage(), ex);
+		        }
+		    }
 		}
-
-
-
-	}
 
 }

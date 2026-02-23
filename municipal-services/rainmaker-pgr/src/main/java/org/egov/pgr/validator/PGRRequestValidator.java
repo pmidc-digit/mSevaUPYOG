@@ -23,6 +23,7 @@ import org.egov.pgr.contract.ServiceResponse;
 import org.egov.pgr.model.ActionHistory;
 import org.egov.pgr.model.ActionInfo;
 import org.egov.pgr.model.Service;
+import org.egov.pgr.model.Service.SourceEnum;
 import org.egov.pgr.model.Service.StatusEnum;
 import org.egov.pgr.service.GrievanceService;
 import org.egov.pgr.service.ReportService;
@@ -127,7 +128,32 @@ public class PGRRequestValidator {
 			vaidateServiceCodes(serviceRequest, errorMap);
 		}
 		validateAssignments(serviceRequest, errorMap);
-		validateAction(serviceRequest, errorMap);
+			validateAddressDetail(serviceRequest, errorMap);
+	
+			if (!CollectionUtils.isEmpty(serviceRequest.getServices())) {
+				ActionInfo actionInfo = serviceRequest.getActionInfo().get(0);
+				Service.SourceEnum source = serviceRequest.getServices().get(0).getSource();
+				if (source.equals(Service.SourceEnum.IVR) && actionInfo != null
+						&& "resolve".equalsIgnoreCase(actionInfo.getAction())) {
+					// IVR can only resolve the complaint
+					log.info("Validating action is not required for IVR source");
+				} else {
+					validateAction(serviceRequest, errorMap);
+
+				}
+			}
+			
+			if (serviceRequest.getServices().get(0).getAuditDetails().getCreatedTime() > 1767225599000L && serviceRequest.getServices().get(0).getSource() != SourceEnum.IVR ) {
+			    // Add existing invalid createdTime error
+
+			    // Add custom error for DGR PGR Service
+			  errorMap.put(
+							    "ACTION_NOT_ALLOWED_CODE",
+							    "Action cannot be performed on mSeva. Please assign or resolve the above grievance on https://connect.punjab.gov.in/ portal."
+							);
+			}
+
+
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 	}
@@ -352,9 +378,12 @@ public class PGRRequestValidator {
 		String role = pgrUtils.getPrecedentRole(roles);
 		List<String> serviceCodes = new ArrayList<>();
 		if(role.equals(PGRConstants.ROLE_DGRO)) {
-			if(!serviceRequest.getServices().get(0).getTenantId().equals(serviceRequest.getRequestInfo().getUserInfo().getTenantId())) {
-				errorMap.put(ErrorConstants.INVALID_ACTION_FOR_GRO_CODE, ErrorConstants.INVALID_ACTION_FOR_GRO_MSG);
-			}
+			/*
+			 * if(!serviceRequest.getServices().get(0).getTenantId().equals(serviceRequest.
+			 * getRequestInfo().getUserInfo().getTenantId())) {
+			 * errorMap.put(ErrorConstants.INVALID_ACTION_FOR_GRO_CODE,
+			 * ErrorConstants.INVALID_ACTION_FOR_GRO_MSG); }
+			 */
 			if (!errorMap.isEmpty())
 				throw new CustomException(errorMap);
 			ServiceReqSearchCriteria serviceReqSearchCriteria = ServiceReqSearchCriteria.builder()
@@ -375,9 +404,12 @@ public class PGRRequestValidator {
 				}
 			}
 		}else if(role.equals(PGRConstants.ROLE_GRO)) {
-			if(!serviceRequest.getServices().get(0).getTenantId().equals(serviceRequest.getRequestInfo().getUserInfo().getTenantId())) {
-				errorMap.put(ErrorConstants.INVALID_ACTION_FOR_GRO_CODE, ErrorConstants.INVALID_ACTION_FOR_GRO_MSG);
-			}
+			/*
+			 * if(!serviceRequest.getServices().get(0).getTenantId().equals(serviceRequest.
+			 * getRequestInfo().getUserInfo().getTenantId())) {
+			 * errorMap.put(ErrorConstants.INVALID_ACTION_FOR_GRO_CODE,
+			 * ErrorConstants.INVALID_ACTION_FOR_GRO_MSG); }
+			 */
 		}
 
 		if (!errorMap.isEmpty())

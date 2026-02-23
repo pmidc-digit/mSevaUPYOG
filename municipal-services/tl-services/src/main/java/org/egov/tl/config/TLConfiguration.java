@@ -52,6 +52,9 @@ public class TLConfiguration {
 
     @Value("${egov.user.search.path}")
     private String userSearchEndpoint;
+    
+    @Value("${egov.user.search.paths}")
+    private String userSearchEndpoints;
 
     @Value("${egov.user.update.path}")
     private String userUpdateEndpoint;
@@ -67,6 +70,9 @@ public class TLConfiguration {
     @Value("${egov.idgen.path}")
     private String idGenPath;
 
+    @Value("${state.level.tenant.id}")
+    private String stateLevelTenantId;
+    
     @Value("${egov.idgen.tl.applicationNum.name}")
     private String applicationNumberIdgenNameTL;
 
@@ -349,5 +355,13 @@ public class TLConfiguration {
     @Value("${egov.tl.calculator.billingSlab.endpoint}")
     private String billingSlabEndPoint;
 
+    @Value("${egov.tl.kafka.batch.size}")
+    private Integer batchSize;
+    
+    @Value("${egov.tl.kafka.max.request.size}")
+    private Integer maxRequestSize;
+    
+    @Value("${egov.tl.kafka.linger.ms}")
+    private Integer lingerMs;
 
 }

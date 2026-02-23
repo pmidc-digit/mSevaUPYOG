@@ -32,6 +32,8 @@ public class PropertyCriteria {
 	private Set<String> oldpropertyids;
 	
 	private Set<Status> status;
+	
+	private Set<String> vasikaNos;
 
 	private String mobileNumber;
 
@@ -80,5 +82,8 @@ public class PropertyCriteria {
 
 	@Builder.Default
 	private Boolean isRequestForOldDataEncryption = false;
+	
+	private String surveyId;
 
+    private Boolean plainSearchOffset;
 }

@@ -1,5 +1,6 @@
 package org.egov.search.service;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import org.egov.SearchApplicationRunnerImpl;
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.encryption.EncryptionService;
 import org.egov.search.model.Definition;
 import org.egov.search.model.SearchDefinition;
 import org.egov.search.model.SearchRequest;
@@ -22,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -47,6 +51,9 @@ public class SearchService {
 	@Autowired
 	private SearchUtils searchUtils;
 	
+	@Autowired
+	private EncryptionService encryptionService;
+	
 	public static final Logger log = LoggerFactory.getLogger(SearchService.class);
 
 	
@@ -61,7 +68,13 @@ public class SearchService {
 			if(null != searchDefinition.getIsCustomerRowMapEnabled()) {
 				if(!searchDefinition.getIsCustomerRowMapEnabled()) {
 					maps = searchRepository.fetchData(searchRequest, searchDefinition);
-				}else {
+					if ((searchDefinition.getDecryptionPathId()!= null)&&(searchRequest.getRequestInfo()!=null)&&(searchRequest.getRequestInfo().getUserInfo()!=null))
+					{
+						Map<String, Object> result = enrichedOuputData(maps, searchDefinition, searchRequest);
+						data = result;
+					}
+				}
+				else {
 					//This is a custom logic for bill-genie, we'll need to write code seperately to support custom rowmap logic for any search.
 					data =  searchRepository.fetchWithCustomMapper(searchRequest, searchDefinition);
 					Map<String, Object> result = new HashMap<>();
@@ -72,6 +85,11 @@ public class SearchService {
 				}
 			}else {
 				maps = searchRepository.fetchData(searchRequest, searchDefinition);
+				if ((searchDefinition.getDecryptionPathId()!= null)&&(searchRequest.getRequestInfo()!=null)&&(searchRequest.getRequestInfo().getUserInfo()!=null))
+				{
+					Map<String, Object> result = enrichedOuputData(maps, searchDefinition, searchRequest);
+					data = result;
+				}
 			}
 		}catch(Exception e){
 			log.error("Exception: ",e);
@@ -79,8 +97,23 @@ public class SearchService {
 		}
 		if(null == data) {
 			try{
-				data = formatResult(maps, searchDefinition, searchRequest);
-			}catch(Exception e){
+	            if (!maps.isEmpty() && maps.get(0) instanceof String) {
+	                String response = maps.get(0);
+	                JsonElement element = JsonParser.parseString(response);
+
+	                if (element.isJsonObject()) {
+	                    data = formatResult(maps, searchDefinition, searchRequest);
+	                } else if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber()) {
+	                    Map<String, Object> result = new HashMap<>();
+	                    result.put("TotalCount", element.getAsInt());
+	                    data = result;
+	                } else {
+	                    data = formatResult(maps, searchDefinition, searchRequest);
+	                }
+	            } else {
+	                data = formatResult(maps, searchDefinition, searchRequest);
+	            }
+	        }catch(Exception e){
 				log.error("Exception: ",e);
 				throw new CustomException("RESULT_FORMAT_ERROR", 
 						"There was an error encountered while formatting the result, Verify output config from the yaml file.");
@@ -90,8 +123,26 @@ public class SearchService {
 		return data;
 	}
 	
+	private Map<String, Object> enrichedOuputData(List<String> maps, Definition searchDefinition, SearchRequest searchRequest ){
+		try {
+			Type type = new TypeToken<ArrayList<Map<String, Object>>>() {}.getType();
+			Gson gson = new Gson();
+			List<Map<String, Object>> mapData = gson.fromJson(maps.toString(), type);
+			mapData = encryptionService.decryptJson(searchRequest.getRequestInfo(),mapData,
+					searchDefinition.getDecryptionPathId(), "Retrieve Searcher Data", Map.class);
+			Map<String, Object> result = new HashMap<>();
+			result.put("ResponseInfo", responseInfoFactory.createResponseInfoFromRequestInfo(searchRequest.getRequestInfo(), true));
+			String outputKey = searchDefinition.getOutput().getOutJsonPath().split("\\.")[1];
+			result.put(outputKey, mapData);
+			return  result;
+		} catch (IOException e) {
+			throw new CustomException("ERROR_IN_DECRYPTION",
+					"There was an error encountered while decrypting the data");
+		}
+	}
 	
-	public String formatResult(List<String> maps, Definition searchDefinition, SearchRequest searchRequest){
+	
+	private String formatResult(List<String> maps, Definition searchDefinition, SearchRequest searchRequest){
 	    Type type = new TypeToken<ArrayList<Map<String, Object>>>() {}.getType();
 		Gson gson = new Gson();
 		List<Map<String, Object>> data = gson.fromJson(maps.toString(), type);

@@ -14,6 +14,9 @@ import org.egov.collection.repository.PaymentRepository;
 import org.egov.collection.util.PaymentEnricher;
 import org.egov.collection.util.PaymentValidator;
 import org.egov.collection.web.contract.Bill;
+import org.egov.collection.web.contract.PropertyDetail;
+import org.egov.collection.web.contract.RoadCuttingInfo;
+import org.egov.collection.web.contract.UsageCategoryInfo;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class PaymentService {
+
+	private static String propertyId;
 
 	private ApportionerService apportionerService;
 
@@ -71,6 +76,8 @@ public class PaymentService {
 	 */
 	public List<Payment> getPayments(RequestInfo requestInfo, PaymentSearchCriteria paymentSearchCriteria,
 			String moduleName) {
+		
+	    
 
 		paymentValidator.validateAndUpdateSearchRequestFromConfig(paymentSearchCriteria, requestInfo, moduleName);
 		if (applicationProperties.isPaymentsSearchPaginationEnabled()) {
@@ -88,78 +95,217 @@ public class PaymentService {
 		 * payerIds = new ArrayList<>();
 		 * payerIds.add(requestInfo.getUserInfo().getUuid());
 		 * paymentSearchCriteria.setPayerIds(payerIds); }
-		 */		
+		 */
 		List<Payment> payments = paymentRepository.fetchPayments(paymentSearchCriteria);
-		if (payments != null && !payments.isEmpty()) {
-		Collections.sort(payments.get(0).getPaymentDetails().get(0).getBill().getBillDetails(), (b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod()));
-		}
-		if (null != paymentSearchCriteria.getBusinessService() && null != paymentSearchCriteria.getConsumerCodes()) {
-			String businessservice = paymentSearchCriteria.getBusinessService();
-			if ((paymentSearchCriteria.getBusinessService().equals("WS")
-					|| paymentSearchCriteria.getBusinessService().equals("SW"))) {
-			 	  List<String> usageCategory = paymentRepository.fetchUsageCategoryByApplicationnos(paymentSearchCriteria.getConsumerCodes(), businessservice);
-		          List<String> address = paymentRepository.fetchAddressByApplicationnos(paymentSearchCriteria.getConsumerCodes(),businessservice);
-		          List<String> propertyIds = paymentRepository.fetchPropertyid(paymentSearchCriteria.getConsumerCodes(), businessservice);
-		          List<String> additional = paymentRepository.adddetails(paymentSearchCriteria.getConsumerCodes(), businessservice);
-		          List<String> meterdetails = paymentRepository.meterinstallmentdate(paymentSearchCriteria.getConsumerCodes(), businessservice);
-		          List<String> meterid = paymentRepository.meterid(paymentSearchCriteria.getConsumerCodes(), businessservice);
-		          String meterMake=null;
-		          String avarageMeterReading=null;
-		          String initialMeterReading=null;
-		          if (additional != null && !additional.isEmpty()) {
-		              ObjectMapper objectMapper = new ObjectMapper();
-
-		              for (String jsonString : additional) {
-		                  try {
-		                      Map<String, String> map = objectMapper.readValue(jsonString, new TypeReference<Map<String, String>>() {});
-		                      meterMake= (String) map.get("meterMake");
-		                      payments.get(0).setMeterMake(meterMake);
-		                      avarageMeterReading= (String) map.get("avarageMeterReading");
-		                      payments.get(0).setAvarageMeterReading(avarageMeterReading);
-		                      initialMeterReading= (String) map.get("initialMeterReading");
-		                      payments.get(0).setInitialMeterReading(initialMeterReading);
-		                      
-		                  } catch (Exception e) {
-		                      e.printStackTrace();
-		                  }
-		              }
-		          } 
-				// setPropertyData(receiptnumber,payments,businessservice);
-				if (usageCategory != null && !usageCategory.isEmpty())
-					payments.get(0).setUsageCategory(usageCategory.get(0));
-				if (address != null && !address.isEmpty())
-					payments.get(0).setAddress(address.get(0));
-				if (propertyIds != null && !propertyIds.isEmpty())
-					payments.get(0).setPropertyId(propertyIds.get(0));
-				
-				
-				if (meterdetails != null && !meterdetails.isEmpty())
-					payments.get(0).setMeterinstallationDate(meterdetails.get(0));
-				if (meterid != null && !meterid.isEmpty())
-					payments.get(0).setMeterId(meterid.get(0));
-			}
-			return payments;
-		} else if (null != paymentSearchCriteria.getReceiptNumbers()) {
-			String receiptnumber = null;
-			Iterator<String> iterate = paymentSearchCriteria.getReceiptNumbers().iterator();
-			while (iterate.hasNext()) {
-				receiptnumber = iterate.next();
-			}
-			String receipts[] = receiptnumber.split("/");
-
 		
-			String businessservice[]= receipts[0].split("_");
-			if (businessservice[0].equals("WS") || businessservice[0].equals("SW")) {
+		
+		if (payments != null && !payments.isEmpty()) {
+			Collections.sort(payments.get(0).getPaymentDetails().get(0).getBill().getBillDetails(),
+					(b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod()));
+		}
+		
+		
+		if ((null != paymentSearchCriteria.getBusinessService() ||null != paymentSearchCriteria.getReceiptNumbers())  && payments != null && !payments.isEmpty())
+		{
+			String businessservice =null;
+			
+			
+			if (null != paymentSearchCriteria.getReceiptNumbers()) 
+				
+			{
+				String receiptnumber = null;
+				Iterator<String> iterate = paymentSearchCriteria.getReceiptNumbers().iterator();
+				while (iterate.hasNext()) {
+					receiptnumber = iterate.next();
+				}
+				String receipts[] = receiptnumber.split("/");
+
+				String businessservices[] = receipts[0].split("_");
+				businessservice=businessservices[0];
+				if (businessservices[0].equals("WS") || businessservices[0].equals("SW")) 
+				{
+					List<String> consumercode = paymentRepository.fetchConsumerCodeByReceiptNumber(receiptnumber);
+
+					// Create a Set to hold the application number
+					Set<String> applicationNumbers = new HashSet<>();
+					/* w/s receipt bug fixing for ledger id and other things-- Abhishek (ticket number-- Defect #24)  */
+					if (consumercode.get(0).contains("WS_AP") || consumercode.get(0).contains("SW_AP"))
+					{
+						
+					    applicationNumbers.add(consumercode.get(0)); // Add the string to the Set
+					    log.info("final consumercode "+applicationNumbers);
+					    paymentSearchCriteria.setApplicationNo(applicationNumbers); // Pass the Set to the method
+					}
+					else
+					{
+					    applicationNumbers.add(consumercode.get(0)); // Add the string to the Set
+
+						paymentSearchCriteria.setConsumerCodes(applicationNumbers);
+					}
+				}
+				
+			}
+				
+			
+			else
+			businessservice = paymentSearchCriteria.getBusinessService();
+			
+			if (businessservice.equals("WS")|| businessservice.equals("SW") || businessservice.equals("WS.ONE_TIME_FEE") || businessservice.equals("SW.ONE_TIME_FEE")) 
+			{
+				
+				if ((businessservice.equals("WS.ONE_TIME_FEE")||businessservice.equals("SW.ONE_TIME_FEE")) && paymentSearchCriteria.getConsumerCodes()!=null  && paymentSearchCriteria.getConsumerCodes()!=null )
+				{
+					paymentSearchCriteria.setConsumerCodes(null);
+				}
+				
+			
+			
+				
+				String meterMake = null;
+				String avarageMeterReading = null;
+				String initialMeterReading = null;
+				String ledgerId = null;
+				String conncat = null;
+				String landArea = null;
+				String meterId = null;
+				String meterInstallationDate = null;
+				String roadType = null;
+				String roadLength = null;
+				String groups = null;
+				String usageCategory = null;
+				String address = null;
+				List<String> ownerName = new ArrayList<>(); // for Multiple Owners
+				List<String> mobileNumber = new ArrayList<>(); // for Multiple owners
+				
+			     
+				 // WS Object
+				
+				Object Curl_details = paymentRepository.Curl_WS(
+					    requestInfo,
+					    paymentSearchCriteria.getConsumerCodes(),
+					    paymentSearchCriteria.getApplicationNo(),
+					    paymentSearchCriteria.getTenantId(),
+					    businessservice
+					);
 				
 
-				setPropertyData(receiptnumber, payments, businessservice[0]);
-			}
-			
-			return payments;
+				if (Curl_details instanceof List) {
+				    List<Map<String, Object>> detailsList = (List<Map<String, Object>>) Curl_details;
 
-		} else {
-			return payments;
+				    if (!detailsList.isEmpty()) {
+				        Map<String, Object> firstEntry = detailsList.get(0); // Get the first object
+
+				        // Extract additionalDetails
+				        Map<String, Object> additionalDetails = (Map<String, Object>) firstEntry.get("additionalDetails");
+
+				        if (additionalDetails != null) {
+				            meterMake = String.valueOf(additionalDetails.get("meterMake"));
+				            avarageMeterReading = additionalDetails.get("avarageMeterReading") != null ? (additionalDetails.get("avarageMeterReading")).toString() : "0" ;
+				            initialMeterReading = additionalDetails.get("initialMeterReading") != null ? additionalDetails.get("initialMeterReading").toString() : "0" ; // use ? for null condition
+				            ledgerId = String.valueOf(additionalDetails.get("ledgerId"));
+				            conncat = String.valueOf(additionalDetails.get("connectionCategory"));
+				            groups = String.valueOf(additionalDetails.get("groups"));
+				        }
+
+				        // Extract Road Cutting Info
+				        List<Map<String, Object>> roadCuttingInfo = (List<Map<String, Object>>) firstEntry.get("roadCuttingInfo");
+
+				        // Extract Meter Details
+				        meterId = String.valueOf(firstEntry.get("meterId"));
+				        meterInstallationDate = String.valueOf(firstEntry.get("meterInstallationDate"));
+
+				        if (roadCuttingInfo != null && !roadCuttingInfo.isEmpty()) {
+				            Map<String, Object> firstRoadInfo = roadCuttingInfo.get(0); // Get the first map from the list
+
+				            // Extract Road Type and Length safely
+				            roadType = firstRoadInfo.get("roadType") != null ? firstRoadInfo.get("roadType").toString() : null;
+				            roadLength = firstRoadInfo.get("roadCuttingArea") != null ? firstRoadInfo.get("roadCuttingArea").toString() : null;
+				        }   
+			        }
+				}
+
+				
+				if (Curl_details != null && Curl_details instanceof List) {
+				    List<Map<String, Object>> detailsList = (List<Map<String, Object>>) Curl_details;
+				    for (Map<String, Object> item : detailsList) {
+				    	
+				        if ("Active".equals(item.get("status"))) {
+				        	propertyId = (String) item.get("propertyId"); 
+				        }
+				    }
+				}
+				
+				Object curlDetailProperty = paymentRepository.Curl_Property(
+					    requestInfo,
+					    paymentSearchCriteria.getTenantId(),
+					    propertyId 
+					);
+				
+				if (curlDetailProperty instanceof List) {
+				    List<Map<String, Object>> tempList = (List<Map<String, Object>>) curlDetailProperty;
+				    if (!tempList.isEmpty()) {
+				        Map<String, Object> temporaryList = tempList.get(0);
+
+				        
+				        List<Map<String, Object>> ownersList = (List<Map<String, Object>>) temporaryList.get("owners");
+				        
+				        
+				        Map<String, Object> addressMap = (Map<String, Object>) temporaryList.get("address");
+				        
+				        String doorNo = addressMap.get("doorNo") != null ? addressMap.get("doorNo").toString() : "";
+				        String buildingName = addressMap.get("buildingName") != null ? addressMap.get("buildingName").toString() : "";
+				        String street = addressMap.get("street") != null ? addressMap.get("street").toString() : "";
+				        String landmark = addressMap.get("landmark") != null ? addressMap.get("landmark").toString() : "" ;
+				        String region = addressMap.get("region") != null ? addressMap.get("region").toString() : "";
+				        String city = addressMap.get("city") != null ? addressMap.get("city").toString() : "";
+				        String district = addressMap.get("district") != null ? addressMap.get("district").toString() : "";
+				        String state = addressMap.get("state") != null ? addressMap.get("state").toString() : "";
+				        String pincode = addressMap.get("pincode") != null ? addressMap.get("pincode").toString() : "";
+				        
+				        address = doorNo + ", " + buildingName + ", " + street + ", " + landmark + ", " + region + ", " 
+		                        + city + ", " + district + ", " + state + ", " + pincode;
+				        
+				        
+			        	usageCategory = String.valueOf(tempList.get(0).get("usageCategory"));
+			        	landArea = String.valueOf(tempList.get(0).get("landArea"));	   
+				        	
+			        	if (ownersList != null && !ownersList.isEmpty()) {
+			        	    for (Map<String, Object> owner : ownersList ) {
+			        	    	String mobileNo = (String) owner.get("mobileNumber");
+			        	        String name = (String) owner.get("name");
+			        	        if (name != null) {
+			        	            ownerName.add(name);
+			        	            mobileNumber.add(mobileNo);
+			        	        }
+			        	    }
+			        	}
+			        }     
+				    	
+				    // Set values
+				    payments.get(0).setUsageCategory(usageCategory);
+				    payments.get(0).setOwnername(ownerName);
+				    payments.get(0).setOwnerNumber(mobileNumber);
+				    payments.get(0).setAddress(address);
+				    payments.get(0).setLandarea(landArea);
+				    payments.get(0).setPropertyId(propertyId);
+				    
+				    payments.get(0).setMeterMake(meterMake);
+			        payments.get(0).setAvarageMeterReading(avarageMeterReading);
+			        payments.get(0).setInitialMeterReading(initialMeterReading);
+			        payments.get(0).setLedgerId(ledgerId);
+			        payments.get(0).setGroupId(groups);
+			        payments.get(0).setConnectionCategory(conncat);
+			        payments.get(0).setRoadtype(roadType);
+			        payments.get(0).setRoadlength(roadLength);
+			        
+			        payments.get(0).setMeterinstallationDate(meterInstallationDate);
+			        payments.get(0).setMeterId(meterId);
+				    } 
+				
+							
+			}
 		}
+		return payments;
 	}
 
 	public Long getpaymentcountForBusiness(String tenantId, String businessService) {
@@ -200,7 +346,8 @@ public class PaymentService {
 			payment.setPayerId(payerId);
 		paymentRepository.savePayment(payment);
 
-		producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
+		String key = paymentRequest.getPayment().getMobileNumber() + paymentRequest.getPayment().getId();
+		producer.producer(applicationProperties.getCreatePaymentTopicName(), key ,paymentRequest);
 
 		return payment;
 	}
@@ -208,39 +355,54 @@ public class PaymentService {
 	private void setPropertyData(String receiptnumber, List<Payment> payments, String businessservice) {
 		List<String> consumercode = paymentRepository.fetchConsumerCodeByReceiptNumber(receiptnumber);
 		String connectionno = consumercode.get(0);
-		List<String> status = paymentRepository.fetchPropertyDetail(connectionno, businessservice);
-		if(!status.isEmpty())
-		{
-				
-		HashMap<String, String> additionalDetail = new HashMap<>();
-		if (!StringUtils.isEmpty(status.get(0)))
-			additionalDetail.put("oldConnectionno", status.get(0));
-		if (!StringUtils.isEmpty(status.get(1)))
-			additionalDetail.put("landArea", status.get(1));
-		if (!StringUtils.isEmpty(status.get(2)))
-			additionalDetail.put("usageCategory", status.get(2));
-		if (!StringUtils.isEmpty(status.get(3)))
-		   payments.get(0).setPropertyId(status.get(3));
-		if (!StringUtils.isEmpty(status.get(4)))
-		payments.get(0).setAddress(status.get(4));
-		if (!StringUtils.isEmpty(status.get(2)))
-		payments.get(0).setUsageCategory(status.get(2));
-		
-		/////
-		
-		
-		if (!StringUtils.isEmpty(status.get(5)))
-			payments.get(0).setMeterinstallationDate(status.get(5));
-		if (!StringUtils.isEmpty(status.get(6)))
-			payments.get(0).setMeterId(status.get(6));
-		if (!StringUtils.isEmpty(status.get(8)))
-			payments.get(0).setAvarageMeterReading(status.get(8));
-		if (!StringUtils.isEmpty(status.get(9)))
-			payments.get(0).setInitialMeterReading(status.get(9));
-		if (!StringUtils.isEmpty(status.get(7)))
-			payments.get(0).setMeterMake(status.get(7));
-		
-		payments.get(0).setPropertyDetail(additionalDetail);}
+		PropertyDetail status = paymentRepository.fetchPropertyDetail(connectionno, businessservice);
+
+		if (status != null) {
+			HashMap<String, String> additionalDetail = new HashMap<>();
+
+			if (!StringUtils.isEmpty(status.getOldConnectionNo())) {
+				additionalDetail.put("oldConnectionno", status.getOldConnectionNo());
+			}
+
+			if (!StringUtils.isEmpty(status.getPlotSize())) {
+				additionalDetail.put("landArea", status.getPlotSize());
+			}
+
+			if (!StringUtils.isEmpty(status.getUsageCategory())) {
+				additionalDetail.put("usageCategory", status.getUsageCategory());
+				payments.get(0).setUsageCategory(status.getUsageCategory());
+			}
+
+			if (!StringUtils.isEmpty(status.getPropertyId())) {
+				payments.get(0).setPropertyId(status.getPropertyId());
+			}
+
+			if (!StringUtils.isEmpty(status.getAddress())) {
+				payments.get(0).setAddress(status.getAddress());
+			}
+
+			if (!StringUtils.isEmpty(status.getMeterDetails())) {
+				payments.get(0).setMeterinstallationDate(status.getMeterDetails());
+			}
+
+			if (!StringUtils.isEmpty(status.getMeterId())) {
+				payments.get(0).setMeterId(status.getMeterId());
+			}
+
+			if (!StringUtils.isEmpty(status.getAverageMeterReading())) {
+				payments.get(0).setAvarageMeterReading(status.getAverageMeterReading());
+			}
+
+			if (!StringUtils.isEmpty(status.getInitialMeterReading())) {
+				payments.get(0).setInitialMeterReading(status.getInitialMeterReading());
+			}
+
+			if (!StringUtils.isEmpty(status.getMeterMake())) {
+				payments.get(0).setMeterMake(status.getMeterMake());
+			}
+
+			payments.get(0).setPropertyDetail(additionalDetail);
+		}
 	}
 
 	/**
@@ -291,7 +453,8 @@ public class PaymentService {
 				Collections.singletonList(paymentRequest.getPayment()), paymentRequest.getRequestInfo());
 
 		paymentRepository.updatePayment(validatedPayments);
-		producer.producer(applicationProperties.getUpdatePaymentTopicName(),
+		String key = paymentRequest.getPayment().getMobileNumber() + paymentRequest.getPayment().getId();
+		producer.producer(applicationProperties.getUpdatePaymentTopicName(), key,
 				new PaymentRequest(paymentRequest.getRequestInfo(), paymentRequest.getPayment()));
 
 		return validatedPayments;
@@ -390,5 +553,5 @@ public class PaymentService {
 
 		return payment;
 	}
-
+	
 }

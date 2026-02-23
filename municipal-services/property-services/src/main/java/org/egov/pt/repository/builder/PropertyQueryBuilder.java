@@ -1,9 +1,13 @@
 package org.egov.pt.repository.builder;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.time.Instant;
 import org.egov.pt.config.PropertyConfiguration;
@@ -11,12 +15,18 @@ import org.egov.pt.consumer.NotificationConsumer;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.PropertyCriteria;
 import org.egov.pt.models.enums.Status;
+import org.egov.pt.service.EnrichmentService;
+import org.egov.pt.util.PTConstants;
+import org.egov.pt.util.PropertyUtil;
 import org.egov.pt.web.contracts.PropertyRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+
+
+import org.egov.common.contract.request.RequestInfo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +36,12 @@ public class PropertyQueryBuilder {
 
 	@Autowired
 	private PropertyConfiguration config;
+	
+	@Autowired 
+	private EnrichmentService enrichmentService;
+	
+	@Autowired
+	private PropertyUtil propertyUtil;
 
 	private static final String SELECT = "SELECT ";
 	private static final String INNER_JOIN = "INNER JOIN";
@@ -197,16 +213,19 @@ public class PropertyQueryBuilder {
 	 * @return
 	 */
 	public String getPropertySearchQuery(PropertyCriteria criteria, List<Object> preparedStmtList,
-			Boolean isPlainSearch, Boolean onlyIds) {
+			Boolean isPlainSearch, Boolean onlyIds, RequestInfo requestInfo) {
 
 		Boolean isEmpty = CollectionUtils.isEmpty(criteria.getPropertyIds())
 				&& CollectionUtils.isEmpty(criteria.getAcknowledgementIds())
+			     && CollectionUtils.isEmpty(criteria.getVasikaNos())        // ✅ added
+
 				&& CollectionUtils.isEmpty(criteria.getOldpropertyids()) && CollectionUtils.isEmpty(criteria.getUuids())
 				&& null == criteria.getMobileNumber() && null == criteria.getName() && null == criteria.getDoorNo()
 				&& null == criteria.getOldPropertyId() && null == criteria.getDocumentNumbers()
 				&& null == criteria.getLocality() && null == criteria.getPropertyType()
 				&& (null == criteria.getFromDate() && null == criteria.getToDate())
-				&& CollectionUtils.isEmpty(criteria.getCreationReason());
+				&& CollectionUtils.isEmpty(criteria.getCreationReason())
+				&& null == criteria.getSurveyId() ;
 
 		if (isEmpty)
 			throw new CustomException("EG_PT_SEARCH_ERROR", " No criteria given for the property search");
@@ -222,10 +241,20 @@ public class PropertyQueryBuilder {
 
 		} else
 			builder = new StringBuilder(QUERY);
-
+		
+		
 		if (isPlainSearch) {
-
-			Set<String> tenantIds = criteria.getTenantIds();
+			Object tenantMapping = enrichmentService.fetchDataFromMdms(requestInfo, config.getStateLevelTenantId(), PTConstants.MDMS_TENANT_MAPPING_MODLENAME , PTConstants.MDMS_TENANT_MAPPING_MASTERNAME, null);
+			Map<String, String> tenantMappingMap = propertyUtil.filterTenantMapping(tenantMapping);
+			
+			Set<String> tenantIds = new HashSet<>();
+			if(criteria.getTenantIds() != null) {
+				for(String tenantId : criteria.getTenantIds()) {
+					String mappedTenantValue = tenantMappingMap.get(tenantId);
+					tenantIds.add(mappedTenantValue);
+				}
+			}
+			
 			if (!CollectionUtils.isEmpty(tenantIds)) {
 				addClauseIfRequired(preparedStmtList, builder);
 				builder.append("property.tenantid IN (").append(createQuery(tenantIds)).append(")");
@@ -233,8 +262,9 @@ public class PropertyQueryBuilder {
 				// appendAndQuery = true;
 			}
 		} else {
-			String tenantId = criteria.getTenantId();
 
+			String tenantId = propertyUtil.getTenantIdMapping(requestInfo, config.getStateLevelTenantId(),
+					criteria.getTenantId());
 			if (tenantId != null) {
 				appendAndQuery = true;
 				if (tenantId.equalsIgnoreCase(config.getStateLevelTenantId())) {
@@ -318,6 +348,21 @@ public class PropertyQueryBuilder {
 			appendAndQuery = true;
 		}
 
+		
+		Set<String> vasikaNos = criteria.getVasikaNos();
+		if (!CollectionUtils.isEmpty(vasikaNos)) {
+
+		    addClauseIfRequired(preparedStmtList, builder);
+
+		    builder.append(
+		        " (property.additionaldetails ->> 'vasikaNo') IN ("
+		    ).append(createQuery(vasikaNos)).append(")");
+
+		    addToPreparedStatementWithUpperCase(preparedStmtList, vasikaNos);
+		    appendAndQuery = true;
+		}
+
+		
 		Set<String> acknowledgementIds = criteria.getAcknowledgementIds();
 		if (!CollectionUtils.isEmpty(acknowledgementIds)) {
 
@@ -357,6 +402,12 @@ public class PropertyQueryBuilder {
 		addClauseIfRequired(preparedStmtList, builder);
 		builder.append("owner.status = ?");
 		preparedStmtList.add(Status.ACTIVE.toString());
+		
+		if (null != criteria.getSurveyId()) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append("property.surveyid = ?");
+			preparedStmtList.add(criteria.getSurveyId());
+		}
 
 		String withClauseQuery = WITH_CLAUSE_QUERY.replace(REPLACE_STRING, builder);
 		if (onlyIds || criteria.getIsRequestForCount())
@@ -364,7 +415,8 @@ public class PropertyQueryBuilder {
 		else
 			return addPaginationWrapper(withClauseQuery, preparedStmtList, criteria);
 	}
-
+	
+	
 	public String getPropertySearchQuerytemp(Property criteria, List<Object> preparedStmtList,
 			Boolean isPlainSearch, Boolean onlyIds) {
 
@@ -481,7 +533,13 @@ public class PropertyQueryBuilder {
 			builder.append("property.id IN (").append(createQuery(uuids)).append(")");
 			addToPreparedStatement(preparedStmtList, uuids);
 		}
-		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+
+        if (criteria.getPlainSearchOffset() != null && criteria.getPlainSearchOffset()) {
+            return builder.toString();
+        } else {
+            return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+        }
+
 	}
 
 	public String getPropertyIdsQuery(Set<String> ownerIds, String tenantId, List<Object> preparedStmtList) {

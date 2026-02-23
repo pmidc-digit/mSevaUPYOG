@@ -197,7 +197,11 @@ public class DemandQueryBuilder {
 			demandQuery.append("dmd.ispaymentcompleted = ?");
 			preparedStatementValues.add(demandCriteria.getIsPaymentCompleted());
 		}
-		
+		//REVERTING BACK 
+		// else {
+		// 	addAndClause(demandQuery);
+		// 	demandQuery.append("dmd.ispaymentcompleted = false");
+		// }
 		if (demandCriteria.getPeriodFrom() != null) {
 			addAndClause(demandQuery);
 			demandQuery.append("dmd.taxPeriodFrom >= ?");

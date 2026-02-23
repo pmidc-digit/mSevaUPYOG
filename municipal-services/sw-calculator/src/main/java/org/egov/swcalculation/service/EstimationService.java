@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,13 +51,11 @@ public class EstimationService {
 	private SWCalculationUtil sWCalculationUtil;
 
 	/**
-	 * Generates a List of Tax head estimates with tax head code, tax head
-	 * category and the amount to be collected for the key.
+	 * Generates a List of Tax head estimates with tax head code, tax head category
+	 * and the amount to be collected for the key.
 	 *
-	 * @param criteria
-	 *            criteria based on which calculation will be done.
-	 * @param requestInfo
-	 *            request info from incoming request.
+	 * @param criteria    criteria based on which calculation will be done.
+	 * @param requestInfo request info from incoming request.
 	 * @return Map<String, Double>
 	 */
 	@SuppressWarnings("rawtypes")
@@ -71,7 +70,8 @@ public class EstimationService {
 		}
 		if (criteria.getSewerageConnection() == null || StringUtils.isEmpty(criteria.getConnectionNo())) {
 			StringBuilder builder = new StringBuilder();
-			builder.append("Sewerage Connection are not present for ").append(StringUtils.isEmpty(criteria.getConnectionNo()) ? "" : criteria.getConnectionNo())
+			builder.append("Sewerage Connection are not present for ")
+					.append(StringUtils.isEmpty(criteria.getConnectionNo()) ? "" : criteria.getConnectionNo())
 					.append(" connection no");
 			throw new CustomException("INVALID_CONNECTION_ID", builder.toString());
 		}
@@ -106,24 +106,21 @@ public class EstimationService {
 				.estimateAmount(sewerageCharge.setScale(2, 2)).build());
 
 		/// DISPOSAL DISCHARGE CHARGES
-		HashMap<String,String> add_details= ((HashMap<String,String>)connection.getAdditionalDetails());
-		if(add_details.containsKey("dischargeConnection"))
-		{
+		HashMap<String, String> add_details = ((HashMap<String, String>) connection.getAdditionalDetails());
+		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
 
-			if(add_details.get("dischargeConnection").equalsIgnoreCase("true"))
-			{
-				//BigDecimal disposal_charge=new BigDecimal(200.0);
+			if (add_details.get("dischargeConnection").equalsIgnoreCase("true")) {
+				// BigDecimal disposal_charge=new BigDecimal(200.0);
 				BigDecimal disposal_charge;
-				try
-				{
-				if(add_details.containsKey("dischargeFee"))  // if dischargeFee attribute is present in additionalDetails then use give dischargeFee else fix dischagefee to 200
-					disposal_charge=new BigDecimal(add_details.get("dischargeFee"));
-				else
-					disposal_charge=new BigDecimal(200.0);
-				}
-				catch(Exception ex)
-				{
-					disposal_charge=new BigDecimal(200.0);
+				try {
+					if (add_details.containsKey("dischargeFee")) // if dischargeFee attribute is present in
+																	// additionalDetails then use give dischargeFee else
+																	// fix dischagefee to 200
+						disposal_charge = new BigDecimal(add_details.get("dischargeFee"));
+					else
+						disposal_charge = new BigDecimal(200.0);
+				} catch (Exception ex) {
+					disposal_charge = new BigDecimal(200.0);
 				}
 				estimates.add(TaxHeadEstimate.builder().taxHeadCode("SW_DISCHARGE_CHARGES")
 						.estimateAmount(disposal_charge.setScale(2, 2)).build());
@@ -142,124 +139,117 @@ public class EstimationService {
 	}
 
 	/**
-	 * method to do a first level filtering on the slabs based on the values
-	 * present in the Sewerage Details
+	 * method to do a first level filtering on the slabs based on the values present
+	 * in the Sewerage Details
 	 */
 
 	public BigDecimal getSewerageEstimationCharge(SewerageConnection sewerageConnection, CalculationCriteria criteria,
-			Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request) {
-		BigDecimal sewerageCharge = BigDecimal.ZERO;
-		HashMap<String, Object> additionalDetail = new HashMap<>();
-		additionalDetail = mapper.convertValue(sewerageConnection.getAdditionalDetails(), HashMap.class);
-		String billingType = (String) additionalDetail.getOrDefault(SWCalculationConstant.BILLINGTYPE, null);
-		if(billingType==null|| billingType=="" || billingType.isEmpty())
-			billingType="STANDARD";
-		if (sewerageConnection.getConnectionType().equalsIgnoreCase(SWCalculationConstant.nonMeterdConnection)
-				&& billingType.equalsIgnoreCase(SWCalculationConstant.CUSTOM)) {
-			Integer billingAmountInt = (Integer) additionalDetail.getOrDefault(SWCalculationConstant.CUSTOM_BILL_AMOUNT, 0);
-			sewerageCharge = BigDecimal.valueOf(Long.valueOf(billingAmountInt)).setScale(2, 2);
-			return sewerageCharge;
-//			sewerageCharge = (BigDecimal) additionalDetail.getOrDefault(SWCalculationConstant.CUSTOM_BILL_AMOUNT,
-//					BigDecimal.ZERO);
-		}
-		
-		if (billingSlabMaster.get(SWCalculationConstant.SW_BILLING_SLAB_MASTER) == null)
-			throw new CustomException("INVALID_BILLING_SLAB", "Billing Slab are Empty");
-		List<BillingSlab> mappingBillingSlab;
-		try {
-			mappingBillingSlab = mapper.readValue(
-					billingSlabMaster.get(SWCalculationConstant.SW_BILLING_SLAB_MASTER).toJSONString(),
-					mapper.getTypeFactory().constructCollectionType(List.class, BillingSlab.class));
-		} catch (IOException e) {
-			throw new CustomException("PARSING_ERROR", " Billing Slab can not be parsed!");
-		}
-		JSONObject calculationAttributeMaster = new JSONObject();
-		calculationAttributeMaster.put(SWCalculationConstant.CALCULATION_ATTRIBUTE_CONST,
-				billingSlabMaster.get(SWCalculationConstant.CALCULATION_ATTRIBUTE_CONST));
-		String calculationAttribute = getCalculationAttribute(calculationAttributeMaster,
-				sewerageConnection.getConnectionType());
-		SewerageConnectionRequest sewerageConnectionRequest = SewerageConnectionRequest.builder()
-				.sewerageConnection(sewerageConnection).requestInfo(request.getRequestInfo()).build();
-		Property property = sWCalculationUtil.getProperty(sewerageConnectionRequest);
-		log.info("billingSlabMaster: "+billingSlabMaster);
-		log.info("mappingBillingSlab:"+mappingBillingSlab+"calculationAttribute: "+calculationAttribute+" calculationAttributeMaster {}:",calculationAttributeMaster);
-		List<BillingSlab> billingSlabs = getSlabsFiltered(sewerageConnectionRequest, mappingBillingSlab, calculationAttribute,
-				request.getRequestInfo(),property);
+	        Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request) {
 
-		if (billingSlabs == null || billingSlabs.isEmpty())
-			throw new CustomException("INVALID_BILLING_SLAB", "Billing Slab are Empty");
-//		if (billingSlabs.size() > 1)
-//			throw new CustomException("INVALID_BILLING_SLAB",
-//					"More than one billing slab found");
-		// Add Billing Slab Ids
-		billingSlabIds.add(billingSlabs.get(0).getId());
+	    BigDecimal sewerageCharge = BigDecimal.ZERO;
+	    HashMap<String, Object> additionalDetail = mapper.convertValue(sewerageConnection.getAdditionalDetails(), HashMap.class);
+	    String billingType = (String) additionalDetail.getOrDefault(SWCalculationConstant.BILLINGTYPE, "STANDARD");
 
-		// Sewerage Charge Calculation
-		Double totalUnits = getCalculationUnit(sewerageConnection, calculationAttribute, criteria,property);
-//		if (totalUnits == 0.0)
-//			return sewerageCharge;
-		BillingSlab billSlab = billingSlabs.get(0);
-		if (isRangeCalculation(calculationAttribute)) {
+	    if (SWCalculationConstant.nonMeterdConnection.equalsIgnoreCase(sewerageConnection.getConnectionType())
+	            && SWCalculationConstant.CUSTOM.equalsIgnoreCase(billingType)) {
+	        Integer billingAmountInt = (Integer) additionalDetail.getOrDefault(SWCalculationConstant.CUSTOM_BILL_AMOUNT, 0);
+	        return BigDecimal.valueOf(Long.valueOf(billingAmountInt)).setScale(2, 2);
+	    }
 
-			 String waterSubUsageType = (String) additionalDetail
-					.getOrDefault(SWCalculationConstant.WATER_SUBUSAGE_TYPE, null);
-if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
-	{
-	if (property.getUsageCategory().equalsIgnoreCase("RESIDENTIAL"))
-		waterSubUsageType="USAGE_DOM_NA";
-	else if (property.getUsageCategory().equalsIgnoreCase("COMMERCIAL"))
-		waterSubUsageType="USAGE_COMM_NA";
-	else if (property.getUsageCategory().equalsIgnoreCase("INDUSTRIAL"))
-		waterSubUsageType="USAGE_COMM_NA";
-	else if (property.getUsageCategory().equalsIgnoreCase("INSTITUTIONAL"))
-		waterSubUsageType="USAGE_COMM_NA";
+	    if (billingSlabMaster.get(SWCalculationConstant.SW_BILLING_SLAB_MASTER) == null)
+	        throw new CustomException("INVALID_BILLING_SLAB", "Billing Slab are Empty");
+
+	    List<BillingSlab> mappingBillingSlab;
+	    try {
+	        mappingBillingSlab = mapper.readValue(
+	                billingSlabMaster.get(SWCalculationConstant.SW_BILLING_SLAB_MASTER).toJSONString(),
+	                mapper.getTypeFactory().constructCollectionType(List.class, BillingSlab.class));
+	    } catch (IOException e) {
+	        throw new CustomException("PARSING_ERROR", "Billing Slab can not be parsed!");
+	    }
+
+	    JSONObject calculationAttributeMaster = new JSONObject();
+	    calculationAttributeMaster.put(SWCalculationConstant.CALCULATION_ATTRIBUTE_CONST,
+	            billingSlabMaster.get(SWCalculationConstant.CALCULATION_ATTRIBUTE_CONST));
+	    String calculationAttribute = getCalculationAttribute(calculationAttributeMaster,
+	            sewerageConnection.getConnectionType());
+
+	    SewerageConnectionRequest sewerageConnectionRequest = SewerageConnectionRequest.builder()
+	            .sewerageConnection(sewerageConnection)
+	            .requestInfo(request.getRequestInfo())
+	            .build();
+
+	    Property property = sWCalculationUtil.getProperty(sewerageConnectionRequest);
+
+	    List<BillingSlab> billingSlabs = getSlabsFiltered(sewerageConnectionRequest, mappingBillingSlab,
+	            calculationAttribute, request.getRequestInfo(), property);
+
+	    if (billingSlabs == null || billingSlabs.isEmpty())
+	        throw new CustomException("INVALID_BILLING_SLAB", "Billing Slab are Empty");
+
+	    Double totalUnits = getCalculationUnit(sewerageConnection, calculationAttribute, criteria, property);
+
+	    // Track all slab IDs and find first applicable slab
+	    BillingSlab applicableBillSlab = null;
+	    Slab applicableSlab = null;
+
+	    for (BillingSlab billSlab : billingSlabs) {
+	        billingSlabIds.add(billSlab.getId()); // track slab IDs
+
+	        String waterSubUsageType = (String) additionalDetail.getOrDefault(SWCalculationConstant.WATER_SUBUSAGE_TYPE, null);
+	        if (waterSubUsageType == null || waterSubUsageType.isEmpty()) {
+	            String usageCategory = property.getUsageCategory();
+	            if ("RESIDENTIAL".equalsIgnoreCase(usageCategory)) {
+	                waterSubUsageType = "USAGE_DOM_NA";
+	            } else if ("COMMERCIAL".equalsIgnoreCase(usageCategory)
+	                    || "INDUSTRIAL".equalsIgnoreCase(usageCategory)
+	                    || "INSTITUTIONAL".equalsIgnoreCase(usageCategory)) {
+	                waterSubUsageType = "USAGE_COMM_NA";
+	            }
+	        }
+
+	        for (Slab slab : billSlab.getSlabs()) {
+	            boolean slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
+	                    && slab.getEffectiveFrom() <= System.currentTimeMillis()
+	                    && slab.getEffectiveTo() >= System.currentTimeMillis()
+	                    && (waterSubUsageType == null || waterSubUsageType.equalsIgnoreCase(billSlab.getWaterSubUsageType()));
+
+	            if (slabCondition && applicableBillSlab == null) {
+	                applicableBillSlab = billSlab;
+	                applicableSlab = slab;
+	                break;
+	            }
+	        }
+	    }
+
+	    if (applicableBillSlab != null && applicableSlab != null) {
+	        sewerageCharge = BigDecimal.valueOf(applicableSlab.getCharge());
+	        request.setTaxPeriodFrom(criteria.getFrom());
+	        request.setTaxPeriodTo(criteria.getTo());
+
+	        if (request.getTaxPeriodFrom() > 0 && request.getTaxPeriodTo() > 0
+	                && sewerageConnection.getConnectionExecutionDate() > request.getTaxPeriodFrom()) {
+
+	            long milliBetweenConnDate = Math.abs(request.getTaxPeriodTo() - sewerageConnection.getConnectionExecutionDate());
+	            long milliBetweenQuarter = Math.abs(request.getTaxPeriodTo() - request.getTaxPeriodFrom());
+
+	            long daysConn = TimeUnit.MILLISECONDS.toDays(milliBetweenConnDate) + 1;
+	            long daysQuarter = TimeUnit.MILLISECONDS.toDays(milliBetweenQuarter) + 1;
+
+	            sewerageCharge = BigDecimal.valueOf(daysConn * (applicableSlab.getCharge() / daysQuarter))
+	                    .setScale(2, 2);
+	        }
+
+	        if (sewerageCharge.doubleValue() < applicableBillSlab.getMinimumCharge()) {
+	            sewerageCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+	        }
+	    } else if (!billingSlabs.isEmpty()) {
+	        sewerageCharge = BigDecimal.valueOf(billingSlabs.get(0).getMinimumCharge());
+	    }
+
+	    return sewerageCharge;
 	}
-			for (Slab slab : billSlab.getSlabs()) {
 
-				boolean slabCondition = false;
-
-				if (waterSubUsageType != null) {
-					slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
-							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
-							&& slab.getEffectiveTo() >= System.currentTimeMillis()
-							&& waterSubUsageType.equalsIgnoreCase(billSlab.getWaterSubUsageType());
-				} else {
-					slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
-							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
-							&& slab.getEffectiveTo() >= System.currentTimeMillis();
-				}
-
-				if (slabCondition) {
-					sewerageCharge = BigDecimal.valueOf((slab.getCharge()));
-					// request.setTaxPeriodFrom(criteria.getFrom());
-					// request.setTaxPeriodTo(criteria.getTo());
-					if (request.getTaxPeriodFrom() > 0 && request.getTaxPeriodTo() > 0) {
-						if (sewerageConnection.getConnectionExecutionDate() > request.getTaxPeriodFrom()) {
-							long milli_sec_btw_conn_date = Math.abs(request.getTaxPeriodTo() - sewerageConnection.getConnectionExecutionDate());
-							long milli_sec_btw_quarter = Math.abs(request.getTaxPeriodTo() - request.getTaxPeriodFrom());
-							//Converting milli seconds to days
-						    long days_conn_date = TimeUnit.MILLISECONDS.toDays(milli_sec_btw_conn_date) + 1;
-						    long days_quarter = TimeUnit.MILLISECONDS.toDays(milli_sec_btw_quarter) + 1;
-	
-							//sewerageCharge = BigDecimal.valueOf((totalUnits * slab.getCharge() * daysDifference));
-							//sewerageCharge = sewerageCharge.add(BigDecimal.valueOf(days_conn_date * (slab.getCharge() / days_quarter)).setScale(2, 2));
-							sewerageCharge = BigDecimal.valueOf(days_conn_date * (slab.getCharge() / days_quarter)).setScale(2, 2);
-						}
-
-					}
-
-					if (billSlab.getMinimumCharge() > sewerageCharge.doubleValue()) {
-						sewerageCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
-					}
-					break;
-				}
-			}
-
-		} else {
-			sewerageCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
-		}
-		return sewerageCharge;
-	}
 
 	private String getCalculationAttribute(Map<String, Object> calculationAttributeMap, String connectionType) {
 		if (calculationAttributeMap == null)
@@ -289,11 +279,12 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 
 	/**
 	 *
-	 * @param assessmentYear - Assessment Year
-	 * @param sewerageCharge - Sewerage Charge
-	 * @param sewerageConnection - Sewerage connection Object
-	 * @param timeBasedExemptionMasterMap - List of time based exemptions master data
-	 * @param requestInfoWrapper - Request Info Object
+	 * @param assessmentYear              - Assessment Year
+	 * @param sewerageCharge              - Sewerage Charge
+	 * @param sewerageConnection          - Sewerage connection Object
+	 * @param timeBasedExemptionMasterMap - List of time based exemptions master
+	 *                                    data
+	 * @param requestInfoWrapper          - Request Info Object
 	 * @return - Returns list of TaxHead estimates
 	 */
 	@SuppressWarnings("unused")
@@ -310,23 +301,22 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 	/**
 	 * 
 	 * @param sewerageConnection - Sewerage Connection Object
-	 * @param billingSlabs - List of Billing Slabs
-	 * @param requestInfo - Request Info Object
+	 * @param billingSlabs       - List of Billing Slabs
+	 * @param requestInfo        - Request Info Object
 	 * @return List of billing slab based on matching criteria
 	 */
-	private List<BillingSlab> getSlabsFiltered(SewerageConnectionRequest sewerageConnection, List<BillingSlab> billingSlabs,
-			String calculationAttribute, RequestInfo requestInfo, Property property) {
+	private List<BillingSlab> getSlabsFiltered(SewerageConnectionRequest sewerageConnection,
+			List<BillingSlab> billingSlabs, String calculationAttribute, RequestInfo requestInfo, Property property) {
 
-		
 //		SewerageConnectionRequest sewerageConnectionRequest = SewerageConnectionRequest.builder()
 //				.sewerageConnection(sewerageConnection).requestInfo(requestInfo).build();
 //		property = sWCalculationUtil.getProperty(sewerageConnectionRequest);
-		
 
 		// get billing Slab
 		log.debug(" the slabs count : " + billingSlabs.size());
 		final String propertyType = (property.getUsageCategory() != null)
-				? property.getUsageCategory().split("\\.")[property.getUsageCategory().split("\\.").length - 1] : "";
+				? property.getUsageCategory().split("\\.")[property.getUsageCategory().split("\\.").length - 1]
+				: "";
 		HashMap<String, Object> additionalDetail = new HashMap<>();
 		additionalDetail = mapper.convertValue(sewerageConnection.getSewerageConnection().getAdditionalDetails(),
 				HashMap.class);
@@ -334,7 +324,7 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 		final String buildingType = SWCalculationConstant.PROPERTY_TYPE_MIXED.equalsIgnoreCase(propertyType)
 				? (String) additionalDetail.getOrDefault(SWCalculationConstant.UNIT_USAGE_TYPE_KEY, null)
 				: propertyType;
-	
+
 		final String connectionType = sewerageConnection.getSewerageConnection().getConnectionType();
 
 		return billingSlabs.stream().filter(slab -> {
@@ -342,40 +332,50 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 			boolean isConnectionTypeMatching = slab.getConnectionType().equalsIgnoreCase(connectionType);
 			boolean isCalculationAttributeMatching = slab.getCalculationAttribute()
 					.equalsIgnoreCase(calculationAttribute);
-			
-			log.info("BuildingTypeMatching: " + slab.getBuildingType() + "buildingType: " + buildingType +
-					"connectionType: " + connectionType + "calculationAttribute: " + calculationAttribute);
 
-			log.info("isBuildingTypeMatching: " +isBuildingTypeMatching+" isConnectionTypeMatching: "
-					+isConnectionTypeMatching+" isCalculationAttributeMatching: "+isCalculationAttributeMatching);
+			log.info("BuildingTypeMatching: " + slab.getBuildingType() + "buildingType: " + buildingType
+					+ "connectionType: " + connectionType + "calculationAttribute: " + calculationAttribute);
+
+			log.info("isBuildingTypeMatching: " + isBuildingTypeMatching + " isConnectionTypeMatching: "
+					+ isConnectionTypeMatching + " isCalculationAttributeMatching: " + isCalculationAttributeMatching);
 			return isBuildingTypeMatching && isConnectionTypeMatching && isCalculationAttributeMatching;
 		}).collect(Collectors.toList());
 	}
 
 	private Double getCalculationUnit(SewerageConnection sewerageConnection, String calculationAttribute,
-			CalculationCriteria criteria,Property property) {
+			CalculationCriteria criteria, Property property) {
 		Double totalUnite = 0.0;
 		if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.meteredConnectionType)) {
 			return totalUnite;
 		} else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(SWCalculationConstant.plotBasedConst)) {
-			if (property.getLandArea() != null && property.getLandArea() > 0)
-				return property.getLandArea();
-			return new Double(sewerageConnection.getNoOfToilets());
-		} else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
+			return (property.getLandArea() != null && property.getLandArea() > 0) 
+					? property.getLandArea() 
+					: (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) 
+					? property.getSuperBuiltUpArea().doubleValue() 
+					: new Double(sewerageConnection.getNoOfToilets());
+		}
+		
+		else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
+				&& calculationAttribute.equalsIgnoreCase(SWCalculationConstant.seatBased)) {
+			if (sewerageConnection.getNoOfToilets()>0)
+				return new Double(sewerageConnection.getNoOfToilets());
+			
+		}
+		
+		else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(SWCalculationConstant.noOfWaterClosets)) {
 			if (sewerageConnection.getNoOfWaterClosets() == null)
 				return totalUnite;
 			return new Double(sewerageConnection.getNoOfWaterClosets());
 		}
 		return totalUnite;
-	
+
 	}
 
 	/**
 	 * 
-	 * @param type
-	 *            will be calculation Attribute
+	 * @param type will be calculation Attribute
 	 * @return true if calculation Attribute is not Flat else false
 	 */
 	private boolean isRangeCalculation(String type) {
@@ -410,8 +410,8 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 
 	/**
 	 * 
-	 * @param criteria - Calculation Criteria Object
-	 * @param masterData - MDMS Master Data
+	 * @param criteria    - Calculation Criteria Object
+	 * @param masterData  - MDMS Master Data
 	 * @param requestInfo - Request Info Object
 	 * @return return all tax heads
 	 */
@@ -436,82 +436,133 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 //		BigDecimal otherCharges = BigDecimal.ZERO;
 //		if (feeObj.get(SWCalculationConstant.OTHER_CHARGE_CONST) != null) {
 //			otherCharges = new BigDecimal(feeObj.getAsNumber(SWCalculationConstant.OTHER_CHARGE_CONST).toString());
-		
-		String connection_propertyType=((HashMap<String,String>)criteria.getSewerageConnection().getAdditionalDetails()).get("waterSubUsageType");
-			
+
+		String connection_propertyType = ((HashMap<String, String>) criteria.getSewerageConnection()
+				.getAdditionalDetails()).get("waterSubUsageType");
+
 		BigDecimal securityDeposit = BigDecimal.ZERO;
-		String tenantid= criteria.getTenantId();
 
-		if(tenantid.equalsIgnoreCase("pb.patiala")) {
-			if (feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST) != null) {
-				if(connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL") )
-					securityDeposit = new BigDecimal(1000.00);
-				else 
-					securityDeposit = new BigDecimal(
-							feeObj.getAsNumber(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST).toString());
-			}
-		}else {
-		
 		if (feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST) != null) {
-			securityDeposit = new BigDecimal(
-					feeObj.getAsNumber(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST).toString());
-		}
-		}
-
-		// 
-		BigDecimal connectionFee = BigDecimal.ZERO;
-		
-		if (feeObj.get(SWCalculationConstant.SW_CONNECTION_FEE_CONST) != null) 
-		{
 
 			BigDecimal connection_plotSize;
-			if(property.getLandArea()==null || property.getLandArea().equals("")) // in case of shared proprties landArea may not be present
-				connection_plotSize=null;
-			else
-				connection_plotSize=new BigDecimal(property.getLandArea());
-			
-			if(connection_plotSize==null || connection_propertyType==null || connection_propertyType.equals(""))
-				connection_propertyType="DEFAULT"; // default connectionFee to be applied from mdms
-			else if(connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL") )
-				connection_propertyType="DOMESTIC";
-			else 
-				connection_propertyType="COMMERCIAL";
-			
-			
-			ArrayList conn_fees=(ArrayList)feeObj.get(SWCalculationConstant.SW_CONNECTION_FEE_CONST);
-			
-			BigDecimal fromPlotSize=BigDecimal.ZERO;
-			BigDecimal toPlotSize=BigDecimal.ZERO;
-			BigDecimal connectionFeeApplicable=BigDecimal.ZERO;
-			String propertyType=null;
-			
-			HashMap<String,String> connFeeMap=null;
-			for (int i=0;i<conn_fees.size();i++)
-			{
-			   connFeeMap=(HashMap<String,String>)conn_fees.get(i);
-			   fromPlotSize=new BigDecimal(connFeeMap.get("fromPlotSize"));
-			   toPlotSize=new BigDecimal(connFeeMap.get("toPlotSize"));
-			   //connectionFeeApplicable=new BigDecimal(connFeeMap.get("connectionFee"));
-			   propertyType=connFeeMap.get("usageType").toString();
-			   if(propertyType.equals(connection_propertyType) &&  connection_plotSize.compareTo(fromPlotSize)>0 && connection_plotSize.compareTo(toPlotSize)<=0)
-			   {
-				   connectionFeeApplicable=new BigDecimal(connFeeMap.get("connectionFee"));
-				   break; // matched the attributes and got valid connection fee
-			   }
-			   
-			}
-			
-			
-			//connectionFee = new BigDecimal(feeObj.getAsNumber(SWCalculationConstant.SW_CONNECTION_FEE_CONST).toString());
-			connectionFee=connectionFeeApplicable;
-		}
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+			        ? BigDecimal.ZERO
+			        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
 
+			if (connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals(""))
+				connection_propertyType = "DEFAULT"; // default securityDeposit to be applied from mdms
+			else if (connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL"))
+				connection_propertyType = "DOMESTIC";
+			else
+				connection_propertyType = "COMMERCIAL";
+
+			Object securityChargeObj = feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST);
+
+			if (securityChargeObj instanceof List) {
+				ArrayList sec_depo = (ArrayList) feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST);
+
+				BigDecimal fromPlotSize = BigDecimal.ZERO;
+				BigDecimal toPlotSize = BigDecimal.ZERO;
+				BigDecimal securityDepositApplicable = BigDecimal.ZERO;
+				String propertyType = null;
+
+				HashMap<String, String> secDepoMap = null;
+				for (int i = 0; i < sec_depo.size(); i++) {
+					secDepoMap = (HashMap<String, String>) sec_depo.get(i);
+					fromPlotSize = new BigDecimal(secDepoMap.get("fromPlotSize"));
+					toPlotSize = new BigDecimal(secDepoMap.get("toPlotSize"));
+					// securityDepositApplicable=new BigDecimal(secDepoMap.get("securityDeposit"));
+					propertyType = secDepoMap.get("usageType").toString();
+					if (propertyType.equals(connection_propertyType) && connection_plotSize.compareTo(fromPlotSize) > 0
+							&& connection_plotSize.compareTo(toPlotSize) <= 0) {
+						securityDepositApplicable = new BigDecimal(secDepoMap.get("securityDeposit"));
+						break; // matched the attributes and got valid connection fee
+					}
+
+				}
+
+				// securityDeposit = new
+				// BigDecimal(feeObj.getAsNumber(SWCalculationConstant.SW_CONNECTION_FEE_CONST).toString());
+				securityDeposit = securityDepositApplicable;
+			} else {
+				securityDeposit = new BigDecimal(
+						feeObj.getAsNumber(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST).toString());
+			}
+		}
+		/*
+		 * String tenantid= criteria.getTenantId();
+		 * 
+		 * if(tenantid.equalsIgnoreCase("pb.patiala")) { if
+		 * (feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST) != null) {
+		 * if(connection_propertyType.contains("DOM") ||
+		 * connection_propertyType.contains("USAGE_RESIDENTIAL") ) securityDeposit = new
+		 * BigDecimal(1000.00); else securityDeposit = new BigDecimal(
+		 * feeObj.getAsNumber(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST).toString(
+		 * )); } }else {
+		 * 
+		 * if (feeObj.get(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST) != null) {
+		 * securityDeposit = new BigDecimal(
+		 * feeObj.getAsNumber(SWCalculationConstant.SW_SECURITY_DEPOSIT_CONST).toString(
+		 * )); } }
+		 */
+
+		//
+		BigDecimal connectionFee = BigDecimal.ZERO;
+
+		if (feeObj.get(SWCalculationConstant.SW_CONNECTION_FEE_CONST) != null) {
+
+			BigDecimal connection_plotSize;
+			Double landArea = property.getLandArea();
+			BigDecimal superBuiltUpArea = property.getSuperBuiltUpArea();
+			connection_plotSize = ((landArea == null || landArea == 0) && (superBuiltUpArea == null || superBuiltUpArea.compareTo(BigDecimal.ZERO) == 0))
+			        ? BigDecimal.ZERO
+			        : (landArea != null && landArea != 0 ? BigDecimal.valueOf(landArea) : superBuiltUpArea);
+
+			if ((connection_plotSize == null || connection_propertyType == null || connection_propertyType.equals("")) && !property.getUsageCategory().equals("MIXED"))
+				connection_propertyType = "DEFAULT"; // default connectionFee to be applied from mdms
+			else if (connection_propertyType.contains("DOM") || connection_propertyType.contains("USAGE_RESIDENTIAL"))
+				connection_propertyType = "DOMESTIC";
+			else if (connection_plotSize == null && property.getUsageCategory().equals("MIXED")) 
+		        // If propertyType is MIXED and plot size is null, set superbuilduparea into connection_plotSize
+		        connection_plotSize = property.getSuperBuiltUpArea();		
+			else
+				connection_propertyType = "COMMERCIAL";
+
+			ArrayList conn_fees = (ArrayList) feeObj.get(SWCalculationConstant.SW_CONNECTION_FEE_CONST);
+
+			BigDecimal fromPlotSize = BigDecimal.ZERO;
+			BigDecimal toPlotSize = BigDecimal.ZERO;
+			BigDecimal connectionFeeApplicable = BigDecimal.ZERO;
+			String propertyType = null;
+
+			HashMap<String, String> connFeeMap = null;
+			
+			for (int i = 0; i < conn_fees.size(); i++) {
+				connFeeMap = (HashMap<String, String>) conn_fees.get(i);
+				fromPlotSize = new BigDecimal(connFeeMap.get("fromPlotSize"));
+				toPlotSize = new BigDecimal(connFeeMap.get("toPlotSize"));
+				// connectionFeeApplicable=new BigDecimal(connFeeMap.get("connectionFee"));
+				propertyType = connFeeMap.get("usageType").toString();
+				if (propertyType.equals(connection_propertyType) && connection_plotSize.compareTo(fromPlotSize) > 0
+						&& connection_plotSize.compareTo(toPlotSize) <= 0) {
+					connectionFeeApplicable = new BigDecimal(connFeeMap.get("connectionFee"));
+					break; // matched the attributes and got valid connection fee
+				}
+
+			}
+
+			// connectionFee = new
+			// BigDecimal(feeObj.getAsNumber(SWCalculationConstant.SW_CONNECTION_FEE_CONST).toString());
+			connectionFee = connectionFeeApplicable;
+		}
 		
-		BigDecimal otherCharges = BigDecimal.ZERO; 
-		if(feeObj.get(SWCalculationConstant.OTHER_FEE_CONST) != null) {
+		BigDecimal otherCharges = BigDecimal.ZERO;
+		if (feeObj.get(SWCalculationConstant.OTHER_FEE_CONST) != null) {
 			otherCharges = new BigDecimal(feeObj.getAsNumber(SWCalculationConstant.OTHER_FEE_CONST).toString());
 		}
-		 
+
 		BigDecimal taxAndCessPercentage = BigDecimal.ZERO;
 		if (feeObj.get(SWCalculationConstant.TAX_PERCENTAGE_CONST) != null) {
 			taxAndCessPercentage = new BigDecimal(
@@ -526,8 +577,8 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 		BigDecimal roadCuttingCharge = BigDecimal.ZERO;
 		BigDecimal usageTypeCharge = BigDecimal.ZERO;
 
-		if(criteria.getSewerageConnection().getRoadCuttingInfo() != null){
-			for(RoadCuttingInfo roadCuttingInfo : criteria.getSewerageConnection().getRoadCuttingInfo()){
+		if (criteria.getSewerageConnection().getRoadCuttingInfo() != null) {
+			for (RoadCuttingInfo roadCuttingInfo : criteria.getSewerageConnection().getRoadCuttingInfo()) {
 				BigDecimal singleRoadCuttingCharge = BigDecimal.ZERO;
 				if (roadCuttingInfo.getRoadType() != null)
 					singleRoadCuttingCharge = getChargeForRoadCutting(masterData, roadCuttingInfo.getRoadType(),
@@ -535,15 +586,13 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 
 				BigDecimal singleUsageTypeCharge = BigDecimal.ZERO;
 				if (roadCuttingInfo.getRoadCuttingArea() != null)
-					singleUsageTypeCharge = getUsageTypeFee(masterData,
-							property.getUsageCategory(),
+					singleUsageTypeCharge = getUsageTypeFee(masterData, property.getUsageCategory(),
 							roadCuttingInfo.getRoadCuttingArea());
 
 				roadCuttingCharge = roadCuttingCharge.add(singleRoadCuttingCharge);
 				usageTypeCharge = usageTypeCharge.add(singleUsageTypeCharge);
 			}
 		}
-
 
 //		BigDecimal roadPlotCharge = BigDecimal.ZERO;
 //		if (property.getLandArea() != null) {
@@ -556,132 +605,146 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 //					criteria.getSewerageConnection().getRoadCuttingArea());
 //		}
 
-		BigDecimal totalCharge = formFee.add(securityDeposit).add(roadCuttingCharge).add(connectionFee).add(otherCharges);
+		BigDecimal totalCharge = formFee.add(securityDeposit).add(roadCuttingCharge).add(connectionFee)
+				.add(otherCharges);
 //				.add(meterCost).add(roadPlotCharge).add(usageTypeCharge);
 //		BigDecimal totalCharge = formFee.add(scrutinyFee).add(otherCharges).add(meterCost).add(roadCuttingCharge)
 //				.add(roadPlotCharge).add(usageTypeCharge);
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(SWCalculationConstant.HUNDRED));
 		//
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
-		//BigDecimal otherCharges=BigDecimal.ZERO;
-		HashMap<String, Object> additionalDetails = mapper.convertValue(criteria.getSewerageConnection().getAdditionalDetails(),
-				HashMap.class);
-		String concategory = additionalDetails.get(SWCalculationConstant.connectionCategory) != null 
-                ? additionalDetails.get(SWCalculationConstant.connectionCategory).toString() 
-                : "null";
-		// if (additionalDetails.get(SWCalculationConstant.connectionCategory).toString().equalsIgnoreCase("REGULARIZED")) {
-                if (concategory.equalsIgnoreCase("REGULARIZED")) {
-			  if (!(otherCharges.compareTo(BigDecimal.ZERO) == 0))
-				  estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_OTHER_CHARGE) .estimateAmount(otherCharges.setScale(2, 2)).build());
+		// BigDecimal otherCharges=BigDecimal.ZERO;
+		
+		/*
+		 For legacy and Regularized wave off of rest fee slab -PI-18845
+		 --->Abhishek Rana
+		 
+		 */
+		Map<String, Object> additionalDetails = Optional.ofNullable(criteria.getSewerageConnection().getAdditionalDetails())
+		        .map(val -> mapper.convertValue(val, HashMap.class))
+		        .orElse(new HashMap<>());
 
+		String concategory = additionalDetails.get(SWCalculationConstant.connectionCategory) != null
+		        ? additionalDetails.get(SWCalculationConstant.connectionCategory).toString()
+		        : "null";
 
-
+		if ("REGULARIZED".equalsIgnoreCase(concategory) || "LEGACY".equalsIgnoreCase(concategory)|| "DISCHARGE_CONNECTION".equalsIgnoreCase(concategory)) {
+			/*
+			 For legacy sw connection - PI-18845
+			 --->Sharan Gakhar (branch : pmidc_testing)
+			 
+			 */
+			//			if (otherCharges.compareTo(BigDecimal.ZERO) != 0) {
+		    otherCharges = (otherCharges == null) ? BigDecimal.ZERO : otherCharges;
+	        	estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_OTHER_CHARGE)
+    				.estimateAmount(otherCharges.setScale(2, 2)).build());
 		}
 		else {
-		if (!(formFee.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_FORM_FEE)
-					.estimateAmount(formFee.setScale(2, 2)).build());
-		if (!(securityDeposit.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_SECURITY_DEPOSIT)
-					.estimateAmount(securityDeposit.setScale(2, 2)).build());
+			if (!(formFee.compareTo(BigDecimal.ZERO) == 0))
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_FORM_FEE)
+						.estimateAmount(formFee.setScale(2, 2)).build());
+			if (!(securityDeposit.compareTo(BigDecimal.ZERO) == 0))
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_SECURITY_DEPOSIT)
+						.estimateAmount(securityDeposit.setScale(2, 2)).build());
 //		if (!(scrutinyFee.compareTo(BigDecimal.ZERO) == 0))
 //			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_SCRUTINY_FEE)
 //					.estimateAmount(scrutinyFee.setScale(2, 2)).build());
-		if (!(otherCharges.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_OTHER_CHARGE)
-					.estimateAmount(otherCharges.setScale(2, 2)).build());
-		if (!(roadCuttingCharge.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ROAD_CUTTING_CHARGE)
-					.estimateAmount(roadCuttingCharge.setScale(2, 2)).build());
-		if (!(connectionFee.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_CONNECTION_FEE)
-					.estimateAmount(connectionFee.setScale(2, 2)).build());
+			if (!(otherCharges.compareTo(BigDecimal.ZERO) == 0))
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_OTHER_CHARGE)
+						.estimateAmount(otherCharges.setScale(2, 2)).build());
+			if (!(roadCuttingCharge.compareTo(BigDecimal.ZERO) == 0))
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ROAD_CUTTING_CHARGE)
+						.estimateAmount(roadCuttingCharge.setScale(2, 2)).build());
+			if (!(connectionFee.compareTo(BigDecimal.ZERO) == 0))
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_CONNECTION_FEE)
+						.estimateAmount(connectionFee.setScale(2, 2)).build());
 //		if (!(usageTypeCharge.compareTo(BigDecimal.ZERO) == 0))
 //			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ONE_TIME_FEE)
 //					.estimateAmount(usageTypeCharge.setScale(2, 2)).build());
 //		if (!(roadPlotCharge.compareTo(BigDecimal.ZERO) == 0))
 //			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_SECURITY_CHARGE)
 //					.estimateAmount(roadPlotCharge.setScale(2, 2)).build());
-		if (!(tax.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_TAX_AND_CESS)
-					.estimateAmount(tax.setScale(2, 2)).build());
+			if (!(tax.compareTo(BigDecimal.ZERO) == 0))
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_TAX_AND_CESS)
+						.estimateAmount(tax.setScale(2, 2)).build());
 		}
 		addAdhocPenaltyAndRebate(estimates, criteria.getSewerageConnection());
 		return estimates;
-		
-	} 
 
-	
+	}
+
 	/**
 	 * Enrich the adhoc penalty and adhoc rebate
 	 * 
-	 * @param estimates
-	 *            tax head estimate
-	 * @param connection
-	 *            water connection object
+	 * @param estimates  tax head estimate
+	 * @param connection water connection object
 	 */
 	@SuppressWarnings("unchecked")
 	private void addAdhocPenaltyAndRebate(List<TaxHeadEstimate> estimates, SewerageConnection connection) {
 		if (connection.getAdditionalDetails() != null) {
 			HashMap<String, Object> additionalDetails = mapper.convertValue(connection.getAdditionalDetails(),
 					HashMap.class);
-			String concategory = additionalDetails.get(SWCalculationConstant.connectionCategory) != null 
-	                ? additionalDetails.get(SWCalculationConstant.connectionCategory).toString() 
-	                : "null";
+			String concategory = additionalDetails.get(SWCalculationConstant.connectionCategory) != null
+					? additionalDetails.get(SWCalculationConstant.connectionCategory).toString()
+					: "null";
 			if (concategory.equalsIgnoreCase("REGULARIZED")) {
-			// if (additionalDetails.get(SWCalculationConstant.connectionCategory).toString().equalsIgnoreCase("REGULARIZED")) {
+				// if
+				// (additionalDetails.get(SWCalculationConstant.connectionCategory).toString().equalsIgnoreCase("REGULARIZED"))
+				// {
 
 				if (additionalDetails.getOrDefault(SWCalculationConstant.OTHER_FEE_CONST, null) != null) {
-					estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.OTHER_FEE)
-							.estimateAmount(
-									new BigDecimal(additionalDetails.get(SWCalculationConstant.OTHER_FEE_CONST).toString()))
-							.build());
+					estimates
+							.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.OTHER_FEE)
+									.estimateAmount(new BigDecimal(
+											additionalDetails.get(SWCalculationConstant.OTHER_FEE_CONST).toString()))
+									.build());
 				}
 			}
-
 
 			else {
-			if (additionalDetails.getOrDefault(SWCalculationConstant.ADHOC_PENALTY, null) != null) {
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ADHOC_PENALTY)
-						.estimateAmount(
-								new BigDecimal(additionalDetails.get(SWCalculationConstant.ADHOC_PENALTY).toString()))
-						.build());
-			}
-			if (additionalDetails.getOrDefault(SWCalculationConstant.ADHOC_REBATE, null) != null) {
-				estimates
-						.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ADHOC_REBATE)
-								.estimateAmount(new BigDecimal(
-										additionalDetails.get(SWCalculationConstant.ADHOC_REBATE).toString()).negate())
-								.build());
-			}
-			if (additionalDetails.getOrDefault(SWCalculationConstant.COMPOSITION_FEE_CONST, null) != null) {
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.COMPOSITION_FEE)
-						.estimateAmount(new BigDecimal(
-								additionalDetails.get(SWCalculationConstant.COMPOSITION_FEE_CONST).toString()))
-						.build());
-			}
-				// System.out.println(additionalDetails.get(SWCalculationConstant.connectionCategory).toString());
-			if (additionalDetails.getOrDefault(SWCalculationConstant.USER_CHARGES_CONST, null) != null) {
-				estimates
-						.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.USER_CHARGES)
-								.estimateAmount(new BigDecimal(
-										additionalDetails.get(SWCalculationConstant.USER_CHARGES_CONST).toString()))
-								.build());
-			}
-
-			if (additionalDetails.getOrDefault(SWCalculationConstant.OTHER_FEE_CONST, null) != null) {
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.OTHER_FEE)
-						.estimateAmount(
-								new BigDecimal(additionalDetails.get(SWCalculationConstant.OTHER_FEE_CONST).toString()))
-						.build());
-			}
+				if (additionalDetails.getOrDefault(SWCalculationConstant.ADHOC_PENALTY, null) != null) {
+					estimates
+							.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ADHOC_PENALTY)
+									.estimateAmount(new BigDecimal(
+											additionalDetails.get(SWCalculationConstant.ADHOC_PENALTY).toString()))
+									.build());
 				}
+				if (additionalDetails.getOrDefault(SWCalculationConstant.ADHOC_REBATE, null) != null) {
+					estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_ADHOC_REBATE)
+							.estimateAmount(
+									new BigDecimal(additionalDetails.get(SWCalculationConstant.ADHOC_REBATE).toString())
+											.negate())
+							.build());
+				}
+				if (additionalDetails.getOrDefault(SWCalculationConstant.COMPOSITION_FEE_CONST, null) != null) {
+					estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.COMPOSITION_FEE)
+							.estimateAmount(new BigDecimal(
+									additionalDetails.get(SWCalculationConstant.COMPOSITION_FEE_CONST).toString()))
+							.build());
+				}
+				// System.out.println(additionalDetails.get(SWCalculationConstant.connectionCategory).toString());
+				if (additionalDetails.getOrDefault(SWCalculationConstant.USER_CHARGES_CONST, null) != null) {
+					estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.USER_CHARGES)
+							.estimateAmount(new BigDecimal(
+									additionalDetails.get(SWCalculationConstant.USER_CHARGES_CONST).toString()))
+							.build());
+				}
+
+				if (additionalDetails.getOrDefault(SWCalculationConstant.OTHER_FEE_CONST, null) != null) {
+					estimates
+							.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.OTHER_FEE)
+									.estimateAmount(new BigDecimal(
+											additionalDetails.get(SWCalculationConstant.OTHER_FEE_CONST).toString()))
+									.build());
+				}
+			}
 		}
 	}
+
 	/**
 	 * 
-	 * @param masterData - MDMS Master Data
-	 * @param roadType - Road Type value
+	 * @param masterData      - MDMS Master Data
+	 * @param roadType        - Road Type value
 	 * @param roadCuttingArea - Road Cutting Area value
 	 * @return road cutting charge
 	 */
@@ -706,7 +769,7 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 	/**
 	 * 
 	 * @param masterData - MDMS Master Data
-	 * @param plotSize - Plot Size
+	 * @param plotSize   - Plot Size
 	 * @return get fee based on plot size
 	 */
 	private BigDecimal getPlotSizeFee(Map<String, Object> masterData, Double plotSize) {
@@ -727,8 +790,8 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 
 	/**
 	 * 
-	 * @param masterData - MDMS Master Data
-	 * @param usageType - Usage Type
+	 * @param masterData      - MDMS Master Data
+	 * @param usageType       - Usage Type
 	 * @param roadCuttingArea - Road Cutting Area
 	 * @return - Returns the Usage Type fee
 	 */
@@ -750,31 +813,31 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 		}
 		return charge;
 	}
-	
-	public Map<String, Object> getQuarterStartAndEndDate(Map<String, Object> billingPeriod){
+
+	public Map<String, Object> getQuarterStartAndEndDate(Map<String, Object> billingPeriod) {
 		Date date = new Date();
 		Calendar fromDateCalendar = Calendar.getInstance();
 		fromDateCalendar.setTime(date);
-		fromDateCalendar.set(Calendar.MONTH, fromDateCalendar.get(Calendar.MONTH)/3 * 3);
+		fromDateCalendar.set(Calendar.MONTH, fromDateCalendar.get(Calendar.MONTH) / 3 * 3);
 		fromDateCalendar.set(Calendar.DAY_OF_MONTH, 1);
 		setTimeToBeginningOfDay(fromDateCalendar);
 		Calendar toDateCalendar = Calendar.getInstance();
 		toDateCalendar.setTime(date);
-		toDateCalendar.set(Calendar.MONTH, toDateCalendar.get(Calendar.MONTH)/3 * 3 + 2);
+		toDateCalendar.set(Calendar.MONTH, toDateCalendar.get(Calendar.MONTH) / 3 * 3 + 2);
 		toDateCalendar.set(Calendar.DAY_OF_MONTH, toDateCalendar.getActualMaximum(Calendar.DAY_OF_MONTH));
 		setTimeToEndOfDay(toDateCalendar);
 		billingPeriod.put(SWCalculationConstant.STARTING_DATE_APPLICABLES, fromDateCalendar.getTimeInMillis());
 		billingPeriod.put(SWCalculationConstant.ENDING_DATE_APPLICABLES, toDateCalendar.getTimeInMillis());
 		return billingPeriod;
 	}
-	
-	public Map<String, Object> getMonthStartAndEndDate(Map<String, Object> billingPeriod){
+
+	public Map<String, Object> getMonthStartAndEndDate(Map<String, Object> billingPeriod) {
 		Date date = new Date();
 		Calendar monthStartDate = Calendar.getInstance();
 		monthStartDate.setTime(date);
 		monthStartDate.set(Calendar.DAY_OF_MONTH, monthStartDate.getActualMinimum(Calendar.DAY_OF_MONTH));
 		setTimeToBeginningOfDay(monthStartDate);
-	    
+
 		Calendar monthEndDate = Calendar.getInstance();
 		monthEndDate.setTime(date);
 		monthEndDate.set(Calendar.DAY_OF_MONTH, monthEndDate.getActualMaximum(Calendar.DAY_OF_MONTH));
@@ -783,36 +846,39 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 		billingPeriod.put(SWCalculationConstant.ENDING_DATE_APPLICABLES, monthEndDate.getTimeInMillis());
 		return billingPeriod;
 	}
-	
+
 	private static void setTimeToBeginningOfDay(Calendar calendar) {
-	    calendar.set(Calendar.HOUR_OF_DAY, 0);
-	    calendar.set(Calendar.MINUTE, 0);
-	    calendar.set(Calendar.SECOND, 0);
-	    calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
 	}
 
 	private static void setTimeToEndOfDay(Calendar calendar) {
-	    calendar.set(Calendar.HOUR_OF_DAY, 23);
-	    calendar.set(Calendar.MINUTE, 59);
-	    calendar.set(Calendar.SECOND, 59);
-	    calendar.set(Calendar.MILLISECOND, 999);
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		calendar.set(Calendar.SECOND, 59);
+		calendar.set(Calendar.MILLISECOND, 999);
 	}
-	
-	public Map<String, List> getReconnectionFeeEstimation(CalculationCriteria criteria, RequestInfo requestInfo, Map<String, Object> masterData ) {
+
+	public Map<String, List> getReconnectionFeeEstimation(CalculationCriteria criteria, RequestInfo requestInfo,
+			Map<String, Object> masterData) {
 		String tenantId = requestInfo.getUserInfo().getTenantId();
-		if (StringUtils.isEmpty(criteria.getSewerageConnection()) && !StringUtils.isEmpty(criteria.getApplicationNo())) {
+		if (StringUtils.isEmpty(criteria.getSewerageConnection())
+				&& !StringUtils.isEmpty(criteria.getApplicationNo())) {
 			SearchCriteria searchCriteria = new SearchCriteria();
 			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
 			searchCriteria.setTenantId(criteria.getTenantId());
 			criteria.setSewerageConnection(
-					calculatorUtil.getSewerageConnectionOnApplicationNO(requestInfo, searchCriteria, tenantId));	
+					calculatorUtil.getSewerageConnectionOnApplicationNO(requestInfo, searchCriteria, tenantId));
 		}
 
 		if (criteria.getSewerageConnection() == null) {
 			throw new CustomException("SEWERAGE_CONNECTION_NOT_FOUND",
 					"Sewerage Connection are not present for " + criteria.getApplicationNo() + " Application no");
 		}
-		List<TaxHeadEstimate> taxHeadEstimates = getTaxHeadForReconnectionFeeEstimationV2(criteria,masterData, requestInfo);
+		List<TaxHeadEstimate> taxHeadEstimates = getTaxHeadForReconnectionFeeEstimationV2(criteria, masterData,
+				requestInfo);
 		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
 		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
 		return estimatesAndBillingSlabs;
@@ -822,15 +888,16 @@ if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
 			Map<String, Object> masterData, RequestInfo requestInfo) {
 		JSONArray feeSlab = (JSONArray) masterData.getOrDefault(SWCalculationConstant.SC_FEESLAB_MASTER, null);
 		if (feeSlab == null)
-			throw new CustomException("FEE_SLAB_NOT_FOUND", "fee slab master data not found!!"); 
-		
+			throw new CustomException("FEE_SLAB_NOT_FOUND", "fee slab master data not found!!");
+
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
 		BigDecimal reconnectionCharge = BigDecimal.ZERO;
-		
+
 		if (feeObj.get(SWCalculationConstant.RECONNECTION_FEE_CONST) != null) {
-			reconnectionCharge = new BigDecimal(feeObj.getAsNumber(SWCalculationConstant.RECONNECTION_FEE_CONST).toString());
+			reconnectionCharge = new BigDecimal(
+					feeObj.getAsNumber(SWCalculationConstant.RECONNECTION_FEE_CONST).toString());
 		}
-		
+
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
 		estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_RECONNECTION_CHARGE)

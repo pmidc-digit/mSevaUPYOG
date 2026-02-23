@@ -50,7 +50,8 @@ public class FileStoreConsumer {
     @Autowired
     private PropertyConfiguration config;
 
-    @KafkaListener(topics = { "${kafka.topics.filestore}" })
+    @KafkaListener(topics = { "${kafka.topics.filestore}" },
+    		concurrency = "${kafka.consumer.config.concurrency.count}")
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         List<Map<String,Object>> jobMaps = (List<Map<String,Object>>)record.get(KEY_PDF_JOBS);
@@ -85,7 +86,8 @@ public class FileStoreConsumer {
             RequestInfo requestInfo = new RequestInfo();
             PropertyRequest propertyRequest = PropertyRequest.builder().requestInfo(requestInfo).property(property).build();
 
-            producer.push(config.getUpdateDocumentTopic(),propertyRequest);
+            String key = propertyRequest.getProperty().getPropertyId();
+            producer.push(config.getUpdateDocumentTopic(), key, propertyRequest);
 
             log.info("Updating document for: "+id);
         }
@@ -97,7 +99,7 @@ public class FileStoreConsumer {
 
         PropertyCriteria criteria = PropertyCriteria.builder().tenantId(tenantId).uuids(Collections.singleton(id)).build();
 
-        List<Property> properties = propertyRepository.getProperties(criteria, false, false);
+        List<Property> properties = propertyRepository.getProperties(criteria, false, false, null);
 
         if(CollectionUtils.isEmpty(properties))
             throw new CustomException("INVALID_ENTITYID","The entity id: "+id+" is not found for tenantId: "+tenantId);

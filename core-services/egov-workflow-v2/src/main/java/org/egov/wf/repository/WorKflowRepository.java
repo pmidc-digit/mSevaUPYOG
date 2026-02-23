@@ -51,7 +51,7 @@ public class WorKflowRepository {
             return new LinkedList<>();
 
         String query = queryBuilder.getProcessInstanceSearchQueryById(ids, preparedStmtList);
-        log.debug("query for status search: "+query+" params: "+preparedStmtList);
+        log.info("query for status search: "+query+" params: "+preparedStmtList);
 
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     }
@@ -173,5 +173,11 @@ public class WorKflowRepository {
         String query = queryBuilder.getEscalatedApplicationsCount(requestInfo,criteria, (ArrayList<Object>) preparedStmtList);
         Integer count =  jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
         return count;
+    }
+    
+    public List<ProcessInstance> getAutoEscalationEligibleApplications(ProcessInstanceSearchCriteria criteria){
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getAutoEscalationEligibleApplicationsSearchQuery(criteria, preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     }
 }

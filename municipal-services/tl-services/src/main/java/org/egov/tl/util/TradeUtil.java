@@ -1,5 +1,6 @@
 package org.egov.tl.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +19,7 @@ import org.egov.tl.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.time.*; 
@@ -230,19 +232,57 @@ public class TradeUtil {
         		
         		license.setFinancialYear(financialYear);
         	}
-            String jsonPath = TLConstants.MDMS_FINACIALYEAR_PATH.replace("{}",license.getFinancialYear());
-            List<Map<String,Object>> jsonOutput =  JsonPath.read(mdmsData, jsonPath);
-            Map<String,Object> financialYearProperties = jsonOutput.get(0);
-            Object startDate = financialYearProperties.get(TLConstants.MDMS_STARTDATE);
-            Object endDate = financialYearProperties.get(TLConstants.MDMS_ENDDATE);
-            taxPeriods.put(TLConstants.MDMS_STARTDATE,(Long) startDate);
-            taxPeriods.put(TLConstants.MDMS_ENDDATE,(Long) endDate);
+            //validity years is 1,2,3
+            JsonNode additionalDetail = license.getTradeLicenseDetail().getAdditionalDetail();
+            int validityInYears=1;
+            if (!additionalDetail.isNull() && !ObjectUtils.isEmpty(additionalDetail.get("validityYears"))){
+                validityInYears = additionalDetail.get("validityYears").asInt();
+            }
 
-        } catch (Exception e) {
+            List<String> financialYears = calculateFinancialYears(license.getFinancialYear(), validityInYears);
+
+            List<Map<String, Long>> allFinancialYearData = new ArrayList<>();
+
+            for (String financialYear : financialYears) {
+                Map<String, Long> newTaxPeriod = new HashMap<>();
+                String jsonPath = TLConstants.MDMS_FINACIALYEAR_PATH.replace("{}", financialYear);
+                List<Map<String, Object>> jsonOutput = JsonPath.read(mdmsData, jsonPath);
+                Map<String, Object> financialYearProperties = jsonOutput.get(0);
+                Object startDate = financialYearProperties.get(TLConstants.MDMS_STARTDATE);
+                Object endDate = financialYearProperties.get(TLConstants.MDMS_ENDDATE);
+                newTaxPeriod.put(TLConstants.MDMS_STARTDATE, (Long) startDate);
+                newTaxPeriod.put(TLConstants.MDMS_ENDDATE, (Long) endDate);
+                allFinancialYearData.add(newTaxPeriod);
+            }
+            // Get the first and last financial year epoch time for taxperiod validTo and From
+            taxPeriods.put(TLConstants.MDMS_STARTDATE, allFinancialYearData.get(0).get("startingDate"));
+            taxPeriods.put(TLConstants.MDMS_ENDDATE, allFinancialYearData.get(allFinancialYearData.size()-1).get("endingDate"));
+
+        }
+        catch (IllegalArgumentException e) {
+            log.error("Error while fetching MDMS data", e);
+            throw new CustomException("Error",e.getMessage());
+        }
+        catch (Exception e) {
             log.error("Error while fetching MDMS data", e);
             throw new CustomException("INVALID FINANCIALYEAR", "No data found for the financialYear: "+license.getFinancialYear());
         }
         return taxPeriods;
+    }
+    public List<String> calculateFinancialYears(String initialYear, int validityYears) {
+        if (validityYears < 1 || validityYears > 3) {
+            throw new IllegalArgumentException("Validity years must be between 1 and 3");
+        }
+        List<String> financialYears = new ArrayList<>();
+
+        int startYear = Integer.parseInt(initialYear.split("-")[0]);
+        int endYear = Integer.parseInt(initialYear.split("-")[1]);
+
+        for (int i = 0; i < validityYears; i++) {
+            financialYears.add(startYear + "-" + (endYear + i));
+            startYear++;
+        }
+        return financialYears;
     }
 
 
@@ -373,14 +413,14 @@ public class TradeUtil {
      * @param businessService The businessService configuration
      * @return Map of is to isStateUpdatable
      */
-    public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<TradeLicense> searchresult) {
+    public Map<String, Boolean> getIdToIsStateUpdatableMap(Map<String, BusinessService> businessServiceMap, List<TradeLicense> searchresult) {
         Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
         searchresult.forEach(result -> {
             String nameofBusinessService = result.getBusinessService();
             if (StringUtils.equals(nameofBusinessService,businessService_BPA) && (result.getStatus().equalsIgnoreCase(STATUS_INITIATED))) {
                 idToIsStateUpdatableMap.put(result.getId(), true);
             } else
-                idToIsStateUpdatableMap.put(result.getId(), workflowService.isStateUpdatable(result.getStatus(), businessService));
+                idToIsStateUpdatableMap.put(result.getId(), workflowService.isStateUpdatable(result.getStatus(), businessServiceMap.get(result.getTenantId())));
         });
         return idToIsStateUpdatableMap;
     }
@@ -440,5 +480,41 @@ public class TradeUtil {
         String state = (String) jsonOutput.get(0).get("name");
         return state;
     }
+    
+    /**
+	 * prepares the mdms request object
+	 * @param requestInfo
+	 * @param tenantId
+	 * @return
+	 */
+	private MdmsCriteriaReq getMDMSRequestForAutoExpirationData(RequestInfo requestInfo, String tenantId) {
+		final String filterCode = "$.[?(@.active=='true' && (@.module=='BPAREG' || @.module=='TL') )]";
+
+		ModuleDetail bpaModuleDtls = ModuleDetail.builder()
+				.masterDetails(Arrays.asList(MasterDetail.builder().name("AutoEscalation").filter(filterCode).build()))
+				.moduleName("Workflow").build();
+		List<ModuleDetail> moduleRequest = Arrays.asList(bpaModuleDtls);
+
+		List<ModuleDetail> moduleDetails = new LinkedList<>();
+		moduleDetails.addAll(moduleRequest);
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(moduleDetails).tenantId(tenantId).build();
+
+		return MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo).build();
+	}
+    
+    public List<Map<String, Object>> fetchAutoExpirationMdmsData(RequestInfo requestInfo){
+		StringBuilder url = getMdmsSearchUrl();
+		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequestForAutoExpirationData(requestInfo, "pb");
+		List<Map<String, Object>> autoEscalationMdmsData = new ArrayList<>();
+		try {
+			Object result = serviceRequestRepository.fetchResult(url, mdmsCriteriaReq);
+			autoEscalationMdmsData = JsonPath.read(result, "$.MdmsRes.Workflow.AutoEscalation");
+		} catch (Exception e) {
+			throw new CustomException("MDMS_SEARCH_ERROR", " Unable to fetch the Auto Escalation data from MDMS.");
+		}
+		
+		return autoEscalationMdmsData;
+	}
 
 }

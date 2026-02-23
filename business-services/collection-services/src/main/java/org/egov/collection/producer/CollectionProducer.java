@@ -38,4 +38,15 @@ public class CollectionProducer {
         }
 
     }
+    
+    public void producer(String topicName, String key , Object value) {
+        try {
+            kafkaTemplate.send(topicName, key ,value);
+        } catch (Exception e) {
+            logger.error("Pushing to Queue FAILED! ", e.getMessage());
+            throw new CustomException("COLLECTIONS_KAFKA_PUSH_FAILED", CollectionServiceConstants
+                    .KAFKA_PUSH_EXCEPTION_DESC);
+        }
+
+    }
 }

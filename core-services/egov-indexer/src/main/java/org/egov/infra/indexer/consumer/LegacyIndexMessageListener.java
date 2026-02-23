@@ -4,6 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.egov.infra.indexer.service.IndexerService;
 import org.egov.infra.indexer.service.LegacyIndexService;
 import org.egov.infra.indexer.util.IndexerUtils;
+import org.egov.infra.indexer.util.DLQHandler;
 import org.egov.infra.indexer.web.contract.LegacyIndexRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,9 @@ public class LegacyIndexMessageListener implements MessageListener<String, Strin
 	@Value("${egov.core.legacyindex.topic.name}")
 	private String legacyIndexTopic;
 
+	@Autowired
+	private DLQHandler dlqHandler;
+
 	@Override
 	/**
 	 * Messages listener which acts as consumer. This message listener is injected inside a kafkaContainer.
@@ -49,13 +53,13 @@ public class LegacyIndexMessageListener implements MessageListener<String, Strin
 				LegacyIndexRequest legacyIndexRequest = mapper.readValue(data.value(), LegacyIndexRequest.class);
 				legacyIndexService.beginLegacyIndex(legacyIndexRequest);
 			}catch(Exception e) {
-				log.error("Couldn't parse legacyindex request: ", e);
+				dlqHandler.handleError(data.value(), e, "LegacyIndexMessageListener", data.topic());
 			}
 		}else {
 			try {
 				indexerService.esIndexer(data.topic(), data.value());
 			} catch (Exception e) {
-				log.error("error while indexing: ", e);
+				dlqHandler.handleError(data.value(), e, "LegacyIndexMessageListener", data.topic());
 			}
 		}
 	}

@@ -73,8 +73,8 @@ public class ActionValidator {
                     break;
 
                 case businessService_BPA:
-                    if (!TRIGGER_NOWORKFLOW.equalsIgnoreCase(license.getAction())) {
-                        errorMap.put("INVALID ACTION", "Action should be NOWORKFLOW during create");
+                    if (!(TRIGGER_NOWORKFLOW.equalsIgnoreCase(license.getAction()) || ACTION_APPLY.equalsIgnoreCase(license.getAction()))) {
+                        errorMap.put("INVALID ACTION", "Action should be NOWORKFLOW or APPLY during create");
                     }
                     break;
             }
@@ -82,11 +82,11 @@ public class ActionValidator {
         //    validateRole(request);
 
         // Check if all the applicationTypes of bulk request is same.
-        if(request.getLicenses().size() > 1){
-            if(applicationTypes.size() != 1){
-                errorMap.put("INVALID APPLICATION TYPES", "Application Types should be identical for bulk requests");
-            }
-        }
+//        if(request.getLicenses().size() > 1){
+//            if(applicationTypes.size() != 1){
+//                errorMap.put("INVALID APPLICATION TYPES", "Application Types should be identical for bulk requests");
+//            }
+//        }
 
         if (!errorMap.isEmpty())
             throw new CustomException(errorMap);
@@ -97,14 +97,14 @@ public class ActionValidator {
      * Validates the update request
      * @param request The tradeLciense update request
      */
-    public void validateUpdateRequest(TradeLicenseRequest request,BusinessService businessService,List<TradeLicense> searchResult){
+    public void validateUpdateRequest(TradeLicenseRequest request,Map<String, BusinessService> businessServiceMap,List<TradeLicense> searchResult){
         validateDocumentsForUpdate(request);
         validateManualExpiration(request);
         validateCancellation(request, searchResult);
        // validateRole(request);
        // validateAction(request);
         validatePayAction(request);
-        validateIds(request,businessService);
+        validateIds(request,businessServiceMap);
     }
 
     private void validateCancellation(TradeLicenseRequest request, List<TradeLicense> searchResult) {
@@ -256,14 +256,14 @@ public class ActionValidator {
      * Validates if the any new object is added in the request
      * @param request The tradeLciense update request
      */
-    private void validateIds(TradeLicenseRequest request,BusinessService businessService){
+    private void validateIds(TradeLicenseRequest request,Map<String, BusinessService> businessServiceMap){
         Map<String,String> errorMap = new HashMap<>();
         request.getLicenses().forEach(license -> {
 
             String namefBusinessService=license.getBusinessService();
             if((namefBusinessService==null) || (namefBusinessService.equals(businessService_TL))||(namefBusinessService.equals(businessService_BPA) && (!license.getStatus().equalsIgnoreCase(STATUS_INITIATED))))
             {
-                if(!workflowService.isStateUpdatable(license.getStatus(), businessService)) {
+                if(!workflowService.isStateUpdatable(license.getStatus(), businessServiceMap.get(license.getTenantId()))) {
                     if (license.getId() == null)
                         errorMap.put("INVALID UPDATE", "Id of tradeLicense cannot be null");
                     if(license.getTradeLicenseDetail().getId()==null)

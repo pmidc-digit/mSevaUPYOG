@@ -97,9 +97,10 @@ public class TransactionService {
         }
 
         // Persist transaction and transaction dump objects
-        producer.push(appProperties.getSaveTxnTopic(), new org.egov.pg.models.TransactionRequest
+        String key = transaction.getConsumerCode();
+        producer.push(appProperties.getSaveTxnTopic(), key , new org.egov.pg.models.TransactionRequest
                 (requestInfo, transaction));
-        producer.push(appProperties.getSaveTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
+        producer.push(appProperties.getSaveTxnDumpTopic(), key , new TransactionDumpRequest(requestInfo, dump));
 
         return transaction;
     }
@@ -146,11 +147,60 @@ public class TransactionService {
 
         Transaction newTxn = null;
 
-	if(currentTxnStatus.getGateway().contentEquals("CCAVANUE")) {     	 
+       	   if(validator.skipGateway(currentTxnStatus)) 
+       	   {
+                  newTxn = currentTxnStatus;
+            } 
+       	   else
+       	   {
+                  newTxn = gatewayService.getLiveStatus(currentTxnStatus, requestParams);
+
+                  // Enrich the new transaction status before persisting
+                  enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
+               // Check if transaction is successful, amount matches etc
+                  if (validator.shouldGenerateReceipt(currentTxnStatus, newTxn)) {
+                  	TransactionRequest request = TransactionRequest.builder().requestInfo(requestInfo).transaction(newTxn).build();
+                  	try {
+                  		paymentsService.registerPayment(request);
+                  	}
+                  	catch (Exception e) {
+                        log.warn("Skipping this transaction due to error: {}", request.getTransaction().getTxnId(), e);
+                    }
+                  }
+               
+          }
+
+       	TransactionDump.TransactionDumpBuilder dumpBuilder = TransactionDump.builder()
+       	        .txnId(currentTxnStatus.getTxnId())
+       	        .auditDetails(newTxn.getAuditDetails());
+
+       	if (newTxn.getResponseJson() != null) {
+       	    dumpBuilder.txnResponse(newTxn.getResponseJson());
+       	}
+
+       	TransactionDump dump = dumpBuilder.build();
+        log.info("dumps "+dump);
+        String key = newTxn.getBankTransactionNo() + newTxn.getBillId();
+        producer.push(appProperties.getUpdateTxnTopic(), key ,new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
+        producer.push(appProperties.getUpdateTxnDumpTopic(), key ,new TransactionDumpRequest(requestInfo, dump));
+
+        return Collections.singletonList(newTxn);
+    }
+
+ public List<Transaction> updateTransactionByReference(RequestInfo requestInfo, Map<String, String> requestParams) {
+
+        Transaction currentTxnStatus = validator.validateUpdateTxn(requestParams);
+
+        log.debug(currentTxnStatus.toString());
+        log.debug(requestParams.toString());
+
+        Transaction newTxn = null;
+
+	 if(currentTxnStatus.getGateway().contentEquals("CCAVANUE")) {     	 
       		 if(validator.skipGateway(currentTxnStatus)) {
                newTxn = currentTxnStatus;
            } else{
-               newTxn = gatewayService.getLiveStatus(currentTxnStatus, requestParams);
+               newTxn = gatewayService.getLiveStatusByReference(currentTxnStatus, requestParams);
 
                // Enrich the new transaction status before persisting
               enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
@@ -170,6 +220,7 @@ public class TransactionService {
                   enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
                // Check if transaction is successful, amount matches etc
                   if (validator.shouldGenerateReceipt(currentTxnStatus, newTxn)) {
+                	  log.info("id"+ currentTxnStatus.getTxnId());
                   	TransactionRequest request = TransactionRequest.builder().requestInfo(requestInfo).transaction(newTxn).build();
                   	paymentsService.registerPayment(request);
                   }
@@ -183,10 +234,12 @@ public class TransactionService {
                 .auditDetails(newTxn.getAuditDetails())
                 .build();
 
-        producer.push(appProperties.getUpdateTxnTopic(), new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
-        producer.push(appProperties.getUpdateTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
+        String key = newTxn.getBankTransactionNo() + newTxn.getBillId();
+        producer.push(appProperties.getUpdateTxnTopic(), key ,new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
+        producer.push(appProperties.getUpdateTxnDumpTopic(), key , new TransactionDumpRequest(requestInfo, dump));
 
         return Collections.singletonList(newTxn);
     }
 
+	
 }

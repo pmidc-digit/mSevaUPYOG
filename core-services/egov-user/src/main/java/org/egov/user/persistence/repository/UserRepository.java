@@ -1,9 +1,31 @@
 package org.egov.user.persistence.repository;
 
-import lombok.extern.slf4j.Slf4j;
+import static java.util.Objects.isNull;
+import static org.egov.user.repository.builder.UserTypeQueryBuilder.SELECT_FAILED_ATTEMPTS_BY_USER_SQL;
+import static org.egov.user.repository.builder.UserTypeQueryBuilder.SELECT_NEXT_SEQUENCE_USER;
+import static org.springframework.util.StringUtils.isEmpty;
 
-import org.egov.common.contract.request.RequestInfo;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.egov.tracer.model.CustomException;
+import org.egov.user.config.UserServiceConstants;
 import org.egov.user.domain.model.Address;
 import org.egov.user.domain.model.Role;
 import org.egov.user.domain.model.User;
@@ -13,25 +35,23 @@ import org.egov.user.domain.model.enums.Gender;
 import org.egov.user.domain.model.enums.GuardianRelation;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.persistence.dto.FailedLoginAttempt;
+import org.egov.user.persistence.dto.UserSession;
 import org.egov.user.repository.builder.RoleQueryBuilder;
 import org.egov.user.repository.builder.UserTypeQueryBuilder;
 import org.egov.user.repository.rowmapper.UserResultSetExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+//import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
-import static org.egov.user.repository.builder.UserTypeQueryBuilder.SELECT_FAILED_ATTEMPTS_BY_USER_SQL;
-import static org.egov.user.repository.builder.UserTypeQueryBuilder.SELECT_NEXT_SEQUENCE_USER;
-import static org.springframework.util.StringUtils.isEmpty;
+import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @Slf4j
@@ -92,13 +112,51 @@ public class UserRepository {
         }
         String queryStr = userTypeQueryBuilder.getQuery(userSearch, preparedStatementValues);
         log.debug(queryStr);
-
+        final List<Object> preparedStatementValuesForRole = new ArrayList<>();
         users = jdbcTemplate.query(queryStr, preparedStatementValues.toArray(), userResultSetExtractor);
+        if(!users.isEmpty()) {
+        	String roleQueryStr = userTypeQueryBuilder.getRolesForUSers(users.stream().map(User::getId).collect(Collectors.toList()), preparedStatementValuesForRole);
+            Map<Long, List<Role>> userRoles = jdbcTemplate.query(roleQueryStr, preparedStatementValuesForRole.toArray(), extractor);
+            for(User user : users) {
+            	Set<Role> roles = new HashSet<>();
+            	if(userRoles.get(user.getId()) != null) {
+            		roles.addAll(userRoles.get(user.getId()));
+            		user.setRoles(roles);
+            	}
+            }
+        }
+        	
         enrichRoles(users);
 
         return users;
     }
 
+ // Implement the ResultSetExtractor
+    ResultSetExtractor<Map<Long, List<Role>>> extractor = new ResultSetExtractor<Map<Long, List<Role>>>() {
+        @Override
+        public Map<Long, List<Role>> extractData(ResultSet rs) throws SQLException, DataAccessException {
+        	Map<Long, List<Role>> userRoles = new HashMap<>();
+        	while (rs.next()) {
+            	Long userId = Long.valueOf(rs.getString("user_id"));
+            	if(userRoles.containsKey(userId)) {
+            		Role role = new Role();
+                    role.setCode(rs.getString("role_code"));
+                    role.setTenantId(rs.getString("role_tenantid"));
+                    List<Role> existingRole = new ArrayList<>();
+                    existingRole.addAll(userRoles.get(userId));
+                    existingRole.add(role);
+            		userRoles.put(userId, existingRole);
+            	} else {
+            		Role role = new Role();
+                    role.setCode(rs.getString("role_code"));
+                    role.setTenantId(rs.getString("role_tenantid"));
+            		userRoles.put(userId, Arrays.asList(role));
+            	}
+            }
+            return userRoles;
+        }
+    };
+    
 
     /**
      * get list of all userids with role in given tenant
@@ -166,6 +224,39 @@ public class UserRepository {
         savedUser.setCorrespondenceAddress(savedCorrespondenceAddress);
         return savedUser;
     }
+    
+    
+    
+    public void insertUserSession(UserSession session) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", session.getId());
+        params.put("userUuid", session.getUserUuid());
+        params.put("userId", session.getUserId());
+        params.put("username", session.getUserName());
+        params.put("loginTime", session.getLoginTime() != null ? Timestamp.valueOf(session.getLoginTime()) : null);
+        params.put("logoutTime", session.getLogoutTime() != null ? Timestamp.valueOf(session.getLogoutTime()) : null);
+        params.put("ipAddress", session.getIpAddress());
+        params.put("usertype", session.getUserType());
+        params.put("iscurrentlylogin", session.getIsCurrentlyLoggedIn());
+        params.put("isautologout", session.getIsautologout());
+
+        namedParameterJdbcTemplate.update(userTypeQueryBuilder.getInsertUserSessionQuery(), params);
+    }
+
+
+
+    public void updateUserLogoutSession(String userUuid, Boolean isAutoLogout) {
+    	 ZoneId zone = ZoneId.of("Asia/Kolkata");
+    	    LocalDateTime nowIST = LocalDateTime.now(zone);
+    	    Map<String, Object> params = new HashMap<>();
+    	    params.put("userUuid", userUuid);
+    	    params.put("logoutTime", Timestamp.valueOf(nowIST));
+    	    params.put("isautologout", isAutoLogout);
+    	    params.put("iscurrentlylogin", false);
+
+        namedParameterJdbcTemplate.update(userTypeQueryBuilder.getUpdateUserLogoutSessionQuery(), params);
+    }
+
 
     /**
      * api will update the user details.
@@ -298,7 +389,7 @@ public class UserRepository {
         else
             updateuserInputs.put("Password", oldUser.getPassword());
 
-        if (oldUser != null && user.getPhoto() != null && user.getPhoto().contains("http"))
+        if (oldUser != null && ((user.getPhoto() != null && user.getPhoto().contains("http")) || StringUtils.isEmpty(user.getPhoto())))
             updateuserInputs.put("Photo", oldUser.getPhoto());
         else
             updateuserInputs.put("Photo", user.getPhoto());
@@ -308,9 +399,11 @@ public class UserRepository {
         else
             updateuserInputs.put("PasswordExpiryDate", oldUser.getPasswordExpiryDate());
         updateuserInputs.put("Salutation", user.getSalutation());
-        updateuserInputs.put("Signature", user.getSignature());
+        if(!StringUtils.isEmpty(user.getSignature()))
+        	updateuserInputs.put("Signature", user.getSignature());
+        else
+        	updateuserInputs.put("Signature", oldUser.getSignature());
         updateuserInputs.put("Title", user.getTitle());
-
 
         List<Enum> userTypeEnumValues = Arrays.asList(UserType.values());
         if (user.getType() != null) {
@@ -340,7 +433,10 @@ public class UserRepository {
         namedParameterJdbcTemplate.update(userTypeQueryBuilder.getUpdateUserQuery(), updateuserInputs);
         if (user.getRoles() != null && !CollectionUtils.isEmpty(user.getRoles()) && !oldUser.getRoles().equals(user.getRoles())) {
             validateAndEnrichRoles(Collections.singletonList(user));
-            updateRoles(user);
+            if(user.getType() != null && UserType.CITIZEN.toString().equals(user.getType().toString()) && Boolean.TRUE.equals(user.getIsRoleUpdatable()))
+            	updateCitizenRoles(user);
+            else if(user.getType() != null && !UserType.CITIZEN.toString().equals(user.getType().toString()))
+            	updateRoles(user);
         }
         if (user.getPermanentAndCorrespondenceAddresses() != null) {
             addressRepository.update(user.getPermanentAndCorrespondenceAddresses(), user.getId(), user.getTenantId());
@@ -395,7 +491,7 @@ public class UserRepository {
      * @param tenantId  tenant id of the roles
      * @return enriched roles
      */
-	@Cacheable(value = "cRolesByCode", key = "roleCodes", sync = true)
+//	@Cacheable(value = "cRolesByCode", key = "roleCodes", sync = true)
     private Set<Role> fetchRolesByCode(Set<String> roleCodes, String tenantId) {
 
 
@@ -479,7 +575,6 @@ public class UserRepository {
      */
     private void saveUserRoles(User entityUser) {
         List<Map<String, Object>> batchValues = new ArrayList<>(entityUser.getRoles().size());
-
         for (Role role : entityUser.getRoles()) {
             batchValues.add(
                     new MapSqlParameterSource("role_code", role.getCode())
@@ -488,6 +583,15 @@ public class UserRepository {
                             .addValue("user_tenantid", entityUser.getTenantId())
                             .addValue("lastmodifieddate", new Date())
                             .getValues());
+            if(UserServiceConstants.CLIENT_ID.equals(entityUser.getClientId())) {          	
+            batchValues.add(
+                    new MapSqlParameterSource("role_code", entityUser.getClientId())
+                            .addValue("role_tenantid", role.getTenantId())
+                            .addValue("user_id", entityUser.getId())
+                            .addValue("user_tenantid", entityUser.getTenantId())
+                            .addValue("lastmodifieddate", new Date())
+                            .getValues());
+            }
         }
         namedParameterJdbcTemplate.batchUpdate(RoleQueryBuilder.INSERT_USER_ROLES,
                 batchValues.toArray(new Map[entityUser.getRoles().size()]));
@@ -628,6 +732,24 @@ public class UserRepository {
         namedParameterJdbcTemplate.update(RoleQueryBuilder.DELETE_USER_ROLES, roleInputs);
         saveUserRoles(user);
     }
+    
+
+	/**
+	 * Updates the roles assigned to a user.
+	 *
+	 * @param user the user whose roles need to be updated
+	 *
+	 * @author Roshan Chaudhary
+	 */
+	private void updateCitizenRoles(User user) {
+		Map<String, Object> roleInputs = new HashMap<String, Object>();
+		List<String> roleCodesWithTenantid = user.getRoles().stream()
+				.map(role -> role.getCode() + ":" + role.getTenantId()).collect(Collectors.toList());
+		roleInputs.put("user_id", user.getId());
+		roleInputs.put("rolesWithTenantid", roleCodesWithTenantid);
+		namedParameterJdbcTemplate.update(RoleQueryBuilder.DELETE_CITIZEN_USER_ROLES, roleInputs);
+		saveUserRoles(user);
+	}
 
     private String getStateLevelTenant(String tenantId) {
         return tenantId.split("\\.")[0];

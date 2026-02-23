@@ -1,12 +1,19 @@
 package org.egov.pg.service.gateways.ccAvanue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
+
 import lombok.extern.slf4j.Slf4j;
+
+import org.egov.pg.constants.PgConstants;
 import org.egov.pg.models.Transaction;
 import org.egov.pg.service.Gateway;
 import org.egov.pg.utils.Utils;
 import org.egov.tracer.model.CustomException;
 import org.egov.tracer.model.ServiceCallException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.postgresql.jdbc.PgArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -128,6 +135,7 @@ public class ccAvanueGateway implements Gateway {
         List<KeyValuePair> pairList = new ArrayList<>();
         String ccaRequest="";
         // Adding elements to the list
+	pairList.add(new KeyValuePair("tid", tid));   
         pairList.add(new KeyValuePair("merchant_id", MERCHANT_KEY_ID));
         pairList.add(new KeyValuePair("order_id",transaction.getTxnId()));
         pairList.add(new KeyValuePair("currency", "INR"));
@@ -157,25 +165,22 @@ public class ccAvanueGateway implements Gateway {
         
         pairList.add(new KeyValuePair("promo_code", ""));
         pairList.add(new KeyValuePair("customer_identifier", transaction.getConsumerCode()));
-	     pairList.add(new KeyValuePair("TID", tid));
         
-        for (KeyValuePair pair : pairList) {
-        	ccaRequest = ccaRequest + pair.getKey() + "=" + pair.getValue() + "&";
-            System.out.println("Key: " + pair.getKey() + ", Value: " + pair.getValue());
-           
+        int andValue= 0;
+        for (KeyValuePair pair : pairList) {   	 
+        	 ccaRequest = ccaRequest + pair.getKey() + "=" + pair.getValue();
+        	 if(andValue<(pairList.size()-1)) {
+        		ccaRequest = ccaRequest + "&";
+        	 }       
+        	  andValue++;
+        	  log.info("Key: " + pair.getKey() + ", Value: " + pair.getValue());
         }
-        System.out.println("Key2:"+ ccaRequest);
-        System.out.println("Key2:"+ MERCHANT_WORKING_KEY);
-
         AesUtil aesUtil=new AesUtil(MERCHANT_WORKING_KEY);
-   	 String encRequest = aesUtil.encrypt(ccaRequest);
-System.out.println("ENC REq "+encRequest);
-        System.out.println("Merchant Id "+MERCHANT_KEY_ID);
-          System.out.println("Access "+MERCHANT_ACCESS_CODE);
-MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-params.add("command", "initiateTransaction");
-params.add("encRequest", encRequest);
-params.add("access_code", MERCHANT_ACCESS_CODE);
+   	 		String encRequest = aesUtil.encrypt(ccaRequest);
+			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+			params.add("command", "initiateTransaction");
+			params.add("encRequest", encRequest);
+			params.add("access_code", MERCHANT_ACCESS_CODE);
         UriComponents uriComponents = UriComponentsBuilder.newInstance().scheme("https").host(MERCHANT_URL_PAY).path
                 (MERCHANT_PATH_PAY).build();
 
@@ -184,11 +189,7 @@ params.add("access_code", MERCHANT_ACCESS_CODE);
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
-            System.out.println("params "+ params);
-    //            URI redirectUri = restTemplate.postForLocation(
-//                    uriComponents.toUriString(), entity
-//            );
-
+          
             String finalurl=uriComponents.toString()+"command=initiateTransaction&encRequest="+encRequest+"&access_code="+MERCHANT_ACCESS_CODE;
             URI redirectUri=null;
 			try {
@@ -210,13 +211,14 @@ params.add("access_code", MERCHANT_ACCESS_CODE);
     }
    private String generateTID() {
     	  // Generate a unique UUID as a transaction ID
-        String tid = UUID.randomUUID().toString();
+        //String tid = UUID.randomUUID().toString();
         // Get the current timestamp
         long currentTimeMillis = System.currentTimeMillis();
         // Add 24 hours to the current time
         long expirationTimeMillis = currentTimeMillis + (24 * 60 * 60 * 1000);
         // Include expiration time in the TID
-        tid += "|" + expirationTimeMillis;
+       // tid += "|" + expirationTimeMillis;
+	String tid = String.valueOf(expirationTimeMillis);
         return tid;
 	}
     public static boolean isTIDValid(String tid) {
@@ -232,54 +234,105 @@ params.add("access_code", MERCHANT_ACCESS_CODE);
         // Check if the current time is within the validity period
         return currentTimeMillis <= expirationTimeMillis;
     }
- @Override
-    public Transaction fetchStatus(Transaction currentStatus, Map<String, String> params) {
-       		 Transaction txn =null;
-                 String ccaRequest="";         
-                 String orderId= currentStatus.getTxnId();
-	         String encResp = params.get("encResp");
-	         String refNo = getRefNo(params.get("encResp"));
-	         if (refNo != null && !refNo.equalsIgnoreCase("null") && !refNo.isEmpty()) {
-     			 ccaRequest =  "{'reference_no': '"+refNo+"'}";    			 
-     		}else {
-     			 ccaRequest =  "{'order_no': '"+orderId+"'}";
-     		}
-  		String pCommand="orderStatusTracker";
- 		String pRequestType="JSON";
- 		String pResponseType="JSON";
- 		String pVersion="1.2";
- 		String vResponse="";
- 		AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
 
-       		String encRequest = aesUtilenc.encrypt(ccaRequest);
-  	 	System.out.println("ENC REq "+encRequest);  
-  	    	StringBuffer wsDataBuff=new StringBuffer();
-  	    	wsDataBuff.append("enc_request="+encRequest+"&access_code="+MERCHANT_ACCESS_CODE+"&command="+pCommand+"&response_type="+pResponseType+"&request_type="+pRequestType+"&version="+pVersion);
-		
+    
+    @Override
+    public Transaction fetchStatus(Transaction currentStatus, Map<String, String> params) {
+       		 Transaction txn =null;     
+             String vResponse="";
+ 		 
+	         AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
+
+	         String txnId = currentStatus.getTxnId(); 
+	         String[] parts = txnId.split("_"); // Split the transaction ID by "_"
+	         String datePart = parts[2] + "_" + parts[3] + "_" + parts[4]; 
+
+	         // Convert to DD-MM-YYYY format
+	         String[] dateComponents = datePart.split("_"); 
+	         String formattedDate = dateComponents[2] + "-" + dateComponents[1] + "-" + dateComponents[0];
+	         String encRequest = aesUtilenc.encrypt("{'order_no': '" + txnId + "'}");  
+	         StringBuffer wsDataBuff = new StringBuffer();
+	         wsDataBuff.append("enc_request=" + encRequest +
+	                           "&access_code=" + MERCHANT_ACCESS_CODE +
+	                           "&command=" + PgConstants.CCAVENUE_PCOMMAND +
+	                           "&response_type=" + PgConstants.CCAVENUE_TYPE +
+	                           "&request_type=" + PgConstants.CCAVENUE_TYPE +
+	                           "&version=" + PgConstants.CCAVENUE_VERSION +
+	                           "&from_date=" + formattedDate);
   	     try {
-		            log.info("ENC WS Data Buff "+wsDataBuff.toString());
-		            log.info("Merchant URL "+MERCHANT_URL_STATUS);
+  	    	 
 			  vResponse = processUrlConnectionReq(wsDataBuff.toString(), MERCHANT_URL_STATUS);
-		     	log.info("Response: "+vResponse);
 	  	      String[] keyValuePairs = vResponse.toString().split("&");
-	      		 //String[] keyValuePairs = response.toString().split("&");
-	         	  String resp = keyValuePairs[1];
-	        	   String status = keyValuePairs[0];
-		   	        log.info("Complete response: "+resp);
-  			        String resp1= resp.substring(13, resp.length());
-	          	        log.info("Response to decrypt: "+resp1);
-	         		 String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
-	         		 String[] keyValuePairs1 = decResp.split(",");
-	         		// List<String> keyValueList = Arrays.asList(keyValuePairs1);
-	         		 System.out.println(keyValuePairs1[1]);
-	         		 txn =  transformRawResponseNew(keyValuePairs1, currentStatus,status); 
-	         		 return txn; 
+	      	  String resp = keyValuePairs[1];
+	          String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
+	       
+	          JSONObject jsonResponse = new JSONObject(decResp);
+
+	   
+	       		 txn =  transformRawResponseNew(jsonResponse,currentStatus); 
+	         	 return txn; 
+  	     
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	    
 		return txn;
     }
+ 
+ public Transaction fetchStatusByReferenceNo(Transaction currentStatus, Map<String, String> params) {
+	 Transaction txn =null;
+      String ccaRequest="";         
+   //   String orderId= currentStatus.getTxnId();
+      String encResp = params.get("encResp");
+      AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
+      String decRespp = aesUtilenc.decrypt(encResp);
+		  log.info(decRespp);
+		  String[] keyValuePairs2 = decRespp.split(",");
+		  String referenceno = keyValuePairs2[0];
+		  log.info("Reference no is"+referenceno);
+		  referenceno = referenceno.substring(17, (referenceno.length())-1);
+		  log.info("correct Reference no is"+referenceno);
+	      ccaRequest =  "{'reference_no': '"+referenceno+"'}";    
+
+	      String pCommand="orderStatusTracker";
+	      String pRequestType="JSON";
+	      String pResponseType="JSON";
+	      String pVersion="1.2";
+	      String vResponse="";
+
+
+	String encRequest = aesUtilenc.encrypt(ccaRequest);
+	System.out.println("ENC REq "+encRequest);  
+	StringBuffer wsDataBuff=new StringBuffer();
+	wsDataBuff.append("enc_request="+encRequest+"&access_code="+MERCHANT_ACCESS_CODE+"&command="+pCommand+"&response_type="+pResponseType+"&request_type="+pRequestType+"&version="+pVersion);
+
+ try {
+            log.info("ENC WS Data Buff "+wsDataBuff.toString());
+            log.info("Merchant URL "+MERCHANT_URL_STATUS);
+	  vResponse = processUrlConnectionReq(wsDataBuff.toString(), MERCHANT_URL_STATUS);
+     	log.info("Response: "+vResponse);
+	      String[] keyValuePairs = vResponse.toString().split("&");
+  		 //String[] keyValuePairs = response.toString().split("&");
+     	  String resp = keyValuePairs[1];
+    	   String status = keyValuePairs[0];
+   	        log.info("Complete response: "+resp);
+	        String resp1= resp.substring(13, resp.length());
+      	        log.info("Response to decrypt: "+resp1);
+     		 String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
+     		 String[] keyValuePairs1 = decResp.split(",");
+     		// List<String> keyValueList = Arrays.asList(keyValuePairs1);
+     		 System.out.println(keyValuePairs1[1]);
+     		 //txn =  transformRawResponseNew(keyValuePairs1, currentStatus,status); 
+     		 return txn; 
+} catch (Exception e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
+return txn;
+}
+ 
+ 
  private String getRefNo(String encResp) {
 	    AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
         String decRespp = aesUtilenc.decrypt(encResp);
@@ -353,43 +406,52 @@ public static String processUrlConnectionReq(String pBankData,String pBankUrl) t
     }
 
 
-    private Transaction transformRawResponseNew(String[] keyValuePairs1, Transaction currentStatus, String status2) {
-
-
+    private Transaction transformRawResponseNew(JSONObject response, Transaction currentStatus) {
         Transaction.TxnStatusEnum status;
-        String gatewayStatus[] = status2.split("=");;        
-        String tanAmtArray[] = keyValuePairs1[3].split(":");
-	String finalStatus[] = keyValuePairs1[23].split(":");
-        String finalOrderStatus= finalStatus[1];
-	finalOrderStatus = finalOrderStatus.substring(1, (finalOrderStatus.length()-1));
-       // status2= "0";
-        if (gatewayStatus[1].equalsIgnoreCase("0") && (finalOrderStatus.equalsIgnoreCase("Successful")|| 
-        		finalOrderStatus.equalsIgnoreCase("Success")|| finalOrderStatus.equalsIgnoreCase("Shipped"))) {
+
+        JSONArray orderStatusList = response.optJSONArray("order_Status_List");
+        JSONObject lastSuccessfulOrder = null;
+
+        // Check if any order status is "Shipped" or "Successful"
+        if (orderStatusList != null) {
+            for (int i = 0; i < orderStatusList.length(); i++) {
+                JSONObject order = orderStatusList.optJSONObject(i);
+                if (order != null) {
+                    String orderStatus = order.optString("order_status");
+                    if ("Successful".equalsIgnoreCase(orderStatus) || 
+                        "Success".equalsIgnoreCase(orderStatus) || 
+                        "Shipped".equalsIgnoreCase(orderStatus)) {
+                        lastSuccessfulOrder = order; 
+                    }
+                }
+            }
+        }
+
+        if (lastSuccessfulOrder != null) {
             status = Transaction.TxnStatusEnum.SUCCESS;
             return Transaction.builder()
-                    .txnId(currentStatus.getTxnId())
-                    .txnAmount(tanAmtArray[1])
+                    .txnId(lastSuccessfulOrder.optString("order_no")) 
+                    .txnAmount(lastSuccessfulOrder.optString("order_amt"))
                     .txnStatus(status)
-                    .gatewayTxnId(keyValuePairs1[1])
-                    .gatewayPaymentMode(keyValuePairs1[27])
-                    .gatewayStatusCode(keyValuePairs1[27])
-                    .gatewayStatusMsg(keyValuePairs1[37])
-                    .responseJson(keyValuePairs1)
+                    .gatewayTxnId(lastSuccessfulOrder.optString("reference_no"))
+                    .gatewayPaymentMode(lastSuccessfulOrder.optString("order_card_name"))
+                    .gatewayStatusCode(lastSuccessfulOrder.optString("status"))
+                    .gatewayStatusMsg(response.toString())
+                    .responseJson(response)
                     .build();
         } else {
-            status = Transaction.TxnStatusEnum.FAILURE;
             return Transaction.builder()
                     .txnId(currentStatus.getTxnId())
-                    .txnAmount(keyValuePairs1[3])
-                    .txnStatus(status)
-                    .gatewayTxnId(keyValuePairs1[1])
-                    .gatewayStatusCode(keyValuePairs1[3])
-                    .gatewayStatusMsg(keyValuePairs1[37])
-                    .responseJson(keyValuePairs1)
+                    .txnAmount(currentStatus.getTxnAmount())
+                    .txnStatus(Transaction.TxnStatusEnum.FAILURE)
+                    .gatewayTxnId(currentStatus.getGatewayTxnId())
+                    .gatewayPaymentMode(currentStatus.getGatewayPaymentMode()) 
+                    .gatewayStatusCode(currentStatus.getGatewayStatusCode()) 
+                    .gatewayStatusMsg(response.toString()) 
+                    .responseJson(response) 
                     .build();
-        }	    
+        }
     }
-
     private Transaction transformRawResponse(ccAvanueresponse resp, Transaction currentStatus) {
 
         Transaction.TxnStatusEnum status;

@@ -177,7 +177,14 @@ public class PropertyValidator {
 				fieldsUpdated.remove("creationReason");
 				isstateUpdatable = true;
 
-			} else {
+			} 
+			else	if (property.getWorkflow().getAction().equalsIgnoreCase(configs.getMutationOpenState())
+					&& propertyFromSearch.getStatus().equals(Status.INACTIVE)) {
+				fieldsUpdated.remove("creationReason");
+				isstateUpdatable = true;
+
+			} 
+			else {
 
 				State currentState = workflowService.getCurrentState(request.getRequestInfo(), property.getTenantId(),
 						property.getAcknowldgementNumber());
@@ -236,11 +243,12 @@ public class PropertyValidator {
        
 
 		CreationReason reason = property.getCreationReason();
-		if (!propertyFromSearch.getStatus().equals(Status.ACTIVE)
-				&& !propertyFromSearch.getCreationReason().equals(reason)) {
-			throw new CustomException("EG_PT_ERROR_CREATION_REASON",
-					"The Creation reason sent in the update Request is Invalid, The Creationg reason can be changed only when a new process is initiated on an ACTIVE record");
-		} else if (propertyFromSearch.getStatus().equals(Status.ACTIVE) && reason.equals(CreationReason.CREATE)) {
+//		if (!propertyFromSearch.getStatus().equals(Status.ACTIVE)
+//				&& !propertyFromSearch.getCreationReason().equals(reason)) {
+//			throw new CustomException("EG_PT_ERROR_CREATION_REASON",
+//					"The Creation reason sent in the update Request is Invalid, The Creationg reason can be changed only when a new process is initiated on an ACTIVE record");
+//		} else 
+			if (propertyFromSearch.getStatus().equals(Status.ACTIVE) && reason.equals(CreationReason.CREATE)) {
 			throw new CustomException("EG_PT_ERROR_CREATION_REASON",
 					"The Creation reason sent in the update Request is Invalid, The Creationg reason cannot be create for an ACTIVE record");
 		}
@@ -562,21 +570,27 @@ List<String> allowedParams = null;
 		User user = requestInfo.getUserInfo();
 		String userType = user.getType();
 		Boolean isUserCitizen = "CITIZEN".equalsIgnoreCase(userType);
-		
-		if(propertyUtil.isPropertySearchOpen(user)) {
+
+
+	    //Commenting this down as while searching in ws for without auth its giving error
+		// if(propertyUtil.isPropertySearchOpen(user)) {
 			
-			if(StringUtils.isEmpty(criteria.getLocality()))
-					throw new CustomException("EG_PT_INVALID_SEARCH"," locality is mandatory for open search");
-		}
+		// 	if(StringUtils.isEmpty(criteria.getLocality()))
+		// 			throw new CustomException("EG_PT_INVALID_SEARCH"," locality is mandatory for open search");
+		// }
 		
 		
-		Boolean isCriteriaEmpty = CollectionUtils.isEmpty(criteria.getOldpropertyids())
-				&& CollectionUtils.isEmpty(criteria.getAcknowledgementIds())
-				&& CollectionUtils.isEmpty(criteria.getPropertyIds())
-				&& CollectionUtils.isEmpty(criteria.getOwnerIds()) 
-				&& CollectionUtils.isEmpty(criteria.getUuids())
-				&& null == criteria.getMobileNumber()
-				&& null == criteria.getName();
+		Boolean isCriteriaEmpty =
+		        CollectionUtils.isEmpty(criteria.getOldpropertyids())
+		     && CollectionUtils.isEmpty(criteria.getAcknowledgementIds())
+		     && CollectionUtils.isEmpty(criteria.getPropertyIds())
+		     && CollectionUtils.isEmpty(criteria.getOwnerIds())
+		     && CollectionUtils.isEmpty(criteria.getUuids())
+		     && CollectionUtils.isEmpty(criteria.getVasikaNos())   // ✅ added
+		     && criteria.getSurveyId() == null
+		     && criteria.getMobileNumber() == null
+		     && criteria.getName() == null;
+
 		
 		if (isUserCitizen) {
 			

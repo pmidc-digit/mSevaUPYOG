@@ -65,27 +65,27 @@ public class Employee {
     private Long id;
 
     @SafeHtml
-    @Size(max = 1024)
+//    @Size(max = 1024)
     private String uuid;
 
     @SafeHtml
-    @Size(min = 1, max = 256)
+    @Size(min = 1)//, max = 256)
     private String code;
 
     @SafeHtml
-    @Size(max = 250)
+//    @Size(max = 250)
     private String employeeStatus;
 
     @SafeHtml
     @NotNull
-    @Size(max = 250)
+//    @Size(max = 250)
     private String employeeType;
 
     private Long dateOfAppointment;
 
     @Valid
     @NotEmpty
-    @Size(min = 1,max = 50)
+    @Size(min = 1)//,max = 50)
     private List<Jurisdiction> jurisdictions = new ArrayList<>();
 
 
@@ -95,27 +95,27 @@ public class Employee {
     private List<Assignment> assignments = new ArrayList<>();
 
     @Valid
-    @Size(max=25)
+//    @Size(max=25)
     private List<ServiceHistory> serviceHistory = new ArrayList<>();
 
 
     private Boolean IsActive;
 
     @Valid
-    @Size(max=25)
+//    @Size(max=25)
     private List<EducationalQualification> education = new ArrayList<>();
 
     @Valid
-    @Size(max=25)
+//    @Size(max=25)
     private List<DepartmentalTest> tests = new ArrayList<>();
 
     @SafeHtml
     @NotNull
-    @Size(max = 250)
+//    @Size(max = 250)
     private String tenantId;
 
     @Valid
-    @Size(max=50)
+//    @Size(max=50)
     private List<EmployeeDocument> documents = new ArrayList<>();
 
     @Valid
@@ -127,6 +127,10 @@ public class Employee {
 
     private Boolean reActivateEmployee;
     
+    public List<String> categories;
+    public List<String> subcategories;
+    public List<String> zones;
+    public List<String> assignedtenattids;
     @Valid
     @NotNull
     private User user;

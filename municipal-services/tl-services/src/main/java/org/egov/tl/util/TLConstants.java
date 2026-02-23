@@ -5,11 +5,24 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TLConstants {
 
+	
+	
+	public static final String MDMS_WC_ROLE_MODLENAME = "common-masters";
+	
+	public static final String MDMS_WC_ROLE_MASTERNAME = "thirdparty";
+	public static final String MODULE_NAME = "pb";
+	public static final String MDMS_RESPONSE_KEY = "MdmsRes";
+	public static final String CATEGORY_KEY = "category";
+	public static final String ROLE_CODE_KEY = "rolecode";
 
     public static  final String businessService_TL = "TL";
 
@@ -116,7 +129,22 @@ public class TLConstants {
     public static final String NOTIFICATION_OBJECT_REMOVED = "tl.en.edit.object.removed";
 
     public static final String NOTIFICATION_OBJECT_REMOVED_EMAIL = "tl.en.edit.object.removed.email";
+    public static final Map<String, String> USER_TYPE_TO_CHANNEL;
 
+    static {
+        USER_TYPE_TO_CHANNEL = new HashMap<>();
+        USER_TYPE_TO_CHANNEL.put("EMPLOYEE", "COUNTER");
+        USER_TYPE_TO_CHANNEL.put("CITIZEN", "CITIZEN");
+        USER_TYPE_TO_CHANNEL.put("SYSTEM", "SYSTEM");
+    }
+    
+    public static final Map<String, String> USER_ROLE_TO_CHANNEL;
+
+    static {
+    	USER_ROLE_TO_CHANNEL = new HashMap<>();
+    	USER_ROLE_TO_CHANNEL.put("ESEWAEMP", "ESEWAEMP");
+    	
+    }
 
     public static final String NOTIFICATION_OBJECT_MODIFIED = "tl.en.edit.object.modified";
 
@@ -242,6 +270,8 @@ public class TLConstants {
 
     public static final String APPLICATION_TYPE_NEW = "NEW";
     
+    public static final String APPLICATION_TYPE_UPGRADE = "UPGRADE";
+    
     // error constants
 
     public static final String INVALID_TENANT_ID_MDMS_KEY = "INVALID TENANTID";
@@ -351,6 +381,7 @@ public class TLConstants {
 	
 	
 	public static final String TL_ACTION_INITIATE = "INITIATE";
+	public static final String TL_ACTION_APPLY = "APPLY";
 
 
 
@@ -374,7 +405,7 @@ public class TLConstants {
 
     public static final String JOB_EXPIRY = "EXPIRY";
 
-    public static final String DEFAULT_WORKFLOW = "NewTL";
+    public static final String DEFAULT_WORKFLOW = "TL";
 
     public static final String PAYMENT_LINK_PLACEHOLDER="{PAYMENT_LINK}";
 
@@ -430,5 +461,21 @@ public class TLConstants {
     public TLConstants() {}
 
     public static final String TENANTS_JSONPATH = "$.MdmsRes.tenant.tenants";
+    
+    public static final String STATUS_BLACKLISTED="BLACKLISTED";
+    
+    public static final String STATUS_INACTIVE="INACTIVE";
+    
+    public static final String ACTION_REAPPROVE  = "REAPPROVE";
+    
+	public static final Map<String, String> TRADETYPE_TO_IDGEN_SHORTNAME =
+	    Stream.of(new Object[][] {
+	        {"ARCHITECT", "AR"},
+	        {"ENGINEER", "ER"},
+	        {"TOWNPLANNER", "TP"},
+	        {"SUPERVISOR", "BD"}
+	    }).collect(Collectors.toMap(data -> (String) data[0], data -> (String) data[1]));
+
+	public static final String SIGNATURE_DOC_TYPE = "APPL.BPAREG_SCANNED_SIGNATURE";
 
 }

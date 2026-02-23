@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -26,12 +27,16 @@ import org.egov.bpa.validator.BPAValidator;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.CheckListRequest;
+import org.egov.bpa.web.model.DocumentCheckList;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.bpa.web.model.user.UserSearchRequest;
+import org.egov.bpa.web.model.workflow.Action;
 import org.egov.bpa.web.model.workflow.BusinessService;
+import org.egov.bpa.web.model.workflow.State;
 import org.egov.bpa.workflow.ActionValidator;
 import org.egov.bpa.workflow.WorkflowIntegrator;
 import org.egov.bpa.workflow.WorkflowService;
@@ -42,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.Rectangle;
@@ -60,6 +66,8 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 @Slf4j
 public class BPAService {
 
+	@Autowired
+	private BPAPropertyService propertyService;
 
 	@Autowired
 	private WorkflowIntegrator wfIntegrator;
@@ -106,6 +114,9 @@ public class BPAService {
 	@Autowired
 	private BPAConfiguration config;
 	
+	@Autowired
+	private BPAPropertyService bpaPropertyService;
+	
 	/**
 	 * does all the validations required to create BPA Record in the system
 	 * @param bpaRequest
@@ -123,18 +134,17 @@ public class BPAService {
 		if(!StringUtils.isEmpty(bpaRequest.getBPA().getApprovalNo())) {
 			bpaRequest.getBPA().setApprovalNo(null);
 		}
-		
 		Map<String, String> values = edcrService.validateEdcrPlan(bpaRequest, mdmsData);
 		String applicationType = values.get(BPAConstants.APPLICATIONTYPE);
 		this.validateCreateOC(applicationType, values, requestInfo, bpaRequest);
 		bpaValidator.validateCreate(bpaRequest, mdmsData, values);
-		if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
+		if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC) && bpaRequest.getBPA().getLandInfo() != null) {
 			landService.addLandInfoToBPA(bpaRequest);
 		}
 		enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, values);
 		wfIntegrator.callWorkFlow(bpaRequest);
-		nocService.createNocRequest(bpaRequest, mdmsData);
-		this.addCalculation(applicationType, bpaRequest);
+		//nocService.createNocRequest(bpaRequest, mdmsData);
+//		this.addCalculation(applicationType, bpaRequest);
 		repository.save(bpaRequest);
 		return bpaRequest.getBPA();
 	}
@@ -172,6 +182,12 @@ public class BPAService {
 			criteria.setEdcrNumber(ocBpas.get(0).getEdcrNumber());
 			ocService.validateAdditionalData(bpaRequest, criteria);
 			bpaRequest.getBPA().setLandInfo(ocBpas.get(0).getLandInfo());
+			bpaRequest.getBPA().setLandId(ocBpas.get(0).getLandId());
+			
+			//Set old property ID
+			((Map<String, Object>)bpaRequest.getBPA().getAdditionalDetails())
+			.put("propertyuid", ((Map<String, Object>)ocBpas.get(0).getAdditionalDetails()).getOrDefault("propertyuid", null));
+			
 		}
 	}
 	
@@ -182,11 +198,11 @@ public class BPAService {
 	 */
 	private void addCalculation(String applicationType,BPARequest bpaRequest) {
 		
-		if (bpaRequest.getBPA().getRiskType().equals(BPAConstants.LOW_RISKTYPE) && !applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-			calculationService.addCalculation(bpaRequest, BPAConstants.LOW_RISK_PERMIT_FEE_KEY);
-		} else {
+//		if (bpaRequest.getBPA().getRiskType().equals(BPAConstants.LOW_RISKTYPE) && !applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
+//			calculationService.addCalculation(bpaRequest, BPAConstants.LOW_RISK_PERMIT_FEE_KEY);
+//		} else {
 			calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
-		}
+//		}
 	}
 
 	/**
@@ -233,6 +249,15 @@ public class BPAService {
 				}
 			}
 		}
+		
+		bpas.forEach(bpa -> {
+			if(bpa.getLandId() != null && bpa.getLandInfo() == null) {
+				((Map<String, Object>)bpa.getAdditionalDetails()).getOrDefault("landInfo", new  HashMap<String, Object>());
+				LandInfo landInfo = new ObjectMapper().convertValue(((Map<String, Object>)bpa.getAdditionalDetails()).get("landInfo"), LandInfo.class);
+				bpa.setLandInfo(landInfo);
+			}
+		});
+		
 		return bpas;
 	}
 	/**
@@ -321,10 +346,10 @@ public class BPAService {
 		}
 
 		String tenantId = criteria.getTenantId();
-		if(landInfo.isEmpty() && !tenantId.isEmpty() && tenantId !=null)
-		{
-          return bpas;
-		}
+		 if(landInfo.isEmpty() && !tenantId.isEmpty() && tenantId !=null)
+		 {
+           return bpas;
+		 }
 
 		bpas = getBPAFromLandId(criteria, requestInfo, null);
 		if (!landInfo.isEmpty()) {
@@ -386,10 +411,11 @@ public class BPAService {
 
 		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
+		bpa.setApplicationType(applicationType);
 		log.debug("applicationType is " + applicationType);
 		BusinessService businessService = workflowService.getBusinessService(bpa, bpaRequest.getRequestInfo(),
 				bpa.getApplicationNo());
-
+		
 		List<BPA> searchResult = getBPAWithBPAId(bpaRequest);
 		if (CollectionUtils.isEmpty(searchResult) || searchResult.size() > 1) {
 			throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Failed to Update the Application, Found None or multiple applications!");
@@ -409,24 +435,40 @@ public class BPAService {
 
 		bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
 		
-		nocService.manageOfflineNocs(bpaRequest, mdmsData);
+//		nocService.manageOfflineNocs(bpaRequest, mdmsData);
 		bpaValidator.validatePreEnrichData(bpaRequest, mdmsData);
 		enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
-		
 		this.handleRejectSendBackActions(applicationType, bpaRequest, businessService, searchResult, mdmsData, edcrResponse);
                 String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
                 String businessSrvc = businessService.getBusinessService();
+                
+                /*
+                 * Before Citizen approval we need to create Application fee demand
+                 */
+                // Create Property if Property not available
+                if (state.equalsIgnoreCase(BPAConstants.STATUS_CITIZENAPPROVAL)) {
+                	if(bpa.getApplicationType() == null) {
+                		bpa.setApplicationType(applicationType);
+                	}
+                	
+                	Boolean isPropertyAvailable = (Boolean)((Map<String, Object>)bpa.getAdditionalDetails()).get("isPropertyAvailable");
+                	String propertyId = ((Map<String, String>)bpa.getAdditionalDetails()).getOrDefault("propertyuid", "");
+                	if(!isPropertyAvailable && StringUtils.isEmpty(propertyId))
+                		bpaPropertyService.createProperty(bpaRequest, mdmsData);
+//                    calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
+                }
                 
                 /*
                  * Before approving the application we need to check sanction fee is applicable
                  * or not for that purpose on PENDING_APPROVAL_STATE the demand is generating.
                  */
                 // Generate the sanction Demand
-                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
-                        && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE)) {
-                    calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-                }
+//                if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
+//                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE)
+//                        || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_LOW_MODULE_CODE))
+//                        && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_VERIFY)) {
+//                    calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
+//                }
                 
                 
                 /*
@@ -444,6 +486,25 @@ public class BPAService {
                     bpa.setWorkflow(workflow);
                 }
 
+        		// Add Assignees in application workflow 
+        		State currentState = workflowService.getCurrentStateObj(bpa.getStatus(), businessService);
+        		String nextStateId = currentState.getActions().stream()
+        				.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
+        				.findFirst().orElse(new Action()).getNextState();
+        		State nextState = businessService.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
+        		
+        		String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
+        		
+        		if (nextState != null && (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) || nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
+        				&& (BPAConstants.ACTION_PAY.equalsIgnoreCase(action) || BPAConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+        			List<String> roles = new ArrayList<>();
+        			nextState.getActions().forEach(stateAction -> {
+        				roles.addAll(stateAction.getRoles());
+        			});
+        			List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
+        			bpa.getWorkflow().setAssignes(assignee);
+        		}
+                
 		wfIntegrator.callWorkFlow(bpaRequest);
 		log.debug("===> workflow done =>" +bpaRequest.getBPA().getStatus()  );
 		enrichmentService.postStatusEnrichment(bpaRequest);
@@ -480,7 +541,7 @@ public class BPAService {
 				throw new CustomException(BPAErrorConstants.BPA_UPDATE_ERROR_COMMENT_REQUIRED,
 						"Comment is mandaotory, please provide the comments ");
 			}
-			nocService.handleBPARejectedStateForNoc(bpaRequest);
+//			nocService.handleBPARejectedStateForNoc(bpaRequest);
 
 		} else {
 			
@@ -488,8 +549,25 @@ public class BPAService {
 				actionValidator.validateUpdateRequest(bpaRequest, businessService);
 				bpaValidator.validateUpdate(bpaRequest, searchResult, mdmsData,
 				workflowService.getCurrentState(bpa.getStatus(), businessService), edcrResponse);
-				if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-					landService.updateLandInfo(bpaRequest);
+				if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC) && bpa.getLandInfo() != null) {
+					if(bpa.getLandId() == null) {
+						if(bpaRequest.getBPA().getLandInfo().getOwnershipCategory() == null || 
+								bpaRequest.getBPA().getLandInfo().getOwnershipCategory().isEmpty()) {
+							bpaRequest.getBPA().getLandInfo().setOwnershipCategory("INDIVIDUAL.SINGLEOWNER");
+						}
+						landService.addLandInfoToBPA(bpaRequest);
+						Map<String, Object> landInfo = new ObjectMapper().convertValue(bpaRequest.getBPA().getLandInfo(), Map.class);
+						((Map<String, Object>)bpaRequest.getBPA().getAdditionalDetails()).put("landInfo", landInfo);
+					}
+					else {
+						landService.updateLandInfo(bpaRequest);
+						if(bpaRequest.getBPA().getLandInfo().getOwners().size() >0) {
+							((Map<String, Object>)bpaRequest.getBPA().getAdditionalDetails()).remove("landInfo");
+						}else {
+							Map<String, Object> landInfo = new ObjectMapper().convertValue(bpaRequest.getBPA().getLandInfo(), Map.class);
+							((Map<String, Object>)bpaRequest.getBPA().getAdditionalDetails()).put("landInfo", landInfo);
+						}
+					}
 				}
 				bpaValidator.validateCheckList(mdmsData, bpaRequest,
 				workflowService.getCurrentState(bpa.getStatus(), businessService));
@@ -524,6 +602,7 @@ public class BPAService {
 			}
 			
 			additionalDetails.put("landId", bpas.get(0).getLandId());
+			additionalDetails.put("riskType", bpas.get(0).getRiskType());
 			criteria.setEdcrNumber(bpas.get(0).getEdcrNumber());
 			ocService.validateAdditionalData(bpaRequest, criteria);
 			bpaRequest.getBPA().setLandInfo(bpas.get(0).getLandInfo());
@@ -787,6 +866,39 @@ public class BPAService {
     				}
     			}
     		}
+    	}
+    	
+    	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
+    		if(StringUtils.isEmpty(applicatioinNo))
+    			throw new CustomException(BPAErrorConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
+    		return repository.getDocumentCheckList(applicatioinNo, tenantId);
+    	}
+    	
+    	public List<DocumentCheckList> saveDocumentCheckLists(CheckListRequest checkListRequest){
+    		Long currentTime = System.currentTimeMillis();
+    		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+    		
+    		checkListRequest.getCheckList().forEach(document -> {
+    			document.setId(UUID.randomUUID().toString());
+    			document.setCreatedtime(currentTime);
+    			document.setLastmodifiedtime(currentTime);
+    			document.setCreatedby(userUUID);
+    			document.setLastmodifiedby(userUUID);
+    		});
+    		repository.saveDocumentCheckList(checkListRequest);
+    		return checkListRequest.getCheckList();
+    	}
+    	
+    	public List<DocumentCheckList> updateDocumentCheckLists(CheckListRequest checkListRequest){
+    		Long currentTime = System.currentTimeMillis();
+    		String userUUID = checkListRequest.getRequestInfo().getUserInfo().getUuid();
+    		
+    		checkListRequest.getCheckList().forEach(document -> {
+    			document.setLastmodifiedtime(currentTime);
+    			document.setLastmodifiedby(userUUID);
+    		});
+    		repository.updateDocumentCheckList(checkListRequest);
+    		return checkListRequest.getCheckList();
     	}
         
 }

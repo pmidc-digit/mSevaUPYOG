@@ -11,14 +11,22 @@ import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.common.contract.request.Role.RoleBuilder;
 import org.egov.common.contract.request.User;
+import org.egov.mdms.model.MasterDetail;
+import org.egov.mdms.model.MdmsCriteria;
+import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
+import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
+import org.egov.wscalculation.repository.BillGeneratorDao;
 import org.egov.wscalculation.repository.DemandRepository;
 import org.egov.wscalculation.repository.ServiceRequestRepository;
 import org.egov.wscalculation.repository.WSCalculationDao;
+import org.egov.wscalculation.repository.WSCalculationDaoImpl;
 import org.egov.wscalculation.repository.WaterConnectionRepository;
 import org.egov.wscalculation.util.CalculatorUtil;
 import org.egov.wscalculation.util.NotificationUtil;
@@ -26,6 +34,7 @@ import org.egov.wscalculation.util.WSCalculationUtil;
 import org.egov.wscalculation.validator.WSCalculationWorkflowValidator;
 import org.egov.wscalculation.web.models.*;
 import org.egov.wscalculation.web.models.Demand.StatusEnum;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.*;
@@ -34,6 +43,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
@@ -49,6 +59,9 @@ public class DemandService {
 
 	@Autowired
 	private ServiceRequestRepository repository;
+	
+	@Autowired
+	private BillGeneratorDao billGeneratorDao;
 
 	@Autowired
 	private ObjectMapper mapper;
@@ -97,6 +110,12 @@ public class DemandService {
 
 	@Autowired
 	private NotificationUtil notificationUtil;
+	
+	@Autowired
+	private WSCalculationDaoImpl dao;
+
+	
+	
 
 	/**
 	 * Creates or updates Demand
@@ -223,7 +242,7 @@ public class DemandService {
 								masterMap, isForConnectionNo, fromDateSearch, toDateSearch));
 					else
 						updateDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
-								masterMap, isForConnectionNo, toDateSearch, toDateSearch));
+								masterMap, isForConnectionNo, fromDateSearch, toDateSearch));
 				}
 			}
 
@@ -276,9 +295,9 @@ public class DemandService {
 			WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder().waterConnection(connection)
 					.requestInfo(requestInfo).build();
 
-			log.info("waterConnectionRequest: {}", waterConnectionRequest);
+			//log.info("waterConnectionRequest: {}", waterConnectionRequest);
 			Property property = wsCalculationUtil.getProperty(waterConnectionRequest);
-			log.info("Property: {}", property);
+		//	log.info("Property: {}", property);
 
 			String tenantId = calculation.getTenantId();
 			String consumerCode = isForConnectionNO ? calculation.getConnectionNo() : calculation.getApplicationNO();
@@ -346,13 +365,13 @@ public class DemandService {
 					businessServices = "SW";
 					for (DemandDetail ddSew : demandDetails) {
 						DemandDetail dd1 = new DemandDetail();
-						if(ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
+						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
 							dd1.setTaxHeadMasterCode("SW_CHARGE");
-						}else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
+						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
 							dd1.setTaxHeadMasterCode("SW_Round_Off");
-						}else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
+						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
 							dd1.setTaxHeadMasterCode("SW_ADVANCE_CARRYFORWARD");
-						}else {
+						} else {
 							dd1.setTaxHeadMasterCode("SW_CHARGE");
 						}
 						dd1.setDemandId(ddSew.getDemandId());
@@ -404,6 +423,7 @@ public class DemandService {
 	 * @param masterMap      Master MDMS Data
 	 * @return Returns list of demands
 	 */
+	@SuppressWarnings({ "unchecked", "null" })
 	private List<Demand> createDemand(CalculationReq calculationReq, List<Calculation> calculations,
 			Map<String, Object> masterMap, boolean isForConnectionNO) {
 		List<Demand> demands = new LinkedList<>();
@@ -476,69 +496,113 @@ public class DemandService {
 					.taxPeriodTo(toDate).consumerType("waterConnection").businessService(businessService)
 					.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
 					.additionalDetails(additionalDetailsMap).build());
+			
+			
+			/*PI-19231
+			 * 
+			 * Sharan_Gakhar
+			 * 
+			 * */
+			
+			Object mdmsResponse = null;
+	        String relatedSwConn = "";
+	        List<String> matchingUsages = new ArrayList<>();
+	        List<String> dbUsageCategory = new ArrayList<>();
 
-			// For the metered connections demand has to create one by one
-			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
-				additionalDetailsMap.put("connectionType", connection.getConnectionType());
-				demandReq.addAll(demands);
-				if (tenantId.equalsIgnoreCase("pb.amritsar")
-						&& demands.get(0).getBusinessService().equalsIgnoreCase("WS")) {
-					List<String> usageCategory = waterCalculatorDao
-							.fetchUsageCategory(demands.get(0).getConsumerCode());
-					if (usageCategory.size() > 0) {
-						if (usageCategory.get(0).equals("NONRESIDENTIAL.COMMERCIAL")) {
-							List<String> sewConsumerList = waterCalculatorDao
-									.fetchSewConnection(demands.get(0).getConsumerCode());
-							if (sewConsumerList.size() > 0) {
-								sewConsumerCode = sewConsumerList.get(0);
-							}
-						}
-					}
-					businessServices = "SW";
-					for (DemandDetail ddSew : demandDetails) {
-						DemandDetail dd1 = new DemandDetail();
-						if(ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
-							dd1.setTaxHeadMasterCode("SW_CHARGE");
-						}else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
-							dd1.setTaxHeadMasterCode("SW_Round_Off");
-						}else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
-							dd1.setTaxHeadMasterCode("SW_ADVANCE_CARRYFORWARD");
-						}else {
-							dd1.setTaxHeadMasterCode("SW_CHARGE");
-						}
-						dd1.setDemandId(ddSew.getDemandId());
-						dd1.setAuditDetails(ddSew.getAuditDetails());
-						dd1.setCollectionAmount(ddSew.getCollectionAmount());
-						dd1.setId(ddSew.getId());
-						dd1.setTaxAmount(ddSew.getTaxAmount());
-						dd1.setTenantId(ddSew.getTenantId());
-						demandDetails1.add(dd1);
-					}
 
-					demandsSw.add(Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails1).payer(owner)
-							.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
-							.taxPeriodTo(toDate).consumerType("sewerageConnection").businessService(businessService)
-							.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
-							.additionalDetails(additionalDetailsMap).build());
-                                        demandsSw.get(0).setBusinessService("SW");
-					demandReq.addAll(demandsSw);
-				}
-			} else {
-				demandReq.addAll(demands);
+			List<String> mdmsUsageCategory = new ArrayList<>();
+
+			try {
+			    mdmsResponse = getMdmsResponse(requestInfo, tenantId);
+
+			    if (mdmsResponse != null) {
+			        // Safely try to read usageCategory from MDMS
+			        try {
+			            mdmsUsageCategory = JsonPath.read(mdmsResponse, "$.MdmsRes.tenant.meterReadingMapping[0].usageCategory");
+			        } catch (Exception e) {
+			            log.error("Error reading usageCategory from MDMS response for tenantId: {} | Message: {}", tenantId, e.getMessage());
+			            mdmsUsageCategory = new ArrayList<>();
+			        }
+			    } else {
+			        log.error("MDMS response is null for tenantId: {}", tenantId);
+			        mdmsUsageCategory = new ArrayList<>();
+			    }
+
+			} catch (Exception e) {
+			    log.error("Exception while fetching MDMS response for tenantId: {} | {}", tenantId, e.getMessage());
+			    mdmsUsageCategory = new ArrayList<>();
 			}
-			List<String> consumerCodes = new ArrayList<String>();
-			consumerCodes.add(sewConsumerCode);
-			waterCalculatorDao.updateBillStatus(consumerCodes, "SW", "EXPIRED");
+			if (mdmsUsageCategory !=null && !mdmsUsageCategory.isEmpty()) {
+				 dbUsageCategory = waterCalculatorDao.fetchUsageCategory(consumerCode);
+
+		         matchingUsages = mdmsUsageCategory.stream().filter(dbUsageCategory::contains).collect(Collectors.toList());
+		        try {
+		            relatedSwConn = dao.getSwConnection(tenantId , consumerCode);
+		        } catch(Exception e){
+		            log.info("relatedSwConn not found in the table");
+		            relatedSwConn = "";
+		        }
+				
+			}
+			
+	        	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
+
+//	        List<String> sewConnectionList = waterCalculatorDao.fetchSewConnection(consumerCode); 
+//	        sewConsumerCode = sewConnectionList.isEmpty() ? "" : sewConnectionList.get(0).toString();
+	        
+//	        WSCalculationDaoImpl dao = new WSCalculationDaoImpl();
+	       
+        	
+	        if (!matchingUsages.isEmpty() && relatedSwConn != null && !relatedSwConn.isEmpty()) {
+	        	// For the metered connections demand has to create one by one
+	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
+	 				demandReq.addAll(demands);
+	 					businessServices = "SW";
+	 					for (DemandDetail ddSew : demandDetails) {
+	 						DemandDetail dd1 = new DemandDetail();
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)) {
+	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)) {
+	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ROUND_OFF);
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)) {
+	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ADVANCE_CARRYFORWARD);
+	 						} else {
+	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
+	 						}
+	 						dd1.setDemandId(ddSew.getDemandId());
+	 						dd1.setAuditDetails(ddSew.getAuditDetails());
+	 						dd1.setCollectionAmount(ddSew.getCollectionAmount());
+	 						dd1.setId(ddSew.getId());
+	 						dd1.setTaxAmount(ddSew.getTaxAmount());
+	 						dd1.setTenantId(ddSew.getTenantId());
+	 						demandDetails1.add(dd1);
+	 					}
+	 					demandsSw.add(Demand.builder().consumerCode(relatedSwConn).demandDetails(demandDetails1).payer(owner)
+	 							.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
+	 							.taxPeriodTo(toDate).consumerType("sewerageConnection").businessService(businessService)
+	 							.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
+	 							.additionalDetails(additionalDetailsMap).build());
+	 					demandsSw.get(0).setBusinessService("SW");
+	 					demandReq.addAll(demandsSw);
+	 				}else {
+	 				demandReq.addAll(demands);
+	 			}
+	        }else {
+	        	demandReq.addAll(demands);
+	        }
+	        
 		}
 
 		String billingcycle = calculatorUtils.getBillingCycle(masterMap);
 		DemandNotificationObj notificationObj = DemandNotificationObj.builder().requestInfo(requestInfo)
 				.tenantId(calculations.get(0).getTenantId()).waterConnectionIds(waterConnectionIds)
 				.billingCycle(billingcycle).build();
-		log.info("Demand Input for WSREconnection is " + demands);
-		List<Demand> demandRes = demandRepository.saveDemand(requestInfo, demandReq, notificationObj);
-		log.info("Demand Response for WSREconnection is " + demandRes);
-
+		List<Demand> demandRes = null ;
+		for(Demand demand : demandReq){
+			log.info("Demand Input for WSREconnection is " + demand);
+			demandRes = demandRepository.saveDemand(requestInfo, Collections.singletonList(demand), notificationObj);
+			log.info("Demand Response for WSREconnection is " + demand);
+		}
 		if (calculationReq.getIsReconnectionRequest())
 			fetchBillForReconnect(demandRes, requestInfo, masterMap);
 		else if (isForConnectionNO && !calculationReq.getIsReconnectionRequest())
@@ -596,9 +660,9 @@ public class DemandService {
 		WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder().waterConnection(connection)
 				.requestInfo(requestInfo).build();
 
-		log.info("waterConnectionRequest: {}", waterConnectionRequest);
+//		log.info("waterConnectionRequest: {}", waterConnectionRequest);
 		Property property = wsCalculationUtil.getProperty(waterConnectionRequest);
-		log.info("Property: {}", property);
+		//log.info("Property: {}", property);
 
 		String tenantId = calculation.getTenantId();
 		String consumerCode = isForConnectionNO ? calculation.getConnectionNo() : calculation.getApplicationNO();
@@ -932,27 +996,26 @@ public class DemandService {
 			List<String> taxHeadMasterCodes = demand.getDemandDetails().stream().map(DemandDetail::getTaxHeadMasterCode)
 					.collect(Collectors.toList());
 			;
-			
-			log.info("Demand Id: "+ demand.getId());
-			log.info(" taxHeadMasterCodes "+taxHeadMasterCodes );
-			
-			log.info(" isMigratedCon "+ isMigratedCon);
-			log.info(" oldDemand.getId().equalsIgnoreCase(demand.getId()) "+ !oldDemand.getId().equalsIgnoreCase(demand.getId()));
-			log.info(" Payment Completed  "+ demand.getIsPaymentCompleted());
-			log.info("Total Tax "+ totalTax);
-			log.info("Total totalCollection "+ totalCollection);
-			Boolean abc=totalTax.compareTo(totalCollection) > 0;
-			
-			log.info(" tax condition "+ abc);
-			log.info(" penalty taxhead code "+	taxHeadMasterCodes.contains(WSCalculationConstant.WS_TIME_PENALTY));
-			
+
+			log.info("Demand Id: " + demand.getId());
+			log.info(" taxHeadMasterCodes " + taxHeadMasterCodes);
+
+			log.info(" isMigratedCon " + isMigratedCon);
+			log.info(" oldDemand.getId().equalsIgnoreCase(demand.getId()) "
+					+ !oldDemand.getId().equalsIgnoreCase(demand.getId()));
+			log.info(" Payment Completed  " + demand.getIsPaymentCompleted());
+			log.info("Total Tax " + totalTax);
+			log.info("Total totalCollection " + totalCollection);
+			Boolean abc = totalTax.compareTo(totalCollection) > 0;
+
+			log.info(" tax condition " + abc);
+			log.info(" penalty taxhead code " + taxHeadMasterCodes.contains(WSCalculationConstant.WS_TIME_PENALTY));
+
 			if (!(isMigratedCon && oldDemand.getId().equalsIgnoreCase(demand.getId()))) {
 				log.info("-------updateDemands-----inside if-------demand.getId()--------" + demand.getId()
 						+ "-------oldDemand.getId()---------" + oldDemand.getId());
-				if (!demand.getIsPaymentCompleted() 
-						&& totalTax.compareTo(totalCollection) > 0
-						&& !taxHeadMasterCodes.contains(WSCalculationConstant.WS_TIME_PENALTY))
-				{
+				if (!demand.getIsPaymentCompleted() && totalTax.compareTo(totalCollection) > 0
+						&& !taxHeadMasterCodes.contains(WSCalculationConstant.WS_TIME_PENALTY)) {
 					log.info(" Inside Update if ");
 
 					if (demand.getStatus() != null && WSCalculationConstant.DEMAND_CANCELLED_STATUS
@@ -962,21 +1025,19 @@ public class DemandService {
 					applyTimeBasedApplicables(demand, requestInfoWrapper, timeBasedExemptionMasterMap, taxPeriods);
 					addRoundOffTaxHead(tenantId, demand.getDemandDetails());
 					demandsToBeUpdated.add(demand);
-				}
-				else
-				{
+				} else {
 					addRoundOffTaxHead(tenantId, demand.getDemandDetails());
 					demandsToBeUpdated.add(demand);
 				}
 			}
 		});
-		log.info("demand to be update123 "+ demandsToBeUpdated);
+		log.info("demand to be update123 " + demandsToBeUpdated);
 		// Call demand update in bulk to update the interest or penalty
 		DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
-		log.info("Is call For Bulk Gen"+isCallFromBulkGen);
+		log.info("Is call For Bulk Gen" + isCallFromBulkGen);
 		if (!isCallFromBulkGen)
 			repository.fetchResult(utils.getUpdateDemandUrl(), request);
-		log.info("demand to be update "+ demandsToBeUpdated);
+		log.info("demand to be update " + demandsToBeUpdated);
 		return demandsToBeUpdated;
 
 	}
@@ -1190,7 +1251,7 @@ public class DemandService {
 						.taxHeadMasterCode(WSCalculationConstant.WS_TIME_REBATE).demandId(demandId).tenantId(tenantId)
 						.build());
 		}
-log.info("Is current Demand  "+isCurrentDemand);
+		log.info("Is current Demand  " + isCurrentDemand);
 		return isCurrentDemand;
 	}
 
@@ -1220,14 +1281,7 @@ log.info("Is current Demand  "+isCurrentDemand);
 		latestDetailInfo.getLatestDemandDetail().setTaxAmount(diff);
 	}
 
-	/**
-	 * 
-	 * @param tenantId TenantId for getting master data.
-	 */
-	public void generateDemandForTenantId(String tenantId, RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria) {
-		requestInfo.getUserInfo().setTenantId(tenantId);
-		generateDemandForULB(requestInfo, tenantId, bulkBillCriteria);
-	}
+
 
 	/**
 	 * 
@@ -1305,7 +1359,7 @@ log.info("Is current Demand  "+isCurrentDemand);
 		}
 		return "Some error occured!!";
 	}
-	
+
 	public String SingleDemandGenerate(String tenantId, SingleDemand singledemand) {
 		singledemand.getRequestInfo().getUserInfo().setTenantId(tenantId);
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterDatas(singledemand, tenantId);
@@ -1322,63 +1376,38 @@ log.info("Is current Demand  "+isCurrentDemand);
 
 		return generateDemandForSingle(billingMasterData, singledemand, tenantId, taxPeriodFrom, taxPeriodTo);
 	}
-	
-	
+
 	/*
 	 * CANCEL BILL
 	 */
-	
-	public CancelDemand cancelDemandForConsumer(CancelDemand cancelDemand ) {
-	
-		
-		for(CancelList CancelList : cancelDemand.getCancelList())
-		{
-			String businessService = CancelList.getBusinessService();
-			String consumerCode = CancelList.getConsumerCode();
-			String tenantId = cancelDemand.getTenantId();
-			Long taxPeriodFrom = cancelDemand.gettaxPeriodFrom();
-			Long taxPeriodTo = cancelDemand.gettaxPeriodTo();
+	public CancelDemand cancelDemandForConsumer(CancelDemand cancelDemand) {	
+		  for (CancelList cancelList : cancelDemand.getCancelList()) {
+		        String tenantId = cancelList.gettenantId();
+		        String demandid = cancelList.getdemandid();
 
-			 Set<String> consumerCodeset = new HashSet<>();
-			     consumerCodeset.add(consumerCode);	
-		        CancelList.setConsumerCode(consumerCode);
-		        consumerCodeset.add(businessService);
-		        CancelList.setBusinessService(businessService);
-		        consumerCodeset.add(tenantId);
-		        
-		        Set<Long> consumerCodesets = new HashSet<>();
-		        consumerCodesets.add(taxPeriodFrom);
-		        cancelDemand.settaxPeriodFrom(taxPeriodFrom);
-		        consumerCodesets.add(taxPeriodTo);
-		        cancelDemand.settaxPeriodFrom(taxPeriodTo);
-		        
-		       
-		List<Canceldemandsearch> demandlist = waterCalculatorDao.getConnectionCancel(businessService, tenantId, consumerCode, taxPeriodFrom,
-					 taxPeriodTo);
-  	  List<BillSearch> billSearch = waterCalculatorDao.getBill(consumerCode,businessService); 
+		        List<Canceldemandsearch> demandlists = waterCalculatorDao.getConnectionCancels(tenantId, demandid);
 
-		if (!demandlist.isEmpty()) 
-		{
-//            for (Canceldemandsearch connectionNo : demandlist) 
-            {
-            	boolean billCancelled =false;
-            Boolean Cancel=  waterCalculatorDao.getUpdate(demandlist);  
-              if(Cancel) 
-              {         
-            	   billCancelled = waterCalculatorDao.getexpiryBill(billSearch);          	  
-              }    
-              
-            }
-		}	
-		     
-		
-		
-		
-	            }
-		return cancelDemand;
-	}
+		        if (demandlists.isEmpty()) {
+		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+		        }
 
-		
+		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
+
+		        if (!cancels) {
+		            throw new CustomException("Update failed", "Failed to update demand records.");
+		        }
+
+		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
+		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
+
+		        if (!billCancelled) {
+		            throw new CustomException("Bill Cancellation Failed", "Failed to cancel bills for the given demand.");
+		        }
+		    }
+
+		    return cancelDemand;
+		}
+
 
 	public String generateDemandForSingle(Map<String, Object> master, SingleDemand singleDemand, String tenantId,
 			Long taxPeriodFrom, Long taxPeriodTo) {
@@ -1389,22 +1418,14 @@ log.info("Is current Demand  "+isCurrentDemand);
 		try {
 			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
 
-			// java.util.Optional<TaxPeriod> matchingObject = taxPeriods.stream().
-			// filter(p -> p.getFromDate().equals(taxPeriodFrom)).findFirst();
-
 			int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
 					.filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
 			String cone = singleDemand.getConsumercode();
 			log.info("Billing master data values for non metered connection:: {}", master);
 			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
 					WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
-
-			// Generate bulk demands for connections in below count
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
-//			 if (connectionNos.size() <= 0) {
-//	                return  ("Demand not generated: No connections found");
-//	            }
 
 			if (connectionNos == null || connectionNos.size() <= 0) {
 				tempvariable = null;
@@ -1427,24 +1448,16 @@ log.info("Is current Demand  "+isCurrentDemand);
 					if (lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-								.getAsInt();
-						// Increased one index to generate the next quarter demand
+								.orElse(-1);
 						generateDemandFromIndex++;
 					}
-					log.info("lastDemandFromDate: {} and generateDemandFromIndex: {}", lastDemandFromDate,
-							generateDemandFromIndex);
-
 					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {
 						generateDemandFromIndex++;
 						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
-						log.info("FromPeriod: {} and ToPeriod: {}", taxPeriod.getFromDate(), taxPeriod.getToDate());
-						log.info("taxPeriodIndex: {} and generateDemandFromIndex: {} and generateDemandToIndex: {}",
-								taxPeriodIndex, generateDemandFromIndex, generateDemandToIndex);
 
 						boolean isConnectionValid = isValidBillingCycle(waterConnection, requestInfo, tenantId,
 								taxPeriod.getFromDate(), taxPeriod.getToDate());
 						if (isConnectionValid) {
-
 							CalculationCriteria calculationCriteria = CalculationCriteria.builder().tenantId(tenantId)
 									.assessmentYear(taxPeriod.getFinancialYear()).from(taxPeriod.getFromDate())
 									.to(taxPeriod.getToDate()).connectionNo(waterConnection.getConnectionNo()).build();
@@ -1463,9 +1476,11 @@ log.info("Is current Demand  "+isCurrentDemand);
 						continue;
 
 					if (connectionNosCount == bulkSaveDemandCount) {
-						log.info(
-								"Controller entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",
-								connectionNosCount, connectionNos.size());
+						/*
+						 * log.info(
+						 * "Controller entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}"
+						 * , connectionNosCount, connectionNos.size());
+						 */
 
 						CalculationReq calculationReq = CalculationReq.builder()
 								.calculationCriteria(calculationCriteriaList).requestInfo(requestInfo)
@@ -1473,6 +1488,7 @@ log.info("Is current Demand  "+isCurrentDemand);
 						log.info(
 								"Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}",
 								calculationCriteriaList.size());
+
 						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
 						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
 						calculationCriteriaList.clear();
@@ -1484,19 +1500,23 @@ log.info("Is current Demand  "+isCurrentDemand);
 						threadSleepCount++;
 
 					} else if (connectionNosIndex == connectionNos.size() - 1) {
-						log.info(
-								"Last connection entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",
-								connectionNosCount, connectionNos.size());
+						/*
+						 * log.info(
+						 * "Last connection entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}"
+						 * , connectionNosCount, connectionNos.size());
+						 */
 						MigrationCount migrationCount = MigrationCount.builder().tenantid(tenantId)
 								.businessService("WS").id(UUID.randomUUID().toString())
-							.createdTime(System.currentTimeMillis()).build();
+								.createdTime(System.currentTimeMillis()).build();
 
 						CalculationReq calculationReq = CalculationReq.builder()
 								.calculationCriteria(calculationCriteriaList).requestInfo(requestInfo)
 								.isconnectionCalculation(true).migrationCount(migrationCount).build();
+
 						log.info(
 								"Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}",
 								calculationCriteriaList.size());
+
 						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
 						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
 						calculationCriteriaList.clear();
@@ -1577,83 +1597,7 @@ log.info("Is current Demand  "+isCurrentDemand);
 
 	}
 
-	/**
-	 * 
-	 * @param master      Master MDMS Data
-	 * @param requestInfo Request Info
-	 * @param tenantId    Tenant Id
-	 */
-	public void generateDemandForULB(RequestInfo requestInfo, String tenantId, BulkBillCriteria bulkBillCriteria) {
 
-		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo, tenantId);
-
-		long startDay = (((int) billingMasterData.get(WSCalculationConstant.Demand_Generate_Date_String)) / 86400000);
-		if (isCurrentDateIsMatching((String) billingMasterData.get(WSCalculationConstant.Billing_Cycle_String),
-				startDay)) {
-
-			Integer batchsize = configs.getBulkbatchSize();
-			Integer batchOffset = configs.getBatchOffset();
-
-			if (bulkBillCriteria.getLimit() != null)
-				batchsize = Math.toIntExact(bulkBillCriteria.getLimit());
-
-			if (bulkBillCriteria.getOffset() != null)
-				batchOffset = Math.toIntExact(bulkBillCriteria.getOffset());
-
-			Map<String, Object> masterMap = mstrDataService.loadMasterData(requestInfo, tenantId);
-
-			ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap
-					.get(WSCalculationConstant.Billing_Period_Master);
-			mstrDataService.enrichBillingPeriod(null, billingFrequencyMap, masterMap,
-					WSCalculationConstant.nonMeterdConnection);
-
-			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-					.get(WSCalculationConstant.BILLING_PERIOD);
-
-			Long fromDate = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
-			Long toDate = (Long) financialYearMaster.get(WSCalculationConstant.ENDING_DATE_APPLICABLES);
-
-			long count = waterCalculatorDao.getConnectionCount(tenantId, fromDate, toDate);
-			log.info("batchsize: " + batchsize + " batchOffset :" + batchOffset);
-			log.info("Connection Count: " + count);
-			log.info("fromDate: " + fromDate + " toDate :" + toDate);
-
-			if (count > 0) {
-				while (batchOffset < count) {
-					List<WaterConnection> connections = waterCalculatorDao.getConnectionsNoList(tenantId,
-							WSCalculationConstant.nonMeterdConnection, batchOffset, batchsize, fromDate, toDate);
-
-					connections = enrichmentService.filterConnections(connections);
-					String assessmentYear = estimationService.getAssessmentYear();
-					log.info("Size of the connection list for batch : " + batchOffset + " is " + connections.size());
-
-					if (connections.size() > 0) {
-						List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
-						for (WaterConnection connection : connections) {
-							CalculationCriteria calculationCriteria = CalculationCriteria.builder().tenantId(tenantId)
-									.assessmentYear(assessmentYear).connectionNo(connection.getConnectionNo())
-									.waterConnection(connection).build();
-							calculationCriteriaList.add(calculationCriteria);
-						}
-						MigrationCount migrationCount = MigrationCount.builder().tenantid(tenantId)
-								.businessService("WS").limit(Long.valueOf(batchsize)).id(UUID.randomUUID().toString())
-								.offset(Long.valueOf(batchOffset)).createdTime(System.currentTimeMillis())
-								.recordCount(Long.valueOf(connections.size())).build();
-
-						CalculationReq calculationReq = CalculationReq.builder()
-								.calculationCriteria(calculationCriteriaList).requestInfo(requestInfo)
-								.isconnectionCalculation(true).migrationCount(migrationCount).build();
-
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
-						log.info("Bulk bill Gen batch info : " + migrationCount);
-						calculationCriteriaList.clear();
-					}
-					batchOffset = batchOffset + batchsize;
-				}
-			}
-
-		}
-	}
 
 	/**
 	 * 
@@ -1663,133 +1607,102 @@ log.info("Is current Demand  "+isCurrentDemand);
 	 */
 	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
 			Long taxPeriodFrom, Long taxPeriodTo) {
-		log.info("generateDemandForULB:: " + tenantId + " taxPeriodFrom:: " + taxPeriodFrom + " taxPeriodTo "
-				+ taxPeriodTo);
+		log.info("generateDemandForULB:: {} taxPeriodFrom:: {} taxPeriodTo {}", tenantId, taxPeriodFrom, taxPeriodTo);
 		try {
 			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
 
-			// java.util.Optional<TaxPeriod> matchingObject = taxPeriods.stream().
-			// filter(p -> p.getFromDate().equals(taxPeriodFrom)).findFirst();
-
 			int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
 					.filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
+
 			String cone = requestInfo.getKey();
 			log.info("Billing master data values for non metered connection:: {}", master);
+
 			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
 					WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
 
-			// Generate bulk demands for connections in below count
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
+
 			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
-			int connectionNosCount = 0;
 			int totalRecordsPushedToKafka = 0;
-			int threadSleepCount = 0;
+
 			for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
 				WaterDetails waterConnection = connectionNos.get(connectionNosIndex);
-				connectionNosCount++;
-				log.info("Connection Number: {} ", waterConnection.getConnectionNo());
+				log.info("Connection Number: {}", waterConnection.getConnectionNo());
 
 				try {
-					int generateDemandFromIndex = 0;
+					int startIndex = 0;
 					Long lastDemandFromDate = waterCalculatorDao
 							.searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
 
 					if (lastDemandFromDate != null) {
-						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
+						startIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-								.getAsInt();
-						// Increased one index to generate the next quarter demand
-						generateDemandFromIndex++;
+								.orElse(-1);
+						startIndex++; // move to next quarter
 					}
-					log.info("lastDemandFromDate: {} and generateDemandFromIndex: {}", lastDemandFromDate,
-							generateDemandFromIndex);
 
-					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {
-						generateDemandFromIndex++;
+					for (int taxPeriodIndex = startIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
 						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
-						log.info("FromPeriod: {} and ToPeriod: {}", taxPeriod.getFromDate(), taxPeriod.getToDate());
-						log.info("taxPeriodIndex: {} and generateDemandFromIndex: {} and generateDemandToIndex: {}",
-								taxPeriodIndex, generateDemandFromIndex, generateDemandToIndex);
+						log.info("FromPeriod: {} ToPeriod: {} connectionNo: {}", taxPeriod.getFromDate(),
+								taxPeriod.getToDate(), waterConnection.getConnectionNo());
 
-						boolean isConnectionValid = isValidBillingCycle(waterConnection, requestInfo, tenantId,
-								taxPeriod.getFromDate(), taxPeriod.getToDate());
-						if (isConnectionValid) {
+						if (isValidBillingCycle(waterConnection, requestInfo, tenantId, taxPeriod.getFromDate(),
+								taxPeriod.getToDate())) {
 
-							CalculationCriteria calculationCriteria = CalculationCriteria.builder().tenantId(tenantId)
+							calculationCriteriaList.add(CalculationCriteria.builder().tenantId(tenantId)
 									.assessmentYear(taxPeriod.getFinancialYear()).from(taxPeriod.getFromDate())
-									.to(taxPeriod.getToDate()).connectionNo(waterConnection.getConnectionNo()).build();
-							calculationCriteriaList.add(calculationCriteria);
-							log.info("connectionNosIndex: {} and connectionNos.size(): {}", connectionNosIndex,
-									connectionNos.size());
+									.to(taxPeriod.getToDate()).connectionNo(waterConnection.getConnectionNo()).build());
+
+							// ✅ Push batch when reaching configured size
+							if (calculationCriteriaList.size() == bulkSaveDemandCount) {
+								pushBatchToKafka(calculationCriteriaList, requestInfo);
+							
+									//Thread.sleep(1500000);
+
+								
+								totalRecordsPushedToKafka += calculationCriteriaList.size();
+								calculationCriteriaList.clear();
+							}
 
 						} else {
-							log.info("Invalid Connection");
-							log.info("connectionNosIndex: {} and connectionNos.size(): {}", connectionNosIndex,
-									connectionNos.size());
+							log.info("Invalid Connection for period {}", taxPeriod.getFinancialYear());
 						}
-
-					}
-					if (calculationCriteriaList.isEmpty())
-						continue;
-
-					if (connectionNosCount == bulkSaveDemandCount) {
-						log.info(
-								"Controller entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",
-								connectionNosCount, connectionNos.size());
-
-						CalculationReq calculationReq = CalculationReq.builder()
-								.calculationCriteria(calculationCriteriaList).requestInfo(requestInfo)
-								.isconnectionCalculation(true).build();
-						log.info(
-								"Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}",
-								calculationCriteriaList.size());
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
-						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
-						calculationCriteriaList.clear();
-						connectionNosCount = 0;
-						if (threadSleepCount == 3) {
-							Thread.sleep(15000);
-							threadSleepCount = 0;
-						}
-						threadSleepCount++;
-
-					} else if (connectionNosIndex == connectionNos.size() - 1) {
-						log.info(
-								"Last connection entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",
-								connectionNosCount, connectionNos.size());
-
-						UUID uuid = UUID.randomUUID();
-
-						MigrationCount migrationCount = MigrationCount.builder().createdTime(System.currentTimeMillis())
-								.businessService("WS").id(uuid.toString()).tenantid(tenantId).build();
-
-						CalculationReq calculationReq = CalculationReq.builder()
-								.calculationCriteria(calculationCriteriaList).requestInfo(requestInfo)
-								.isconnectionCalculation(true).migrationCount(migrationCount).build();
-						log.info(
-								"Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}",
-								calculationCriteriaList.size());
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
-						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
-						calculationCriteriaList.clear();
-						connectionNosCount = 0;
-
 					}
 
 				} catch (Exception e) {
-					e.printStackTrace();
-					log.error("Exception occurred while generating demand for water connectionno: "
-							+ waterConnection.getConnectionNo() + " tenantId: " + tenantId + " Exception msg:"
-							+ e.getMessage());
+					log.error("Exception while generating demand for connectionNo: {} tenantId: {} msg: {}",
+							waterConnection.getConnectionNo(), tenantId, e.getMessage(), e);
 				}
-
 			}
+
+// ✅ Push leftover records if any
+			if (!calculationCriteriaList.isEmpty()) {
+				pushBatchToKafka(calculationCriteriaList, requestInfo);
+				totalRecordsPushedToKafka += calculationCriteriaList.size();
+				calculationCriteriaList.clear();
+			}
+
 			log.info("totalRecordsPushedToKafka: {}", totalRecordsPushedToKafka);
+
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.error("Exception occurred while processing the demand generation for tenantId: " + tenantId);
+			log.error("Exception occurred while processing demand generation for tenantId: {}", tenantId, e);
 		}
+	}
+
+	private void pushBatchToKafka(List<CalculationCriteria> calculationCriteriaList, RequestInfo requestInfo) {
+	    CalculationReq calculationReq = CalculationReq.builder()
+	            .calculationCriteria(new ArrayList<>(calculationCriteriaList)) // copy
+	            .requestInfo(requestInfo)
+	            .isconnectionCalculation(true)
+	            .build();
+
+	    // use first connectionNo in the batch as key
+	    String key = calculationCriteriaList.get(0).getConnectionNo();
+
+	    log.info("Pushing batch to Kafka with {} records, key={}", calculationCriteriaList.size(), key);
+
+	    wsCalculationProducer.push(configs.getCreateDemand(), key, calculationReq);
 	}
 
 	private boolean isValidBillingCycle(WaterDetails waterConnection, RequestInfo requestInfo, String tenantId,
@@ -1893,32 +1806,106 @@ log.info("Is current Demand  "+isCurrentDemand);
 		return notificationSent;
 	}
 
-	public List<String> fetchBillSchedulerSingle(Set<String> consumerCodes, String tenantId, RequestInfo requestInfo) {
-		List<String> consumercodesFromRes = new ArrayList<>();
-		for (String consumerCode : consumerCodes) {
+	public List<String> fetchBillSchedulerSingle(Set<String> consumerCodes, String tenantId,RequestInfo requestInfo, List<String> failureCollector, String  schedlerId, String localitycode
+	) {
+	    List<String> successConsumerCodes = new ArrayList<>();
 
-			try {
+	    for (String consumerCode : consumerCodes) {
+			List<BillV2> bills =null;
 
-				StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
+	        try {
+	        	
+	            StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
 
-				Object result = serviceRequestRepository.fetchResult(fetchBillURL,
-						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
-				log.info("Bills generated for the consumercodes: {}", fetchBillURL);
-				BillResponseV2 billResponse = mapper.convertValue(result, BillResponseV2.class);
-				List<BillV2> bills = billResponse.getBill();
-				if (bills != null && !bills.isEmpty()) {
-					consumercodesFromRes
-							.addAll(bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList()));
-					log.info("Bill generated successfully for consumercode: {}, TenantId: {}", consumerCode, tenantId);
-				}
+	            Object result = serviceRequestRepository.fetchResult(
+	                    fetchBillURL,
+	                    RequestInfoWrapper.builder().requestInfo(requestInfo).build()
+	            );
 
-			} catch (Exception ex) {
-				log.error("Fetch Bill Error For tenantId:{} consumercode: {} and Exception is: {}", tenantId,
-						consumerCodes, ex);
-			}
-		}
-		return consumercodesFromRes;
+	            BillResponseV2 billResponse = mapper.convertValue(result, BillResponseV2.class);
+	            if (billResponse == null) {
+	                log.warn("⚠️ BillResponseV2 is null after conversion.");
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	            			  consumerCode,
+			            		 schedlerId,
+		  				        localitycode,
+		  				        WSCalculationConstant.FAILURE,
+		  				        tenantId,
+		  				        "BillResponseV2 is null after conversion.",
+		  				      System.currentTimeMillis()
+		  				    );
+	            } else if (billResponse.getBill() == null) {
+	                log.warn("⚠️ Bill list is null in BillResponseV2.");
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	            			  consumerCode,
+			            		 schedlerId,
+		  				        localitycode,
+		  				        WSCalculationConstant.FAILURE,
+		  				        tenantId,
+		  				        "Bill list is null in BillResponseV2.",
+		  				      System.currentTimeMillis()
+		  				    );
+	            } else {
+	                bills = billResponse.getBill();
+	            }
+	        	
+	            
+	            if (bills != null && !bills.isEmpty()) {
+	            	
+	            	
+	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
+	            			  consumerCode,
+		            		 schedlerId,
+	  				        localitycode,
+	  				        WSCalculationConstant.SUCCESS,
+	  				        tenantId,
+	  				        WSCalculationConstant.SUCCESS_MESSAGE,
+	  				      System.currentTimeMillis()
+	  				    );
+
+	            	 
+	            	
+	                successConsumerCodes.addAll(
+	                    bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList())
+	                
+	                		);
+	                log.info("✅ Bill generated successfully for consumerCode: {}", consumerCode);
+	            } else {
+	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
+	            			  consumerCode,
+			            		 schedlerId,
+		  				        localitycode,
+		  				        WSCalculationConstant.FAILURE,
+		  				        tenantId,
+		  				        WSCalculationConstant.FAILURE_MESSAGE,
+		  				      System.currentTimeMillis()
+		  				    );
+
+	                failureCollector.add(consumerCode);
+	                log.warn("⚠️ No bills returned for consumerCode: {}", consumerCode);
+	            }
+
+	        } catch (Exception ex) {
+	        	  billGeneratorDao.updateBillSchedulerConnectionStatus(
+	        			  consumerCode,
+		            		 schedlerId,
+	  				        localitycode,
+	  				        WSCalculationConstant.FAILURE,
+	  				        tenantId,
+	  				      WSCalculationConstant.FAILURE_MESSAGE + " | Error Msg: " + ex.getMessage(),
+	  				      System.currentTimeMillis()
+	  				    );
+
+	            failureCollector.add(consumerCode);
+	            log.error("❌ Fetch Bill failed for consumerCode: {} Exception: {}", consumerCode, ex.getMessage(), ex);
+	            
+	        }
+	    }
+
+	    return successConsumerCodes;
 	}
+
+
 
 	public boolean fetchBill(List<Demand> demandResponse, RequestInfo requestInfo, Map<String, Object> masterMap) {
 		boolean notificationSent = false;
@@ -1933,7 +1920,7 @@ log.info("Is current Demand  "+isCurrentDemand);
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
 //				log.info("Result"+result.toString());
-				wsCalculationProducer.push(configs.getPayTriggers(), billResponse);
+				//wsCalculationProducer.push(configs.getPayTriggers(), billResponse);
 				notificationSent = true;
 				successCount++;
 			} catch (Exception ex) {
@@ -1941,18 +1928,18 @@ log.info("Is current Demand  "+isCurrentDemand);
 				errorMap.add(demand);
 			}
 		}
-		String uuid = demandResponse.get(0).getAuditDetails().getCreatedBy();
-		if (errorMap.size() == demandResponse.size()) {
-			paymentNotificationService.sendBillNotification(requestInfo, uuid, demandResponse.get(0).getTenantId(),
-					masterMap, false);
-		} else {
-			if (!errorMap.isEmpty()) {
-				paymentNotificationService.sendBillNotification(requestInfo, uuid, demandResponse.get(0).getTenantId(),
-						masterMap, false);
-			}
-			paymentNotificationService.sendBillNotification(requestInfo, uuid, demandResponse.get(0).getTenantId(),
-					masterMap, true);
-		}
+//		String uuid = demandResponse.get(0).getAuditDetails().getCreatedBy();
+//		if (errorMap.size() == demandResponse.size()) {
+//			paymentNotificationService.sendBillNotification(requestInfo, uuid, demandResponse.get(0).getTenantId(),
+//					masterMap, false);
+//		} else {
+//			if (!errorMap.isEmpty()) {
+//				paymentNotificationService.sendBillNotification(requestInfo, uuid, demandResponse.get(0).getTenantId(),
+//						masterMap, false);
+//			}
+//			paymentNotificationService.sendBillNotification(requestInfo, uuid, demandResponse.get(0).getTenantId(),
+//					masterMap, true);
+//		}
 		return notificationSent;
 	}
 
@@ -2118,5 +2105,70 @@ log.info("Is current Demand  "+isCurrentDemand);
 		}
 		return demandList;
 	}
+	
+	/*PI-19231
+	 * 
+	 * */
+	
+	public Object getMdmsResponse(RequestInfo requestInfo, String tenantId ) {
+//		StringBuilder uri = new StringBuilder(calculatorUtils.getMdmsSearchUrl());
+//		MdmsCriteriaReq mdmsCriteriaReq = calculatorUtils.getWsTest(requestInfo ,tenantId);
+		Object response = null;
+		try {
+			response = repository.fetchResult(calculatorUtils.getMdmsSearchUrl(), calculatorUtils.getUsageCategoryFromMdms(requestInfo ,tenantId));
+			log.info("response : " + response);	
+			return response;
+		}
+		catch(Exception e){
+			log.error("Error fetching result", e);
+		}
+		return response;
+		
+	}	
+	
+	
+	
+	
+	
+	public List<Demand> searchDemandForBreakdownCalculation(
+	        String tenantId,
+	        Set<String> consumerCodes,
+	        RequestInfo requestInfo) {
+
+	    Object result = serviceRequestRepository.fetchResult(
+	            getDemandSearchURLForWS(tenantId, consumerCodes),
+	            RequestInfoWrapper.builder()
+	                    .requestInfo(requestInfo)
+	                    .build()
+	    );
+
+	    log.info("Demand search (Breakdown) response: {}", result);
+
+	    try {
+	        return mapper.convertValue(result, DemandResponse.class).getDemands();
+	    } catch (IllegalArgumentException e) {
+	        throw new CustomException(
+	                "EG_WS_PARSING_ERROR",
+	                "Failed to parse Demand Search response for Breakdown"
+	        );
+	    }
+	}
+	
+	
+	
+	public StringBuilder getDemandSearchURLForWS(
+	        String tenantId,
+	        Set<String> consumerCodes) {
+
+	    StringBuilder url = new StringBuilder(configs.getBillingServiceHost());
+
+	    url.append(configs.getDemandSearchEndPoint());
+	    url.append("?tenantId=").append(tenantId);
+	    url.append("&businessService=").append(configs.getBusinessService()); // ✅ WS
+	    url.append("&consumerCode=").append(StringUtils.join(consumerCodes, ','));
+
+	    return url;
+	}
+
 
 }

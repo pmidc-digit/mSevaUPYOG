@@ -9,10 +9,12 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 public class PGRQueryBuilder {
@@ -41,7 +43,7 @@ public class PGRQueryBuilder {
     
     private static final String RESOLVED_COMPLAINTS_QUERY = "select count(*) from eg_pgr_service_v2 where applicationstatus='CLOSEDAFTERRESOLUTION' and tenantid=? and lastmodifiedtime>? ";
     
-    private static final String AVERAGE_RESOLUTION_TIME_QUERY = "select round(avg(lastmodifiedtime-createdtime)/86400000) from eg_pgr_service_v2 where applicationstatus='CLOSEDAFTERRESOLUTION' and tenantid=? ";
+    private static final String AVERAGE_RESOLUTION_TIME_QUERY = "select coalesce(round(avg(lastmodifiedtime-createdtime)/86400000),0) from eg_pgr_service_v2 where applicationstatus='CLOSEDAFTERRESOLUTION' and tenantid=? ";
     
 
 
@@ -88,10 +90,19 @@ public class PGRQueryBuilder {
             addToPreparedStatement(preparedStmtList, applicationStatuses);
         }
 
-        if (criteria.getServiceRequestId() != null) {
-            addClauseIfRequired(preparedStmtList, builder);
-            builder.append(" ser.serviceRequestId=? ");
-            preparedStmtList.add(criteria.getServiceRequestId());
+        if (criteria.getServiceRequestId() != null && !criteria.getServiceRequestId().isEmpty()) {
+            List<String> requestIds = Arrays.stream(criteria.getServiceRequestId().split(","))
+                                            .map(String::trim)
+                                            .filter(s -> !s.isEmpty())
+                                            .collect(Collectors.toList());
+
+            if (!requestIds.isEmpty()) {
+                addClauseIfRequired(preparedStmtList, builder);
+                builder.append(" ser.serviceRequestId IN (");
+                builder.append(requestIds.stream().map(id -> "?").collect(Collectors.joining(", ")));
+                builder.append(") ");
+                preparedStmtList.addAll(requestIds);
+            }
         }
 
         Set<String> ids = criteria.getIds();

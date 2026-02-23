@@ -42,55 +42,49 @@ public class UserService {
 	 * @param request WaterConnectionRequest
 	 */
 	public void createUser(WaterConnectionRequest request) {
-		if (!CollectionUtils.isEmpty(request.getWaterConnection().getConnectionHolders())) {
-			Role role = getCitizenRole();
-			Set<String> listOfMobileNumbers = getMobileNumbers(request);
-			request.getWaterConnection().getConnectionHolders().forEach(holderInfo -> {
-				addUserDefaultFields(request.getWaterConnection().getTenantId(), role, holderInfo);
-				UserDetailResponse userDetailResponse = userExists(holderInfo, request.getRequestInfo());
-				if (CollectionUtils.isEmpty(userDetailResponse.getUser())) {
-					/*
-					 * Sets userName equal to mobileNumber
-					 *
-					 * If mobileNumber already assigned as user-name for another user
-					 *
-					 * then random uuid is assigned as user-name
-					 */
-					StringBuilder uri = new StringBuilder(configuration.getUserHost())
-							.append(configuration.getUserContextPath()).append(configuration.getUserCreateEndPoint());
-					setUserName(holderInfo, listOfMobileNumbers);
 
-					ConnectionUserRequest userRequest = ConnectionUserRequest.builder()
-							.requestInfo(request.getRequestInfo()).user(holderInfo).build();
+	    if (CollectionUtils.isEmpty(request.getWaterConnection().getConnectionHolders())) return;
 
-					userDetailResponse = userCall(userRequest, uri);
+	    Role role = getCitizenRole();
+	    Set<String> listOfMobileNumbers = getMobileNumbers(request);
 
-					if (ObjectUtils.isEmpty(userDetailResponse)) {
-						throw new CustomException("INVALID USER RESPONSE",
-								"The user create has failed for the mobileNumber : " + holderInfo.getUserName());
-					}
+	    request.getWaterConnection().getConnectionHolders().forEach(holderInfo -> {
 
-				} else {
+	        addUserDefaultFields(request.getWaterConnection().getTenantId(), role, holderInfo);
 
-					holderInfo.setId(userDetailResponse.getUser().get(0).getId());
-					holderInfo.setUuid(userDetailResponse.getUser().get(0).getUuid());
-					addUserDefaultFields(request.getWaterConnection().getTenantId(), role, holderInfo);
+	        UserDetailResponse existingUser = userExists(holderInfo, request.getRequestInfo());
 
-					StringBuilder uri = new StringBuilder(configuration.getUserHost())
-							.append(configuration.getUserContextPath()).append(configuration.getUserUpdateEndPoint());
-					if (userDetailResponse.getUser() != null && holderInfo.getRelationship().contains("*")) {
-						holderInfo.setRelationship(userDetailResponse.getUser().get(0).getRelationship());
-					}
-					userDetailResponse = userCall(new ConnectionUserRequest(request.getRequestInfo(), holderInfo), uri);
-					if (userDetailResponse.getUser().get(0).getUuid() == null) {
-						throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");
-					}
-				}
-				// Assigns value of fields from user got from userDetailResponse to owner object
-				setOwnerFields(holderInfo, userDetailResponse, request.getRequestInfo());
-			});
-		}
+	        boolean isMobileSame = existingUser != null
+	                               && !existingUser.getUser().isEmpty()
+	                               && existingUser.getUser().get(0).getMobileNumber()
+	                                     .equals(holderInfo.getMobileNumber());
+
+	        if (existingUser == null || existingUser.getUser().isEmpty() || !isMobileSame) {
+
+	            setUserName(holderInfo, listOfMobileNumbers);
+
+	            StringBuilder uri = new StringBuilder(configuration.getUserHost())
+	                    .append(configuration.getUserContextPath())
+	                    .append(configuration.getUserCreateEndPoint());
+
+	            ConnectionUserRequest userRequest =
+	                    new ConnectionUserRequest(request.getRequestInfo(), holderInfo);
+
+	            UserDetailResponse createdUser = userCall(userRequest, uri);
+
+	            setOwnerFields(holderInfo, createdUser, request.getRequestInfo());
+
+	        } else {
+
+	            holderInfo.setUuid(existingUser.getUser().get(0).getUuid());
+	            holderInfo.setId(existingUser.getUser().get(0).getId());
+
+	            setOwnerFields(holderInfo, existingUser, request.getRequestInfo());
+	        }
+
+	    });
 	}
+
 
 	/**
 	 * Create citizen role
@@ -273,9 +267,14 @@ public class UserService {
 	 */
 	private UserDetailResponse userExists(OwnerInfo connectionHolderInfo, RequestInfo requestInfo) {
 		UserSearchRequest userSearchRequest = getBaseUserSearchRequest(connectionHolderInfo.getTenantId(), requestInfo);
-		userSearchRequest.setMobileNumber(connectionHolderInfo.getMobileNumber());
-		userSearchRequest.setUserType(connectionHolderInfo.getType());
-		userSearchRequest.setName(connectionHolderInfo.getName());
+		if(connectionHolderInfo.getUuid()!=null){
+			userSearchRequest.setUuid(new HashSet<>(Collections.singletonList(connectionHolderInfo.getUuid())));
+		}
+		else {
+			userSearchRequest.setMobileNumber(connectionHolderInfo.getMobileNumber());
+			userSearchRequest.setUserType(connectionHolderInfo.getType());
+			userSearchRequest.setName(connectionHolderInfo.getName());
+		}
 		StringBuilder uri = new StringBuilder(configuration.getUserHost())
 				.append(configuration.getUserSearchEndpoint());
 		return userCall(userSearchRequest, uri);

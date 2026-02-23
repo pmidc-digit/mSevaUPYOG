@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.hrms.utils.HRMSConstants;
+import org.egov.hrms.utils.MsevaSsoConstants;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
@@ -27,6 +28,9 @@ public class MDMSService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private MsevaSsoConstants msevaSsoConstants;
 	
 	@Value("${egov.mdms.host}")
 	private String mdmsHost;
@@ -85,6 +89,33 @@ public class MDMSService {
 	public MdmsResponse fetchMDMSData(RequestInfo requestInfo, String tenantId) {
 		StringBuilder uri = new StringBuilder();
 		MdmsCriteriaReq request = prepareMDMSRequest(uri, requestInfo, tenantId);
+		MdmsResponse response = null;
+		try {
+			response = restTemplate.postForObject(uri.toString(), request, MdmsResponse.class);
+		}catch(Exception e) {
+			log.info("Exception while fetching from MDMS: ",e);
+			log.info("Request: "+ request);
+		}
+		return response;
+	}
+	
+	public MdmsResponse fetchMDMSDataTenant(RequestInfo requestInfo, String tenantId) {
+		StringBuilder uri = new StringBuilder();
+		MdmsCriteriaReq request = prepareMDMSRequestTenant(uri, requestInfo, tenantId);
+		MdmsResponse response = null;
+		try {
+			response = restTemplate.postForObject(uri.toString(), request, MdmsResponse.class);
+		}catch(Exception e) {
+			log.info("Exception while fetching from MDMS: ",e);
+			log.info("Request: "+ request);
+		}
+		return response;
+	}
+
+	
+	public MdmsResponse fetchMDMSDistrictData(RequestInfo requestInfo, String tenantId, String districtName) {
+		StringBuilder uri = new StringBuilder();
+		MdmsCriteriaReq request = prepareMDMSRequestDistrict(uri, requestInfo, tenantId, districtName);
 		MdmsResponse response = null;
 		try {
 			response = restTemplate.postForObject(uri.toString(), request, MdmsResponse.class);
@@ -153,6 +184,69 @@ public class MDMSService {
 		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 	
 	}
+	
+	public MdmsCriteriaReq prepareMDMSRequestTenant(StringBuilder uri, RequestInfo requestInfo, String tenantId) {
+		
+		List<ModuleDetail> moduleDetails = new ArrayList<>();
+		
+			ModuleDetail moduleDetail = new ModuleDetail();
+			
+			List<MasterDetail> masterDetails = new ArrayList<>();
+			
+				MasterDetail masterDetail=null;
+				
+					String master;
+					master = msevaSsoConstants.MDMS_FETCH_TENANTS_REQBODY;
+					masterDetail = MasterDetail.builder().name(master).build();
+						masterDetails.add(masterDetail);
+			
+			moduleDetail.setMasterDetails(masterDetails);
+			moduleDetails.add(moduleDetail);
+			moduleDetail.setModuleName(msevaSsoConstants.MDMS_FETCH_TENANT_REQUESTBODY);
+		uri.append(mdmsHost).append(mdmsEndpoint);
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
+		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();	
+	}
+
+	
+	public MdmsCriteriaReq prepareMDMSRequestDistrict(StringBuilder uri, RequestInfo requestInfo, String tenantId, String districtName) {
+
+	    List<ModuleDetail> moduleDetails = new ArrayList<>();
+
+	    ModuleDetail moduleDetail = new ModuleDetail();
+
+	    List<MasterDetail> masterDetails = new ArrayList<>();
+
+	    // Master name (TENANTS table / MDMS module)
+	    String master = msevaSsoConstants.MDMS_FETCH_DISTRICT_REQUESTBODY;
+
+	    // Add filter to match the district by thirdpartyname
+	    MasterDetail masterDetail = MasterDetail.builder()
+	            .name(master)
+	            .build();
+
+	    masterDetails.add(masterDetail);
+
+	    moduleDetail.setMasterDetails(masterDetails);
+	    moduleDetail.setModuleName(msevaSsoConstants.MDMS_FETCH_TENANT_REQUESTBODY);
+
+	    moduleDetails.add(moduleDetail);
+
+	    // Append MDMS endpoint
+	    uri.append(mdmsHost).append(mdmsEndpoint);
+
+	    MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+	            .tenantId(tenantId)
+	            .moduleDetails(moduleDetails)
+	            .build();
+
+	    return MdmsCriteriaReq.builder()
+	            .requestInfo(requestInfo)
+	            .mdmsCriteria(mdmsCriteria)
+	            .build();
+	}
+
+
 
 
 	/**

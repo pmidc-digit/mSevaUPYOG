@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.egov.user.config.UserServiceConstants.USER_CLIENT_ID;
+import static org.egov.user.config.UserServiceConstants.*;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
@@ -189,9 +189,10 @@ public class UserService {
         
         String altmobnumber=null;
         
-        if(searchCriteria.getMobileNumber()!=null) {
-        	altmobnumber = searchCriteria.getMobileNumber();
-        }
+		/*
+		 * if(searchCriteria.getMobileNumber()!=null) { altmobnumber =
+		 * searchCriteria.getMobileNumber(); }
+		 */
       //  org.egov.user.domain.model.User user= encryptionDecryptionUtil.encryptObject(searchCriteria, "User", User.class);
         searchCriteria = encryptionDecryptionUtil.encryptObject(searchCriteria, "UserSearchCriteria", UserSearchCriteria.class);
         
@@ -205,7 +206,7 @@ public class UserService {
 
         list = encryptionDecryptionUtil.decryptObject(list, "UserListSelf", User.class, requestInfo);
 
-        setFileStoreUrlsByFileStoreIds(list);
+//        setFileStoreUrlsByFileStoreIds(list);
         return list;
     }
 
@@ -218,7 +219,10 @@ public class UserService {
     public User createUser(User user, RequestInfo requestInfo) {
         user.setUuid(UUID.randomUUID().toString());
         user.validateNewUser(createUserValidateName);
-        conditionallyValidateOtp(user);
+        if(!CLIENT_ID.equals(user.getClientId())) {
+        	conditionallyValidateOtp(user);
+        }
+    
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "UserSelf", User.class);
         validateUserUniqueness(user);
@@ -304,6 +308,10 @@ public class UserService {
             map.add("tenantId", user.getTenantId());
             map.add("isInternal", "true");
             map.add("userType", UserType.CITIZEN.name());
+            if(CLIENT_ID.equals(user.getClientId())) {
+            	map.add("thirdPartyName", CLIENT_ID);
+            }
+            
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map,
                     headers);
@@ -334,8 +342,15 @@ public class UserService {
      * @return
      */
     public Boolean validateOtp(User user) {
-        Otp otp = Otp.builder().otp(user.getOtpReference()).identity(user.getMobileNumber()).tenantId(user.getTenantId())
+    	Otp otp = null;
+    	if(user.getType().equals(UserType.CITIZEN) && isCitizenLoginOtpBased) 
+                      
+         otp = Otp.builder().otp(user.getOtpReference()).identity(user.getUserName()).tenantId(user.getTenantId())
                 .userType(user.getType()).build();
+         else
+        	 otp = Otp.builder().otp(user.getOtpReference()).identity(user.getMobileNumber()).tenantId(user.getTenantId())
+             .userType(user.getType()).build();
+    	
         RequestInfo requestInfo = RequestInfo.builder().action("validate").ts(System.currentTimeMillis()).build();
         OtpValidateRequest otpValidationRequest = OtpValidateRequest.builder().requestInfo(requestInfo).otp(otp)
                 .build();
@@ -384,6 +399,8 @@ public class UserService {
                     if (user.getUserName().equalsIgnoreCase(userInfo.getUserName()) && user.getTenantId().equalsIgnoreCase(userInfo.getTenantId())
                             && user.getType().equals(UserType.fromValue(userInfo.getType())))
                         tokenStore.removeAccessToken(token);
+                    userRepository.updateUserLogoutSession(user.getUuid(), true);
+                    	
                 }
             }
         }

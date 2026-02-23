@@ -92,6 +92,9 @@ public class WSCalculationConstant {
 	
 	public static final String WS_TIME_REBATE="WS_TIME_REBATE";
 
+	
+	public static final String WS_BREAKDOWN_PENALTY="WS_BREAKDOWN_PENALTY";
+
 	/**
 	 * data fields
 	 */
@@ -150,7 +153,7 @@ public class WSCalculationConstant {
 
 	public static final String nonMeterdConnection = "Non Metered";
 
-	public static final String noOfTapsConst = "No. of taps";
+	public static final String noOfTapsConst = "TAP_BASED";
 
 	public static final String pipeSizeConst = "Pipe Size";
 	
@@ -226,6 +229,11 @@ public class WSCalculationConstant {
 	public static final String WC_ROADTYPE_MASTER = "RoadType";
 	
 	public static final String SUCCESS = "Success";
+
+	public static final String INITIATED = "Initiated";
+
+	public static final String INPROGRESS = "Inprogress";
+
 	
 	
 	
@@ -326,6 +334,9 @@ public class WSCalculationConstant {
 	public static final String NO_METER = "No-meter";
 	
 	public static final String BREAKDOWN= "Breakdown";
+	
+	public static final String REPLACEMENT= "Replacement";
+
 
 	public static final String CHANNEL_LIST = "channelList";
 	
@@ -446,5 +457,15 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 
 	public static final String WS_DUPLICATE_BILL_SCHEDULER_MSG = "WS_DUPLICATE_BILL_SCHEDULER_MSG";
 	
+	public static final String METER_READING_MAPPING = "meterReadingMapping"; 
 	
+	public static final String USAGE_CATEGORY_NONRESIDENTIAL_COMMERCIAL = "NONRESIDENTIAL.COMMERCIAL";
+	
+	public static final String SW_CHARGE = "SW_CHARGE";
+	
+	public static final String SW_ROUND_OFF = "SW_Round_Off";
+	
+	public static final String WS_ADVANCE_CARRYFORWARD = "WS_ADVANCE_CARRYFORWARD";
+
+	public static final String SW_ADVANCE_CARRYFORWARD = "SW_ADVANCE_CARRYFORWARD";
 }

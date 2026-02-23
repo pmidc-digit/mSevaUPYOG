@@ -61,13 +61,15 @@ public class DemandRepository {
 				List<Demand>  demandList =  mapper.convertValue(result,DemandResponse.class).getDemands();
 				if(!CollectionUtils.isEmpty(demandList)) {
 					notificationObj.setSuccess(true);
-					swCalculationProducer.push(config.getOnDemandSuccess(), notificationObj);
+					String key = demandList.get(0).getConsumerCode();
+					swCalculationProducer.push(config.getOnDemandSuccess(), key, notificationObj);
 				}
 				return demandList;
 	        }
 	        catch(IllegalArgumentException e){
 				notificationObj.setSuccess(false);
-				swCalculationProducer.push(config.getOnDemandFailed(), notificationObj);
+				String key = demands.get(0).getConsumerCode();
+				swCalculationProducer.push(config.getOnDemandFailed(), key, notificationObj);
 				throw new CustomException("EG_SW_PARSING_ERROR","Failed to parse response of create demand");
 	        }
 	    }

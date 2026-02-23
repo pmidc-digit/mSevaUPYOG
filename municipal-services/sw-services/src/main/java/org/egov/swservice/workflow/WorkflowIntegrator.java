@@ -63,7 +63,13 @@ public class WorkflowIntegrator {
 	public void callWorkFlow(SewerageConnectionRequest sewerageConnectionRequest, Property property) {
 		String wfBusinessServiceName = config.getBusinessServiceValue();
 		
-		if(sewerageConnectionRequest.isDisconnectRequest()
+//		if(sewerageConnectionRequest.isDisconnectRequest()
+//				|| (sewerageConnectionRequest.getSewerageConnection().getApplicationStatus().equalsIgnoreCase(SWConstants.PENDING_FOR_PAYMENT_STATUS_CODE)
+//				&& sewerageConnectionRequest.getSewerageConnection().getApplicationNo().contains(SWConstants.APPLICATION_DISCONNECTION_CODE))) {
+//			wfBusinessServiceName = config.getDisconnectBusinessServiceName();
+//		} 
+		if((sewerageConnectionRequest.isDisconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION)) && 
+				!(sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION))
 				|| (sewerageConnectionRequest.getSewerageConnection().getApplicationStatus().equalsIgnoreCase(SWConstants.PENDING_FOR_PAYMENT_STATUS_CODE)
 				&& sewerageConnectionRequest.getSewerageConnection().getApplicationNo().contains(SWConstants.APPLICATION_DISCONNECTION_CODE))) {
 			wfBusinessServiceName = config.getDisconnectBusinessServiceName();
@@ -78,7 +84,7 @@ public class WorkflowIntegrator {
 		SewerageConnection connection = sewerageConnectionRequest.getSewerageConnection();
 		ProcessInstance processInstance = ProcessInstance.builder()
 				.businessId(sewerageConnectionRequest.getSewerageConnection().getApplicationNo())
-				.tenantId(property.getTenantId())
+				.tenantId(sewerageConnectionRequest.getSewerageConnection().getTenantId())
 				.businessService(wfBusinessServiceName).moduleName(MODULE_NAME_VALUE)
 				.action(connection.getProcessInstance().getAction()).build();
 

@@ -2,7 +2,9 @@ package org.egov.swservice.util;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SWConstants {
 
@@ -31,7 +33,9 @@ public class SWConstants {
 	public static final String ACTIVATE_CONNECTION = "ACTIVATE_CONNECTION";
 	public static final String SUBMIT_APPLICATION = "SUBMIT_APPLICATION";
 	public static final String ACTION_REJECT = "REJECT";
-
+	
+	public static final String FORWARD_FOR_INSPECTION = "FORWARD_FOR_INSPECTION";
+	
 	public static final String ACTION_CANCEL = "CANCEL";
 
 	public static final String ACTION_PAY = "PAY";
@@ -43,6 +47,8 @@ public class SWConstants {
 	public static final String STATUS_APPLIED = "APPLIED";
 
 	public static final String STATUS_APPROVED = "CONNECTION_ACTIVATED";
+	
+	public static final String APPROVED = "APPROVED";
 
 	public static final String STATUS_REJECTED = "REJECTED";
 
@@ -59,6 +65,13 @@ public class SWConstants {
 	public static final String SMS_RECIEVER_MASTER = "SMSReceiver";
 
 	public static final String SERVICE_FIELD_VALUE_SW = "SW";
+	public static final String MDMS_WC_ROLE_MODLENAME = "common-masters";
+	
+	public static final String MDMS_WC_ROLE_MASTERNAME = "thirdparty";
+	public static final String MODULE_NAME = "pb";
+	public static final String MDMS_RESPONSE_KEY = "MdmsRes";
+	public static final String CATEGORY_KEY = "category";
+	public static final String ROLE_CODE_KEY = "rolecode";
 
 	// Application Status For Notification
 	public static final String INITIATE_INITIATED = "SUBMIT_APPLICATION_PENDING_FOR_DOCUMENT_VERIFICATION";
@@ -134,8 +147,25 @@ public class SWConstants {
 			SEND_BACK_PENDING_FOR_COUNTER_EMPLOYEE_ACTION));
 
 	public static final List<String> CHANNEL_VALUES = Collections
-			.unmodifiableList(Arrays.asList("CITIZEN", "CFC_COUNTER", "MIGRATION", "DATA_ENTRY", "SYSTEM"));
+			.unmodifiableList(Arrays.asList("CITIZEN", "CFC_COUNTER", "MIGRATION", "DATA_ENTRY", "SYSTEM","ESEWAEMP","EODB"));
+	 public static final Map<String, String> USER_TYPE_TO_CHANNEL;
 
+	    static {
+	        USER_TYPE_TO_CHANNEL = new HashMap<>();
+	        USER_TYPE_TO_CHANNEL.put("EMPLOYEE", "CFC_COUNTER");
+	        USER_TYPE_TO_CHANNEL.put("CITIZEN", "CITIZEN");
+	        USER_TYPE_TO_CHANNEL.put("SYSTEM", "SYSTEM");
+	        USER_TYPE_TO_CHANNEL.put("MIGRATION", "MIGRATION");
+	        USER_TYPE_TO_CHANNEL.put("DATA_ENTRY", "DATA_ENTRY");
+	    }
+	    
+	    public static final Map<String, String> USER_ROLE_TO_CHANNEL;
+
+	    static {
+	    	USER_ROLE_TO_CHANNEL = new HashMap<>();
+	    	USER_ROLE_TO_CHANNEL.put("ESEWAEMP", "ESEWAEMP");
+	    	
+	    }
 	public static final String USREVENTS_EVENT_TYPE = "SYSTEMGENERATED";
 
 	public static final String USREVENTS_EVENT_NAME = "SEWERAGE CONNECTION";

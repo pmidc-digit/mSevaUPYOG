@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import org.egov.wscalculation.producer.WSCalculationProducer;
 import org.egov.wscalculation.repository.builder.WSCalculatorQueryBuilder;
 import org.egov.wscalculation.web.models.MeterConnectionRequests;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMapper;
+import org.egov.wscalculation.repository.rowmapper.BillSearchRowMappers;
 import org.egov.wscalculation.repository.rowmapper.DemandSchedulerRowMapper;
 import org.egov.wscalculation.repository.rowmapper.Demandcancelwrapper;
 import org.egov.wscalculation.repository.rowmapper.MeterReadingCurrentReadingRowMapper;
@@ -20,7 +22,9 @@ import org.egov.wscalculation.repository.rowmapper.WaterConnectionRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterDemandRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterRowMapper;
 import org.egov.wscalculation.web.models.BillSearch;
+import org.egov.wscalculation.web.models.BillSearchs;
 import org.egov.wscalculation.web.models.CancelDemand;
+import org.egov.wscalculation.web.models.CancelDemandReq;
 import org.egov.wscalculation.web.models.Canceldemandsearch;
 import org.egov.wscalculation.web.models.MeterConnectionRequest;
 import org.egov.wscalculation.web.models.MeterReading;
@@ -29,7 +33,9 @@ import org.egov.wscalculation.web.models.WaterConnection;
 import org.egov.wscalculation.web.models.WaterDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +68,10 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	@Autowired
 	private BillSearchRowMapper billsearchMapper;
 	
+	@Autowired
+	private BillSearchRowMappers billsearchMappers;
+
+	
 	
 	@Autowired
 	private WaterRowMapper waterRowMapper;
@@ -75,6 +85,12 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	@Value("${egov.meterservice.createmeterconnection}")
 	private String createMeterConnection;
 
+	@Value("${egov.meterservice.updatemeterconnection}")
+	private String updateMeterConnection;
+	
+	@Value("${egov.meterservice.cancelmeterconnection}")
+	private String cancelMeterConnection;
+	
 	/**
 	 * 
 	 * @param meterConnectionRequest MeterConnectionRequest contains meter reading
@@ -85,6 +101,18 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		wSCalculationProducer.push(createMeterConnection, meterConnectionRequest);
 	}
 
+	
+	@Override
+	public void updateMeterReading(MeterConnectionRequest meterConnectionRequest) {
+		wSCalculationProducer.push(updateMeterConnection, meterConnectionRequest);
+	}
+	
+	
+	
+	@Override
+	public void cancelPreviousMeterReading(CancelDemandReq demandId) {
+		wSCalculationProducer.push(cancelMeterConnection, demandId);
+	}
 	/**
 	 * 
 	 * @param criteria would be meter reading criteria
@@ -111,7 +139,60 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		log.debug("Prepared Statement" + preparedStatement.toString());
 		return jdbcTemplate.query(query, preparedStatement.toArray(), currentMeterReadingRowMapper);
 	}
+	
+	
+	
+	@Override
+	public List<MeterReading> searchCurrentMeterReadingsforUpdate(MeterReadingSearchCriteria criteria) {
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getCurrentReadingConnectionSearchQuery(criteria, preparedStatement);
+		if (query == null)
+			return Collections.emptyList();
+		log.debug("Query: " + query);
+		log.debug("Prepared Statement" + preparedStatement.toString());
+		return jdbcTemplate.query(query, preparedStatement.toArray(), currentMeterReadingRowMapper);
+	}
+	
+//    PI-20289 Metered Breakdown penalty enable and working new logic
 
+	// DAO method to get previous meter status (second latest)
+	public String getPreviousMeterStatus(String tenantId, String connectionNo) {
+	    List<Object> preparedStatement = new ArrayList<>();
+	    StringBuilder query = new StringBuilder();
+	    query.append("SELECT meterstatus FROM eg_ws_meterreading ")
+	         .append("WHERE tenantid = ? AND connectionno = ? ")
+	         .append("ORDER BY currentreadingdate DESC");
+
+	    preparedStatement.add(tenantId);
+	    preparedStatement.add(connectionNo);
+
+	    List<String> statuses = jdbcTemplate.query(query.toString(), preparedStatement.toArray(),
+	            (rs, rowNum) -> rs.getString("meterstatus"));
+
+	    // Return second latest meter status (previous)
+	    return (statuses.size() > 1) ? statuses.get(1) : null;
+	}
+
+	@Override
+	public String searchLastMeterId(String connectionNo, Long lastReadingDate, Long currentDate, String tenantId) {
+	    List<Object> preparedStatement = new ArrayList<>();
+	    String query = queryBuilder.getMeterId(connectionNo, lastReadingDate, currentDate, tenantId, preparedStatement);
+
+	    if (query == null)
+	        return null;
+
+	    log.debug("Query: " + query);
+	    log.debug("Prepared Statement: " + preparedStatement);
+
+	    try {
+	        return jdbcTemplate.queryForObject(query, preparedStatement.toArray(), String.class);
+	    } catch (EmptyResultDataAccessException e) {
+	        throw new RuntimeException("No previous meter reading found for connectionNo: " + connectionNo);
+
+	    }
+	}
+
+	
 	/**
 	 * 
 	 * @param ids of string of connection ids on which search is performed
@@ -218,7 +299,15 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	@Override
 	public List<String> getConnectionsNoByLocality(String tenantId, String connectionType, String locality) {
 		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getConnectionsNoByLocality(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, locality, preparedStatement);
+		String query = queryBuilder.getConnectionsNoByLocality(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, locality,null, preparedStatement);
+		log.info("preparedStatement: " + preparedStatement + " query : " + query);
+		return jdbcTemplate.queryForList(query, preparedStatement.toArray(), String.class);
+	}
+	
+	@Override
+	public List<String> getConnectionsNoByGroups(String tenantId, String connectionType, String group) {
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getConnectionsNoByLocality(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, null,group, preparedStatement);
 		log.info("preparedStatement: " + preparedStatement + " query : " + query);
 		return jdbcTemplate.queryForList(query, preparedStatement.toArray(), String.class);
 	}
@@ -273,6 +362,7 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(status.toString());
 		String queryStr = queryBuilder.getBillStatusUpdateQuery(consumerCodes,businessService, preparedStmtList);
+		log.info("Query for updateBillStatus : "  + queryStr );
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	@Override
@@ -301,6 +391,33 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		
 	}
 	
+	
+	@Override
+	public List<Map<String, Object>> getCollection(String tenantId, Long taxPeriodFrom, Long taxPeriodTo, String consumerCode) {
+	    List<Object> preparedStatement = new ArrayList<>();
+	    String query = queryBuilder.getCollection(tenantId, taxPeriodFrom, taxPeriodTo, consumerCode, preparedStatement);
+
+	    log.info("preparedStatement: {} | query: {}", preparedStatement, query);
+
+	    try {
+	        return jdbcTemplate.queryForList(query, preparedStatement.toArray());
+	    } catch (EmptyResultDataAccessException e) {
+	        return Collections.emptyList(); // return empty list if no records found
+	    }
+	}
+
+
+	
+	public List<Canceldemandsearch> getConnectionCancels(String tenantId, String demandid) {
+		
+			List<Object> preparedStatement = new ArrayList<>();
+			String query = queryBuilder.getCancelBills( tenantId,demandid, preparedStatement);
+			log.info("preparedStatement: " + preparedStatement + " connection type: " + 
+					 " connection list : " + query);
+			return jdbcTemplate.query(query, preparedStatement.toArray(), demandcancelwrapper);
+		
+	}
+	
 	/* UPDATE */
 	
 	
@@ -312,10 +429,17 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 			jdbcTemplate.update(query, preparedStatement.toArray());	
 			return true;
 	}
-
 	
+	public Boolean getUpdates(List demandlists) {		
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getUpdateDemands(demandlists,preparedStatement);
+		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
+				 " connection list : " + query);
+		jdbcTemplate.update(query, preparedStatement.toArray());	
+		return true;
+}
 	
-	
+		
 	
 	public List<BillSearch> getBill(String consumercode,String businessService) {
 		
@@ -324,8 +448,29 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
 				 " connection list : " + query);
 		return jdbcTemplate.query(query, preparedStatement.toArray(),billsearchMapper);
+	}
+	
+	
+public List<BillSearch> getBills(String tenantId, String demandid) {
+		
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getBillids(tenantId,demandid,preparedStatement);
+		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
+				 " connection list : " + query);
+		return jdbcTemplate.query(query, preparedStatement.toArray(),billsearchMapper);
 	
 }
+
+public List<BillSearchs> getBillss(String tenantId, String demandid) {
+	
+	List<Object> preparedStatement = new ArrayList<>();
+	String query = queryBuilder.getBillidss(tenantId,demandid,preparedStatement);
+	log.info("preparedStatement: " + preparedStatement + " connection type: " + 
+			 " connection list : " + query);
+	return jdbcTemplate.query(query, preparedStatement.toArray(),billsearchMappers);
+
+}
+
 
 	
 	
@@ -338,6 +483,37 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		jdbcTemplate.update(query, preparedStatement.toArray());	
 		return true;
 }
+	
+	
+	
+	public Boolean getexpiryBills(List billSearchsss) {
+		
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getBillDemands(billSearchsss,preparedStatement);
+		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
+				 " connection list : " + query);
+		jdbcTemplate.update(query, preparedStatement.toArray());	
+		return true;
+}
+	
+	public String getSwConnection(String tenantId, String consumerCode){
+	    List<Object> preparedStatement = new ArrayList<>();
+	    String query = queryBuilder.getRelatedSwConnenction(tenantId, consumerCode, preparedStatement);
+	    log.info("Query: {}", query);
+	    log.info("Parameters: {}", preparedStatement);
+
+	    try {
+	        String result = jdbcTemplate.queryForObject(query, preparedStatement.toArray(), String.class);
+	        log.info("Query result: {}", result);
+	        return result;
+	    } catch (EmptyResultDataAccessException e) {
+	        log.warn("No result found for tenantId={} and consumerCode={}", tenantId, consumerCode);
+	        return "";
+	    } catch (Exception e) {
+	        log.error("Error executing query", e);
+	        throw e; 
+	    }
+	}
 
 
 

@@ -1,12 +1,14 @@
 package org.egov.bpa.calculator.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.egov.bpa.calculator.config.BPACalculatorConfig;
 import org.egov.bpa.calculator.kafka.broker.BPACalculatorProducer;
@@ -34,6 +36,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
+import org.springframework.util.StringUtils;
 
 @Service
 @Slf4j
@@ -76,9 +79,11 @@ public class CalculationService {
 				.getTenantId();
 		Object mdmsData = mdmsService.mDMSCall(calculationReq, tenantId);
 		List<Calculation> calculations = getCalculation(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
-		demandService.generateDemand(calculationReq.getRequestInfo(),calculations, mdmsData);
 		CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
-		producer.push(config.getSaveTopic(), calculationRes);
+		if(calculationReq.getCalulationCriteria() != null && calculationReq.getCalulationCriteria().size() > 0 && !calculationReq.getCalulationCriteria().get(0).isOnlyEstimates()) {
+			demandService.generateDemand(calculationReq.getRequestInfo(),calculations, mdmsData);
+			producer.push(config.getSaveTopic(),calculationRes.getCalculations().get(0).getApplicationNumber(), calculationRes);
+		}
 		return calculations;
 	}
 
@@ -135,7 +140,12 @@ public class CalculationService {
 			CalulationCriteria calulationCriteria, RequestInfo requestInfo,
 			Object mdmsData) {
 		List<TaxHeadEstimate> estimates = new LinkedList<>();
-		EstimatesAndSlabs estimatesAndSlabs;
+		
+		TaxHeadEstimate estimate = new TaxHeadEstimate();
+		BigDecimal totalTax=BigDecimal.ZERO;
+		String taxhead=null;
+
+		EstimatesAndSlabs estimatesAndSlabs = new EstimatesAndSlabs();
 		if (calulationCriteria.getFeeType().equalsIgnoreCase(BPACalculatorConstants.LOW_RISK_PERMIT_FEE_TYPE)) {
 
 //			 stopping Application fee for lowrisk applicaiton according to BBI-391
@@ -151,7 +161,68 @@ public class CalculationService {
 
 			calulationCriteria.setFeeType(BPACalculatorConstants.LOW_RISK_PERMIT_FEE_TYPE);
 
-		} else {
+		} 
+		else if (calulationCriteria.getFeeType().equalsIgnoreCase(BPACalculatorConstants.MDMS_CALCULATIONTYPE_APL_FEETYPE) && calulationCriteria.getBpa().getApplicationType().equalsIgnoreCase("BUILDING_PLAN_SCRUTINY"))
+		{	
+			@SuppressWarnings("unchecked")
+			Map<String,String> node=(Map<String, String>)calulationCriteria.getBpa().getAdditionalDetails();
+		
+			if(!node.containsKey("boundaryWallLength"))
+				throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Boundary Wall length should not be null");
+			if(!node.containsKey("builtUpArea"))
+				throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "builtUpArea should not be null!!");
+
+			String categorie = node.getOrDefault("categories", "");
+	    	String subcategorie = node.getOrDefault("subcategories", "");
+	    	String proposedSite = node.getOrDefault("proposedSite", "").toUpperCase();
+			
+			List<Map<String,Object>> applicationFees = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_APPLIOCATION_FEES_PATH.replace("{0}", categorie).replace("{1}", subcategorie).replace("{2}", proposedSite));
+			
+			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")).multiply(BigDecimal.valueOf(3.2808)); //In Running Feet
+			BigDecimal area=new BigDecimal(node.get("builtUpArea")).multiply(BigDecimal.valueOf(10.7639)); //In Sq Feet
+			
+			for(Map<String,Object> fee : applicationFees) {
+
+				String taxHeadCode = fee.get("taxHeadCode").toString();
+				BigDecimal rate = new BigDecimal((Double)fee.get("rate"));
+				BigDecimal amount = BigDecimal.ZERO;
+				TaxHeadEstimate appFeeEstimate = new TaxHeadEstimate();
+				
+				switch (taxHeadCode) {
+				case BPACalculatorConstants.BPA_BUILDING_APPLICATION_FEES:
+					amount = rate.multiply(area);
+					break;
+				case BPACalculatorConstants.BPA_BOUNDARY_WALL_FEES:
+					amount = rate.multiply(boundayWallLength);
+					break;
+				}
+				
+				appFeeEstimate.setEstimateAmount(amount.setScale(0, RoundingMode.CEILING));
+				appFeeEstimate.setCategory(Category.FEE);
+				appFeeEstimate.setTaxHeadCode(taxHeadCode);
+				estimates.add(appFeeEstimate);
+			}
+			
+		}
+		
+		else if (calulationCriteria.getFeeType().equalsIgnoreCase(BPACalculatorConstants.MDMS_CALCULATIONTYPE_SANC_FEETYPE) 
+				&& ( calulationCriteria.getBpa().getBusinessService().startsWith(BPACalculatorConstants.MDMS_BPA) 
+						|| calulationCriteria.getBpa().getBusinessService().equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA_LOW) ) )
+		{
+			
+			@SuppressWarnings("unchecked")
+			Map<String,Object> node=(Map<String, Object>)calulationCriteria.getBpa().getAdditionalDetails();
+			
+			Map<String, Object> taxPeriod = mdmsService.getTaxPeriods(mdmsData);
+			String finYear = taxPeriod.get(BPACalculatorConstants.MDMS_FINANCIALYEAR)
+					.toString();
+			String tanentId=calulationCriteria.getBpa().getTenantId();
+			
+			//Calculate Sanction Fee of BPA
+			estimates = calculateSanctionFee(requestInfo, tanentId, finYear, node);
+		}
+
+		else {
 			estimatesAndSlabs = getBaseTax(calulationCriteria, requestInfo, mdmsData);
 			estimates.addAll(estimatesAndSlabs.getEstimates());
 		}
@@ -259,5 +330,154 @@ public class CalculationService {
 		estimatesAndSlabs.setEstimates(estimates);
 		return estimatesAndSlabs;
 	}
+	
+	/**
+	 * Calculate the Sanction fee of the BPA application
+	 * @param requestInfo to call the MDMS API
+	 * @param tanentId required to call the MDMS API
+	 * @param plotArea Plot area of the Building
+	 * @param builtUpArea Build-up area of the Building
+	 * @param basementArea Basement area of the Building
+	 * @param category Usage type of the Building
+	 * @param finYear Current financial year
+	 * @return List of TaxHeadEstimate for the Demand creation
+	 */
+	private List<TaxHeadEstimate> calculateSanctionFee (RequestInfo requestInfo,String tanentId, String finYear, Map<String,Object> node) {
+		
+		if(!node.containsKey("area"))
+			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Plot area should not be null");
+		if(!node.containsKey("builtUpArea"))
+			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "builtUpArea should not be null!!");
+		if(!node.containsKey("categories"))
+			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Categories should not be null!!");
+		
+//		Map<String,Object> fee = node.containsKey("selfCertificationCharges") ? (Map<String, Object>)node.get("selfCertificationCharges") : new HashMap<>();
+		
+		List<Map<String,Object>> adjustedAmountsList = node.get("adjustedAmounts") != null ? (List<Map<String,Object>>)node.get("adjustedAmounts") : new ArrayList();
+		
+		Map<String,Object> adjustedAmounts = adjustedAmountsList.stream()
+				.collect(Collectors.toMap(adjustedAmount -> adjustedAmount.get("taxHeadCode").toString(), adjustedAmount -> adjustedAmount));
+		
+		BigDecimal builtUpArea = new BigDecimal((String)node.get("builtUpArea")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD); //In Sq Yard
+		BigDecimal plotArea = new BigDecimal((String)node.get("area")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD);  //In Sq Yard
+		BigDecimal basementArea = BigDecimal.ZERO;
+		String category = StringUtils.isEmpty(node.get("categories")) ? null : node.get("categories").toString();
+		String approvedColony = (String)node.getOrDefault("approvedColony", "NO");
+//		String buildingStatus  = (String)node.getOrDefault("buildingStatus", "");
+		Map<String, Object> farDetails  = (Map<String, Object>)node.getOrDefault("farDetails", new HashMap<>());
+		String roadType  = (String)node.getOrDefault("roadType", "OTHER ROAD");
+		String NocNumber  = (String)node.getOrDefault("NocNumber", "");
+		boolean isClubbedPlot  = (boolean)node.getOrDefault("isClubbedPlot", false);
+		Boolean purchasedFAR = (Boolean)node.getOrDefault("purchasedFAR", false);
+		
+		List<TaxHeadEstimate> estimates = new LinkedList<>();
+		Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(requestInfo, tanentId, BPACalculatorConstants.MDMS_CHARGES_TYPE_CODE, category, finYear);
+		List<Map<String,Object>> chargesTypejsonOutput = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_CHARGES_TYPE_PATH);
+		
+		chargesTypejsonOutput.forEach(chargesType -> {
+			BigDecimal rate = new BigDecimal(chargesType.containsKey("rate") ? (Double) chargesType.get("rate") : 0.0);
+			BigDecimal discount = new BigDecimal(chargesType.containsKey("discount") ? (Double) chargesType.get("discount") : 0.0);
+			TaxHeadEstimate estimate = new TaxHeadEstimate();
+			BigDecimal amount= BigDecimal.ZERO;
+			String taxhead= chargesType.get("taxHeadCode").toString();
+			
+			switch (taxhead) {
+			
+			case BPACalculatorConstants.BPA_PROCESSING_FEES:
+			case BPACalculatorConstants.BPA_EXTERNAL_DEVELOPMENT_CHARGES:
+				if(approvedColony.equalsIgnoreCase("LAL_LAKEER") || (approvedColony.equalsIgnoreCase("NO") && StringUtils.isEmpty(NocNumber)))
+					amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
+				break;
+			case BPACalculatorConstants.BPA_CLU_CHARGES:
+				if(approvedColony.equalsIgnoreCase("LAL_LAKEER") || (approvedColony.equalsIgnoreCase("NO") && StringUtils.isEmpty(NocNumber))) {
+					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
+							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
+					Double CLUSlabAmount = slabAmountMap.containsKey(roadType) ? slabAmountMap.get(roadType) : slabAmountMap.get("OTHER ROAD");
+					amount = new BigDecimal(CLUSlabAmount).multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
+				}
+				break;
+			case BPACalculatorConstants.BPA_MALBA_CHARGES:
+				BigDecimal sqFeetArea = builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET);
+				Double slabAmount = (Double)((List<Map<String, Object>>)chargesType.get("slabs")).stream().filter(slab -> {
+					return sqFeetArea.compareTo(new BigDecimal(slab.get("fromPlotArea").toString())) >= 0 
+					        && sqFeetArea.compareTo(new BigDecimal(slab.get("toPlotArea").toString())) <= 0;
+				}).map(slab -> slab.get("rate")).findFirst().orElse(0.0);
+				if(slabAmount == 0.0) {
+					List<Object> slabs = (List<Object>)chargesType.get("slabs");
+					Map<String, Object> maxSlab = (Map<String, Object>)slabs.get(slabs.size() -1 );
+					amount = sqFeetArea.subtract(new BigDecimal((Double)maxSlab.get("toPlotArea")))
+							.multiply(rate).add(new BigDecimal((Double)maxSlab.get("rate"))).setScale(0, RoundingMode.CEILING);
+				}else
+					amount = new BigDecimal(slabAmount).setScale(0, RoundingMode.CEILING);
+				break;
+			case BPACalculatorConstants.BPA_MINING_CHARGES:
+				amount=rate.multiply(basementArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.CEILING);
+				break;
+			case BPACalculatorConstants.BPA_LABOUR_CESS:
+				amount=rate.multiply(builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.CEILING);
+				break;
+			case BPACalculatorConstants.BPA_CLUBBING_CHARGES:
+				if(isClubbedPlot) {
+					Double clubbingSlabAmount = (Double)((List<Map<String, Object>>)chargesType.get("slabs")).stream().filter(slab -> {
+						return plotArea.doubleValue() > (Double)slab.get("fromPlotArea") 
+						        && plotArea.doubleValue() <= (Double)slab.get("toPlotArea");
+					}).map(slab -> slab.get("rate")).findFirst().orElse(0.0);
+					if(clubbingSlabAmount == 0.0)
+						amount=rate.multiply(plotArea).setScale(0, RoundingMode.CEILING);
+					else
+						amount=BigDecimal.valueOf(clubbingSlabAmount).multiply(plotArea).setScale(0, RoundingMode.CEILING);
+				}
+				break;
+			case BPACalculatorConstants.BPA_WATER_CHARGES:
+			case BPACalculatorConstants.BPA_URBAN_DEVELOPMENT_CESS:
+			case BPACalculatorConstants.BPA_GAUSHALA_CHARGES_CESS:
+			case BPACalculatorConstants.BPA_RAIN_WATER_HARVESTING_CHARGES:
+			case BPACalculatorConstants.BPA_SUB_DIVISION_CHARGES:
+				amount = rate.setScale(0, RoundingMode.CEILING);
+				break;	
+			case BPACalculatorConstants.BPA_PURCHASABLE_FAR_CHARGES:
+				if(farDetails != null && farDetails.containsKey("purchasableFar") && farDetails.get("purchasableFar") != null && purchasedFAR) 
+					amount = new BigDecimal(farDetails.get("purchasableFar").toString()).multiply(rate).setScale(0, RoundingMode.CEILING);
+				else
+					amount = BigDecimal.ZERO;
+				break;
+			}
+			
+			if(!discount.equals(BigDecimal.ZERO))
+				amount = amount.subtract(amount.divide(new BigDecimal(100)).multiply(discount)).setScale(0, RoundingMode.CEILING);
+			
+			Map<String, Object> adjustedAmount = adjustedAmounts.containsKey(taxhead) ? 
+					(Map<String, Object>)adjustedAmounts.get(taxhead) : new LinkedHashMap<String, Object>();
+			
+			estimate.setEstimateAmount(amount);
+			estimate.setCategory(Category.FEE);
+			estimate.setTaxHeadCode(taxhead);
+			estimate.setAdjustedAmount(new BigDecimal(adjustedAmount.getOrDefault("adjustedAmount", "0").toString()));
+			estimate.setFilestoreId((String)adjustedAmount.getOrDefault("filestoreId", null));
+			estimate.setRemark((String)adjustedAmount.getOrDefault("remark", null));
+			estimates.add(estimate);
+			
+		});
+		
+		//Updating Urban Development Cess based on other fees
+		estimates.stream().filter(estimate -> estimate.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_URBAN_DEVELOPMENT_CESS)).forEach(estimate -> {
+			BigDecimal totalFee = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_PROCESSING_FEES) || 
+					est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_CLU_CHARGES) || 
+					est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_EXTERNAL_DEVELOPMENT_CHARGES))
+			.map(est -> est.getEstimateAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+			estimate.setEstimateAmount(estimate.getEstimateAmount().multiply(totalFee).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING));
+		});
+		
+		//Updating Water Charges based on Malba Charges
+		estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_WATER_CHARGES)).forEach(estimate -> {
+			BigDecimal amount = estimates.stream().filter(est -> est.getTaxHeadCode().equalsIgnoreCase(BPACalculatorConstants.BPA_MALBA_CHARGES))
+					.map(est -> est.getEstimateAmount()).findFirst().orElse(BigDecimal.ZERO)
+					.multiply(estimate.getEstimateAmount()).divide(BigDecimal.valueOf(100.0)).setScale(0, RoundingMode.CEILING);
+			estimate.setEstimateAmount(amount);
+		});
+		
+		return estimates;
+	}
 
 }
+

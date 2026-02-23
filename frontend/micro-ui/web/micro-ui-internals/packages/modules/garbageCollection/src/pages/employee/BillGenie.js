@@ -46,8 +46,6 @@ const BillGenie = () => {
       alert(t("Please select at least one search criteria"));
       return;
     }
-
-    // console.log("data===", data);
     // return;
     setLoader(true);
     const payload = {
@@ -96,7 +94,6 @@ const BillGenie = () => {
       Header: `${t("TL_COMMON_TABLE_COL_APP_DATE")}`,
       accessor: "createdtime",
       Cell: ({ row }) => {
-        console.log("row", row);
         return (
           <div>
             <span>{row.original?.createdtime ? GetCell(format(new Date(row.original?.createdtime), "dd/MM/yyyy")) : ""}</span>
@@ -110,8 +107,16 @@ const BillGenie = () => {
       accessor: "action",
       Cell: ({ row }) => {
         return (
-          <div>
+          <div style={{ display: "flex", gap: "15px" }}>
             <SubmitBar label="Download" onSubmit={() => getRecieptSearch({ tenantId, bills: getBills })} />
+            <SubmitBar
+              label="Pay"
+              onSubmit={() => {
+                console.log("check row", row?.original?.uuid);
+                const id = row?.original?.uuid;
+                history.push(`/digit-ui/employee/payment/collect/GC/${id}/${tenantId}?tenantId=${tenantId}`);
+              }}
+            />
           </div>
         );
       },
@@ -181,40 +186,6 @@ const BillGenie = () => {
             />
             {errors?.locality && <p style={{ color: "red" }}>{errors.locality.message}</p>}
           </div>
-
-          {/*Property Tax Unique ID */}
-          {/* <div
-            style={{
-              flex: "0 0 20%", // 2 items per row
-              maxWidth: "20%",
-            }}
-          >
-            <CardLabel>
-              {`${t("NDC_MSG_PROPERTY_LABEL")}`} <span style={{ color: "red" }}></span>
-            </CardLabel>
-            <Controller
-              control={control}
-              name="propertyId"
-              // rules={{
-              //   required: "Name is required",
-              //   minLength: { value: 2, message: "Name must be at least 2 characters" },
-              // }}
-              render={(props) => (
-                <TextInput
-                  style={{ marginBottom: 0 }}
-                  value={props.value}
-                  error={errors?.name?.message}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                  t={t}
-                />
-              )}
-            />
-          </div> */}
 
           {/*Bill No. */}
           <div

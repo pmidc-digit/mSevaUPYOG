@@ -60,7 +60,7 @@ export const GCService = {
 
   billGenieSearch: (details, tenantId) =>
     Request({
-      url: Urls.gc.billGenie,
+      url: Urls.gc.billGenieSearch,
       data: details,
       useCache: false,
       setTimeParam: false,

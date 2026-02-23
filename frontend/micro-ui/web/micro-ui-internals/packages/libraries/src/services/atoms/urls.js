@@ -386,7 +386,7 @@ const Urls = {
     location: "/egov-location/location/v11/boundarys/_search",
     validateConnection: "/gc-services/gc/_validateConnection",
     scheduler: "/gc-calculator/garbagecharges/scheduler/_create",
-    billGenie: "/egov-searcher/bill-genie/garbagecollectionbills/_get",
+    billGenieSearch: "/egov-searcher/bill-genie/garbagecollectionbills/_get",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

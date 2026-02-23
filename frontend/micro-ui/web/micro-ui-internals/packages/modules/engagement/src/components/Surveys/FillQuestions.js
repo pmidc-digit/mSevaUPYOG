@@ -16,6 +16,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import Dialog from "../Modal/Dialog";
+import { ChevronIcon } from "../../components/SvgIndex";
 
 const FillQuestions = (props) => {
   const { t } = useTranslation();
@@ -40,6 +41,7 @@ const FillQuestions = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const prevProps = props.location.state;
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null);
+  const [openSections, setOpenSections] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -1092,8 +1094,13 @@ const FillQuestions = (props) => {
   function handleOnCancelDialog() {
     setOpenQuesDetailsDialog(false);
   }
-  console.log("check prevProps", prevProps);
-  console.log("userInfo", userInfo);
+
+  const toggleSection = (uuid) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [uuid]: !prev[uuid],
+    }));
+  };
 
   return submitted === true && openQuesDetailsDialog ? (
     <Dialog
@@ -1108,7 +1115,7 @@ const FillQuestions = (props) => {
   ) : userInfo?.type?.toUpperCase() === "EMPLOYEE" ||
     prevProps?.citizenFill ||
     (userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === true) ? (
-    <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+    <div className="employeeCard" style={{ background: "white", display: "block", padding: "15px" }}>
       <div className="category-card">
         <div>
           <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
@@ -1149,82 +1156,110 @@ const FillQuestions = (props) => {
           </>
         ) : (
           <>
-            <CardLabel>
-              {`${t("CITY")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <div style={{ width: "50%" }}>
+              <CardLabel>
+                {`${t("CITY")}`} <span className="check-page-link-button">*</span>
+              </CardLabel>
 
-            <select
-              id="dropdown"
-              value={city}
-              onChange={(e) => {
-                handleCityChange(e);
-              }}
-              disabled={localStorage.getItem("CITIZEN.CITY") === "pb.punjab" ? false : true}
-            >
-              <option value="">--Please choose a city--</option>
-              {cities.map((option, index) => (
-                <option key={index} value={option.code}>
-                  {option?.name}
-                </option>
-              ))}
-            </select>
+              <select
+                id="dropdown"
+                value={city}
+                onChange={(e) => {
+                  handleCityChange(e);
+                }}
+                disabled={localStorage.getItem("CITIZEN.CITY") === "pb.punjab" ? false : true}
+              >
+                <option value="">--Please choose a city--</option>
+                {cities.map((option, index) => (
+                  <option key={index} value={option.code}>
+                    {option?.name}
+                  </option>
+                ))}
+              </select>
 
-            {errors && errors["city"] && (
-              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
-                {errors?.["city"].answerRequired}
-              </CardLabelError>
-            )}
-
-            <CardLabel>
-              {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
-
-            <select
-              id="dropdown"
-              value={locality}
-              onChange={(e) => {
-                handleLocalityChangeCitizen(e);
-              }}
-            >
-              <option value="">--Please choose a locality--</option>
-              {city !== null && localityList !== null && (
-                <>
-                  {localityList.map((option, index) => (
-                    <option key={index} value={option.name}>
-                      {option?.name}
-                    </option>
-                  ))}
-                </>
+              {errors && errors["city"] && (
+                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                  {errors?.["city"].answerRequired}
+                </CardLabelError>
               )}
-            </select>
-            {errors && errors["locality"] && (
-              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
-                {errors?.["locality"].answerRequired}
-              </CardLabelError>
-            )}
+            </div>
+
+            <div style={{ width: "50%" }}>
+              <CardLabel>
+                {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
+              </CardLabel>
+
+              <select
+                id="dropdown"
+                value={locality}
+                onChange={(e) => {
+                  handleLocalityChangeCitizen(e);
+                }}
+              >
+                <option value="">--Please choose a locality--</option>
+                {city !== null && localityList !== null && (
+                  <>
+                    {localityList.map((option, index) => (
+                      <option key={index} value={option.name}>
+                        {option?.name}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
+              {errors && errors["locality"] && (
+                <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
+                  {errors?.["locality"].answerRequired}
+                </CardLabelError>
+              )}
+            </div>
           </>
         )}
-        <form onSubmit={handleSubmit}>
+        <form style={{ width: "50%" }} onSubmit={handleSubmit}>
           {data.sections?.length > 0
             ? data.sections.map((section) => (
-                <div>
-                  <h2>{section.title}</h2>
-                  {section.questions.map((question, index) => (
-                    <div>
-                      <h3>{question.questionStatement}</h3>
-                      <div className="surveyQuestion-wrapper">
-                        <div style={{ display: "inline" }}>
-                          {index + 1}. {question.question.questionStatement} {question?.required && <span style={{ color: "red" }}>*</span>}
+                <div key={section.uuid} style={{ marginBottom: "20px" }}>
+                  {/* Section Header */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      background: "#f5f5f5",
+                      padding: "10px",
+                      borderRadius: "4px",
+                    }}
+                    onClick={() => toggleSection(section.uuid)}
+                  >
+                    <h2 style={{ margin: 0 }}>{section.title}</h2>
+                    {/* <span style={{ fontSize: "18px" }}>{openSections[section.uuid] ? "▲" : "▼"}</span> */}
+                    <ChevronIcon isOpen={openSections[section.uuid]} />
+                  </div>
+
+                  {/* 👇 THIS WAS MISSING */}
+                  {!openSections[section.uuid] && (
+                    <div style={{ padding: "10px 0" }}>
+                      {section.questions.map((question, index) => (
+                        <div key={question.questionUuid}>
+                          <div className="surveyQuestion-wrapper">
+                            <div style={{ display: "inline" }}>
+                              {index + 1}. {question.question.questionStatement}
+                              {question?.required && <span style={{ color: "red" }}> *</span>}
+                            </div>
+
+                            {displayAnswerField(question.question.type, question.question, section)}
+
+                            {errors[question.questionUuid] && <span className="error">{errors[question.questionUuid]}</span>}
+                          </div>
                         </div>
-                        {displayAnswerField(question.question.type, question.question, section)}
-                        {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
-                        <div></div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               ))
             : null}
+
           <button type="submit" style={{ marginLeft: "10px" }}>
             Submit
           </button>

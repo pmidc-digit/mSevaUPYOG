@@ -222,7 +222,7 @@ const NewRegistration = ({ stateCode }) => {
               <p className="login-subtitle">Create your account to get started</p>
             </div>
 
-            <LanguageSelect onLanguageChange={setSelectedLanguage} />
+            {/* <LanguageSelect onLanguageChange={setSelectedLanguage} /> */}
             <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
 
             {step === "FORM" && (

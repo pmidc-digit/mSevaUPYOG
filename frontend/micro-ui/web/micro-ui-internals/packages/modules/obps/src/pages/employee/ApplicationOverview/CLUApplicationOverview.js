@@ -42,6 +42,7 @@ import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { amountToWords, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import { getDrivingDistance } from "../../../utils/getDistance";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -130,7 +131,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [timeObj, setTimeObj] = useState(null);
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
-
+  const [distances, setDistances] = useState([]);  
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   console.log("applicationDetails here===>", applicationDetails);
@@ -553,7 +554,8 @@ const stateId = Digit.ULBService.getStateId();
   function onActionSelect(action) {
     console.log("selected action", action);
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
-
+    const validationMsg = validateSiteImages(action);
+    console.log('validationMsg', validationMsg)
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
@@ -576,7 +578,10 @@ const stateId = Digit.ULBService.getStateId();
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {      
+    }else if(validationMsg){
+      setShowToast({ key: "true", error: true, message: validationMsg }); 
+      return;
+    }else {      
       if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
@@ -848,6 +853,60 @@ const stateId = Digit.ULBService.getStateId();
 
   //console.log("sitePhotoGrahphs==>", sitePhotographs);
   //console.log("remainingDocs==>", remainingDocs);
+
+  useEffect(() => {
+    const fetchDistances = async () => {
+      if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0) {
+        try {
+          const results = await Promise.all(
+            geoLocations.map(async (loc, idx) => {
+              const d1 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude1),
+                parseFloat(coordinates?.Longitude1),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const d2 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude2),
+                parseFloat(coordinates?.Longitude2),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const minDistance = Math.min(d1, d2);
+              console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
+              return minDistance;
+            })
+          );
+          setDistances(results);
+          console.log("Final distances (m):", results);
+        } catch (err) {
+          console.error("Error fetching distances:", err);
+        }
+      }
+    };
+
+    fetchDistances();
+  }, [coordinates, geoLocations]);
+
+  const validateSiteImages = (action) => {
+    if (applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
+      // Check distances
+      if (distances?.length > 0) {
+        for (let i = 0; i < distances.length; i++) {
+          const d = distances[i];
+          if (d > 50) {
+            // return with index (human-friendly: +1)
+            return `Site image ${i + 1} is not within 50 meters`;
+          }
+        }
+      }
+    }
+    return null; // no error
+  };
+
+
+  console.log('distances here ', distances)
+
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");

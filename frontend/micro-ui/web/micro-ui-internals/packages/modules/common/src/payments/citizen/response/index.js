@@ -276,6 +276,7 @@ const WrapPaymentComponent = (props) => {
     const fee = paymentData?.totalAmountPaid;
     console.log("fee here here", fee);
     const amountinwords = amountToWords(fee);
+    console.log('amountinwords', amountinwords)
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
       //if not filestoreid
@@ -368,7 +369,8 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);
+          console.log('this else triggered')
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData,amountinwords }] }, generatePdfKey);
         }
       }
     }
@@ -380,8 +382,34 @@ const WrapPaymentComponent = (props) => {
         : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
 
     if (fileStore && fileStore[response.filestoreIds[0]]) {
-      window.open(fileStore[response.filestoreIds[0]], "_blank");
+      const receiptUrl = fileStore[response.filestoreIds[0]];
+
+      if (business_service === "obpas_noc") {
+        // Parse the original receiptUrl
+        const urlObj = new URL(receiptUrl);
+
+        // Build a new URL using window.origin but keep pathname and search
+        const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
+
+        try {
+          // Fetch the file as a Blob
+          const res = await fetch(downloadUrl);
+          const blob = await res.blob();
+
+          // Use your helper to force download
+          downloadPdf(blob, `receipt_${receiptNumber || "obpas_noc"}.pdf`);
+        } catch (err) {
+          console.log(err, "error in receipt download");
+          window.open(downloadUrl, "_blank");
+        }
+
+        // Fallback: open in new tab
+      } else {
+        window.open(receiptUrl, "_blank");
+      }
     }
+
+
     setPrinting(false);
   };
 

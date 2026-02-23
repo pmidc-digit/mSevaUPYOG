@@ -20,8 +20,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.upyog.chb.config.CommunityHallBookingConfiguration;
 import org.upyog.chb.constants.CommunityHallBookingConstants;
+import org.upyog.chb.enums.BookingStatusEnum;
 import org.upyog.chb.repository.ServiceRequestRepository;
 import org.upyog.chb.util.NotificationUtil;
+import org.upyog.chb.util.MdmsUtil;
+import org.upyog.chb.service.CalculationService;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import org.upyog.chb.web.models.CommunityHallBookingDetail;
 import org.upyog.chb.web.models.CommunityHallBookingRequest;
 import org.upyog.chb.web.models.events.Action;
@@ -48,6 +53,11 @@ public class CHBNotificationService {
 	private ServiceRequestRepository serviceRequestRepository;
 	@Autowired
 	private CHBEncryptionService chbEncryptionService;
+	@Autowired
+	private MdmsUtil mdmsUtil;
+
+	@Autowired
+	private CalculationService calculationService;
 
 	public void process(CommunityHallBookingRequest bookingRequest, String status) {
 		CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
@@ -59,19 +69,23 @@ public class CHBNotificationService {
 		String tenantId = bookingRequest.getHallsBookingApplication().getTenantId();
 		String action = status;
 
-		List<String> configuredChannelNames = fetchChannelList(new RequestInfo(), tenantId.split("\\.")[0],
+		// Pass the real RequestInfo so localization/MDMS lookups use caller context
+		List<String> configuredChannelNames = fetchChannelList(bookingRequest.getRequestInfo(), tenantId.split("\\.")[0],
 				config.getModuleName(), action);
+
+		log.info("Configured channels for action {} : {}", action, configuredChannelNames);
 
 		log.info("Fetching localization message for notification");
 		// All notification messages are part of this messages object
 		String localizationMessages = util.getLocalizationMessages(tenantId, bookingRequest.getRequestInfo());
 
+		// Correct mapping: SMS channel should trigger SMS sending, EVENT channel should trigger event notifications
 		if (configuredChannelNames.contains(CommunityHallBookingConstants.CHANNEL_NAME_SMS)) {
-			sendEventNotification(localizationMessages, bookingRequest, status);
+			sendMessageNotification(localizationMessages, bookingRequest, status);
 		}
 
 		if (configuredChannelNames.contains(CommunityHallBookingConstants.CHANNEL_NAME_EVENT)) {
-			sendMessageNotification(localizationMessages, bookingRequest, status);
+			sendEventNotification(localizationMessages, bookingRequest, status);
 		}
 	}
 	
@@ -83,33 +97,98 @@ public class CHBNotificationService {
 	 */
 	private void  sendMessageNotification(String localizationMessages, CommunityHallBookingRequest bookingRequest, String status) {
 		CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
-		Map<String, String> messageMap = new HashMap<String, String>();
-    	String message = null;
+
+		// Normalize incoming workflow action/status to a booking-status token expected by templates
+		String normalizedStatus = normalizeStatusForNotification(status, bookingDetail);
+
+		// Determine which templates to send for the given action/status.
+		List<String> statusesToSend = new ArrayList<>();
 		try {
-			messageMap = util.getCustomizedMsg(bookingRequest.getHallsBookingApplication(), localizationMessages, status
-					 , CommunityHallBookingConstants.CHANNEL_NAME_SMS);
-			
-			message = messageMap.get(NotificationUtil.MESSAGE_TEXT);
-			 /**
-			  * Dynamic values Place holders
-			  * {APPLICANT_NAME} 
-			  * {BOOKING_NO}
-			  * {COMMUNITY_HALL_NAME}
-			  * {LINK} - Optional			 
-			  */
-			 message = String.format(message, bookingDetail.getApplicantDetail().getApplicantName(), 
-					 bookingDetail.getBookingNo(), bookingDetail.getCommunityHallName(), messageMap.get(NotificationUtil.ACTION_LINK));
-		}catch (Exception e) {
-			log.error("Exception occcured while fetching message", e);
-			e.printStackTrace();
+			if (BookingStatusEnum.PAYMENT_DONE.name().equals(normalizedStatus)) {
+				// On payment action, send both Booking Confirmed (BUSINESS flag BOOKED) and Payment Confirmation
+				statusesToSend.add(BookingStatusEnum.BOOKED.name());
+				statusesToSend.add(BookingStatusEnum.PAYMENT_DONE.name());
+			} else if (BookingStatusEnum.BOOKING_CREATED.name().equals(normalizedStatus)
+				|| BookingStatusEnum.PENDING_PAYMENT.name().equals(normalizedStatus)) {
+				// On submit action, send Pending Payment message (map BOOKING_CREATED or explicit PENDING_PAYMENT)
+				statusesToSend.add(BookingStatusEnum.PENDING_PAYMENT.name());
+			} else if (BookingStatusEnum.CANCELLED.name().equals(normalizedStatus)) {
+				// On cancel action, send cancelled message
+				statusesToSend.add(BookingStatusEnum.CANCELLED.name());
+			} else {
+				// Default: send message for the normalized status
+				statusesToSend.add(normalizedStatus);
+			}
+		} catch (Exception e) {
+			log.error("Error while preparing notification status list", e);
+			statusesToSend.add(normalizedStatus);
 		}
-		log.info("Message for sending sms notification : " + message);
-		if (message != null) {
-			List<SMSRequest> smsRequests = new LinkedList<>();
-			if (config.getIsSMSNotificationEnabled()) {
-				Map<String, String> mobileNumberToOwner = new HashMap<String, String>();
-				mobileNumberToOwner.put(bookingDetail.getApplicantDetail().getApplicantMobileNo(),
-						bookingDetail.getApplicantDetail().getApplicantName());
+
+		// Prepare recipient map (applicant + hall notification number)
+		Map<String, String> mobileNumberToOwner = new HashMap<String, String>();
+		if (bookingDetail.getApplicantDetail() != null && StringUtils.isNotBlank(bookingDetail.getApplicantDetail().getApplicantMobileNo())) {
+			mobileNumberToOwner.put(bookingDetail.getApplicantDetail().getApplicantMobileNo(),
+					bookingDetail.getApplicantDetail().getApplicantName());
+		}
+		try {
+			String tenantId = bookingRequest.getHallsBookingApplication().getTenantId();
+			Object mdmsData = mdmsUtil.mDMSCall(bookingRequest.getRequestInfo(), tenantId);
+			if (mdmsData != null) {
+				String hallCode = bookingDetail.getCommunityHallCode();
+				List<Object> matched = JsonPath.parse(mdmsData)
+						.read("$.MdmsRes." + config.getModuleName() + ".CommunityHalls[?(@.code=='" + hallCode + "')]");
+				if (matched != null && !matched.isEmpty()) {
+					Object hallNode = matched.get(0);
+					try {
+						String notifNumber = JsonPath.read(hallNode, "$.notificationNumber");
+						if (StringUtils.isNotBlank(notifNumber)) {
+							mobileNumberToOwner.put(notifNumber, bookingDetail.getCommunityHallName());
+						}
+					} catch (Exception e) {
+						log.debug("No notificationNumber found for hall {} in MDMS", hallCode);
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Exception while fetching CommunityHalls from MDMS for notification: ", e);
+		}
+
+		// For each configured message status, fetch template, format it and send SMS
+		for (String msgStatus : statusesToSend) {
+			// If this is a pending payment template, compute amount from calculation service
+			if (BookingStatusEnum.PENDING_PAYMENT.name().equals(msgStatus)) {
+				try {
+					List<org.upyog.chb.web.models.billing.DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest);
+					BigDecimal total = BigDecimal.ZERO;
+					for (org.upyog.chb.web.models.billing.DemandDetail dd : demandDetails) {
+						if (dd != null && dd.getTaxAmount() != null)
+							total = total.add(dd.getTaxAmount());
+					}
+					// attach amount to booking additionalDetails so populateDynamicValues can pick it
+					Map<String, Object> add = new HashMap<>();
+					add.put("amount", total.setScale(2, BigDecimal.ROUND_FLOOR).toString());
+					bookingDetail.setAdditionalDetails(add);
+				} catch (Exception e) {
+					log.error("Error while calculating demand for amount in notification", e);
+				}
+			}
+			Map<String, String> messageMap = new HashMap<String, String>();
+			String message = null;
+			try {
+				messageMap = util.getCustomizedMsg(bookingRequest.getHallsBookingApplication(), localizationMessages, msgStatus,
+						CommunityHallBookingConstants.CHANNEL_NAME_SMS);
+				message = messageMap.get(NotificationUtil.MESSAGE_TEXT);
+				if (message != null) {
+					message = String.format(message, bookingDetail.getApplicantDetail().getApplicantName(),
+							bookingDetail.getBookingNo(), bookingDetail.getCommunityHallName(), messageMap.get(NotificationUtil.ACTION_LINK));
+				}
+			} catch (Exception e) {
+				log.error("Exception occcured while fetching message for status " + msgStatus, e);
+			}
+
+			log.info("Message for sending sms notification for status {}: {}", msgStatus, message);
+			if (message != null && config.getIsSMSNotificationEnabled()) {
+				List<SMSRequest> smsRequests = new LinkedList<>();
 				enrichSMSRequest(bookingRequest, smsRequests, mobileNumberToOwner, message);
 				if (!CollectionUtils.isEmpty(smsRequests))
 					util.sendSMS(smsRequests);
@@ -299,6 +378,46 @@ public class CHBNotificationService {
 		mdmsCriteriaReq.setRequestInfo(requestInfo);
 
 		return mdmsCriteriaReq;
+	}
+
+	/**
+	 * Normalize incoming workflow action (like SUBMIT) to booking-status enum name
+	 * used by localization templates. Provides sensible fallbacks.
+	 */
+	private String normalizeStatusForNotification(String action, CommunityHallBookingDetail bookingDetail) {
+		if (action == null)
+			return bookingDetail != null && bookingDetail.getBookingStatus() != null ? bookingDetail.getBookingStatus()
+					: BookingStatusEnum.BOOKING_CREATED.name();
+		String upper = action.toUpperCase();
+		try {
+			BookingStatusEnum.valueOf(upper);
+			return upper;
+		} catch (IllegalArgumentException e) {
+			switch (upper) {
+			case "SUBMIT":
+				return BookingStatusEnum.PENDING_PAYMENT.name();
+			case "PAY":
+			case "PAYMENT":
+			case "PAYMENT_DONE":
+				return BookingStatusEnum.PAYMENT_DONE.name();
+			case "APPROVE":
+			case "BOOK":
+				return BookingStatusEnum.BOOKED.name();
+			case "CANCEL":
+			case "CANCELLED":
+				return BookingStatusEnum.CANCELLED.name();
+			default:
+				if (bookingDetail != null && bookingDetail.getBookingStatus() != null) {
+					try {
+						BookingStatusEnum.valueOf(bookingDetail.getBookingStatus());
+						return bookingDetail.getBookingStatus();
+					} catch (IllegalArgumentException ex) {
+						return BookingStatusEnum.BOOKING_CREATED.name();
+					}
+				}
+				return BookingStatusEnum.BOOKING_CREATED.name();
+			}
+		}
 	}
 	
 	

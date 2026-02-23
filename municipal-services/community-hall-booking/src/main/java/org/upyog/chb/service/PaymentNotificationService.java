@@ -43,6 +43,9 @@ public class PaymentNotificationService {
 	@Value("${egov.mdms.search.endpoint}")
 	private String mdmsUrl;
 
+    @Autowired
+    private CHBNotificationService notificationService;
+
 	@Autowired
 	private CommunityHallBookingConfiguration configs;
 
@@ -93,6 +96,7 @@ public class PaymentNotificationService {
 				//deleting booking timer
 				bookingService.updateBookingSynchronously(bookingRequest, paymentRequest.getPayment().getPaymentDetails().get(0), BookingStatusEnum.BOOKED,
 						true);
+				notificationService.process(bookingRequest,"PAY");
 			}
 		} catch (IllegalArgumentException e) {
 			log.error("Illegal argument exception occured while sending notification CHB : " + e.getMessage());

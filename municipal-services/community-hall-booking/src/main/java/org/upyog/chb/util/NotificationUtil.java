@@ -183,8 +183,8 @@ public class NotificationUtil {
 		case BOOKING_CREATED:
 			//Fetch message template from localization message for localization code
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-			
-			link = getActionLink(bookingDetail, actionStatus);
+			// For booking creation (submit), include payment link
+			link = getActionLink(bookingDetail, PAYMENT_LINK);
 			//Update placeholder in messages
 		//	message = populateDynamicValues(bookingDetail, messageTemplate);
 			//Shorten URL part of notification message
@@ -195,11 +195,23 @@ public class NotificationUtil {
 
 		case BOOKED:
 			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
-			link = getActionLink(bookingDetail, actionStatus);
+			// For booking confirmed, provide permission letter link
+			link = getActionLink(bookingDetail, PERMISSION_LETTER_LINK);
 			
 		//	message = populateDynamicValues(bookingDetail, messageTemplate);
 		//	String permissionLetterShortUrl = getActionLink(bookingDetail, actionStatus);
 		//	message = message.replace(CommunityHallBookingConstants.CHB_PERMISSION_LETTER_LINK, permissionLetterShortUrl);
+			break;
+
+		case PENDING_PAYMENT:
+			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
+			// Pending payment should include payment link
+			link = getActionLink(bookingDetail, PAYMENT_LINK);
+			break;
+
+		case PAYMENT_DONE:
+			messageTemplate = getMessageTemplate(notificationEventType, localizationMessage);
+			// Payment confirmation usually doesn't need a link
 			break;
 
 		case CANCELLED:
@@ -221,27 +233,84 @@ public class NotificationUtil {
 		
 		Map<String, String> messageMap = new HashMap<String, String>();
 		messageMap.put(ACTION_LINK, link);
-		messageMap.put(MESSAGE_TEXT, messageTemplate);
+		// Populate dynamic placeholders in template
+		String populatedMessage = null;
+		try {
+			populatedMessage = populateDynamicValues(bookingDetail, messageTemplate, link);
+		} catch (Exception e) {
+			log.error("Error while populating dynamic values for message", e);
+			populatedMessage = messageTemplate;
+		}
+		messageMap.put(MESSAGE_TEXT, populatedMessage);
 		
 		log.info("getCustomizedMsg messageTemplate : " + messageTemplate);
 		return messageMap;
 	}
+
+	private String populateDynamicValues(CommunityHallBookingDetail bookingDetail, String template, String actionLink) {
+		if (template == null)
+			return null;
+		String message = template;
+		try {
+			String applicantName = "";
+			if (bookingDetail.getApplicantDetail() != null && bookingDetail.getApplicantDetail().getApplicantName() != null)
+				applicantName = bookingDetail.getApplicantDetail().getApplicantName();
+			message = message.replace("{APPLICANT_NAME}", applicantName);
+			message = message.replace("{BOOKING_NO}", bookingDetail.getBookingNo() == null ? "" : bookingDetail.getBookingNo());
+			message = message.replace("{COMMUNITY_HALL_NAME}", bookingDetail.getCommunityHallName() == null ? "" : bookingDetail.getCommunityHallName());
+			// Replace common link placeholders with the provided actionLink
+			if (actionLink != null) {
+				message = message.replace("{PERMISSION_LETTER_LINK}", actionLink);
+				message = message.replace("{PORTAL_LINK}", actionLink);
+				message = message.replace("{CHB_PERMISSION_LETTER_LINK}", actionLink);
+				message = message.replace("{CHB_PAYMENT_LINK}", actionLink);
+			}
+			// Replace date placeholder if paymentDate is available
+			if (message.contains("{DATE}")) {
+				Long paymentDate = bookingDetail.getPaymentDate();
+				if (paymentDate != null && paymentDate > 0) {
+					java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy");
+					message = message.replace("{DATE}", sdf.format(new java.util.Date(paymentDate)));
+				} else {
+					message = message.replace("{DATE}", "");
+				}
+			}
+			// Replace office name placeholder with PMIDC (can be changed later)
+			message = message.replace("{OFFICE_NAME}", "PMIDC");
+			// Try to resolve amount from bookingDetail additionalDetails or leave blank
+			if (message.contains("{AMOUNT}")) {
+				String amountStr = "";
+				Object additional = bookingDetail.getAdditionalDetails();
+				if (additional instanceof java.util.Map) {
+					java.util.Map<?, ?> map = (java.util.Map<?, ?>) additional;
+					if (map.get("amount") != null)
+						amountStr = String.valueOf(map.get("amount"));
+					else if (map.get("totalAmount") != null)
+						amountStr = String.valueOf(map.get("totalAmount"));
+				}
+				message = message.replace("{AMOUNT}", amountStr == null ? "" : amountStr);
+			}
+		} catch (Exception e) {
+			log.error("Error while populating dynamic message values", e);
+		}
+		return message;
+	}
 	
 	public String getActionLink(CommunityHallBookingDetail bookingDetail, String action) {
 		String link = null;
-		if(PAYMENT_LINK.equals(action)) {
-			//Payment Link
+		if (PAYMENT_LINK.equals(action)) {
+			// Payment Link - return direct UI URL (no shortening)
 			link = config.getUiAppHost() + config.getPayLinkSMS().replace("$consumerCode", bookingDetail.getBookingNo())
-					.replace("$mobile", bookingDetail.getApplicantDetail().getApplicantMobileNo()).replace("$tenantId", bookingDetail.getTenantId())
-					.replace("$businessService", config.getBusinessServiceName());
-		} else if(PERMISSION_LETTER_LINK.toString().equals(action)) {
-			//Permission letter link
+				.replace("$mobile", bookingDetail.getApplicantDetail().getApplicantMobileNo()).replace("$tenantId", bookingDetail.getTenantId())
+				.replace("$businessService", config.getBusinessServiceName());
+		} else if (PERMISSION_LETTER_LINK.toString().equals(action)) {
+			// Permission letter link (can be shortened)
 			link = config.getUiAppHost() + config.getPermissionLetterLink().replace("$consumerCode", bookingDetail.getBookingNo())
-					.replace("$mobile", bookingDetail.getApplicantDetail().getApplicantMobileNo()).replace("$tenantId", bookingDetail.getTenantId())
-					.replace("$businessService", config.getBusinessServiceName());
-		}
-		if (null != link) {
-			link = getShortnerURL(link);
+				.replace("$mobile", bookingDetail.getApplicantDetail().getApplicantMobileNo()).replace("$tenantId", bookingDetail.getTenantId())
+				.replace("$businessService", config.getBusinessServiceName());
+			if (null != link) {
+				link = getShortnerURL(link);
+			}
 		}
 		return link;
 	}

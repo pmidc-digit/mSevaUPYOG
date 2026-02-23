@@ -960,3 +960,19 @@ config:
       - work-dir: "utilities/search-api"
         image-name: "search-api"
         dockerfile: 'build/Dockerfile'
+
+  - name: 'builds/upyog/municipal-services/layout-services'
+    build:
+      - work-dir: 'municipal-services/layout-services'
+        image-name: 'layout-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/layout-services/src/main/resources/db"
+        image-name: "layout-services-db"
+
+  - name: "builds/upyog/municipal-services/layout-calculator"
+    build:
+      - work-dir: "municipal-services/layout-calculator"
+        image-name: "layout-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/layout-calculator/migration"
+    #    image-name: "layout-calculator-db"

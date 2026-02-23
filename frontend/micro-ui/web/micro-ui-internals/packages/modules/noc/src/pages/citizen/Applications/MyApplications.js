@@ -64,7 +64,7 @@ const MyApplications = ({ view }) => {
         accessor: (row) => row?.Applications?.applicationNo,
         Cell: ({ row }) => (
           <Link to={`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`}>
-            {GetCell(row.original?.Applications?.applicationNo)}
+            <b>{GetCell(row.original?.Applications?.applicationNo)}</b>
           </Link>
         ),
       },

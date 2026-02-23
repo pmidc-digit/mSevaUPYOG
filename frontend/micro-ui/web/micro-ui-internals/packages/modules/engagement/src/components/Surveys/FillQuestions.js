@@ -1115,7 +1115,7 @@ const FillQuestions = (props) => {
   ) : userInfo?.type?.toUpperCase() === "EMPLOYEE" ||
     prevProps?.citizenFill ||
     (userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === true) ? (
-    <div className="employeeCard" style={{ background: "white", display: "block", padding: "15px" }}>
+    <div className="employeeCard surveyCardSection">
       <div className="category-card">
         <div>
           <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
@@ -1156,7 +1156,7 @@ const FillQuestions = (props) => {
           </>
         ) : (
           <>
-            <div style={{ width: "50%" }}>
+            <div style={{ width: "70%" }}>
               <CardLabel>
                 {`${t("CITY")}`} <span className="check-page-link-button">*</span>
               </CardLabel>
@@ -1184,7 +1184,7 @@ const FillQuestions = (props) => {
               )}
             </div>
 
-            <div style={{ width: "50%" }}>
+            <div style={{ width: "70%" }}>
               <CardLabel>
                 {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
               </CardLabel>
@@ -1215,7 +1215,7 @@ const FillQuestions = (props) => {
             </div>
           </>
         )}
-        <form style={{ width: "50%" }} onSubmit={handleSubmit}>
+        <form style={{ width: "70%" }} onSubmit={handleSubmit}>
           {data.sections?.length > 0
             ? data.sections.map((section) => (
                 <div key={section.uuid} style={{ marginBottom: "20px" }}>

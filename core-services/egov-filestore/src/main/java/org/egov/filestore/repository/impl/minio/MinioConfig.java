@@ -21,6 +21,10 @@ public class MinioConfig {
 	@Value("${fixed.bucketname}")
 	private String bucketName;
 	
+
+	@Value("${fixed.ticket.bucketname}")
+	private String ticketBucketName;
+	
 	@Value("${minio.source}")
 	private String source;
 

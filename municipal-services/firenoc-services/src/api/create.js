@@ -1,5 +1,6 @@
 import { Router } from "express";
-import producer from "../kafka/producer";
+import logger from "../config/logger";
+//import producer from "../kafka/producer";
 import {
   requestInfoToResponseInfo,
   createWorkFlow,
@@ -13,7 +14,16 @@ import { validateFireNOCModel } from "../utils/modelValidation";
 import set from "lodash/set";
 import get from "lodash/get";
 const asyncHandler = require("express-async-handler");
+const { initializeProducer } = require("../kafka/producer");
+let producer;
+initializeProducer().then((p) => {
+   producer = p;
 
+  logger.info('Kafka producer connected');
+}).catch((error) => {
+  logger.error(error.stack || error);
+  process.exit(1);
+});
 export default ({ config }) => {
   let api = Router();
   api.post(
@@ -72,24 +82,43 @@ export const createApiResponse = async ({ body }, res, next) => {
   //console.log("test body"+ JSON.stringify(body))
 
   //Comment the Calculate API as per Palam Sir Direction 
-
-  //for (var i = 0; i < FireNOCs.length; i++) {
-    //let firenocResponse = await calculate(FireNOCs[i], RequestInfo);
-  //}
+  let firenocResponse
+  for (var i = 0; i < FireNOCs.length; i++) {
+     firenocResponse = await calculate(FireNOCs[i], RequestInfo);
+    // console.log("firenocResponse",JSON.stringify(firenocResponse))
+  }
+ var validityYears =
+  (firenocResponse &&
+   firenocResponse.Calculation &&
+   firenocResponse.Calculation[0] &&
+   firenocResponse.Calculation[0].taxHeadEstimates &&
+   firenocResponse.Calculation[0].taxHeadEstimates[0] &&
+   firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears) != null
+    ? firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+    : 1;
 
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
-  //console.log("Final Requested Body for Create"+JSON.stringify(body));
+  body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+  ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+  validityYears: validityYears
+};
+
+  console.log("Final Requested Body for Create"+ JSON.stringify(body));
   payloads.push({
     topic: envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
-    messages: JSON.stringify(body)
+    messages: [{ value: JSON.stringify(body) }]
   });
   let response = {
     ResponseInfo: requestInfoToResponseInfo(body.RequestInfo, true),
     FireNOCs: body.FireNOCs
   };
 
-  producer.send(payloads, function(err, data) {
-    if (err) console.log(err);
-  });
+  //  await producer.send(payloads, function(err, data) {
+  //    if (err) console.log(err);
+  //  });
+  await producer.send({
+    topic: envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
+    messages: [{ value: JSON.stringify(body) }]
+});
   return response;
 };

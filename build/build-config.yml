@@ -930,3 +930,33 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
+
+  - name: 'builds/upyog/municipal-services/clu-services'
+    build:
+      - work-dir: 'municipal-services/clu-services'
+        image-name: 'clu-services'
+        dockerfile: 'build/maven/Dockerfile'
+      - work-dir: "municipal-services/clu-services/src/main/resources/db"
+        image-name: "clu-services-db"
+
+  - name: "builds/upyog/municipal-services/clu-calculator"
+    build:
+      - work-dir: "municipal-services/clu-calculator"
+        image-name: "clu-calculator"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/clu-calculator/migration"
+    #    image-name: "clu-calculator-db"
+
+  - name: "builds/upyog/core-services/egov-esign"
+    build:
+      - work-dir: "core-services/egov-esign"
+        image-name: "egov-esign"
+        dockerfile: "build/maven/Dockerfile"
+     # - work-dir: "core-services/egov-esign/src/main/resources/db"
+      #  image-name: "egov-esign-db"
+
+  - name: "builds/upyog/utilities/search-api"
+    build:
+      - work-dir: "utilities/search-api"
+        image-name: "search-api"
+        dockerfile: 'build/Dockerfile'

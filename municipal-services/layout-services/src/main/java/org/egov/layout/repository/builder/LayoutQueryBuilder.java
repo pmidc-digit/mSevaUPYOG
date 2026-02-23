@@ -45,7 +45,7 @@ public class LayoutQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', layoutdoc.uuid, " +
 					"'documentType', layoutdoc.documenttype, " +
-					"'documentAttachment', layoutdoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', layoutdoc.documentAttachment, 'order', layoutdoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', layoutowner.additionalDetails, " +
 					"'uuid', layoutowner.uuid " +

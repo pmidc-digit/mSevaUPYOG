@@ -45,7 +45,7 @@ public class NocQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', nocdoc.uuid, " +
 					"'documentType', nocdoc.documenttype, " +
-					"'documentAttachment', nocdoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', nocdoc.documentAttachment, 'order', nocdoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', nocowner.additionalDetails, " +
 					"'uuid', nocowner.uuid " +

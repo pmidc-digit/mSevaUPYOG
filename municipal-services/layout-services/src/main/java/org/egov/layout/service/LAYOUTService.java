@@ -91,9 +91,9 @@ public class LAYOUTService {
 		String ulbType = (String) siteDetails.get("ulbType");
 		Map<String, Object> buildingCategory = (Map<String, Object>) siteDetails.get("buildingCategory");
 		String buildingCategoryType = (String) buildingCategory.get("code");
-		if(buildingCategoryType.equals("RESIDENTIAL_PLOTTED")){
+		if(buildingCategoryType.equals("RESIDENTIAL")){
 			acres = (String) siteDetails.get("areaUnderResidentialUseInSqM");
-		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE_BUILDING")){
+		}else if(buildingCategoryType.equals("INDUSTRIAL_WAREHOUSE")){
 			acres = (String) siteDetails.get("areaUnderInstutionalUseInSqM");
 		}
 		else{

@@ -141,10 +141,8 @@ const ChallanStepperForm = () => {
   };
 
   const handleViolation = (e) => {
-    console.log("e====", e);
     const filterData = OffenceTypeData?.Challan?.OffenceType?.filter((item) => item.subCategoryId == e?.id);
     setViolationData(filterData);
-    console.log("filterData", filterData);
   };
 
   return (

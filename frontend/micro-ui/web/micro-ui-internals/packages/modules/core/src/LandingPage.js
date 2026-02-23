@@ -22,6 +22,8 @@ const LandingPage = () => {
     script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
     script.async = true;document.body.appendChild(script);
   }, []);
+
+
   return (
     <div className="landing-page">
       {/* Hero Section with Login Cards */}

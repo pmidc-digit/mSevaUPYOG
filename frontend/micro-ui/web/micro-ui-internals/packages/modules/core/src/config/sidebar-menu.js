@@ -15,12 +15,12 @@ return [
       onClick: closeSidebar,
     },
   },
-  {
-    type: "component",
-    element: "LANGUAGE",
-    action: <ChangeLanguage />,
-    icon: "LanguageIcon",
-  },
+  // {
+  //   type: "component",
+  //   element: "LANGUAGE",
+  //   action: <ChangeLanguage />,
+  //   icon: "LanguageIcon",
+  // },
   {
     id: "login-btn",
     element: "LOGIN",

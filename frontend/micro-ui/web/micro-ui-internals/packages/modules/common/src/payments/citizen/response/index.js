@@ -276,6 +276,7 @@ const WrapPaymentComponent = (props) => {
     const fee = paymentData?.totalAmountPaid;
     console.log("fee here here", fee);
     const amountinwords = amountToWords(fee);
+    console.log('amountinwords', amountinwords)
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
       //if not filestoreid
@@ -368,7 +369,8 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);
+          console.log('this else triggered')
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData,amountinwords }] }, generatePdfKey);
         }
       }
     }

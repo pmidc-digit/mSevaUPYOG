@@ -128,7 +128,7 @@ export const NOCFeeTable = ({
     const feeTypes = Object.keys(feeHistory);
     // Find the maximum number of history entries across all fee types
     const maxHistoryLength = Math.max(...feeTypes.map(ft => feeHistory[ft]?.length || 0));
-
+    //style removed from toggle button to bring it closer to feehistory label as per feedback
     return (
       <div className="custom-fix-fee-history-wrapper">
         {/* Toggle Header */}
@@ -136,7 +136,7 @@ export const NOCFeeTable = ({
           className="custom-fix-fee-history-toggle"
           onClick={() => setShowHistory(!showHistory)}
         >
-          <span className="custom-fix-fee-history-toggle-text">{t("BPA_FEE_HISTORY_LABEL")}</span>
+          <span>{t("BPA_FEE_HISTORY_LABEL")}</span>
           <span className="custom-fix-fee-history-toggle-icon">{showHistory ? "▲" : "▼"}</span>
         </div>
 

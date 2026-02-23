@@ -34,7 +34,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY,formatDuration } from "../../../utils/index";
+import { convertToDDMMYYYY,formatDuration, amountToWords } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
@@ -225,7 +225,9 @@ const CitizenApplicationOverview = () => {
         throw new Error("Noc Application data is missing");
       }
       const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
+       const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
@@ -546,9 +548,14 @@ const finalComment = useMemo(() => {
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
   console.log("displayData=>", displayData);
+  const order = {
+    "OWNER.SITEPHOTOGRAPHONE": 1,
+    "OWNER.SITEPHOTOGRAPHTWO": 2,
+  };
   const sitePhotos = displayData?.Documents?.filter(
-    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+    (doc) => doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  )?.sort((a, b) => order[a?.documentType] - order[b?.documentType]);
+
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
@@ -763,8 +770,7 @@ const finalComment = useMemo(() => {
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos].reverse()
-              .map((doc) => (
+            [...sitePhotos].map((doc) => (
                 <NocSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}
                   filestoreId={doc?.filestoreId || doc?.uuid}

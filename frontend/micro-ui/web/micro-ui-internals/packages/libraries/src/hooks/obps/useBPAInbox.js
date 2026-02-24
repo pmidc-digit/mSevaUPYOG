@@ -6,7 +6,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm } = filters;
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
-  let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
+  let { moduleName, businessService, applicationStatus, locality, assignee, applicationType, licenseType } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
   let applicationNumber = "";
@@ -32,6 +32,8 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           ? businessService
             ? [businessService]
             : OBPS_BPA_BUSINESS_SERVICES
+          : licenseType && licenseType.filter(item => item).length > 0
+          ? licenseType.filter(item => item)
           : businessService
           ? [businessService.identifier]
           // ? [businessService]

@@ -157,13 +157,13 @@ const InboxComposer = ({
             <CurrentMobileModalComponent {...propsForCurrentMobileModalComponent} />
           </PopUp>
         ) : null}
-        {/* {isInboxLoading ? <Loader /> : <DetailsCard {...propsForInboxMobileCards} />} */}
+        {/* Using global Table component which has built-in mobile card view */}
         {isInboxLoading ? <Loader /> :
           <div>
-            {propsForInboxMobileCards?.data?.length < 1 ?
+            {propsForInboxTable?.data?.length < 1 ?
               <Card className="margin-unset text-align-center">
                 {propsForInboxTable?.noResultsMessage ? t(propsForInboxTable?.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
-              </Card> : <DetailsCard {...propsForInboxMobileCards} />}
+              </Card> : <Table t={t} {...propsForInboxTable} />}
           </div>}
       </div>
     );

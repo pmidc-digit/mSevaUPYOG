@@ -13,13 +13,15 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             {
                 Header: t("BPA_APPLICATION_NUMBER_LABEL"),
                 accessor: "applicationNo",
+                className: "ndc-new-table-app",
                 Cell: ({ row }) => {
                     // console.log("row.original", row);
                     return (
-                        <div>
-                            <Link to={`${parentRoute}/stakeholder-inbox/stakeholder/${row.original["applicationId"]}`}>
-                                <span className="link">{row.original["applicationId"]}</span>
+                        <div className="ndc-new-cell-stack">
+                            <Link to={`${parentRoute}/stakeholder-inbox/stakeholder/${row.original["applicationId"]}`} className="ndc-new-app-link">
+                                {row.original["applicationId"]}
                             </Link>
+                            {/* {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null} */}
                         </div>
                     );
                 },
@@ -36,6 +38,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             {
                 Header: t("EVENTS_STATUS_LABEL"),
                 accessor: row => t(`WF_${row?.businessService}_${row?.status}`),
+                Cell: ({ row }) => {
+                    const statusValue = row.original?.status || "-";
+                    return (
+                        <span className="ndc-new-status-pill">
+                            {String(statusValue || "-").toLowerCase()}
+                        </span>
+                    );
+                },
             },
             {
                 Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),

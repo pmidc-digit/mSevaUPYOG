@@ -35,9 +35,13 @@ public class ExternalEmailService implements EmailService {
 
 	private void sendTextEmail(Email email) {
 		final SimpleMailMessage mailMessage = new SimpleMailMessage();
+		mailMessage.setFrom(mailSender.getUsername());
 		mailMessage.setTo(email.getEmailTo().toArray(new String[0]));
 		mailMessage.setSubject(email.getSubject());
 		mailMessage.setText(email.getBody());
+		log.info("Sending text email to: {}", String.join(", ", email.getEmailTo()));
+		log.info("Subject: {}", email.getSubject());
+		log.info("Body: {}", email.getBody());
 		mailSender.send(mailMessage);
 	}
 

@@ -45,7 +45,7 @@ public class CluQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', cludoc.uuid, " +
 					"'documentType', cludoc.documenttype, " +
-					"'documentAttachment', cludoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', cludoc.documentAttachment, 'order', cludoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', cluowner.additionalDetails, " +
 					"'uuid', cluowner.uuid " +

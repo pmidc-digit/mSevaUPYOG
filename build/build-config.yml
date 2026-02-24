@@ -1015,69 +1015,9 @@ config:
    #   - work-dir: "municipal-services/clu-calculator/migration"
     #    image-name: "clu-calculator-db"
 
-  - name: "builds/upyog/municipal-services/gc-calculator"
-    build:
-      - work-dir: "municipal-services/gc-calculator"
-        image-name: "gc-calculator"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/gc-calculator/src/main/resources/db"
-        image-name: "gc-calculator-db"
-
-  - name: "builds/upyog/municipal-services/gc-services"
-    build:
-      - work-dir: "municipal-services/gc-services"
-        image-name: "gc-services"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/gc-services/src/main/resources/db"
-        image-name: "gc-services-db"
-
-  - name: "builds/upyog/municipal-services/rl-services"
-    build:
-      - work-dir: "municipal-services/rl-services"
-        image-name: "rl-services"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/rl-services/src/main/resources/db"
-        image-name: "rl-services-db"
-
-  - name: "builds/upyog/municipal-services/rl-calculator"
-    build:
-      - work-dir: "municipal-services/rl-calculator"
-        image-name: "rl-calculator"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "municipal-services/rl-calculator/src/main/resources/db"
-        image-name: "rl-calculator-db"
-        
-  - name: "builds/upyog/utilities/ticketing-module"
-    build:
-      - work-dir: "utilities/ticketing-module"
-        image-name: "ticketing-module"
-        dockerfile: 'build/maven/maven2/Dockerfile'
 
   - name: "builds/upyog/utilities/search-api"
     build:
       - work-dir: "utilities/search-api"
         image-name: "search-api"
         dockerfile: 'build/Dockerfile'
-
-  - name: "builds/upyog/core-services/egov-property-rate-search"
-    build:
-      - work-dir: "core-services/egov-property-rate-search"
-        image-name: "egov-property-rate-search"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "core-services/egov-property-rate-search/src/main/resources/db"
-        image-name: "egov-property-rate-search-db"
-
-  - name: "builds/upyog/core-services/egov-indexer-v2"
-    build:
-      - work-dir: "core-services/egov-indexer-v2"
-        image-name: "egov-indexer-v2"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "core-services/egov-indexer-v2/src/main/resources/db"
-        image-name: "egov-indexer-v2-db"
-
-  - name: "builds/upyog/utilities/search-api"
-    build:
-      - work-dir: "utilities/search-api"
-        image-name: "search-api"
-        dockerfile: 'build/Dockerfile'
-

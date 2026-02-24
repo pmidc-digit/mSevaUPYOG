@@ -60,4 +60,16 @@ public class CalculatorController {
 		log.info("Finished bulk demands for rent/lease demands.");
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
+	@PostMapping("/_generateBill")
+	public ResponseEntity<Void> generateBill(@Valid @RequestBody RequestInfo requestInfo,
+			@ModelAttribute GetBillCriteria getBillCriteria) {
+		log.info("Generating bill for tenant: {} consumerCodes: {}", getBillCriteria.getTenantId(), getBillCriteria.getConsumerCodes());
+		String consumerCode = null;
+		if (getBillCriteria.getConsumerCodes() != null && !getBillCriteria.getConsumerCodes().isEmpty()) {
+			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining());
+		}
+		demandService.generateBatchDemand(requestInfo, getBillCriteria.getTenantId(), consumerCode);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 }

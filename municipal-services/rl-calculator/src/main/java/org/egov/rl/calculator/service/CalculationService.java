@@ -10,6 +10,9 @@ import org.egov.rl.calculator.web.models.RLProperty;
 import org.egov.rl.calculator.web.models.TaxRate;
 import org.egov.rl.calculator.web.models.demand.BillingPeriod;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
+import org.egov.rl.calculator.web.models.demand.Demand;
+import org.egov.rl.calculator.web.models.Owner;
+import org.egov.rl.calculator.web.models.OwnerInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -206,6 +209,56 @@ public class CalculationService {
 		System.out.println("payAmount = " + payAmount);
         
 		return payAmount;
+	}
+
+	/**
+	 * Builds a Demand object for a given allotment request without persisting it.
+	 * Reuses existing calculation logic to create demand details and fills tax period and expiry
+	 * using billing period information.
+	 *
+	 * @param allotmentRequest The allotment request containing application and requestInfo
+	 * @param isSecurityDeposite Whether to include security deposit in calculation
+	 * @return A constructed Demand or null if billing period couldn't be determined
+	 */
+	public Demand buildDemand(AllotmentRequest allotmentRequest, boolean isSecurityDeposite) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		String tenantId = allotmentDetails.getTenantId();
+		String consumerCode = allotmentDetails.getApplicationNumber();
+
+		OwnerInfo ownerInfo = allotmentDetails.getOwnerInfo().get(0);
+		Owner payerUser = Owner.builder().name(ownerInfo.getName()).emailId(ownerInfo.getEmailId())
+				.uuid(ownerInfo.getUserUuid()).mobileNumber(ownerInfo.getMobileNo()).tenantId(ownerInfo.getTenantId())
+				.build();
+
+		List<DemandDetail> demandDetails = calculateDemand(isSecurityDeposite, allotmentRequest);
+		BigDecimal amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+		String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+
+		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
+		BillingPeriod billingPeriod = billingPeriods.stream()
+				.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null);
+
+		if (billingPeriod != null) {
+			long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
+					? allotmentDetails.getStartDate()
+					: billingPeriod.getTaxPeriodFrom();
+
+			long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
+					? billingPeriod.getTaxPeriodTo()
+					: allotmentDetails.getEndDate();
+			long expiryDate = billingPeriod.getDemandExpiryDate();
+
+			Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
+					.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(startDay).taxPeriodTo(endDay)
+					.fixedbillexpirydate(expiryDate).billExpiryTime(expiryDate)
+					.consumerType(allotmentDetails.getApplicationType())
+					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+			return demand;
+		}
+		return null;
 	}
 	
 	/**

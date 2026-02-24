@@ -1,55 +1,15 @@
-import { CloseSvg, TextInput } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, Fragment } from "react";
+import { CloseSvg } from "@egovernments/digit-ui-react-components";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../../../../hooks/useDebounce";
 
-const MultipleChoice = ({
-  t,
-  options = [],
-  updateOption,
-  addOption,
-  removeOption,
-  createNewSurvey,
-  isPartiallyEnabled,
-  formDisabled,
-  inputRef,
-  maxLength,
-  titleHover,
-  weightHover,
-  minWeight,
-  maxWeight,
-  isInputDisabled,
-}) => {
+const MultipleChoice = ({ t, options = checkboxlist, updateOption, addOption, removeOption,createNewSurvey,isPartiallyEnabled,formDisabled,inputRef,maxLength,titleHover,isInputDisabled }) => {
   return (
     <div className="options_checkboxes">
-      {options.map((option) => (
-        <div key={option.id}>
-          <RadioButtonOption
-            index={option.id}
-            title={option.title}
-            weightage={option.optionWeightage}
-            updateOption={updateOption}
-            removeOption={removeOption}
-            inputRef={inputRef}
-            maxLength={maxLength}
-            titleHover={titleHover}
-            weightageHover={weightHover}
-            minWeight={minWeight}
-            maxWeight={maxWeight}
-            isPartiallyEnabled={isPartiallyEnabled}
-            isInputDisabled={isInputDisabled}
-            formDisabled={formDisabled}
-            optionsLength={options.length}
-          />
-        </div>
+      {options.map((title, index) => (
+        <RadioButtonOption key={index} index={index} title={title} updateOption={updateOption} removeOption={removeOption} inputRef={inputRef} maxLength={maxLength} titleHover={titleHover} isPartiallyEnabled={isPartiallyEnabled} isInputDisabled={isInputDisabled} formDisabled={formDisabled}/>
       ))}
       <div>
-        <button
-          className="unstyled-button link"
-          type="button"
-          style={{ display: "block", padding: "8px 16px 8px", backgroundColor: "#2947a3", color: "white", borderRadius: "8px" }}
-          disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)}
-          onClick={() => addOption()}
-        >
+        <button className="unstyled-button link" type="button" disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)} onClick={() => addOption()}>
           {t("CS_COMMON_ADD_OPTION")}
         </button>
       </div>
@@ -59,45 +19,17 @@ const MultipleChoice = ({
 
 export default MultipleChoice;
 
-const RadioButtonOption = ({
-  index,
-  title,
-  weightage,
-  updateOption,
-  removeOption,
-  inputRef,
-  maxLength,
-  titleHover,
-  weightHover,
-  minWeight,
-  maxWeight,
-  isPartiallyEnabled,
-  isInputDisabled,
-  formDisabled,
-  optionsLength,
-}) => {
+const RadioButtonOption = ({ index, title, updateOption, removeOption, inputRef, maxLength, titleHover,isPartiallyEnabled, isInputDisabled, formDisabled }) => {
   const [optionTitle, setOptionTitle] = useState(title);
-  const [optionWeightage, setOptionWeightage] = useState(weightage);
   const [isFocused, setIsFocused] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    updateOption({ value: optionTitle, id: index, weightage: optionWeightage });
-  }, [optionTitle, optionWeightage]);
-  const handleChange = (e) => {
-    const inputValue = e.target.value;
-    const number = parseInt(inputValue, 10);
+      updateOption({ value: optionTitle, id: index });
+  }, [optionTitle]);
 
-    if (inputValue === "" || (/^(10|[0-9])$/.test(inputValue) && !inputValue.includes("-"))) {
-      setError("");
-      setOptionWeightage(e.target.value);
-    } else {
-      setError("Please enter a number between 0 and 10.");
-    }
-  };
   return (
-    <div className="optionradiobtnwrapper" style={{ alignItems: "flex-start" }}>
-      <input type="radio" className="customradiobutton" disabled={isInputDisabled} />
+    <div className="optionradiobtnwrapper">
+      <input type="radio" className="customradiobutton" disabled={isInputDisabled}/>
       <input
         type="text"
         ref={inputRef}
@@ -110,29 +42,8 @@ const RadioButtonOption = ({
         title={titleHover}
         disabled={isPartiallyEnabled ? !isPartiallyEnabled : formDisabled}
       />
-      {optionsLength > 1 && (
-        <div className="pointer" onClick={() => removeOption(index)}>
-          <CloseSvg />
-        </div>
-      )}
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <label htmlFor="numberInput">Enter a number (0-10):</label>
-        <input
-          type="number"
-          id="numberInput"
-          // defaultValue={optionWeightage}
-          value={optionWeightage}
-          required
-          placeholder="Option Weightage"
-          min={minWeight}
-          max={maxWeight}
-          title={weightHover}
-          className="employee-card-input"
-          //    name={`questions[${index}].optionsWeightage`}
-          onChange={handleChange}
-          onWheel={(e) => e.target.blur()}
-        />
-        {error && <span style={{ color: "red" }}>{error}</span>}
+      <div className="pointer" onClick={() => removeOption(index)}>
+        <CloseSvg />
       </div>
     </div>
   );

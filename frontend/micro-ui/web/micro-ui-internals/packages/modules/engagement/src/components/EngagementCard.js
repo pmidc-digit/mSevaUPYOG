@@ -8,7 +8,7 @@ import {
   PMBIconSolid,
   SurveyIconSolid,
   PropertyHouse,
-} from "@mseva/digit-ui-react-components";
+} from "@egovernments/digit-ui-react-components";
 
 const EngagementCard = () => {
   const userRoles = Digit.SessionStorage.get("User")?.info?.roles;
@@ -77,29 +77,8 @@ const EngagementCard = () => {
       },
       {
         label: t("CS_COMMON_NEW_SURVEY"),
-        link: `/digit-ui/employee/engagement/surveys/create-survey-step-form`,
+        link: `/digit-ui/employee/engagement/surveys/create`,
       },
-      {
-        label: t("Create Category"),
-        link: `/digit-ui/employee/engagement/surveys/create-category`,
-      },
-      {
-        label: t("Search Categories"),
-        link: `/digit-ui/employee/engagement/surveys/search-categories`,
-      },
-      {
-        label: t("Create Questions"),
-        link: `/digit-ui/employee/engagement/surveys/create-questions`,
-      },
-      {
-        label: t("Search Questions"),
-        link: `/digit-ui/employee/engagement/surveys/search-questions`,
-      },
-      {
-        label: t("Active and Open Surveys"),
-        link: `/digit-ui/employee/engagement/surveys/active-open-surveys`,
-      },
-
     ],
   };
 

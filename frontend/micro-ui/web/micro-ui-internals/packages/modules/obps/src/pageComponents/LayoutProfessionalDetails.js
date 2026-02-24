@@ -355,6 +355,7 @@ const LayoutProfessionalDetails = (_props) => {
                 }}
                 t={t}
                 disabled="true"
+                disable={true}
               />
             )}
           />

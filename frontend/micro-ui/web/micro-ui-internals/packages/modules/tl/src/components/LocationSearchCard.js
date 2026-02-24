@@ -62,19 +62,14 @@ const LocationSearchCard = ({
   const onLocationChange = (val, location) => {
     safeSetCode(val);
     safeSetGeo(location);
-    // console.log("onLocationChange", val, location);
     isDisabled = val ? false : true;
     // setCode(val);
     // setGeoLocation({...location});
     // onChange(val, location);
   };
 
-//   useEffect(() => {
-//     console.log("code====", code);
-//   }, [code]);
 
   const onLocationChangewithPlace = (val, location, place) => {
-    console.log("onLocationChangewithPlace");
     isDisabled = val ? false : true;
     // setCode(val);
     // setGeoLocation(location);
@@ -86,13 +81,10 @@ const LocationSearchCard = ({
   };
 
   const onSubmit = () => {
-    console.log("code", code);
-    console.log("geoLocation", geoLocation);
     onSelect("address", { geoLocation })
     // if (_place.length > 0) {
     //   onChange(code, geoLocation, _place);
     // } else {
-    //   console.log("onSubmit", code, geoLocation);
     //   onChange(code, geoLocation);
     // }
   };

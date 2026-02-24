@@ -2,14 +2,21 @@ import React from "react";
 import useInbox from "../useInbox";
 
 const useTLInbox = ({ tenantId, filters = {}, config }) => {
-  console.log("filters coming useTLInbox ", filters);
 
-  const { pgrQuery = {}, tlfilters = {}, wfFilters = {}, sortBy, sortOrder, limit, offset } = filters;
+  const { pgrQuery = {}, tlfilters = {}, wfFilters = {}, sortBy, sortOrder, sortParams, limit, offset } = filters;
+  // Map sortParams from Table format [{id, desc}] to API format
+  const effectiveSortBy = sortParams?.[0]?.id || sortBy || "applicationDate";
+  const effectiveSortOrder = sortParams?.[0] ? (sortParams[0].desc ? "DESC" : "ASC") : (sortOrder || "DESC");
   // const { applicationStatus, mobileNumber, applicationNumber, sortBy, sortOrder, locality, uuid, limit, offset } = filters;
   const USER_UUID = Digit.UserService.getUser()?.info?.uuid;
 
   const applicationNumber = filters?.search?.applicationNumber;
   const mobileNumber = filters?.search?.mobileNumber;
+  const tradeLicenseNumber = filters?.search?.tradeLicenseNumber;
+  const applicationType = filters?.search?.applicationType;
+  const fromDate = filters?.search?.fromDate;
+  const toDate = filters?.search?.toDate;
+  const ownerName = filters?.search?.ownerName;
   const applicationStatus = "";
   const serviceCode = filters?.filters?.pgrQuery?.serviceCode;
   const locality = filters?.filters?.pgrQuery?.locality;
@@ -50,6 +57,11 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
     moduleSearchCriteria: {
       ...(mobileNumber ? { mobileNumber: mobileNumber } : {}),
       ...(applicationNumber ? { applicationNumber: applicationNumber } : {}),
+      ...(tradeLicenseNumber ? { licenseNumbers: tradeLicenseNumber } : {}),
+      ...(applicationType ? { applicationType: applicationType } : {}),
+      ...(fromDate ? { fromDate: fromDate } : {}),
+      ...(toDate ? { toDate: toDate } : {}),
+      ...(ownerName ? { ownerName: ownerName } : {}),
       ...(serviceCode?.length > 0 ? { serviceCode: serviceCode } : {}),
       ...(locality?.length > 0
         ? {
@@ -58,8 +70,8 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
         : {}),
 
       //   ...(tenants?.length > 0 ? { tenantId: tenants } : {}),
-      ...(sortBy ? { sortBy } : {}),
-      sortOrder: "DESC",
+      sortBy: effectiveSortBy,
+      sortOrder: effectiveSortOrder,
     },
 
     limit,
@@ -74,7 +86,11 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
         statuses: data?.statusMap || [],
         table: data?.items?.map((application) => ({
           applicationId: application.businessObject?.applicationNumber || "N/A",
+          licenseNumber: application.businessObject?.licenseNumber || "-",
+          tradeName: application.businessObject?.tradeName || "-",
+          ownerName: application.businessObject?.tradeLicenseDetail?.owners?.[0]?.name || "-",
           date: application.businessObject?.applicationDate || 0,
+          financialYear: application.businessObject?.financialYear || "-",
           businessService: application?.ProcessInstance?.businessService || "N/A",
           locality: `${application.businessObject?.tenantId
             ?.toUpperCase()

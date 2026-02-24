@@ -4,7 +4,6 @@ import { Loader } from "@googlemaps/js-api-loader";
 
 const LocationSearch = (props) => {
   let defaultBounds = {};
-  console.log("setCode=======", props);
 
   const updateDefaultBounds = (center) => {
     if (!center.lat || !center.lng) {
@@ -40,7 +39,6 @@ const LocationSearch = (props) => {
 
   const loadGoogleMaps = (callback) => {
     const key = globalConfigs?.getConfig("GMAPS_API_KEY");
-    console.log("GMAPS_API_KEY: ", key);
     const loader = new Loader({
       apiKey: key,
       version: "weekly",
@@ -251,9 +249,7 @@ const LocationSearch = (props) => {
     };
 
     // props?.setCode(location);
-    console.log("Lat & Long", location);
     // props?.setCode(location);
-    onChange("000000", { longitude: location.lng, latitude: location.lat });
     // if(isPlaceRequired)
     // setLocationText(location, onChange, true);
     // else
@@ -301,16 +297,13 @@ const LocationSearch = (props) => {
     // Listen for the event fired when the user selects a prediction and retrieve
     // more details for that place.
     markers[0].addListener("dragend", (marker) => onMarkerDragged(marker, onChange, isPlaceRequired));
-    console.log("In initAutoComplete, searbox: ", searchBox);
     searchBox.addListener("place_changed", () => {
       const place = searchBox.getPlace();
-      console.log("Place: ", place);
       if (!place) {
         return;
       } // Clear out the old markers.
       let pincode = GetPinCode(place);
 
-      console.log("Pincode: ", pincode);
       if (pincode) {
         const { geometry } = place;
         const geoLocation = {

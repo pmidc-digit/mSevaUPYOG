@@ -110,7 +110,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
   if (userType === "employee") {
     return (
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
+        <CardLabel className="card-label-smaller hrms-text-transform-none" style={editScreen ? { color: "#B1B4B6" } : {}}>
           {t("TL_LOCALIZATION_TRADE_ADDRESS")}
         </CardLabel>
         <div className="form-field">

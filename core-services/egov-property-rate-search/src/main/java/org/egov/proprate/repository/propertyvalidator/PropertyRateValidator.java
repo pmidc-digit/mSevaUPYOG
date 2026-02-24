@@ -65,6 +65,10 @@ public class PropertyRateValidator {
             if (rate.getPropertyId() == null || rate.getPropertyId().trim().isEmpty()) {
                 errorMap.put("INVALID_PROPERTY_ID_" + i, "Property ID is mandatory for record " + (i + 1));
             }
+            
+            if (rate.getIsModified() == null) {
+                errorMap.put("IS_MAPPING_MODIFIED" + i, "Boolean Value For Application is Modified or not is Present  " + (i + 1));
+            }
 
         }
 

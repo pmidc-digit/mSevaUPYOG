@@ -34,6 +34,9 @@ public class AddPropertyRate {
 
     @JsonProperty("isUrban")
     private Boolean isUrban;
+    
+    @JsonProperty("isModified")
+    private Boolean isModified;
 
     @JsonProperty("segmentId")
     private String segmentId;

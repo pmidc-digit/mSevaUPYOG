@@ -99,6 +99,7 @@ public class PropertyRateQueryBuilder {
     	    "r.id as integration_id, r.districtid, r.tehsilid, r.village_id, r.locality, " +
     	    "r.segmentid, r.subsegmentid, r.categoryid, r.subcategoryid, r.rate, " +
     	    "dm.district_name, tm.tehsil_name, vm.village_name, " + 
+    	    "sm.segment_name, sl.sub_segment_name, " +  // Added segment & sub-segment names
     	    "p.propertyid, p.nooffloors, p.tenantid, add.locality AS localityCode, " +
     	    "(SELECT STRING_AGG(o.userid, ',') FROM public.eg_pt_owner o WHERE o.propertyid = p.id) AS ownerUuid, " +
     	    "(SELECT STRING_AGG(CAST(o.ownerShipPercentage AS TEXT), ',') FROM public.eg_pt_owner o WHERE o.propertyid = p.id) AS ownerPercentages, " +
@@ -110,10 +111,12 @@ public class PropertyRateQueryBuilder {
     	    "LEFT JOIN revenue_district_master dm ON r.districtid::integer = dm.district_id " +
     	    "LEFT JOIN revenue_tehsil_master tm ON r.tehsilid::integer = tm.tehsil_id " +
     	    "LEFT JOIN revenue_village_master vm ON r.village_id::integer = vm.village_id " + 
+    	    "LEFT JOIN revenue_segment_master sm ON r.segmentid::integer = sm.segment_level_id " +  // Join for segment name
+    	    "LEFT JOIN revenue_sub_segment_list sl ON r.subsegmentid::integer = sl.sub_segment_id " + // Join for sub-segment name
     	    "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +
     	    "WHERE p.status = 'ACTIVE' " +
     	    "AND r.propertyid IS NOT NULL " +
-    	    "AND r.is_verified = false "; // Stopped here so filters can be appended
+    	    "AND r.is_verified = false ";
     
     /* =========================
        MAIN QUERY BUILDER

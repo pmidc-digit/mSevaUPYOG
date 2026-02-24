@@ -26,7 +26,6 @@ export const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = () => {
-    console.log("localStepData in step 3: formData:", localStepData);
 
     const missingDocs = validateDocuments(localStepData);
 

@@ -38,14 +38,6 @@ const TLApplicationDetails = () => {
   const { tenants } = storeData || {};
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [viewTimeline, setViewTimeline] = useState(false);
-  let multiBoxStyle = {
-    border: "groove",
-    background: "#FAFAFA",
-    borderRadius: "4px",
-    paddingInline: "10px",
-    marginTop: "10px",
-    marginBottom: "10px",
-  };
   let multiHeaderStyle = { marginBottom: "10px", marginTop: "10px", color: "#505A5F" };
   //todo: hook should return object to render the data
   const { isLoading, isError, error, data: application, error: errorApplication } = Digit.Hooks.tl.useTLApplicationDetails({
@@ -79,7 +71,7 @@ const TLApplicationDetails = () => {
   }, []);
 
   const { data: menuList, isLoading: TLLoading } = Digit.Hooks.useCustomMDMS(tenantId, "TradeLicense", [{ name: "TradeType" }]);
-  console.log("menuList", menuList?.TradeLicense?.TradeType);
+
 
   const { data: paymentsHistory } = Digit.Hooks.tl.useTLPaymentHistory(tenantId, id);
   useEffect(() => {
@@ -272,7 +264,6 @@ const TLApplicationDetails = () => {
 
   const checkFinalData = checkDownload?.filter((item) => item?.code == tradeType);
 
-  console.log("checkFinalData", checkFinalData);
 
   const isTestApplication = checkFinalData?.[0]?.ishazardous;
 
@@ -307,15 +298,14 @@ const TLApplicationDetails = () => {
           },
         ];
 
-  // console.log("DisplayMenuValue",displayMenu, (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions))
-
+  
   const ownersSequences =
     application?.[0]?.tradeLicenseDetail?.owners?.additionalDetails !== null
       ? application?.[0]?.tradeLicenseDetail?.owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
       : [];
   return (
     <React.Fragment>
-      <div className="cardHeaderWithOptions" style={isMobile ? {} : { maxWidth: "960px" }}>
+      <div className={`cardHeaderWithOptions${!isMobile ? " TL-max-width-960" : ""}`}>
         <Header>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
         <div>
           <MultiLink
@@ -405,7 +395,7 @@ const TLApplicationDetails = () => {
                 <CardSectionHeader>{t("TL_COMMON_OWN_DETAILS")}</CardSectionHeader>
                 {ownersSequences.map((ele, index) => {
                   return application?.tradeLicenseDetail?.subOwnerShipCategory.includes("INSTITUTIONAL") ? (
-                    <div key={index} style={multiBoxStyle}>
+                    <div key={index} className="TL-multi-box">
                       <CardSectionHeader style={multiHeaderStyle}>{`${t("TL_PAYMENT_PAID_BY_PLACEHOLDER")} - ` + (index + 1)}</CardSectionHeader>
                       {/* <Row
                       className="border-none"
@@ -445,7 +435,7 @@ const TLApplicationDetails = () => {
                       />
                     </div>
                   ) : (
-                    <div key={index} style={multiBoxStyle}>
+                    <div key={index} className="TL-multi-box">
                       <CardSectionHeader style={multiHeaderStyle}>{`${t("TL_PAYMENT_PAID_BY_PLACEHOLDER")} - ` + (index + 1)}</CardSectionHeader>
                       <Row
                         className="border-none"
@@ -489,7 +479,7 @@ const TLApplicationDetails = () => {
                 <CardSectionHeader>{t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")}</CardSectionHeader>
                 {application?.tradeLicenseDetail?.tradeUnits?.map((ele, index) => {
                   return (
-                    <div key={index} style={multiBoxStyle}>
+                    <div key={index} className="TL-multi-box">
                       <CardSectionHeader style={multiHeaderStyle}>
                         {t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")} {index + 1}
                       </CardSectionHeader>
@@ -524,7 +514,7 @@ const TLApplicationDetails = () => {
                   application?.tradeLicenseDetail?.accessories.length > 0 &&
                   application?.tradeLicenseDetail?.accessories?.map((ele, index) => {
                     return (
-                      <div key={index} style={multiBoxStyle}>
+                      <div key={index} className="TL-multi-box">
                         {/* <CardSectionHeader style={multiHeaderStyle}>
                         {t("TL_ACCESSORY_LABEL")} {index + 1}
                       </CardSectionHeader> */}
@@ -600,14 +590,7 @@ const TLApplicationDetails = () => {
                     // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                   />
                 )}
-                <div style={{ 
-                  marginTop: "20px",
-                  marginBottom: "20px",
-                  borderRadius: "4px",
-                  border: "1px solid #E0E4E8",
-                  backgroundColor: "#F9F9F9",
-                  padding: "16px"
-                }}>
+                <div className="TL-doc-container">
                   <CardSubHeader style={{ marginTop: "0px", marginBottom: "16px", display: "flex", alignItems: "center" }}>
                    
                     {t("TL_COMMON_DOCS")}
@@ -616,13 +599,7 @@ const TLApplicationDetails = () => {
                     {application?.tradeLicenseDetail?.applicationDocuments?.length > 0 ? (
                       <TLDocument value={{ ...application }}></TLDocument>
                     ) : (
-                      <div style={{ 
-                        padding: "16px",
-                        textAlign: "center",
-                        color: "#7A8A96",
-                        backgroundColor: "#ffffff",
-                        borderRadius: "4px"
-                      }}>
+                      <div className="TL-no-doc-placeholder">
                         <Row text={t("TL_NO_DOCUMENTS_MSG")} />
                       </div>
                     )}

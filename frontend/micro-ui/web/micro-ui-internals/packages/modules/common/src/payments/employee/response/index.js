@@ -824,7 +824,7 @@ export const SuccessfulPayment = (props) => {
                 </div>
               )}
 
-            {businessService == "TL" ? (
+            {/* {businessService == "TL" ? (
               <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printCertificate}>
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                   <path d="M0 0h24v24H0z" fill="none" />
@@ -832,7 +832,7 @@ export const SuccessfulPayment = (props) => {
                 </svg>
                 {t("CS_COMMON_PRINT_CERTIFICATE")}
               </div>
-            ) : null}
+            ) : null} */}
 
             {/* {businessService !== "chb-services" &&
               businessService !== "adv-services" &&

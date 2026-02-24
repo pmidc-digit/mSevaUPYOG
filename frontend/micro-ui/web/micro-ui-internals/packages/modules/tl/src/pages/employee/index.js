@@ -163,8 +163,8 @@ const EmployeeApp = ({ path, url, userType }) => {
     <React.Fragment>
       {/* <BackButton>{t("CS_COMMON_BACK")}</BackButton> */}
     <Switch>
-      <div className="ground-container" style={locationCheck ? {width: "100%", marginLeft: "0px"} : {marginLeft: "0px"}}>
-          <div style={locationCheck ? {marginLeft: "15px", marginTop:"3rem"} : {}}>
+      <div className={`ground-container TL-ground-ml-0 ${locationCheck ? "TL-ground-full-width" : ""}`}>
+          <div className={locationCheck ? "TL-breadcrumb-offset" : ""}>
             <TLBreadCrumb location={location} />
           </div>
           {/* <p className="breadcrumb" style={{ marginLeft: mobileView ? "2vw" : !locationCheck ? "revert": "15px" }}>

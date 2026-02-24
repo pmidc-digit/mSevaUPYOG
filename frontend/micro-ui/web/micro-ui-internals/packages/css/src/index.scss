@@ -139,6 +139,7 @@
 
 @import "./modules/adv/index.scss";
 @import "./modules/hrms/index.scss";
+@import "./modules/TL/index.scss";
 
 .display-none {
   display: none;
@@ -972,16 +973,14 @@
 }
 
 .options-card {
-  max-height: 350px; /* Upper limit to trigger scrolling */
-  min-height: 20px; /* Always some visible height */
-  overflow-y: auto; /* Vertical scrolling only */
-  overflow-x: hidden; /* No horizontal scroll */
-  border: 1px solid #ccc; /* Optional: visual boundary */
-  border-radius: 8px; /* Rounded corners for a modern look */
-  background-color: #fff; /* Ensure readable background */
+  max-height: 350px;  
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  border: 1px solid #ccc; 
+  border-radius: 8px;
+  background-color: #fff; 
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   padding: 4px 0;
-  z-index: 1000; /* Ensure it appears above other elements */
 }
 
 /* ===== TimelineHOC CSS ===== */
@@ -1438,4 +1437,7 @@ video {
 input[type="date"] {
   -webkit-appearance: none !important;
   appearance: none !important;
+}
+.hrms-text-transform{
+  text-transform: none !important;
 }

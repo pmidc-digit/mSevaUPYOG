@@ -29,15 +29,16 @@ const MobileInbox = ({
   localities,
 }) => {
   const { t } = useTranslation();
-  console.log("🔍 MobileInbox - filterComponent:", filterComponent);
-  console.log("🔍 MobileInbox - localities:", localities);
-  console.log("🔍 MobileInbox - data?.statuses:", data?.statuses);
   
   const getData = () => data?.table.map(e => ({
       [t("WF_INBOX_HEADER_APPLICATION_NO")]:e?.["applicationId"],
+      [t("TL_COMMON_TABLE_COL_LIC_NO")]:e?.["licenseNumber"] || "-",
+      [t("TL_COMMON_TABLE_COL_TRADE_NAME")]:e?.["tradeName"] || "-",
+      [t("TL_COMMON_TABLE_COL_OWN_NAME")]:e?.["ownerName"] || "-",
       [t("TL_COMMON_TABLE_COL_APP_DATE")]:convertEpochToDateDMY(e?.["date"]),
+      [t("TL_COMMON_TABLE_COL_FIN_YEAR")]:e?.["financialYear"] || "-",
       [t("TL_COMMON_TABLE_COL_APP_TYPE")]:e?.["businessService"]?t(`CS_COMMON_INBOX_${e?.["businessService"]?.toUpperCase()}`):t("NA"),
-      [t("WF_INBOX_HEADER_LOCALITY")]:t(Digit.Utils.locale.getRevenueLocalityCode(e?.["locality"], e?.["tenantId"])),
+      // [t("WF_INBOX_HEADER_LOCALITY")]:t(Digit.Utils.locale.getRevenueLocalityCode(e?.["locality"], e?.["tenantId"])),
       [t("WF_INBOX_HEADER_STATUS")]:t(e?.["businessService"]?`WF_${e["businessService"]?.toUpperCase()}_${e?.["status"]}`:`NA`),
       [t("WF_INBOX_HEADER_CURRENT_OWNER")]:t(e?.owner),
       [t("WF_INBOX_HEADER_SLA_DAYS_REMAINING")]:t(e?.["sla"])}))

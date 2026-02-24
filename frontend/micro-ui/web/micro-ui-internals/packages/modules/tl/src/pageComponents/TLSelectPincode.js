@@ -46,7 +46,6 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const [pincodeServicability, setPincodeServicability] = useState(null);
 
   useEffect(() => {
-    console.log("formValue in useEffect of TLSelectPincode ", formValue);
 
     const keys = Object.keys(formValue);
     const part = {};
@@ -94,7 +93,6 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     // Check if pincode exists in tenant master data
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == data?.pincode));
     if (foundValue) {
-      console.log("Pincode found in master data:", data.pincode);
       setPincodeServicability(null);
       onSelect(config.key.pincode, { pincode: data.pincode });
     } else {
@@ -110,7 +108,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     return inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller">{`${t(input.label)}`}</CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t(input.label)}`}</CardLabel>
           <div className="form-field">
             {/* <TextInput 
               key={input.name} 

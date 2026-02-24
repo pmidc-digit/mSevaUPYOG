@@ -866,6 +866,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             tenantId,
             action: existing ? "update" : "INITIATE",
             remarks: checklistRemarks[doc?.documentUid] || "",
+            order:doc?.order
           };
         }),
       };

@@ -90,9 +90,22 @@
   color: red;
 }
 
+.close-btn {
+  background-color: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  padding: 8px 16px;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .upload-tag-container {
     width: 80%;
   }
+}
+
+.inbox-name {
+  font-size: 32px;
+  font-family: "Noto Sans", sans-serif;
+  color: black;
+  display: inline;
+  padding-left: 180px;
 }

@@ -429,12 +429,14 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     window.open(jumpTo, "_blank");
   }
 
-  const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0)?.map((doc, index) => ({
     id: index,
+    index: index,
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-    fileUrl: doc.values?.[0]?.fileURL || null,
+    fileUrl: doc?.values?.[0]?.fileURL || null,
+    fileStoreId: doc?.values?.[0]?.fileStoreId || null,
   }));
-  const documentsColumnsOwner = [
+  const documentsColumnsOwner = [    
     {
       Header: t("BPA_OWNER_DETAILS_LABEL"),
       accessor: "title",
@@ -455,6 +457,12 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     },
   ];
   const documentsColumns = [
+    {
+      Header: t("SR_NO"),
+      accessor: "index",
+      width:"20px",
+      Cell: ({ value }) => <div style={{width: "20px"}}>{value + 1}</div>,
+    },
     {
       Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
       accessor: "title",
@@ -979,11 +987,13 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t, path)
     }
-    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY"){
-      if (path == "bpa") {
+    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY" || action === "APPLY"){
+      if (path == "bpa" && isBPA) {
         if (!validateDataForAction(action)) {
           return;
         }
+      }else if(path == "bpa" && isBPA){
+
       }
       saveAsDraft(data?.applicationData, action)
     }
@@ -1050,6 +1060,32 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         return true
       }
     }
+    else{
+      return true;
+    }
+  }
+
+  const validateDataForNewAction = (action) => {
+    if(action === "SEND_TO_CITIZEN"){
+      const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      const isFeesDeclared = data?.applicationData?.additionalDetails?.isFeesDeclared;
+      const ownerData = data?.applicationData?.landInfo?.owners
+      const documentData = data?.applicationData?.documents
+      if(!(ownerData?.length > 0)){
+        setShowToast({
+          key: "error",
+          action: t("Please Insert Owner Data before Submiting")
+        })
+        return false
+      }
+      if((documentData?.length > 0)){
+        console.log("All The Document Data")
+        return false
+      }
+      else{
+        return true
+      }
+    }    
     else{
       return true;
     }
@@ -1868,10 +1904,11 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                               className="customTable table-border-style"
                               t={t}
                               data={documentsData}
+                              pageSizeLimit={100}
                               columns={documentsColumns}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
-                              autoSort={true}
+                              // autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
                             />}                          
@@ -2014,9 +2051,9 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           : null}
 
                         {/* to get Fee values */}
-                        {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                        {/* {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
                           <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
-                        )}
+                        )} */}
                         {/*blocking reason*/}
                         {detail?.additionalDetails?.inspectionReport &&
                           detail?.isFeeDetails &&

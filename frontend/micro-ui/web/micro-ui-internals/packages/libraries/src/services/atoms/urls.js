@@ -209,6 +209,9 @@ const Urls = {
     cluCheckListSearch: "/clu-services/v1/checklist/_search",
     layoutCalculator: "/layout-calculator/v1/_calculate",
     layoutCollectionSearch: "/collection-services/payments/layout/_search",
+    bpaCheckListCreate : "/bpa-services/v1/checklist/_create",
+    bpaCheckListUpdate : "/bpa-services/v1/checklist/_update",
+    bpaCheckListSearch : "/bpa-services/v1/checklist/_search"
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",

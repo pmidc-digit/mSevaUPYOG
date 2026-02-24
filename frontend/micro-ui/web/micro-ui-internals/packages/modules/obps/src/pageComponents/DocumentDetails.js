@@ -221,7 +221,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
         >
           {/* {bpaTaxDocuments?.map((document, index) => { */}
           {bpaTaxDocuments
-            ?.filter((document) => document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE")
+            ?.filter((document) => document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE" && document.code !== "SITEPHOTOGRAPH_TWO")
             .map((document, index) => {
               return (
                 <div
@@ -420,14 +420,14 @@ function SelectDocument({
       <LabelFieldPair>
         {/* {console.log("doc", doc)} */}
         <CardLabel className="card-label-smaller">
-          {t(doc?.code)} {doc?.required && " *"}
+          {t(doc?.code)} {doc?.required && <div>{" "} <span className="requiredField">*</span></div>}
         </CardLabel>
         <div className="field">
           <CustomUploadFile
             id={"tl-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}

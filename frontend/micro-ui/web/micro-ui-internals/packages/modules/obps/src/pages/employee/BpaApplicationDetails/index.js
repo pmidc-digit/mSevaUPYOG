@@ -51,6 +51,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { LoaderNew } from "../../../components/LoaderNew";
+import BPADocumentChecklist from "../../../pageComponents/BPADocumentChecklist";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -144,9 +145,11 @@ const BpaApplicationDetail = () => {
   const [malbafees, setMalbafees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES || "");
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
+  const [checklistRemarks, setChecklistRemarks] = useState({});
   console.log("DATA DATA", data);
   const [appData, setAppData] = useState(data);
   const [getLoading, setLoading] = useState(false);
+  const isDocPending = data?.applicationStatus === "DOC_VERIFICATION_PENDING";
 
   const geoLocations = useMemo(() => {
           if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -171,6 +174,7 @@ const BpaApplicationDetail = () => {
   const { data: pdfDetails, isLoading: pdfLoading, error: searchError } = Digit.Hooks.useDocumentSearch(improvedDoc, {
     enabled: improvedDoc?.length > 0 ? true : false,
   });
+  const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);
   const application = data?.BPA?.[0] || {};
   console.log(application, "YYY");
   let businessService = [];
@@ -429,11 +433,12 @@ const BpaApplicationDetail = () => {
     }
   }
 
-  const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0)?.map((doc, index) => ({
     id: index,
+    index: index,
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-    fileUrl: doc.values?.[0]?.fileURL || null,
-    fileStoreId: doc?.fileStoreId || null,
+    fileUrl: doc?.values?.[0]?.fileURL || null,
+    fileStoreId: doc?.values?.[0]?.fileStoreId || null,
   }));
   const documentsColumnsOwner = [
       {
@@ -456,6 +461,12 @@ const BpaApplicationDetail = () => {
       },
     ];
     const documentsColumns = [
+      {
+        Header: t("SR_NO"),
+        accessor: "index",
+        width: "20px",
+        Cell: ({ value }) => <div style={{ width: "20px" }}>{value + 1}</div>,
+      },
       {
         Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
         accessor: "title",
@@ -1073,6 +1084,15 @@ const BpaApplicationDetail = () => {
           }
         ];
 
+  const remainingDocs = (getOrderDocuments(applicationDocs) || [])?.filter((doc)=> !(doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"))?.filter((obj) => obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0)?.map((doc, index) => ({
+    id: index,
+    documentUid: doc?.values?.[0]?.documentUid,
+    index: index,
+    title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+    fileUrl: doc?.values?.[0]?.fileURL || null,
+    fileStoreId: doc?.values?.[0]?.fileStoreId || null,
+  }))
+
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     console.log("SelectedActionData", data);
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
@@ -1100,6 +1120,15 @@ const BpaApplicationDetail = () => {
           return;
         }
       }      
+    }
+
+    if (data?.BPA?.status === "DOC_VERIFICATION_PENDING") {
+      const allRemarksFilled = Object.values(checklistRemarks).every(remark => remark && remark.trim() !== "");
+      if (!allRemarksFilled) {
+        closeModal();
+        setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
+        return;
+      }
     }
 
     console.log("fieldInspectionPending",fieldInspectionPending)
@@ -1139,6 +1168,35 @@ const BpaApplicationDetail = () => {
           return;
         }
       }
+      const checklistPayload = {
+        checkList: (remainingDocs || []).map((doc) => {
+          const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.documentUid);
+          return {
+            id: existing?.id, // include if updating
+            documentuid: doc?.documentUid,
+            applicationNo: id,
+            tenantId,
+            action: existing ? "update" : "INITIATE",
+            remarks: checklistRemarks[doc?.documentUid] || "",
+          };
+        }),
+      };
+
+      // Call checklist API before NOCUpdate
+      if (isDocPending && checklistPayload?.checkList?.length > 0) {
+        if (searchChecklistData?.checkList?.length > 0) {
+          await Digit.OBPSService.BPACheckListUpdate({
+            details: checklistPayload,
+            filters: { tenantId },
+          });
+        } else {
+          await Digit.OBPSService.BPACheckListCreate({
+            details: checklistPayload,
+            filters: {},
+          });
+        }
+      }
+
       let payload = {
           ...data,
           BPA: {
@@ -1521,17 +1579,31 @@ const BpaApplicationDetail = () => {
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
                           {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
-                            {pdfLoading ? <Loader /> : <Table
+                            {/* {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={documentsData}
                               columns={documentsColumns}
+                              pageSizeLimit={100}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
-                              autoSort={true}
+                              // autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
-                            />}                          
+                            />}                           */}
+
+                          <StatusTable>
+                            {remainingDocs?.length > 0 && (
+                              <BPADocumentChecklist
+                                documents={remainingDocs}
+                                applicationNo={id}
+                                tenantId={tenantId}
+                                onRemarksChange={setChecklistRemarks}
+                                readOnly={!isDocPending}
+                              />
+                            )}
+                          </StatusTable>
+
                           {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                          
                             {ecbcDocumentsData?.length>0 &&<div>{(pdfLoading || isFileLoading) ? <Loader /> : <Table
@@ -1571,10 +1643,11 @@ const BpaApplicationDetail = () => {
                             </Card>
                           }
                           {
-                            data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 &&
+                            data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && 
                             <Card>
                               <div id="fieldInspection"></div>
-                              <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} />
+                              {isMobile ? <SiteInspection siteImages={siteImages} setSiteImages={setSiteImages} geoLocations={geoLocations} customOpen={routeToImage} /> : 
+                              <div className="ads-timer-expired">{t("BPA_MOBILE_APP_REQUIRED_MESSAGE")}</div>}
                             </Card>
                           }
 
@@ -1715,9 +1788,9 @@ const BpaApplicationDetail = () => {
                           : null}
 
                         {/* to get Fee values */}
-                        {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                        {/* {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
                           <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
-                        )}
+                        )} */}
                         {/*blocking reason*/}
                         {detail?.additionalDetails?.inspectionReport &&
                           detail?.isFeeDetails &&

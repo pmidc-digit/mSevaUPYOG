@@ -7,6 +7,14 @@ const getRandomId = () => {
   return Math.floor((Math.random() || 1) * 139);
 };
 
+const CloseBtn = (props) => {
+  return (
+    <div className="close-btn" onClick={props.onClick}>      
+      <Close />
+    </div>
+  );
+};
+
 const getCitizenStyles = (value) => {
   let citizenStyles = {};
   if (value == "propertyCreate") {
@@ -277,7 +285,12 @@ const CustomUploadFile = (props) => {
               <SubmitBar
                 onSubmit={() => routeTo(props.uploadedFile)}
                 label={t("CS_VIEW_DOCUMENT")}
-              />
+              />              
+            </div>
+          )}
+          {!props.uploadedFile || props.error ? null : (
+            <div className="upload-tag-container">
+              <CloseBtn onClick={() => props.onDelete(props.uploadedFile)} />
             </div>
           )}
         </div>

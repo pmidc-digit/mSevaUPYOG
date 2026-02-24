@@ -344,11 +344,15 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }));
     });
 
-    const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+    const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0)?.map((doc, index) => ({
         id: index,
+        index: index,
         title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
         fileUrl: doc.values?.[0]?.fileURL || null,
+        fileStoreId: doc.values?.[0]?.fileStoreId || null,
     }));
+
+    console.log("applicationDocs", getOrderDocuments(applicationDocs))
 
     // const ecbcDocumentsData = useMemo(() => {
     //     return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
@@ -367,6 +371,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     
       return docs.map((doc, index) => ({
         id: index,
+        index: index,
         title: doc.title ? t(doc.title) : t("CS_NA"),
         fileUrl: doc.fileURL || null,
       }));
@@ -435,6 +440,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     
         return {
           id: index,
+          index: index,
           title,
           fileUrl: doc.fileURL || null,
         };
@@ -443,6 +449,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
 
     const documentsColumns = [
+        {
+            Header: t("SR_NO"),
+            accessor: "index",
+            width: "20px",
+            Cell: ({ value }) => <div style={{ width: "20px" }}>{value + 1}</div>,
+        },
         {
             Header: t("BPA_DOCUMENT_NAME"),
             accessor: "title",
@@ -906,7 +918,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             columns={documentsColumns}
                             getCellProps={() => ({ style: {} })}
                             disableSort={false}
-                            autoSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
@@ -1394,7 +1406,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             columns={documentsColumns}
                             getCellProps={() => ({ style: {} })}
                             disableSort={false}
-                            autoSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
@@ -1409,9 +1421,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             t={t}
                             data={documentsData}
                             columns={documentsColumns}
+                            pageSizeLimit={100}
                             getCellProps={() => ({ style: {} })}
                             disableSort={false}
-                            autoSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}

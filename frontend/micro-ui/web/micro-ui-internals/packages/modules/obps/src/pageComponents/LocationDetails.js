@@ -7,6 +7,8 @@ import { stringReplaceAll } from "../utils";
 import EXIF from "exif-js";
 import BharatMap from "./BharatMap";
 import CustomLocationSearch from "../components/CustomLocationSearch";
+import { LoaderNew } from "../components/LoaderNew";
+import CustomUploadFile from "../components/CustomUploadFile";
 
 const imageSize = process.env.IMAGE_UPLOAD_SIZE || 2097152;
 
@@ -32,27 +34,33 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
   const [placeName, setplaceName] = useState(formData?.address?.placeName || formData?.placeName || "");
   const [localities, setLocalities] = useState();
   const [selectedLocality, setSelectedLocality] = useState(currentStepData?.createdResponse?.landInfo?.address?.locality?.code ? currentStepData?.createdResponse?.landInfo?.address?.locality : currentStepData?.PlotDetails?.landInfo?.address?.locality || null);
-  const [viewSiteImageURL, setViewSiteImageURL] = useState(null);
-  const state = localStorage.getItem("Citizen.tenant-id");
+  // const [viewSiteImageURL, setViewSiteImageURL] = useState(null);
+  // const [viewSiteImageURLTwo, setViewSiteImageURLTwo] = useState(null);
+  // const state = localStorage.getItem("Citizen.tenant-id");
   //const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = {};
-  let cityCode = formData?.data?.edcrDetails?.tenantId;
-  console.log("viewSiteImageURL",viewSiteImageURL)
+  let cityCode = formData?.data?.edcrDetails?.tenantId;  
 // const [sitePhotoGraph, setSitePhotoGraph] = useState()
 const [uploadedFile, setUploadedFile] = useState(() => {
   return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_ONE")?.fileStoreId || null;
 });
+const [uploadedFileTwo, setUploadedFileTwo] = useState(() => {
+  return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_TWO")?.fileStoreId || null;
+});
 const [geoLocationFromImg, setGeoLocationFromImg] = useState(currentStepData?.createdResponse?.landInfo?.address?.geoLocation || { latitude: null, longitude: null });
+const [geoLocationFromImgTwo, setGeoLocationFromImgTwo] = useState(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo || { latitude: null, longitude: null });
 const [errors, setError] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
 
 const [isUploading, setIsUploading] = useState(false);
 const [isFileLoading, setIsFileLoading] = useState(false);
+const [isUploadingTwo, setIsUploadingTwo] = useState(false);
+const [isFileLoadingTwo, setIsFileLoadingTwo] = useState(false);
 
 const geoLocations = useMemo(() => {
-  return [{...geoLocationFromImg}]
-},[geoLocationFromImg])
+  return [{...geoLocationFromImg},{...geoLocationFromImgTwo}]
+},[geoLocationFromImg, geoLocationFromImgTwo])
 
 
   if (!formData.address) {
@@ -127,19 +135,33 @@ const geoLocations = useMemo(() => {
     }
   }, [pincode]);
 
-  useEffect(async () => {
-    if(uploadedFile){
-      setIsFileLoading(true);
-      const result = await Digit.UploadServices.Filefetch([uploadedFile], state)
-      console.log("uploadedFile",result);
-      if(result?.data?.fileStoreIds?.length>0){
-        setViewSiteImageURL(result?.data?.fileStoreIds?.[0]?.url);
-        setIsFileLoading(false);
-      }else{
-        setIsFileLoading(false);
-      }
-    }
-  }, [uploadedFile])
+  // useEffect(async () => {
+  //   if(uploadedFile){
+  //     setIsFileLoading(true);
+  //     const result = await Digit.UploadServices.Filefetch([uploadedFile], state)
+  //     console.log("uploadedFile",result);
+  //     if(result?.data?.fileStoreIds?.length>0){
+  //       setViewSiteImageURL(result?.data?.fileStoreIds?.[0]?.url);
+  //       setIsFileLoading(false);
+  //     }else{
+  //       setIsFileLoading(false);
+  //     }
+  //   }
+  // }, [uploadedFile])
+
+  // useEffect(async () => {
+  //   if(uploadedFileTwo){
+  //     setIsFileLoadingTwo(true);
+  //     const result = await Digit.UploadServices.Filefetch([uploadedFileTwo], state)
+  //     console.log("uploadedFile",result);
+  //     if(result?.data?.fileStoreIds?.length>0){
+  //       setViewSiteImageURLTwo(result?.data?.fileStoreIds?.[0]?.url);
+  //       setIsFileLoadingTwo(false);
+  //     }else{
+  //       setIsFileLoadingTwo(false);
+  //     }
+  //   }
+  // }, [uploadedFileTwo])
 
 
   useEffect(() => {
@@ -253,18 +275,23 @@ useEffect(() => {
   //   // onSelect(config.key, address);
   // };
 
-  const validateForm = (city, locality, siteImage) => {
+  const validateForm = (city, locality, siteImage, pincode, siteImageTwo) => {
     if (!city || city.trim() === "") {
       setError(t("Please select a City"));
       return false;
     }
 
-    if (!locality || (Array.isArray(locality) && locality.length === 0) || locality === "") {
+    if (!locality || (Array.isArray(locality) && locality.length === 0) || !locality?.code || locality === "") {
       setError(t("Please select a Locality"));
       return false;
     }
 
     if (!siteImage || (Array.isArray(siteImage) && siteImage.length === 0) || siteImage === "") {
+      setError(t("Please upload Site Image"));
+      return false;
+    }
+
+    if (!siteImageTwo || (Array.isArray(siteImageTwo) && siteImageTwo.length === 0) || siteImageTwo === "") {
       setError(t("Please upload Site Image"));
       return false;
     }
@@ -295,20 +322,33 @@ useEffect(() => {
     const userInfo = Digit.UserService.getUser()
     const accountId = userInfo?.info?.uuid
     const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
+    const additionalDetails = {
+      ...currentStepData?.createdResponse?.additionalDetails,
+      geoLocationTwo: {
+        latitude: Number(geoLocationFromImgTwo?.latitude)?.toFixed(6) || null,
+        longitude: Number(geoLocationFromImgTwo?.longitude)?.toFixed(6) || null
+      }
+    }
 
     // ✅ Run validation first
-    if (!validateForm(address.city, address.locality, uploadedFile, pincode)) {
+    if (!validateForm(address.city, address.locality, uploadedFile, pincode, uploadedFileTwo)) {
       return; // stop execution if validation fails
     }
 
     // ✅ Proceed only if validation passes
     let documents = [...(currentStepData?.createdResponse?.documents || [])]?.filter(
-      (item) => item.documentType !== "SITEPHOTOGRAPH_ONE"
+      (item) => item.documentType !== "SITEPHOTOGRAPH_ONE" && item.documentType !== "SITEPHOTOGRAPH_TWO"
     );
 
     const siteDocument = [...(currentStepData?.createdResponse?.documents || [])]?.find(
       (item) => item.documentType === "SITEPHOTOGRAPH_ONE"
     );
+
+    const siteDocumentTwo = [...(currentStepData?.createdResponse?.documents || [])]?.find(
+      (item) => item.documentType === "SITEPHOTOGRAPH_TWO"
+    );
+
+    console.log("DocumentsData", siteDocument, siteDocumentTwo)
 
     documents.push({
       documentType: "SITEPHOTOGRAPH_ONE",
@@ -320,12 +360,23 @@ useEffect(() => {
       id: siteDocument?.id || null
     });
 
+    documents.push({
+      documentType: "SITEPHOTOGRAPH_TWO",
+      fileStoreId: uploadedFileTwo,
+      fileStore: uploadedFileTwo,
+      fileName: "",
+      fileUrl: "",
+      additionalDetails: {},
+      id: siteDocumentTwo?.id || null
+    });
+
     console.log("LocationAPI", address, documents);
 
     try{
         setApiLoading(true);
         const result = await Digit.OBPSService.update({ BPA: {
           ...currentStepData?.createdResponse,
+          additionalDetails,
           landInfo: {
             ...currentStepData?.createdResponse?.landInfo,
             address
@@ -353,14 +404,6 @@ useEffect(() => {
 
   };
 
-  function onSave(geoLocation, pincode, placeName) {
-    selectPincode(pincode);
-    sessionStorage.setItem("currentPincode", pincode);
-    setgeoLocation(geoLocation);
-    setplaceName(placeName);
-    setIsOpen(false);
-    setPinerror(null);
-  }
 
 
   function selectPincode(e) {
@@ -380,33 +423,6 @@ useEffect(() => {
     // setLocalities(null);
   }
 
-  function selectStreet(e) {
-    setStreet(e.target.value);
-  }
-
-  function selectGeolocation(e) {
-    formData.address["geoLocation"] = typeof e === "object" && e !== null ? e.target.value : e;
-    setgeoLocation(typeof e === "object" && e !== null ? e.target.value : e);
-    setplaceName(typeof e === "object" && e !== null ? e.target.value : e);
-    sessionStorage.setItem("currentPincode", "");
-    sessionStorage.setItem("currentCity", JSON.stringify({}));
-    sessionStorage.setItem("currLocality", JSON.stringify({}));
-    setPincode("");
-    setSelectedLocality(null);
-
-  }
-
-  function selectLandmark(e) {
-    setLandmark(e.target.value);
-  }
-
-  function selectCity(city) {
-    setSelectedLocality(null);
-    setLocalities(null);
-    setSelectedCity(city);
-    sessionStorage.setItem("currentCity", JSON.stringify(city));
-    formData.address["city"] = city;
-  }
 
 
 
@@ -448,79 +464,112 @@ function extractGeoLocation(file) {
   });
 }
 
-async function selectfiles(e) {
-  const file = e.target.files[0];
-  console.log("uploadFile", file);
-  if (!file) return;
+  async function selectfiles(e) {
+    const file = e.target.files[0];
+    console.log("uploadFile", file);
+    if (!file) return;
 
 
-  const geo = await extractGeoLocation(file);
-  if (!geo.latitude || !geo.longitude) {
-    setError(t("This image does not contain GPS location data"));
-    setUploadedFile(null);
-    setGeoLocationFromImg({ latitude: null, longitude: null });
-    return;
-  }
-
-
-  setError(null);
-  setGeoLocationFromImg(geo);
-  setgeoLocation(geo);
-  setIsUploading(true)
-
-  try {
-    let newFile;
-    if (file?.size > imageSize) {
-      newFile = await Digit.Utils.compressImage(file);
-    }else{
-      newFile = file;
+    const geo = await extractGeoLocation(file);
+    if (!geo.latitude || !geo.longitude) {
+      setError(t("This image does not contain GPS location data"));
+      setUploadedFile(null);
+      setGeoLocationFromImg({ latitude: null, longitude: null });
+      return;
     }
-    const response = await Digit.UploadServices.Filestorage("PT", newFile, Digit.ULBService.getStateId());
-if (response?.data?.files?.length > 0) {
-  const fileStoreId = response.data.files[0].fileStoreId;
-  setUploadedFile(fileStoreId);
-  console.log("Uploaded FileStoreId:", fileStoreId);
 
 
-  // 🔥 Update formData
-  // formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
+    setError(null);
+    setGeoLocationFromImg(geo);
+    setgeoLocation(geo);
+    setIsUploading(true)
 
-  // 🔥 Persist in sessionStorage so update API can pick it later
-  // sessionStorage.setItem("BUILDING_PERMIT", JSON.stringify(formData));
-} else {
-  setError("File upload failed");
-}
+    try {
+      let newFile;
+      if (file?.size > imageSize) {
+        newFile = await Digit.Utils.compressImage(file);
+      } else {
+        newFile = file;
+      }
+      const response = await Digit.UploadServices.Filestorage("PT", newFile, Digit.ULBService.getStateId());
+      if (response?.data?.files?.length > 0) {
+        const fileStoreId = response.data.files[0].fileStoreId;
+        setUploadedFile(fileStoreId);
+        console.log("Uploaded FileStoreId:", fileStoreId);
 
 
-  } catch (err) {
-    setError("File upload error");
-  }finally{
-    setIsUploading(false)
+        // 🔥 Update formData
+        // formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
+
+        // 🔥 Persist in sessionStorage so update API can pick it later
+        // sessionStorage.setItem("BUILDING_PERMIT", JSON.stringify(formData));
+      } else {
+        setError("File upload failed");
+      }
+
+
+    } catch (err) {
+      setError("File upload error");
+    } finally {
+      setIsUploading(false)
+    }
   }
-}
+  async function selectfilesTwo(e) {
+    const file = e.target.files[0];
+    console.log("uploadFile", file);
+    if (!file) return;
 
 
-  const renderLabel = (label, value) => (
-    <div >
-      <CardLabel>{label}</CardLabel>
-      <div>{value || t("CS_NA")}</div>
-    </div>
-  );
+    const geo = await extractGeoLocation(file);
+    if (!geo.latitude || !geo.longitude) {
+      setError(t("This image does not contain GPS location data"));
+      setUploadedFileTwo(null);
+      setGeoLocationFromImgTwo({ latitude: null, longitude: null });
+      return;
+    }
 
-  if(apiLoading || isLoading) return <Loader/>
+
+    setError(null);
+    setGeoLocationFromImgTwo(geo);
+    setgeoLocation(geo);
+    setIsUploadingTwo(true)
+
+    try {
+      let newFile;
+      if (file?.size > imageSize) {
+        newFile = await Digit.Utils.compressImage(file);
+      } else {
+        newFile = file;
+      }
+      const response = await Digit.UploadServices.Filestorage("PT", newFile, Digit.ULBService.getStateId());
+      if (response?.data?.files?.length > 0) {
+        const fileStoreId = response.data.files[0].fileStoreId;
+        setUploadedFileTwo(fileStoreId);
+        console.log("Uploaded FileStoreId:", fileStoreId);
+
+
+        // 🔥 Update formData
+        // formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
+
+        // 🔥 Persist in sessionStorage so update API can pick it later
+        // sessionStorage.setItem("BUILDING_PERMIT", JSON.stringify(formData));
+      } else {
+        setError("File upload failed");
+      }
+
+
+    } catch (err) {
+      setError("File upload error");
+    } finally {
+      setIsUploadingTwo(false)
+    }
+  }
+  
+
+  if(apiLoading || isLoading || isUploading || isUploadingTwo || isFileLoading || isFileLoadingTwo) return <LoaderNew page={true} />
 
 return (
-  <div >
-    {/* {!isOpen && <Timeline />} */}
-    {/* {isOpen && (
-      <GIS
-        t={t}
-        onSelect={onSelect}
-        formData={formData}
-        handleRemove={handleRemove}
-        onSave={onSave}
-      />
-    )} */}
+  <div >    
 
     {!isOpen && (
       <FormStep
@@ -530,55 +579,7 @@ return (
         isDisabled={!selectedCity || Pinerror}
         isMultipleAllow={true}
         // forcedError={t(Pinerror)}
-      >
-        {/* GIS Section */}
-        {/* <div style={sectionStyle}>
-          <h2 style={headingStyle}>{t("BPA_GIS_LABEL")}</h2>
-          <div>
-            <TextInput
-              style={{}}
-              isMandatory={false}
-              optionKey="i18nKey"
-              t={t}
-              name="gis"
-              value={
-                isEditApplication || isSendBackTOCitizen
-                  ? geoLocation.latitude !== null
-                    ? `${geoLocation.latitude}, ${geoLocation.longitude}`
-                    : ""
-                  : placeName
-              }
-              onChange={selectGeolocation}
-            />
-            <LinkButton
-              label={
-                <div>
-                  <span>
-                    <svg
-                      style={
-                        !isMobile
-                          ? { position: "relative", left: "515px", bottom: "25px", marginTop: "-20px" }
-                          : { float: "right", position: "relative", bottom: "25px", marginTop: "-20px", marginRight: "5px" }
-                      }
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M11 7C8.79 7 7 8.79 7 11C7 13.21 8.79 15 11 15C13.21 15 15 13.21 15 11C15 8.79 13.21 7 11 7ZM19.94 10C19.48 5.83 16.17 2.52 12 2.06V0H10V2.06C5.83 2.52 2.52 5.83 2.06 10H0V12H2.06C2.52 16.17 5.83 19.48 10 19.94V22H12V19.94C16.17 19.48 19.48 16.17 19.94 12H22V10H19.94ZM11 18C7.13 18 4 14.87 4 11C4 7.13 7.13 4 11 4C14.87 4 18 7.13 18 11C18 14.87 14.87 18 11 18Z"
-                        fill="#505A5F"
-                      />
-                    </svg>
-                  </span>
-                </div>
-              }
-              style={{}}
-              onClick={(e) => handleGIS()}
-            />
-          </div>
-        </div> */}
+      >       
 
         {/* Pincode Section */}
         <div>
@@ -600,7 +601,7 @@ return (
 
         {/* City Section */}
         <div>
-          <h2 className="card-label">{t("BPA_CITY_LABEL")}</h2>
+          <h2 className="card-label">{t("BPA_CITY_LABEL")}<span className="requiredField"> *</span></h2>
           {!isOpen && (
             <TextInput
               value={selectedCity?.name || ""}
@@ -612,7 +613,7 @@ return (
 
         {/* Locality (Mohalla) Section - RESTORED ORIGINAL GUARD */}
         <div>
-          <h2 className="card-label" >{t("BPA_LOC_MOHALLA_LABEL")}</h2>
+          <h2 className="card-label" >{t("BPA_LOC_MOHALLA_LABEL")}<span className="requiredField"> *</span></h2>
 
           {!isOpen && selectedCity && localities && !propertyData?.address ? (
             <span className={"form-pt-dropdown-only"}>
@@ -632,7 +633,7 @@ return (
             </span>
           ) : (
             <span className={"form-pt-dropdown-only"}>
-              <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel>
+              <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")} `}<span className="requiredField">*</span></CardLabel>
               <TextInput
                
                 isMandatory={false}
@@ -649,28 +650,25 @@ return (
 
         {/* Site Photograph Section */}
         <div>
-          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH")}</h2>
+          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH")} <span className="requiredField">*</span></h2>
 
-          <UploadFile
+          <CustomUploadFile
             id="loc-site-photo"
             onUpload={selectfiles}
             onDelete={() => {
               setUploadedFile(null);
+              setGeoLocationFromImg({ latitude: null, longitude: null })
               // setFiles && setFiles(null);
             }}
+            uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
             accept=".jpg,.jpeg,.png"
           />
+          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          
 
-          {isFileLoading && (
+          {/* {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
             <div>
-              <Loader />
-            </div>
-          )}
-
-          {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
-            <div>
-              {/* <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel> */}
               <a 
                 href={viewSiteImageURL} 
                 target="_blank" 
@@ -680,48 +678,36 @@ return (
                 {t("CS_COMMON_VIEW_SITE_PHOTOGRAPH")}
               </a>
             </div>
-          )}
-
-          {isUploading && (
-            <div>
-              <Loader />
-              <span>{t ? t("CS_FILE_UPLOADING") : "Uploading image..."}</span>
-            </div>
-          )}
-
-          {!isUploading && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude !==0 && (
-            <div>
-              <strong>📍 Extracted Geo Location</strong>
-              <div>Latitude: {Number(geoLocationFromImg.latitude).toFixed(6)}</div>
-              <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
-            </div>
-          )}
-          {!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0 &&(
-            // <div style={{ marginTop: "16px" }}>
-            //   <a 
-            //     href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 
-            //     target="_blank" 
-            //     rel="noopener noreferrer"
-            //     style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
-            //   >
-            //     {t("CS_COMMON_VIEW_SITE_LOCATION")}
-            //   </a>
-            // </div>
-            <CustomLocationSearch position={geoLocations}/>
-          )}
-          {/* {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
-            <BharatMap mapUrl={`lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`}/>
           )} */}
+          
+        </div>
+        <div>
+          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH_2")} <span className="requiredField">*</span></h2>
+
+          <CustomUploadFile
+            id="loc-site-photo"
+            onUpload={selectfilesTwo}
+            onDelete={() => {
+              setUploadedFileTwo(null);
+              setGeoLocationFromImgTwo({ latitude: null, longitude: null })
+              // setFiles && setFiles(null);
+            }}
+            uploadedFile={uploadedFileTwo}
+            message={uploadedFileTwo ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+            accept=".jpg,.jpeg,.png"
+          />
+          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>  
+        </div>
+        <div style={{paddingTop: "10px"}}>
+        {((!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0)||(!isUploadingTwo && geoLocationFromImgTwo?.latitude && geoLocationFromImgTwo?.latitude !==0 && geoLocationFromImgTwo?.longitude && geoLocationFromImgTwo?.longitude !==0)) &&(            
+            <CustomLocationSearch position={geoLocations}/>
+        )} 
         </div>
       </FormStep>
     )}
        <ActionBar>
-        <SubmitBar
-                                      label="Back"
-                                     
-                                      onSubmit={onGoBack}
-                            />
-           {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  disabled={!selectedCity || Pinerror || apiLoading}/>}
+        <SubmitBar label="Back" onSubmit={onGoBack} />
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  disabled={!selectedCity || Pinerror || apiLoading}/>}
        </ActionBar>
        {errors && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />}
   </div>

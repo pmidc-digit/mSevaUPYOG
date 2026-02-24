@@ -56,7 +56,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
             <Link to={`${parentRoute}/layout/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
               {row.original?.applicationId || row.original?.applicationNo || "-"}
             </Link>
-            {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null}
+            {/* {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null} */}
           </div>
         ),
       },

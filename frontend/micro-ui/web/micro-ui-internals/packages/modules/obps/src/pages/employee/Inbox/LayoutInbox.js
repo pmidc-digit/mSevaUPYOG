@@ -316,7 +316,7 @@ const { isLoading: isInboxLoading, data: inboxData } =
       isLoading={isInboxLoading}
       tableData={tableData}
       tableProps={propsForInboxTable}
-      tableHeader="ES_INBOX_INBOX"
+      tableHeader="Applications"
       pagination={
         <InboxPagination
           offset={formState.tableForm?.offset || 0}

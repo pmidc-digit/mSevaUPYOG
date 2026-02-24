@@ -3,7 +3,7 @@ import { FilterFormField } from "@mseva/digit-ui-react-components";
 import { useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter }) => {
+const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTypesOfBPA, handleFilter, licenseTypes, showLicenseTypeFilter = false }) => {
   const { t } = useTranslation();
   const [showAllStatuses, setShowAllStatuses] = useState(false);
 
@@ -11,6 +11,14 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
     { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
   ];
+
+  // License Type options for BPAREG (Professional Registration) - Only shown in stakeholder inbox
+  const licenseTypeOptions = showLicenseTypeFilter ? [
+    { code: "ARCHITECT", name: "Architect" },
+    { code: "ENGINEER", name: "Engineer" },
+    { code: "TOWNPLANNER", name: "Town Planner" },
+    { code: "SUPERVISOR", name: "Supervisor" },
+  ] : [];
 
   applicationTypesOfBPA?.forEach((type) => {
     type.name = t(`WF_BPA_${type.code}`);
@@ -32,8 +40,11 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
 
   const { field: assigneeField } = useController({ name: "assignee", control: controlFilterForm });
   const { field: statusField } = useController({ name: "applicationStatus", control: controlFilterForm, defaultValue: [] });
+  const { field: licenseTypeField } = useController({ name: "licenseType", control: controlFilterForm, defaultValue: [] });
 
   const statusValues = Array.isArray(statusField.value) ? statusField.value : [];
+
+  const licenseTypeValues = Array.isArray(licenseTypeField.value) ? licenseTypeField.value : [];
 
   const toggleStatus = (statusCode) => {
     let newStatusValues;
@@ -51,6 +62,23 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     }
   };
 
+  const toggleLicenseType = (licenseTypeCode) => {
+    let newLicenseTypeValues;
+    if (licenseTypeValues.includes(licenseTypeCode)) {
+      newLicenseTypeValues = licenseTypeValues.filter((code) => code !== licenseTypeCode);
+    } else {
+      newLicenseTypeValues = [...licenseTypeValues, licenseTypeCode];
+    }
+    licenseTypeField.onChange(newLicenseTypeValues);
+    // Immediately notify parent of filter change
+    if (typeof handleFilter === "function") {
+      handleFilter({
+        licenseType: newLicenseTypeValues,
+        applicationStatus: statusValues.map((code) => ({ code })),
+      });
+    }
+  };
+
   const cards = [
     ...availableOptions.map((option) => ({
       key: option.code,
@@ -61,28 +89,49 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
       code: option.code,
       icon: "⌂",
     })),
-    ...(statuses || []).map((status) => ({
-      key: status.applicationstatus,
-      type: "status",
-      label: t(status.applicationstatus),
-      subtitle: null,
-      count: status.totalCount ?? status.count ?? status.noOfRecords ?? status.totalRecords ?? status.applicationCount ?? 0,
-      code: status.applicationstatus,
-      icon: "◎",
+    ...(statuses || []).map((status) => {
+      // Include businessService in key if available to avoid deduplication
+      const uniqueKey = status.businessService ? `${status.applicationstatus}-${status.businessService}` : status.applicationstatus;
+      return {
+        key: uniqueKey,
+        type: "status",
+        label: t(status.applicationstatus),
+        subtitle: status.businessService ? `${status.businessService}` : null,
+        count: status.totalCount ?? status.count ?? status.noOfRecords ?? status.totalRecords ?? status.applicationCount ?? 0,
+        code: status.applicationstatus,
+        businessService: status.businessService,
+        icon: "◎",
+      };
+    }),
+    ...licenseTypeOptions.map((licenseType) => ({
+      key: licenseType.code,
+      type: "licenseType",
+      label: licenseType.name,
+      subtitle: "License Type",
+      count: null,
+      code: licenseType.code,
+      icon: "📋",
     })),
   ];
 
   const visibleCards = showAllStatuses ? cards : cards.slice(0, 6);
+
+  // For stakeholder inbox, show assignee + license type cards only
+  const displayCards = showLicenseTypeFilter 
+    ? cards.filter(card => card.type === "assignee" || card.type === "licenseType")
+    : visibleCards;
 
   return (
     <div className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
       <FilterFormField>
         <div className="ndc-new-filter-status-wrapper">
           <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
-            {visibleCards.map((card, index) => {
+            {displayCards.map((card, index) => {
               const isActive =
                 card.type === "assignee"
                   ? assigneeField.value === card.code
+                  : card.type === "licenseType"
+                  ? licenseTypeValues.includes(card.code)
                   : statusValues.includes(card.code);
 
               const variant = getVariantByIndex(index, getVariantFromCode(card.code));
@@ -102,8 +151,11 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                         handleFilter({
                           assignee: card.code,
                           applicationStatus: statusValues.map((code) => ({ code })),
+                          licenseType: licenseTypeValues,
                         });
                       }
+                    } else if (card.type === "licenseType") {
+                      toggleLicenseType(card.code);
                     } else {
                       toggleStatus(card.code);
                     }
@@ -127,7 +179,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
               );
             })}
           </div>
-          {cards.length > 6 ? (
+          {!showLicenseTypeFilter && cards.length > 6 ? (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
               <button
               type="button"

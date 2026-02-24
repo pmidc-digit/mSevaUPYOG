@@ -4,11 +4,9 @@ import { Link } from "react-router-dom";
 
 const Details = ({ label, name, onClick }) => {
   return (
-    <div className="detail" onClick={onClick}>
-      <span className="label">
-        <h2>{label}</h2>
-      </span>
-      <span className="name" style={{overflowWrap:"break-word"}}>{name}</span>
+    <div className="digit-table-mobile-card-row" onClick={onClick}>
+      <span className="digit-table-mobile-card-label">{label}</span>
+      <span className="digit-table-mobile-card-value" style={{overflowWrap:"break-word"}}>{name}</span>
     </div>
   );
 };
@@ -16,7 +14,7 @@ const Details = ({ label, name, onClick }) => {
 const DetailsCard = ({ data, serviceRequestIdKey, linkPrefix, handleSelect, selectedItems, keyForSelected, handleDetailCardClick, isTwoDynamicPrefix=false,getRedirectionLink ,handleClickEnabled =true, tenantIdsList=[]}) => {
   if (linkPrefix && serviceRequestIdKey) {
     return (
-      <div>
+      <div className="digit-table-mobile-wrapper">
         {data.map((object, itemIndex) => {
             console.log("ObjectInsideDetailsCard", object);
           return (
@@ -37,7 +35,7 @@ const DetailsCard = ({ data, serviceRequestIdKey, linkPrefix, handleSelect, sele
                     object[serviceRequestIdKey]}`+`/${tenantIdsList[itemIndex]}`
                 }
             >
-              <div className="details-container">
+              <div className="digit-table-mobile-card">
                 {Object.keys(object).map((name, index) => {
                   if (name === "applicationNo" || name === "Vehicle Log") return null;
                   return <Details label={name} name={object[name]} key={index} />;
@@ -51,13 +49,13 @@ const DetailsCard = ({ data, serviceRequestIdKey, linkPrefix, handleSelect, sele
   }
 
   return (
-    <div>
+    <div className="digit-table-mobile-wrapper">
       {data.map((object, itemIndex) => {
         return (
           <div
             key={itemIndex}
             style={{ border: selectedItems?.includes(object[keyForSelected]) ? "2px solid #a82227" : "2px solid #fff" }}
-            className="details-container"
+            className="digit-table-mobile-card"
             onClick={() =>handleClickEnabled && handleSelect(object)}
           >
             {Object.keys(object).filter(rowEle => !(typeof object[rowEle] == "object" && object[rowEle]?.hidden == true)).map((name, index) => {

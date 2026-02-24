@@ -1,12 +1,11 @@
-import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect, use } from "react"
-import { InboxComposer, CaseIcon, Header, Toast } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react"
+import { CaseIcon, Header, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
-import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
+import { useForm } from "react-hook-form";
+import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
+import NewFilterFormFieldsComponent from "../../../../../templates/Inbox/NewFilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
-import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
-import { set } from "lodash";
 
 const Inbox = ({ parentRoute }) => {
 
@@ -15,6 +14,11 @@ const Inbox = ({ parentRoute }) => {
     error: false,
     label: ""
   });
+  const [activeStatusTab, setActiveStatusTab] = useState("ALL");
+  const [topBarSearch, setTopBarSearch] = useState("");
+  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
+  const isMobile = window.Digit.Utils.browser.isMobile();
+  
   // const tenantId = Digit.ULBService.getStateId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
 
@@ -25,7 +29,8 @@ const Inbox = ({ parentRoute }) => {
     applicationStatus: [],
     businessService: null,
     locality: [],
-    assignee: "ASSIGNED_TO_ALL"
+    assignee: "ASSIGNED_TO_ALL",
+    licenseType: [],
   }
   const tableOrderFormDefaultValues = {
     sortBy: "",
@@ -63,6 +68,7 @@ const Inbox = ({ parentRoute }) => {
     setFilterFormValue("applicationStatus", "");
     setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
+    setFilterFormValue("licenseType", []);
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
   }
   
@@ -105,52 +111,63 @@ const Inbox = ({ parentRoute }) => {
 
   const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, isError } = Digit.Hooks.obps.useBPAInbox({
     tenantId: tenantId === "pb" ? "pb.punjab" : tenantId,
-    filters: { ...formState }
+    filters: { 
+      ...formState,
+      searchForm: {
+        ...formState.searchForm,
+        ...(topBarSearch && { applicationNo: topBarSearch })
+      }
+    }
   });
 
-  // const isInboxLoading = false, table = [], statuses = [], totalCount = 0;
   console.log("isInboxLoading", isInboxLoading, "table", table, "statuses", statuses, "totalCount", totalCount);
 
-  const PropsForInboxLinks = {
-    logoIcon: <CaseIcon />,
-    headerText: "CS_COMMON_OBPS",
-    // links: [{
-    //   text: t("BPA_SEARCH_PAGE_TITLE"),
-    //   link: "/digit-ui/employee/obps/search/application",
-    //   businessService: "BPA",
-    //   roles: ["BPAREG_EMPLOYEE", "BPAREG_APPROVER", "BPAREG_DOC_VERIFIER", "BPAREG_DOC_VERIFIER"],
-    // }]
-    links:[]
-  }
+  const onNextPage = () => {
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + parseInt(formState.tableForm?.limit) },
+    });
+  };
 
-  const SearchFormFields = useCallback(({ registerRef, searchFormState, searchFieldComponents }) => <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />, [])
+  const onPrevPage = () => {
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit) },
+    });
+  };
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <FilterFormFieldsComponent {...{ statuses, isInboxLoading, registerRef, controlFilterForm, setFilterFormValue, filterFormState: formState?.filterForm, getFilterFormValue, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant }} />
-    , [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant])
+  const onStatusTabClick = useCallback(
+    (label, statusCode) => {
+      setActiveStatusTab(statusCode || label);
+      if (label === "CLEAR") {
+        setTopBarSearch("");
+        return;
+      }
+      if (label === "ALL") {
+        dispatch({
+          action: "mutateFilterForm",
+          data: { ...formState.filterForm, applicationStatus: [] },
+        });
+        return;
+      }
+      const resolvedCode = statusCode || label;
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, applicationStatus: [resolvedCode] },
+      });
+    },
+    [formState.filterForm, dispatch]
+  );
 
-  const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""];
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateSearchForm", data })
-  }
+  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } });
 
-  const onFilterFormSubmit = (data) => {
-    console.log("onFilterFormSubmitData", data)
-    data.hasOwnProperty("") && delete data?.[""] ;
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateFilterForm", data })
-  }
-
-  const propsForSearchForm = { SearchFormFields, onSearchFormSubmit, searchFormDefaultValues: formState?.searchForm, resetSearchFormDefaultValues: searchFormDefaultValues, onSearchFormReset }
-
-  const propsForFilterForm = { FilterFormFields, onFilterFormSubmit, filterFormDefaultValues: formState?.filterForm, resetFilterFormDefaultValues: filterFormDefaultValues, onFilterFormReset }
-
-  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } })
-
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table })
-  
-  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
+  const {
+    control: controlFilterForm,
+    setValue: setFilterFormValue,
+    getValues: getFilterFormValue,
+  } = useForm({
+    defaultValues: { ...filterFormDefaultValues },
+  });
 
   useEffect(() => {
     if(isError) {
@@ -164,23 +181,195 @@ const Inbox = ({ parentRoute }) => {
     }
   },[isError])
 
-  return <>
-    <Header>
-      {t("ES_COMMON_INBOX")}
-      {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
-    </Header>
+  return (
+    <>
+      {!isError && (
+        <>
+          {/* Mobile Filter Drawer */}
+          {isMobile && showFilterDrawer && (
+            <div className="filter-drawer-overlay" onClick={() => setShowFilterDrawer(false)}>
+              <div className="filter-drawer" onClick={(e) => e.stopPropagation()}>
+                <div className="filter-drawer-header">
+                  <h3>{t("COMMON_FILTERS")}</h3>
+                  <button 
+                    className="filter-drawer-close" 
+                    onClick={() => setShowFilterDrawer(false)}
+                    aria-label="Close filters"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="filter-drawer-content">
+                  <NewFilterFormFieldsComponent
+                    registerRef={() => {}}
+                    controlFilterForm={controlFilterForm}
+                    setFilterFormValue={setFilterFormValue}
+                    filterFormState={formState?.filterForm}
+                    getFilterFormValue={getFilterFormValue}
+                    statuses={statuses}
+                    isInboxLoading={isInboxLoading}
+                    showLicenseTypeFilter={true}
+                    handleFilter={(filterData) => {
+                      dispatch({ 
+                        action: "mutateFilterForm", 
+                        data: { 
+                          ...formState?.filterForm,
+                          applicationStatus: filterData.applicationStatus?.map((item) => item.code) || [],
+                          ...(filterData.locality ? { locality: filterData.locality } : {}),
+                          ...(filterData.assignee ? { assignee: filterData.assignee } : {}),
+                          ...(filterData.licenseType ? { licenseType: filterData.licenseType } : {}),
+                        } 
+                      });
+                    }}
+                  />
+                </div>
+                <div className="filter-drawer-footer">
+                  <button 
+                    className="filter-apply-btn"
+                    onClick={() => setShowFilterDrawer(false)}
+                  >
+                    {t("COMMON_APPLY")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
+          <InboxWrapper
+            title={t("ES_COMMON_INBOX")}
+            totalCount={totalCount}
+            filterSection={
+              !isMobile ? (
+                <NewFilterFormFieldsComponent
+                  registerRef={() => {}}
+                  controlFilterForm={controlFilterForm}
+                  setFilterFormValue={setFilterFormValue}
+                  filterFormState={formState?.filterForm}
+                  getFilterFormValue={getFilterFormValue}
+                  statuses={statuses}
+                  isInboxLoading={isInboxLoading}
+                  showLicenseTypeFilter={true}
+                  handleFilter={(filterData) => {
+                    dispatch({ 
+                      action: "mutateFilterForm", 
+                      data: { 
+                        ...formState?.filterForm,
+                        applicationStatus: filterData.applicationStatus?.map((item) => item?.code || item) || [],
+                        ...(filterData.locality ? { locality: filterData.locality } : {}),
+                        ...(filterData.assignee ? { assignee: filterData.assignee } : {}),
+                        ...(filterData.licenseType ? { licenseType: filterData.licenseType } : {}),
+                      } 
+                    });
+                  }}
+                />
+              ) : null
+            }
+            topBar={
+              <div className="new-inbox-topbar">
+                <div className="new-inbox-tabs">
+                  {/* Assignee Buttons */}
+                  {["ASSIGNED_TO_ME", "ASSIGNED_TO_ALL"].map((assigneeCode) => {
+                    const assigneeLabel = assigneeCode === "ASSIGNED_TO_ME" ? t("ES_INBOX_ASSIGNED_TO_ME") : t("ES_INBOX_ASSIGNED_TO_ALL");
+                    const isActive = formState.filterForm.assignee === assigneeCode;
+                    return (
+                      <button
+                        key={assigneeCode}
+                        type="button"
+                        className={`new-inbox-tab ${isActive ? "new-inbox-tab-active" : ""}`}
+                        onClick={() => {
+                          dispatch({
+                            action: "mutateFilterForm",
+                            data: { ...formState.filterForm, assignee: assigneeCode }
+                          });
+                        }}
+                      >
+                        {assigneeLabel}
+                      </button>
+                    );
+                  })}
+                  
+                  {/* License Type Buttons */}
+                  {[
+                    { code: "ARCHITECT", name: "Architect" },
+                    { code: "ENGINEER", name: "Engineer" },
+                    { code: "TOWNPLANNER", name: "Town Planner" },
+                    { code: "SUPERVISOR", name: "Supervisor" },
+                  ].map((licenseType) => {
+                    const isActive = formState.filterForm.licenseType?.includes(licenseType.code);
+                    return (
+                      <button
+                        key={licenseType.code}
+                        type="button"
+                        className={`new-inbox-tab ${isActive ? "new-inbox-tab-active" : ""}`}
+                        onClick={() => {
+                          const currentLicenseTypes = formState.filterForm.licenseType || [];
+                          const newLicenseTypes = isActive
+                            ? currentLicenseTypes.filter(code => code !== licenseType.code)
+                            : [...currentLicenseTypes, licenseType.code];
+                          dispatch({
+                            action: "mutateFilterForm",
+                            data: { ...formState.filterForm, licenseType: newLicenseTypes }
+                          });
+                        }}
+                      >
+                        {licenseType.name}
+                      </button>
+                    );
+                  })}
+                </div>
 
-    {Digit.Utils.browser.isMobile() &&
-      <div style={{ marginLeft: "12px" }}>
-        <Link to={window.location.href.includes("/citizen") ? "/digit-ui/citizen/obps/search/application" : "/digit-ui/employee/obps/search/application"}>
-          <span className="link">{t("BPA_SEARCH_PAGE_TITLE")}</span>
-        </Link>
-      </div>
-    }
-    {!isError && <InboxComposer {...{ isInboxLoading, PropsForInboxLinks, ...propsForSearchForm, ...propsForFilterForm, ...propsForMobileSortForm, propsForInboxTable, propsForInboxMobileCards, formState }}></InboxComposer>}
-    {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}
-  </>
+                {/* Search Bar */}
+                <div className="new-inbox-search">
+                  <span aria-hidden="true" className="new-inbox-search-icon">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="11" cy="11" r="7" stroke="#6B7280" strokeWidth="2" />
+                      <line
+                        x1="16.65"
+                        y1="16.65"
+                        x2="21"
+                        y2="21"
+                        stroke="#6B7280"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    className="new-inbox-search-input"
+                    placeholder="Search by application number..."
+                    value={topBarSearch}
+                    onChange={(e) => setTopBarSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+            }
+            isLoading={isInboxLoading}
+            tableData={table}
+            tableProps={propsForInboxTable}
+            tableHeader="Applications"
+            pagination={
+              <InboxPagination
+                offset={formState.tableForm?.offset || 0}
+                limit={formState.tableForm?.limit || 10}
+                totalCount={totalCount}
+                onPageSizeChange={onPageSizeChange}
+                onNextPage={onNextPage}
+                onPrevPage={onPrevPage}
+              />
+            }
+          />
+        </>
+      )}
+      {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}
+    </>
+  );
 }
 
 export default Inbox

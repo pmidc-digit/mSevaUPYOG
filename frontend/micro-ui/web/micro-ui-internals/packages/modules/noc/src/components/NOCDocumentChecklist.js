@@ -6,6 +6,12 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
+ const sortedDocuments = [...(documents || [])]?.sort((a, b) => {
+   if (!a?.order) return 1; // push falsy (null/undefined/0) to the end
+   if (!b?.order) return -1;
+   return a.order - b.order;
+ });
+
   // fetch urls and checklist data as before...
   const { data: urlsList } = Digit.Hooks.noc.useNOCDocumentSearch(
     { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
@@ -40,7 +46,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
           </tr>
         </thead>
         <tbody>
-          {documents?.map((doc, i) => {
+          {sortedDocuments?.map((doc, i) => {
             const url = urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
             return (
               <tr key={doc.documentUid || i}>

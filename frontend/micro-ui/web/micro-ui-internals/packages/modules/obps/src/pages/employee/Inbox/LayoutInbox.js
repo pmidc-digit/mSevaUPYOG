@@ -211,7 +211,7 @@ const LayoutInbox = ({ parentRoute }) => {
     return redirectBS;
   };
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, tableData, getRedirectionLink });
+  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: tableData, getRedirectionLink });
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
 

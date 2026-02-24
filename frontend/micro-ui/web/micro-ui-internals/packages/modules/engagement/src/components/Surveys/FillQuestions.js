@@ -46,7 +46,7 @@ const FillQuestions = (props) => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let response = await Digit.LocationService.getLocalities("pb.testing");
+      let response = await Digit.LocationService.getLocalities(prevProps.citizenData.city?.code);
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary?.length > 0) {

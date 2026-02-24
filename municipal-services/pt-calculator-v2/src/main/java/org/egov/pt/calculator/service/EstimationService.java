@@ -2006,12 +2006,13 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			}
 
 			JsonNode units = propertyDetails.get("units");
-			//	double floorNo = Double.parseDouble(String.valueOf(units.get("floorNo")));
+			int noOfFloors = propertyDetails.get("noOfFloors").asInt();
 			String floorNo = "0";
 			ArrayNode updatedUnits = mapper.createArrayNode();
 			boolean landValueUsedInAnyUnit = false;
 			boolean isResidentialOcc = false;
 			double totalUnitAreaSy = 0.0;
+			double totalUnitAreaSqFt =0.0;
 
 			if (units != null && units.isArray()) {
 				for (JsonNode unit : units) {
@@ -2028,6 +2029,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 					double unitAreaSqYard = unit.get("unitArea").asDouble(0.0);
 					double unitAreaSqFt = unitAreaSqYard * 9;
 					totalUnitAreaSy += unitAreaSqYard;
+					totalUnitAreaSqFt += unitAreaSqFt;
 					double unitTax = 0.0;
 
 					if ("RENTED".equalsIgnoreCase(occ)) {
@@ -2091,7 +2093,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				((ObjectNode) propertyDetails).set("units", updatedUnits);
 			}
 
-			int floorNoInt = 0;
+			int floorNoInt = 0;  /// TODO NoOfFloors
 			if (floorNo != null && !floorNo.trim().isEmpty()) {
 				try {
 					floorNoInt = Integer.parseInt(floorNo.trim());
@@ -2100,11 +2102,12 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 					floorNoInt = 0;
                 }
 			}
+			 
 
-			if (isResidentialOcc &&   !"MIXED".equalsIgnoreCase(usageMajor)) {
-				if (totalUnitAreaSy <= slab1AreaMax  && landArea <= slab1LandMax) {
-					PT_TAX = slab1Tax;
-				} else if (totalUnitAreaSy <= slab2AreaMax && landArea <= slab2LandMax) {
+			if (isResidentialOcc &&   !"MIXED".equalsIgnoreCase(usageMajor) ) {
+				if (totalUnitAreaSqFt <= slab1AreaMax  && landArea <= slab1LandMax) {
+					PT_TAX = (noOfFloors == 1) ? slab1Tax : slab2Tax;
+				} else if (totalUnitAreaSqFt <= slab2AreaMax && landArea <= slab2LandMax && noOfFloors == 1) {
 					PT_TAX = slab2Tax;
 				}
 			}

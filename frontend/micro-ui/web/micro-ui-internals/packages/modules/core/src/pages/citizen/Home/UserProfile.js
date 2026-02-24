@@ -497,6 +497,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
 
   if (loading) return <Loader></Loader>;
 
+  console.log("stateOptions", stateOptions);
+
   return (
     <div className="user-profile">
       <section className={`user-profile-section-wrapper ${userType === "employee" ? "employee" : ""}`}>
@@ -581,7 +583,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 </div>
 
                 <div className="user-profile-field-wrapper">
-                  <CardLabel className="user-profile-label">{`${t("CORE_COMMON_PROFILE_EMAIL")}`}</CardLabel>
+                  <CardLabel className="user-profile-label">{`${t("CORE_COMMON_PROFILE_EMAIL")}`}*</CardLabel>
                   <TextInput
                     t={t}
                     type={"email"}
@@ -725,12 +727,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "center" , width: "100%"}}>
-                <button
-                  onClick={updateProfile}
-                  className="selector-button-primary"
-                  style={{ width: "100%", height: "46px", marginTop: "24px" }}
-                >
+              <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                <button onClick={updateProfile} className="selector-button-primary" style={{ width: "100%", height: "46px", marginTop: "24px" }}>
                   {t("CORE_COMMON_SAVE")}
                 </button>
               </div>

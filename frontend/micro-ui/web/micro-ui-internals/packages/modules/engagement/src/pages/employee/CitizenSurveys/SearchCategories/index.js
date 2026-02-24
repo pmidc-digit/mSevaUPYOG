@@ -1,5 +1,5 @@
-import React, { Fragment, useCallback, useMemo, useReducer, useState,useEffect } from "react";
-import {  DocumentIcon, Toast, Header, InboxComposer } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
+import { DocumentIcon, Toast, Header, InboxComposer } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchCategoryFieldsComponents from "./SearchCategoryFieldsComponents";
@@ -109,23 +109,18 @@ const SearchCategories = ({ parentRoute }) => {
   //
   let { data: { Categories = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyCategoryInbox(formState);
   const totalCount = Categories?.length;
- const [sortedCategories,setSortedCategories]=useState([])
-  useEffect(()=>{
-if(Categories.length>0){
-  
-
-    const sorted = [...Categories].sort(
-      (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
-    );
-  Categories=sorted
-    setSortedCategories(sorted);
-
-}
-  },[Categories])
+  const [sortedCategories, setSortedCategories] = useState([]);
+  useEffect(() => {
+    if (Categories.length > 0) {
+      const sorted = [...Categories].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+      Categories = sorted;
+      setSortedCategories(sorted);
+    }
+  }, [Categories]);
   //Props for links card:
   const PropsForInboxLinks = {
-    logoIcon: <DocumentIcon />,
-    headerText: "CS_COMMON_SURVEYS",
+    // logoIcon: <DocumentIcon />,
+    // headerText: "CS_COMMON_SURVEYS",
     links: [
       {
         text: t("Create New Survey"),
@@ -227,7 +222,7 @@ if(Categories.length>0){
     },
   });
 
-  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: sortedCategories,   setShowToast });
+  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: sortedCategories, setShowToast });
 
   //const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 

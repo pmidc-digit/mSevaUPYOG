@@ -439,7 +439,7 @@ const InspectionReportForm = (_props) => {
                                     const cleanedQuestion = questionText.replace(/^[\d\s.:]+/, '').trim();
                                     return (
                                     <tr key={ind}>
-                                         <td style={{width:"100px"}}>{ind + 1}</td>
+                                        <td style={{width:"100px"}}>{ind + 1}</td>
                                         <td>{cleanedQuestion}</td>
                                         <td>
                                             <Controller

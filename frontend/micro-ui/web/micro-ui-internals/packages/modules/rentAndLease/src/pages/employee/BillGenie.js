@@ -119,7 +119,7 @@ const BillGenie = () => {
   const getReceiptSearch = async (bill) => {
     try {
       setLoader(true);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Bills: [bill] }, "mcollectbill");
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Bills: [bill] }, "rentandlease-bill");
 
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: response.filestoreIds[0],

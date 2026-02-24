@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import {  LoginIcon, Toast } from "@mseva/digit-ui-react-components";
+import { LoginIcon, Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import LanguageSelect from "../NewLogin/NewLanguageSelect";
 import LocationSelect from "../NewLogin/NewLocationSelect";
 import RegistrationForm from "./NewRegistrationForm";
 import OtpInput from "../NewLogin/NewSelectOtp";
 
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
+
+const genders = [
+  { name: "Male", code: "MALE" },
+  { name: "Female", code: "FEMALE" },
+  { name: "Transgender", code: "TRANSGENDER" },
+];
 
 const NewRegistration = ({ stateCode }) => {
   const { t } = useTranslation();
@@ -23,6 +29,7 @@ const NewRegistration = ({ stateCode }) => {
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   const [selectedCity, setSelectedCity] = useState(location.state?.selectedCity || null);
   const [dob, setDob] = useState("");
+  const [getGender, setGender] = useState();
 
   useEffect(() => {
     let to;
@@ -79,6 +86,7 @@ const NewRegistration = ({ stateCode }) => {
         tenantId: stateCode,
         userType: getUserType(),
         type: "register",
+        gender: getGender?.code,
       };
       const [res, err] = await sendOtp({ otp: data });
       if (!err) {
@@ -121,6 +129,7 @@ const NewRegistration = ({ stateCode }) => {
         otpReference: otp,
         dob: dob,
         tenantId: stateCode,
+        gender: getGender?.code,
       };
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.registerUser(requestData, stateCode);
 
@@ -162,8 +171,13 @@ const NewRegistration = ({ stateCode }) => {
       selectedCity: selectedCity,
     });
   };
+
+  useEffect(() => {
+    console.log("getGender", getGender);
+  }, [getGender]);
+
   return (
-  <div className="login-page-cover">
+    <div className="login-page-cover">
       <div className="login-container">
         {/* Left Panel - Same Hero Section as Login */}
         <div className="login-hero-panel">
@@ -172,9 +186,7 @@ const NewRegistration = ({ stateCode }) => {
               <LoginIcon />
             </div>
             <h1 className="hero-title">Welcome to UPYOG</h1>
-            <p className="hero-description">
-              Your digital gateway to urban governance services. Access all municipal services in one place.
-            </p>
+            <p className="hero-description">Your digital gateway to urban governance services. Access all municipal services in one place.</p>
             <div className="hero-features">
               <div className="feature-item">
                 <div className="feature-icon">
@@ -225,6 +237,14 @@ const NewRegistration = ({ stateCode }) => {
             {/* <LanguageSelect onLanguageChange={setSelectedLanguage} /> */}
             <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
 
+            <div className="location-wrapper">
+              <div className="label">
+                {t("CORE_COMMON_GENDER")}
+                <span> *</span>
+              </div>
+
+              <Dropdown option={genders} optionKey="name" id="name" selected={getGender} select={setGender} placeholder={t("COMMON_TABLE_SEARCH")} />
+            </div>
             {step === "FORM" && (
               <RegistrationForm
                 onRegisterSubmit={onRegisterSubmit}

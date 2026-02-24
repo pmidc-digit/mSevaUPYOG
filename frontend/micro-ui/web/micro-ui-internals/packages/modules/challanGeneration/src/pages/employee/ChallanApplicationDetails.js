@@ -292,49 +292,56 @@ const ChallanApplicationDetails = () => {
     if (!modalData?.amount) {
       setErrorOne(`Please Enter Amount`);
       setShowErrorToastt(true);
+      return;
+    }
+
+    if (!modalData?.wfDocuments || modalData?.wfDocuments.length === 0) {
+      setErrorOne(`Please upload required document`);
+      setShowErrorToastt(true);
+      return;
+    }
+
+    const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
+    if (modalData?.amount > finalAmount) {
+      setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
+      setShowErrorToastt(true);
+      setError(`Amount must be less than or equal to ${finalAmount}`);
     } else {
-      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
-      if (modalData?.amount > finalAmount) {
-        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
-        setShowErrorToastt(true);
-        setError(`Amount must be less than or equal to ${finalAmount}`);
-      } else {
-        console.log("nothing");
+      console.log("nothing");
 
-        setLoader(true);
+      setLoader(true);
 
-        const payload = {
-          Challan: {
-            ...getChallanData,
-            workflow: {
-              action: "SETTLED",
-              documents: modalData?.wfDocuments,
-            },
-            feeWaiver: modalData?.amount,
+      const payload = {
+        Challan: {
+          ...getChallanData,
+          workflow: {
+            action: "SETTLED",
+            documents: modalData?.wfDocuments,
           },
-        };
+          feeWaiver: modalData?.amount,
+        },
+      };
 
-        console.log("payload", payload);
-        try {
-          const response = await Digit.ChallanGenerationService.update(payload);
-          setLoader(false);
-          setShowModal(false);
-          // ✅ Show success first
-          // setShowToast({ key: "success", message: "Successfully updated the status" });
-          setLable("Challan is Settled");
-          setError(false);
-          setShowToast(true);
+      console.log("payload", payload);
+      try {
+        const response = await Digit.ChallanGenerationService.update(payload);
+        setLoader(false);
+        setShowModal(false);
+        // ✅ Show success first
+        // setShowToast({ key: "success", message: "Successfully updated the status" });
+        setLable("Challan is Settled");
+        setError(false);
+        setShowToast(true);
 
-          // ✅ Delay navigation so toast shows
-          setTimeout(() => {
-            history.push("/digit-ui/employee/challangeneration/inbox");
-            window.location.reload();
-          }, 2000);
+        // ✅ Delay navigation so toast shows
+        setTimeout(() => {
+          history.push("/digit-ui/employee/challangeneration/inbox");
+          window.location.reload();
+        }, 2000);
 
-          // history.push(`/digit-ui/employee/challangeneration/inbox`);
-        } catch (error) {
-          setLoader(false);
-        }
+        // history.push(`/digit-ui/employee/challangeneration/inbox`);
+      } catch (error) {
+        setLoader(false);
       }
     }
   };

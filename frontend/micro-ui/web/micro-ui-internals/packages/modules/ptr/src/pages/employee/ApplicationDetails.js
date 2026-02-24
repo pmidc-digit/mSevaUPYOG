@@ -742,7 +742,7 @@ const ApplicationDetails = () => {
   let dowloadOptions = [];
     let user = Digit.UserService.getUser();
 
-   const isCemp = user?.info?.roles.filter(role => role.code === "CEMP")
+  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
 
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
@@ -803,7 +803,7 @@ const ApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {isCemp && dowloadOptions && dowloadOptions.length > 0 && (
+          {isCemp && (reciept_data?.Payments[0]?.paymentStatus === "NEW" || reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") && dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}

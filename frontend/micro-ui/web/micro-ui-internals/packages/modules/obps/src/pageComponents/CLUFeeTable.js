@@ -127,7 +127,6 @@ export const CLUFeeTable = ({
     if (!feeHistory || Object.keys(feeHistory).length === 0) return null;
 
     const feeTypes = Object.keys(feeHistory);
-
     // Find the maximum number of history entries across all fee types
     const maxHistoryLength = Math.max(...feeTypes.map(ft => feeHistory[ft]?.length || 0));
 
@@ -148,7 +147,7 @@ export const CLUFeeTable = ({
             <table className="custom-fix-fee-history-table">
               <thead>
                 <tr>
-                  <th className="custom-fix-fee-history-table-header">{t("BPA_FEE_HISTORY_DETAILS")}</th>
+                  <th className="custom-fix-fee-history-table-header">Details</th>
                   {feeTypes.map((feeType) => (
                     <th key={feeType} className="custom-fix-fee-history-table-header-fee">
                       {t(feeType)}

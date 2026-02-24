@@ -29,6 +29,8 @@ const ChallanStepperForm = () => {
   const [documentsData, setDocumentsData] = useState({});
   const isCitizen = window.location.href.includes("citizen");
 
+  const [getViolationData, setViolationData] = useState([]);
+
   const handleDocumentsSelect = (key, data) => {
     setDocumentsData(data);
   };
@@ -41,6 +43,9 @@ const ChallanStepperForm = () => {
   const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
   const { data: OffenceActData, isLoading: OffenceActLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Acts" }]);
+
+  console.log("subCategoryData", subCategoryData);
+  console.log("OffenceTypeData", OffenceTypeData);
 
   const {
     control,
@@ -140,6 +145,11 @@ const getActs = (offenceType, offenceActData) =>
   const handleRates = (val) => {
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
+  };
+
+  const handleViolation = (e) => {
+    const filterData = OffenceTypeData?.Challan?.OffenceType?.filter((item) => item.subCategoryId == e?.id);
+    setViolationData(filterData);
   };
 
   return (
@@ -279,6 +289,7 @@ const getActs = (offenceType, offenceActData) =>
                   <Dropdown
                     className="form-field"
                     select={(e) => {
+                      handleViolation(e);
                       props.onChange(e);
                     }}
                     selected={props.value}
@@ -310,7 +321,7 @@ const getActs = (offenceType, offenceActData) =>
                       handleRates(e);
                     }}
                     selected={props.value}
-                    option={OffenceTypeData?.Challan?.OffenceType}
+                    option={getViolationData}
                     optionKey="name"
                     t={t}
                   />

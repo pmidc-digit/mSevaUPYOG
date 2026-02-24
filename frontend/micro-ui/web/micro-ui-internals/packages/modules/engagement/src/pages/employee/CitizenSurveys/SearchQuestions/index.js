@@ -182,7 +182,6 @@ const SearchQuestions = ({ parentRoute }) => {
 
   //
   const onSearchFormSubmit = (data) => {
-    console.log("onSearchFormSubmit:", data);
     //setIsSearchClicked(true);
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
     data.hasOwnProperty("") ? delete data?.[""] : null;

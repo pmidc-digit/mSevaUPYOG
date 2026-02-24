@@ -16,7 +16,6 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
   //   const filtered = ulbs.filter((item) => item.code === tenantId);
   //   return filtered;
   // }, [ulbs]);
-  console.log("category ulbs", ulbs);
   let isTenantFound = true;
   let userUlbs = ulbs
     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
@@ -71,7 +70,6 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
       });
   }
 
-  console.log("controlSearchForm: ", controlSearchForm);
   return (
     <>
       <SearchField>

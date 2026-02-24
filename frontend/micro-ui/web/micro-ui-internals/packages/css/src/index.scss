@@ -1669,7 +1669,6 @@ input[type="date"] {
   border-collapse: collapse;
 }
 
-
 .custom-fee-table-header {
   padding: 14px 12px;
   font-size: 12px;
@@ -1679,7 +1678,6 @@ input[type="date"] {
   font-weight: 600;
   text-align: left;
 }
-
 
 .custom-fee-table-cell {
   padding: 14px 12px;
@@ -1703,7 +1701,6 @@ input[type="date"] {
 .custom-fee-table-cell-remark {
   padding: 14px 12px;
 }
-
 
 .custom-fee-history-section {
   margin-top: 16px;
@@ -1729,7 +1726,6 @@ input[type="date"] {
   border-collapse: collapse;
 }
 
-
 .custom-fee-history-header {
   padding: 12px 8px;
   font-size: 14px;
@@ -1740,7 +1736,6 @@ input[type="date"] {
   font-weight: 600;
   text-align: left;
 }
-
 
 .custom-fee-history-cell {
   padding: 12px 8px;
@@ -1771,7 +1766,6 @@ input[type="date"] {
   margin-right: 4px;
 }
 
-
 .custom-fee-table-input {
   width: 100%;
   border-radius: 4px;
@@ -1787,7 +1781,7 @@ input[type="date"] {
   white-space: pre-wrap;
   resize: vertical;
   padding: 10px 12px;
-  border: 1px solid #CCCCCC;
+  border: 1px solid #cccccc;
   border-radius: 4px;
   font-size: 15px;
   line-height: 1.5;
@@ -1801,16 +1795,16 @@ input[type="date"] {
 }
 
 .custom-fee-table-textarea:disabled {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
   color: #999;
   cursor: not-allowed;
 }
 
 .custom-fee-remark-display {
   padding: 10px 12px;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  background-color: #F9F9F9;
+  background-color: #f9f9f9;
   font-size: 15px;
   line-height: 1.5;
   word-wrap: break-word;
@@ -1823,7 +1817,6 @@ input[type="date"] {
   color: #333;
 }
 
-
 .custom-fee-mobile-cards {
   display: flex;
   flex-direction: column;
@@ -1833,7 +1826,7 @@ input[type="date"] {
 
 .custom-fee-card {
   background: white;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -1850,13 +1843,13 @@ input[type="date"] {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #F0F0F0;
+  border-bottom: 2px solid #f0f0f0;
 }
 
 .custom-fee-card-type {
   font-weight: 700;
   font-size: 15px;
-  color: #1A1A1A;
+  color: #1a1a1a;
   text-transform: capitalize;
   letter-spacing: 0.3px;
 }
@@ -1897,18 +1890,18 @@ input[type="date"] {
   font-size: 13px;
   color: #333;
   padding: 8px;
-  background: #F9F9F9;
+  background: #f9f9f9;
   border-radius: 4px;
   min-height: 32px;
   display: flex;
   align-items: center;
-  border: 1px solid #E8E8E8;
+  border: 1px solid #e8e8e8;
 }
 
 /* Total Row Special Styling */
 .custom-fee-card-total-row {
-  background: linear-gradient(135deg, #F5F7FA 0%, #F0F3F8 100%);
-  border: 2px solid #D0D8E8;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f3f8 100%);
+  border: 2px solid #d0d8e8;
   margin-top: 8px;
 
   .custom-fee-card-header {
@@ -1936,7 +1929,7 @@ input[type="date"] {
 .custom-fee-card-total-value {
   font-size: 24px;
   font-weight: 800;
-  color: #1A1A1A;
+  color: #1a1a1a;
   letter-spacing: 0.2px;
 }
 
@@ -1948,7 +1941,6 @@ input[type="date"] {
   line-height: 1.4;
 }
 
-
 /* Mobile History Section */
 .custom-fee-mobile-wrapper {
   display: flex;
@@ -1958,7 +1950,7 @@ input[type="date"] {
 
 .custom-fee-mobile-history {
   background: white;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #e0e0e0;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   margin-top: 20px;
@@ -1970,19 +1962,19 @@ input[type="date"] {
   align-items: center;
   padding: 16px;
   cursor: pointer;
-  background: linear-gradient(135deg, #F5F7FA 0%, #F0F3F8 100%);
-  border-bottom: 1px solid #E0E0E0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f3f8 100%);
+  border-bottom: 1px solid #e0e0e0;
   transition: all 0.2s ease;
 
   &:active {
-    background: linear-gradient(135deg, #F0F3F8 0%, #E8ECFA 100%);
+    background: linear-gradient(135deg, #f0f3f8 0%, #e8ecfa 100%);
   }
 }
 
 .custom-fee-history-title {
   font-weight: 700;
   font-size: 14px;
-  color: #1A1A1A;
+  color: #1a1a1a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2000,8 +1992,8 @@ input[type="date"] {
 }
 
 .custom-fee-history-card {
-  background: #F9F9F9;
-  border: 1px solid #E8E8E8;
+  background: #f9f9f9;
+  border: 1px solid #e8e8e8;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -2026,7 +2018,7 @@ input[type="date"] {
 
 .custom-fee-history-entry {
   padding: 8px 0;
-  border-bottom: 1px solid #E8E8E8;
+  border-bottom: 1px solid #e8e8e8;
 
   &:last-child {
     border-bottom: none;
@@ -2127,7 +2119,7 @@ input[type="date"] {
 }
 
 .checklist-mobile-card {
-  border-bottom: 1px solid #E0E0E0;
+  border-bottom: 1px solid #e0e0e0;
   padding: 12px 0;
 }
 
@@ -2190,7 +2182,7 @@ input[type="date"] {
   white-space: pre-wrap;
   resize: vertical;
   padding: 14px 16px;
-  border: 1px solid #CCCCCC;
+  border: 1px solid #cccccc;
   border-radius: 4px;
   font-size: 15px;
   line-height: 1.5;
@@ -2208,7 +2200,7 @@ input[type="date"] {
 }
 
 .checklist-table-textarea:disabled {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
   color: #999;
   cursor: not-allowed;
   border-color: #e1e8f0;
@@ -2255,62 +2247,66 @@ input[type="date"] {
 }
 
 @media (min-width: 1024px) {
-  .data-card{
+  .data-card {
     .employee-card-sub-heade {
-        margin-bottom: 40px;
+      margin-bottom: 40px;
       font-size: 18px;
-          font-weight: 700;
-    color: #1e293b;
-    text-align: left;
-    text-transform: uppercase;
-    letter-spacing: .4px;
+      font-weight: 700;
+      color: #1e293b;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
   }
 }
-.language-plugin{
-    position: fixed; 
-    top: 16px; 
-    right: 20px;
-    z-index: 99999;
-    background: linear-gradient(135deg, rgb(37, 99, 235), rgb(124, 58, 237));
-    padding: 6px 10px;
-    border-radius:8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    display: flex;
-    align-items: center;
-}       
-.language-plugin svg path{
-  fill: #FFF;
-} 
-.language-plugin:hover{
-  transform: translateY(-3px) scale(1.03);
-  box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.25),
-    0 0 20px rgba(59, 130, 246, 0.5),
-    0 0 35px rgba(14, 165, 233, 0.4);
+.language-plugin {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 99999;
+  background: linear-gradient(135deg, rgb(37, 99, 235), rgb(124, 58, 237));
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
 }
-.language-plugin-landing{
-   position: fixed; 
-    top: 16px; 
-    right: 20px;
-    z-index: 99999;
-    background: #FFF;
-    padding: 6px 10px;
-    border-radius:8px;
-    display: flex;
-    align-items: center;
-    backdrop-filter: blur(12px);
+.language-plugin svg path {
+  fill: #fff;
+}
+.language-plugin:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 0 20px rgba(59, 130, 246, 0.5), 0 0 35px rgba(14, 165, 233, 0.4);
+}
+.language-plugin-landing {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 99999;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-   box-shadow:0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
-.language-plugin-landing:hover{
+.language-plugin-landing:hover {
   transform: translateY(-3px) scale(1.03);
-  box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.25),
-    0 0 20px rgba(59, 130, 246, 0.5),
-    0 0 35px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 0 20px rgba(59, 130, 246, 0.5), 0 0 35px rgba(14, 165, 233, 0.4);
 }
-.margin-right-50{
+.margin-right-50 {
   margin-right: 50px;
+}
+
+.engageMentCollapse {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
 }

@@ -180,7 +180,6 @@ const SearchCategories = ({ parentRoute }) => {
 
   //
   const onSearchFormSubmit = (data) => {
-    console.log("onSearchFormSubmit: ", data);
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
     data.hasOwnProperty("") ? delete data?.[""] : null;
     dispatch({ action: "mutateSearchForm", data });

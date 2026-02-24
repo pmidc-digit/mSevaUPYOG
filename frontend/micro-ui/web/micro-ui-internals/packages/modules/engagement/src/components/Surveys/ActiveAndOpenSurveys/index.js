@@ -11,7 +11,6 @@ const ActiveAndOpenSurveys = (props) => {
   const history = useHistory();
   const { t } = useTranslation();
   const userInfo = Digit.UserService.getUser().info;
-  console.log("userinfo", userInfo);
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   let userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
   const tenantId = userType.toLowerCase() === "employee" ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //passing static value for testing
@@ -128,13 +127,10 @@ const ActiveAndOpenSurveys = (props) => {
       })
       .catch((error) => {
         setLoading(false);
-        console.error("Failed to fetch surveys", error);
       });
   }
 
-  console.log("userinfo", userInfo);
   const handleStartSurvey = (surveyDetails) => {
-    console.log("Survey Details: ", surveyDetails);
     const encodedUUID = encodeURIComponent(surveyDetails.uuid);
 
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");

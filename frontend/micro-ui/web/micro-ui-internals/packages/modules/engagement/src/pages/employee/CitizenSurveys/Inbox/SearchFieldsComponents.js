@@ -10,36 +10,31 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   //const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
-      const userInfo = Digit.UserService.getUser().info;
- let isTenantFound= true;
+
+  const userInfo = Digit.UserService.getUser().info;
+  let isTenantFound = true;
   let userUlbs = ulbs
     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
-  if(userUlbs?.length===0 ||tenantId==="pb.punjab"){
+  if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
     isTenantFound = false;
-   //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
-   let adduserUlbs={ i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.tenantId}`}
-   if(tenantId==="pb.punjab"){
-    userUlbs=[adduserUlbs,...ulbs]
-   }
-   else{
-   userUlbs=[adduserUlbs]
-   }
+    //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]
+    let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
+    if (tenantId === "pb.punjab") {
+      userUlbs = [adduserUlbs, ...ulbs];
+    } else {
+      userUlbs = [adduserUlbs];
+    }
   }
   const selectedTenat = useMemo(() => {
-    if(userUlbs?.length>0 && isTenantFound===true){
-    
-    const filtered = ulbs.filter((item) => item.code === tenantId);
-    return filtered;
-    }
-    else{
-      
-       const filtered = userUlbs.filter((item) => item.code === tenantId);
-    return filtered;
+    if (userUlbs?.length > 0 && isTenantFound === true) {
+      const filtered = ulbs.filter((item) => item.code === tenantId);
+      return filtered;
+    } else {
+      const filtered = userUlbs.filter((item) => item.code === tenantId);
+      return filtered;
     }
   }, [ulbs]);
-
-// console.log("userUlbs",userUlbs,userInfo,ulbs)
 
   /**
    * ToDo how to display default value correctly ask @egov-saurabh
@@ -58,7 +53,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
           name={"tenantIds"}
           control={controlSearchForm}
         /> */}
-           <Controller
+        <Controller
           rules={{ required: t("REQUIRED_FIELD") }}
           defaultValue={selectedTenat?.[0]}
           render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}

@@ -47,13 +47,10 @@ const useInboxMobileCardsData = ({ parentRoute, table, setShowToast }) => {
   };
 
   const handleUpdateSurveyConfirm = (row) => {
-    console.log("Current row: ", row);
-    const currentStatus = row?.active?"Active":"Inactive";
-    const updatedStatus= row?.active?"Inactive":"Active";
+    const currentStatus = row?.active ? "Active" : "Inactive";
+    const updatedStatus = row?.active ? "Inactive" : "Active";
     setShowToast({
-      label: `Are you sure you want to change the survey status of "${
-        row?.surveyTitle
-      }" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
+      label: `Are you sure you want to change the survey status of "${row?.surveyTitle}" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,

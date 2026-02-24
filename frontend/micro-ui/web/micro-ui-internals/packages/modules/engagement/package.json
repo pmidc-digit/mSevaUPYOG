@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-engagement",
-  "version": "1.1.32",
+  "version": "1.1.32-UAT.1",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

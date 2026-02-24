@@ -47,7 +47,6 @@ const FillQuestions = (props) => {
     (async () => {
       setLoading(true);
       let response = await Digit.LocationService.getLocalities("pb.testing");
-      console.log("response==", response);
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary?.length > 0) {
@@ -67,7 +66,6 @@ const FillQuestions = (props) => {
         })
         ?.sort((a, b) => a.wardNumber - b.wardNumber);
 
-      console.log("localityDropdownOptions==", localityDropdownOptions);
       setLocalityList(localityDropdownOptions);
     })();
   }, [city]);
@@ -141,7 +139,6 @@ const FillQuestions = (props) => {
   const prevFormDataRef = useRef({});
 
   let data = prevProps?.surveyDetails;
-  console.log("data", data);
 
   data = {
     ...data,
@@ -216,8 +213,6 @@ const FillQuestions = (props) => {
             : localStorage.getItem("CITIZEN.CITY")
           : city,
     };
-    console.log("payload", payload);
-    console.log("userInfo", userInfo);
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
         setFetchAnswers(response);

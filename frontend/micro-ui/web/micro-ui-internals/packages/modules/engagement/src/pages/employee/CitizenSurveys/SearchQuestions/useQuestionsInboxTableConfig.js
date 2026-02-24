@@ -48,7 +48,6 @@ const useQuestionsInboxTableConfig = ({
   };
 
   function handleDisplayQuesDetails(question) {
-    console.log("question: ", question);
     setOpenQuesDetailsDialog(true);
     const content = (
       <div>

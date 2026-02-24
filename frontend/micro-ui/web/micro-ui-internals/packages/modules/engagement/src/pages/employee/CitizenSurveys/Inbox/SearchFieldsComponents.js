@@ -11,8 +11,6 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   const tenantId = Digit.ULBService.getCurrentTenantId();
   //const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
 
-  console.log("index ulbs", ulbs);
-
   const userInfo = Digit.UserService.getUser().info;
   let isTenantFound = true;
   let userUlbs = ulbs
@@ -37,8 +35,6 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
       return filtered;
     }
   }, [ulbs]);
-
-  // console.log("userUlbs",userUlbs,userInfo,ulbs)
 
   /**
    * ToDo how to display default value correctly ask @egov-saurabh

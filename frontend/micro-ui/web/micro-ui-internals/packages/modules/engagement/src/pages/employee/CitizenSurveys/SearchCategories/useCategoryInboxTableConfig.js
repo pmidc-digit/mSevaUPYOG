@@ -22,7 +22,6 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
   // };
 
   const handleUpdateCategoryConfirm = (row) => {
-    console.log("Current row: ", row);
     const currentStatus = row?.original?.isActive ? "Active" : "Inactive";
     const updatedStatus = row?.original?.isActive ? "Inactive" : "Active";
     setShowToast({

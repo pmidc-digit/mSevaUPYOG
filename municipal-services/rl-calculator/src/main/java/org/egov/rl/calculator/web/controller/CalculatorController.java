@@ -8,6 +8,8 @@ import org.egov.rl.calculator.web.models.CalculationReq;
 import org.egov.rl.calculator.web.models.GetBillCriteria;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
 import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,9 @@ public class CalculatorController {
 
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
+
+	@Autowired
+	private ObjectMapper mapper;
 
     @PostMapping("/_calculate")
     public ResponseEntity<DemandResponse> create(@Valid @RequestBody CalculationReq request) {
@@ -62,13 +67,36 @@ public class CalculatorController {
 	}
 
 	@PostMapping("/_generateBill")
-	public ResponseEntity<Void> generateBill(@Valid @RequestBody RequestInfo requestInfo,
+	public ResponseEntity<Void> generateBill(@RequestBody(required = false) JsonNode requestBody,
 			@ModelAttribute GetBillCriteria getBillCriteria) {
 		log.info("Generating bill for tenant: {} consumerCodes: {}", getBillCriteria.getTenantId(), getBillCriteria.getConsumerCodes());
 		String consumerCode = null;
 		if (getBillCriteria.getConsumerCodes() != null && !getBillCriteria.getConsumerCodes().isEmpty()) {
 			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining());
 		}
+
+		JsonNode requestInfoNode = null;
+		if (requestBody != null) {
+			if (requestBody.has("RequestInfo"))
+				requestInfoNode = requestBody.get("RequestInfo");
+			else if (requestBody.has("requestInfo"))
+				requestInfoNode = requestBody.get("requestInfo");
+			else
+				requestInfoNode = requestBody;
+		}
+
+		RequestInfo requestInfo = null;
+		try {
+			log.debug("Incoming requestBody: {}", requestBody);
+			log.debug("Resolved requestInfoNode: {}", requestInfoNode);
+			if (requestInfoNode != null && !requestInfoNode.isNull()) {
+				requestInfo = mapper.convertValue(requestInfoNode, RequestInfo.class);
+				log.debug("Mapped RequestInfo: {}", requestInfo);
+			}
+		} catch (Exception e) {
+			log.warn("Unable to parse RequestInfo from request body. node={}", requestInfoNode, e);
+		}
+
 		demandService.generateBatchDemand(requestInfo, getBillCriteria.getTenantId(), consumerCode);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

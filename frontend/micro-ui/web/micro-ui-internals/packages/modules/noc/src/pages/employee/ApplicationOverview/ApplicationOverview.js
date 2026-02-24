@@ -948,6 +948,7 @@ console.log('distances', distances)
             tenantId,
             action: existing ? "update" : "INITIATE",
             remarks: checklistRemarks[doc?.documentUid] || "",
+            order:doc?.order
           };
         }),
       };

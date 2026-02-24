@@ -201,7 +201,17 @@ const ReNewApplication = (props) => {
 
     let EDITRENEWAL = data?.tradedetils1?.checkForRenewal;
     let sendBackToCitizen = false;
+
     if (data?.tradedetils1?.action == "SENDBACKTOCITIZEN") {
+      EDITRENEWAL = false;
+      sendBackToCitizen = true;
+    }
+    // Also detect RESUBMIT: employee editing an application sent back to citizen
+    if (
+      !sendBackToCitizen &&
+      window.location.href.includes("edit-application-details") &&
+      data?.tradedetils1?.status === "CITIZENACTIONREQUIRED"
+    ) {
       EDITRENEWAL = false;
       sendBackToCitizen = true;
     }
@@ -299,6 +309,7 @@ const ReNewApplication = (props) => {
     let subOwnerShipCategory = data?.ownershipCategory?.code || "";
     let licenseType = data?.tradedetils?.["0"]?.licenseType?.code || "PERMANENT";
 
+
     if (!EDITRENEWAL || sendBackToCitizen) {
       let formData = cloneDeep(data.tradedetils1);
 
@@ -316,7 +327,14 @@ const ReNewApplication = (props) => {
       if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
       if (data?.accessories?.length > 0) formData.tradeLicenseDetail.accessories = data?.accessories;
       if (data?.tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = data?.tradeUnits;
-      if (data?.owners?.length > 0) formData.tradeLicenseDetail.owners = data?.owners;
+      if (data?.owners?.length > 0) {
+        // Preserve id/uuid from original application owners; overlay with form-updated values
+        const originalOwners = formData.tradeLicenseDetail.owners || [];
+        formData.tradeLicenseDetail.owners = data?.owners.map((owner, index) => {
+          const original = originalOwners.find(o => o.id && o.id === owner.id) || originalOwners[index] || {};
+          return { ...original, ...owner };
+        });
+      }
       if (structureType) formData.tradeLicenseDetail.structureType = structureType;
       if (subOwnerShipCategory|| data?.owners?.[0]?.subOwnerShipCategory?.code) formData.tradeLicenseDetail.subOwnerShipCategory = formData?.tradeLicenseDetail?.owners?.[0]?.subOwnerShipCategory?.code?.includes("INSTITUTIONAL") ? data?.owners?.[0]?.subOwnerShipCategory.code : subOwnerShipCategory;
       if (formData?.tradeLicenseDetail?.owners?.[0]?.subOwnerShipCategory?.code?.includes("INSTITUTIONAL")) formData.tradeLicenseDetail.institution = {
@@ -359,7 +377,16 @@ const ReNewApplication = (props) => {
       if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
       if (data?.accessories?.length > 0) formData.tradeLicenseDetail.accessories = data?.accessories;
       if (data?.tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = data?.tradeUnits?.filter((ob) => ob?.active !== false);
-      if (data?.owners?.length > 0) formData.tradeLicenseDetail.owners = data?.owners?.filter((ob) => ob?.active !== false);
+      if (data?.owners?.length > 0) {
+        // Preserve id/uuid from original application owners; overlay with form-updated values
+        const originalOwners = formData.tradeLicenseDetail.owners || [];
+        formData.tradeLicenseDetail.owners = data?.owners
+          .map((owner, index) => {
+            const original = originalOwners.find(o => o.id && o.id === owner.id) || originalOwners[index] || {};
+            return { ...original, ...owner };
+          })
+          .filter((ob) => ob?.active !== false);
+      }
       if (data?.address) formData.tradeLicenseDetail.address = data?.address;
       if (data?.cpt?.details?.address||propertyDetails) {
         let address = {};
@@ -439,7 +466,7 @@ const ReNewApplication = (props) => {
 
   return (
     <div>
-      <div style={{ marginLeft: "15px" }}>
+      <div className="Tl-ml-15">
         <Header>
           {window.location.href.includes("employee/tl/edit-application-details")
             ? t("ES_TITLE_RE_NEW_TRADE_LICESE_APPLICATION")

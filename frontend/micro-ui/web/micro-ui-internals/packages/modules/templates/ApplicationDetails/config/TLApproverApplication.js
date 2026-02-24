@@ -51,6 +51,21 @@ export const configTLApproverApplication = ({
               name: "comments",
             },
           },
+          ...(checkCondtions ? [{
+            label: t("TL_FORWARD_NAME_LABEL"),
+            type: "text",
+            populators: {
+              name: "name",
+              placeholder: t("TL_FORWARD_NAME_PLACEHOLDER"),
+            },
+          },
+          {
+            label: t("TL_FORWARD_DATE_LABEL"),
+            type: "date",
+            populators: {
+              name: "date",
+            },
+          }] : []),
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (

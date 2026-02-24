@@ -39,9 +39,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   const filteredOwnershipSubTypes = useMemo(() => {
     if (!ownershipTypeMain) return [];
-    //console.log("ownershipTypeMain",ownershipTypeMain);
     const currentFilteredData = dropdownData?.filter((item) => item?.code.split(".")?.[0] === ownershipTypeMain?.code);
-    //console.log("currentFilteredData", currentFilteredData);
     let modifiedFilteredData;
 
     if (ownershipTypeMain?.code === "INSTITUTIONALPRIVATE") {
@@ -70,7 +68,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       });
     }
 
-    // console.log("modifiedFilteredData", modifiedFilteredData);
     return modifiedFilteredData || [];
     //return dropdownData?.filter(item => item.code.startsWith(ownershipTypeMain.code)) || [];
   }, [dropdownData, ownershipTypeMain]);
@@ -249,7 +246,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   //   }
   // }, []);
 
-  console.log("formData here", formData);
 
   if (userType === "employee") {
     let isRenewal = window.location.href.includes("tl/renew-application-details");
@@ -274,7 +270,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             </LabelFieldPair>
           )}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
+          <CardLabel className="card-label-smaller hrms-text-transform-none" style={editScreen ? { color: "#B1B4B6" } : {}}>
             {`${t("TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL")}`}
             <span className="requiredField">*</span>
           </CardLabel>
@@ -290,7 +286,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
+          <CardLabel className="card-label-smaller hrms-text-transform-none" style={editScreen ? { color: "#B1B4B6" } : {}}>
             {`${t("COMMON-MASTERS_SUBOWNERSHIP_LABEL")}`}
             <span className="requiredField">*</span>
           </CardLabel>

@@ -262,7 +262,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                         </div>
                     ) : null}
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("TRADELICENSE_TRADECATEGORY_LABEL")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TRADELICENSE_TRADECATEGORY_LABEL")} * `}</CardLabel>
                         <Controller
                             control={control}
                             name={"tradeCategory"}
@@ -309,7 +309,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("TRADELICENSE_TRADETYPE_LABEL")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TRADELICENSE_TRADETYPE_LABEL")} * `}</CardLabel>
                         <Controller
                             control={control}
                             name={"tradeType"}
@@ -353,7 +353,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_SUB_TYPE_LABEL")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_SUB_TYPE_LABEL")} * `}</CardLabel>
                         <Controller
                             control={control}
                             name={"tradeSubType"}
@@ -382,7 +382,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}> {localFormState.touched.tradeSubType ? errors?.tradeSubType?.message : ""} </CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}`}</CardLabel>
+                        <CardLabel className="card-label-smaller hrms-text-transform-none">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}`}</CardLabel>
                         <div className="form-field">
                             <Controller
                                 control={control}
@@ -409,7 +409,7 @@ function checkRangeForUomValue(e, fromUom, toUom){
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}</CardLabel>
+                        <CardLabel className="card-label-smaller hrms-text-transform-none">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}</CardLabel>
                         <div className="form-field">
                             <Controller
                                 control={control}

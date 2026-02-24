@@ -28,7 +28,6 @@ export const TLList = () => {
 
   let newapplicationlist = applicationsList;
 
-  console.log("newapplicationlist==", newapplicationlist, newapplicationlist?.length);
 
   return (
     <React.Fragment>
@@ -41,7 +40,7 @@ export const TLList = () => {
           newapplicationlist?.map((application, index) => (
             <div key={index}>{application?.applicationNumber && <TradeLicenseList application={application} />}</div>
           ))}
-        {!newapplicationlist?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}
+        {!newapplicationlist?.length > 0 && <p className="TL-ml-16 TL-mt-16">{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}
       </div>
       {/* <p style={{ marginLeft: "16px", marginTop: "16px" }}>
         {t("TL_NOT_ABLE_TO_FIND_TRADE_LICENSE")}{" "}

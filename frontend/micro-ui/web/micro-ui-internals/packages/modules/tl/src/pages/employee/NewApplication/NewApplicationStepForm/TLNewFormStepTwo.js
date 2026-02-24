@@ -13,9 +13,14 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
   // delete
-  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
+  // const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-  const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
+  const [propertyId, setPropertyId] = useState(
+    new URLSearchParams(useLocation().search).get("propertyId")
+    || formData?.TraidDetails?.cpt?.details?.propertyId
+    || ""
+  );
+ const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
   // const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
   // const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
 
@@ -32,7 +37,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   );
 
   useEffect(() => {
-    console.log("formData in step 2: ", formData);
   }, []);
 
   const closeToast = () => {
@@ -61,6 +65,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
       if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.dob) missingFields.push(`Date of Birth (Owner ${index})`);
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };
@@ -82,15 +87,25 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const goNext = async (data) => {
-    console.log("Submitting full form data: ", formData);
 
     const { OwnerDetails } = formData || {};
+
 
     // if (!validateOwnerDetails(OwnerDetails)) {
     //   setError(t("Please fill all owner mandatory details correctly."));
     //   setShowToast(true);
     //   return;
     // }
+
+     if (
+      OwnerDetails?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" &&
+      (!OwnerDetails?.owners || OwnerDetails.owners.length < 2)
+    ) {
+      setError(t("TL_ERROR_MULTIPLE_OWNER") || "Please add at least 2 owners for Multiple Ownership!");
+      setShowToast(true);
+      return;
+    }
+
     const missingFields = validateOwnerDetails(OwnerDetails);
 
     if (missingFields.length > 0) {
@@ -100,10 +115,9 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     const res = await onSubmit(formData);
-    console.log("API response: ", res);
+    
 
-    if (res) {
-      console.log("Submission successful, moving to next step.");
+    if (res === true) {
       onGoNext();
     } else {
       console.error("Submission failed, not moving to next step.");
@@ -112,7 +126,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data) => {
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
-    console.log("sample_formData: ", data);
+;
 
     const { TraidDetails, OwnerDetails } = data;
 
@@ -182,6 +196,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
         address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
       if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
+      if (TraidDetails.address?.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
     } else if (TraidDetails?.address) {
       address.city = TraidDetails.address.city?.code || null;
       if (TraidDetails?.address?.locality?.code) {
@@ -190,6 +205,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
       if (TraidDetails.address.street) address.street = TraidDetails.address.street;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
+      if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
     }
     if (TraidDetails.address?.geoLocation?.latitude) {
       address.latitude = TraidDetails.address?.geoLocation?.latitude;
@@ -200,17 +216,41 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (OwnerDetails?.owners?.length > 0) {
       OwnerDetails.owners.map((owner, index) => {
         let obj = {};
-        obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
-        obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };
+        // ➡️ Safely convert DOB — handle YYYY-MM-DD string, epoch number, or already-epoch string
+        const rawDob = owner?.dob;
+        if (rawDob) {
+          if (typeof rawDob === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDob)) {
+            obj.dob = convertDateToEpoch(rawDob);
+          } else if (typeof rawDob === "number") {
+            obj.dob = rawDob; // already epoch
+          } else {
+            obj.dob = null;
+          }
+        } else {
+          obj.dob = null;
+        }
         if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
         if (owner.gender?.code) obj.gender = owner.gender.code;
-        if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
-        if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
+        if (owner.mobileNumber) obj.mobileNumber = String(owner.mobileNumber);
+        if (owner.name) obj.name = owner.name;
         if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
         obj.permanentAddress = obj.permanentAddress || null;
-        if (owner.relationship) obj.relationship = owner.relationship?.code;
+        if (owner.relationship) {
+          const rel = owner.relationship;
+          if (typeof rel === "string") {
+            obj.relationship = rel;
+          } else if (typeof rel?.code === "string") {
+            obj.relationship = rel.code;
+          } else if (typeof rel?.code?.code === "string") {
+            // Double-nested from back navigation
+            obj.relationship = rel.code.code;
+          } else {
+            obj.relationship = String(rel);
+          }
+        }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
+        if (owner.altContactNumber) obj.altContactNumber = owner.altContactNumber;
         owners.push(obj);
       });
     }
@@ -227,7 +267,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
     let validityYears = TraidDetails?.validityYears?.code || 1;
 
-    console.log("trade type");
 
     let formData = {
       action: "INITIATE",
@@ -260,12 +299,9 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (subOwnerShipCategory) formData.tradeLicenseDetail.subOwnerShipCategory = subOwnerShipCategory;
 
     if (OwnerDetails?.owners?.length && subOwnerShipCategory.includes("INSTITUTIONAL")) {
-      formData.tradeLicenseDetail.institution = {
-        designation: OwnerDetails.owners[0]?.designation,
-        instituionName: OwnerDetails.owners[0]?.instituionName,
-        name: OwnerDetails.owners[0]?.name,
-        contactNo: OwnerDetails.owners[0]?.altContactNumber,
-      };
+      let institutionObj = {};
+      if (OwnerDetails.owners[0]?.designation) institutionObj.designation = OwnerDetails.owners[0].designation;
+      formData.tradeLicenseDetail.institution = institutionObj;
     }
 
     if (TraidDetails?.cpt) {
@@ -276,19 +312,21 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
-    console.log("formData in step 2: ", formData);
     setLoader(true);
     try {
       const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
       setLoader(false);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-        console.log("response in step 2: ", response.Licenses[0]);
+       
       }
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {
       setLoader(false);
-      return error;
+      const errMsg = error?.response?.data?.Errors?.[0]?.message || error?.message || t("TL_CREATE_ERROR");
+      setError(errMsg);
+      setShowToast(true);
+      return false;
     }
   };
 
@@ -297,7 +335,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
@@ -314,7 +351,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       }
     }, [showToast]);
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

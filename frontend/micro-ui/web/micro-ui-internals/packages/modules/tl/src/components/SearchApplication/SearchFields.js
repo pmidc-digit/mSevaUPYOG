@@ -28,8 +28,6 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
   const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices, tenantId }, {});
   let applicationStatuses = [];
 
-  // console.log("statusData in TL: ", statusData);
-  // console.log("applicationStatuses in TL: ", applicationStatuses);
 
   statusData &&
     statusData?.otherRoleStates?.map((status) => {

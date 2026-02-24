@@ -18,7 +18,6 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
   let defaultcoord1 = defaultcoord ? defaultcoord[0] : {};
   const onSkip = () => onSelect();
   const onChange = (code, location) => {
-    console.log("Geolocation:",code,location);
     setPincodeServicability(null);
     
     // Validate pincode format
@@ -44,7 +43,6 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
     }
   };
 
-  console.log("GeoLocation formdata", config.key, formData);
   const isEmpRenewLicense =
     window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
 

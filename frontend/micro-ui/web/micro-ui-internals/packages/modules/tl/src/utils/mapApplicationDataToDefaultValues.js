@@ -4,6 +4,16 @@ const formatFinancialYear = (year) => ({
     code: `${year}`,
     i18nKey: `FY${year}`
   });
+
+  const getNextFinancialYear = (year) => {
+    if (!year) return {};
+    const parts = year.split("-");
+    if (parts.length < 2) return {};
+    const endYear = Number(parts[1]);
+    if (isNaN(endYear)) return {};
+    const nextYear = `20${endYear}-${endYear + 1}`;
+    return { code: nextYear, i18nKey: `FY${nextYear}`, id: `20${endYear}` };
+  };
   
   const formatStructureType = (structureType = "", t) => {
     if (!structureType) {
@@ -29,31 +39,37 @@ const formatFinancialYear = (year) => ({
     };
   };
   
-  const formatOwner = (owner, idx) => ({
-    name: owner?.name || "",
-    mobileNumber: owner?.mobileNumber || "",
-    altContactNumber: owner?.altContactNumber || "",
-    instituionName: "",
-    fatherOrHusbandName: owner?.fatherOrHusbandName || "",
-    relationship: {
-      code: owner?.relationship || "FATHER",
-      i18nKey: owner?.relationship ? `COMMON_RELATION_${owner.relationship}` : "COMMON_RELATION_FATHER"
-    },
-    emailId: owner?.emailId || "",
-    permanentAddress: owner?.permanentAddress || "",
-    correspondenceAddress: "",
-    ownerType: {
-      code: owner?.ownerType || "NONE",
-      i18nKey: owner?.ownerType || "NONE",
-      name: owner?.ownerType || "Not Applicable"
-    },
-    gender: {
-      code: owner?.gender || "MALE",
-      i18nKey: `TL_GENDER_${owner?.gender || "MALE"}`
-    },
-    key: Date.now() + idx,
-    // id: owner?.id
-  });
+  const formatOwner = (owner, idx) => {
+    const relationshipCode = (owner?.relationship || "FATHER").toUpperCase();
+    const genderCode = (owner?.gender || "MALE").toUpperCase();
+    return {
+      name: owner?.name || "",
+      mobileNumber: owner?.mobileNumber || "",
+      altContactNumber: owner?.altContactNumber || "",
+      instituionName: "",
+      fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+      relationship: {
+        code: relationshipCode,
+        i18nKey: `COMMON_RELATION_${relationshipCode}`
+      },
+      emailId: owner?.emailId || "",
+      permanentAddress: owner?.permanentAddress || "",
+      correspondenceAddress: "",
+      ownerType: {
+        code: owner?.ownerType || "NONE",
+        i18nKey: owner?.ownerType || "NONE",
+        name: owner?.ownerType || "Not Applicable"
+      },
+      gender: {
+        code: genderCode,
+        i18nKey: `TL_GENDER_${genderCode}`
+      },
+      key: Date.now() + idx,
+      id: owner?.id,
+      uuid: owner?.uuid,
+      tenantId: owner?.tenantId,
+    };
+  };
   
   const formatTradeUnit = (unit, idx, t) => {
     if (typeof unit?.tradeType !== "string") return unit;
@@ -86,12 +102,10 @@ const formatFinancialYear = (year) => ({
   };
   
   const formatAccessory = (acc, idx, t) => {
-    console.log("acc",acc);
-    console.log("acc=======",typeof acc?.accessoryCategory !== "string");
-    console.log("coming here");
+
     
     if (typeof acc?.accessoryCategory !== "string") return acc;
-   console.log("coming here not",idx);
+ 
     const accessoryI18nKey = `TRADELICENSE_ACCESSORIESCATEGORY_${stringReplaceAll(acc?.accessoryCategory || "", "-", "_")}`;
   
     return {
@@ -117,7 +131,7 @@ const formatFinancialYear = (year) => ({
     const { structureType, structureSubType } = formatStructureType(tradeLicenseDetail?.structureType || "", t);
   
     const isImmovable = (tradeLicenseDetail?.structureType || "").split(".")[0] === "IMMOVABLE";
-    console.log("ApplicationDataForMapFunction: ", applicationData?.licenseType);
+  
     let isRenewal = window.location.href.includes("renew-application-details")  || window.location.href.includes("renew-trade");
 
   
@@ -126,7 +140,7 @@ const formatFinancialYear = (year) => ({
         tradedetils: [
           {
             tradeName: applicationData?.tradeName || "",
-            financialYear: isRenewal? {} : formatFinancialYear(applicationData?.financialYear || ""),
+            financialYear: formatFinancialYear(applicationData?.financialYear || ""),
             licenseType: {
               code: applicationData?.licenseType || "PERMANENT",
               active: true,
@@ -145,8 +159,8 @@ const formatFinancialYear = (year) => ({
         tradeUnits: (tradeLicenseDetail?.tradeUnits || []).map((unit, idx) => formatTradeUnit(unit, idx, t)),
         accessories: (tradeLicenseDetail?.accessories || []).map((acc, idx) => formatAccessory(acc, idx, t)),
         validityYears: {
-          code: 1,
-          i18nKey: 1
+          code: tradeLicenseDetail?.additionalDetail?.validityYears || 1,
+          i18nKey: tradeLicenseDetail?.additionalDetail?.validityYears || 1
         },
         cpt: {
           id: null,

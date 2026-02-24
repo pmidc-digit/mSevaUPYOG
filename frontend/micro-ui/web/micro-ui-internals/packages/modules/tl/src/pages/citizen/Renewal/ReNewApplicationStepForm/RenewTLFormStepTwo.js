@@ -47,6 +47,7 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
       if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.dob) missingFields.push(`Date of Birth (Owner ${index})`);
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };

@@ -49,10 +49,24 @@ const TLDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   return (
     <div>
+      <div className="TL-mb-16">
+        {/* <h2 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "8px" }}>{t("TL_REQUIRED_DOCUMENTS")}</h2> */}
+        <p className="TL-doc-note">
+          {/* {t("TL_UPLOAD_SINGLE_FILE_NOTE")} */}
+        </p>
+        <button
+          type="button"
+          onClick={() => window.open("https://pmidc-firenoc-documents.s3.amazonaws.com/SELFDECLARATION.pdf", "_blank")}
+          className="TL-download-btn"
+        >
+          {t("TL_DOWNLOAD_SELF_DECLARATION")}
+        </button>
+      </div>
       {finalTlDocumentsList?.map((document, index) => {
         return (
           <SelectDocument
             key={index}
+            index={index}
             document={document}
             action={action}
             t={t}
@@ -74,6 +88,26 @@ const TLDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   );
 };
 
+// Document metadata using localization codes (matching Mono UI)
+const DOC_INFO = {
+  OWNERIDPROOF: {
+    descriptionKey: "TL_OWNERIDPROOF_NOTE",
+    fileInfoKey: "COMMON_OWNERSHIPPROOF_DESCRIPTION",
+  },
+  OWNERSHIPPROOF: {
+    descriptionKey: "COMMON_OWNERSHIPPROOF_STATEMENT",
+    fileInfoKey: "COMMON_OWNERSHIPPROOF_DESCRIPTION",
+  },
+  OWNERPHOTO: {
+    descriptionKey: "COMMON_OWNERPHOTO_STATEMENT",
+    fileInfoKey: "COMMON_OWNERPHOTO_DESCRIPTION",
+  },
+  SELFCAREDECLARATION: {
+    descriptionKey: "COMMON_OWNERSELF_STATEMENT",
+    fileInfoKey: "COMMON_OWNERPHOTO_DESCRIPTION",
+  },
+};
+
 function SelectDocument({
   t,
   document: doc,
@@ -90,6 +124,7 @@ function SelectDocument({
   fromRawData,
   key,
   id,
+  index,
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -219,8 +254,13 @@ function SelectDocument({
       }
     }
   }, [doc]);
+
+  const isRequired = doc?.documentType !== "OLDLICENCENO" && doc?.documentType !== "OWNERPHOTO";
+  const docInfo = DOC_INFO[doc?.documentType] || {};
+  const docLabel = t(`TL_${doc?.documentType.replaceAll(".", "_")}`);
+
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div className="TL-mb-24">
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {doc?.documentType != "OLDLICENCENO"
@@ -247,8 +287,9 @@ function SelectDocument({
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
             buttonType="button"
           />
-          <div style={{ fontSize: "12px", color: "#505A5F", marginTop: "4px" }}>
-            {t("Allowed file types")}: {acceptFormat}
+          <div className="TL-doc-file-info">
+            {docInfo.descriptionKey && <div>{t(docInfo.descriptionKey)}</div>}
+            {docInfo.fileInfoKey && <div className="TL-mt-4">{t(docInfo.fileInfoKey)}</div>}
           </div>
         </div>
       </LabelFieldPair>

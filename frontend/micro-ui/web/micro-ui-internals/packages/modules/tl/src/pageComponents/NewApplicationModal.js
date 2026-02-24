@@ -21,7 +21,6 @@ const NewApplicationModal = ({}) => {
     retry: false,
     enable: false,
   });
-  // console.log("mutation docs", mutationDocuments);
 
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
@@ -42,7 +41,7 @@ const NewApplicationModal = ({}) => {
     );
   };
   const closeModal = (e) => {
-    console.log("in Print");
+    
 
     const content = printRef.current.innerHTML;
     const printWindow = window.open("", "_blank");
@@ -72,13 +71,13 @@ const NewApplicationModal = ({}) => {
 
      // Handle print cancellation or completion
     printWindow.onafterprint = () => {
-      console.log("Print completed or cancelled");
+      
       printWindow.close();
     };
 
     // For browsers that don't support onafterprint
     printWindow.onbeforeunload = () => {
-      console.log("Print window closed");
+     
     };
 
     
@@ -88,7 +87,6 @@ const NewApplicationModal = ({}) => {
   };
 
   const setModal = () => {
-    console.log("in Apply");
 
     // onSelect()
   };

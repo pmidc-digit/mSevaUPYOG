@@ -7,7 +7,7 @@ import { TLSearch } from "../../../../../../libraries/src/services/molecules/TL/
 import cloneDeep from "lodash/cloneDeep";
 
 const TradeLicenseList = ({ application }) => {
-  console.log("application", application);
+
 
   sessionStorage.setItem("isDirectRenewal", true);
   const history = useHistory();

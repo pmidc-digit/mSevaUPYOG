@@ -14,7 +14,6 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
     const missingDocs = validateDocuments(currentStepData);
 
@@ -42,7 +41,6 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }

@@ -27,7 +27,6 @@ const MyApplications = ({ view }) => {
     <React.Fragment>
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
       {data?.map((application) => {
-        console.log("applicationWithIndex", application);
         return (
           <div>
             <Card>

@@ -123,7 +123,7 @@ const MobileSearchApplication = ({ Controller, register, control, t, reset, prev
           {t(data?.display)
             .split("\\n")
             .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
+              <p key={index} className="TL-alignC">
                 {text}
               </p>
             ))}

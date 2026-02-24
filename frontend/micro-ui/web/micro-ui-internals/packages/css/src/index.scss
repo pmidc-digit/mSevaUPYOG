@@ -2301,12 +2301,13 @@ input[type="date"] {
   margin-right: 50px;
 }
 
-.engageMentCollapse {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  background: #f5f5f5;
-  padding: 10px;
-  border-radius: 4px;
+.surveyCardSection {
+  background: white;
+  display: block;
+  padding: 15px;
+  justify-self: center;
+  width: 50%;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }

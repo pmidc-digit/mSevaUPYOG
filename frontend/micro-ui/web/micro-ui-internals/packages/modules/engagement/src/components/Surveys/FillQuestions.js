@@ -46,7 +46,7 @@ const FillQuestions = (props) => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let response = await Digit.LocationService.getLocalities(prevProps.citizenData.city?.code);
+      let response = await Digit.LocationService.getLocalities("pb.testing");
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary?.length > 0) {
@@ -1215,7 +1215,18 @@ const FillQuestions = (props) => {
             ? data.sections.map((section) => (
                 <div key={section.uuid} style={{ marginBottom: "20px" }}>
                   {/* Section Header */}
-                  <div className="engageMentCollapse" onClick={() => toggleSection(section.uuid)}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: " space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      background: "#f5f5f5",
+                      padding: " 10px",
+                      borderRadius: " 4px",
+                    }}
+                    onClick={() => toggleSection(section.uuid)}
+                  >
                     <h2 style={{ margin: 0 }}>{section.title}</h2>
                     {/* <span style={{ fontSize: "18px" }}>{openSections[section.uuid] ? "▲" : "▼"}</span> */}
                     <ChevronIcon isOpen={openSections[section.uuid]} />

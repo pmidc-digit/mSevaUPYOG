@@ -271,6 +271,7 @@ console.log('calculatorData', calculatorData)
           uuid: doc?.documentUid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId,
+          order: doc?.order
         };
       });
 
@@ -289,6 +290,7 @@ console.log('calculatorData', calculatorData)
           uuid: doc?.documentUid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId,
+          order: doc?.order
         });
       });
     }

@@ -19,7 +19,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setSelectedCheckBox(e.target.checked);
   }
 
- // console.log("selectedCheckBox", selectedCheckBox);
+  // console.log("selectedCheckBox", selectedCheckBox);
 
   const currentStepData = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.formData || {};
@@ -30,14 +30,12 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   const ownerIds = useSelector(function (state) {
-        return state.obps.OBPSFormReducer.ownerIds;
+    return state.obps.OBPSFormReducer.ownerIds;
   });
-    
+
   const ownerPhotos = useSelector(function (state) {
-        return state.obps.OBPSFormReducer.ownerPhotos;
+    return state.obps.OBPSFormReducer.ownerPhotos;
   });
-
-
 
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
@@ -132,7 +130,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   function mapToCLUPayload(cluFormData, selectedAction) {
     console.log("cluFormData", cluFormData);
 
-    {/**Change of Owner Feature Left and to be discussed*/}
+    {
+      /**Change of Owner Feature Left and to be discussed*/
+    }
 
     // const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
     //   return {
@@ -155,7 +155,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       },
       cluDetails: {
         ...cluFormData?.apiData?.Clu?.[0]?.cluDetails,
-        vasikaNumber: cluFormData?.siteDetails?.vasikaNumber || "", 
+        vasikaNumber: cluFormData?.siteDetails?.vasikaNumber || "",
         vasikaDate: cluFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(cluFormData?.siteDetails?.vasikaDate) : "",
 
         //update data with redux as we can not use old data for update api
@@ -182,7 +182,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           },
           coordinates: { ...coordinates },
           ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
-          ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList: [] 
+          ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
         },
       },
       documents: [],
@@ -190,52 +190,49 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     const docsArrayFromRedux = cluFormData?.documents?.documents?.documents || [];
 
-    if(isEdit){
-       
-    const apiResponseDocuments = currentStepData?.apiData?.Clu?.[0]?.documents || [];
+    if (isEdit) {
+      const apiResponseDocuments = currentStepData?.apiData?.Clu?.[0]?.documents || [];
 
-    const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d)=> d.documentType));
+      const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
 
-    const updatedApiResponseDocuments = apiResponseDocuments?.map((doc)=>{
+      const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
+        const fileStoreId =
+          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid ||
+          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
+        return {
+          ...doc,
+          uuid: fileStoreId,
+          documentAttachment: fileStoreId,
+        };
+      });
 
-    const fileStoreId = docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.uuid || docsArrayFromRedux?.find((obj)=> obj.documentType === doc.documentType)?.documentAttachment;
-      return ({
-        ...doc,
-        uuid: fileStoreId,
-        documentAttachment: fileStoreId
-      })
-    });
+      const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
 
-   const newlyAddedDocs = docsArrayFromRedux?.filter((d) => !apiResponseDocumentType.has(d.documentType)) || [];
-
-   const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc)=>{
-    return {
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.filestoreId,
-    }
-   });
+      const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
+        return {
+          uuid: doc?.documentUid,
+          documentType: doc?.documentType,
+          documentAttachment: doc?.filestoreId,
+        };
+      });
 
    const overallDocs= [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
    
    console.log("overallDocs", overallDocs);
 
-
-    overallDocs.forEach((doc)=>{
-      updatedApplication?.documents?.push({
-       ...doc
-      })
-    })
-
-    }else{
+      overallDocs.forEach((doc) => {
+        updatedApplication?.documents?.push({
+          ...doc,
+        });
+      });
+    } else {
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
-        uuid: doc?.documentUid,
-        documentType: doc?.documentType,
-        documentAttachment: doc?.filestoreId,
+          uuid: doc?.documentUid,
+          documentType: doc?.documentType,
+          documentAttachment: doc?.filestoreId,
+        });
       });
-     });
-
     }
 
     const payload = {
@@ -266,7 +263,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: businessServiceCode,
   });
 
- // console.log("workflow Details here==>", workflowDetails);
+  // console.log("workflow Details here==>", workflowDetails);
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -283,7 +280,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //console.log("selectedAction here", action);
   }
 
-  const ownersList= currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.map(
+    (item) => item.ownerOrFirmName
+  );
   console.log("ownersList===>", ownersList);
   const combinedOwnersName = ownersList?.join(", ");
   console.log("combinedOwnersName==>", combinedOwnersName);
@@ -295,9 +294,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       <CLUSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-          combinedOwnersName
-        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         onChange={(e) => handleCheckBox(e)}
         value={selectedCheckBox}
         checked={selectedCheckBox}
@@ -305,7 +302,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
       {actions && (
         <ActionBar>
-          <SubmitBar className="go-back-footer-button" label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="submit-bar submit-bar-back" label="Back" onSubmit={onGoBack} />
 
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />

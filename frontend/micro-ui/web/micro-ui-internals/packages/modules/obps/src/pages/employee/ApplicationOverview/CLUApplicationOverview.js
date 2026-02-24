@@ -40,7 +40,8 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-import { amountToWords } from "../../../utils";
+import { amountToWords, formatDuration } from "../../../utils";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -127,6 +128,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [distances, setDistances] = useState([]);  
@@ -140,6 +142,10 @@ const CLUEmployeeApplicationDetails = () => {
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
   //console.log("businessService here", businessServiceCode, siteImages);
   
+const stateId = Digit.ULBService.getStateId();
+  const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
+  
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
@@ -160,6 +166,25 @@ const CLUEmployeeApplicationDetails = () => {
     },
     { enabled: id ? true : false }
   );
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+
+  const hasPayments = combinedPayments.length > 0;
+
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -471,6 +496,12 @@ const CLUEmployeeApplicationDetails = () => {
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
 
       setFieldInspectionPending(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending);
+
+      const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = cluObject?.auditDetails?.lastModifiedTime;
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = totalTime ? formatDuration(totalTime) : null;
+      setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);
 
@@ -904,7 +935,7 @@ const CLUEmployeeApplicationDetails = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-        {(isLoading || recieptDataLoading2) && <Loader />}
+        {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
         {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
           <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
         )}
@@ -1069,8 +1100,10 @@ const CLUEmployeeApplicationDetails = () => {
         </StatusTable>
       </Card>
 
-      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (
+{/* {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0) && (
         <Card>
+          <CardSubHeader>{`${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
         </Card>
       )}
@@ -1126,12 +1159,28 @@ const CLUEmployeeApplicationDetails = () => {
               calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY1"
+            hasPayments={hasPayments}
           />
+        )}
+        {hasPayments && (
+          <div style={{ marginTop: "16px" }}>
+            <PaymentHistory payments={combinedPayments} />
+          </div>
         )}
       </Card>
 
+{/* will not be shown on first step(FIELDINSPECTION_INPROGRESS) */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
       <div className="employeeCard">
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
+            <LinkButton
+              label={t("BPA_DOWNLOAD_FEE_NOTIFICATION")}
+              onClick={() => routeToImage(feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId)}
+            />
+          )}
+        </div>
 
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
@@ -1149,6 +1198,7 @@ const CLUEmployeeApplicationDetails = () => {
           />
         )}
       </div>
+      )}
 
       <CheckBox
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
@@ -1184,7 +1234,8 @@ const CLUEmployeeApplicationDetails = () => {
         )}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+         {/* <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/> */}
+       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
       </div>
 
       {actions?.length > 0 && (
@@ -1244,7 +1295,7 @@ const CLUEmployeeApplicationDetails = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}
     </div>
   );
 };

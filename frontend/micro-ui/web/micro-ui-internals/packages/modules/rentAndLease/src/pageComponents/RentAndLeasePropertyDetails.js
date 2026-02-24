@@ -144,19 +144,17 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     }
   }, [data, selectedPropertyType, selectedPropertySpecific, selectedLocationType]);
 
-  useEffect(() => {
-    const startDate = watch("arrearStartDate");
-    if (startDate) {
-      const end = new Date(startDate);
-      end.setFullYear(end.getFullYear() + 1);
-      setValue("arrearEndDate", end.toISOString().split("T")[0], { shouldValidate: true });
-    }
-  }, [watch("arrearStartDate")]);
-
   const todayISO = new Date().toISOString().split("T")[0];
   const minStartDate = new Date();
   minStartDate.setMonth(minStartDate.getMonth() - 11);
   const minStartDateISO = minStartDate.toISOString().split("T")[0];
+
+  useEffect(() => {
+    const startDate = watch("arrearStartDate");
+    if (startDate) {
+      setValue("arrearEndDate", todayISO, { shouldValidate: true });
+    }
+  }, [watch("arrearStartDate")]);
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -189,8 +187,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   };
 
   const onSubmit = async (data) => {
-    console.log("data", data);
-
     const applicationType = data?.applicationType?.code;
 
     if (applicationType === "Legacy" && data?.arrear > 0 && !documentsData?.[0]?.filestoreId) {
@@ -296,7 +292,6 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   }, [isError, triggerToast]);
 
   const handleDocumentsSelect = (data) => {
-    console.log("data check", data);
     setDocumentsData(data);
   };
 
@@ -443,16 +438,16 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
               required: t("PTR_FIELD_REQUIRED"),
               validate: (value) => {
                 if (!value) return t("PTR_FIELD_REQUIRED");
-                const minStart = new Date(minStartDateISO);
                 const chosen = new Date(value);
-                if (chosen < minStart) return t("RAL_START_DATE_TOO_OLD");
+                const today = new Date(todayISO);
+                if (chosen > today) return t("RAL_START_DATE_CANNOT_BE_FUTURE");
                 return true;
               },
             }}
             render={({ value, onChange }) => (
               <TextInput
                 type="date"
-                min={minStartDateISO}
+                max={todayISO}
                 value={value || ""}
                 onChange={(e) => {
                   const newStart = e.target.value;
@@ -568,22 +563,26 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       {errors.penaltyType && <CardLabelError>{getErrorMessage("penaltyType")}</CardLabelError>}
 
       {/* Security Amount */}
-      <LabelFieldPair>
-        <CardLabel>
-          {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="securityDeposit"
-            rules={{ required: t("PTR_FIELD_REQUIRED") }}
-            render={({ value, onChange }) => (
-              <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
-            )}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
+      {watch("applicationType")?.code != "Legacy" && (
+        <React.Fragment>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("RAL_SECURITY_AMOUNT")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="securityDeposit"
+                rules={{ required: t("PTR_FIELD_REQUIRED") }}
+                render={({ value, onChange }) => (
+                  <TextInput type="number" value={value || ""} onChange={(e) => onChange(e.target.value)} disable={true} />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.securityDeposit && <CardLabelError className="ral-error-label">{getErrorMessage("securityDeposit")}</CardLabelError>}
+        </React.Fragment>
+      )}
       {watch("applicationType")?.code == "Legacy" && (
         <React.Fragment>
           {/* Arrears Amount */}
@@ -623,7 +622,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
                 render={({ value, onChange }) => (
                   <TextInput
                     type="date"
-                    min={minStartDateISO}
+                    max={todayISO}
                     value={value || ""}
                     onChange={(e) => {
                       onChange(e);

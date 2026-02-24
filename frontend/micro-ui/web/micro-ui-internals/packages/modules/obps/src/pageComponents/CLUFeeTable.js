@@ -64,7 +64,7 @@ export const CLUFeeTable = ({
             t={t}
             type="number"
             isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0
+            value={feeData[row.index]?.adjustedAmount === null
               ? ""
               : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
             onChange={(e) => {
@@ -102,12 +102,15 @@ export const CLUFeeTable = ({
         return (
           <TextArea
             value={feeData[row.index]?.remark || ""}
-            onChange={(e) =>
-              handleRemarkChange(row.index, e.target.value, row.amount)
-            }
+            onChange={(e) => {
+              e.target.style.height = "auto";
+              e.target.style.height = e.target.scrollHeight + "px";
+              handleRemarkChange(row.index, e.target.value, row.amount);
+            }}
             disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
+            style={{ height: "50px", overflow: "hidden" }}
           />
         );
       },
@@ -174,14 +177,23 @@ export const CLUFeeTable = ({
                         </td>
                       ))}
                     </tr>
+                    {/* Last Updated Date Row - Only render if at least one fee type has a date for this entry */}
+                    {feeTypes?.some(ft => feeHistory[ft]?.[entryIndex]?.when) && (
+                      <tr>
+                        <td className="custom-fix-fee-history-table-cell-label">{t("BPA_LAST_UPDATED_DATE_LABEL")}</td>
+                        {feeTypes?.map((feeType) => (
+                          <td key={`${feeType}-date-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
+                            {feeHistory[feeType]?.[entryIndex]?.when ? new Date(feeHistory[feeType][entryIndex].when).toLocaleDateString("en-IN") : t("CS_NA")}
+                          </td>
+                        ))}
+                      </tr>
+                    )}
                     {/* Updated By Row */}
                     <tr>
                       <td className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator" : "custom-fix-fee-history-table-cell-separator-last"}>{t("BPA_UPDATED_BY_LABEL")}</td>
-                      {feeTypes.map((feeType) => (
-                        <td key={`${feeType}-updatedby-${entryIndex}`} className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator-value" : "custom-fix-fee-history-table-cell-separator-value-last"}>
-                          {feeHistory[feeType]?.[entryIndex]?.who || t("UNKNOWN")}
-                        </td>
-                      ))}
+                      <td colSpan={feeTypes.length} className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator-value" : "custom-fix-fee-history-table-cell-separator-value-last"}>
+                        {feeTypes.map(ft => feeHistory[ft]?.[entryIndex]?.who).find(who => who) || t("UNKNOWN")}
+                      </td>
                     </tr>
                   </React.Fragment>
                 ))}
@@ -219,7 +231,7 @@ export const CLUFeeTable = ({
                       type="number"
                       isMandatory={false}
                       value={
-                        feeData[row.index]?.adjustedAmount === 0
+                        feeData[row.index]?.adjustedAmount === null
                           ? ""
                           : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
                       }
@@ -242,10 +254,15 @@ export const CLUFeeTable = ({
                     <label className="custom-fee-card-label">{t("BPA_REMARK_LABEL")}</label>
                     <TextArea
                       value={feeData[row.index]?.remark || ""}
-                      onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
+                      onChange={(e) => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = e.target.scrollHeight + "px";
+                        handleRemarkChange(row.index, e.target.value, row.amount);
+                      }}
                       disabled={readOnly}
                       className="custom-fee-table-textarea"
                       placeholder="Enter remarks..."
+                      style={{ overflow: "hidden" }}
                     />
                   </div>
                 </div>
@@ -255,7 +272,7 @@ export const CLUFeeTable = ({
 
             {row?.taxHeadCode === "CLU_TOTAL" && (
               <div className="custom-fee-card-total-content">
-                <div className="custom-fee-card-total-label">Total Amount :</div>
+                <div className="custom-fee-card-total-label">{t("BPA_TOTAL_AMOUNT_LABEL")}</div>
                 <div className="custom-fee-card-total-value">
                   <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                 </div>
@@ -293,6 +310,11 @@ export const CLUFeeTable = ({
                         <div className="custom-fee-history-item">
                           <span className="custom-fee-history-label-bold">{t("BPA_REMARK_LABEL")}:</span> {h.remarks || t("CS_NA")}
                         </div>
+                        {h.when && (
+                          <div className="custom-fee-history-item">
+                            <span className="custom-fee-history-label-bold">{t("BPA_LAST_UPDATED_DATE_LABEL")}:</span> {new Date(h.when).toLocaleDateString("en-IN")}
+                          </div>
+                        )}
                         <div className="custom-fee-history-item">
                           <span className="custom-fee-history-label-bold">{t("BPA_UPDATED_BY_LABEL")}:</span> {h.who || t("UNKNOWN")}
                         </div>

@@ -1,6 +1,6 @@
 {
   "name": "@mseva/upyog-ui-module-pgrai",
-  "version": "1.1.33",
+  "version": "1.1.33-dev.1.2",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

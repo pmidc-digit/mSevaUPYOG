@@ -42,7 +42,8 @@ import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-
+import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
+import { getDrivingDistance } from "../../../utils/getdistance";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -105,7 +106,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [approverComment , setApproverComment] = useState(null);
-
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
@@ -127,7 +129,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
-
+  const [distances, setDistances] = useState([]);  
   console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
@@ -152,6 +154,7 @@ const NOCEmployeeApplicationOverview = () => {
 
  const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
+ console.log('searchChecklistData', searchChecklistData)
 
   useEffect(() => {
       if (eSignError) {
@@ -163,14 +166,6 @@ const NOCEmployeeApplicationOverview = () => {
       }
     }, [eSignError]);
 
-  useEffect(() => {
-    if (window.location.pathname.endsWith("/complete")) {
-      history.push(`/digit-ui/employee/noc/search/application-overview/${id}`);
-        console.log('useeffetc called complete')
-
-    }
-
-  }, [history, id]);
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -182,7 +177,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }, [siteImages]);
 
-  
+  console.log('geoLocations', geoLocations)
   const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
     title: value?.documentType,
     fileStoreId: value?.filestoreId,
@@ -190,27 +185,27 @@ const NOCEmployeeApplicationOverview = () => {
     longitude: value?.longitude,
   })), [siteImages])
 
-  const documentsColumnsSiteImage = [
-    {
-      Header: t("BPA_SITES"),
-      accessor: "title",
-      Cell: ({ value }) => t(value) || t("CS_NA"),
-    },
-    {
-      Header: t(" "),
-      accessor: "fileStoreId",
-      Cell: ({ value }) => {
-        return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
-            label={t("View")}
-            onClick={() => routeToImage(value)}
-          />
-        ) : (
-          t("CS_NA")
-        )
-      },
-    }
-  ];
+  // const documentsColumnsSiteImage = [
+  //   {
+  //     Header: t("BPA_SITES"),
+  //     accessor: "title",
+  //     Cell: ({ value }) => t(value) || t("CS_NA"),
+  //   },
+  //   {
+  //     Header: t(" "),
+  //     accessor: "fileStoreId",
+  //     Cell: ({ value }) => {
+  //       return value ? (
+  //         <LinkButton style={{ float: "right", display: "inline" }}
+  //           label={t("View")}
+  //           onClick={() => routeToImage(value)}
+  //         />
+  //       ) : (
+  //         t("CS_NA")
+  //       )
+  //     },
+  //   }
+  // ];
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -251,28 +246,54 @@ const NOCEmployeeApplicationOverview = () => {
         }
       })();
   }, [tenantId, businessServiceCode, isLoading]);
-  useEffect(() => {
-    if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-      const commentsobj = workflowDetails?.data?.timeline
-        ?.filter((item) => item?.performedAction === "APPROVE")
-        ?.flatMap((item) => item?.wfComment || []);
+  // useEffect(() => {
+  //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+  //     const commentsobj = workflowDetails?.data?.timeline
+  //       ?.filter((item) => item?.performedAction === "APPROVE")
+  //       ?.flatMap((item) => item?.wfComment || []);
       
-      const approvercomments = commentsobj?.[0];
+  //     const approvercomments = commentsobj?.[0];
   
-      // Extract only the part after [#?..**]
-      let conditionText = "";
-      if (approvercomments?.includes("[#?..**]")) {
-        conditionText = approvercomments.split("[#?..**]")[1] || "";
-      }
+  //     // Extract only the part after [#?..**]
+  //     let conditionText = "";
+  //     if (approvercomments?.includes("[#?..**]")) {
+  //       conditionText = approvercomments.split("[#?..**]")[1] || "";
+  //     }
   
-      const finalComment = conditionText
-        ? `The above approval is subjected to the following conditions:\n${conditionText}`
-        : "";
+  //     const finalComment = conditionText
+  //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+  //       : "";
   
-      setApproverComment(finalComment);
+  //     setApproverComment(finalComment);
+  //   }
+  // }, [workflowDetails]);
+  
+
+  
+  const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
     }
+
+    const commentsobj = workflowDetails.data.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+
+    const approvercomments = commentsobj?.[0];
+
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }
+
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
+      : "";
   }, [workflowDetails]);
-  
+
 
   
   // async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -316,6 +337,27 @@ const NOCEmployeeApplicationOverview = () => {
   }
 }
 
+const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const Property = applicationDetails?.Noc?.[0];
+      //console.log("tenants", tenants);
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , false, searchChecklistData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoader(false);
+    }
+  };
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
     try {
@@ -325,7 +367,7 @@ const NOCEmployeeApplicationOverview = () => {
       let fileStoreId = application?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
 
       if (!fileStoreId) {
-        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
+        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
 
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
@@ -399,15 +441,19 @@ const NOCEmployeeApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-        onClick: printCertificateWithESign,
-        disabled: eSignLoading,
-      });
-    }
-  }
+  dowloadOptions.push({
+      label: t("Application Form"),
+      onClick: handleDownloadPdf,
+    });
+  // if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
+  //   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  //     dowloadOptions.push({
+  //       label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+  //       onClick: printCertificateWithESign,
+  //       disabled: eSignLoading,
+  //     });
+  //   }
+  // }
  useEffect(() => {
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
   const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -472,6 +518,23 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
 
 
   console.log('user', user)
+
+  const order = {
+    "OWNER.SITEPHOTOGRAPHONE": 1,
+    "OWNER.SITEPHOTOGRAPHTWO": 2,
+  };
+  const sitePhotos = displayData?.Documents?.filter(
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
+
+  console.log('sitePhotos', sitePhotos)
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+  );
+  const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
+  console.log('coordinates', coordinates)
+
+ 
 
   useEffect(() => {
   const status = applicationDetails?.Noc?.[0]?.applicationStatus;
@@ -560,10 +623,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     }
   }, [applicationDetails?.Noc]);
 
+
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId)
   }
   
+ 
+
+
   const getUrlForDocumentView = async (filestoreId) => {
     if (filestoreId?.length === 0) return;
     try {
@@ -606,6 +673,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     setImageUrl(null);
   }
   function onActionSelect(action) {
+    const validationMsg = validateSiteImages(action);
     console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
     const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
@@ -635,6 +703,9 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    }else if(validationMsg){
+      setShowToast({ key: "true", error: true, message: validationMsg }); 
+      return;
     } else {
       if (
         applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
@@ -648,6 +719,64 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       setSelectedAction(action);
     }
   }
+
+useEffect(() => {
+  const fetchDistances = async () => {
+    if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0) {
+      try {
+        const results = await Promise.all(
+          geoLocations.map(async (loc, idx) => {
+            const d1 = await getDrivingDistance(
+              parseFloat(coordinates?.Latitude1),
+              parseFloat(coordinates?.Longitude1),
+              parseFloat(loc?.latitude),
+              parseFloat(loc?.longitude)
+            );
+            const d2 = await getDrivingDistance(
+              parseFloat(coordinates?.Latitude2),
+              parseFloat(coordinates?.Longitude2),
+              parseFloat(loc?.latitude),
+              parseFloat(loc?.longitude)
+            );
+            const minDistance = Math.min(d1, d2);
+            console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
+            return minDistance;
+          })
+        );
+        setDistances(results);
+        console.log("Final distances (m):", results);
+      } catch (err) {
+        console.error("Error fetching distances:", err);
+      }
+    }
+  };
+
+  fetchDistances();
+}, [coordinates, geoLocations]);
+
+// validation util
+const validateSiteImages = (action) => {
+  if (
+    applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+    action?.action === "SEND_FOR_INSPECTION_REPORT"
+  ) {
+
+    // Check distances
+    if (distances?.length > 0) {
+      for (let i = 0; i < distances.length; i++) {
+        const d = distances[i];
+        if (d > 50) {
+          // return with index (human-friendly: +1)
+          return `Site image ${i + 1} is not within 50 meters`;
+        }
+      }
+    }
+  }
+  return null; // no error
+};
+
+
+console.log('distances', distances)
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
@@ -915,26 +1044,23 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
   };
-  const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
-
+  
   const handleViewTimeline = () => {
     setViewTimeline(true);
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
   console.log("displayData here", displayData);
-  const sitePhotos = displayData?.Documents?.filter(
-    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
-  const remainingDocs = displayData?.Documents?.filter(
-    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
-  );
+  
+  
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
+
+ 
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
@@ -952,14 +1078,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }
           />
         )}
-        {/* {dowloadOptions && dowloadOptions.length > 0 && (
+        {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-        )} */}
+        )}
       </div>
 
       <NOCImageView
@@ -1111,18 +1237,17 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .reverse()
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
+
 
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
         <Card>
@@ -1166,12 +1291,12 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
         <Card>
           <CardSubHeader>
-              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${
-                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                  }`
-                : t("BPA_FI_REPORT")}
-            </CardSubHeader>
+            {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+              ? `${t("BPA_FI_REPORT")} - Verified by ${
+                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
+              : t("BPA_FI_REPORT")}
+          </CardSubHeader>
 
           <div id="fieldInspection"></div>
           <InspectionReport
@@ -1183,7 +1308,10 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           />
         </Card>
       )}
-      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ? (
+        <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div>
+      ) : (
+        applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
             <CardSubHeader>
@@ -1200,7 +1328,8 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
               InspectionReportVerifier={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier}
             />
           </Card>
-        )}
+        )
+      )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
@@ -1251,7 +1380,11 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            disable={
+              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
+              applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"
+            }
+            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
       </Card>

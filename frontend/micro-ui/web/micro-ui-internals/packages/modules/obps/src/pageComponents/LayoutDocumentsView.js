@@ -13,7 +13,7 @@ const LayoutDocumentTableView = ({documents}) => {
         {
           Header: t("BPA_DOCUMENT_NAME"),
           accessor: "title",
-          Cell: ({ value }) => t(value) || t("CS_NA"),
+          Cell: ({ value }) => <strong>{t(value)}</strong> || t("CS_NA"),
         },
         {
           Header: t("BPA_DOCUMENT_FILE"),

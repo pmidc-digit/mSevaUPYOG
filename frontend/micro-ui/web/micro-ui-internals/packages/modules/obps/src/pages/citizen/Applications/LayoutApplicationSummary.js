@@ -32,6 +32,7 @@ import LayoutDocumentView from "./LayoutDocumentView";
 import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
+import NocSitePhotographs from "../../../components/NocSitePhotographs";
 
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -129,6 +130,9 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
+  const sitePhotos = layoutDocuments?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
 
   // Helper function to find document by type and owner index
   // Searches in both API documents (documents array) and owner's additionalDetails
@@ -520,7 +524,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
         {applicationDetails?.Layout?.[0]?.owners?.map((applicant, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
+              <RenderRow label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM"? t("NEW_LAYOUT_FIRM_NAME_LABEL") :t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
+              {index === 0 && <RenderRow label={`Applicant Type`} value={applicant?.additionalDetails?.aplicantType?.name} />}
               <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
               <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
               <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
@@ -650,27 +655,49 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
         {/* 1️⃣ SITE COORDINATES CARD */}
         {displayData?.coordinates && displayData.coordinates.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
+          // <Card>
+          //   <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
 
-            {displayData.coordinates.map((detail, index) => (
-              <div
-                key={index}
-                style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-              >
-                <StatusTable>
-                  <RenderRow label={t("COMMON_LATITUDE1_LABEL")} value={detail?.Latitude1} />
-                  <RenderRow label={t("COMMON_LONGITUDE1_LABEL")} value={detail?.Longitude1} />
-                  <RenderRow label={t("COMMON_LATITUDE2_LABEL")} value={detail?.Latitude2} />
-                  <RenderRow label={t("COMMON_LONGITUDE2_LABEL")} value={detail?.Longitude2} />
-                  <RenderRow label={t("COMMON_LATITUDE3_LABEL")} value={detail?.Latitude3} />
-                  <RenderRow label={t("COMMON_LONGITUDE3_LABEL")} value={detail?.Longitude3} />
-                  <RenderRow label={t("COMMON_LATITUDE4_LABEL")} value={detail?.Latitude4} />
-                  <RenderRow label={t("COMMON_LONGITUDE4_LABEL")} value={detail?.Longitude4} />
-                </StatusTable>
-              </div>
-            ))}
-          </Card>
+          //   {displayData.coordinates.map((detail, index) => (
+          //     <div
+          //       key={index}
+          //       style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
+          //     >
+          //       <StatusTable>
+          //         <RenderRow label={t("COMMON_LATITUDE1_LABEL")} value={detail?.Latitude1} />
+          //         <RenderRow label={t("COMMON_LONGITUDE1_LABEL")} value={detail?.Longitude1} />
+          //         <RenderRow label={t("COMMON_LATITUDE2_LABEL")} value={detail?.Latitude2} />
+          //         <RenderRow label={t("COMMON_LONGITUDE2_LABEL")} value={detail?.Longitude2} />
+          //         <RenderRow label={t("COMMON_LATITUDE3_LABEL")} value={detail?.Latitude3} />
+          //         <RenderRow label={t("COMMON_LONGITUDE3_LABEL")} value={detail?.Longitude3} />
+          //         <RenderRow label={t("COMMON_LATITUDE4_LABEL")} value={detail?.Latitude4} />
+          //         <RenderRow label={t("COMMON_LONGITUDE4_LABEL")} value={detail?.Longitude4} />
+          //       </StatusTable>
+          //     </div>
+          //   ))}
+          // </Card>
+          <Card>
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {sitePhotos?.length > 0 &&
+            [...sitePhotos]
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={displayData?.coordinates?.[0]}
+                />
+              ))}
+        </StatusTable>
+      </Card>
         )}
 
         {/* 2️⃣ DOCUMENTS CARD */}

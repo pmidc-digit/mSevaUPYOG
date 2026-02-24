@@ -24,6 +24,7 @@ import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
+import { LoaderNew } from "../components/LoaderNew";
 
 const useQueryParam = (key) => {
   const { search } = useLocation();
@@ -55,8 +56,9 @@ const LayoutApplicantDetails = (_props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
+  const [primaryApplicantType, setPrimaryApplicantType] = useState({});
 
-  console.log("userInfo here", userInfo);
+  console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
 
   const { isLoading: genderTypeDataLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
@@ -540,7 +542,7 @@ const LayoutApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       {loader && <Loader />}
-      <div>
+      <div>        
         {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader> */}
@@ -596,10 +598,41 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {`${t("Applicant Type")}`} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+                <Controller
+                  control={control}
+                  name={"aplicantType"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {                        
+                        props.onChange(e);
+                        setPrimaryApplicantType(e)
+                      }}
+                      selected={props.value}
+                      option={[
+                        {name: "Individual", code: "INDIVIDUAL"},
+                        {name: "Firm", code: "FIRM"},
+                      ]}
+                      optionKey="name"
+                      disable={isEditMode}
+                      t={t}
+                    />
+                  )}
+                />              
+              <CardLabelError style={errorStyle}>{errors?.aplicantType?.message || ""}</CardLabelError>
+            </div>
+          </LabelFieldPair>
+
           {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
-              {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
+              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_NAME_LABEL") : t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
@@ -806,8 +839,9 @@ const LayoutApplicantDetails = (_props) => {
               justifyContent: "end",
             }}
           >
-            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
-              <strong>Accepted File Types:</strong> JPEG, JPG, PNG
+            <p className="advisory-text">
+              {/* <strong>Accepted File Types:</strong> JPEG, JPG, PNG */}
+              Only <strong>.png, .jpeg, .jpg</strong> files are accepted with maximum size of <strong>5 MB</strong>
             </p>
           </div>
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
@@ -852,8 +886,9 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
-              <strong>Accepted File Types:</strong> PDF
+            <p className="advisory-text">
+              {/* <strong>Accepted File Types:</strong> PDF */}
+              Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
             </p>
           </div>
           {/* PAN Document */}
@@ -899,8 +934,9 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
-              <strong>Accepted File Types:</strong> PDF
+            <p className="advisory-text">
+              {/* <strong>Accepted File Types:</strong> PDF */}
+              Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
             </p>
           </div>
 
@@ -1004,7 +1040,7 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       {/* {applicantErrors[index]?.mobileNumber && <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>} */}
-                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>                    
 
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
@@ -1123,6 +1159,22 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "end",
+
+                          borderRadius: "4px",
+                          marginBottom: "20px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <p className="advisory-text">
+                          {/* <strong>Accepted File Types:</strong> PDF */}
+                          Only <strong>.png, .jpeg, .jpg</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                        </p>
+                      </div>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1147,6 +1199,22 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "end",
+
+                          borderRadius: "4px",
+                          marginBottom: "20px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <p className="advisory-text">
+                          {/* <strong>Accepted File Types:</strong> PDF */}
+                          Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                        </p>
+                      </div>
 
                       {/* PAN Number */}
 
@@ -1174,6 +1242,22 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "end",
+
+                          borderRadius: "4px",
+                          marginBottom: "20px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <p className="advisory-text">
+                          {/* <strong>Accepted File Types:</strong> PDF */}
+                          Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                        </p>
+                      </div>
 
                       <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">

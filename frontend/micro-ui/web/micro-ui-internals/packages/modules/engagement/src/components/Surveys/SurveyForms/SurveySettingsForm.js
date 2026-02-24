@@ -1,6 +1,8 @@
 import React, { useEffect,useMemo } from "react";
-import { CardLabelError, TextInput, RadioButtons } from "@egovernments/digit-ui-react-components";
+import { CardLabelError, TextInput, RadioButtons, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
+import { fieldChange} from '../../../redux/actions/surveyFormActions';
+import { useSelector, useDispatch } from 'react-redux';
 
  const ConvertEpochToDate = (dateEpoch) => {
   if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
@@ -15,12 +17,13 @@ import { Controller, useFormContext } from "react-hook-form";
   return `${year}-${month}-${day}`;
 };
 
-const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInputs, enableEndDateTimeOnly }) => {
+const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInputs, enableEndDateTimeOnly,readOnly }) => {
   
   const formErrors = surveyFormState?.errors;
-  
+    const dispatch = useDispatch();
   const { getValues } = useFormContext()
   const currentTs = new Date().getTime()
+  const surveyDetails = useSelector(state => state.engagement.surveyForm.surveyDetails[0]);
   const isValidFromDate = (enteredValue) => {
     
     const enteredTs = new Date(enteredValue).getTime()
@@ -39,35 +42,68 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
   };
   const isValidFromTime = () => true;
   const isValidToTime = () => true;
-
+       const handleFieldChange = (e) => {
+         const { name, value } = e.target;
+         dispatch(fieldChange(surveyDetails.id, { [name]: value }));
+       };
   return (
-    <div className="surveydetailsform-wrapper">
-      <div className="heading">{t("CS_COMMON_SETTINGS")}</div>
-      <span className="surveyformfield">
-        <label>{`${t("LABEL_SURVEY_START_DATE")} * `}</label>
+    // <div className="surveydetailsform-wrapper">
+    <div
+    //className="surveydetailsform-wrapper"
+     className="create-survey-card"
+    >
+      {/* <div 
+      style={{fontSize:'22px', lineHeight:'24px',color:'black',fontWeight:'500',fontFamily:'Noto Sans,sans-serif'}}
+      //className="heading"
+      >
+        {"Survey Publish Period"}</div> */}
+        <div>
+        <CardSectionHeader>
+            {t("Survey Publish Period")}
+          </CardSectionHeader>
+          <div style={{
+ border:'1px solid #DFE0E2',
+ marginBottom:'20px',
+          }}></div>
+          </div>
+      
+      <div className="survey-row">
+   
+    <div className="survey-column">
+        <label>{t("LABEL_SURVEY_START_DATE")} <span style={{color:"red"}}>*</span></label>
         <Controller
           control={controlSurveyForm}
           name="fromDate"
-          defaultValue={surveyFormState?.fromDate}
+          // defaultValue={surveyFormState?.fromDate}
+          defaultValue={surveyDetails.fromDate}
+          onChange={handleFieldChange}
           rules={{ required: true, validate: !enableEndDateTimeOnly? { isValidFromDate }:null }}
-          render={({ onChange, value }) => <TextInput type="date" onChange={onChange} defaultValue={value} disable={disableInputs}/>}
+          render={({ onChange, value }) => <TextInput name="fromDate" type="date" onChange={handleFieldChange} defaultValue={surveyDetails.fromDate} 
+          // disable={disableInputs}
+          disable={readOnly||false}
+          />}
         />
+     
         {formErrors && formErrors?.fromDate && formErrors?.fromDate?.type === "required" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
         )}
         {formErrors && formErrors?.fromDate && formErrors?.fromDate?.type === "isValidFromDate" && (
           <CardLabelError>{t(`EVENTS_FROM_DATE_ERROR_INVALID`)}</CardLabelError>
         )}
-      </span>
+      </div>
 
-      <span className="surveyformfield">
-        <label>{`${t("LABEL_SURVEY_START_TIME")} * `}</label>
+      {/* <span className="surveyformfield"> */}
+      <div className="survey-column">
+        <label>{t("LABEL_SURVEY_START_TIME")} <span style={{color:"red"}}>*</span></label>
         <Controller
           control={controlSurveyForm}
           name="fromTime"
-          defaultValue={surveyFormState?.fromTime}
+          defaultValue={surveyDetails.fromTime}
           rules={{ required: true, validate: { isValidFromTime } }}
-          render={({ onChange, value }) => <TextInput type="time" onChange={onChange} defaultValue={value} disable={disableInputs} />}
+          render={({ onChange, value }) => <TextInput name="fromTime" type="time" onChange={handleFieldChange} defaultValue={surveyDetails.fromTime} 
+          // disable={disableInputs}
+          disable={readOnly||false}
+           />}
         />
         {formErrors && formErrors?.fromTime && formErrors?.fromTime?.type === "required" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
@@ -75,16 +111,22 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
         {formErrors && formErrors?.fromTime && formErrors?.fromTime?.type === "isValidFromDate" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_INVALID`)}</CardLabelError>
         )}
-      </span>
+      </div>
+      </div>
 
-      <span className="surveyformfield">
-        <label>{`${t("LABEL_SURVEY_END_DATE")} * `}</label>
+      <div className="survey-row">
+   
+    <div className="survey-column">
+        <label>{t("LABEL_SURVEY_END_DATE")} <span style={{color:"red"}}>*</span></label>
         <Controller
           control={controlSurveyForm}
           name="toDate"
-          defaultValue={surveyFormState?.toDate}
+          defaultValue={surveyDetails.toDate}
           rules={{ required: true, validate: { isValidToDate } }}
-          render={({ onChange, value }) => <TextInput type="date" onChange={onChange} defaultValue={value} disable={enableEndDateTimeOnly ? !enableEndDateTimeOnly : disableInputs}/>}
+          render={({ onChange, value }) => <TextInput name="toDate" type="date" onChange={handleFieldChange} defaultValue={surveyDetails.toDate} 
+          //disable={enableEndDateTimeOnly ? !enableEndDateTimeOnly : disableInputs}
+          disable={readOnly||false}
+          />}
         />
         {formErrors && formErrors?.toDate && formErrors?.toDate?.type === "required" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
@@ -92,17 +134,21 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
         {formErrors && formErrors?.toDate && formErrors?.toDate?.type === "isValidToDate" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_INVALID`)}</CardLabelError>
         )}{" "}
-      </span>
+      </div>
 
-      <span className="surveyformfield">
-        <label>{`${t("LABEL_SURVEY_END_TIME")} * `}</label>
+      {/* <span className="surveyformfield"> */}
+      <div className="survey-column">
+        <label>{t("LABEL_SURVEY_END_TIME")} <span style={{color:"red"}}>*</span></label>
 
         <Controller
           control={controlSurveyForm}
           name="toTime"
-          defaultValue={surveyFormState?.toTime}
+          defaultValue={surveyDetails?.toTime}
           rules={{ required: true, validate: { isValidToTime } }}
-          render={({ onChange, value }) => <TextInput type="time" onChange={onChange} defaultValue={value} disable={enableEndDateTimeOnly ? !enableEndDateTimeOnly : disableInputs}/>}
+          render={({ onChange, value }) => <TextInput name="toTime" type="time" onChange={handleFieldChange} defaultValue={surveyDetails.toTime}
+           //disable={enableEndDateTimeOnly ? !enableEndDateTimeOnly : disableInputs}
+           disable={readOnly||false}
+           />}
         />
         {formErrors && formErrors?.toTime && formErrors?.toTime?.type === "required" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
@@ -110,7 +156,8 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
         {formErrors && formErrors?.toTime && formErrors?.toTime?.type === "isValidToDate" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_INVALID`)}</CardLabelError>
         )}
-      </span>
+      </div>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,9 @@
-import { ActionBar, Card, SubmitBar, Menu } from "@egovernments/digit-ui-react-components";
+import { ActionBar, Card, SubmitBar, Menu } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useForm,FormProvider } from "react-hook-form";
 import SurveyInfoLabel from "../../../utils/SurveyInfoLabel";
 import SurveyDetailsForms from "../SurveyForms/SurveyDetailsForms";
-import SurveyFormsMaker from "../SurveyForms/SurveyFormsMaker";
+import QuestionFormsMaker from "../SurveyForms/QuestionFormsMaker";
 import SurveySettingsForms from "../SurveyForms/SurveySettingsForm";
 
 const EditSurveyForms = ({ t, onEdit, menuOptions, initialSurveysConfig, isFormDisabled, isPartiallyEnabled, displayMenu, setDisplayMenu, onActionSelect ,isSurveyActive}) => {
@@ -48,7 +48,7 @@ const EditSurveyForms = ({ t, onEdit, menuOptions, initialSurveysConfig, isFormD
             enableDescriptionOnly={isPartiallyEnabled}
             surveyFormData={getSurveyFormValues}
           />
-          <SurveyFormsMaker t={t} setSurveyConfig={setSurveyFormValue} disableInputs={isFormDisabled} formsConfig={initialSurveysConfig.questions} isPartiallyEnabled={isPartiallyEnabled} formDisabled={isFormDisabled} controlSurveyForm={controlSurveyForm}/>
+          <QuestionFormsMaker t={t} setSurveyConfig={setSurveyFormValue} disableInputs={isFormDisabled} formsConfig={initialSurveysConfig.questions} isPartiallyEnabled={isPartiallyEnabled} formDisabled={isFormDisabled} controlSurveyForm={controlSurveyForm}/>
           <SurveySettingsForms
             t={t}
             controlSurveyForm={controlSurveyForm}

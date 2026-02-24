@@ -7,7 +7,7 @@ import { resetForm } from "../../../../redux/actions/surveyFormActions";
 //
 import { goPrev, updateSurveyForm } from "../../../../redux/actions/surveyFormActions";
 
-const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
+const SurveryFormSummary = ({ config, onGoNext, onBackClick }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const history = useHistory();

@@ -106,17 +106,20 @@ const BillGenie = () => {
       Header: `${t("Action")}`,
       accessor: "action",
       Cell: ({ row }) => {
+        console.log("row?.original", row);
         return (
           <div style={{ display: "flex", gap: "15px" }}>
             <SubmitBar label="Download" onSubmit={() => getRecieptSearch({ tenantId, bills: getBills })} />
-            <SubmitBar
-              label="Pay"
-              onSubmit={() => {
-                console.log("check row", row?.original?.uuid);
-                const id = row?.original?.uuid;
-                history.push(`/digit-ui/employee/payment/collect/GC/${id}/${tenantId}?tenantId=${tenantId}`);
-              }}
-            />
+            {row?.original?.status != "Paid" && (
+              <SubmitBar
+                label="Pay"
+                onSubmit={() => {
+                  console.log("check row", row?.original?.uuid);
+                  const id = row?.original?.uuid;
+                  history.push(`/digit-ui/employee/payment/collect/GC/${id}/${tenantId}?tenantId=${tenantId}`);
+                }}
+              />
+            )}
           </div>
         );
       },

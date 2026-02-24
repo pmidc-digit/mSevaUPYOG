@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { resetForm } from "../../../../redux/actions/surveyFormActions";
 //
 import { goPrev, updateSurveyForm } from "../../../../redux/actions/surveyFormActions";
 
 const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
+  const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const history = useHistory();
   const closeToast = () => {
@@ -63,7 +65,8 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
         dispatch(resetForm());
         if (response?.Surveys?.length > 0) {
           history.push("/digit-ui/employee/engagement/surveys/create-response", {
-            message: "Survey Successfully Created",
+            // message: "Survey Successfully Created",
+            message: t("ENGAGEMENT_SURVEY_CREATED"),
             response: response?.Surveys,
             isSuccess: true,
           });

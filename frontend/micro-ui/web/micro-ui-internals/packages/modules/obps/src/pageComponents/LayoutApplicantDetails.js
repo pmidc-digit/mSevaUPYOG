@@ -1234,7 +1234,7 @@ const LayoutApplicantDetails = (_props) => {
         </div>
       </div>
       {/* TOAST */}
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} isDleteBtn={true}/>}
     </React.Fragment>
   );
 };

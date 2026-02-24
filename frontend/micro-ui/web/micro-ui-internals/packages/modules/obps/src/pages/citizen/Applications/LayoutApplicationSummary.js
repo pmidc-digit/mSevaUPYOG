@@ -168,11 +168,12 @@ const LayoutApplicationSummary = () => {
 
   const handleDownloadPdf = async () => {
     try {
-      const Property = layoutData;
+      setLoading(true);
+      const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
-      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -404,8 +405,8 @@ const LayoutApplicationSummary = () => {
   const ownersList = displayData?.owners?.map((item)=> item.name);
   const combinedOwnersName = ownersList?.join(", ");
 
-  if (isLoading) {
-    return <Loader />;
+  if (isLoading || loading) {
+    return <LoaderNew page={true} />;
   }
 
   return (

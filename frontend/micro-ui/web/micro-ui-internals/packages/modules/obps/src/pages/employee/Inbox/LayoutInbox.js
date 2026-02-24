@@ -206,7 +206,12 @@ const LayoutInbox = ({ parentRoute }) => {
     onSortingByData,
   })
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, tableData })
+  const getRedirectionLink = (bService) => {
+    let redirectBS = "layout/inbox/application-overview";    
+    return redirectBS;
+  };
+
+  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: tableData, getRedirectionLink });
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
 

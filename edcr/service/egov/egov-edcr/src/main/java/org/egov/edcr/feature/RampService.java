@@ -95,7 +95,7 @@ public class RampService extends FeatureProcess {
     private static final String SUBRULE_50_C_4_B_SLOPE_DESCRIPTION = "Maximum Slope of DA Ramp %s";
     private static final String FLOOR = "Floor";
     // private static final String SUBRULE_40_A_3_WIDTH_DESCRIPTION = "Minimum Width of Ramp %s";
-    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope of DA Ramp";
+    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope width of DA Ramp";
 
     @Override
     public Plan validate(Plan pl) {
@@ -207,7 +207,8 @@ public class RampService extends FeatureProcess {
                 scrutinyDetail2.addColumnHeading(3, REQUIRED);
                 scrutinyDetail2.addColumnHeading(4, PROVIDED);
                 scrutinyDetail2.addColumnHeading(5, STATUS);
-                scrutinyDetail2.setKey("Block_" + block.getNumber() + "_" + "DA Ramp - Maximum Slope");
+//                scrutinyDetail2.setKey("Block_" + block.getNumber() + "_" + "DA Ramp - Maximum Slope");
+                scrutinyDetail2.setKey("Block_" + block.getNumber() + "_" + "DA Ramp");
 
                 ScrutinyDetail scrutinyDetail3 = new ScrutinyDetail();
                 scrutinyDetail3.addColumnHeading(1, RULE_NO);
@@ -263,13 +264,23 @@ public class RampService extends FeatureProcess {
                                     isSlopeDefined = true;
                                 }
                             }
+//                            if (isSlopeDefined) {
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
+//                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail1);
+//                            } else {
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
+//                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+//                                        scrutinyDetail1);
+//                            }
+                            BigDecimal expectedSlope1 = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
+                                    RoundingMode.HALF_UP);
                             if (isSlopeDefined) {
-                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
-                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail1);
+                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
+                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
                             } else {
-                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
+                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
                                         DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
-                                        scrutinyDetail1);
+                                        scrutinyDetail2);
                             }
                             valid = false;
                             if (isSlopeDefined) {

@@ -47,17 +47,17 @@
 
 package org.egov.edcr.feature;
 
-import static org.egov.edcr.constants.DxfFileConstants.A;
-import static org.egov.edcr.constants.DxfFileConstants.A_AF;
-import static org.egov.edcr.constants.DxfFileConstants.A_PO;
-import static org.egov.edcr.constants.DxfFileConstants.A_R;
-import static org.egov.edcr.constants.DxfFileConstants.F;
-import static org.egov.edcr.constants.DxfFileConstants.F_H;
-import static org.egov.edcr.constants.DxfFileConstants.F_RT;
-import static org.egov.edcr.constants.DxfFileConstants.F_LD;
-import static org.egov.edcr.constants.DxfFileConstants.F_CB;
-//import static org.egov.edcr.constants.DxfFileConstants.F_IT;
-import static org.egov.edcr.constants.DxfFileConstants.G;
+import static org.egov.edcr.constants.DxfFileConstants.*;
+//import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+//import static org.egov.edcr.constants.DxfFileConstants.A_PO;
+//import static org.egov.edcr.constants.DxfFileConstants.A_R;
+//import static org.egov.edcr.constants.DxfFileConstants.F;
+//import static org.egov.edcr.constants.DxfFileConstants.F_H;
+//import static org.egov.edcr.constants.DxfFileConstants.F_RT;
+//import static org.egov.edcr.constants.DxfFileConstants.F_LD;
+//import static org.egov.edcr.constants.DxfFileConstants.F_CB;
+////import static org.egov.edcr.constants.DxfFileConstants.F_IT;
+//import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.PARKING_SLOT;
 import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
@@ -608,6 +608,30 @@ public class Parking extends FeatureProcess {
 //            	}
 //            }
             }
+        }else if (mostRestrictiveOccupancy != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
+        	BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
+
+            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
+                pl.addErrors(errors);
+            } else {            	
+            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
+            	Integer multiplier = getLTypeMultiplier(subType);
+            	if (multiplier == null) {
+            	    HashMap<String, String> errors = new HashMap<>();
+            	    errors.put("Parking Calculation Error",
+            	            "No ECS rule defined for subtype: " + subType);
+            	    pl.addErrors(errors);
+            	} else {
+            	    // Divide first and round UP
+            	    int baseEcs = plotCoveredArea
+            	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
+            	            .intValue();
+            	    // Multiply after rounding
+            	    noOfrequiredParking = baseEcs * multiplier;
+            	}
+            }
         }
 
         
@@ -1141,6 +1165,34 @@ public class Parking extends FeatureProcess {
             case "G-GIF":
             case "G-ITF":
             case "G-WT":
+                return 2;
+
+            default:
+                return null;
+        }
+    }
+    
+    private Integer getLTypeMultiplier(String subType) {
+
+        if (subType == null) {
+            return null;
+        }
+
+        String type = subType.trim().toUpperCase();
+
+        switch (type) {
+            // 2 ECS per 100 sqm
+        	case "L-GP":
+            case "L-GO":
+            case "L-NS":
+            case "L-PS":
+            case "L-CO":
+            case "L-ERC":
+            case "L-MP":
+            case "L-NH":
+                return 2;
+            // 3 ECS per 100 sqm
+            case "L-C":
                 return 2;
 
             default:

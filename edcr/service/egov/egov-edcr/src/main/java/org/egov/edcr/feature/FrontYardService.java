@@ -865,6 +865,10 @@ private class FrontYardResult {
 			minVal = getMinValueForPublicBuildingByMDMS(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
 			subRule = RULE_37_TWO_I;
 			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
+			if (setback.getFrontYard().getMinimumDistance().compareTo(minVal) >= 0) {		    
+			}else {
+				valid=false;
+			}
 			compareFrontYardResultPublicBuilding(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
 		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
 		}

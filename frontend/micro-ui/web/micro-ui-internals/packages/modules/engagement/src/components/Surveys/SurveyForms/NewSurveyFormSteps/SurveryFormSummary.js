@@ -63,7 +63,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
         dispatch(resetForm());
         if (response?.Surveys?.length > 0) {
           history.push("/digit-ui/employee/engagement/surveys/create-response", {
-            message: "SURVEY_FORM_CREATED",
+            message: "Survey Successfully Created",
             response: response?.Surveys,
             isSuccess: true,
           });

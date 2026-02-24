@@ -8,7 +8,7 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
   const { t } = useTranslation();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
+  const userInfo = Digit.UserService.getUser().info;
   // const userUlbs = ulbs
   //   .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
   //   .sort(alphabeticalSortFunctionForTenantsBasedOnName);
@@ -16,26 +16,32 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
   //   const filtered = ulbs.filter((item) => item.code === tenantId);
   //   return filtered;
   // }, [ulbs]);
-  let isTenantFound= true;
-   let userUlbs = ulbs
-     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
-     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
-   if(userUlbs?.length===0){
-     isTenantFound = false;
-    userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
-   }
-   const selectedTenat = useMemo(() => {
-     if(userUlbs?.length>0 && isTenantFound===true){
-     
-     const filtered = ulbs.filter((item) => item.code === tenantId);
-     return filtered;
-     }
-     else{
-       
-        const filtered = userUlbs.filter((item) => item.code === tenantId);
-     return filtered;
-     }
-   }, [ulbs]);
+  console.log("category ulbs", ulbs);
+  let isTenantFound = true;
+  let userUlbs = ulbs
+    .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
+    .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+  if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
+    // isTenantFound = false;
+    // userUlbs = [{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.info.tenantId}` }];
+    isTenantFound = false;
+    //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]
+    let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
+    if (tenantId === "pb.punjab") {
+      userUlbs = [adduserUlbs, ...ulbs];
+    } else {
+      userUlbs = [adduserUlbs];
+    }
+  }
+  const selectedTenat = useMemo(() => {
+    if (userUlbs?.length > 0 && isTenantFound === true) {
+      const filtered = ulbs.filter((item) => item.code === tenantId);
+      return filtered;
+    } else {
+      const filtered = userUlbs.filter((item) => item.code === tenantId);
+      return filtered;
+    }
+  }, [ulbs]);
   // const isActiveOptions = [
   //   { id: true, name: "Yes" },
   //   { id: false, name: "No" },

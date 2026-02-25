@@ -22,8 +22,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     control,
     handleSubmit,
     setValue,
-    trigger,
     formState: { errors },
+    trigger,
     watch
   } = useForm({ 
      defaultValues: {
@@ -49,7 +49,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
-  const commonProps = { Controller, control, setValue,trigger, errors, errorStyle, useFieldArray, watch};
+  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
   let tenantId;
 

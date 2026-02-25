@@ -16,7 +16,6 @@ import {
   TLTimeLine,
   DisplayPhotos,
   StarRated,
-  MultiLink
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,8 +39,7 @@ const CitizenApplicationOverview = () => {
   const [appDetails, setAppDetails] = useState({});
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
-  const [showOptions, setShowOptions] = useState(false);
-  
+
   const [ndcDatils, setNdcDetails] = useState([]);
   const [displayData, setDisplayData] = useState({});
   const [getLoader, setLoader] = useState(false);
@@ -86,60 +84,7 @@ const CitizenApplicationOverview = () => {
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
     user = userInfo?.value;
   }
-   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "NDC",
-      consumerCodes: id,
-      isEmployee: false,
-    },
-    { enabled: id ? true : false }
-  );
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    setLoader(true);
-    try {
-      let response = null;
-      let application = applicationDetails?.Applications?.[0];
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
-        response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [
-              {
-                ...(payments || {}),
-                ...application,
-              },
-            ], },
-          "ndc-receipt"
-        );
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-      setLoader(false);
-    } catch (error) {
-      console.error(error);
-      setLoader(false);
-    }
-  }
-  const dowloadOptions = [];
-
-  if(applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"){
-    dowloadOptions.push({
-    label: t("DOWNLOAD_CERTIFICATE"),
-    onClick: () => handleDownloadPdf(),
-  });
-  }
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-    dowloadOptions.push({
-      label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-    });
-  }
-  
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const removeDuplicatesByUUID = (arr) => {
     const seen = new Set();
@@ -260,7 +205,7 @@ const CitizenApplicationOverview = () => {
       .filter(Boolean)
       .join(", ");
   }
-  if (isLoading || isDetailsLoading || recieptDataLoading) {
+  if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
 
@@ -282,17 +227,9 @@ const CitizenApplicationOverview = () => {
         {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
         <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
-          <div className="cardHeaderWithOptions ral-app-details-header">
-            { getLoader && <Loader />}
-            {dowloadOptions && dowloadOptions.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            )}
-          </div>
+          {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+            <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
+          )}
         </div>
 
         {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||

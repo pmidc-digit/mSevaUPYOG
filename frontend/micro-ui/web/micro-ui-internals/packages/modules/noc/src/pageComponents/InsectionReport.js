@@ -47,18 +47,17 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         setFieldReports((prev) => prev.filter((o) => o.key != unit.key));
     };
 
+    useEffect(() => {        
+        const data = FieldReports.map((e) => {
+            return e;
+        });
+        onSelect("FieldReports", data);
+        sessionStorage.setItem("INSPECTION_DATA", JSON.stringify(data));
+    }, [FieldReports]);
+
     useEffect(() => {
-  if (!FieldReports || FieldReports?.length === 0) return;
-
-  const data = FieldReports.map(e => e);
-  onSelect("FieldReports", data);
-  sessionStorage.setItem("INSPECTION_DATA", JSON.stringify(data));
-}, [FieldReports]);
-
-
-    // useEffect(() => {
-    //     onSelect("tradedetils1", previousLicenseDetails);
-    // }, [previousLicenseDetails]);
+        onSelect("tradedetils1", previousLicenseDetails);
+    }, [previousLicenseDetails]);
 
     useEffect(() => {
                 console.log("useffect 2INSPECTION_REPORT_PENDING");
@@ -446,12 +445,12 @@ const InspectionReportForm = (_props) => {
                         </div>
                     ))} */}
         <div className="bpa-table-container">
-          <table className="customTable table-border-style checklist-document-table">
+          <table className="customTable table-border-style">
             <thead>
               <tr>
-                <th className="checklist-table-header checklist-table-header-srno">{t("SR_NO")}</th>
-                <th className="checklist-table-header checklist-table-header-doc-name">{t("BPA_CHECK_LIST_DETAILS")}</th>
-                <th className="checklist-table-header checklist-table-header-remark">{t("BPA_REMARKS")}</th>
+                <th>{t("SR_NO")}</th>
+                <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
+                <th>{t("BPA_REMARKS")}</th>
               </tr>
             </thead>
             <tbody>
@@ -491,7 +490,7 @@ const InspectionReportForm = (_props) => {
                             <TextArea
                               value={props.value}
                               onChange={(e) => props.onChange(e.target.value)}
-                            //   placeholder={t("BPA_ENTER_REMARKS")}
+                              placeholder={t("BPA_ENTER_REMARKS")}
                               onBlur={props.onBlur}
                               disabled={applicationStatus !== "INSPECTION_REPORT_PENDING"}
                             />

@@ -422,7 +422,7 @@ import { useCLUSearchApplication, useCLUCitizenSearchApplication, useCLUSearchAp
 import useCLUInbox from "./obps/useCLUInbox";
 import useLudhianaPropertSearch from "./pt/useLudhianaPropertSearch";
 import useBathindaPropertySearch from "./pt/useBathindaPropertySearch";
-import useCLUCreateAPI from "./obps/useCLUCreateAPI";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -654,7 +654,6 @@ const obps = {
   useLayoutCitizenSearchApplication,
   useLayoutDocumentSearch,
   useCLUFeeCalculator,
-  useCLUCreateAPI,
   useCLUSearchApplication,
   useCLUCitizenSearchApplication,
   useCLUSearchApplicationByIdOrMobile,

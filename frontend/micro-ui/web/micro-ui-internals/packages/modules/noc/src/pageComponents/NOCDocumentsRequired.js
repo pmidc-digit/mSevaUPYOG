@@ -64,6 +64,8 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
   if (isFirm) {
     filteredDocuments = filteredDocuments?.map(doc => doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc);
   }
+  filteredDocuments = filteredDocuments?.sort((a, b) => (a.order || 0) - (b.order || 0));
+
   console.log("filteredDocuments", filteredDocuments);
 
   useEffect(() => {
@@ -127,7 +129,8 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
       documentType: doc.documentType,
       filestoreId: doc.filestoreId,
       documentUid: doc.documentUid,
-      documentAttachment: doc.documentAttachment
+      documentAttachment: doc.documentAttachment,
+      order:doc?.order
     }))
    }
  };
@@ -183,7 +186,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
+      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType , order: doc?.order }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]
       : {}
@@ -319,7 +322,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (selectedDocument?.code) {
-     // console.log("selectedDocument here", selectedDocument);
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -334,7 +336,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             documentType: selectedDocument?.code,
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
-            documentAttachment: uploadedFile
+            documentAttachment: uploadedFile,
+            order: doc?.order
           },
         ];
       });

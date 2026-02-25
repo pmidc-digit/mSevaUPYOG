@@ -271,7 +271,6 @@ const WrapPaymentComponent = (props) => {
       console.log("usage", usage);
     }
 
-    console.log("licenseType:", licenseType);
     const state = Digit.ULBService.getStateId();
     const fee = paymentData?.totalAmountPaid;
     const amountinwords = amountToWords(fee);

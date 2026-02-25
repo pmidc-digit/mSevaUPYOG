@@ -46,7 +46,6 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
@@ -132,7 +131,6 @@ const NOCEmployeeApplicationOverview = () => {
   
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
-   console.log("businessService here==>", businessServiceCode);
 
    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {

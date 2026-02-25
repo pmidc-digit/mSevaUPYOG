@@ -43,7 +43,8 @@ import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
-
+import { getDrivingDistance } from "../../../utils/getdistance";
+import ZoneModal from "../../../components/ZoneModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -489,13 +490,15 @@ const handleDownloadPdf = async () => {
 }, [applicationDetails, data]);
 
 
-  const [displayMenu, setDisplayMenu] = useState(false);
+const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
+  const [showZoneModal, setShowZoneModal] = useState(false);
 
   const [documentVerifier, setDocumentVerifier] = useState("");
-const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
+  const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
+  const currentZoneCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteDetails?.zone;
 
 
   const closeMenu = () => {
@@ -660,6 +663,13 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
 
+    
+    if (validationMsg) {
+        setTimeout(() => {
+          alert(validationMsg);
+        }, 0);
+      }
+
     const payload = {
       Licenses: [action],
     };
@@ -680,6 +690,8 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       printCertificateWithESign();
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
+}     else if (action?.action == "UPDATE_ZONE") {
+      setShowZoneModal(true);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
@@ -698,93 +710,110 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
-
+  
+  const handleZoneSubmit = (selectedZone) => {
+  const payload = {
+    Licenses: [{
+      action: "UPDATE_ZONE",
+      comment: "",
+      // Pass the zone object which contains both code and name
+      zone: selectedZone
+    }]
+  };
+  submitAction(payload);
+};
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
     console.log("payloadData", payloadData);
     const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
-    
+    const filtData = data?.Licenses?.[0];
     // Check if comments are mandatory when status is INSPECTION_REPORT_PENDING
     // Check if remarks are mandatory when status is DOCUMENTVERIFY
-    if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
-      const allRemarksFilled = remainingDocs.every(
-        (doc) => checklistRemarks[doc.documentUid] && typeof checklistRemarks[doc.documentUid] === "string" && checklistRemarks[doc.documentUid].trim() !== ""
-      );
-      if (!allRemarksFilled) {
-        setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
-        return;
-      }
-    }
-
-    if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
-      console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
-      if (fieldInspectionPending?.length === 0) {
-        closeModal();
-        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
-        return;
-      } else if (fieldInspectionPending?.[0]?.questionLength === 0) {
-        closeModal();
-        setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
-        return;
-      } else {
-        const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_" + index]);
-        if (isQuestionEmpty) {
-          closeModal();
-          setShowToast({ key: "true", error: true, message: "Please fill in all the questions in Field Inspection Report before submitting" });
+    if (filtData?.action !== "UPDATE_ZONE") {
+      if (applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY") {
+        const allRemarksFilled = remainingDocs.every(
+          (doc) =>
+            checklistRemarks[doc.documentUid] &&
+            typeof checklistRemarks[doc.documentUid] === "string" &&
+            checklistRemarks[doc.documentUid].trim() !== ""
+        );
+        if (!allRemarksFilled) {
+          setShowToast({ key: "true", error: true, message: "Please fill in all document checklist remarks before submitting." });
           return;
         }
       }
-      const additionalRemarks = fieldInspectionPending?.[0]?.["Remarks_19"];
 
-      if (additionalRemarks && additionalRemarks.trim().split(/\s+/).filter(Boolean).length < 20) {
-        closeModal();
-        setShowToast({
-          key: "true",
-          error: true,
-          message: "Additional remarks must be at least 20 words long",
-        });
-        return;
-      }
-
-    }
-
-    if (!isFeeDisabled) {
-      const hasNonZeroFee = (feeAdjustments || []).filter((row) => row.taxHeadCode !== "NOC_COMPOUNDING_FEES").every((row) => (row.adjustedAmount ?? 0) > 0);
-
-      const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || []).find((c) => c.isLatest);
-      const allRemarksFilled = (feeAdjustments || []).every((row) => {
-        if (!row.edited) return true;
-
-        // Find the original estimate for this taxHeadCode
-        const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
-
-        const adjustedAmount = row.adjustedAmount ?? 0;
-
-        if (row?.taxHeadCode === "NOC_COMPOUNDING_FEES") {
-          // Special case: only require remark if changed to non-zero
-          if (adjustedAmount > 0) {
-            return row?.remark && row?.remark.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
-          }
-          return true; // no remark needed if set to 0/null
+      if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
+        console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
+        if (fieldInspectionPending?.length === 0) {
+          closeModal();
+          setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
+          return;
+        } else if (fieldInspectionPending?.[0]?.questionLength === 0) {
+          closeModal();
+          setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
+          return;
         } else {
-          // Default logic for all other fees
-          return row?.remark && row?.remark?.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+          const isQuestionEmpty = fieldInspectionPending?.[0]?.questionList?.some((q, index) => !fieldInspectionPending?.[0]?.["Remarks_" + index]);
+          if (isQuestionEmpty) {
+            closeModal();
+            setShowToast({ key: "true", error: true, message: "Please fill in all the questions in Field Inspection Report before submitting" });
+            return;
+          }
         }
-      });
+        const additionalRemarks = fieldInspectionPending?.[0]?.["Remarks_19"];
 
-      if (!hasNonZeroFee) {
-        setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
-        return;
+        if (additionalRemarks && additionalRemarks.trim().split(/\s+/).filter(Boolean).length < 20) {
+          closeModal();
+          setShowToast({
+            key: "true",
+            error: true,
+            message: "Additional remarks must be at least 20 words long",
+          });
+          return;
+        }
       }
 
-      if (!allRemarksFilled) {
-        setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
-        return;
+      if (!isFeeDisabled) {
+        const hasNonZeroFee = (feeAdjustments || [])
+          .filter((row) => row.taxHeadCode !== "NOC_COMPOUNDING_FEES")
+          .every((row) => (row.adjustedAmount ?? 0) > 0);
+
+        const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || []).find((c) => c.isLatest);
+        const allRemarksFilled = (feeAdjustments || []).every((row) => {
+          if (!row.edited) return true;
+
+          // Find the original estimate for this taxHeadCode
+          const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
+
+          const adjustedAmount = row.adjustedAmount ?? 0;
+
+          if (row?.taxHeadCode === "NOC_COMPOUNDING_FEES") {
+            // Special case: only require remark if changed to non-zero
+            if (adjustedAmount > 0) {
+              return row?.remark && row?.remark.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+            }
+            return true; // no remark needed if set to 0/null
+          } else {
+            // Default logic for all other fees
+            return row?.remark && row?.remark?.trim() !== "" && row?.remark?.trim() !== originalRemark?.trim();
+          }
+        });
+
+        if (!hasNonZeroFee) {
+          setShowToast({ key: "true", error: true, message: "Please enter a fee amount before submission." });
+          return;
+        }
+
+        if (!allRemarksFilled) {
+          setShowToast({ key: "true", error: true, message: "Remarks are mandatory for all fee rows." });
+          return;
+        }
       }
+      // console.log("data ==>", data);
     }
-    // console.log("data ==>", data);
-
+    
     const newCalculation = {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
@@ -820,9 +849,17 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     };
     console.log("updatedApplicant", updatedApplicant);
 
-    const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
+        
+    if (filtData?.action === "UPDATE_ZONE") {
+      const currentSite = updatedApplicant?.nocDetails?.additionalDetails?.siteDetails || {};
+      updatedApplicant.nocDetails.additionalDetails.siteDetails = {
+        ...currentSite,
+        zone: filtData?.zone?.name,
+      };
+    }
 
+
+    //console.log("filtData", filtData);
     updatedApplicant.workflow = {
       action: filtData.action,
        assignes: applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
@@ -895,6 +932,15 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           setTimeout(() => {
             window.location.href = "/digit-ui/employee/noc/inbox";
           }, 3000);
+        } else if (filtData?.action === "UPDATE_ZONE") {
+              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+              workflowDetails.revalidate();
+              refetch();
+              setShowZoneModal(false);
+              setSelectedAction(null);
+              setTimeout(() => {
+                window.location.href = "/digit-ui/employee/noc/inbox";
+              }, 3000);
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           console.log("We are calling employee response page");
@@ -910,7 +956,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           setFeeAdjustments((prev) => (prev || []).map((p) => ({ ...p, edited: false })));
           setSelectedAction(null);
           refetchChecklist();
-           setTimeout(() => {
+          setTimeout(() => {
             window.location.href = "/digit-ui/employee/noc/inbox";
           }, 3000);
         }
@@ -1309,9 +1355,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable={
-              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
-              applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"
-            }
+              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"            }
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
@@ -1354,7 +1398,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
         </Modal>
       )}
 
-      {showModal ? (
+{showModal ? (
         <NOCModal
           t={t}
           action={selectedAction}
@@ -1377,6 +1421,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           closeToastOne={closeToastOne}
         />
       ) : null}
+
+      {showZoneModal && (
+        <ZoneModal
+          onClose={() => setShowZoneModal(false)}
+          onSelect={handleZoneSubmit}
+          currentZoneCode={currentZoneCode}
+        />
+      )}
 
       {showToast && (
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />

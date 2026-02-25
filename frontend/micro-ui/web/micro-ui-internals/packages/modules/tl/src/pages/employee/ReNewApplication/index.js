@@ -201,7 +201,6 @@ const ReNewApplication = (props) => {
 
     let EDITRENEWAL = data?.tradedetils1?.checkForRenewal;
     let sendBackToCitizen = false;
-
     if (data?.tradedetils1?.action == "SENDBACKTOCITIZEN") {
       EDITRENEWAL = false;
       sendBackToCitizen = true;
@@ -221,6 +220,13 @@ const ReNewApplication = (props) => {
         data.gender = data?.gender?.code;
         data.relationship = data?.relationship?.code;
         data.ownerType = data?.ownerType?.code;
+        // Convert dob to epoch for server (form provides "YYYY-MM-DD" date string)
+        if (typeof data.dob === "string" && /^\d{4}-\d{1,2}-\d{1,2}$/.test(data.dob)) {
+          data.dob = convertDateToEpoch(data.dob);
+        } else if (typeof data.dob !== "number" || isNaN(data.dob)) {
+          // "NA", empty, null, or invalid → remove so the original epoch survives the spread merge
+          delete data.dob;
+        }
       });
     }
 
@@ -308,7 +314,6 @@ const ReNewApplication = (props) => {
     let tradeName = data?.tradedetils?.["0"]?.tradeName || "";
     let subOwnerShipCategory = data?.ownershipCategory?.code || "";
     let licenseType = data?.tradedetils?.["0"]?.licenseType?.code || "PERMANENT";
-
 
     if (!EDITRENEWAL || sendBackToCitizen) {
       let formData = cloneDeep(data.tradedetils1);

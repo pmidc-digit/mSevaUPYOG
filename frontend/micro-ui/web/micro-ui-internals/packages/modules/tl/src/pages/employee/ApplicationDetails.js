@@ -59,6 +59,16 @@ const ApplicationDetails = () => {
     mutate,
   } = Digit.Hooks.tl.useApplicationActions(tenantId);
 
+  // Sanitize null document arrays to prevent server NPE in EnrichmentService.enrichTLUpdateRequest
+  const safeMutate = (data, ...rest) => {
+    if (data?.Licenses?.[0]?.tradeLicenseDetail) {
+      const detail = data.Licenses[0].tradeLicenseDetail;
+      if (!detail.applicationDocuments) detail.applicationDocuments = [];
+      if (!detail.verificationDocuments) detail.verificationDocuments = [];
+    }
+    return mutate(data, ...rest);
+  };
+
   let EditRenewalApplastModifiedTime = Digit.SessionStorage.get("EditRenewalApplastModifiedTime");
 
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -975,7 +985,7 @@ const ApplicationDetails = () => {
         isLoading={isLoading}
         isDataLoading={isLoading}
         applicationData={applicationDetails?.applicationData}
-        mutate={mutate}
+        mutate={safeMutate}
         id={"timeline"}
         workflowDetails={workflowDetails}
         businessService={businessService}

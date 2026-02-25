@@ -153,7 +153,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     setSelectedCorrespondentDistrict(userDetails?.correspondenceDistrict);
     setCorrespondenceAddress(userDetails?.correspondenceAddress);
     setSelectedCorrespondentState(userDetails?.correspondenceState);
-    setSelectedState(userDetails?.permanentState);
+    setSelectedState(userDetails?.permanentState || "Punjab");
 
     if (userDetails?.isAddressSame) {
       setIsAddressSame(userDetails?.isAddressSame);
@@ -651,7 +651,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
                     selected={selectedState}
                     select={SelectState}
-                    disable={editScreen}
+                    disable={true}
                   />
                 </div>
 

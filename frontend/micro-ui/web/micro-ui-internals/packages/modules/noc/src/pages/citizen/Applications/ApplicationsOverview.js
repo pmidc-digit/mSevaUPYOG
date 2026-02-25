@@ -398,7 +398,6 @@ const CitizenApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
 
 //   useEffect(() => {
 //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {

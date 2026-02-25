@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-noc",
-  "version": "1.0.78-dev.1.7",
+  "version": "1.0.78-dev.1.8",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",

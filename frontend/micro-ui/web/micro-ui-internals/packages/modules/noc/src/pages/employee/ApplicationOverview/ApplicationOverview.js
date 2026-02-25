@@ -42,11 +42,10 @@ import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
+import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
@@ -105,7 +104,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [approverComment , setApproverComment] = useState(null);
-
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
@@ -128,10 +128,9 @@ const NOCEmployeeApplicationOverview = () => {
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
 
-  console.log("applicationDetails here==>", applicationDetails);
+  
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
-   console.log("businessService here==>", businessServiceCode);
 
    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -163,14 +162,6 @@ const NOCEmployeeApplicationOverview = () => {
       }
     }, [eSignError]);
 
-  useEffect(() => {
-    if (window.location.pathname.endsWith("/complete")) {
-      history.push(`/digit-ui/employee/noc/search/application-overview/${id}`);
-        console.log('useeffetc called complete')
-
-    }
-
-  }, [history, id]);
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -190,27 +181,27 @@ const NOCEmployeeApplicationOverview = () => {
     longitude: value?.longitude,
   })), [siteImages])
 
-  const documentsColumnsSiteImage = [
-    {
-      Header: t("BPA_SITES"),
-      accessor: "title",
-      Cell: ({ value }) => t(value) || t("CS_NA"),
-    },
-    {
-      Header: t(" "),
-      accessor: "fileStoreId",
-      Cell: ({ value }) => {
-        return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
-            label={t("View")}
-            onClick={() => routeToImage(value)}
-          />
-        ) : (
-          t("CS_NA")
-        )
-      },
-    }
-  ];
+  // const documentsColumnsSiteImage = [
+  //   {
+  //     Header: t("BPA_SITES"),
+  //     accessor: "title",
+  //     Cell: ({ value }) => t(value) || t("CS_NA"),
+  //   },
+  //   {
+  //     Header: t(" "),
+  //     accessor: "fileStoreId",
+  //     Cell: ({ value }) => {
+  //       return value ? (
+  //         <LinkButton style={{ float: "right", display: "inline" }}
+  //           label={t("View")}
+  //           onClick={() => routeToImage(value)}
+  //         />
+  //       ) : (
+  //         t("CS_NA")
+  //       )
+  //     },
+  //   }
+  // ];
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -251,28 +242,53 @@ const NOCEmployeeApplicationOverview = () => {
         }
       })();
   }, [tenantId, businessServiceCode, isLoading]);
-  useEffect(() => {
-    if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-      const commentsobj = workflowDetails?.data?.timeline
-        ?.filter((item) => item?.performedAction === "APPROVE")
-        ?.flatMap((item) => item?.wfComment || []);
+  // useEffect(() => {
+  //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+  //     const commentsobj = workflowDetails?.data?.timeline
+  //       ?.filter((item) => item?.performedAction === "APPROVE")
+  //       ?.flatMap((item) => item?.wfComment || []);
       
-      const approvercomments = commentsobj?.[0];
+  //     const approvercomments = commentsobj?.[0];
   
-      // Extract only the part after [#?..**]
-      let conditionText = "";
-      if (approvercomments?.includes("[#?..**]")) {
-        conditionText = approvercomments.split("[#?..**]")[1] || "";
-      }
+  //     // Extract only the part after [#?..**]
+  //     let conditionText = "";
+  //     if (approvercomments?.includes("[#?..**]")) {
+  //       conditionText = approvercomments.split("[#?..**]")[1] || "";
+  //     }
   
-      const finalComment = conditionText
-        ? `The above approval is subjected to the following conditions:\n${conditionText}`
-        : "";
+  //     const finalComment = conditionText
+  //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+  //       : "";
   
-      setApproverComment(finalComment);
+  //     setApproverComment(finalComment);
+  //   }
+  // }, [workflowDetails]);
+  
+
+  const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
     }
+
+    const commentsobj = workflowDetails.data.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+
+    const approvercomments = commentsobj?.[0];
+
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }
+
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
+      : "";
   }, [workflowDetails]);
-  
+
 
   
   // async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
@@ -316,6 +332,27 @@ const NOCEmployeeApplicationOverview = () => {
   }
 }
 
+const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const Property = applicationDetails?.Noc?.[0];
+      //console.log("tenants", tenants);
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t , false, searchChecklistData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoader(false);
+    }
+  };
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
     try {
@@ -325,7 +362,7 @@ const NOCEmployeeApplicationOverview = () => {
       let fileStoreId = application?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
 
       if (!fileStoreId) {
-        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
+        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
 
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
@@ -399,15 +436,19 @@ const NOCEmployeeApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-        onClick: printCertificateWithESign,
-        disabled: eSignLoading,
-      });
-    }
-  }
+  dowloadOptions.push({
+      label: t("Application Form"),
+      onClick: handleDownloadPdf,
+    });
+  // if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
+  //   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+  //     dowloadOptions.push({
+  //       label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+  //       onClick: printCertificateWithESign,
+  //       disabled: eSignLoading,
+  //     });
+  //   }
+  // }
  useEffect(() => {
   const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
   const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -559,6 +600,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
+
 
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId)
@@ -922,10 +964,15 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  console.log("displayData here", displayData);
+  const order = {
+    "OWNER.SITEPHOTOGRAPHONE": 1,
+    "OWNER.SITEPHOTOGRAPHTWO": 2,
+  };
+
   const sitePhotos = displayData?.Documents?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+  )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
+
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
@@ -952,14 +999,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }
           />
         )}
-        {/* {dowloadOptions && dowloadOptions.length > 0 && (
+        {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
             onHeadClick={() => setShowOptions(!showOptions)}
             displayOptions={showOptions}
             options={dowloadOptions}
           />
-        )} */}
+        )}
       </div>
 
       <NOCImageView
@@ -1111,16 +1158,14 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .reverse()
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 
@@ -1166,12 +1211,12 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
       {applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" && hasRole && (
         <Card>
           <CardSubHeader>
-              {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${
-                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                  }`
-                : t("BPA_FI_REPORT")}
-            </CardSubHeader>
+            {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+              ? `${t("BPA_FI_REPORT")} - Verified by ${
+                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
+              : t("BPA_FI_REPORT")}
+          </CardSubHeader>
 
           <div id="fieldInspection"></div>
           <InspectionReport
@@ -1183,7 +1228,10 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
           />
         </Card>
       )}
-      {applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+      {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ? (
+        <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div>
+      ) : (
+        applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
             <CardSubHeader>
@@ -1200,7 +1248,8 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
               InspectionReportVerifier={applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier}
             />
           </Card>
-        )}
+        )
+      )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
@@ -1251,7 +1300,10 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            disable={
+              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+            }
+            applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
       </Card>

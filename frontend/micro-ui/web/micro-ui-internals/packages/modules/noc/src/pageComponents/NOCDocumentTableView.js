@@ -90,7 +90,7 @@ const NOCDocumentTableView = ({documents}) => {
       title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
       fileUrl: doc?.url,
     }));
-  }, [mappedDocuments, t]);
+  }, [mappedDocuments]);
 
   return (
     <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>

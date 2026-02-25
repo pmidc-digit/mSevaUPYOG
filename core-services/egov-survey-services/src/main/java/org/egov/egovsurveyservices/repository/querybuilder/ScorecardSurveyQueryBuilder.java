@@ -53,6 +53,7 @@ public class ScorecardSurveyQueryBuilder {
                     "section.title AS section_title, " +
                     "section.weightage AS section_weightage, " +
                     "section.sectionorder AS section_order, " +
+                    "section.createdtime AS section_createdtime, " +
 
                     // Question fields
                     "question.uuid AS question_uuid, " +
@@ -79,7 +80,9 @@ public class ScorecardSurveyQueryBuilder {
                     "questionOption.uuid AS option_uuid, " +
                     "questionOption.optiontext AS option_text, " +
                     "questionOption.optionorder as option_order, " +
-                    "questionOption.weightage AS option_weightage " +
+                    "questionOption.weightage AS option_weightage, " +
+                    "questionOption.createdtime AS option_createdtime, " +
+                    "questionOption.lastmodifiedtime AS option_lastmodifiedtime " +
 
             "FROM eg_ss_survey_entity AS survey " +
             "LEFT JOIN eg_ss_survey_section AS section " +
@@ -131,6 +134,8 @@ public class ScorecardSurveyQueryBuilder {
             preparedStmtList.add(System.currentTimeMillis());
         }
         
+        // preserve insertion order by ordering on created timestamps (section/question/option)
+        query.append(" ORDER BY survey.createdtime DESC, section.section_createdtime ASC, question.question_createdtime ASC, questionOption.option_createdtime ASC ");
         return query.toString();
     }
 

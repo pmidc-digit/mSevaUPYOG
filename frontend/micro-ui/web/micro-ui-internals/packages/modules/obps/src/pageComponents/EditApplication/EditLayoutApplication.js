@@ -119,6 +119,7 @@ const EditLayoutApplication = () => {
     panDocumentUploadedFiles: primaryOwner?.additionalDetails?.panDocument || "",
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
+    aplicantType: primaryOwner?.additionalDetails?.aplicantType,
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -233,6 +234,12 @@ const EditLayoutApplication = () => {
         value: `${genderDetails.code}`,
       });
     });
+
+  const convertToISODate = (dateStr) => {
+    const [dd, mm, yyyy] = dateStr.split("-");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
 
   // useEffect(() => {
   //   const hasApiData = !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && ulbList?.length > 0
@@ -456,6 +463,7 @@ const EditLayoutApplication = () => {
             // Document file references
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
+            aplicantType: applicantDetails?.aplicantType,
           };
     
           const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);
@@ -479,6 +487,7 @@ const EditLayoutApplication = () => {
             // ),
             isCluRequired: options?.find((obj) => obj?.code === siteDetails?.isCluRequired?.code || obj?.code === siteDetails?.isCluRequired),
             applicationAppliedUnder: applicationAppliedUnderOptions?.find((obj) => obj?.code === siteDetails?.applicationAppliedUnder?.code || obj?.code === siteDetails?.applicationAppliedUnder),
+            vasikaDate: convertToISODate(siteDetails?.vasikaDate),
             // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
             // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),
             // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),

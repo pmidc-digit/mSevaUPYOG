@@ -153,6 +153,7 @@ const LayoutStepperForm = () => {
     panDocumentUploadedFiles: primaryOwner?.additionalDetails?.panDocument || "",
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
+    aplicantType: primaryOwner?.additionalDetails?.aplicantType,
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -205,6 +206,11 @@ const LayoutStepperForm = () => {
           value: `${genderDetails.code}`,
         });
       });
+  const convertToISODate = (dateStr) => {
+    const [dd, mm, yyyy] = dateStr.split("-");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
 
   useEffect(() => {
       // Reset form only once when component mounts
@@ -282,6 +288,7 @@ const LayoutStepperForm = () => {
             ) : "",
           applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
           panNumber: applicantDetails?.panNumber || "",
+          aplicantType: applicantDetails?.aplicantType,
           // Professional details (if applicable)
           professionalName: applicantDetails?.professionalName || "",
           professionalEmailId: applicantDetails?.professionalEmailId || "",
@@ -315,6 +322,7 @@ const LayoutStepperForm = () => {
           // ),
           isCluRequired: options?.find((obj) => obj?.code === siteDetails?.isCluRequired?.code || obj?.code === siteDetails?.isCluRequired),
           applicationAppliedUnder: applicationAppliedUnderOptions?.find((obj) => obj?.code === siteDetails?.applicationAppliedUnder?.code || obj?.code === siteDetails?.applicationAppliedUnder),
+          vasikaDate: convertToISODate(siteDetails?.vasikaDate),
           // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
           // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),
           // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),
@@ -370,6 +378,7 @@ const LayoutStepperForm = () => {
             photoUploadedFiles: owner?.additionalDetails?.ownerPhoto ,
             documentUploadedFiles: owner?.additionalDetails?.documentFile ,
             panDocumentUploadedFiles: owner?.additionalDetails?.panDocument,
+            aplicantType: owner?.additionalDetails?.aplicantType,
             // Store original owner data for reference
             uuid: owner?.uuid || "",
             id: owner?.id || "",

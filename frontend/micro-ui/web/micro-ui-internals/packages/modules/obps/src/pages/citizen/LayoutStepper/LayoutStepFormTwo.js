@@ -271,6 +271,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         documentFile: formData?.applicationDetails?.documentUploadedFiles || null,
         ownerPhoto: formData?.applicationDetails?.photoUploadedFiles || null,
         panDocument: formData?.applicationDetails?.panDocumentUploadedFiles || null,
+        aplicantType: formData?.applicationDetails?.aplicantType || null
       },
       // additionalDetails: {
       //   documentFile: formData?.applicationDetails?.documentUploadedFiles || formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || null,
@@ -296,6 +297,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
             documentFile: applicant?.documentUploadedFiles || null,
             ownerPhoto: applicant?.photoUploadedFiles || null,
             panDocument: applicant?.panDocumentUploadedFiles || null,
+            aplicantType: applicant?.aplicantType || null
           },
           // additionalDetails: {
           //   documentFile: applicant?.documentUploadedFiles || formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,

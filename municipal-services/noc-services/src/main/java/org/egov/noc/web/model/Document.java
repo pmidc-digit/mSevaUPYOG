@@ -18,26 +18,33 @@ import javax.validation.constraints.*;
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class Document   {
   @SafeHtml
-  @JsonProperty("id")
-  private String id = null;
+  @JsonProperty("uuid")
+  private String uuid = null;
 
   @SafeHtml
   @JsonProperty("documentType")
   private String documentType = null;
 
   @SafeHtml
-  @JsonProperty("fileStoreId")
-  private String fileStoreId = null;
+  @JsonProperty("documentAttachment")
+  private String documentAttachment = null;
+
+  @JsonProperty("nocId")
+  @ApiModelProperty(value = "Reference to the NOC application ID")
+  private String nocId;
 
   @SafeHtml
   @JsonProperty("documentUid")
   private String documentUid = null;
+  
+  @JsonProperty("order")
+  private Integer order = null;
 
-  @JsonProperty("additionalDetails")
-  private Object additionalDetails = null;
+//  @JsonProperty("additionalDetails")
+//  private Object additionalDetails = null;
 
-  public Document id(String id) {
-    this.id = id;
+  public Document uuid(String uuid) {
+    this.uuid = uuid;
     return this;
   }
 
@@ -47,12 +54,12 @@ public class Document   {
   **/
   @ApiModelProperty(value = "system id of the Document.")
   
-  @Size(max=64)   public String getId() {
-    return id;
+  @Size(max=64)   public String getUuid() {
+    return uuid;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
   }
 
   public Document documentType(String documentType) {
@@ -60,6 +67,14 @@ public class Document   {
     return this;
   }
 
+
+  public String getNocId() {
+    return nocId;
+  }
+
+  public void setNocId(String nocId) {
+    this.nocId = nocId;
+  }
   /**
    * unique document type code, should be validated with document type master
    * @return documentType
@@ -74,8 +89,8 @@ public class Document   {
     this.documentType = documentType;
   }
 
-  public Document fileStoreId(String fileStore) {
-    this.fileStoreId = fileStoreId;
+  public Document documentAttachment(String documentAttachment) {
+    this.documentAttachment = documentAttachment;
     return this;
   }
 
@@ -85,12 +100,12 @@ public class Document   {
   **/
   @ApiModelProperty(value = "File store reference key.")
   
-    public String getFileStoreId() {
-    return fileStoreId;
+    public String getDocumentAttachment() {
+    return documentAttachment;
   }
 
-  public void setFileStoreId(String fileStoreId) {
-    this.fileStoreId = fileStoreId;
+  public void setDocumentAttachment(String documentAttachment) {
+    this.documentAttachment = documentAttachment;
   }
 
   public Document documentUid(String documentUid) {
@@ -112,28 +127,28 @@ public class Document   {
     this.documentUid = documentUid;
   }
 
-  public Document additionalDetails(Object additionalDetails) {
-    this.additionalDetails = additionalDetails;
-    return this;
-  }
-
   /**
-   * Json object to capture any extra information which is not accommodated by model
-   * @return additionalDetails
+   * Document Order.
+   * @return Order
   **/
-  @ApiModelProperty(value = "Json object to capture any extra information which is not accommodated by model")
+  @ApiModelProperty(value = "Document Order.")
   
-    public Object getAdditionalDetails() {
-    return additionalDetails;
+    public Integer getOrder() {
+    return order;
   }
 
-  public void setAdditionalDetails(Object additionalDetails) {
-    this.additionalDetails = additionalDetails;
+  public void setOrder(Integer order) {
+    this.order = order;
+  }
+
+  public Document order(Integer order) {
+    this.order = order;
+    return this;
   }
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -141,16 +156,17 @@ public class Document   {
       return false;
     }
     Document document = (Document) o;
-    return Objects.equals(this.id, document.id) &&
+    return Objects.equals(this.uuid, document.uuid) &&
         Objects.equals(this.documentType, document.documentType) &&
-        Objects.equals(this.fileStoreId, document.fileStoreId) &&
-        Objects.equals(this.documentUid, document.documentUid) &&
-        Objects.equals(this.additionalDetails, document.additionalDetails);
+        Objects.equals(this.documentAttachment, document.documentAttachment) &&
+        Objects.equals(this.documentUid, document.documentUid);
+//        Objects.equals(this.additionalDetails, document.additionalDetails);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, documentType, fileStoreId, documentUid, additionalDetails);
+
+    return Objects.hash(uuid, documentType, documentAttachment, documentUid);
   }
 
   @Override
@@ -158,11 +174,11 @@ public class Document   {
     StringBuilder sb = new StringBuilder();
     sb.append("class Document {\n");
     
-    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    id: ").append(toIndentedString(uuid)).append("\n");
     sb.append("    documentType: ").append(toIndentedString(documentType)).append("\n");
-    sb.append("    fileStore: ").append(toIndentedString(fileStoreId)).append("\n");
+    sb.append("    fileStore: ").append(toIndentedString(documentAttachment)).append("\n");
     sb.append("    documentUid: ").append(toIndentedString(documentUid)).append("\n");
-    sb.append("    additionalDetails: ").append(toIndentedString(additionalDetails)).append("\n");
+//    sb.append("    additionalDetails: ").append(toIndentedString(additionalDetails)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -171,7 +187,7 @@ public class Document   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

@@ -1,0 +1,195 @@
+package org.egov.layout.web.model;
+
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.SafeHtml;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.*;
+
+/**
+ * This object holds list of documents attached during the transaciton for a property
+ */
+@ApiModel(description = "This object holds list of documents attached during the transaciton for a property")
+@Validated
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+public class Document   {
+  @SafeHtml
+  @JsonProperty("uuid")
+  private String uuid = null;
+
+  @SafeHtml
+  @JsonProperty("documentType")
+  private String documentType = null;
+
+  @SafeHtml
+  @JsonProperty("documentAttachment")
+  private String documentAttachment = null;
+
+  @JsonProperty("cluId")
+  @ApiModelProperty(value = "Reference to the NOC application ID")
+  private String layoutId;
+
+  @SafeHtml
+  @JsonProperty("documentUid")
+  private String documentUid = null;
+  
+  @JsonProperty("order")
+  private Integer order = null;
+
+//  @JsonProperty("additionalDetails")
+//  private Object additionalDetails = null;
+
+  public Document uuid(String uuid) {
+    this.uuid = uuid;
+    return this;
+  }
+
+  /**
+   * system id of the Document.
+   * @return id
+  **/
+  @ApiModelProperty(value = "system id of the Document.")
+  
+  @Size(max=64)   public String getUuid() {
+    return uuid;
+  }
+
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
+  }
+
+  public Document documentType(String documentType) {
+    this.documentType = documentType;
+    return this;
+  }
+
+
+  public String getLayoutId() {
+    return layoutId;
+  }
+
+  public void setLayoutId(String layoutId) {
+    this.layoutId = layoutId;
+  }
+  /**
+   * unique document type code, should be validated with document type master
+   * @return documentType
+  **/
+  @ApiModelProperty(value = "unique document type code, should be validated with document type master")
+  
+    public String getDocumentType() {
+    return documentType;
+  }
+
+  public void setDocumentType(String documentType) {
+    this.documentType = documentType;
+  }
+
+  public Document documentAttachment(String documentAttachment) {
+    this.documentAttachment = documentAttachment;
+    return this;
+  }
+
+  /**
+   * File store reference key.
+   * @return fileStore
+  **/
+  @ApiModelProperty(value = "File store reference key.")
+  
+    public String getDocumentAttachment() {
+    return documentAttachment;
+  }
+
+  public void setDocumentAttachment(String documentAttachment) {
+    this.documentAttachment = documentAttachment;
+  }
+
+  public Document documentUid(String documentUid) {
+    this.documentUid = documentUid;
+    return this;
+  }
+
+  /**
+   * The unique id(Pancard Number,Adhar etc.) of the given Document.
+   * @return documentUid
+  **/
+  @ApiModelProperty(value = "The unique id(Pancard Number,Adhar etc.) of the given Document.")
+  
+  @Size(max=64)   public String getDocumentUid() {
+    return documentUid;
+  }
+
+  public void setDocumentUid(String documentUid) {
+    this.documentUid = documentUid;
+  }
+
+  /**
+   * Document Order.
+   * @return Order
+  **/
+  @ApiModelProperty(value = "Document Order.")
+  
+    public Integer getOrder() {
+    return order;
+  }
+
+  public void setOrder(Integer order) {
+    this.order = order;
+  }
+
+  public Document order(Integer order) {
+    this.order = order;
+    return this;
+  }
+
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Document document = (Document) o;
+    return Objects.equals(this.uuid, document.uuid) &&
+        Objects.equals(this.documentType, document.documentType) &&
+        Objects.equals(this.documentAttachment, document.documentAttachment) &&
+        Objects.equals(this.documentUid, document.documentUid);
+//        Objects.equals(this.additionalDetails, document.additionalDetails);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(uuid, documentType, documentAttachment, documentUid);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class Document {\n");
+    
+    sb.append("    id: ").append(toIndentedString(uuid)).append("\n");
+    sb.append("    documentType: ").append(toIndentedString(documentType)).append("\n");
+    sb.append("    fileStore: ").append(toIndentedString(documentAttachment)).append("\n");
+    sb.append("    documentUid: ").append(toIndentedString(documentUid)).append("\n");
+//    sb.append("    additionalDetails: ").append(toIndentedString(additionalDetails)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}

@@ -69,8 +69,56 @@ public class EmployeeRowMapper implements ResultSetExtractor<List<Employee>> {
 		setDocuments(rs, currentEmployee);
 		setDeactivationDetails(rs, currentEmployee);
 		setReactivationDetails(rs, currentEmployee);
+		setObpas(rs, currentEmployee);
+
 	}
 	
+	
+	
+	public void setObpas(ResultSet rs, Employee currentEmployee) {
+	    try {
+	        if (currentEmployee.getCategories() == null) currentEmployee.setCategories(new ArrayList<>());
+	        if (currentEmployee.getSubcategories() == null) currentEmployee.setSubcategories(new ArrayList<>());
+	        if (currentEmployee.getZones() == null) currentEmployee.setZones(new ArrayList<>());
+	        if (currentEmployee.getAssignedtenattids() == null) currentEmployee.setAssignedtenattids(new ArrayList<>());
+
+	        // Helper to safely get column if it exists
+	        String empCategory = hasColumn(rs, "obpas_category") ? rs.getString("obpas_category") : null;
+	        if (!StringUtils.isEmpty(empCategory) && !currentEmployee.getCategories().contains(empCategory)) {
+	            currentEmployee.getCategories().add(empCategory);
+	        }
+
+	        String empSubcategory = hasColumn(rs, "obpas_subcategory") ? rs.getString("obpas_subcategory") : null;
+	        if (!StringUtils.isEmpty(empSubcategory) && !currentEmployee.getSubcategories().contains(empSubcategory)) {
+	            currentEmployee.getSubcategories().add(empSubcategory);
+	        }
+
+	        String empZone = hasColumn(rs, "obpas_zone") ? rs.getString("obpas_zone") : null;
+	        if (!StringUtils.isEmpty(empZone) && !currentEmployee.getZones().contains(empZone)) {
+	            currentEmployee.getZones().add(empZone);
+	        }
+
+	        String empAssignedTenantId = hasColumn(rs, "obpas_assignedtenantid") ? rs.getString("obpas_assignedtenantid") : null;
+	        if (!StringUtils.isEmpty(empAssignedTenantId) && !currentEmployee.getAssignedtenattids().contains(empAssignedTenantId)) {
+	            currentEmployee.getAssignedtenattids().add(empAssignedTenantId);
+	        }
+
+	    } catch(Exception e) {
+	        log.error("Error in row mapper while mapping OBPAS fields: ", e);
+	        throw new CustomException("ROWMAPPER_ERROR","Error in row mapper while mapping OBPAS fields");
+	    }
+	}
+
+	// Utility method to check if column exists in ResultSet
+	private boolean hasColumn(ResultSet rs, String columnName) {
+	    try {
+	        return rs.findColumn(columnName) > 0;
+	    } catch (SQLException e) {
+	        return false;
+	    }
+	}
+
+
 	/**
 	 * Maps Assignments inside a ResultSet to the Assignment POJO inside employee object.
 	 * 

@@ -11,6 +11,7 @@ import org.egov.infra.indexer.custom.pt.PropertyRequest;
 import org.egov.infra.indexer.producer.IndexerProducer;
 import org.egov.infra.indexer.service.IndexerService;
 import org.egov.infra.indexer.util.IndexerUtils;
+import org.egov.infra.indexer.util.DLQHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.listener.MessageListener;
@@ -32,6 +33,13 @@ public class BPACustomIndexMessageListener implements MessageListener<String, St
     @Autowired
     private IndexerProducer  indexerProducer;
 
+    @Autowired
+    private DLQHandler dlqHandler;
+
+    @Value("${egov.indexer.bpa.create.topic.name}")
+    private String bpaCreateTopic;
+
+
     @Override
     /**
      * Messages listener which acts as consumer. This message listener is injected
@@ -40,13 +48,18 @@ public class BPACustomIndexMessageListener implements MessageListener<String, St
      * index 5. Core indexing
      */
     public void onMessage(ConsumerRecord<String, String> data) {
+    	log.info("Topic from BPACustomIndexMessageListener: " + data.topic());
+    	
         ObjectMapper mapper = indexerUtils.getObjectMapperWithNull();
         try {
+            if(data.topic().equalsIgnoreCase(bpaCreateTopic)){
+                Thread.sleep(2000);
+            }
             BPARequest bpaRequest = mapper.readValue(data.value(), BPARequest.class);
             EnrichedBPARequest enrichedBPARequest = bpaCustomDecorator.transformData(bpaRequest);
             indexerService.esIndexer(data.topic(), mapper.writeValueAsString(enrichedBPARequest));
         } catch (Exception e) {
-            log.error("Couldn't parse bpaindex request: ", e);
+            dlqHandler.handleError(data.value(), e, "BPACustomIndexMessageListener", data.topic());
         }
     }
 }

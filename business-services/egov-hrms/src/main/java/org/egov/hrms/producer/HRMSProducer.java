@@ -16,4 +16,9 @@ public class HRMSProducer {
         log.info("Topic: "+topic);
         kafkaTemplate.send(topic, value);
     }
+    
+    public void push(String topic, String key, Object value) {
+        log.info("Topic: "+topic);
+        kafkaTemplate.send(topic, key, value);
+    }
 }

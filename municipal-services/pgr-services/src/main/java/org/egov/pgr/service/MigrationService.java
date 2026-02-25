@@ -202,8 +202,8 @@ public class MigrationService {
             ServiceRequest serviceRequest = ServiceRequest.builder().service(service).build();
             //log.info("Pushing service request: " + serviceRequest);
             /*#################### TEMPORARY FOR TESTING, REMOVE THE COMMENTS*/
-               producer.push(config.getBatchCreateTopic(),serviceRequest);
-               producer.push(config.getBatchWorkflowSaveTopic(),processInstanceRequest);
+               producer.push(config.getBatchCreateTopic(),serviceRequest.getService().getId(), serviceRequest);
+               producer.push(config.getBatchWorkflowSaveTopic(), processInstanceRequest.getProcessInstances().get(0).getId(),processInstanceRequest);
 
             // Temporary for testing
             services.add(service);

@@ -127,6 +127,10 @@ public class Employee {
 
     private Boolean reActivateEmployee;
     
+    public List<String> categories;
+    public List<String> subcategories;
+    public List<String> zones;
+    public List<String> assignedtenattids;
     @Valid
     @NotNull
     private User user;

@@ -61,7 +61,7 @@ public class CallbackAPI {
         report.setDoneTime(DoneTime);
         report.setUsernameHash(hashService.getHashValue(mobilenumber));
 
-        producer.push(topic, report);
+        producer.push(topic,report.getJobno(), report);
         return ResponseEntity.ok().body("Status successfully sent");
     }
 }

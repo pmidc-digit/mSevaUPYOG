@@ -26,6 +26,7 @@ import org.egov.common.contract.request.User;
 import org.egov.swcalculation.config.SWCalculationConfiguration;
 import org.egov.swcalculation.constants.SWCalculationConstant;
 import org.egov.swcalculation.producer.SWCalculationProducer;
+import org.egov.swcalculation.repository.BillGeneratorDao;
 import org.egov.swcalculation.repository.DemandRepository;
 import org.egov.swcalculation.repository.ServiceRequestRepository;
 import org.egov.swcalculation.repository.SewerageCalculatorDao;
@@ -88,6 +89,9 @@ public class DemandService {
 
 	@Autowired
 	private DemandRepository demandRepository;
+	
+	@Autowired
+	private BillGeneratorDao billGeneratorDao;
 
 	@Autowired
 	private SWCalculationConfiguration configs;
@@ -288,10 +292,11 @@ public class DemandService {
 				.billingCycle(billingcycle)
 				.build();
 		List<Demand> demandRes = demandRepository.saveDemand(calculationReq.getRequestInfo(), demands,notificationObj);
-		if(calculationReq.getIsReconnectionRequest())
-			fetchBillForReconnect(demandRes, calculationReq.getRequestInfo(), masterMap);
-		else if(isForConnectionNO && !calculationReq.getIsReconnectionRequest())
-			fetchBill(demandRes, calculationReq.getRequestInfo(),masterMap);
+		/* Temp Disabling  this -> PI-19148->Abhishek Rana   */
+		//		if(calculationReq.getIsReconnectionRequest())
+//			fetchBillForReconnect(demandRes, calculationReq.getRequestInfo(), masterMap);
+//		else if(isForConnectionNO && !calculationReq.getIsReconnectionRequest())
+//			fetchBill(demandRes, calculationReq.getRequestInfo(),masterMap);
 		return demandRes;
 	}
 
@@ -344,7 +349,8 @@ public class DemandService {
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
-				producer.push(configs.getPayTriggers(), billResponse);
+				String key = demand.getConsumerCode(); 
+				producer.push(configs.getPayTriggers(), key ,billResponse);
 				notificationSent = true;
 				successCount++;
 
@@ -379,7 +385,8 @@ public class DemandService {
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
-				producer.push(configs.getPayTriggers(), billResponse);
+				String key = demand.getConsumerCode(); 
+				producer.push(configs.getPayTriggers(), key ,billResponse);
 				notificationSent = true;
 				successCount++;
 
@@ -414,7 +421,8 @@ public class DemandService {
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
-				producer.push(configs.getPayTriggers(), billResponse);
+				String key = demand.getConsumerCode(); 
+				producer.push(configs.getPayTriggers(), key ,billResponse);
 				notificationSent = true;
 				successCount++;
 
@@ -1042,7 +1050,8 @@ public class DemandService {
 								.isconnectionCalculation(true)
 								.migrationCount(migrationCount).build();
 						
-						swCalculationProducer.push(configs.getCreateDemand(), calculationReq);
+						String key = connections.get(0).getConnectionNo();
+						swCalculationProducer.push(configs.getCreateDemand(), key , calculationReq);
 						calculationCriteriaList.clear();
 						return "Demand Generated successfully for consumer Code"+bulkBillCriteria.getConsumerCode();
 					}
@@ -1187,7 +1196,8 @@ public class DemandService {
 								.isconnectionCalculation(true)
 								.migrationCount(migrationCount).build();
 						
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						String key = connections.get(0).getConnectionNo();
+						kafkaTemplate.send(configs.getCreateDemand(), key ,calculationReq);
 						log.info("Bulk bill Gen batch info : " + migrationCount);
 						calculationCriteriaList.clear();
 					}
@@ -1244,7 +1254,7 @@ public class DemandService {
 					if(lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
+								.findFirst().orElse(-1);
 						//Increased one index to generate the next quarter demand
 						generateDemandFromIndex++;
 					}
@@ -1294,13 +1304,16 @@ public class DemandService {
 								.migrationCount(migrationCount)
 								.build();
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+
+					    String key = sewConnDetails.getConnectionNo();
+					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
+					    
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
 						if(threadSleepCount == 3) {
-							Thread.sleep(15000);
+						    Thread.sleep(1000); // Sleep for 1 second
 							threadSleepCount=0;
 						}
 						threadSleepCount++;
@@ -1323,7 +1336,8 @@ public class DemandService {
 								.migrationCount(migrationCount)
 								.build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						String key = sewConnDetails.getConnectionNo();
+					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
@@ -1478,7 +1492,7 @@ public class DemandService {
 					if(lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
+								.findFirst().orElse(-1);
 						//Increased one index to generate the next quarter demand
 						generateDemandFromIndex++;
 					}
@@ -1536,7 +1550,9 @@ public class DemandService {
 								.migrationCount(migrationCount)
 								.build();
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						
+						String key = sewConnDetails.getConnectionNo();
+						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
@@ -1564,7 +1580,8 @@ public class DemandService {
 								.isconnectionCalculation(true)
 								.migrationCount(migrationCount).build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						String key = sewConnDetails.getConnectionNo();
+						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
@@ -1708,30 +1725,76 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 		}
 		return consumercodesFromRes;
 	}
-	
-	public List<String> fetchBillSchedulerSingle(Set<String> consumerCodes,String tenantId, RequestInfo requestInfo) {
-		List<String> consumercodesFromRes = new ArrayList<>() ;
-		for (String consumerCode : consumerCodes) {
 
+	public List<String> fetchBillSchedulerSingle(Set<String> consumerCodes, String tenantId, RequestInfo requestInfo,
+			List<String> failureCollector, String schedulerId, String localityCode) {
+		List<String> successConsumerCodes = new ArrayList<>();
+
+		for (String consumerCode : consumerCodes) {
+			List<BillV2> bills =null;
 			try {
-				
 				StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
 
-				Object result = serviceRequestRepository.fetchResult(fetchBillURL, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
-				log.info("Bills generated for the consumercodes: {}", fetchBillURL);
+				Object result = serviceRequestRepository.fetchResult(fetchBillURL,
+						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
 				BillResponseV2 billResponse = mapper.convertValue(result, BillResponseV2.class);
-				List<BillV2> bills = billResponse.getBill();
-				if(bills != null && !bills.isEmpty()) {
-					consumercodesFromRes.addAll(bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList()));
-					log.info("Bill generated successfully for consumercode: {}, TenantId: {}" ,consumerCode, tenantId);
+				  if (billResponse == null) {
+				        log.warn("⚠️ BillResponseV2 is null after conversion.");
+				        billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+								SWCalculationConstant.FAILURE, tenantId, "BillResponseV2 is null after conversion.", System.currentTimeMillis());
+
+				    } else if (billResponse.getBill() == null) {
+				        log.warn("⚠️ Bill list is null in BillResponseV2.");
+				        billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+								SWCalculationConstant.FAILURE, tenantId, "Bill list is null in BillResponseV2.", System.currentTimeMillis());
+
+				    } else {
+				        bills = billResponse.getBill();
+				    }
+			
+
+				if (bills != null && !bills.isEmpty()) {
+					billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+							SWCalculationConstant.SUCCESS, tenantId, SWCalculationConstant.SUCCESS_MESSAGE,
+							System.currentTimeMillis());
+
+					successConsumerCodes
+							.addAll(bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList()));
+
+					log.info("✅ Bill generated successfully for consumerCode: {}", consumerCode);
+				} else {
+					String failureMsg = SWCalculationConstant.FAILURE_MESSAGE + " | No bills returned";
+
+					try {
+						billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+								SWCalculationConstant.FAILURE, tenantId, failureMsg, System.currentTimeMillis());
+					} catch (Exception dbEx) {
+						log.error("DB update failed for {} (no bills): {}", consumerCode, dbEx.getMessage());
+					}
+
+					failureCollector.add(consumerCode);
+					log.warn("⚠️ No bills returned for consumerCode: {}", consumerCode);
 				}
 
 			} catch (Exception ex) {
-				log.error("Fetch Bill Error For tenantId:{} consumercode: {} and Exception is: {}",tenantId,consumerCodes, ex);
+				String errorMsg = SWCalculationConstant.FAILURE_MESSAGE + " | Exception: " + ex.getMessage();
+
+				try {
+					billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+							SWCalculationConstant.FAILURE, tenantId, errorMsg, System.currentTimeMillis());
+				} catch (Exception dbEx) {
+					log.error("DB update failed for {} (exception case): {}", consumerCode, dbEx.getMessage());
+				}
+
+				failureCollector.add(consumerCode);
+				log.error("❌ Fetch Bill failed for consumerCode: {} Exception: {}", consumerCode, ex.getMessage(), ex);
 			}
 		}
-		return consumercodesFromRes;
+
+		return successConsumerCodes;
 	}
+
 		/**
 		 * Search demand based on demand id and updated the tax heads with new adhoc tax heads
 		 * 

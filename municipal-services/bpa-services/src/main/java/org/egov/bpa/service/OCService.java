@@ -96,7 +96,7 @@ public class OCService {
 		edcrData.forEach(edcrDetail -> {
 
 			String tenantId = criteria.getTenantId();
-			MdmsCriteriaReq mdmsCriteriaReq = util.getMDMSRequest(requestInfo, tenantId);
+			MdmsCriteriaReq mdmsCriteriaReq = util.getMDMSRequest(requestInfo, tenantId.split("\\.")[0]);
 			Object result = serviceRequestRepository.fetchResult(util.getMdmsSearchUrl(), mdmsCriteriaReq);
 
 			ArrayList OcData = new ArrayList();
@@ -112,13 +112,13 @@ public class OCService {
 
 
 			String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-					+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
+					+ ") && ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
 					+ buildingHeight + "  ))].riskType";
 
 			List<String> riskTypes = JsonPath.read(OcData.get(0), filterExp);
 			riskType.add(riskTypes.get(0));
 
-			khathaNos.add(JsonPath.read(edcrDetail, BPAConstants.OC_KHATHANO));
+//			khathaNos.add(JsonPath.read(edcrDetail, BPAConstants.OC_KHATHANO));
 
 			plotNos.add(JsonPath.read(edcrDetail, BPAConstants.OC_PLOTNO));
 

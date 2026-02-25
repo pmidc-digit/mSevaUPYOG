@@ -349,7 +349,8 @@ public class DemandService {
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
-				producer.push(configs.getPayTriggers(), billResponse);
+				String key = demand.getConsumerCode(); 
+				producer.push(configs.getPayTriggers(), key ,billResponse);
 				notificationSent = true;
 				successCount++;
 
@@ -384,7 +385,8 @@ public class DemandService {
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
-				producer.push(configs.getPayTriggers(), billResponse);
+				String key = demand.getConsumerCode(); 
+				producer.push(configs.getPayTriggers(), key ,billResponse);
 				notificationSent = true;
 				successCount++;
 
@@ -419,7 +421,8 @@ public class DemandService {
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
-				producer.push(configs.getPayTriggers(), billResponse);
+				String key = demand.getConsumerCode(); 
+				producer.push(configs.getPayTriggers(), key ,billResponse);
 				notificationSent = true;
 				successCount++;
 
@@ -1047,7 +1050,8 @@ public class DemandService {
 								.isconnectionCalculation(true)
 								.migrationCount(migrationCount).build();
 						
-						swCalculationProducer.push(configs.getCreateDemand(), calculationReq);
+						String key = connections.get(0).getConnectionNo();
+						swCalculationProducer.push(configs.getCreateDemand(), key , calculationReq);
 						calculationCriteriaList.clear();
 						return "Demand Generated successfully for consumer Code"+bulkBillCriteria.getConsumerCode();
 					}
@@ -1192,7 +1196,8 @@ public class DemandService {
 								.isconnectionCalculation(true)
 								.migrationCount(migrationCount).build();
 						
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						String key = connections.get(0).getConnectionNo();
+						kafkaTemplate.send(configs.getCreateDemand(), key ,calculationReq);
 						log.info("Bulk bill Gen batch info : " + migrationCount);
 						calculationCriteriaList.clear();
 					}
@@ -1249,7 +1254,7 @@ public class DemandService {
 					if(lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
+								.findFirst().orElse(-1);
 						//Increased one index to generate the next quarter demand
 						generateDemandFromIndex++;
 					}
@@ -1299,7 +1304,10 @@ public class DemandService {
 								.migrationCount(migrationCount)
 								.build();
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+
+					    String key = sewConnDetails.getConnectionNo();
+					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
+					    
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
@@ -1328,7 +1336,8 @@ public class DemandService {
 								.migrationCount(migrationCount)
 								.build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						String key = sewConnDetails.getConnectionNo();
+					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
@@ -1483,7 +1492,7 @@ public class DemandService {
 					if(lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
+								.findFirst().orElse(-1);
 						//Increased one index to generate the next quarter demand
 						generateDemandFromIndex++;
 					}
@@ -1541,7 +1550,9 @@ public class DemandService {
 								.migrationCount(migrationCount)
 								.build();
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						
+						String key = sewConnDetails.getConnectionNo();
+						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
@@ -1569,7 +1580,8 @@ public class DemandService {
 								.isconnectionCalculation(true)
 								.migrationCount(migrationCount).build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						kafkaTemplate.send(configs.getCreateDemand(), calculationReq);
+						String key = sewConnDetails.getConnectionNo();
+						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
@@ -1719,6 +1731,7 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 		List<String> successConsumerCodes = new ArrayList<>();
 
 		for (String consumerCode : consumerCodes) {
+			List<BillV2> bills =null;
 			try {
 				StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
 
@@ -1726,7 +1739,20 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 
 				BillResponseV2 billResponse = mapper.convertValue(result, BillResponseV2.class);
-				List<BillV2> bills = billResponse.getBill();
+				  if (billResponse == null) {
+				        log.warn("⚠️ BillResponseV2 is null after conversion.");
+				        billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+								SWCalculationConstant.FAILURE, tenantId, "BillResponseV2 is null after conversion.", System.currentTimeMillis());
+
+				    } else if (billResponse.getBill() == null) {
+				        log.warn("⚠️ Bill list is null in BillResponseV2.");
+				        billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
+								SWCalculationConstant.FAILURE, tenantId, "Bill list is null in BillResponseV2.", System.currentTimeMillis());
+
+				    } else {
+				        bills = billResponse.getBill();
+				    }
+			
 
 				if (bills != null && !bills.isEmpty()) {
 					billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,

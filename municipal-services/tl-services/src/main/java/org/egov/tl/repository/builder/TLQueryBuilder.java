@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -85,7 +87,9 @@ public class TLQueryBuilder {
       
       private final String countWrapper = "SELECT COUNT(DISTINCT(tl_id)) FROM ({INTERNAL_QUERY}) as license_count";
       
-      public static final String TENANTIDQUERY="select distinct(tenantid) from eg_tl_tradelicense";
+      public static final String TENANTIDQUERY="select distinct(tenantid) from eg_tl_tradelicense Where businessservice = ?";
+      public static final String IDQUERY =
+    	        "SELECT tl.id FROM eg_tl_tradelicense tl ";
 
 
 
@@ -115,7 +119,7 @@ public class TLQueryBuilder {
         
         else {
 
-            if (criteria.getTenantId() != null) {
+            if (criteria.getTenantId() != null && !criteria.getOnlyLatestApplication()) {
                 addClauseIfRequired(preparedStmtList, builder);
                 builder.append(" tl.tenantid=? ");
                 preparedStmtList.add(criteria.getTenantId());
@@ -366,6 +370,138 @@ public class TLQueryBuilder {
         return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
 
     }
+    
+    
+    public String getTLPlainSearchQueryIDs(TradeLicenseSearchCriteria criteria,
+			List<Object> preparedStmtList) {
+
+		StringBuilder builder = new StringBuilder(IDQUERY);
+		boolean whereAdded = false;
+
+// tenantId
+		if (StringUtils.hasText(criteria.getTenantId())) {
+			builder.append(" WHERE tl.tenantid = ? ");
+			preparedStmtList.add(criteria.getTenantId());
+			whereAdded = true;
+		}
+
+// ids
+		if (!CollectionUtils.isEmpty(criteria.getIds())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.id IN (").append(createQuery(criteria.getIds())).append(") ");
+			preparedStmtList.addAll(criteria.getIds());
+			whereAdded = true;
+		}
+
+// applicationNumber
+		if (StringUtils.hasText(criteria.getApplicationNumber())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.applicationnumber = ? ");
+			preparedStmtList.add(criteria.getApplicationNumber());
+			whereAdded = true;
+		}
+
+// licenseNumbers
+		if (!CollectionUtils.isEmpty(criteria.getLicenseNumbers())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.licensenumber IN (").append(createQuery(criteria.getLicenseNumbers())).append(") ");
+			preparedStmtList.addAll(criteria.getLicenseNumbers());
+			whereAdded = true;
+		}
+
+// oldLicenseNumber
+		if (StringUtils.hasText(criteria.getOldLicenseNumber())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.oldlicensenumber = ? ");
+			preparedStmtList.add(criteria.getOldLicenseNumber());
+			whereAdded = true;
+		}
+
+// status
+		if (!CollectionUtils.isEmpty(criteria.getStatus())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.status IN (").append(createQuery(criteria.getStatus())).append(") ");
+			preparedStmtList.addAll(criteria.getStatus());
+			whereAdded = true;
+		}
+
+// businessService
+		if (StringUtils.hasText(criteria.getBusinessService())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.businessservice = ? ");
+			preparedStmtList.add(criteria.getBusinessService());
+			whereAdded = true;
+		}
+
+// applicationType
+		if (StringUtils.hasText(criteria.getApplicationType())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.applicationtype = ? ");
+			preparedStmtList.add(criteria.getApplicationType());
+			whereAdded = true;
+		}
+
+// tradeName
+		if (StringUtils.hasText(criteria.getTradeName())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.tradename ILIKE ? ");
+			preparedStmtList.add("%" + criteria.getTradeName() + "%");
+			whereAdded = true;
+		}
+
+// financialYear
+		if (StringUtils.hasText(criteria.getFinancialYear())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.financialyear = ? ");
+			preparedStmtList.add(criteria.getFinancialYear());
+			whereAdded = true;
+		}
+
+// accountId
+		if (StringUtils.hasText(criteria.getAccountId())) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.accountid = ? ");
+			preparedStmtList.add(criteria.getAccountId());
+			whereAdded = true;
+		}
+
+// createdtime range
+		if (criteria.getFromDate() != null && criteria.getToDate() != null) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.createdtime BETWEEN ? AND ? ");
+			preparedStmtList.add(criteria.getFromDate());
+			preparedStmtList.add(criteria.getToDate());
+			whereAdded = true;
+		}
+
+// issueddate range
+		if (criteria.getIssuedFrom() != null && criteria.getIssuedTo() != null) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.issueddate BETWEEN ? AND ? ");
+			preparedStmtList.add(criteria.getIssuedFrom());
+			preparedStmtList.add(criteria.getIssuedTo());
+			whereAdded = true;
+		}
+
+// validTo
+		if (criteria.getValidTo() != null) {
+			builder.append(whereAdded ? " AND " : " WHERE ");
+			builder.append(" tl.validto <= ? ");
+			preparedStmtList.add(criteria.getValidTo());
+			whereAdded = true;
+		}
+
+// ORDER + PAGINATION
+		builder.append(" ORDER BY tl.createdtime DESC ");
+		builder.append(" OFFSET ? LIMIT ? ");
+
+		preparedStmtList.add(criteria.getOffset());
+		preparedStmtList.add(criteria.getLimit());
+
+		return builder.toString();
+	}
+
+
     
     public String getApplicationsCountQuery(TradeLicenseSearchCriteria criteria, List<Object> preparedStmtList, String applicationType) {
     	

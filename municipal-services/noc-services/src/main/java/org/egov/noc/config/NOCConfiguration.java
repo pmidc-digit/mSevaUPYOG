@@ -46,6 +46,19 @@ public class NOCConfiguration {
 	@Value("${notification.sms.enabled}")
 	private Boolean isSMSEnabled;
 
+	// Property Service
+	@Value("${egov.property.service.host}")
+	private String propertyHost;
+
+	@Value("${egov.property.service.context.path}")
+	private String propertyContextPath;
+
+	@Value("${egov.property.searchendpoint}")
+	private String propertySearchEndpoint;
+
+	@Value("${egov.property.createendpoint}")
+	private String propertyCreateEndpoint;
+
 	// Localization
 	@Value("${egov.localization.host}")
 	private String localizationHost;
@@ -101,6 +114,12 @@ public class NOCConfiguration {
 	@Value("${persister.save.noc.topic}")
 	private String saveTopic;
 
+	@Value("${persister.save.checkList.topic}")
+	private String saveCheckListTopic;
+
+	@Value("${persister.update.checkList.topic}")
+	private String updateCheckListTopic;
+
 	@Value("${egov.billingservice.host}")
 	private String billingServiceHost;
 
@@ -135,5 +154,12 @@ public class NOCConfiguration {
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String kafkaGroupId;
+
+	//HRMS Config
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.employee.search.endpoint}")
+	private String employeeSearchEndpoint;
 
 }

@@ -93,12 +93,12 @@ public class BusinessServiceRepository {
      * @return
      */
     @Cacheable(value = "roleTenantAndStatusesMapping")
-    public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(){
+    public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(ProcessInstanceSearchCriteria criteria){
 
 
         Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = new HashMap();
 
-        List<BusinessService> businessServices = getAllBusinessService();
+        List<BusinessService> businessServices = getAllBusinessService(criteria);
 
         for(BusinessService businessService : businessServices){
 
@@ -151,16 +151,27 @@ public class BusinessServiceRepository {
      * Returns all the avialable businessServices
      * @return
      */
-    private List<BusinessService> getAllBusinessService(){
+    private List<BusinessService> getAllBusinessService(ProcessInstanceSearchCriteria criteria){
 
         List<Object> preparedStmtList = new ArrayList<>();
-        String query = queryBuilder.getBusinessServices(new BusinessServiceSearchCriteria(), preparedStmtList);
+        String query=null;
 
-        List<BusinessService> businessServices = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-        List<BusinessService> filterBusinessServices = filterBusinessServices((businessServices));
+        BusinessServiceSearchCriteria businessCriteria = new BusinessServiceSearchCriteria();
 
-        return filterBusinessServices;
+        if (criteria != null && criteria.getBusinessService() != null) {
+            businessCriteria.setBusinessServices(
+                Arrays.asList(criteria.getBusinessService())
+            );
+        }
+
+        query = queryBuilder.getBusinessServices(businessCriteria, preparedStmtList);
+
+        List<BusinessService> businessServices =
+                jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+
+        return filterBusinessServices(businessServices);
     }
+
 
 
     /**

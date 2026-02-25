@@ -3,14 +3,26 @@ package org.egov.user.security.oauth2.custom;
 import org.egov.user.domain.model.SecureUser;
 import org.egov.user.domain.model.User;
 import org.egov.user.domain.service.UserService;
+import org.egov.user.persistence.dto.UserSession;
+import org.egov.user.persistence.repository.UserRepository;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.stereotype.Service;
 
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import javax.servlet.http.HttpServletRequest;
+
+
 
 
 
@@ -18,6 +30,11 @@ import java.util.Map;
 public class CustomTokenEnhancer extends TokenEnhancerChain {
 	 private UserService userService;
 	 org.egov.user.domain.model.User user;
+
+	 private UserRepository userRepository;
+	  public CustomTokenEnhancer(UserRepository userRepository) {
+	        this.userRepository = userRepository;
+	    }
     @Override
     public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
         final DefaultOAuth2AccessToken token = (DefaultOAuth2AccessToken) accessToken;
@@ -52,6 +69,31 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
         token.setAdditionalInformation(info);
      //   userService.removeTokensByUser(user);
         OAuth2AccessToken enhancedToken = super.enhance(token, authentication);
+        String ipAddress = "";
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        if (request != null) {
+            ipAddress = request.getHeader("X-Forwarded-For");
+            if (ipAddress == null || ipAddress.isEmpty()) {
+                ipAddress = request.getRemoteAddr();
+            }
+        }
+        ZoneId IST = ZoneId.of("Asia/Kolkata");
+        ZonedDateTime nowIST = ZonedDateTime.now(IST);
+        
+        
+        UserSession session = UserSession.builder()
+                .id(UUID.randomUUID())
+                .userUuid(su.getUser().getUuid())
+                .userId(su.getUser().getId())
+                .loginTime(nowIST.toLocalDateTime()) // store actual IST time
+                .ipAddress(ipAddress)
+                .userName(su.getUsername())
+                .userType(su.getUser().getType())
+                .isCurrentlyLoggedIn(true)
+                .isautologout(false)
+                .build();
+
+        userRepository.insertUserSession(session);
 
         if (isPasswordType) {
             ((DefaultOAuth2AccessToken) enhancedToken).setValue(null);

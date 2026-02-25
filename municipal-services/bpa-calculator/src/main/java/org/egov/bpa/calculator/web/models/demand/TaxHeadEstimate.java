@@ -23,4 +23,6 @@ public class TaxHeadEstimate {
     private BigDecimal adjustedAmount = BigDecimal.ZERO;
     
     private String filestoreId;
+    
+    private String remark;
 }

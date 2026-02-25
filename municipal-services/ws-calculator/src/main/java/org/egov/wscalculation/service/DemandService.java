@@ -545,7 +545,8 @@ public class DemandService {
 				
 			}
 			
-	        
+	        	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
+
 //	        List<String> sewConnectionList = waterCalculatorDao.fetchSewConnection(consumerCode); 
 //	        sewConsumerCode = sewConnectionList.isEmpty() ? "" : sewConnectionList.get(0).toString();
 	        
@@ -555,7 +556,6 @@ public class DemandService {
 	        if (!matchingUsages.isEmpty() && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 	        	// For the metered connections demand has to create one by one
 	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
-	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
 	 					for (DemandDetail ddSew : demandDetails) {
@@ -1448,7 +1448,7 @@ public class DemandService {
 					if (lastDemandFromDate != null) {
 						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
 								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-								.getAsInt();
+								.orElse(-1);
 						generateDemandFromIndex++;
 					}
 					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {
@@ -1811,6 +1811,8 @@ public class DemandService {
 	    List<String> successConsumerCodes = new ArrayList<>();
 
 	    for (String consumerCode : consumerCodes) {
+			List<BillV2> bills =null;
+
 	        try {
 	        	
 	            StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
@@ -1821,8 +1823,31 @@ public class DemandService {
 	            );
 
 	            BillResponseV2 billResponse = mapper.convertValue(result, BillResponseV2.class);
-	            List<BillV2> bills = billResponse.getBill();
-
+	            if (billResponse == null) {
+	                log.warn("⚠️ BillResponseV2 is null after conversion.");
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	            			  consumerCode,
+			            		 schedlerId,
+		  				        localitycode,
+		  				        WSCalculationConstant.FAILURE,
+		  				        tenantId,
+		  				        "BillResponseV2 is null after conversion.",
+		  				      System.currentTimeMillis()
+		  				    );
+	            } else if (billResponse.getBill() == null) {
+	                log.warn("⚠️ Bill list is null in BillResponseV2.");
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	            			  consumerCode,
+			            		 schedlerId,
+		  				        localitycode,
+		  				        WSCalculationConstant.FAILURE,
+		  				        tenantId,
+		  				        "Bill list is null in BillResponseV2.",
+		  				      System.currentTimeMillis()
+		  				    );
+	            } else {
+	                bills = billResponse.getBill();
+	            }
 	        	
 	            
 	            if (bills != null && !bills.isEmpty()) {
@@ -2100,5 +2125,50 @@ public class DemandService {
 		return response;
 		
 	}	
+	
+	
+	
+	
+	
+	public List<Demand> searchDemandForBreakdownCalculation(
+	        String tenantId,
+	        Set<String> consumerCodes,
+	        RequestInfo requestInfo) {
+
+	    Object result = serviceRequestRepository.fetchResult(
+	            getDemandSearchURLForWS(tenantId, consumerCodes),
+	            RequestInfoWrapper.builder()
+	                    .requestInfo(requestInfo)
+	                    .build()
+	    );
+
+	    log.info("Demand search (Breakdown) response: {}", result);
+
+	    try {
+	        return mapper.convertValue(result, DemandResponse.class).getDemands();
+	    } catch (IllegalArgumentException e) {
+	        throw new CustomException(
+	                "EG_WS_PARSING_ERROR",
+	                "Failed to parse Demand Search response for Breakdown"
+	        );
+	    }
+	}
+	
+	
+	
+	public StringBuilder getDemandSearchURLForWS(
+	        String tenantId,
+	        Set<String> consumerCodes) {
+
+	    StringBuilder url = new StringBuilder(configs.getBillingServiceHost());
+
+	    url.append(configs.getDemandSearchEndPoint());
+	    url.append("?tenantId=").append(tenantId);
+	    url.append("&businessService=").append(configs.getBusinessService()); // ✅ WS
+	    url.append("&consumerCode=").append(StringUtils.join(consumerCodes, ','));
+
+	    return url;
+	}
+
 
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -82,7 +83,7 @@ public class DemandService {
             String tenantId = calculations.get(0).getTenantId();
             Set<String> applicationNos = calculations.stream().map(calculation -> calculation.getBpa().getApplicationNo()).collect(Collectors.toSet());
 //            Set<String> applicationNumbers = calculations.stream().map(calculation -> calculation.getBPA().getApplicationNo()).collect(Collectors.toSet());
-            List<Demand> demands = searchDemand(tenantId,applicationNos,requestInfo,calculations.get(0));
+            List<Demand> demands = searchDemand(tenantId,applicationNos,requestInfo,calculations.get(0), "false");
             Set<String> applicationNumbersFromDemands = new HashSet<>();
             if(!CollectionUtils.isEmpty(demands))
                 applicationNumbersFromDemands = demands.stream().map(Demand::getConsumerCode).collect(Collectors.toSet());
@@ -114,7 +115,7 @@ public class DemandService {
         for(Calculation calculation : calculations) {
 
             List<Demand> searchResult = searchDemand(calculation.getTenantId(),Collections.singleton(calculation.getBpa().getApplicationNo())
-                    , requestInfo,calculation);
+                    , requestInfo,calculation, "false");
 
             if(CollectionUtils.isEmpty(searchResult))
                 throw new CustomException(BPACalculatorConstants.INVALID_UPDATE,"No demand exists for applicationNumber: "+calculation.getBpa().getApplicationNo());
@@ -190,12 +191,13 @@ public class DemandService {
      * @param requestInfo The RequestInfo of the incoming request
      * @return Lis to demands for the given consumerCode
      */
-    private List<Demand> searchDemand(String tenantId,Set<String> consumerCodes,RequestInfo requestInfo,Calculation calculation){
+    private List<Demand> searchDemand(String tenantId,Set<String> consumerCodes,RequestInfo requestInfo,Calculation calculation, String isPaymentCompleted){
     	String feeType = calculation.getFeeType();
         String uri = utils.getDemandSearchURL();
         uri = uri.replace("{1}",tenantId);
-        uri = uri.replace("{2}",(utils.getBillingBusinessService(calculation.getBpa().getBusinessService(), feeType)));
+        uri = uri.replace("{2}",(utils.getBillingBusinessService(calculation.getBpa().getBusinessService(), feeType, calculation.getBpa().getApplicationType())));
         uri = uri.replace("{3}",StringUtils.join(consumerCodes, ','));
+        uri = uri.replace("{4}", isPaymentCompleted);
 
         Object result = serviceRequestRepository.fetchResult(new StringBuilder(uri),RequestInfoWrapper.builder()
                                                       .requestInfo(requestInfo).build());
@@ -266,6 +268,23 @@ public class DemandService {
             
             Map<String, Object> taxPeriod = mdmsService.getTaxPeriods(mdmsData);
             
+            List<Demand> searchResult = searchDemand(calculation.getTenantId(),Collections.singleton(calculation.getBpa().getApplicationNo())
+                    , requestInfo,calculation, "true");
+            
+            if(!CollectionUtils.isEmpty(searchResult)) {
+            	Demand latestDemand = searchResult.stream().max(Comparator.comparingLong(Demand::getTaxPeriodTo)).get();
+            	latestDemand.setTaxPeriodTo(System.currentTimeMillis());
+            	demandRepository.updateDemand(requestInfo, Collections.singletonList(latestDemand));
+            	
+            	List<DemandDetail> allPaidDemandDetails = searchResult.stream()
+            			.map(Demand::getDemandDetails)
+            			.flatMap(List::stream).collect(Collectors.toList());            	
+            	
+            	List<DemandDetail> updatedDemandDetails = getRemainingDemandDetails(demandDetails, allPaidDemandDetails, calculation.getTenantId());
+            	demandDetails.clear();
+            	demandDetails.addAll(updatedDemandDetails);
+            }
+            
              demands.add(Demand.builder()
                     .consumerCode(consumerCode)
                     .demandDetails(demandDetails)
@@ -274,8 +293,8 @@ public class DemandService {
                     .tenantId(tenantId)
                     .taxPeriodFrom((Long)taxPeriod.get(BPACalculatorConstants.MDMS_STARTDATE))
                     .taxPeriodTo((Long)taxPeriod.get(BPACalculatorConstants.MDMS_ENDDATE))
-                    .consumerType("BPA")
-                    .businessService(utils.getBillingBusinessService(bpa.getBusinessService(),calculation.getFeeType()))
+                    .consumerType("BPA-" + BPACalculatorConstants.MDMS_CHARGES_TYPE_CODE)
+                    .businessService(utils.getBillingBusinessService(bpa.getBusinessService(),calculation.getFeeType(), bpa.getApplicationType()))
                     .build());
         }
         return demandRepository.saveDemand(requestInfo,demands);
@@ -342,6 +361,51 @@ public class DemandService {
 
             demandDetails.add(roundOffDemandDetail);
         }
+    }
+    
+    /**
+     * Returns the list of new DemandDetail to be added for creation the demand for remaining amount
+     * @param demandDetails The list of demandDetails to be updated
+     * @param searchDemandDetails The list of demandDetails from the existing demand
+     * @return The list of new DemandDetails
+     */
+    private List<DemandDetail> getRemainingDemandDetails(List<DemandDetail> demandDetails, List<DemandDetail> searchDemandDetails, String tenantId){
+
+        List<DemandDetail> newDemandDetails = new ArrayList<>();
+        Map<String, List<DemandDetail>> taxHeadToDemandDetail = new HashMap<>();
+
+        searchDemandDetails.forEach(demandDetail -> {
+            if(!taxHeadToDemandDetail.containsKey(demandDetail.getTaxHeadMasterCode())){
+                List<DemandDetail> demandDetailList = new LinkedList<>();
+                demandDetailList.add(demandDetail);
+                taxHeadToDemandDetail.put(demandDetail.getTaxHeadMasterCode(),demandDetailList);
+            }
+            else
+              taxHeadToDemandDetail.get(demandDetail.getTaxHeadMasterCode()).add(demandDetail);
+        });
+
+        BigDecimal diffInTaxAmount;
+        List<DemandDetail> demandDetailList;
+        BigDecimal total;
+        
+        for(DemandDetail demandDetail : demandDetails){
+            if(!taxHeadToDemandDetail.containsKey(demandDetail.getTaxHeadMasterCode()))
+                newDemandDetails.add(demandDetail);
+            else {
+                 demandDetailList = taxHeadToDemandDetail.get(demandDetail.getTaxHeadMasterCode());
+                 total = demandDetailList.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                 diffInTaxAmount = demandDetail.getTaxAmount().subtract(total);
+                 if(diffInTaxAmount.compareTo(BigDecimal.ZERO)!=-1) {
+                	 demandDetail.setTaxAmount(diffInTaxAmount);
+                 }else {
+                	 demandDetail.setTaxAmount(BigDecimal.ZERO);
+                 }
+                 newDemandDetails.add(demandDetail);
+
+            }
+        }
+        addRoundOffTaxHead(tenantId,newDemandDetails);
+        return newDemandDetails;
     }
     
 }

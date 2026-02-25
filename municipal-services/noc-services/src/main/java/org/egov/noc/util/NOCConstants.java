@@ -13,6 +13,8 @@ public class NOCConstants {
 	public static final String NOC_TYPE = "NocType";
 	public static final String SOURCE_RefId = "SourceRefId";
 	public static final String ACTION_APPLY = "APPLY";
+	public static final String FI_STATUS = "FIELDINSPECTION_INPROGRESS";
+	public static final String ACTION_RESUBMIT = "RESUBMIT";
 	// mdms path codes
 
     public static final String NOC_JSONPATH_CODE = "$.MdmsRes.NOC";
@@ -81,5 +83,13 @@ public class NOCConstants {
 	public static final String AIRPORT_NOC_TYPE = "AIRPORT_AUTHORITY";
 
 	public static final String PARSING_ERROR = "PARSING_ERROR";
+
+	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
+
+	public static final String INVALID_REQUEST = "INVALID REQUEST";
+	
+	public static final String BUILDING_TYPE = "BuildingType";
+	
+	public static final String BUILDING_CATEGORY = "BuildingCategory";
 
 }

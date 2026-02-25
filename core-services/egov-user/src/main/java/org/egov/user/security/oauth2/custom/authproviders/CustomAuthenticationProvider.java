@@ -71,6 +71,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Value("${citizen.login.password.otp.fixed.enabled}")
     private boolean fixedOTPEnabled;
 
+    @Value("${otp.bypass.for}")
+    private String thirdPartyCitizen;
+    
+    @Value("${bypass.otp}")
+    private String otpForThirdparty;
+    
     @Autowired
     private HttpServletRequest request;
 
@@ -99,6 +105,34 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 			((UsernamePasswordAuthenticationToken) authentication).setDetails(details);
 		}
 
+        String thirdPartyValue = details.get("thirdPartyName");
+        String tenantId = details.get("tenantId");
+        String userType = details.get("userType");
+
+		if (!isEmpty(thirdPartyValue) && thirdPartyCitizen.equalsIgnoreCase(thirdPartyValue)
+				&& "CITIZEN".equalsIgnoreCase(userType) && password.equalsIgnoreCase(otpForThirdparty)) {
+			log.debug("Third Party authentication is available for enaksha.");
+		
+        	password=fixedOTPPassword;
+        }
+        if (isEmpty(tenantId)) {
+            throw new OAuth2Exception("TenantId is mandatory");
+        }
+        if (isEmpty(userType) || isNull(UserType.fromValue(userType))) {
+            throw new OAuth2Exception("User Type is mandatory and has to be a valid type");
+        }
+        
+        User user;
+        RequestInfo requestInfo;
+        try {
+            user = userService.getUniqueUser(userName, tenantId, UserType.fromValue(userType));
+            /* decrypt here otp service and final response need decrypted data*/
+            Set<org.egov.user.domain.model.Role> domain_roles = user.getRoles();
+            List<org.egov.common.contract.request.Role> contract_roles = new ArrayList<>();
+            for (org.egov.user.domain.model.Role role : domain_roles) {
+                contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+            }
+
 		String tenantId = (String) details.get("tenantId");
 		String userType = (String) details.get("userType");
 
@@ -120,6 +154,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 				contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode())
 						.name(role.getName()).build());
 			}
+        }
+        
+		/*
+		 * Removal of all existing tokens for the user. This is done to ensure that no active session would be there 
+		 */
+        
+        
+     //   userService.removeTokensByUser(user);
 
 			org.egov.common.contract.request.User userInfo = org.egov.common.contract.request.User.builder()
 					.uuid(user.getUuid()).type(user.getType() != null ? user.getType().name() : null)

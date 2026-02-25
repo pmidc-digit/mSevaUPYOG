@@ -99,7 +99,7 @@ public class NOCConstants {
 	
 	public static final String MDMS_CHARGES_TYPE_PATH  = "$.MdmsRes.noc.ChargesType.*.Charges.*.[?( @.applicable==true )]";
 	
-	public static final String MDMS_CHARGES_TYPE_CODE  = "101";
+	public static final String MDMS_CHARGES_TYPE_CODE  = "102";
 
 	public static final String NOC_PROCESSING_FEES = "NOC_PROCESSING_FEES";
 

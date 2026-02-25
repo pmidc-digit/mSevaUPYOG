@@ -53,6 +53,7 @@ import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -222,7 +223,8 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			return;
 
 		BillRequestV2 req = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
-		producer.push(billCancelTopic, req);
+		String key = bills.get(0).getConsumerCode();
+		producer.push(billCancelTopic, key ,req);
 
 	}
 
@@ -247,6 +249,38 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			billCriteria.setConsumerCode(new HashSet<>());
 		BillResponseV2 res = searchActiveBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		log.info("\n\t\t\tResurlt billing query\t"+res);
+		
+		
+		/*
+		 * Check Duplicate Active Bills are Present on Not
+		*/
+		Map<String, List<BillV2>> byConsumer =
+			    res.getBill().stream()
+			        .collect(Collectors.groupingBy(BillV2::getConsumerCode));
+
+		Set<String> duplicateConsumerCodes = byConsumer.entrySet().stream()
+			    .filter(e -> e.getValue().size() > 1)
+			    .map(Map.Entry::getKey)
+			    .collect(Collectors.toSet());
+
+		
+		if (!duplicateConsumerCodes.isEmpty()) {
+
+		    billRepository.updateBillStatus(
+		        UpdateBillCriteria.builder()
+		            .statusToBeUpdated(BillStatus.EXPIRED)
+		            .consumerCodes(duplicateConsumerCodes)
+		            .businessService(billCriteria.getBusinessService())
+		            .tenantId(billCriteria.getTenantId())
+		            .build()
+		    );
+		    
+			return generateBill(billCriteria, requestInfo);   
+		}
+
+		/*----------
+		 * Ending of Duplicate -------
+		*/		
 		
 		List<BillV2> bills = res.getBill();
 
@@ -470,8 +504,9 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
+		String key = billRequest.getBills().get(0).getTenantId() + billRequest.getBills().get(0).getMobileNumber();
 		if (billRequest.getBills().get(0).getBusinessService().equalsIgnoreCase("WS")||billRequest.getBills().get(0).getBusinessService().equalsIgnoreCase("SW"))
-			kafkaTemplate.send(notifTopicName, null, billRequest);
+			kafkaTemplate.send(notifTopicName, key, billRequest);
 		return create(billRequest);
 	}
 
@@ -585,7 +620,11 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 					billAmount = billAmount.add(billDetail.getAmount());
 				}
 				
+
 				if ((billAmount.compareTo(BigDecimal.ZERO) >= 0) || (billAmount.compareTo(BigDecimal.ZERO) < 0 && ADVANCE_ALLOWED_BUSINESS_SERVICES.contains(demands.get(0).getBusinessService()))) {
+					/*  Round Up of Bill to check is there is any decimal . */
+
+					billAmount = billAmount.setScale(0, RoundingMode.CEILING);
 
 					BillV2 bill = BillV2.builder()
 						.auditDetails(util.getAuditDetail(requestInfo))
@@ -609,6 +648,15 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 			}
 
 		}
+		
+		/* Final Round Up of Bill to check is there still any decimal left. */
+		bills.forEach(bill -> {
+		    BigDecimal total = bill.getTotalAmount();
+		    if (total != null && total.stripTrailingZeros().scale() > 0) {
+		        bill.setTotalAmount(total.setScale(0, RoundingMode.CEILING));
+		    }
+		});
+
 		return bills;
 	}
 
@@ -847,7 +895,8 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 	public BillResponseV2 sendBillToKafka(BillRequestV2 billRequest) {
 
 		try {
-			kafkaTemplate.send(appProps.getCreateBillTopic(), appProps.getCreateBillTopicKey(), billRequest);
+			String key = billRequest.getBills().get(0).getTenantId() + billRequest.getBills().get(0).getMobileNumber();
+			kafkaTemplate.send(appProps.getCreateBillTopic(), key , billRequest);
 		} catch (Exception e) {
 			log.debug("BillService createAsync:" + e);
 			throw new CustomException("EGBS_BILL_SAVE_ERROR", e.getMessage());

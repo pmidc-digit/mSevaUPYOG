@@ -266,9 +266,7 @@ const WrapPaymentComponent = (props) => {
 
     if (sourceData) {
       fileNo = `PB/${districtCode}/${ulbCode}/${+sourceData?.approvalNo?.slice(-6) + 500000}`;
-      console.log("newCode", fileNo);
       usage = sourceData?.additionalDetails?.usage || sourceData?.additionalDetails?.siteDetails?.buildingCategory?.name;
-      console.log("usage", usage);
     }
 
     const state = Digit.ULBService.getStateId();

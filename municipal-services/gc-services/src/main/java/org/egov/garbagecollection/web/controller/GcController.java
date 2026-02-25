@@ -164,11 +164,14 @@ public class GcController {
 		
 		List<GarbageConnection> existingConnections = waterService.search(criteria, requestInfoWrapper.getRequestInfo());
 		
-		// Filter active connections only
-		List<GarbageConnection> activeConnections = existingConnections != null ? 
+		// Filter active connections only (status ACTIVE and applicationStatus CONNECTION_ACTIVATED)
+		List<GarbageConnection> activeConnections = existingConnections != null ?
 			existingConnections.stream()
-				.filter(conn -> conn.getStatus() == Connection.StatusEnum.ACTIVE)
-				.collect(java.util.stream.Collectors.toList()) : 
+				.filter(conn -> conn != null
+						&& conn.getStatus() == Connection.StatusEnum.ACTIVE
+						&& conn.getApplicationStatus() != null
+						&& GCConstants.STATUS_APPROVED.equalsIgnoreCase(conn.getApplicationStatus()))
+				.collect(java.util.stream.Collectors.toList()) :
 			new java.util.ArrayList<>();
 		
 		// Check if unit already has a connection

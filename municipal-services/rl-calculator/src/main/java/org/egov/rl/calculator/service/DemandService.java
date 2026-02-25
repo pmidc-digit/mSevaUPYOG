@@ -122,7 +122,7 @@ public class DemandService {
 							? billingPeriod.getTaxPeriodTo()
 							: allotmentDetails.getEndDate();
 
-					long exparyDate = billingPeriod.getDemandExpiryDate();
+//					long exparyDate = billingPeriod.getDemandExpiryDate();
 
 					amountPayable = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
 							BigDecimal::add);
@@ -130,8 +130,7 @@ public class DemandService {
 
 					Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails)
 							.payer(payerUser).minimumAmountPayable(amountPayable).tenantId(tenantId)
-							.taxPeriodFrom(startDay).taxPeriodTo(endDay).fixedbillexpirydate(exparyDate)
-							.billExpiryTime(exparyDate).consumerType(applicationType)
+							.taxPeriodFrom(startDay).taxPeriodTo(endDay).consumerType(applicationType)
 							.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 					demands.add(demand);
 				}

@@ -118,7 +118,6 @@ const ChallanApplicationDetails = () => {
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -180,7 +179,6 @@ const ChallanApplicationDetails = () => {
         applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
         applicationDetails?.challans?.[0]?.additionalDetail?.longitude
       );
-      console.log("location", location);
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -239,7 +237,6 @@ const ChallanApplicationDetails = () => {
     const payload = {
       Licenses: [action],
     };
-    console.log("action", action);
     if (action.action == "PAY") {
       const code = getChallanData?.challanNo;
       history.push(`/digit-ui/employee/payment/collect/Challan_Generation/${code}/${tenantId}?tenantId=${tenantId}`);
@@ -253,7 +250,6 @@ const ChallanApplicationDetails = () => {
 
   const payLater = async () => {
     setLoader(true);
-    console.log("pay later", getChallanData);
 
     const payload = {
       Challan: {
@@ -287,54 +283,57 @@ const ChallanApplicationDetails = () => {
   };
 
   const submitAction = async (modalData) => {
-    console.log("modalData", modalData);
     // return;
     if (!modalData?.amount) {
       setErrorOne(`Please Enter Amount`);
       setShowErrorToastt(true);
+      return;
+    }
+
+    if (!modalData?.wfDocuments || modalData?.wfDocuments.length === 0) {
+      setErrorOne(`Please upload required document`);
+      setShowErrorToastt(true);
+      return;
+    }
+
+    const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
+    if (modalData?.amount > finalAmount) {
+      setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
+      setShowErrorToastt(true);
+      setError(`Amount must be less than or equal to ${finalAmount}`);
     } else {
-      const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
-      if (modalData?.amount > finalAmount) {
-        setErrorOne(`Amount must be less than or equal to ${finalAmount}`);
-        setShowErrorToastt(true);
-        setError(`Amount must be less than or equal to ${finalAmount}`);
-      } else {
-        console.log("nothing");
+      setLoader(true);
 
-        setLoader(true);
-
-        const payload = {
-          Challan: {
-            ...getChallanData,
-            workflow: {
-              action: "SETTLED",
-              documents: modalData?.wfDocuments,
-            },
-            feeWaiver: modalData?.amount,
+      const payload = {
+        Challan: {
+          ...getChallanData,
+          workflow: {
+            action: "SETTLED",
+            documents: modalData?.wfDocuments,
           },
-        };
+          feeWaiver: modalData?.amount,
+        },
+      };
 
-        console.log("payload", payload);
-        try {
-          const response = await Digit.ChallanGenerationService.update(payload);
-          setLoader(false);
-          setShowModal(false);
-          // ✅ Show success first
-          // setShowToast({ key: "success", message: "Successfully updated the status" });
-          setLable("Challan is Settled");
-          setError(false);
-          setShowToast(true);
+      try {
+        const response = await Digit.ChallanGenerationService.update(payload);
+        setLoader(false);
+        setShowModal(false);
+        // ✅ Show success first
+        // setShowToast({ key: "success", message: "Successfully updated the status" });
+        setLable("Challan is Settled");
+        setError(false);
+        setShowToast(true);
 
-          // ✅ Delay navigation so toast shows
-          setTimeout(() => {
-            history.push("/digit-ui/employee/challangeneration/inbox");
-            window.location.reload();
-          }, 2000);
+        // ✅ Delay navigation so toast shows
+        setTimeout(() => {
+          history.push("/digit-ui/employee/challangeneration/inbox");
+          window.location.reload();
+        }, 2000);
 
-          // history.push(`/digit-ui/employee/challangeneration/inbox`);
-        } catch (error) {
-          setLoader(false);
-        }
+        // history.push(`/digit-ui/employee/challangeneration/inbox`);
+      } catch (error) {
+        setLoader(false);
       }
     }
   };

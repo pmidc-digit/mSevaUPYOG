@@ -54,7 +54,7 @@ const NocUploadedDocument = ({ filestoreId, documentType, documentName, latitude
         />
 
         {(latitude || longitude) && (
-          <div style={{ marginTop: "8px", fontSize: "12px", color: "#666" }}>
+          <div>
             {latitude && <div>Lat: {latitude}</div>}
             {longitude && <div>Long: {longitude}</div>}
           </div>

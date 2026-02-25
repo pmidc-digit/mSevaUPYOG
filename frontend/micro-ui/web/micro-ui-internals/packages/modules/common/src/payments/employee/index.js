@@ -26,7 +26,7 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
 
   return (
     <React.Fragment>
-      <p className="breadcrumb" style={{ marginLeft: "15px" }}>
+      <p className="breadcrumb" style={{ marginLeft: "15px", marginTop: isMobile ? "70px" : "3rem" }}>
         <Link to={`/digit-ui/employee`}>{t("ES_COMMON_HOME")}</Link>
         {isFsm ? <Link to={`/digit-ui/employee/fsm/home`}>/ {t("ES_TITLE_FSM")} </Link> : null}
         {isFsm ? <Link to={`/digit-ui/employee/fsm/inbox`}>/ {t("ES_TITLE_INBOX")}</Link> : null}/ {link}

@@ -32,7 +32,7 @@ const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
     <React.Fragment>
-      <div className="bills-citizen-wrapper">
+      <div className="card">
         <Switch>
           <AppContainer>
             {!isResponse ? (

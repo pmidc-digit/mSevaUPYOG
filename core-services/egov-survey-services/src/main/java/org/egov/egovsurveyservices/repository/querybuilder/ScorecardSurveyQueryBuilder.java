@@ -65,6 +65,7 @@ public class ScorecardSurveyQueryBuilder {
                     "question.lastmodifiedby AS question_lastmodifiedby, " +
                     "question.createdtime AS question_createdtime, " +
                     "question.lastmodifiedtime AS question_lastmodifiedtime, " +
+                    "question.qorder AS question_qorder, " +
                     "question.categoryid AS question_categoryid, " +
                     "questionCategory.label AS question_category_label, " +
                     "surveyCategory.label AS survey_category_label, " +
@@ -133,9 +134,8 @@ public class ScorecardSurveyQueryBuilder {
             preparedStmtList.add(System.currentTimeMillis());
         }
         
-        // preserve insertion order by ordering on section order and created timestamps (question/option)
-        // use real column names or select aliases (no qualified alias like question.question_createdtime)
-        query.append(" ORDER BY survey.createdtime DESC, section.sectionorder ASC, question.createdtime ASC, questionOption.createdtime ASC ");
+        // order using selected aliases so DISTINCT + ORDER BY is allowed
+        query.append(" ORDER BY survey_createdtime DESC, section_order ASC, question_weightage_qorder ASC, question_qorder ASC, option_order ASC ");
         return query.toString();
     }
 

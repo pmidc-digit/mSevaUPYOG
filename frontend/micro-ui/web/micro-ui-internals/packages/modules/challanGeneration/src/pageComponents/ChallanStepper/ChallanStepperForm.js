@@ -29,6 +29,8 @@ const ChallanStepperForm = () => {
   const [documentsData, setDocumentsData] = useState({});
   const isCitizen = window.location.href.includes("citizen");
 
+  const [getViolationData, setViolationData] = useState([]);
+
   const handleDocumentsSelect = (key, data) => {
     setDocumentsData(data);
   };
@@ -40,6 +42,7 @@ const ChallanStepperForm = () => {
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
   const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
+  const { data: OffenceActData, isLoading: OffenceActLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Acts" }]);
 
   const {
     control,
@@ -54,10 +57,15 @@ const ChallanStepperForm = () => {
       shouldUnregister: false,
     },
   });
+  const getActs = (offenceType, offenceActData) =>
+    offenceType?.acts
+      ?.map((code) => offenceActData?.Challan?.Acts?.find((a) => a?.code === code)?.name)
+      ?.filter(Boolean)
+      ?.join(", ") || "";
 
   const onSubmit = async (data) => {
     let missingDocs = [];
-
+    const actString = getActs(data?.offenceType, OffenceActData);
     docData?.Challan?.Documents?.forEach((doc) => {
       if (doc.required) {
         const hasFile = documentsData?.documents?.some((d) => d.documentType.includes(doc.code) && d.filestoreId);
@@ -95,6 +103,7 @@ const ChallanStepperForm = () => {
       additionalDetail: {
         latitude: documentsData?.documents?.[1]?.latitude,
         longitude: documentsData?.documents?.[1]?.longitude,
+        offenceActs: actString,
       },
       // address: {},
       documents: documentsData?.documents,
@@ -133,6 +142,11 @@ const ChallanStepperForm = () => {
   const handleRates = (val) => {
     const filterRates = OffenceRates?.Challan?.Rates?.filter((item) => item?.offenceTypeId == val?.id);
     setValue("amount", filterRates?.[0]?.amount);
+  };
+
+  const handleViolation = (e) => {
+    const filterData = OffenceTypeData?.Challan?.OffenceType?.filter((item) => item.subCategoryId == e?.id);
+    setViolationData(filterData);
   };
 
   return (
@@ -272,6 +286,7 @@ const ChallanStepperForm = () => {
                   <Dropdown
                     className="form-field"
                     select={(e) => {
+                      handleViolation(e);
                       props.onChange(e);
                     }}
                     selected={props.value}
@@ -303,7 +318,7 @@ const ChallanStepperForm = () => {
                       handleRates(e);
                     }}
                     selected={props.value}
-                    option={OffenceTypeData?.Challan?.OffenceType}
+                    option={getViolationData}
                     optionKey="name"
                     t={t}
                   />
@@ -372,7 +387,7 @@ const ChallanStepperForm = () => {
           isDleteBtn={"true"}
         />
       )}
-      {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
+      {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading || OffenceActLoading) && <Loader page={true} />}
     </div>
   );
 };

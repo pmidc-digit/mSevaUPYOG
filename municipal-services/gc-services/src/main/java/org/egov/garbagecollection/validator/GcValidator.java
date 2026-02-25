@@ -273,11 +273,13 @@ public class GcValidator {
             List<GarbageConnection> unitConnections = gcService.search(criteriaForUnit, request.getRequestInfo());
             
             if (unitConnections != null && !unitConnections.isEmpty()) {
-                // Filter active connections only for this unit
+                // Consider a connection active only when both status is ACTIVE
+                // and applicationStatus is CONNECTION_ACTIVATED
                 boolean unitHasActiveConnection = unitConnections.stream()
-                        .filter(conn -> conn != null && conn.getStatus() != null)
-                        .anyMatch(conn -> conn.getStatus() == StatusEnum.ACTIVE);
-                
+                        .filter(conn -> conn != null && conn.getStatus() != null && conn.getApplicationStatus() != null)
+                        .anyMatch(conn -> conn.getStatus() == StatusEnum.ACTIVE
+                                && GCConstants.STATUS_APPROVED.equalsIgnoreCase(conn.getApplicationStatus()));
+
                 if (unitHasActiveConnection) {
                     throw new CustomException("UNIT_ALREADY_HAS_CONNECTION",
                             "Unit " + unitId + " already has an active garbage connection. " +
@@ -291,8 +293,9 @@ public class GcValidator {
             if (propertyConnections != null && !propertyConnections.isEmpty()) {
                 // Filter active connections only
                 List<GarbageConnection> activeConnections = propertyConnections.stream()
-                        .filter(conn -> conn != null && conn.getStatus() != null && conn.getStatus() == StatusEnum.ACTIVE)
-                        .collect(Collectors.toList());
+                    .filter(conn -> conn != null && conn.getStatus() != null && conn.getStatus() == StatusEnum.ACTIVE
+                        && conn.getApplicationStatus() != null && GCConstants.STATUS_APPROVED.equalsIgnoreCase(conn.getApplicationStatus()))
+                    .collect(Collectors.toList());
                 
                 if (activeConnections.size() >= 3) {
                     throw new CustomException("MAX_CONNECTIONS_EXCEEDED",

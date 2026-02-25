@@ -25,7 +25,17 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000
 });
+console.log("DB pool", pool)
 
+pool.connect()
+  .then(client => {
+    console.log("Database connection successful");
+    client.release(); // release back to pool
+  })
+  .catch(err => {
+    console.error("Database connection failed:", err.message);
+    process.exit(1); // stop app if DB is not reachable
+  });
 const options = {
   controllers: "./src/api",
   useStubs: true // Conditionally turn on stubs (mock mode)

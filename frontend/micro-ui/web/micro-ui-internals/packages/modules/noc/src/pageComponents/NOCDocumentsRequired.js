@@ -71,7 +71,6 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
   useEffect(() => {
     setDocuments((prev) => {
       const arr = Array.isArray(prev) ? prev : [];
-      console.log('arr', arr)
       const hasAuth = arr.some((d) => d.documentType === "OWNER.AUTHORIZATIONLETTER");
       if (isFirm && !hasAuth) {
         return [...arr, { documentType: "OWNER.AUTHORIZATIONLETTER", filestoreId: "", documentUid: "", documentAttachment: "" }];

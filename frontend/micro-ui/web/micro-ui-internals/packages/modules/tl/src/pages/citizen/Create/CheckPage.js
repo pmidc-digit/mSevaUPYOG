@@ -105,13 +105,13 @@ const WrapCheckPage = ({ onSubmit, value }) => {
     <React.Fragment>
       <div className="step-form-wrapper">
         {window.location.href.includes("/citizen") ? <Timeline currentStep={4} /> : null}
-        <div style={{ width: "100%" }}>
+        <div className="TL-full-width-container">
           <Header styles={{ fontSize: "32px" }}>{t("TL_COMMON_SUMMARY")}</Header>
           <Card //style={{ paddingRight: "16px", boxShadow: "none" }}
           >
             <CardHeader styles={{ fontSize: "28px" }}>{t("TL_LOCALIZATION_TRADE_DETAILS")}</CardHeader>
             <StatusTable>
-              <label style={{ width: "100px", display: "inline" }} onClick={() => routeTo(`${routeLink}/TradeName`)}>
+              <label className="TL-label-inline-100" onClick={() => routeTo(`${routeLink}/TradeName`)}>
                 <EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />
               </label>
               <Row
@@ -190,7 +190,7 @@ const WrapCheckPage = ({ onSubmit, value }) => {
                   </React.Fragment>
                 ) : (
                   <React.Fragment>
-                    <label style={{ width: "100px", display: "inline" }} onClick={() => routeTo(`${routeLink}/map`)}>
+                    <label className="TL-label-inline-100" onClick={() => routeTo(`${routeLink}/map`)}>
                       <EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />
                     </label>
                     <Row
@@ -214,7 +214,7 @@ const WrapCheckPage = ({ onSubmit, value }) => {
           >
             <StatusTable>
               <CardHeader styles={{ fontSize: "28px" }}>{t("TL_NEW_OWNER_DETAILS_HEADER")}</CardHeader>
-              <label style={{ width: "100px", display: "inline" }} onClick={() => routeTo(`${routeLink}/owner-details`)}>
+              <label className="TL-label-inline-100" onClick={() => routeTo(`${routeLink}/owner-details`)}>
                 <EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />
               </label>
               {owners.owners &&
@@ -247,7 +247,7 @@ const WrapCheckPage = ({ onSubmit, value }) => {
           >
             <StatusTable>
               <CardHeader styles={{ fontSize: "28px" }}>{t("TL_COMMON_DOCS")}</CardHeader>
-              <label style={{ width: "100px", display: "inline" }} onClick={() => routeTo(`${routeLink}/proof-of-identity`)}>
+              <label className="TL-label-inline-100" onClick={() => routeTo(`${routeLink}/proof-of-identity`)}>
                 <EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />
               </label>
               <div>

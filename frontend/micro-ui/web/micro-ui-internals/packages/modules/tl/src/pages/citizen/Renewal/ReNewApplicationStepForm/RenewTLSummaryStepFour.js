@@ -1,14 +1,40 @@
 // RenewSummaryStepFour.jsx
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { FormComposer } from "@mseva/digit-ui-react-components";
+import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 
 export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const history = useHistory();
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+  // Monitor checkbox state and enable/disable button
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.declarationChecked) {
+        setIsButtonDisabled(false);
+      } else {
+        setIsButtonDisabled(true);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-close toast after 3 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+        setError("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   useEffect(() => {
       Digit.TLService.fetch_bill({ tenantId: tenantId, filters: { consumerCode: formData?.CreatedResponse?.applicationNumber, businessService: "TL" } });
@@ -16,27 +42,26 @@ export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => 
   },[])
 
   const goNext = async () => {
-    // const response = await Digit.TLService.update({ Licenses: [formData?.CreatedResponse] }, tenantId);
-
-    // if (response?.Licenses?.length > 0) {
-    //   history.replace(`/digit-ui/employee/tl/application-details/${response?.Licenses?.[0]?.applicationNumber}`);
-    // }
-    console.log("Full form data submitted: ", formData);
+    // Validate checkbox
+    if (!window.declarationChecked) {
+      setError(t("TL_PLEASE_ACCEPT_DECLARATION") !== "TL_PLEASE_ACCEPT_DECLARATION" ? t("TL_PLEASE_ACCEPT_DECLARATION") : "Please accept the declaration to proceed");
+      setShowToast(true);
+      return;
+    }
     
-    const res = onSubmit(formData?.CreatedResponse);
-    console.log("API response: ", res);
+    const res = await onSubmit(formData?.CreatedResponse);
+
 
     if (res) {
-      console.log("Submission successful, moving to next step.");
-
       history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
     } else {
-      console.error("Submission failed, not moving to next step.");
+      setError("Submission failed. Please try again.");
+      setShowToast(true);
     }
   };
 
   const onSubmit = async (data) => {
-    console.log("formData", data);
+   
     let formdata = {...data};
     formdata.tradeLicenseDetail.applicationDocuments = formData?.Documents?.documents?.documents;
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
@@ -63,7 +88,19 @@ export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => 
       label={t(config.texts.submitBarLabel)}
       currentStep={config.currStepNumber}
       onBackClick={onGoBack}
+      isDisabled={isButtonDisabled}
     />
+    {showToast && (
+      <Toast
+        error={true}
+        label={error}
+        isDleteBtn={true}
+        onClose={() => {
+          setShowToast(false);
+          setError("");
+        }}
+      />
+    )}
     </React.Fragment>
   );
 };

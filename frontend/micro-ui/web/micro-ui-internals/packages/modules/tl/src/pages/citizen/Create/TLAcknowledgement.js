@@ -151,13 +151,13 @@ const TLAcknowledgement = ({ data, onSuccess, onUpdateSuccess }) => {
   return(
     <Card>
       <BannerPicker t={t} data={mutation2.data} isSuccess={mutation2.isSuccess} isLoading={(mutation2.isIdle || mutation2.isLoading)} />
-      {(mutation2.isSuccess) && <CardText>{!isDirectRenewal?t("TL_FILE_TRADE_RESPONSE"):t("TL_FILE_TRADE_RESPONSE_DIRECT_REN")}</CardText>}
-      {(!mutation2.isSuccess) && <CardText>{t("TL_FILE_TRADE_FAILED_RESPONSE")}</CardText>}
-      {!isEdit && mutation2.isSuccess && <SubmitBar label={t("TL_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} />}
+      {/* {(mutation2.isSuccess) && <CardText>{!isDirectRenewal?t("TL_FILE_TRADE_RESPONSE"):t("TL_FILE_TRADE_RESPONSE_DIRECT_REN")}</CardText>} */}
+      {/* {(!mutation2.isSuccess) && <CardText>{t("TL_FILE_TRADE_FAILED_RESPONSE")}</CardText>} */}
+      {!isEdit && mutation2.isSuccess && <SubmitBar label={t("TL_DOWNLOAD_ACK_FORM")} onSubmit={handleDownloadPdf} className="TL-mb-10" />}
       {(mutation2.isSuccess) && isEdit && (
         <LinkButton
           label={
-            <div className="response-download-button">
+            <div className="response-download-button ">
               <span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#a82227">
                   <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
@@ -176,7 +176,7 @@ const TLAcknowledgement = ({ data, onSuccess, onUpdateSuccess }) => {
         <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
       </Link>}
       <Link to={`/digit-ui/citizen`}>
-        <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+        <LinkButton  label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
     </Card>
   );

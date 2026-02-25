@@ -28,7 +28,6 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
       : pincode
       ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
       : allCities;
-console.log("citiesInTLSelectAddress", cities);
   const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city || null);
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
@@ -76,7 +75,6 @@ console.log("citiesInTLSelectAddress", cities);
     }
   }, [formData?.tradeUnits?.[0]?.tradeCategory?.code]);
 
-  console.log("formDataInTLSelectState", formData)
 
   useEffect(() => {
     if (selectedCity && fetchedLocalities) {
@@ -178,7 +176,7 @@ console.log("citiesInTLSelectAddress", cities);
     return (
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("MYCITY_CODE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("MYCITY_CODE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             name={"city"}
             defaultValue={cities?.length === 1 ? cities[0] : selectedCity}
@@ -201,7 +199,7 @@ console.log("citiesInTLSelectAddress", cities);
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_MOHALLA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_MOHALLA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             name="locality"
             defaultValue={selectedLocality || formData?.address?.locality || null}

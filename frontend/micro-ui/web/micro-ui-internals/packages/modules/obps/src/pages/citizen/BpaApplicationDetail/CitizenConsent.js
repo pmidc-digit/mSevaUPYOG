@@ -200,7 +200,7 @@ console.log('data for ownerconsent', data)
 
 
 
-  const selfdeclarationform = `
+  const selfdeclarationform = data?.applicationData?.additionalDetails?.isSelfCertification ?`
   <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; margin-top:-100px; padding:0;">
 
     <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
@@ -208,6 +208,83 @@ console.log('data for ownerconsent', data)
     </h2>
     <div style="text-align:center; margin-top:-78px; font-size:16px;">
       (For Authorization of ${architecttype} under Self-Certification Scheme)
+    </div>
+
+    <div style="margin-top:-52px;">
+      <p style="margin-bottom:-32px;"><strong>To</strong></p>
+      <p style="margin-bottom:-32px;"><strong>${ulbselection || "<ULB Type>"}</strong></p>
+      <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
+    </div>
+
+    <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;margin-left-5px; text-align:justify;">
+  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${address || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
+  I/We hereby declare that the Professional's Name <b>${stakeholderName}</b> <b>${architecttype}</b> having Registration No <b>${architectid}</b> is appointed by me/us and is authorized to make representation/application with regard to aforesaid construction to any of the authorities.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
+  I/We further declare that I am/We are aware of all the actions taken or representations made by the <b>${architecttype}</b> authorized by me/us.
+    </p>
+
+    <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
+      <li style="margin-top:-5px;margin-bottom:-25px;">1. That I am/We are sole owner(s) of the site.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">2. That there is no dispute regarding the site and if any dispute arises, then I/We shall be solely responsible for the same.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">3. That construction of the building will be undertaken as per the approved building plans and structural design given by the Structural Engineer.</li>,
+      <li style="margin-top:-5px;margin-bottom:-25px;">4. If there is any shortfall in fees, I will be liable to pay the balance amount.</li>
+      <li style="margin-top:-5px;margin-bottom:-25px;">That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.</li>
+    </ol>
+
+    <!-- Signature / details table -->
+    ${TimeStamp !== "" ? `<table style="width:100%; border-collapse:collapse; margin-top:6px; font-size:14px;">
+      <tr>
+        <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
+          <div style="font-weight:700; margin-bottom:4px;">Date:</div>
+          <div style="min-height:60px;">${DateOnly || "<Date of Sign>"}</div>
+        </td>
+
+        <td style="width:52%; vertical-align:top; border:1px dotted #000;">
+          <table style="width:100%; border-collapse:collapse;">
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; width:40%; font-weight:700;">Name of Owner:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${ownername}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Application Number:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${applicationnumber}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${address}</td>
+            </tr>
+            <tr>
+            <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">e-Mail:</td>
+            <td style="padding:6px; border-bottom:1px dotted #000;">${ownerEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${ownermobileNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; font-weight:700;">Signature:</td>
+              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || "<date> <time>"}</b></td>
+            </tr>
+          </table>` : ""}
+        </td>
+      </tr>
+    </table>
+  </div>
+` : `
+  <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; margin-top:-100px; padding:0;">
+
+    <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
+      OWNER'S DECLARATION
+    </h2>
+    <div style="text-align:center; margin-top:-78px; font-size:16px;">
+      (For Authorization of ${architecttype})
     </div>
 
     <div style="margin-top:-52px;">

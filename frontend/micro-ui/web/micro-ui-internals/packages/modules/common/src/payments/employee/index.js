@@ -23,6 +23,7 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
   const commonProps = { stateCode, cityCode, moduleCode, setLink };
 
   const isFsm = location?.pathname?.includes("fsm") || location?.pathname?.includes("FSM");
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
     <React.Fragment>

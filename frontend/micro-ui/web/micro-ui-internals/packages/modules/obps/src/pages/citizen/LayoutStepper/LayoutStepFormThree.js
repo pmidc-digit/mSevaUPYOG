@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_LayoutNewApplication_FORM } from "../../../redux/actions/LayoutNewApplicationActions";
@@ -19,6 +19,127 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       ? state.obps.LayoutNewApplicationFormReducer.formData[config?.key]
       : {},
   )
+
+  const currentStepDataNew = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
+
+  const [applicationNo, setApplicationNo] = useState("");
+    const [isVacant, setIsVacant] = useState(false);
+    const [isCluApproved, setIsCluApproved] = useState(false);
+    const [isRestrictedArea, setIsRestrictedArea] = useState(false);
+    const [isUnderMasterPlan, setIsUnderMasterPlan] = useState(false);
+    const [isNationalHighway, setIsNationalHighway] = useState(false);
+    const [isInstitution, setIsInstitution] = useState(false);
+  
+    useEffect(() => {
+      if (!currentStepDataNew) return;
+  
+      // Application No
+      setApplicationNo(
+        currentStepDataNew?.apiData?.Layout?.applicationNo || ""
+      );
+  
+      // Vacant
+      setIsVacant(
+        currentStepDataNew?.siteDetails?.buildingStatus?.code === "VACANT"
+      );
+  
+      // CLU Approved
+      const cluApprovedValue =
+        currentStepDataNew?.siteDetails?.isCluRequired?.code ||
+        currentStepDataNew?.siteDetails?.isCluRequired;
+  
+      setIsCluApproved(
+        cluApprovedValue === "YES" || cluApprovedValue === true
+      );
+  
+      // Restricted Area
+      setIsRestrictedArea(
+        currentStepDataNew?.siteDetails?.specificationRestrictedArea?.code === "YES"
+      );
+  
+      // Under Master Plan
+      setIsUnderMasterPlan(
+        currentStepDataNew?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES"
+      );
+  
+      // National Highway
+      const roadType =
+        currentStepDataNew?.siteDetails?.roadType?.name ||
+        currentStepDataNew?.siteDetails?.roadType ||
+        "";
+  
+      setIsNationalHighway(
+        roadType.toLowerCase().includes("national") ||
+        roadType.toLowerCase().includes("nh")
+      );
+  
+      // Institution
+      const buildingCategory =
+        currentStepDataNew?.siteDetails?.buildingCategory?.code ||
+        currentStepDataNew?.siteDetails?.buildingCategory ||
+        "";
+  
+      setIsInstitution(
+        buildingCategory === "INSTITUTION" ||
+        buildingCategory.toLowerCase().includes("institution")
+      );
+  
+    }, [currentStepDataNew]);
+
+  const { isLoading: isDocLoading, data: docData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "LAYOUT", ["LayoutDocuments"])
+
+  const filteredDocuments = useMemo(() => {
+      console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
+      let docs = docData?.LAYOUT?.LayoutDocuments || []
+      
+      console.log("=== FILTER DEBUG ===")
+      console.log("Initial docs count:", docs.length, docs)
+      console.log("isCluApproved:", isCluApproved)
+      console.log("isNationalHighway:", isNationalHighway)
+      console.log("isInstitution:", isInstitution)
+      
+      // Filter and process documents
+      const processedDocs = docs
+        .map((doc) => {
+          // Set default required status based on backend config
+          let isRequired = doc.required || false
+          
+          // Override required status based on conditions
+          
+          // Site photographs are ALWAYS mandatory (regardless of CLU)
+          if (doc.code === "OWNER.SITEPHOTOGRAPHONE" || doc.code === "OWNER.SITEPHOTOGRAPHTWO") {
+            isRequired = true
+          }
+          // National Highway NOC is mandatory only when it's a National Highway
+          else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
+            isRequired = isNationalHighway
+          }
+          // When CLU = YES: Make specific CLU documents mandatory
+          // else if (isCluApproved && doc.cluRequired) {
+          //   isRequired = true
+          // }
+          // When CLU = NO: CLU-required docs become NOT mandatory, but regular required docs stay mandatory
+          // else if (!isCluApproved && doc.cluRequired) {
+          //   isRequired = false
+          // }
+          
+          // Filter out building drawing if vacant
+          if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
+            return null
+          }
+          
+          return { ...doc, required: isRequired }
+        }).filter(doc => !(doc?.cluRequired && !isCluApproved))
+        .filter(doc => doc !== null)
+      
+      console.log("Final docs count:", processedDocs.length)
+      console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
+      console.log("=== END DEBUG ===")
+      
+      return processedDocs
+    }, [isVacant, isCluApproved, isNationalHighway, isInstitution, docData?.LAYOUT?.LayoutDocuments?.length])
+
+
 
   const coordinates = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {})
 
@@ -83,26 +204,52 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   //   return [];
   // }
 
-   function validation(documents) {
-    if (!isLoading) {
-      const isVacant = completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false
+  //  function validation(documents) {
+  //   if (!isLoading && !isDocLoading) {
 
-      const layoutDocumentsType = isVacant
-        ? data?.Layout?.Documents?.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING")
-        : data?.Layout?.Documents
+  //     console.log("filteredDocuments and Documents", filteredDocuments, documents)
 
-      const documentsData = documents?.documents?.documents || []
+  //     const isVacant = completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false
 
-      const requiredDocs = (layoutDocumentsType || []).filter((doc) => doc.required).map((doc) => doc.code)
+  //     const layoutDocumentsType = isVacant
+  //       ? data?.Layout?.Documents?.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING")
+  //       : data?.Layout?.Documents
 
-      const uploadedDocs = documentsData.map((doc) => doc.documentType)
+  //     const documentsData = documents?.documents?.documents || []
 
-      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc))
+  //     const requiredDocs = (layoutDocumentsType || []).filter((doc) => doc.required).map((doc) => doc.code)
 
-      return missingDocs
-    }
-    return []
-  }
+  //     const uploadedDocs = documentsData.map((doc) => doc.documentType)
+
+  //     const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc))
+
+  //     return missingDocs
+  //   }
+  //   return []
+  // }
+
+  function validation(documents) {
+  if (isLoading || isDocLoading) return [];
+
+  const uploadedDocs = documents?.documents?.documents || [];
+
+  // 1️⃣ Get all REQUIRED document codes
+  const requiredDocCodes = (filteredDocuments || [])
+    .filter(doc => doc.required)
+    .map(doc => doc.code);
+
+  // 2️⃣ Get uploaded document types
+  const uploadedDocTypes = uploadedDocs.map(doc => doc.documentType);
+
+  // 3️⃣ Find missing required documents
+  const missingDocs = requiredDocCodes.filter(
+    code => !uploadedDocTypes.includes(code)
+  );
+
+  // console.log("filtered",requiredDocCodes, uploadedDocs, uploadedDocTypes, missingDocs)
+
+  return missingDocs;
+}
 
   function onGoBack(data) {
     onBackClick(config.key, data);

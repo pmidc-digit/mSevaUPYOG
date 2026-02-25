@@ -1462,7 +1462,7 @@ const LayoutSiteDetails = (_props) => {
                         onBlur={(e) => {
                           props.onBlur(e);
                         }}
-                        placeholder="Sq M"
+                        // placeholder="Sq M"
                         disable={currentStepData?.apiData?.applicationNo ? true : false}
                       />
                     )}

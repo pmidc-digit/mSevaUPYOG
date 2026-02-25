@@ -70,7 +70,7 @@ const LayoutResponseCitizen = (props) => {
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {downloading && <Loader />}
-        {layoutData?.applicationStatus !== "REJECTED" ? (
+        {layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? (
           <div>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
             {pdfError && <div style={{ color: "red", padding: "10px", marginTop: "10px" }}>{pdfError}</div>}

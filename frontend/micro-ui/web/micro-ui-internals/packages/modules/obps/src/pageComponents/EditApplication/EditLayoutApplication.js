@@ -487,7 +487,7 @@ const EditLayoutApplication = () => {
             // ),
             isCluRequired: options?.find((obj) => obj?.code === siteDetails?.isCluRequired?.code || obj?.code === siteDetails?.isCluRequired),
             applicationAppliedUnder: applicationAppliedUnderOptions?.find((obj) => obj?.code === siteDetails?.applicationAppliedUnder?.code || obj?.code === siteDetails?.applicationAppliedUnder),
-            vasikaDate: convertToISODate(siteDetails?.vasikaDate),
+            // vasikaDate: convertToISODate(siteDetails?.vasikaDate),
             // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
             // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),
             // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),

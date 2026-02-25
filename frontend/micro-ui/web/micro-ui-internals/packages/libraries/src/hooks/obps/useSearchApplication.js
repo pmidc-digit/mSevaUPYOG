@@ -137,3 +137,28 @@ export const useLayoutSearchApplicationByIdOrMobile = (params, tenantId, config 
   });
   return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params]) };
 };
+
+const useLayoutCheckListSearchFn = (params, tenantId) => {
+  return async () => {
+    return await Digit.OBPSService.LayoutCheckListSearch({ tenantId, filters: params, });
+  };
+};
+
+export const useLayoutCheckListSearch = (params, tenantId, config = {}) => {
+  const client = useQueryClient();
+
+  const result = useQuery(
+    ["LAYOUT_CHECKLIST_SEARCH", params],
+    useLayoutCheckListSearchFn(params, tenantId),
+    {
+      staleTime: Infinity,
+      ...config,
+    }
+  );
+
+  // Add a helper to revalidate if you want
+  return {
+    ...result,
+    revalidate: () => client.invalidateQueries(["LAYOUT_CHECKLIST_SEARCH", params]),
+  };
+};

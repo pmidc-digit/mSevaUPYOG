@@ -50,11 +50,12 @@
 
 /* Button */
 .upload-file-button {
-  height: auto;
-  min-height: 40px;
-  max-height: 40px;
-  width: 43%;
-  padding: 0;
+  position: absolute;
+  opacity: 0;
+  height: 40px;  
+  width: 175px;  
+  top: 10px;
+  left: 15px;
 }
 
 /* Hide elements */
@@ -94,6 +95,22 @@
   font-size: 13px;
   color: red;
   margin: 0;
+}
+
+.upload-file-new {
+  min-height: 56px;
+  @apply relative border border-input-border w-full;
+  border-radius: 10px;
+
+  div {
+    @apply flex flex-row h-full items-center pl-md mt-sm mb-sm flex-wrap;
+    border-radius: 10px;
+
+    .file-upload-status {
+      @apply text-body-s-dt ml-sm;
+    }
+  }
+
 }
 
 /* Mobile */

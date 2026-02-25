@@ -598,7 +598,7 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
               {`${t("Applicant Type")}`} <span className="requiredField">*</span>
             </CardLabel>

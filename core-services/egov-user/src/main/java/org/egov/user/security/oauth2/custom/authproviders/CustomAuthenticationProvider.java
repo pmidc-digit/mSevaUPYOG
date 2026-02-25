@@ -1,6 +1,8 @@
 package org.egov.user.security.oauth2.custom.authproviders;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.codehaus.jackson.map.ObjectMapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.egov.tracer.model.ServiceCallException;
@@ -23,7 +25,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import javax.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,6 +63,10 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${citizen.login.password.otp.fixed.value}")
     private String fixedOTPPassword;
+    
+
+    @Value("${default.employee.password}")
+    private String defaultEmployeePassword;
 
     @Value("${citizen.login.password.otp.fixed.enabled}")
     private boolean fixedOTPEnabled;
@@ -75,13 +85,25 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         this.userService = userService;
     }
 
-    @Override
-    public Authentication authenticate(Authentication authentication) {
-        String userName = authentication.getName();
-        String password = authentication.getCredentials().toString();
-	
+	@Override
+	public Authentication authenticate(Authentication authentication) {
+		String userName = authentication.getName();
+		String password = authentication.getCredentials().toString();
 
-        final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
+		boolean isPasswordType = !password.matches("\\d{6}");
+		Map<String, Object> details;
+		Object existingDetails = authentication.getDetails();
+		if (existingDetails instanceof Map) {
+			details = new LinkedHashMap<>((Map<String, Object>) existingDetails);
+		} else {
+			details = new LinkedHashMap<>();
+		}
+
+		details.put("isPasswordType", isPasswordType);
+
+		if (authentication instanceof UsernamePasswordAuthenticationToken) {
+			((UsernamePasswordAuthenticationToken) authentication).setDetails(details);
+		}
 
         String thirdPartyValue = details.get("thirdPartyName");
         String tenantId = details.get("tenantId");
@@ -111,18 +133,27 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
             }
 
-            org.egov.common.contract.request.User userInfo = org.egov.common.contract.request.User.builder().uuid(user.getUuid())
-                    .type(user.getType() != null ? user.getType().name() : null).roles(contract_roles).build();
-            requestInfo = RequestInfo.builder().userInfo(userInfo).build();
-            user = encryptionDecryptionUtil.decryptObject(user, "UserListSelf", User.class, requestInfo);
+		String tenantId = (String) details.get("tenantId");
+		String userType = (String) details.get("userType");
 
-        } catch (UserNotFoundException e) {
-            log.error("User not found", e);
-            throw new OAuth2Exception("Invalid login credentials");
-        } catch (DuplicateUserNameException e) {
-            log.error("Fatal error, user conflict, more than one user found", e);
-            throw new OAuth2Exception("Invalid login credentials");
+		if (isEmpty(tenantId)) {
+			throw new OAuth2Exception("TenantId is mandatory");
+		}
+		if (isEmpty(userType) || isNull(UserType.fromValue(userType))) {
+			throw new OAuth2Exception("User Type is mandatory and has to be a valid type");
+		}
 
+		User user;
+		RequestInfo requestInfo;
+		try {
+			user = userService.getUniqueUser(userName, tenantId, UserType.fromValue(userType));
+			/* decrypt here otp service and final response need decrypted data */
+			Set<org.egov.user.domain.model.Role> domain_roles = user.getRoles();
+			List<org.egov.common.contract.request.Role> contract_roles = new ArrayList<>();
+			for (org.egov.user.domain.model.Role role : domain_roles) {
+				contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode())
+						.name(role.getName()).build());
+			}
         }
         
 		/*
@@ -132,65 +163,84 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         
      //   userService.removeTokensByUser(user);
 
+			org.egov.common.contract.request.User userInfo = org.egov.common.contract.request.User.builder()
+					.uuid(user.getUuid()).type(user.getType() != null ? user.getType().name() : null)
+					.roles(contract_roles).build();
+			requestInfo = RequestInfo.builder().userInfo(userInfo).build();
+			user = encryptionDecryptionUtil.decryptObject(user, "UserListSelf", User.class, requestInfo);
 
-        if (user.getActive() == null || !user.getActive()) {
-            throw new OAuth2Exception("Please activate your account");
-        }
+		} catch (UserNotFoundException e) {
+			log.error("User not found", e);
+			throw new OAuth2Exception("Invalid login credentials");
+		} catch (DuplicateUserNameException e) {
+			log.error("Fatal error, user conflict, more than one user found", e);
+			throw new OAuth2Exception("Invalid login credentials");
 
-        // If account is locked, perform lazy unlock if eligible
+		}
 
-        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+		userService.removeTokensByUser(user);
 
-            if (userService.isAccountUnlockAble(user)) {
-                user = unlockAccount(user, requestInfo);
-            } else
-                throw new OAuth2Exception("Account locked");
-        }
+		if (user.getActive() == null || !user.getActive()) {
+			throw new OAuth2Exception("Please activate your account");
+		}
 
+		// If account is locked, perform lazy unlock if eligible
 
-        boolean isCitizen = false;
-        if (user.getType() != null && user.getType().equals(UserType.CITIZEN))
-            isCitizen = true;
+		if (user.getAccountLocked() != null && user.getAccountLocked()) {
 
-        boolean isPasswordMatched;
-        if (isCitizen) {
-            if (fixedOTPEnabled && !fixedOTPPassword.equals("") && fixedOTPPassword.equals(password)) {
-                //for automation allow fixing otp validation to a fixed otp
-                isPasswordMatched = true;
-            } else {
-                isPasswordMatched = isPasswordMatch(citizenLoginPasswordOtpEnabled, password, user, authentication);
-            }
-        } else {
-            isPasswordMatched = isPasswordMatch(employeeLoginPasswordOtpEnabled, password, user, authentication);
-        }
+			if (userService.isAccountUnlockAble(user)) {
+				user = unlockAccount(user, requestInfo);
+			} else
+				throw new OAuth2Exception("Account locked");
+		}
 
-        if (isPasswordMatched) {
+		boolean isCitizen = false;
+		if (user.getType() != null && user.getType().equals(UserType.CITIZEN))
+			isCitizen = true;
+
+		boolean isPasswordMatched = false;
+		if (isCitizen) {
+			if (fixedOTPEnabled && !fixedOTPPassword.equals("") && fixedOTPPassword.equals(password)) {
+				// for automation allow fixing otp validation to a fixed otp
+				isPasswordMatched = true;
+			} else {
+				isPasswordMatched = isPasswordMatch(citizenLoginPasswordOtpEnabled, password, user, authentication);
+			}
+		} else {
+			if ((employeeLoginPasswordOtpEnabled && password.equals(defaultEmployeePassword)) && !isPasswordType) {
+				isPasswordMatched = true;
+			} else {
+				isPasswordMatched = isPasswordMatch(!isPasswordType, password, user, authentication);
+			}
+		}
+
+		if (isPasswordMatched) {
 
 			/*
-			  We assume that there will be only one type. If it is multiple
-			  then we have change below code Separate by comma or other and
-			  iterate
+			 * We assume that there will be only one type. If it is multiple then we have
+			 * change below code Separate by comma or other and iterate
 			 */
-            List<GrantedAuthority> grantedAuths = new ArrayList<>();
-            grantedAuths.add(new SimpleGrantedAuthority("ROLE_" + user.getType()));
-            final SecureUser secureUser = new SecureUser(getUser(user));
-            userService.resetFailedLoginAttempts(user);
-            return new UsernamePasswordAuthenticationToken(secureUser,
-                    password, grantedAuths);
-        } else {
-            // Handle failed login attempt
-            // Fetch Real IP after being forwarded by reverse proxy
-            userService.handleFailedLogin(user, request.getHeader(IP_HEADER_NAME), requestInfo);
+			List<GrantedAuthority> grantedAuths = new ArrayList<>();
+			grantedAuths.add(new SimpleGrantedAuthority("ROLE_" + user.getType()));
+			final SecureUser secureUser = new SecureUser(getUser(user));
+			userService.resetFailedLoginAttempts(user);
+			return new UsernamePasswordAuthenticationToken(secureUser, password, grantedAuths);
+		} else {
+			// Handle failed login attempt
+			// Fetch Real IP after being forwarded by reverse proxy
+			userService.handleFailedLogin(user, request.getHeader(IP_HEADER_NAME), requestInfo);
 
-            throw new OAuth2Exception("Invalid login credentials");
-        }
+			throw new OAuth2Exception("Invalid login credentials");
+		}
 
-    }
+	}
 
     private boolean isPasswordMatch(Boolean isOtpBased, String password, User user, Authentication authentication) {
         BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
         final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
         String isCallInternal = details.get("isInternal");
+        String userName = authentication.getName();
+
         if (isOtpBased) {
             if (null != isCallInternal && isCallInternal.equals("true")) {
                 log.debug("Skipping otp validation during login.........");
@@ -208,10 +258,16 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 log.debug("Skipping password validation during login.........");
                 return true;
             }
+            if (!userName.equalsIgnoreCase(user.getUserName())) {
+                log.error("Username mismatch during password validation");
+                return false;
+            }
             return bcrypt.matches(password, user.getPassword());
         }
     }
 
+    
+   
     @SuppressWarnings("unchecked")
     private String getTenantId(Authentication authentication) {
         final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();

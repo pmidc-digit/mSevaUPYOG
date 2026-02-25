@@ -167,6 +167,16 @@ const { isLoading: isInboxLoading, data: inboxData } =
     dispatch({ action: "mutateFilterForm", data })
   }
 
+  const onSearchFormSubmit = (data) => {
+    // Filter out empty values
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== null && value !== undefined && value !== "")
+    )
+    // Only reset offset when searching, preserve the current limit
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } })
+    dispatch({ action: "mutateSearchForm", data: filteredData })
+  }
+
   const propsForInboxTable = useLayoutTableConfig({
     parentRoute,
     onPageSizeChange,
@@ -194,6 +204,16 @@ const { isLoading: isInboxLoading, data: inboxData } =
     reset: resetFilterForm,
   } = useForm({
     defaultValues: { ...filterFormDefaultValues },
+  })
+
+  // Setup search form with react-hook-form
+  const {
+    register: registerSearchFormField,
+    handleSubmit: handleSearchFormSubmit,
+    setValue: setSearchFormValue,
+    reset: resetSearchForm,
+  } = useForm({
+    defaultValues: { ...searchFormDefaultValues },
   })
 
 
@@ -244,6 +264,14 @@ const { isLoading: isInboxLoading, data: inboxData } =
       setFilterFormValue("businessService", formState.filterForm.businessService || "Layout_mcUp")
     }
   }, [formState?.filterForm?.moduleName, formState?.filterForm?.applicationStatus, formState?.filterForm?.assignee, formState?.filterForm?.businessService, setFilterFormValue])
+
+  // Search form sync with reducer state
+  useEffect(() => {
+    if (formState?.searchForm) {
+      setSearchFormValue("applicationNumber", formState.searchForm.applicationNumber || null)
+      setSearchFormValue("mobileNumber", formState.searchForm.mobileNumber || null)
+    }
+  }, [formState?.searchForm?.applicationNumber, formState?.searchForm?.mobileNumber, setSearchFormValue])
 
   // Search debounce
   useEffect(() => {
@@ -300,6 +328,32 @@ const { isLoading: isInboxLoading, data: inboxData } =
           statuses={statusData}
           isInboxLoading={isInboxLoading}
           handleFilter={handleFilterChange}
+        />
+      }
+      searchSection={
+        <LayoutSearchFormFields
+          registerRef={registerSearchFormField}
+          searchFormState={formState?.searchForm}
+          searchFieldComponents={
+            <div className="layout-search-actions">
+              <button
+                type="button"
+                className="layout-search-button layout-search-button-secondary"
+                onClick={() => {
+                  onSearchFormReset(setSearchFormValue)
+                }}
+              >
+                {t("ES_COMMON_CLEAR_SEARCH")}
+              </button>
+              <button
+                type="button"
+                className="layout-search-button layout-search-button-primary"
+                onClick={handleSearchFormSubmit(onSearchFormSubmit)}
+              >
+                {t("ES_COMMON_SEARCH")}
+              </button>
+            </div>
+          }
         />
       }
       topBar={

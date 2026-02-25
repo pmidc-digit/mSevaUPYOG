@@ -121,6 +121,7 @@ const InboxWrapper = ({
   title,
   totalCount = 0,
   filterSection,
+  searchSection,
   topBar,
   isLoading = false,
   tableData = [],
@@ -149,6 +150,12 @@ const InboxWrapper = ({
         )}
 
         {topBar}
+
+        {searchSection && (
+          <div className="new-inbox-search-section">
+            {searchSection}
+          </div>
+        )}
 
         {isLoading ? (
           <Loader />

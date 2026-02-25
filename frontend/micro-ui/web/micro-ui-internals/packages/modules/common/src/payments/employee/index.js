@@ -24,6 +24,7 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
 
   const isFsm = location?.pathname?.includes("fsm") || location?.pathname?.includes("FSM");
   const isMobile = window.Digit?.Utils?.browser?.isMobile();
+  console.log(isMobile, "IS MOBILE");
 
   return (
     <React.Fragment>

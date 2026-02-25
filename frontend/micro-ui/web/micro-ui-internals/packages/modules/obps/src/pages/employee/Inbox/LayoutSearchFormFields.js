@@ -1,33 +1,25 @@
 import React from "react"
-import { CardLabelError, SearchField, TextInput, MobileNumber } from "@mseva/digit-ui-react-components"
 import { useTranslation } from "react-i18next"
 
 const LayoutSearchFormFields = ({ registerRef, searchFormState, searchFieldComponents }) => {
   const { t } = useTranslation()
   const isMobile = window.Digit.Utils.browser.isMobile()
 
-  const gridStyles = () => {
-    return { gridTemplateColumns: "33.33% 67.33%", textAlign: "start" }
-  }
-
   if (!isMobile) {
     return (
       <React.Fragment>
-        <div className="search-container" style={{  marginLeft: "24px" }}>
+        <div className="search-container">
           <div className="search-complaint-container">
-            <div
-              className="complaint-input-container"
-              style={window.location.href.includes("/citizen") ? gridStyles() : { textAlign: "start" }}
-            >
-              <SearchField>
+            <div className="complaint-input-container">
+              <div className="search-field">
                 <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
-                <TextInput name="applicationNumber" inputRef={registerRef({})} />
-              </SearchField>
-              <SearchField>
+                <input type="text" name="applicationNumber" ref={registerRef({})} />
+              </div>
+              <div className="search-field">
                 <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>
-                <TextInput name="mobileNumber" inputRef={registerRef({})} />
-              </SearchField>
-              <div className="search-action-wrapper" style={{ width: "100%" }}>
+                <input type="text" name="mobileNumber" ref={registerRef({})} />
+              </div>
+              <div className="search-action-wrapper">
                 {searchFieldComponents}
               </div>
             </div>
@@ -38,14 +30,17 @@ const LayoutSearchFormFields = ({ registerRef, searchFormState, searchFieldCompo
   }
   return (
     <React.Fragment>
-      <SearchField>
+      <div className="search-field" style={{ marginBottom: "12px" }}>
         <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
-        <TextInput name="applicationNumber" inputRef={registerRef({})} />
-      </SearchField>
-      <SearchField>
+        <input type="text" name="applicationNumber" ref={registerRef({})} />
+      </div>
+      <div className="search-field" style={{ marginBottom: "12px" }}>
         <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>
-        <TextInput name="mobileNumber" inputRef={registerRef({})} />
-      </SearchField>
+        <input type="text" name="mobileNumber" ref={registerRef({})} />
+      </div>
+      <div style={{ marginTop: "16px" }}>
+        {searchFieldComponents}
+      </div>
     </React.Fragment>
   )
 }

@@ -45,7 +45,6 @@ import InspectionReportDisplay from "../../../pageComponents/InspectionReportDis
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   console.log("wfDocuments", wfDocuments);
   const caption = {
@@ -131,7 +130,6 @@ const NOCEmployeeApplicationOverview = () => {
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
 
   
-  console.log("applicationDetails here==>", applicationDetails);
 
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
    console.log("businessService here==>", businessServiceCode);
@@ -155,7 +153,6 @@ const NOCEmployeeApplicationOverview = () => {
 
  const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
- console.log('searchChecklistData', searchChecklistData)
 
   useEffect(() => {
       if (eSignError) {
@@ -969,7 +966,6 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  console.log("displayData here", displayData);
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
     "OWNER.SITEPHOTOGRAPHTWO": 2,
@@ -979,7 +975,6 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
 
-  console.log('sitePhotos', sitePhotos)
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
@@ -1308,8 +1303,7 @@ const [InspectionReportVerifier, setInspectionReportVerifier] = useState("");
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
             disable={
-              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
-              applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED"
+              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
             }
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />

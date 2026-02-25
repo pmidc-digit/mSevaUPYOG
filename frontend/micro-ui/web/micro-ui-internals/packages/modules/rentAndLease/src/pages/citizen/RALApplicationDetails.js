@@ -28,7 +28,6 @@ const RALApplicationDetails = () => {
     }
   };
 
-  console.log('applicationData', applicationData)
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,

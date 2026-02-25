@@ -217,7 +217,6 @@ export const SuccessfulPayment = (props) => {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
 

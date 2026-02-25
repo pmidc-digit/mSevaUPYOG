@@ -471,7 +471,6 @@ const getJESiteImages = async (appData, t, stateCode) => {
 
         // Use your exif function here
         const exifData = await getExifDataFromUrl(exiflink);
-        console.log("exifData in siteImages", exifData);
         if ([3, 6, 8].includes(exifData?.Orientation)) {
           exifData.Orientation = 1;
         }
@@ -533,8 +532,7 @@ const getLatestCalculationDetails = (appData, t) => {
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, isView = false, checklistData = null) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
-  console.log("appData here in DownloadACK", appData);
-  console.log('isView', isView)
+ 
 
   let detailsArr = [],
     imageURL = "";

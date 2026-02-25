@@ -274,9 +274,7 @@ const WrapPaymentComponent = (props) => {
     console.log("licenseType:", licenseType);
     const state = Digit.ULBService.getStateId();
     const fee = paymentData?.totalAmountPaid;
-    console.log("fee here here", fee);
     const amountinwords = amountToWords(fee);
-    console.log('amountinwords', amountinwords)
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
       //if not filestoreid
@@ -369,7 +367,6 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          console.log('this else triggered')
           response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData,amountinwords }] }, generatePdfKey);
         }
       }
@@ -399,7 +396,6 @@ const WrapPaymentComponent = (props) => {
           // Use your helper to force download
           downloadPdf(blob, `receipt_${receiptNumber || "obpas_noc"}.pdf`);
         } catch (err) {
-          console.log(err, "error in receipt download");
           window.open(downloadUrl, "_blank");
         }
 

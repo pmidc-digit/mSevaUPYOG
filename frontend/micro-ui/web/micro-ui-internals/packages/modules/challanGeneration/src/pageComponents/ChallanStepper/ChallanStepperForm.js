@@ -63,7 +63,6 @@ const getActs = (offenceType, offenceActData) =>
   const onSubmit = async (data) => {
     let missingDocs = [];
     const actString = getActs(data?.offenceType, OffenceActData); 
-    console.log("Resolved Act(s):", actString);
     docData?.Challan?.Documents?.forEach((doc) => {
       if (doc.required) {
         const hasFile = documentsData?.documents?.some((d) => d.documentType.includes(doc.code) && d.filestoreId);

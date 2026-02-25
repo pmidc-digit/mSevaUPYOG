@@ -75,7 +75,6 @@ const NOCDocumentTableView = ({documents}) => {
   };
   });
 
-  console.log('mappedDocuments', mappedDocuments)
   const documentsData = useMemo(() => {
     if (!mappedDocuments) return [];
 
@@ -93,7 +92,6 @@ const NOCDocumentTableView = ({documents}) => {
     }));
   }, [mappedDocuments, t]);
 
-console.log('documentsData', documentsData)
   return (
     <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
       <style>{srNoStyle}</style>

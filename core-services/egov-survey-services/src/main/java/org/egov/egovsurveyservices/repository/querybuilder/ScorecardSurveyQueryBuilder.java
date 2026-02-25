@@ -53,7 +53,6 @@ public class ScorecardSurveyQueryBuilder {
                     "section.title AS section_title, " +
                     "section.weightage AS section_weightage, " +
                     "section.sectionorder AS section_order, " +
-                    "section.createdtime AS section_createdtime, " +
 
                     // Question fields
                     "question.uuid AS question_uuid, " +
@@ -134,8 +133,9 @@ public class ScorecardSurveyQueryBuilder {
             preparedStmtList.add(System.currentTimeMillis());
         }
         
-        // preserve insertion order by ordering on created timestamps (section/question/option)
-        query.append(" ORDER BY survey.createdtime DESC, section.section_createdtime ASC, question.question_createdtime ASC, questionOption.option_createdtime ASC ");
+        // preserve insertion order by ordering on section order and created timestamps (question/option)
+        // use real column names or select aliases (no qualified alias like question.question_createdtime)
+        query.append(" ORDER BY survey.createdtime DESC, section.sectionorder ASC, question.createdtime ASC, questionOption.createdtime ASC ");
         return query.toString();
     }
 

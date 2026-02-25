@@ -16,9 +16,9 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
 
     @Override
     public List<ScorecardSurveyEntity> extractData(ResultSet rs) throws SQLException {
-        Map<String, ScorecardSurveyEntity> surveyMap = new HashMap<>();
-        Map<String, Map<String, Question>> sectionQuestionMap = new HashMap<>();
-        Map<String, List<QuestionOption>> questionOptionsMap = new HashMap<>(); // Map to store options by question UUID
+        Map<String, ScorecardSurveyEntity> surveyMap = new java.util.LinkedHashMap<>();
+        Map<String, Map<String, Question>> sectionQuestionMap = new java.util.LinkedHashMap<>();
+        Map<String, List<QuestionOption>> questionOptionsMap = new java.util.HashMap<>(); // Map to store options by question UUID
 
         try {
             while (rs.next()) {
@@ -162,6 +162,7 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
             throw new RuntimeException("Error while extracting survey data", e);
         }
 
+        // preserve insertion order from the resultset; surveyMap is LinkedHashMap so insertion order is preserved
         return new ArrayList<>(surveyMap.values());
     }
 }

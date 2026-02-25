@@ -1,7 +1,7 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.1.68
+RUN yarn add @mseva/digit-ui-libraries@1.1.6-8.UAT.1
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
@@ -10,23 +10,23 @@ RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
 RUN yarn add @mseva/digit-ui-module-noc@1.0.77
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32-UAT.2
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.23
-RUN yarn add @mseva/digit-ui-module-core@1.0.66-UAT.3
-RUN yarn add @mseva/digit-ui-module-common@1.1.88
+RUN yarn add @mseva/digit-ui-module-core@1.0.66-UAT.4
+RUN yarn add @mseva/digit-ui-module-common@1.1.88-UAT.1
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
-RUN yarn add @mseva/digit-ui-module-ptr@1.3.4
+RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-UAT.1
 RUN yarn add @mseva/digit-ui-module-swach@1.0.55
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39
 RUN yarn add @mseva/digit-ui-module-tl@1.0.31
-RUN yarn add @mseva/digit-ui-module-obps@1.1.89
-RUN yarn add @mseva/digit-ui-module-sv@1.1.49
-RUN yarn add @mseva/upyog-ui-module-ads@1.1.86
-RUN yarn add @mseva/upyog-ui-module-chb@1.1.91
-RUN yarn add @mseva/upyog-ui-module-asset@1.1.44
-RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33
+RUN yarn add @mseva/digit-ui-module-obps@1.1.89-UAT.1
+RUN yarn add @mseva/digit-ui-module-sv@1.1.49-UAT.1
+RUN yarn add @mseva/upyog-ui-module-ads@1.1.8-6.UAT.1
+RUN yarn add @mseva/upyog-ui-module-chb@1.1.9-1.UAT.1
+RUN yarn add @mseva/upyog-ui-module-asset@1.1.4-4.UAT.1
+RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-UAT.1
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-UAT.1
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.72
 ARG WORK_DIR
 WORKDIR /app

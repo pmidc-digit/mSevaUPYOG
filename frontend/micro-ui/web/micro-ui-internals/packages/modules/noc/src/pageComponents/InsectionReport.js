@@ -61,7 +61,6 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
     // }, [previousLicenseDetails]);
 
     useEffect(() => {
-                console.log("useffect 2INSPECTION_REPORT_PENDING");
 
         let ques = [];
         let documentlist = [];

@@ -70,7 +70,6 @@ const RALApplicationDetails = () => {
     },
     { enabled: acknowledgementIds ? true : false }
   );
-  console.log('reciept_data', reciept_data)
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: acknowledgementIds,
@@ -89,7 +88,6 @@ const RALApplicationDetails = () => {
 
     return () => clearTimeout(timer);
   };
-  console.log('applicationData', applicationData)
 
   const rawAdditionalDetails = applicationData?.additionalDetails || {};
   const propertyDetails = Array.isArray(rawAdditionalDetails?.propertyDetails)

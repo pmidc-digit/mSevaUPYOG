@@ -244,7 +244,6 @@ const CitizenApplicationOverview = () => {
     let application = applicationDetails?.Noc?.[0]
 
     let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    console.log("fileStoreId before create", fileStoreId);
 
     if (!fileStoreId) {
       const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
@@ -547,7 +546,6 @@ const finalComment = useMemo(() => {
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  console.log("displayData=>", displayData);
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
     "OWNER.SITEPHOTOGRAPHTWO": 2,

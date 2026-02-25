@@ -371,6 +371,10 @@ consumerGroup.on("message", function (message) {
       //   break;
       case envVariables.KAFKA_TOPICS_RECEIPT_CREATE:
         {
+          let businessService = get(value, "Payment.paymentDetails[0].businessService") || get(value, "Payment.paymentDetails[0].bill.businessService");
+          if (businessService !== envVariables.BUSINESS_SERVICE) {
+            return;
+          }
           console.log("reciept hit");
           sendPaymentMessage(value);
           FireNOCPaymentStatus(value);

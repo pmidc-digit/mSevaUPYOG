@@ -122,10 +122,10 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
     : visibleCards;
 
   return (
-    <div className="ndc-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
+    <div className="custom-new-inbox-filter-card" style={{ marginTop: 16, marginBottom: 16 }}>
       <FilterFormField>
-        <div className="ndc-new-filter-status-wrapper">
-          <div className="ndc-new-filter-status-grid ndc-new-filter-card-grid">
+        <div className="custom-new-filter-status-wrapper">
+          <div className="custom-new-filter-status-grid custom-new-filter-card-grid">
             {displayCards.map((card, index) => {
               const isActive =
                 card.type === "assignee"
@@ -140,7 +140,7 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                 <button
                   key={card.key}
                   type="button"
-                  className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card ${variant} ${
+                  className={`custom-new-filter-status-card custom-new-filter-option-card custom-new-filter-card ${variant} ${
                     isActive ? "active" : ""
                   }`}
                   onClick={() => {
@@ -162,17 +162,17 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
                   }}
                 >
                   {isActive ? (
-                    <span className="ndc-new-filter-card-check" aria-hidden="true">
+                    <span className="custom-new-filter-card-check" aria-hidden="true">
                       ✓
                     </span>
                   ) : null}
-                  <div className="ndc-new-filter-status-title ndc-new-filter-option-title">{card.label}</div>
+                  <div className="custom-new-filter-status-title custom-new-filter-option-title">{card.label}</div>
                   {card.subtitle ? (
-                    <div className="ndc-new-filter-option-subtitle">{card.subtitle}</div>
+                    <div className="custom-new-filter-option-subtitle">{card.subtitle}</div>
                   ) : (
-                    <div className="ndc-new-filter-status-count">{card.count !== null && card.count !== undefined ? card.count : ""}</div>
+                    <div className="custom-new-filter-status-count">{card.count !== null && card.count !== undefined ? card.count : ""}</div>
                   )}
-                  <span className="ndc-new-filter-card-icon" aria-hidden="true">
+                  <span className="custom-new-filter-card-icon" aria-hidden="true">
                     <span>{card.icon}</span>
                   </span>
                 </button>
@@ -183,11 +183,11 @@ const NewFilterFormFieldsComponent = ({ statuses, controlFilterForm, application
             <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
               <button
               type="button"
-              className="ndc-new-filter-show-more"
+              className="custom-new-filter-show-more"
               onClick={() => setShowAllStatuses((prev) => !prev)}
               aria-label={showAllStatuses ? t("ES_COMMON_SHOW_LESS") : t("ES_COMMON_SHOW_MORE")}
             >
-              <span className="ndc-new-filter-show-more-icon" aria-hidden="true">
+              <span className="custom-new-filter-show-more-icon" aria-hidden="true">
                 {showAllStatuses ? "▲" : "▼"}
               </span>
             </button>

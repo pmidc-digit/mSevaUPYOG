@@ -19,16 +19,6 @@ const getStatusRowStyle = (statusClass) => {
   return {};
 };
 
-const getStatusPillStyle = (statusClass) => {
-  if (statusClass === "approved") return { background: "#dcfce7", color: "#166534" };
-  if (statusClass === "rejected") return { background: "#fee2e2", color: "#b91c1c" };
-  if (statusClass === "forwarded") return { background: "#dbeafe", color: "#1d4ed8" };
-  if (statusClass === "in-progress") return { background: "#cbd5e1", color: "#1e293b" };
-  if (statusClass === "pending") return { background: "#ffedd5", color: "#c2410c" };
-  if (statusClass === "new") return { background: "#e2e8f0", color: "#1e293b" };
-  return { background: "#e2e8f0", color: "#1e293b" };
-};
-
 const getStatusDisplayText = (value) => String(value || "").toLowerCase().replace(/\s+/g, "");
 
 const extractTextValue = (value) => {
@@ -127,14 +117,9 @@ const Table = ({
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const tref = useRef();
-  const tableClassName = `${className || "table"} ndc-new-table`.trim();
-  const tableWrapperClassName = `${customTableWrapperClassName} ndc-new-table-wrapper`.trim();
+  const tableClassName = `${className || "table"} custom-new-table`.trim();
+  const tableWrapperClassName = `${customTableWrapperClassName} custom-new-table-wrapper`.trim();
   const tableStyles = {
-    width: "100%",
-    borderCollapse: "collapse",
-    borderRadius: "16px",
-    overflow: "hidden",
-    background: "#ffffff",
     ...styles,
   };
 
@@ -199,7 +184,7 @@ const Table = ({
               {t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"}:
               <select
                 value={pageSize}
-                style={{ marginLeft: "8px" }}
+                className="digit-table-mobile-pagination-select"
                 onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
               >
                 {[10, 20, 30, 40, 50].map((size) => (
@@ -240,11 +225,11 @@ const Table = ({
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
-              {showAutoSerialNo&& <th style={{ verticalAlign: "top", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "12px", color: "#6b7280", padding: "14px 20px", background: "#f3f4f6", borderBottom: "1px solid #e5e7eb" }}>
+              {showAutoSerialNo&& <th>
               {showAutoSerialNo&& typeof showAutoSerialNo =="string"?t(showAutoSerialNo):t("TB_SNO")}
               </th>}
               {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())} style={{ verticalAlign: "top", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "12px", color: "#6b7280", padding: "14px 20px", background: "#f3f4f6", borderBottom: "1px solid #e5e7eb", fontWeight: 700 }}>
+                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
                   {column.render("Header")}
                   <span>{column.isSorted ? column.isSortedDesc ? <SortDown /> : <SortUp /> : ""}</span>
                 </th>
@@ -293,32 +278,23 @@ const Table = ({
                     <td
                       // style={{ padding: "20px 18px", fontSize: "16px", borderTop: "1px solid grey", textAlign: "left", verticalAlign: "middle" }}
                       {...cell.getCellProps([
-                        // {
-                        //   className: cell.column.className,
-                        //   style: cell.column.style,
-                        // },
-                        // getColumnProps(cell.column),
                         (() => {
                           const cellProps = getCellProps(cell) || {};
                           const isActionColumn = String(cell.column?.id || cell.column?.accessor || "").toLowerCase().includes("action");
                           return {
                             ...cellProps,
-                            className: [cellProps.className, "ndc-new-cell"].filter(Boolean).join(" "),
-                            style: {
-                              padding: "16px 20px",
-                              fontSize: "14px",
-                              color: "#334155",
-                              borderBottom: "1px solid #e5e7eb",
-                              textAlign: isActionColumn ? "center" : "left",
-                              verticalAlign: "middle",
-                              ...(cellProps.style || {}),
-                            },
+                            className: [
+                              cellProps.className,
+                              "custom-new-cell",
+                              isActionColumn ? "custom-new-cell-action" : ""
+                            ].filter(Boolean).join(" "),
+                            style: cellProps.style || {},
                           };
                         })(),
                       ])}
                     >
                       {cell.attachment_link ? (
-                        <a style={{ color: "#2563eb", fontWeight: 600 }} href={cell.attachment_link}>
+                        <a className="custom-new-cell-link" href={cell.attachment_link}>
                           {cell.render("Cell")}
                         </a>
                       ) : (
@@ -331,20 +307,8 @@ const Table = ({
                           const canPill = isStatusColumn && !!String(cellValue || "").trim();
                           if (!canPill) return <React.Fragment> {cell.render("Cell")} </React.Fragment>;
                           const cellStatusClass = getStatusClass(cellValue);
-                          const pillStyle = getStatusPillStyle(cellStatusClass);
                           return (
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                padding: "6px 12px",
-                                borderRadius: "999px",
-                                fontSize: "13px",
-                                fontWeight: 700,
-                                ...pillStyle,
-                              }}
-                            >
+                            <span className={`digit-table-status-pill ${cellStatusClass}`}>
                               {getStatusDisplayText(cellValue)}
                             </span>
                           );
@@ -366,7 +330,6 @@ const Table = ({
           <select
             className="cp"
             value={pageSize}
-            style={{ marginRight: "15px" }}
             onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
           >
             {[10, 20, 30, 40, 50].map((pageSize) => (

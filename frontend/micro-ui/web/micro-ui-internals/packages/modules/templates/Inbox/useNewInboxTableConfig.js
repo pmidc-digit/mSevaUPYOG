@@ -50,13 +50,13 @@ const useNewInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, tota
         Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "applicationId",
         disableSortBy: true,
-        className: "ndc-new-table-app",
+        className: "custom-new-table-app",
         Cell: ({ row }) => (
-          <div className="ndc-new-cell-stack">
-            <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`} className="ndc-new-app-link">
+          <div className="custom-new-cell-stack">
+            <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`} className="custom-new-app-link">
               {row.original?.applicationId || row.original?.applicationNo || "-"}
             </Link>
-            {row.original?.locality ? <div className="ndc-new-cell-secondary">{row.original?.locality}</div> : null}
+            {row.original?.locality ? <div className="custom-new-cell-secondary">{row.original?.locality}</div> : null}
           </div>
         ),
       },
@@ -75,7 +75,7 @@ const useNewInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, tota
           const statusValue = row.original?.status || row.original?.applicationStatus || "-";
           const statusClass = getStatusClass(statusValue);
           return (
-            <span className={`ndc-new-status-pill ${statusClass}`}>
+            <span className={`custom-new-status-pill ${statusClass}`}>
               {renderStatusIcon(statusClass)}
               <span>{String(statusValue || "-").toLowerCase()}</span>
             </span>
@@ -86,12 +86,12 @@ const useNewInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, tota
         Header: t("CS_COMMON_ACTION"),
         accessor: "action",
         disableSortBy: true,
-        className: "ndc-new-table-action",
+        className: "custom-new-table-action",
         Cell: ({ row }) => (
-          <span className="ndc-new-action-group">
+          <span className="custom-new-action-group">
             <Link
               to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}
-              className="ndc-new-icon ndc-new-icon-link"
+              className="custom-new-icon custom-new-icon-link"
               aria-label={t("ES_COMMON_VIEW")}
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
@@ -113,7 +113,7 @@ const useNewInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, tota
       },
     }),
     getRowProps: (row) => ({
-      className: `ndc-new-row ${getStatusClass(row?.original?.status || row?.original?.applicationStatus)}`,
+      className: `custom-new-row ${getStatusClass(row?.original?.status || row?.original?.applicationStatus)}`,
     }),
     disableSort: false,
     autoSort: false,

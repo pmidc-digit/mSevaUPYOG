@@ -55,16 +55,16 @@ const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
   };
 
   return (
-    <div className="ndc-new-table-card">
-      <div className="ndc-new-table-header">{title || t("Assigned Applications")}</div>
-      <div className="ndc-new-table-wrapper">
-        <table className="ndc-new-table">
+    <div className="custom-new-table-card">
+      <div className="custom-new-table-header">{title || t("Assigned Applications")}</div>
+      <div className="custom-new-table-wrapper">
+        <table className="custom-new-table">
           <thead>
             <tr>
               {resolvedColumns.map((column, index) => (
                 <th
                   key={column.id || column.accessor || index}
-                  className={column.headerClassName || (column.type === "action" ? "ndc-new-table-action" : "")}
+                  className={column.headerClassName || (column.type === "action" ? "custom-new-table-action" : "")}
                 >
                   {typeof column.Header === "function" ? column.Header() : column.Header}
                 </th>
@@ -76,7 +76,7 @@ const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
               const rowStatus = row?.status || row?.applicationStatus || "";
               const rowStatusClass = getStatusClass(rowStatus);
               return (
-                <tr key={row?.applicationId || row?.uuid || row?.id} className={`ndc-new-row ${rowStatusClass}`}>
+                <tr key={row?.applicationId || row?.uuid || row?.id} className={`custom-new-row ${rowStatusClass}`}>
                   {resolvedColumns.map((column, index) => {
                     const value = getAccessorValue(row, column.accessor);
                     if (column.Cell) {
@@ -91,14 +91,14 @@ const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
                         return (
                           <td
                             key={column.id || column.accessor || index}
-                            className={column.className || (column.type === "action" ? "ndc-new-table-action" : "")}
+                            className={column.className || (column.type === "action" ? "custom-new-table-action" : "")}
                           >
-                            <div className="ndc-new-cell-stack">
-                              <div className="ndc-new-cell-primary">
+                            <div className="custom-new-cell-stack">
+                              <div className="custom-new-cell-primary">
                                 {column.Cell({ row: { original: row }, value, parentRoute })}
                               </div>
                               {/* {secondaryDisplayValue ? (
-                                <div className="ndc-new-cell-secondary">{secondaryDisplayValue}</div>
+                                <div className="custom-new-cell-secondary">{secondaryDisplayValue}</div>
                               ) : null} */}
                             </div>
                           </td>
@@ -107,7 +107,7 @@ const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
                       return (
                         <td
                           key={column.id || column.accessor || index}
-                          className={column.className || (column.type === "action" ? "ndc-new-table-action" : "")}
+                          className={column.className || (column.type === "action" ? "custom-new-table-action" : "")}
                         >
                           {column.Cell({ row: { original: row }, value, parentRoute })}
                         </td>
@@ -120,7 +120,7 @@ const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
                       const statusClass = getStatusClass(statusValue);
                       return (
                         <td key={column.id || column.accessor || index}>
-                          <span className={`ndc-new-status-pill ${statusClass}`}>
+                          <span className={`custom-new-status-pill ${statusClass}`}>
                             {renderStatusIcon(statusClass)}
                             <span>{statusLabel}</span>
                           </span>
@@ -139,10 +139,10 @@ const NewNDCInboxTable = ({ rows = [], parentRoute, columns = [], title }) => {
                     if (column.subAccessor || column.subFormatter) {
                       return (
                         <td key={column.id || column.accessor || index} className={column.className}>
-                          <div className="ndc-new-cell-stack">
-                            <div className="ndc-new-cell-primary">{displayValue ?? "-"}</div>
+                          <div className="custom-new-cell-stack">
+                            <div className="custom-new-cell-primary">{displayValue ?? "-"}</div>
                             {/* {secondaryDisplayValue ? (
-                              <div className="ndc-new-cell-secondary">{secondaryDisplayValue}</div>
+                              <div className="custom-new-cell-secondary">{secondaryDisplayValue}</div>
                             ) : null} */}
                           </div>
                         </td>

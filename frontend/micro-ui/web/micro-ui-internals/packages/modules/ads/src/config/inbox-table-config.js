@@ -74,7 +74,7 @@ export const TableConfig = (t) => ({
       const statusText = getAdsStatusText((key) => key, row?.original);
       const statusClass = getStatusClass(statusText);
       return {
-        className: `ndc-new-row ${statusClass}`,
+        className: `custom-new-row ${statusClass}`,
         style: getStatusRowStyle(statusClass),
       };
     },
@@ -83,12 +83,12 @@ export const TableConfig = (t) => ({
         Header: t("ADS_BOOKING_NO"),
         accessor: "bookingNo",
         disableSortBy: true,
-        className: "ndc-new-table-app",
+        className: "custom-new-table-app",
         Cell: ({ row }) => {
           const bookingNo = row?.original?.searchData?.["bookingNo"] || "-";
           return (
-            <div className="ndc-new-cell-stack">
-              <Link to={`${props.parentRoute}/applicationsearch/application-details/` + `${bookingNo}`} className="ndc-new-app-link ndc-new-cell-primary">
+            <div className="custom-new-cell-stack">
+              <Link to={`${props.parentRoute}/applicationsearch/application-details/` + `${bookingNo}`} className="custom-new-app-link custom-new-cell-primary">
                 {bookingNo}
               </Link>
             </div>
@@ -100,13 +100,13 @@ export const TableConfig = (t) => ({
       {
         Header: t("ADS_APPLICANT_NAME"),
         accessor: "applicantName",
-        Cell: ({ row }) => <span className="ndc-new-cell-primary">{row?.original?.searchData?.applicantDetail?.["applicantName"] || "-"}</span>,
+        Cell: ({ row }) => <span className="custom-new-cell-primary">{row?.original?.searchData?.applicantDetail?.["applicantName"] || "-"}</span>,
         mobileCell: (original) => GetMobCell(original?.searchData?.applicantDetail?.["applicantName"]),
       },
       {
         Header: t("AD _TYPE"),
         accessor: "adType",
-        Cell: ({ row }) => <span className="ndc-new-cell-primary">{row.original?.searchData?.cartDetails?.[0]?.["addType"] || "-"}</span>,
+        Cell: ({ row }) => <span className="custom-new-cell-primary">{row.original?.searchData?.cartDetails?.[0]?.["addType"] || "-"}</span>,
         mobileCell: (original) => GetMobCell(original?.searchData?.cartDetails?.[0]?.["addType"]),
       },
 
@@ -122,12 +122,12 @@ export const TableConfig = (t) => ({
         Header: t("BOOKING_STATUS"),
         id: "status",
         accessor: (row) => getAdsStatusText(t, row),
-        className: "ndc-new-table-status",
+        className: "custom-new-table-status",
         Cell: ({ value }) => {
           const statusValue = String(value || "-");
           const statusClass = getStatusClass(statusValue);
           return (
-            <span className={`ndc-new-status-pill ${statusClass}`}>
+            <span className={`custom-new-status-pill ${statusClass}`}>
               {renderStatusIcon(statusClass)}
               <span>{getStatusDisplayText(statusValue)}</span>
             </span>

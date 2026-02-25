@@ -40,6 +40,7 @@ const ChallanStepperForm = () => {
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
   const { data: OffenceRates, isLoading: OffenceRatesLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Rates" }]);
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
+  const { data: OffenceActData, isLoading: OffenceActLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Acts" }]);
 
   const {
     control,
@@ -54,10 +55,15 @@ const ChallanStepperForm = () => {
       shouldUnregister: false,
     },
   });
+const getActs = (offenceType, offenceActData) =>
+  offenceType?.acts?.map(
+    (code) => offenceActData?.Challan?.Acts?.find((a) => a?.code === code)?.name
+  )?.filter(Boolean)?.join(", ") || "";
 
   const onSubmit = async (data) => {
     let missingDocs = [];
-
+    const actString = getActs(data?.offenceType, OffenceActData); 
+    console.log("Resolved Act(s):", actString);
     docData?.Challan?.Documents?.forEach((doc) => {
       if (doc.required) {
         const hasFile = documentsData?.documents?.some((d) => d.documentType.includes(doc.code) && d.filestoreId);
@@ -95,6 +101,7 @@ const ChallanStepperForm = () => {
       additionalDetail: {
         latitude: documentsData?.documents?.[1]?.latitude,
         longitude: documentsData?.documents?.[1]?.longitude,
+        offenceActs: actString,
       },
       // address: {},
       documents: documentsData?.documents,
@@ -372,7 +379,7 @@ const ChallanStepperForm = () => {
           isDleteBtn={"true"}
         />
       )}
-      {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading) && <Loader page={true} />}
+      {(OffenceRatesLoading || loader || categoryLoading || subCategoryLoading || OffenceTypeLoading || OffenceActLoading) && <Loader page={true} />}
     </div>
   );
 };

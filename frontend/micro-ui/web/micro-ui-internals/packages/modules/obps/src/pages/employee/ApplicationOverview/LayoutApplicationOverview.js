@@ -35,6 +35,7 @@ import { Loader } from "../../../config/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
+import ZoneModal from "../../../components/ZoneModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -121,12 +122,14 @@ const LayoutEmployeeApplicationOverview = () => {
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
   const [checklistRemarks, setChecklistRemarks] = useState({});
   const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const [showZoneModal, setShowZoneModal] = useState(false);
 
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, {
     cacheTime: 0,
   });
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here==>", applicationDetails);
+  console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
+  const currentZoneCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
 
   // Fetch layout checklist data - only if not on first DM submission
   // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
@@ -291,7 +294,7 @@ const LayoutEmployeeApplicationOverview = () => {
       doc.documentType === "SITE.PHOTOGRAPHONE" ||
       doc.documentType === "SITE.PHOTOGRAPHTWO"
   );
-  const remainingDocs = displayData?.Documents?.filter(
+  const remainingDocs = displayData?.Documents?.sort((a,b) => b?.order - a?.order)?.filter(
     (doc) =>
       !(
         doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
@@ -464,8 +467,11 @@ const LayoutEmployeeApplicationOverview = () => {
           // Check if all documents have remarks filled
           const allRemarksFilledForDocuments = remainingDocs.every(doc => {
             const remark = checklistRemarks[doc.documentUid || doc.uuid];
+            console.log("remarkdoc",remainingDocs,doc,checklistRemarks, checklistRemarks[doc.documentUid || doc.uuid])
             return remark && typeof remark === 'string' && remark.trim().length > 0;
           });
+
+          console.log("allRemarksFilledForDocuments",allRemarksFilledForDocuments)
 
           if (!allRemarksFilledForDocuments) {
             closeModal();
@@ -546,11 +552,21 @@ const LayoutEmployeeApplicationOverview = () => {
         try {
           // At DM level: shouldFetchChecklist is false, so we ALWAYS CREATE on first DM submit
           // At other levels: shouldFetchChecklist is true, so checklistData contains existing records, and we UPDATE
+          if (filtData?.action === "UPDATE_ZONE") {
+              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+              workflowDetails.revalidate();
+              refetch();
+              setShowZoneModal(false);
+              setSelectedAction(null);
+              setTimeout(() => {
+                window.location.href = "/digit-ui/employee/obps/layout/inbox";
+              }, 3000);
+          }
           if (!shouldFetchChecklist) {
             // DM ROLE: CREATE checklist on first submit
             const checklistPayload = {
               checkList: (displayData?.Documents || []).map(doc => ({
-                documentUid: doc.documentUid || doc.uuid,
+                documentuid: doc.documentUid || doc.uuid,
                 applicationNo: id,
                 tenantId: tenantId,
                 action: "INITIATE",
@@ -706,9 +722,11 @@ const LayoutEmployeeApplicationOverview = () => {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else if (action?.action == "UPDATE_ZONE") {
+      setShowZoneModal(true);
     } else {
       // Validation: Prevent forwarding without required site images during field inspection
-      if(applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+      if (applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -718,6 +736,19 @@ const LayoutEmployeeApplicationOverview = () => {
       setSelectedAction(action);
     }
   }
+
+
+  const handleZoneSubmit = (selectedZone) => {
+  const payload = {
+    Licenses: [{
+      action: "UPDATE_ZONE",
+      comment: "",
+      // Pass the zone object which contains both code and name
+      zone: selectedZone
+    }]
+  };
+  submitAction(payload);
+};
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -741,10 +772,15 @@ const LayoutEmployeeApplicationOverview = () => {
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
   };
+  const formatDateVasika = (dateString) => {
+    if (!dateString) return "";
+    const [day, month, year] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
 
   // Helper function to render label-value pairs only when value exists
   const renderLabel = (label, value) => {
-    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
       return null;
     }
 
@@ -815,7 +851,7 @@ const LayoutEmployeeApplicationOverview = () => {
               <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalRegId || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
-              <Row label={t("BPA_CERTIFICATE_EXPIRY_DATE")} text={displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A"} />
+              <Row label={t("BPA_CERTIFICATE_EXPIRY_DATE")} text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")} />
             </StatusTable>
           </div>
         </Card>
@@ -866,7 +902,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("NOC_DISTRICT_LABEL"), detail?.district?.name || detail?.district)}
               {renderLabel(t("NOC_ZONE_LABEL"), detail?.zone)}
               {renderLabel(t("NOC_SITE_VASIKA_NO_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("NOC_SITE_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
+              {renderLabel(t("NOC_SITE_VASIKA_DATE_LABEL"), formatDateVasika(detail?.vasikaDate))}
               {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
 
               {/* Additional Site Details */}
@@ -884,21 +920,21 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel("Is Area Under Master Plan", detail?.isAreaUnderMasterPlan?.name || detail?.isAreaUnderMasterPlan?.code)}
 
               {/* Area Breakdown */}
-              {renderLabel("Area Under EWS (Sq.M)", detail?.areaUnderEWS)}
-              {renderLabel("Area Under Road (Sq.M)", detail?.areaUnderRoadInSqM)}
+              {renderLabel("Area Under EWS (sq.mt)", detail?.areaUnderEWS)}
+              {renderLabel("Area Under Road (sq.mt)", detail?.areaUnderRoadInSqM)}
               {renderLabel("Area Under Road (%)", detail?.areaUnderRoadInPct)}
-              {renderLabel("Area Under Park (Sq.M)", detail?.areaUnderParkInSqM)}
+              {renderLabel("Area Under Park (sq.mt)", detail?.areaUnderParkInSqM)}
               {renderLabel("Area Under Park (%)", detail?.areaUnderParkInPct)}
-              {renderLabel("Area Under Parking (Sq.M)", detail?.areaUnderParkingInSqM)}
+              {renderLabel("Area Under Parking (sq.mt)", detail?.areaUnderParkingInSqM)}
               {renderLabel("Area Under Parking (%)", detail?.areaUnderParkingInPct)}
-              {renderLabel("Area Under Other Amenities (Sq.M)", detail?.areaUnderOtherAmenitiesInSqM)}
+              {renderLabel("Area Under Other Amenities (sq.mt)", detail?.areaUnderOtherAmenitiesInSqM)}
               {renderLabel("Area Under Other Amenities (%)", detail?.areaUnderOtherAmenitiesInPct)}
-              {renderLabel("Area Under Residential Use (Sq.M)", detail?.areaUnderResidentialUseInSqM)}
+              {renderLabel("Area Under Residential Use (sq.mt)", detail?.areaUnderResidentialUseInSqM)}
               {renderLabel("Area Under Residential Use (%)", detail?.areaUnderResidentialUseInPct)}
 
               {/* Floor Area Details */}
               {detail?.floorArea && detail?.floorArea?.length > 0 && (
-                <>{detail?.floorArea?.map((floor, idx) => renderLabel(`Floor ${idx + 1} Area (Sq.M)`, floor?.value))}</>
+                <>{detail?.floorArea?.map((floor, idx) => renderLabel(`Floor ${idx + 1} Area (sq.mt)`, floor?.value))}</>
               )}
             </StatusTable>
           </div>
@@ -931,7 +967,7 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       {/* 1️⃣ SITE COORDINATES CARD */}
-      {displayData?.coordinates && displayData.coordinates.length > 0 && (
+      {/* {displayData?.coordinates && displayData.coordinates.length > 0 && (
         <Card>
           <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
 
@@ -950,7 +986,7 @@ const LayoutEmployeeApplicationOverview = () => {
             </div>
           ))}
         </Card>
-      )}
+      )} */}
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
@@ -982,7 +1018,7 @@ const LayoutEmployeeApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
           <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
-            tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly="true" />}</StatusTable>
+            tenantId={tenantId} onRemarksChange={setChecklistRemarks} value={checklistRemarks} readOnly="true" />}</StatusTable>
         </Card>
       }
 
@@ -992,7 +1028,7 @@ const LayoutEmployeeApplicationOverview = () => {
         <Card>
           <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
           <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
-            tenantId={tenantId} onRemarksChange={setChecklistRemarks} />}</StatusTable>
+            tenantId={tenantId} onRemarksChange={setChecklistRemarks} value={checklistRemarks} />}</StatusTable>
         </Card>
       }
 
@@ -1170,6 +1206,14 @@ const LayoutEmployeeApplicationOverview = () => {
 
       {showToast && (
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
+      )}
+
+      {showZoneModal && (
+        <ZoneModal
+          onClose={() => setShowZoneModal(false)}
+          onSelect={handleZoneSubmit}
+          currentZoneCode={currentZoneCode}
+        />
       )}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}

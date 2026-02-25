@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
+const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, value, readOnly = false }) => {
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
@@ -24,7 +24,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
     if (documents?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
       documents.forEach(d => { 
-        initial[d.documentUid || d.uuid] = d.remarks || ""; 
+        initial[d.documentUid || d.uuid] = value?.[d.documentUid || d.uuid] || d.remarks || ""; 
       });
       console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
       console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
@@ -33,11 +33,13 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
     }
   }, [documents]);
 
-  const handleBlur = (uid, value) => {
-    const updated = { ...localRemarks, [uid]: value };
-    setLocalRemarks(updated);
-    onRemarksChange(updated);
-  };
+  useEffect(() => {}, [localRemarks])
+
+//   const handleBlur = (uid, value) => {
+//     const updated = { ...localRemarks, [uid]: value };
+//     setLocalRemarks(updated);
+//     onRemarksChange(updated);
+//   };
 
   return (
     <div className="checklist-document-table-wrapper">
@@ -66,21 +68,21 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                   {isReadOnly ? (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={value[doc.documentUid] ?? ""}
                       disabled={true}
                       className="checklist-table-textarea"
                     />
                   ) : (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={value[doc.documentUid] ?? ""}
                       onChange={(e) => {
                         console.log("onChange triggered - value:", e.target.value);
-                        setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
+                        onRemarksChange(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
                       }}
                       onBlur={(e) => {
                         console.log("onBlur triggered - final value:", e.target.value);
-                        handleBlur(doc.documentUid, e.target.value);
+                        // handleBlur(doc.documentUid, e.target.value);
                       }}
                       className="checklist-table-textarea"
                     />

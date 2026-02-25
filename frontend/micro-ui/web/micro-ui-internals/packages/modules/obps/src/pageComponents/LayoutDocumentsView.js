@@ -48,7 +48,7 @@ const LayoutDocumentTableView = ({documents}) => {
     }
   );
   
-  const mappedDocuments = documents?.map(doc => {
+  const mappedDocuments = documents?.sort((a,b) => b?.order - a?.order)?.map(doc => {
    const { documentUid, documentType } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
    return {

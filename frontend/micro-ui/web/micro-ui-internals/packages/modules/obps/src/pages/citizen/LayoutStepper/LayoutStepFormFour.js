@@ -352,7 +352,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     
     if (isEditMode) {
       // EDIT MODE: Merge API documents with Redux documents (like CLU)
-      const apiResponseDocuments = layoutData?.documents || [];
+      const apiResponseDocuments = layoutFormData?.documents?.documents?.documents || [];
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
       
       console.log("[v0] EDIT MODE - apiResponseDocuments:", apiResponseDocuments);
@@ -364,6 +364,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
         return {
           ...doc,
+          order: doc?.order,
           uuid: fileStoreId || doc.uuid,
           documentAttachment: fileStoreId || doc.documentAttachment,
         };
@@ -374,6 +375,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
         return {
+          order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId || doc?.documentAttachment,
@@ -393,6 +395,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
+          order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId || doc?.documentAttachment,

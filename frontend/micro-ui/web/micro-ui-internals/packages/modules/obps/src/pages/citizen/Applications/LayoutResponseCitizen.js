@@ -142,8 +142,8 @@ const LayoutResponseCitizen = (props) => {
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {downloading && <Loader />}
-        {layoutData?.applicationStatus !== "REJECTED" ? (
-          <div style={{display:"flex", justifyContent:"space-evenly"}}>
+        {layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? (
+          <div>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
             {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </div>

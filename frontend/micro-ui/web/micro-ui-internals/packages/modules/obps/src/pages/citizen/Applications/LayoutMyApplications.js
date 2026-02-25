@@ -65,8 +65,9 @@ const LayoutMyApplications = ({ view }) => {
     },
     {
       Header: t("Owner"),
-      accessor: (row) => row?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "",
-      Cell: ({ row }) => GetCell(row.original?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "-"),
+      // accessor: (row) => row?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "",
+      accessor: (row) => row?.Applications?.owners?.[0]?.name || "",
+      Cell: ({ row }) => GetCell(row.original?.Applications?.owners?.[0]?.name || "-"),
     },
     {
       Header: t("TL_COMMON_TABLE_COL_STATUS"),

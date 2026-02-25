@@ -2236,6 +2236,17 @@ input[type="date"] {
   flex: 1;
 }
 
+.surveyCardSection {
+  background: white;
+  display: block;
+  padding: 15px;
+  justify-self: center;
+  width: 50%;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
 .checklist-card-content {
   display: flex;
   flex-direction: column;
@@ -2390,15 +2401,4 @@ input[type="date"] {
 }
 .margin-right-50 {
   margin-right: 50px;
-}
-
-.surveyCardSection {
-  background: white;
-  display: block;
-  padding: 15px;
-  justify-self: center;
-  width: 50%;
-  @media (max-width: 768px) {
-    width: 100%;
-  }
 }

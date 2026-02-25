@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Fragment  } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, DatePicker, CardSectionHeader, DeleteIcon, Table, Loader, CardSubHeader  } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -53,15 +53,6 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
       return <div>{t("NO_INSPECTION_REPORTS_AVAILABLE")}</div>;
     }
 
-    const srNoStyle = `
-    .noc-inspection-report table tbody tr td:first-child,
-    .noc-inspection-report table thead tr th:first-child {
-      width: 100px !important;
-      max-width: 100px !important;
-      min-width: 100px !important;
-      flex: 0 0 100px !important;
-    }
-  `;
   
     return (
       <div>
@@ -102,10 +93,7 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
             //     )}
             //   </div>
             // ))
-            <>
-             <style>{srNoStyle}</style>
-            <div className="noc-inspection-report">
-              <Table
+            <Table
               className="customTable table-border-style"
               t={t}
               data={tableData}
@@ -129,9 +117,6 @@ const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
               isPaginationRequired={false}
               pageSizeLimit={tableData.length}
             />
-            </div>
-            </>
-            
           ) : (
             <div>{t("NA")}</div>
           )}

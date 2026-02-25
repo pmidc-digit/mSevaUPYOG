@@ -27,7 +27,7 @@ const NOCSiteDetails = (_props) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { t, goNext, currentStepData, Controller, control, setValue, trigger, errors, errorStyle, useFieldArray, watch } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
   // console.log('currentStepData herrrrre', currentStepData)
   //logic for Net Plot Area After Widening (A-B)
   const [netPlotArea, setNetPlotArea] = useState("0.00");
@@ -308,7 +308,7 @@ const sortedRoadType = useMemo(
                     onBlur={(e) => {
                       props.onBlur(e);
                     }}
-                    disabled={Boolean(siteAddress) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)}
+                    disabled ={Boolean(siteAddress) || Boolean(currentStepData?.applicationDetails?.owners?.[0]?.PropertyOwnerAddress)}
                   />
                 )}
               />
@@ -532,15 +532,6 @@ const sortedRoadType = useMemo(
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
-                  validate: (value) => {
-                    const totalArea = parseFloat(NetTotalArea || 0);
-                    const roadWideningArea = parseFloat(value || 0);
-
-                    if (roadWideningArea > totalArea) {
-                      return t("AREA_LEFT_FOR_ROAD_WIDENING_CANNOT_EXCEED_TOTAL_AREA");
-                    }
-                    return true;
-                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -550,7 +541,6 @@ const sortedRoadType = useMemo(
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
-                      trigger("areaLeftForRoadWidening", { shouldFocus: false });
                     }}
                   />
                 )}
@@ -562,7 +552,7 @@ const sortedRoadType = useMemo(
           </LabelFieldPair>
 
           <LabelFieldPair style={{ marginBottom: "20px" }}>
-            <CardLabel style={{ marginTop: "0" }} className="card-label-smaller">
+            <CardLabel className="card-label-smaller">
               {`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -695,9 +685,7 @@ const sortedRoadType = useMemo(
                     />
                   )}
                 />
-                {errors?.isBasementAreaAvailable && (
-                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.isBasementAreaAvailable.message}</p>
-                )}
+                {errors?.isBasementAreaAvailable && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.isBasementAreaAvailable.message}</p>}
               </div>
             </LabelFieldPair>
           )}
@@ -1114,32 +1102,32 @@ const sortedRoadType = useMemo(
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`${t("BPA_AREA_TYPE_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
-              {fetchedLocalities?.length > 0 && (
-                <Controller
-                  control={control}
-                  name={"localityAreaType"}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      select={(e) => {
-                        props.onChange(e);
-                      }}
-                      selected={localities || props.value}
-                      option={fetchedLocalities.sort((a, b) => a.name.localeCompare(b.name))}
-                      optionKey="name"
-                      t={t}
-                    />
-                  )}
-                />
-              )}
-              {errors?.localityAreaType ? errors?.localityAreaType?.message : ""}
+            {fetchedLocalities?.length > 0 && (
+              <Controller
+                control={control}
+                name={"localityAreaType"}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    select={(e) => {
+                      props.onChange(e);
+                    }}
+                    selected={localities || props.value}
+                    option={fetchedLocalities.sort((a, b) => a.name.localeCompare(b.name))}
+                    optionKey="name"
+                    t={t}
+                  />
+                )}
+              />
+            )}
+             {errors?.localityAreaType ? errors?.localityAreaType?.message : ""}
             </div>
           </LabelFieldPair>
         </div>

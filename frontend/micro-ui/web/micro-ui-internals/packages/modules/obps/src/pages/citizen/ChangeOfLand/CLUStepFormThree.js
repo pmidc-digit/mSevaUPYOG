@@ -25,10 +25,8 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
   
-  console.log("coordinates from redux", coordinates);
 
   function goNext(finaldata) {
-    //console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
       setError(`${t("BPA_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replace(".", "_").toUpperCase())}`);
@@ -60,9 +58,20 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       const isCluAppliedCategoryIndustry = latestCurrentStepData?.siteDetails?.appliedCluCategory?.code === "INDUSTRY_GODOWN_WAREHOUSING_COLD_STORE" || false;
 
 
+      const owners = latestCurrentStepData?.applicationDetails?.owners || [];
+      const isFirm = owners.some((owner) => {
+          const typeCode = owner?.ownerType?.code || owner?.ownerType;
+          return typeCode?.toString()?.toUpperCase() === "FIRM";
+      });
+
       const cluDocumentsType = data?.CLU?.Documents?.map((item)=> {
           if(item?.code === "OWNER.INDUSTRYCATEGORYSUPPORTINGDOCUMENT"){
               return {...item, required: isCluAppliedCategoryIndustry ? true : false};
+          }
+
+          if (item?.code === "OWNER.FIRMDOCUMENT") {
+            const updatedItem = { ...item, required: isFirm ? true : false };
+            return updatedItem;
           }
 
           return item;
@@ -73,7 +82,6 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
       // Step 1: Extract required document codes from layoutDocumentsType
       const requiredDocs = cluDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
-      //console.log("required Documnets in CLU", requiredDocs);
 
       // Step 2: Extract uploaded documentTypes
       const uploadedDocs = documentsData.map((doc) => doc.documentType);
@@ -90,7 +98,6 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_OBPS_FORM(config.key, data));
     }

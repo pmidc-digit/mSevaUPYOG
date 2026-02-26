@@ -19,7 +19,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setSelectedCheckBox(e.target.checked);
   }
 
-  // console.log("selectedCheckBox", selectedCheckBox);
 
   const currentStepData = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.formData || {};
@@ -58,13 +57,11 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = async (action) => {
-    console.log("formData in parent SummaryPage", currentStepData);
 
     onSubmit(currentStepData, action);
   };
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("formData inside onSubmit", data);
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
@@ -76,12 +73,11 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     try {
       const finalPayload = mapToCLUPayload(data, selectedAction);
-      console.log("finalPayload here==>", finalPayload);
+      ("finalPayload here==>", finalPayload);
 
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("success: Update API ");
         // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
 
         if (window.location.href.includes("citizen")) {
@@ -92,7 +88,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             }, 3000);
           } else {
             //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-            console.log("We are calling citizen response page");
             history.replace({
               pathname: `/digit-ui/citizen/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
               state: { data: response },
@@ -100,7 +95,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           }
         } else {
           //need to check for employee side
-          console.log("we are calling employee response page");
 
           if (selectedAction.action === "CANCEL") {
             setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
@@ -116,11 +110,9 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           }
         }
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
-      console.log("errors here in goNext - catch block", error);
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     }finally{
       setTimeout(()=>{setShowToast(null);},3000);
@@ -128,7 +120,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function mapToCLUPayload(cluFormData, selectedAction) {
-    console.log("cluFormData", cluFormData);
 
     {
       /**Change of Owner Feature Left and to be discussed*/
@@ -213,12 +204,12 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           uuid: doc?.documentUid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId,
+          order: doc?.order,
         };
       });
 
    const overallDocs= [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
    
-   console.log("overallDocs", overallDocs);
 
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({
@@ -231,6 +222,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           uuid: doc?.documentUid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId,
+          order: doc?.order,
         });
       });
     }
@@ -252,18 +244,14 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(null);
   };
 
-  console.log("currentStepData in StepFour", currentStepData);
   const applicationNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo || "";
   const businessServiceCode = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
-  //console.log("applicationNo here==>", applicationNo);
-  //console.log("businessServiceCode here==>", businessServiceCode);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNo,
     moduleCode: businessServiceCode,
   });
 
-  // console.log("workflow Details here==>", workflowDetails);
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -273,19 +261,15 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  //console.log("actions here", actions);
 
   function onActionSelect(action) {
     goNext(action);
-    //console.log("selectedAction here", action);
   }
 
   const ownersList = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.map(
     (item) => item.ownerOrFirmName
   );
-  console.log("ownersList===>", ownersList);
   const combinedOwnersName = ownersList?.join(", ");
-  console.log("combinedOwnersName==>", combinedOwnersName);
 
   const CLUSummary = Digit?.ComponentRegistryService?.getComponent("CLUSummary");
 

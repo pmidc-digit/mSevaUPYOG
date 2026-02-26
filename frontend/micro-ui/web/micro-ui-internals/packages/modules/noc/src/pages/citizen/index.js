@@ -1,6 +1,6 @@
-import { AppContainer, BackButton, BreadCrumb, PrivateRoute } from "@mseva/digit-ui-react-components";
+import { AppContainer, BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
 import React from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
+import { Route, Switch, useRouteMatch, Link, useLocation } from "react-router-dom";
 import { shouldHideBackButton } from "../../utils";
 import { useTranslation } from "react-i18next";
 
@@ -8,38 +8,42 @@ const hideBackButtonConfig = [];
 
 const NOCBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
-  const crumbs = [
-    {
-      path: "/digit-ui/citizen",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: "/digit-ui/citizen/noc-home",
-      content: `NOC Home`,
-      show: location.pathname.includes("/noc/new-application") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/noc-home",
-      content: `NOC Home`,
-      show: location.pathname.includes("noc/my-application") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/noc-home",
-      content: `NOC Home`,
-      show: location.pathname.includes("noc/search/application-overview/") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/noc-home",
-      content: `NOC Home`,
-      show: location.pathname.includes("noc/search-application") ? true : false,
-    },
-  ];
-  return <BreadCrumb crumbs={crumbs} />;
+
+  const getBreadcrumbs = () => {
+    const breadcrumbs = [];
+    const hasSecondBreadcrumb = location.pathname.includes("/noc/new-application") ||
+        location.pathname.includes("noc/my-application") ||
+        location.pathname.includes("noc/search/application-overview/") ||
+        location.pathname.includes("noc/search-application");
+    
+    breadcrumbs.push(
+      <span key="home">
+        <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
+          {t("ES_COMMON_HOME")}
+        </Link>
+        {hasSecondBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>}
+      </span>
+    );
+
+    if (hasSecondBreadcrumb) {
+      breadcrumbs.push(
+        <span key="noc">
+          <Link to="/digit-ui/citizen/noc-home" style={{ textDecoration: "none" }}>
+            NOC Home
+          </Link>
+        </span>
+      );
+    }
+
+    return breadcrumbs;
+  };
+
+  return <div style={{ marginBottom: "16px", display: "flex", alignItems: "center" }}>{getBreadcrumbs()}</div>;
 };
 
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
+  const location = useLocation();
   const { t } = useTranslation();
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
   const NOCResponseCitizen = Digit.ComponentRegistryService.getComponent("NOCResponseCitizen");

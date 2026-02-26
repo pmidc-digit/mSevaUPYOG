@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ByteArrayResource;
@@ -28,7 +29,11 @@ public class FileStore {
 	@Value("${filestore.path}")
     private String fileStorePath;
 	
-	public List<String> uploadToFileStore(List<MultipartFile> files, String tenantId, String module)
+	@Value("${filestore.view.file.path}")
+    private String fileStoreViewFilePath;
+	
+	
+	public String  uploadToFileStore(List<MultipartFile> files, String tenantId, String module)
 			throws IOException {
 
 		
@@ -86,9 +91,34 @@ public class FileStore {
 	        }
 	    }
 
-	    return fileStoreIds;
+	   return getImageUrl(tenantId,fileStoreIds.get(0));
 	}
    
+	public String getImageUrl(String tenantId, String fileStoreId) {
+
+        String url = new StringBuilder(fileStoreHost.concat(fileStoreViewFilePath)).toString()
+                + "?tenantId=" + tenantId
+                + "&fileStoreIds=" + fileStoreId;
+       String imageUrl = null;
+     
+       RestTemplate restTemplate = new RestTemplate();
+     
+        ResponseEntity<Map> response =
+                restTemplate.getForEntity(url, Map.class);
+
+        Map body = response.getBody();
+
+        if (body != null && body.get("fileStoreIds") != null) {
+
+            List<Map<String, Object>> fileStoreList =
+                    (List<Map<String, Object>>) body.get("fileStoreIds");
+
+            if (!fileStoreList.isEmpty()) {
+               imageUrl =  (String) fileStoreList.get(0).get("url");
+            }
+        }
+        return imageUrl;
+	}
 }
 
 

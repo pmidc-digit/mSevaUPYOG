@@ -35,76 +35,85 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
 	  public CustomTokenEnhancer(UserRepository userRepository) {
 	        this.userRepository = userRepository;
 	    }
-    @Override
-    public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
-        final DefaultOAuth2AccessToken token = (DefaultOAuth2AccessToken) accessToken;
+	  @Override
+	  public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken,
+	                                   final OAuth2Authentication authentication) {
 
-        SecureUser su = (SecureUser) authentication.getUserAuthentication().getPrincipal();
-        final Map<String, Object> info = new LinkedHashMap<String, Object>();
-        final Map<String, Object> responseInfo = new LinkedHashMap<String, Object>();
-        Object detailsObj = authentication.getUserAuthentication().getDetails();
-        boolean isPasswordType = false; // default
-        if (detailsObj instanceof Map) {
-            Map<?, ?> detailsMap = (Map<?, ?>) detailsObj;
-            if (detailsMap.containsKey("isPasswordType")) {
-                isPasswordType = Boolean.TRUE.equals(detailsMap.get("isPasswordType"));
-            }
-        }
+	      DefaultOAuth2AccessToken token = (DefaultOAuth2AccessToken) accessToken;
 
-        org.egov.user.web.contract.auth.User webUser = su.getUser();
-        User domainUser = User.builder()
-                .id(webUser.getId())
-                .userName(webUser.getUserName())
-                .build();
-        user = domainUser;
-        responseInfo.put("api_id", "");
-        responseInfo.put("ver", "");
-        responseInfo.put("ts", "");
-        responseInfo.put("res_msg_id", "");
-        responseInfo.put("msg_id", "");
-        responseInfo.put("status", "Access Token generated successfully");
-        info.put("ResponseInfo", responseInfo);
-        info.put("UserRequest", su.getUser());
-        
-        token.setAdditionalInformation(info);
-     //   userService.removeTokensByUser(user);
-        OAuth2AccessToken enhancedToken = super.enhance(token, authentication);
-        String ipAddress = "";
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        if (request != null) {
-            ipAddress = request.getHeader("X-Forwarded-For");
-            if (ipAddress == null || ipAddress.isEmpty()) {
-                ipAddress = request.getRemoteAddr();
-            }
-        }
-        ZoneId IST = ZoneId.of("Asia/Kolkata");
-        ZonedDateTime nowIST = ZonedDateTime.now(IST);
-        
-        
-        UserSession session = UserSession.builder()
-                .id(UUID.randomUUID())
-                .userUuid(su.getUser().getUuid())
-                .userId(su.getUser().getId())
-                .loginTime(nowIST.toLocalDateTime()) // store actual IST time
-                .ipAddress(ipAddress)
-                .userName(su.getUsername())
-                .userType(su.getUser().getType())
-                .isCurrentlyLoggedIn(true)
-                .isautologout(false)
-                .build();
+	      SecureUser su =
+	              (SecureUser) authentication.getUserAuthentication().getPrincipal();
 
-        userRepository.insertUserSession(session);
+	      Map<String, Object> info = new LinkedHashMap<>();
+	      Map<String, Object> responseInfo = new LinkedHashMap<>();
 
-        if (isPasswordType) {
-            ((DefaultOAuth2AccessToken) enhancedToken).setValue(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setRefreshToken(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setExpiration(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setScope(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setTokenType(null);
-        }
-     
-        return super.enhance(token, authentication);
-    }
+	      // ✅ Read isPasswordType from Authentication details
+	      boolean isPasswordType = false;
 
+	      Object detailsObj = authentication.getUserAuthentication().getDetails();
+	      if (detailsObj instanceof Map) {
+	          Map<?, ?> detailsMap = (Map<?, ?>) detailsObj;
+	          Object value = detailsMap.get("isPasswordType");
+	          if (value instanceof Boolean) {
+	              isPasswordType = (Boolean) value;
+	          }
+	      }
 
+	      responseInfo.put("api_id", "");
+	      responseInfo.put("ver", "");
+	      responseInfo.put("ts", "");
+	      responseInfo.put("res_msg_id", "");
+	      responseInfo.put("msg_id", "");
+	      responseInfo.put("status", "Access Token generated successfully");
+
+	      info.put("ResponseInfo", responseInfo);
+	      info.put("UserRequest", su.getUser());
+
+	      token.setAdditionalInformation(info);
+
+	      // ✅ Call super ONLY ONCE
+	      DefaultOAuth2AccessToken enhancedToken =
+	              (DefaultOAuth2AccessToken) super.enhance(token, authentication);
+
+	      // 🔐 If password login → hide token values
+	      if (isPasswordType) {
+	          enhancedToken.setValue(null);
+	          enhancedToken.setRefreshToken(null);
+//	          enhancedToken.setExpiration(null);
+	          enhancedToken.setScope(null);
+	          enhancedToken.setTokenType(null);
+	      }
+
+	      // ✅ Save session
+	      String ipAddress = "";
+	      ServletRequestAttributes attr =
+	              (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
+	      if (attr != null) {
+	          HttpServletRequest request = attr.getRequest();
+	          ipAddress = request.getHeader("X-Forwarded-For");
+	          if (ipAddress == null || ipAddress.isEmpty()) {
+	              ipAddress = request.getRemoteAddr();
+	          }
+	      }
+
+	      ZoneId IST = ZoneId.of("Asia/Kolkata");
+	      ZonedDateTime nowIST = ZonedDateTime.now(IST);
+
+	      UserSession session = UserSession.builder()
+	              .id(UUID.randomUUID())
+	              .userUuid(su.getUser().getUuid())
+	              .userId(su.getUser().getId())
+	              .loginTime(nowIST.toLocalDateTime())
+	              .ipAddress(ipAddress)
+	              .userName(su.getUsername())
+	              .userType(su.getUser().getType())
+	              .isCurrentlyLoggedIn(true)
+	              .isautologout(false)
+	              .build();
+
+	      userRepository.insertUserSession(session);
+
+	      return enhancedToken;   // ✅ RETURN THIS
+	  }
 }

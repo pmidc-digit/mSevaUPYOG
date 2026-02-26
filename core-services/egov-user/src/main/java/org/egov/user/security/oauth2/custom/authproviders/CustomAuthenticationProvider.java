@@ -73,12 +73,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String userName = authentication.getName();
         String password = authentication.getCredentials().toString();
 
-        final LinkedHashMap<String, String> details =
-                (LinkedHashMap<String, String>) authentication.getDetails();
+        final LinkedHashMap<String, Object> details =
+                (LinkedHashMap<String, Object>) authentication.getDetails();
 
-        String thirdPartyValue = details.get("thirdPartyName");
-        String tenantId = details.get("tenantId");
-        String userType = details.get("userType");
+        String thirdPartyValue = (String) details.get("thirdPartyName");
+        String tenantId = (String) details.get("tenantId");
+        String userType = (String) details.get("userType");
 
         // 🔹 Third party bypass logic (Citizen only)
         if (!isEmpty(thirdPartyValue)
@@ -95,7 +95,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         if (isEmpty(userType) || isNull(UserType.fromValue(userType))) {
-            throw new OAuth2Exception("User Type is mandatory and has to be a valid type");
+            throw new OAuth2Exception("User Type is mandatory and has to be valid");
         }
 
         User user;
@@ -104,26 +104,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         try {
             user = userService.getUniqueUser(userName, tenantId, UserType.fromValue(userType));
 
-            Set<org.egov.user.domain.model.Role> domainRoles = user.getRoles();
-            List<org.egov.common.contract.request.Role> contractRoles = new ArrayList<>();
-
-            for (org.egov.user.domain.model.Role role : domainRoles) {
-                contractRoles.add(
-                        org.egov.common.contract.request.Role.builder()
-                                .code(role.getCode())
-                                .name(role.getName())
-                                .build()
-                );
-            }
-
-            org.egov.common.contract.request.User userInfo =
-                    org.egov.common.contract.request.User.builder()
-                            .uuid(user.getUuid())
-                            .type(user.getType() != null ? user.getType().name() : null)
-                            .roles(contractRoles)
-                            .build();
-
-            requestInfo = RequestInfo.builder().userInfo(userInfo).build();
+            requestInfo = RequestInfo.builder().build();
 
             user = encryptionDecryptionUtil.decryptObject(
                     user, "UserListSelf", User.class, requestInfo
@@ -133,8 +114,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             log.error("Login failed", e);
             throw new OAuth2Exception("Invalid login credentials");
         }
-
-        // userService.removeTokensByUser(user); // optional
 
         if (user.getActive() == null || !user.getActive()) {
             throw new OAuth2Exception("Please activate your account");
@@ -151,12 +130,16 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         boolean isCitizen = user.getType() != null &&
                 user.getType().equals(UserType.CITIZEN);
 
+        // ✅ Detect login type
         boolean isPasswordType = !password.matches("\\d{6}");
+
+        // ✅ Pass to TokenEnhancer
+        details.put("isPasswordType", isPasswordType);
+
         boolean isPasswordMatched;
 
         if (isCitizen) {
 
-            // Citizen fixed OTP support
             if (fixedOTPEnabled
                     && !fixedOTPPassword.isEmpty()
                     && fixedOTPPassword.equals(password)) {
@@ -164,6 +147,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 isPasswordMatched = true;
 
             } else {
+
                 isPasswordMatched = isPasswordMatch(
                         citizenLoginPasswordOtpEnabled,
                         password,
@@ -174,16 +158,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         } else {
 
-            // Employee default password bypass
             if (employeeLoginPasswordOtpEnabled
                     && password.equals(defaultEmployeePassword)
-                    && isPasswordType) {
+                    && !isPasswordType) {
 
                 isPasswordMatched = true;
 
             } else {
 
-                // 6-digit → OTP
                 boolean isOtpLogin = !isPasswordType;
 
                 isPasswordMatched = isPasswordMatch(
@@ -226,15 +208,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
 
-        final LinkedHashMap<String, String> details =
-                (LinkedHashMap<String, String>) authentication.getDetails();
+        final LinkedHashMap<String, Object> details =
+                (LinkedHashMap<String, Object>) authentication.getDetails();
 
-        String isCallInternal = details.get("isInternal");
+        String isCallInternal = (String) details.get("isInternal");
 
         if (isOtpBased) {
 
             if ("true".equals(isCallInternal)) {
-                log.debug("Skipping OTP validation (internal call)");
                 return true;
             }
 
@@ -243,14 +224,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             try {
                 return userService.validateOtp(user);
             } catch (ServiceCallException e) {
-                log.error("OTP validation failed");
                 return false;
             }
 
         } else {
 
             if ("true".equals(isCallInternal)) {
-                log.debug("Skipping password validation (internal call)");
                 return true;
             }
 
@@ -280,28 +259,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private org.egov.user.web.contract.auth.User getUser(User user) {
 
-        org.egov.user.web.contract.auth.User authUser =
-                org.egov.user.web.contract.auth.User.builder()
-                        .id(user.getId())
-                        .userName(user.getUserName())
-                        .uuid(user.getUuid())
-                        .name(user.getName())
-                        .mobileNumber(user.getMobileNumber())
-                        .emailId(user.getEmailId())
-                        .locale(user.getLocale())
-                        .active(user.getActive())
-                        .type(user.getType().name())
-                        .roles(toAuthRole(user.getRoles()))
-                        .tenantId(user.getTenantId())
-                        .build();
-
-        if (user.getPermanentAddress() != null) {
-            authUser.setPermanentCity(
-                    user.getPermanentAddress().getCity()
-            );
-        }
-
-        return authUser;
+        return org.egov.user.web.contract.auth.User.builder()
+                .id(user.getId())
+                .userName(user.getUserName())
+                .uuid(user.getUuid())
+                .name(user.getName())
+                .mobileNumber(user.getMobileNumber())
+                .emailId(user.getEmailId())
+                .locale(user.getLocale())
+                .active(user.getActive())
+                .type(user.getType().name())
+                .roles(toAuthRole(user.getRoles()))
+                .tenantId(user.getTenantId())
+                .build();
     }
 
     private Set<Role> toAuthRole(

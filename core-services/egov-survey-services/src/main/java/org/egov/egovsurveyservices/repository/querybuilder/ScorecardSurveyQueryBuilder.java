@@ -249,8 +249,8 @@ public class ScorecardSurveyQueryBuilder {
     }
 
     public String getSurveyResponseDetails() {
-        return "SELECT uuid, surveyuuid, citizenid, tenantid, locality, coordinates, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime " +
-                "FROM eg_ss_survey_response WHERE surveyuuid = ? AND citizenid = ? AND tenantid = ? LIMIT 1";
+        return "SELECT uuid, surveyuuid, citizenid, tenantid, locality, coordinates, comments, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime " +
+            "FROM eg_ss_survey_response WHERE surveyuuid = ? AND citizenid = ? AND tenantid = ? LIMIT 1";
     }
 
     public String fetchTenantIdBasedOnSurveyId() {

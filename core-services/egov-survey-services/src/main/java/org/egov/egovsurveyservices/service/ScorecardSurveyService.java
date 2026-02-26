@@ -304,12 +304,11 @@ public class ScorecardSurveyService {
 
                                 surveyResponse.setCitizenId(uuid);
                                 return ScorecardQuestionResponse.builder()
-                                        .questionUuid(answer.getQuestionUuid())
-                                        .questionStatement(question.getQuestionStatement())
-                                        .answerUuid(answer.getUuid())
-                                        .comments(answer.getComments())
-                                        .answerResponse(answer)
-                                        .build();
+                                    .questionUuid(answer.getQuestionUuid())
+                                    .questionStatement(question.getQuestionStatement())
+                                    .answerUuid(answer.getUuid())
+                                    .answerResponse(answer)
+                                    .build();
                             }).collect(Collectors.toList());
                     producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
                     return ScorecardSectionResponse.builder()
@@ -319,15 +318,16 @@ public class ScorecardSurveyService {
                 }).collect(Collectors.toList());
 
         ScorecardAnswerResponse scorecardAnswerResponse = ScorecardAnswerResponse.builder()
-                .locality(surveyResponse.getLocality())
-                .coordinates(surveyResponse.getCoordinates())
-                .tenantId(surveyResponse.getTenantId())
-                .status(surveyResponse.getStatus().toString())
-                .surveyUuid(surveyResponse.getSurveyUuid())
-                .citizenId(surveyResponse.getCitizenId())
-                .sectionResponses(enrichedSectionResponses)
-                .auditDetails(auditDetails)
-                .build();
+            .locality(surveyResponse.getLocality())
+            .coordinates(surveyResponse.getCoordinates())
+            .tenantId(surveyResponse.getTenantId())
+            .status(surveyResponse.getStatus().toString())
+            .surveyUuid(surveyResponse.getSurveyUuid())
+            .citizenId(surveyResponse.getCitizenId())
+            .sectionResponses(enrichedSectionResponses)
+            .auditDetails(auditDetails)
+            .comments(surveyResponse.getComments())
+            .build();
 
         return ScorecardSubmitResponse.builder().scorecardAnswerResponse(scorecardAnswerResponse).build();
 
@@ -379,6 +379,7 @@ public class ScorecardSurveyService {
             scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
             scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
             scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+            scorecardAnswerResponse.setComments(surveyResponseNew.getComments());
         }
         return scorecardAnswerResponse;
     }
@@ -386,11 +387,10 @@ public class ScorecardSurveyService {
     private ScorecardAnswerResponse buildScorecardAnswerResponse(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
         Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
         for (AnswerNew answer : answers) {
-            ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
+                ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())
                     .questionStatement(answer.getQuestionStatement())
                     .answerUuid(answer.getUuid())
-                    .comments(answer.getComments())
                     .answerResponse(answer)
                     .build();
 
@@ -488,6 +488,7 @@ public class ScorecardSurveyService {
                 response.setLocality(sr.getLocality());
                 response.setStatus(sr.getStatus().toString());
                 response.setCoordinates(sr.getCoordinates());
+                response.setComments(sr.getComments());
                 responses.add(response);
             }
         }
@@ -502,11 +503,10 @@ public class ScorecardSurveyService {
         for (AnswerNew answer : answers) {
 
 
-            ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
+                ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())
                     .questionStatement(answer.getQuestionStatement())
                     .answerUuid(answer.getUuid())
-                    .comments(answer.getComments())
                     .answerResponse(answer)
                     .build();
 

@@ -12,7 +12,7 @@ import {
 
 const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode }) => {
   const [selectedZone, setSelectedZone] = useState(null);
-console.log('defaultZoneCode', defaultZoneCode)
+// console.log('defaultZoneCode', defaultZoneCode)
   let tenantId;
   if (window.location.pathname.includes("employee")) {
     tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -26,7 +26,7 @@ console.log('defaultZoneCode', defaultZoneCode)
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
   ]);
 
-  console.log('zoneList', zoneList);
+  // console.log('zoneList', zoneList);
 
   
 
@@ -39,7 +39,7 @@ const zoneOptions = useMemo(
    () => zoneList?.tenant?.zoneMaster?.[0]?.zones || [],
   [zoneList]
  );
-console.log('zoneOptions', zoneOptions)
+// console.log('zoneOptions', zoneOptions)
  useEffect(() => {
   if (!selectedZone && defaultZoneCode && zoneOptions?.length) {
     // Accept both object ({code, name}) and string ("Zone1")

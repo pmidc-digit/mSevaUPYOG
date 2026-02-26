@@ -1085,6 +1085,9 @@ const FillQuestions = (props) => {
 
   function handleOnCancelDialog() {
     setOpenQuesDetailsDialog(false);
+    userInfo?.type?.toUpperCase() === "CITIZEN"
+      ? history.push("/digit-ui/citizen/engagement/surveys/active-open-surveys")
+      : history.push("/digit-ui/employee/engagement/surveys/active-open-surveys");
   }
 
   const toggleSection = (uuid) => {

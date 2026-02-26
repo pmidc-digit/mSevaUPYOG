@@ -93,7 +93,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
-  console.log('id', id.length)
+  // console.log('id', id.length)
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -109,7 +109,7 @@ const CitizenApplicationOverview = () => {
        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
    } : {})
   
-  console.log('applicationD', applicationDetails)
+  // console.log('applicationD', applicationDetails)
  const [approverComment , setApproverComment] = useState(null);
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
@@ -171,7 +171,7 @@ const CitizenApplicationOverview = () => {
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       const lastModified = nocObject?.auditDetails?.lastModifiedTime;
-      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
       const time = formatDuration(totalTime)
       
@@ -244,7 +244,7 @@ const CitizenApplicationOverview = () => {
     let application = applicationDetails?.Noc?.[0]
 
     let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    console.log("fileStoreId before create", fileStoreId);
+    // console.log("fileStoreId before create", fileStoreId);
 
     if (!fileStoreId) {
       const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
@@ -399,7 +399,7 @@ const CitizenApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  // console.log("actions here", actions);
 
 //   useEffect(() => {
 //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
@@ -450,7 +450,7 @@ const finalComment = useMemo(() => {
 
 
   function onActionSelect(action) {
-    console.log("selected action", action);
+    // console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
 
     const payload = {
@@ -486,7 +486,7 @@ const finalComment = useMemo(() => {
       vasikaDate, // add vasikaDate
       workflow: {},
     };
-    console.log("updatedApplicant", updatedApplicant);
+    // console.log("updatedApplicant", updatedApplicant);
     const filtData = data?.Licenses?.[0];
     //console.log("filtData", filtData);
 
@@ -511,7 +511,7 @@ const finalComment = useMemo(() => {
           setSelectedAction(null);
         } else {
           //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling citizen response page");
+          // console.log("We are calling citizen response page");
           history.replace({
             pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
@@ -547,7 +547,7 @@ const finalComment = useMemo(() => {
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  console.log("displayData=>", displayData);
+  // console.log("displayData=>", displayData);
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
     "OWNER.SITEPHOTOGRAPHTWO": 2,
@@ -559,13 +559,13 @@ const finalComment = useMemo(() => {
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
-  console.log("remainingDocs", remainingDocs);
+  // console.log("remainingDocs", remainingDocs);
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-  console.log("combinerOwnersName", combinedOwnersName);
+  // console.log("combinerOwnersName", combinedOwnersName);
 
 
   

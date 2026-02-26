@@ -24,7 +24,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     setValue,
     trigger,
     formState: { errors },
-    watch
+    watch,
+    getValues
   } = useForm({ 
      defaultValues: {
        floorArea: [{ value: "" }] ,
@@ -44,6 +45,13 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const ownerIds = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.ownerIds;
   });
+
+  
+  const handleBack = () => {
+    const data = getValues();
+    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+    onBackClick(config.key, data);
+  };
 
   const ownerPhotos = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
@@ -283,11 +291,11 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-          <NOCSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <NOCSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          <NOCSiteDetails onGoBack={handleBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          <NOCSpecificationDetails onGoBack={handleBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
         </div>
         <ActionBar>
-          <SubmitBar className="submit-bar-back" label="Back" onSubmit={onGoBack} />
+          <SubmitBar className="submit-bar-back" label="Back" onSubmit={handleBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>

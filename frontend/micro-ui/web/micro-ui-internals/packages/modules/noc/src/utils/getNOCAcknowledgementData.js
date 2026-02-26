@@ -84,6 +84,10 @@ const getApplicantDetails = (appData, t) => {
         title: t("NOC_OWNER_TYPE_LABEL"), 
         value: owner?.ownerType?.code 
       },
+      owner?.firmName && { 
+        title: t("NOC_FIRM_NAME"), 
+        value: owner?.firmName 
+      },
       {
         title: t("NOC_FIRM_OWNER_NAME_LABEL"),
         value: owner?.ownerOrFirmName || "NA",

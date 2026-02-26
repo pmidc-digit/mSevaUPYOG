@@ -72,7 +72,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           PropertyOwnerPlotArea: null,
           ownerType:"",
           propertyVasikaDate: "",
-          propertyVasikaNo:""
+          propertyVasikaNo:"",
+          firmName:""
         },
       ],
     },
@@ -100,7 +101,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
         setTimeout(() => {
           setShowToast(null);
         }, 3000);
-        setShowToast({ key: "true", error: true, message: t("Noc propertyid required if property registered is selected yes") }); // Use your NOC-specific translation key if different from BPA
+        setShowToast({ key: "true", error: true, message: t("NOC_PROPERTY_ID_REQUIRED_IF_YES_MSG") }); // Use your NOC-specific translation key if different from BPA
         return false;
       }
     }

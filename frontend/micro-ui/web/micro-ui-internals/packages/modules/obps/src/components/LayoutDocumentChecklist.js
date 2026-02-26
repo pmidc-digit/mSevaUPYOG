@@ -8,7 +8,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
 
   // Debug: Log readOnly status - handle both string and boolean
   const isReadOnly = readOnly === true || readOnly === "true";
-  console.log("LayoutDocumentChecklist - readOnly prop:", readOnly, "isReadOnly:", isReadOnly);
+  //console.log("LayoutDocumentChecklist - readOnly prop:", readOnly, "isReadOnly:", isReadOnly);
 
   // fetch urls
   const { data: urlsList } = Digit.Hooks.obps.useLayoutDocumentSearch(
@@ -17,7 +17,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
     { enabled: documents?.length > 0 }
   );
 
-  console.log(urlsList, "USER LIST");
+  //console.log(urlsList, "USER LIST");
 
   // Initialize remarks for each document
   useEffect(() => {
@@ -26,8 +26,8 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
       documents.forEach(d => { 
         initial[d.documentUid || d.uuid] = value?.[d.documentUid || d.uuid] || d.remarks || ""; 
       });
-      console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
-      console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
+      //console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
+      //console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }
@@ -77,11 +77,11 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                       t={t}
                       value={value[doc.documentUid] ?? ""}
                       onChange={(e) => {
-                        console.log("onChange triggered - value:", e.target.value);
+                        //console.log("onChange triggered - value:", e.target.value);
                         onRemarksChange(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
                       }}
                       onBlur={(e) => {
-                        console.log("onBlur triggered - final value:", e.target.value);
+                        //console.log("onBlur triggered - final value:", e.target.value);
                         // handleBlur(doc.documentUid, e.target.value);
                       }}
                       className="checklist-table-textarea"

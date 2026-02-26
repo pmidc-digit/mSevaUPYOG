@@ -168,14 +168,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
     return null;
   };
 
-  console.log("=== LayoutApplicationSummary Debug ===")
-  console.log("Raw data from hook:", data)
-  console.log("applicationDetails (data?.resData):", applicationDetails)
-  console.log("Layout array:", applicationDetails?.Layout)
-  console.log("First Layout object:", applicationDetails?.Layout?.[0])
-  console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
-  console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
-  console.log("=== End Debug ===")
+  //console.log("=== LayoutApplicationSummary Debug ===")
+  //console.log("Raw data from hook:", data)
+  //console.log("applicationDetails (data?.resData):", applicationDetails)
+  //console.log("Layout array:", applicationDetails?.Layout)
+  //console.log("First Layout object:", applicationDetails?.Layout?.[0])
+  //console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
+  //console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
+  //console.log("=== End Debug ===")
   const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
@@ -209,9 +209,9 @@ const [viewTimeline, setViewTimeline] = useState(false);
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
 
-    console.log("=== useEffect for displayData ===")
-    console.log("layoutObject:", layoutObject)
-    console.log("layoutObject?.documents:", layoutObject?.documents)
+    //console.log("=== useEffect for displayData ===")
+    //console.log("layoutObject:", layoutObject)
+    //console.log("layoutObject?.documents:", layoutObject?.documents)
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
@@ -219,8 +219,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
       const Documents = layoutObject?.documents || []
 
-      console.log("Documents array:", Documents)
-      console.log("Documents length:", Documents.length)
+      //console.log("Documents array:", Documents)
+      //console.log("Documents length:", Documents.length)
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -229,7 +229,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         Documents: Documents.length > 0 ? Documents : [],
       }
 
-      console.log("finalDisplayData:", finalDisplayData)
+      //console.log("finalDisplayData:", finalDisplayData)
       setDisplayData(finalDisplayData)
     }
   }, [applicationDetails?.Layout])
@@ -372,7 +372,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
-    console.log("payload data======> ",payloadData);
+    //console.log("payload data======> ",payloadData);
 
 
 
@@ -423,7 +423,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
       setLoading(true);
       let response = null;
       const fee = payments?.totalAmountPaid;
-      console.log("fee here here", fee);
+      //console.log("fee here here", fee);
       const amountinwords = amountToWords(fee);
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
@@ -504,7 +504,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
     return <LoaderNew page={true} />;
   }
 
-  console.log("dowloadOptions",dowloadOptions)
+  //console.log("dowloadOptions",dowloadOptions)
 
   return (
     <div className={"employee-main-application-details"}>

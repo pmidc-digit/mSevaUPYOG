@@ -58,7 +58,7 @@ const LayoutApplicantDetails = (_props) => {
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
   const [primaryApplicantType, setPrimaryApplicantType] = useState({});
 
-  console.log("userInfo here", getValues("aplicantType"), applicants);
+  //console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
 
   const { isLoading: genderTypeDataLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
@@ -82,7 +82,7 @@ const LayoutApplicantDetails = (_props) => {
 
   useEffect(() => {
     // Only restore data on mount, not on every change
-    console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
+    //console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
     const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
@@ -93,13 +93,13 @@ const LayoutApplicantDetails = (_props) => {
 
     // Restore additional applicants from currentStepData
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
-      console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
+      //console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
       setApplicants(currentStepData.applicants);
     }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
     else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
       const ownersFromApi = currentStepData.apiData.Layout[0].owners;
-      console.log("[v0] Mapping owners from API response:", ownersFromApi);
+      //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
       const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
@@ -130,7 +130,7 @@ const LayoutApplicantDetails = (_props) => {
         };
       });
 
-      console.log("[v0] Mapped additional applicants:", additionalApplicants);
+      //console.log("[v0] Mapped additional applicants:", additionalApplicants);
 
       // Keep the first empty placeholder at index 0, then add additional applicants
       // This is because the render logic skips index 0 (index > 0)
@@ -148,19 +148,19 @@ const LayoutApplicantDetails = (_props) => {
 
     // Restore document uploaded files from Redux state
     if (currentStepData?.documentUploadedFiles && Object.keys(currentStepData.documentUploadedFiles).length > 0) {
-      console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
+      //console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
       setDocumentUploadedFiles(currentStepData.documentUploadedFiles);
     }
     
     // Restore photo uploaded files from Redux state
     if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
-      console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
+      //console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
       setPhotoUploadedFiles(currentStepData.photoUploadedFiles);
     }
 
     // Restore PAN document uploaded files from Redux state
     if (currentStepData?.panDocumentUploadedFiles && Object.keys(currentStepData.panDocumentUploadedFiles).length > 0) {
-      console.log("[v0] Restoring panDocumentUploadedFiles from Redux:", currentStepData.panDocumentUploadedFiles);
+      //console.log("[v0] Restoring panDocumentUploadedFiles from Redux:", currentStepData.panDocumentUploadedFiles);
       setPanDocumentUploadedFiles(currentStepData.panDocumentUploadedFiles);
     }
 
@@ -171,7 +171,7 @@ const LayoutApplicantDetails = (_props) => {
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
       const ownersFromApi = currentStepData.apiData.Layout[0].owners;
-      console.log("[v0] Mapping documents from owners additionalDetails");
+      //console.log("[v0] Mapping documents from owners additionalDetails");
 
       const docFiles = {};
       const photoFiles = {};
@@ -190,9 +190,9 @@ const LayoutApplicantDetails = (_props) => {
         }
       });
 
-      console.log("[v0] Mapped document files:", docFiles);
-      console.log("[v0] Mapped photo files:", photoFiles);
-      console.log("[v0] Mapped PAN document files:", panDocFiles);
+      //console.log("[v0] Mapped document files:", docFiles);
+      //console.log("[v0] Mapped photo files:", photoFiles);
+      //console.log("[v0] Mapped PAN document files:", panDocFiles);
 
       if (Object.keys(docFiles).length > 0) {
         setDocumentUploadedFiles(docFiles);
@@ -219,7 +219,7 @@ const LayoutApplicantDetails = (_props) => {
 
     const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
     setIsLoading(false);
-    console.log(userResponse, "PHOTO");
+    //console.log(userResponse, "PHOTO");
     if (!userResponse?.user?.length) {
       setShowToast({
         key: "true",

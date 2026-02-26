@@ -16,7 +16,7 @@ const LayoutResponseCitizen = (props) => {
   
 
   const layoutData = state?.data?.Layout?.[0]
-  console.log("layoutData in response page", layoutData)
+  //console.log("layoutData in response page", layoutData)
 
   const tenantId = window.localStorage.getItem("CITIZEN.CITY")
 
@@ -51,7 +51,7 @@ const LayoutResponseCitizen = (props) => {
     // Digit.Utils.pdf.generate(acknowledgementData);
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch(err){
-      console.log('err', err)
+      //console.log('err', err)
     }finally{
       setDownloading(false);
     }

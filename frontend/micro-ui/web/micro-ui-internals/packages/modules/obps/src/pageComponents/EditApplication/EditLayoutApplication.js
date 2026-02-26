@@ -86,7 +86,7 @@ const EditLayoutApplication = () => {
   const formData = formState?.formData;
   const step = formState?.step;
 
-  console.log("FORM DATA FOR EDIT", formState);
+  //console.log("FORM DATA FOR EDIT", formState);
 
   let tenantId;
   if (window.location.pathname.includes("employee")) {
@@ -97,7 +97,7 @@ const EditLayoutApplication = () => {
 
   const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here==>", data);
+  //console.log("applicationDetails here==>", data);
   const layoutObject = data?.data?.[0]?.Applications;
   const professionalDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails || {};
@@ -132,9 +132,9 @@ const EditLayoutApplication = () => {
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
   };
   
-  console.log(siteDetails, "SSSSS");
-  console.log("[EditLayoutApplication] Primary owner data:", primaryOwner);
-  console.log("[EditLayoutApplication] Extracted applicant details:", applicantDetails);
+  //console.log(siteDetails, "SSSSS");
+  //console.log("[EditLayoutApplication] Primary owner data:", primaryOwner);
+  //console.log("[EditLayoutApplication] Extracted applicant details:", applicantDetails);
   const setStep = (updatedStepNumber) => {
     dispatch(SET_LayoutNewApplication_STEP(updatedStepNumber));
   };
@@ -145,7 +145,7 @@ const EditLayoutApplication = () => {
   const { data: buildingCategoryData, isLoading: isBuildingCategoryLoading } = Digit?.Hooks?.obps?.useLayoutBuildingCategory(stateId);
   const { data: roadTypeData, isLoading: isRoadTypeLoading } = Digit?.Hooks?.obps?.useLayoutRoadType(stateId);
   const { data: layoutTypeData, isLoading: isLayoutTypeLoading } = Digit?.Hooks?.obps?.useLayoutType(stateId);
-  console.log(layoutTypeData, "LAYOUT TYPE");
+  //console.log(layoutTypeData, "LAYOUT TYPE");
 
   const { data: mdmsData, isLoading: isMdmsLoading } = Digit?.Hooks?.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
   const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
@@ -166,24 +166,24 @@ const EditLayoutApplication = () => {
   const hasResetForm = useRef(false);
 
   useEffect(() => {
-    console.log("[v0] Loading states:", {
-      isLoading,
-      isBuildingTypeLoading,
-      isBuildingCategoryLoading,
-      isRoadTypeLoading,
-      isLayoutTypeLoading,
-      isUlbListLoading,
-      isMdmsLoading,
-    });
-    console.log("[v0] Data availability:", {
-      hasLayoutObject: !!layoutObject?.layoutDetails,
-      buildingTypeLength: buildingTypeData?.length || 0,
-      buildingCategoryLength: buildingCategoryData?.length || 0,
-      layoutTypeLength: layoutTypeData?.length || 0,
-      roadTypeLength: roadTypeData?.length || 0,
-      areaTypeLength: areaTypeOptions.length,
-      menuLength: menu.length,
-    });
+    // console.log("[v0] Loading states:", {
+    //   isLoading,
+    //   isBuildingTypeLoading,
+    //   isBuildingCategoryLoading,
+    //   isRoadTypeLoading,
+    //   isLayoutTypeLoading,
+    //   isUlbListLoading,
+    //   isMdmsLoading,
+    // });
+    // console.log("[v0] Data availability:", {
+    //   hasLayoutObject: !!layoutObject?.layoutDetails,
+    //   buildingTypeLength: buildingTypeData?.length || 0,
+    //   buildingCategoryLength: buildingCategoryData?.length || 0,
+    //   layoutTypeLength: layoutTypeData?.length || 0,
+    //   roadTypeLength: roadTypeData?.length || 0,
+    //   areaTypeLength: areaTypeOptions.length,
+    //   menuLength: menu.length,
+    // });
   }, [isLoading, isBuildingTypeLoading, isBuildingCategoryLoading, isRoadTypeLoading, isLayoutTypeLoading, isUlbListLoading, isMdmsLoading]);
 
   // First useEffect: Handle zone updates only
@@ -389,7 +389,7 @@ const EditLayoutApplication = () => {
         // if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
         if (!isBuildingTypeLoading && !isBuildingCategoryLoading && !isRoadTypeLoading && !isLayoutTypeLoading && !isMdmsLoading && !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
           isDataInitialized.current = true;
-          console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
+          //console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
           
           
           const formattedDocuments = {
@@ -493,7 +493,7 @@ const EditLayoutApplication = () => {
             // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),
             // specificationIsSiteUnderMasterPlan: options.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan || {})),
           };
-          console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
+          //console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
     
           dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
           dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
@@ -508,7 +508,7 @@ const EditLayoutApplication = () => {
           // Index 0 = primary owner (used by form but not displayed in UI)
           // Index 1+ = additional owners (displayed in UI)
           const ownersFromApi = layoutObject?.owners || [];
-          console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
+          //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
           
           // Helper function to format DOB
           const formatDobToDate = (dob) => {
@@ -551,7 +551,7 @@ const EditLayoutApplication = () => {
     
           const applicantsForForm = allApplicants.length > 0 ? allApplicants : [];
     
-          console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
+          //console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
           dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicantsForForm));
     
           // dispatch(UPDATE_LayoutNewApplication_FORM("apiData", {...applicationDetails, apiData: editApi?.Layout?.[0] || editApi})); // Store full response like CLU

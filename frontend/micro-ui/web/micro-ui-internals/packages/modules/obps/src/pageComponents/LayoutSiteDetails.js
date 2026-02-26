@@ -29,7 +29,7 @@ const LayoutSiteDetails = (_props) => {
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues } = _props;
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
-  console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
+  //console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
   const [netArea, setNetArea] = useState("0.00");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening"); // A = Total Plot Area
@@ -70,13 +70,13 @@ const LayoutSiteDetails = (_props) => {
   // Sync cluDocumentUpload form field with cluDocumentUploadedFile state
   useEffect(() => {
     if (cluDocumentUploadedFile?.fileStoreId) {
-      console.log("Syncing cluDocumentUpload field with fileStoreId:", cluDocumentUploadedFile.fileStoreId);
+      //console.log("Syncing cluDocumentUpload field with fileStoreId:", cluDocumentUploadedFile.fileStoreId);
       setValue("cluDocumentUpload", cluDocumentUploadedFile.fileStoreId, { shouldValidate: true });
     }
   }, [cluDocumentUploadedFile, setValue]);
 
-  console.log("STEPERDFATA", currentStepData);
-  console.log(isEditMode, "LOOK EDIT");
+  //console.log("STEPERDFATA", currentStepData);
+  //console.log(isEditMode, "LOOK EDIT");
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00");
@@ -89,7 +89,7 @@ const LayoutSiteDetails = (_props) => {
 
   const floorAreaValues = watch("floorArea");
   const basementAreaValues = watch("basementArea");
-  console.log(currentStepData, "DTATA TO BE MAPPED", getValues("isCluRequired"), isCluRequired);
+  //console.log(currentStepData, "DTATA TO BE MAPPED", getValues("isCluRequired"), isCluRequired);
 
   // Watch percentage fields to display calculated values
   const watchedEWSPct = watch("areaUnderEWSInPct");
@@ -150,7 +150,7 @@ const LayoutSiteDetails = (_props) => {
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
-  console.log(roadType, buildingType, "RRRRRRR");
+  //console.log(roadType, buildingType, "RRRRRRR");
 
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
@@ -255,7 +255,7 @@ const LayoutSiteDetails = (_props) => {
     // Second priority: auto-select based on tenantId
     if (tenantId && allCities?.length > 0) {
       const defaultCity = allCities.find((city) => city.code === tenantId);
-      console.log(defaultCity, "DDDDD");
+      //console.log(defaultCity, "DDDDD");
       if (defaultCity) {
         setSelectedCity(defaultCity);
         // Use trigger to validate and update the field
@@ -648,12 +648,12 @@ const LayoutSiteDetails = (_props) => {
                             
                             if (response?.data?.files?.length > 0) {
                               const fileStoreId = response.data.files[0].fileStoreId;
-                              console.log("✅ CLU Document uploaded successfully:", fileStoreId);
+                              //console.log("✅ CLU Document uploaded successfully:", fileStoreId);
                               setCluDocumentUploadedFile({
                                 fileStoreId: fileStoreId,
                                 fileName: file.name
                               });
-                              console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
+                              //console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
                             } else {
                               console.error("❌ File upload failed - no fileStoreId in response");
                               setCluDocumentError("File upload failed");

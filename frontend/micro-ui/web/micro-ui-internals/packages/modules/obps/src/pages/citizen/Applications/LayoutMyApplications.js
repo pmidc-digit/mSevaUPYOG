@@ -33,7 +33,7 @@ const LayoutMyApplications = ({ view }) => {
 
   const { isLoading, data, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(params, tenantId);
 
-  console.log("data herein CLU==>", data);
+  //console.log("data herein CLU==>", data);
 
   const labels=["CS_CF_VIEW", "CS_CF_TRACK", "TL_VIEW_DETAILS"];
 

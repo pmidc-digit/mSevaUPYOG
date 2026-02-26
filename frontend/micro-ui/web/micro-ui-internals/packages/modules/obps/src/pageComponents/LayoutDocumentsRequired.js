@@ -58,7 +58,7 @@ const LayoutDocumentsRequired = ({
   }, [coordinates])
 
   // console.log("coordinates (from redux)", coordinates, data)
-  console.log("geocoordinates", geocoordinates)
+  //console.log("geocoordinates", geocoordinates)
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
   // const applicationNo = currentStepData?.apiData?.Layout?.applicationNo || ""
@@ -581,7 +581,7 @@ function LayoutSelectDocument({
           }
         })
       } catch (error) {
-        console.log("EXIF parsing failed:", error)
+        //console.log("EXIF parsing failed:", error)
         resolve({ latitude: null, longitude: null })
       }
     })

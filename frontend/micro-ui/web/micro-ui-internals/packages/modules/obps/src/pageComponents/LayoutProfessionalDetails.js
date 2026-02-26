@@ -46,7 +46,7 @@ const LayoutProfessionalDetails = (_props) => {
   const [expiredDate, setExpiredDate] = useState(""); // Store expired date for display
   const [licenseStatus, setLicenseStatus] = useState(null); // Track license status (APPROVED, EXPIRED, etc.)
 
-  console.log(data, "DATAAA");
+  //console.log(data, "DATAAA");
 
   useEffect(() => {
     if (data && data.Licenses && data.Licenses.length > 0) {
@@ -67,7 +67,7 @@ const LayoutProfessionalDetails = (_props) => {
           setGetCounsilNo(bpaData?.licenseNumber);
           setValue("professionalRegId", bpaData?.licenseNumber);
         }
-        console.log(bpaData, "BPA DATA - APPROVED");
+        //console.log(bpaData, "BPA DATA - APPROVED");
 
         if (bpaData.validTo) {
           const date = new Date(bpaData.validTo);
@@ -77,11 +77,11 @@ const LayoutProfessionalDetails = (_props) => {
           const formattedDate = `${year}-${month}-${day}`;
           setFormattedDate(formattedDate);
           setValue("professionalRegistrationValidity", formattedDate);
-          console.log("  Formatted date:", formattedDate);
+          //console.log("  Formatted date:", formattedDate);
         }
 
         if (bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress) {
-          console.log("ProfessionalsAddress",bpaData)
+          //console.log("ProfessionalsAddress",bpaData)
           const professionalAddress = bpaData?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || bpaData?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress;
           setValue("professionalAddress", professionalAddress);
         }
@@ -93,7 +93,7 @@ const LayoutProfessionalDetails = (_props) => {
         if (councilNo) {
           setValue("professionalRegId", councilNo);
         }
-        console.log(bpaData, "BPA DATA - EXPIRED");
+        //console.log(bpaData, "BPA DATA - EXPIRED");
 
         if (bpaData.validTo) {
           const date = new Date(bpaData.validTo);
@@ -111,14 +111,14 @@ const LayoutProfessionalDetails = (_props) => {
           setValue("professionalAddress", professionalAddress);
         }
       } else {
-        console.log("No APPROVED or EXPIRED license found");
+        //console.log("No APPROVED or EXPIRED license found");
         setLicenseStatus(null);
       }
     }
   }, [setValue, data]);
 
   useEffect(() => {
-    console.log("currentStepData2", currentStepData);
+    //console.log("currentStepData2", currentStepData);
     const formattedData = currentStepData?.applicationDetails;
     if (formattedData) {
       // console.log("coming here", formattedData);
@@ -140,16 +140,16 @@ const LayoutProfessionalDetails = (_props) => {
   }, [currentStepData, setValue]);
 
   useEffect(() => {
-    console.log("  ProfessionalDetails - currentStepData:", currentStepData);
+    //console.log("  ProfessionalDetails - currentStepData:", currentStepData);
     const formattedData = currentStepData?.applicationDetails;
     if (formattedData) {
-      console.log("  Setting professional details:", formattedData);
+      //console.log("  Setting professional details:", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
     }
   }, [currentStepData?.applicationDetails, setValue]);
-  console.log("first page");
+  //console.log("first page");
 
   const [userPhoto, setUserPhoto] = useState(null);
   const [documents, setDocuments] = useState({});
@@ -158,13 +158,13 @@ const LayoutProfessionalDetails = (_props) => {
   useEffect(() => {
     if (data?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.photo) {
       const photoFileStoreId = data?.Licenses[0]?.tradeLicenseDetail?.owners[0]?.photo;
-      console.log("photoFileStoreId:", photoFileStoreId);
+      //console.log("photoFileStoreId:", photoFileStoreId);
       Digit.UploadServices.Filefetch([photoFileStoreId], tenantId.split(".")[0]).then((res) => {
-        console.log("Photo fetch response:", res);
+        //console.log("Photo fetch response:", res);
         setDocuments(res?.data);
         if (res?.data?.[photoFileStoreId]) {
           const photoUrl = res.data[photoFileStoreId]?.split(",")[0];
-          console.log("Setting photo URL:", photoUrl);
+          //console.log("Setting photo URL:", photoUrl);
           setUserPhoto(photoUrl);
         }
       }).catch((err) => {
@@ -173,7 +173,7 @@ const LayoutProfessionalDetails = (_props) => {
     }
   }, [data, tenantId]);
 
-  console.log("VVVVVVV", userInfo);
+  //console.log("VVVVVVV", userInfo);
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("BPA_PROFESSIONAL_DETAILS")}</CardSectionHeader>

@@ -38,9 +38,9 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint here", checkpoint);
+  //console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments", wfDocuments);
+  //console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
@@ -128,7 +128,7 @@ const LayoutEmployeeApplicationOverview = () => {
     cacheTime: 0,
   });
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
+  //console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
   const currentZoneCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
 
   // Fetch layout checklist data - only if not on first DM submission
@@ -141,7 +141,7 @@ const LayoutEmployeeApplicationOverview = () => {
     tenantId,
     { enabled: shouldFetchChecklist }
   );
-  console.log("DEBUG: Checklist data fetched:", checklistData, "Fetch enabled:", shouldFetchChecklist);
+  //console.log("DEBUG: Checklist data fetched:", checklistData, "Fetch enabled:", shouldFetchChecklist);
 
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
 
@@ -151,8 +151,8 @@ const LayoutEmployeeApplicationOverview = () => {
     moduleCode: applicationDetails?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "Layout_mcUp",
   });
 
-  console.log("workflowDetails here=>", workflowDetails);
-  console.log("next employee ======>", data, applicationDetails, applicationDetails?.businessService);
+  //console.log("workflowDetails here=>", workflowDetails);
+  //console.log("next employee ======>", data, applicationDetails, applicationDetails?.businessService);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -166,8 +166,8 @@ const LayoutEmployeeApplicationOverview = () => {
     let WorkflowService = null;
     const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
 
-    console.log("  Business service:", businessService);
-    console.log("  Tenant ID:", tenantId);
+    //console.log("  Business service:", businessService);
+    //console.log("  Tenant ID:", tenantId);
 
     if (businessService && tenantId) {
       (async () => {
@@ -175,7 +175,7 @@ const LayoutEmployeeApplicationOverview = () => {
         try {
           WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
           const states = WorkflowService?.BusinessServices?.[0]?.states || [];
-          console.log("  Setting workflowService state with", states.length, "states");
+          //console.log("  Setting workflowService state with", states.length, "states");
           setWorkflowService(states);
         } catch (error) {
           console.error("  Error fetching workflow service:", error);
@@ -184,7 +184,7 @@ const LayoutEmployeeApplicationOverview = () => {
         }
       })();
     } else {
-      console.log("  Skipping workflow load - missing business service or tenant");
+      //console.log("  Skipping workflow load - missing business service or tenant");
     }
   }, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
   let user = Digit.UserService.getUser();
@@ -225,11 +225,11 @@ const LayoutEmployeeApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  //console.log("actions here", actions);
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0];
-    console.log(layoutObject, "layoutObject---in---useEffect");
+    //console.log(layoutObject, "layoutObject---in---useEffect");
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
@@ -238,7 +238,7 @@ const LayoutEmployeeApplicationOverview = () => {
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
 
-      console.log("DEBUG: Documents array with remarks:", Documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
+      //console.log("DEBUG: Documents array with remarks:", Documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -269,7 +269,7 @@ const LayoutEmployeeApplicationOverview = () => {
       checklistData.checkList.forEach(item => {
         remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
       });
-      console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
+      //console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
       setChecklistRemarks(remarksMap);
     }
   }, [checklistData]);
@@ -281,7 +281,7 @@ const LayoutEmployeeApplicationOverview = () => {
       hasRole &&
       !isMobile
     ) {
-     console.log("Field_Inspection_Only_Available_On_Mobile");
+     //console.log("Field_Inspection_Only_Available_On_Mobile");
     }
   }, [applicationDetails?.Layout?.[0]?.applicationStatus, hasRole, isMobile]);
 
@@ -390,7 +390,7 @@ const LayoutEmployeeApplicationOverview = () => {
   }
 
   useEffect(() => {
-    console.log(" useEffect triggered - id changed to:", id);
+    //console.log(" useEffect triggered - id changed to:", id);
 
     if (workflowDetails) {
       workflowDetails.revalidate();
@@ -416,12 +416,12 @@ const LayoutEmployeeApplicationOverview = () => {
   }
 
   const submitAction = async (data) => {
-    console.log(" submitAction called with data:", data);
+    //console.log(" submitAction called with data:", data);
     setIsSubmitting(true);
 
     try {
       const filtData = data?.Licenses?.[0];
-      console.log(" filtData:", filtData);
+      //console.log(" filtData:", filtData);
 
       if (!filtData) {
         console.error(" ERROR: filtData is undefined");
@@ -431,7 +431,7 @@ const LayoutEmployeeApplicationOverview = () => {
       }
 
       const layoutObject = applicationDetails?.Layout?.[0];
-      console.log(" layoutObject:", layoutObject);
+      //console.log(" layoutObject:", layoutObject);
 
       if (!layoutObject) {
         console.error(" ERROR: layoutObject is undefined");
@@ -467,11 +467,11 @@ const LayoutEmployeeApplicationOverview = () => {
           // Check if all documents have remarks filled
           const allRemarksFilledForDocuments = remainingDocs.every(doc => {
             const remark = checklistRemarks[doc.documentUid || doc.uuid];
-            console.log("remarkdoc",remainingDocs,doc,checklistRemarks, checklistRemarks[doc.documentUid || doc.uuid])
+            //console.log("remarkdoc",remainingDocs,doc,checklistRemarks, checklistRemarks[doc.documentUid || doc.uuid])
             return remark && typeof remark === 'string' && remark.trim().length > 0;
           });
 
-          console.log("allRemarksFilledForDocuments",allRemarksFilledForDocuments)
+          //console.log("allRemarksFilledForDocuments",allRemarksFilledForDocuments)
 
           if (!allRemarksFilledForDocuments) {
             closeModal();
@@ -541,10 +541,10 @@ const LayoutEmployeeApplicationOverview = () => {
         Layout: updatedApplicant,
       };
 
-      console.log(" finalPayload:", JSON.stringify(finalPayload, null, 2));
+      //console.log(" finalPayload:", JSON.stringify(finalPayload, null, 2));
 
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
-      console.log(" API response:", response);
+      //console.log(" API response:", response);
 
       // Also send checklist update/create for document remarks
       // CHECK: If on DM role (shouldFetchChecklist === false), CREATE checklist. Otherwise UPDATE if data exists
@@ -573,9 +573,9 @@ const LayoutEmployeeApplicationOverview = () => {
                 remarks: checklistRemarks[doc.documentUid || doc.uuid] || "",
               })),
             };
-            console.log("DEBUG: DM ROLE - Sending checklist CREATE payload:", checklistPayload);
+            //console.log("DEBUG: DM ROLE - Sending checklist CREATE payload:", checklistPayload);
             const checklistResponse = await Digit.OBPSService.LayoutCheckListCreate({ details: checklistPayload, filters: {} });
-            console.log("DEBUG: Checklist create response:", checklistResponse);
+            //console.log("DEBUG: Checklist create response:", checklistResponse);
             // Refetch checklist after creation
             refetchChecklist();
           } else if (checklistData?.checkList?.length > 0) {
@@ -593,9 +593,9 @@ const LayoutEmployeeApplicationOverview = () => {
                 };
               }),
             };
-            console.log("DEBUG: OTHER ROLES - Sending checklist UPDATE payload:", checklistPayload);
+            //console.log("DEBUG: OTHER ROLES - Sending checklist UPDATE payload:", checklistPayload);
             const checklistResponse = await Digit.OBPSService.LayoutCheckListUpdate({ details: checklistPayload, filters: { tenantId } });
-            console.log("DEBUG: Checklist update response:", checklistResponse);
+            //console.log("DEBUG: Checklist update response:", checklistResponse);
           } else {
             console.warn("DEBUG: Checklist data not available at non-DM roles - may need to search first");
           }
@@ -625,7 +625,7 @@ const LayoutEmployeeApplicationOverview = () => {
           filtData?.action === "FORWARD_L7" ||
           filtData?.action === "SENDBACKTOPROFESSIONAL"
         ) {
-          console.log("We are calling employee response page");
+          //console.log("We are calling employee response page");
           history.replace({
             pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
@@ -695,19 +695,19 @@ const LayoutEmployeeApplicationOverview = () => {
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-    console.log("check action === ", action);
+    //console.log("check action === ", action);
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-    console.log("check filterNexState=== ", filterNexState[0]?.nextState);
+    //console.log("check filterNexState=== ", filterNexState[0]?.nextState);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("check getWorkflowService === ", getWorkflowService);
-    console.log(filterRoles, "filterRoles");
+    //console.log("check getWorkflowService === ", getWorkflowService);
+    //console.log(filterRoles, "filterRoles");
 
     // <CHANGE> Added detailed logging and fallback to empty array
     const nextStateRoles = filterRoles?.[0]?.actions || [];
-    console.log("  Next state roles to filter employees:", nextStateRoles);
+    //console.log("  Next state roles to filter employees:", nextStateRoles);
     setEmployees(nextStateRoles);
 
     const payload = {
@@ -731,7 +731,7 @@ const LayoutEmployeeApplicationOverview = () => {
         return;
       }
       // <CHANGE> Log before opening modal to verify employees are set
-      console.log("  Opening modal with filtered employees:", nextStateRoles);
+      //console.log("  Opening modal with filtered employees:", nextStateRoles);
       setShowModal(true);
       setSelectedAction(action);
     }
@@ -793,7 +793,7 @@ const LayoutEmployeeApplicationOverview = () => {
     return <Row label={label} text={displayValue} />;
   };
 
-  console.log("displayData here", displayData);
+  //console.log("displayData here", displayData);
 
   const handleViewTimeline = () => {
     setViewTimeline(true);
@@ -802,7 +802,7 @@ const LayoutEmployeeApplicationOverview = () => {
   };
 
   const onChangeReport = (key, value) => {
-    console.log("key,value", key, value);
+    //console.log("key,value", key, value);
     setFieldInspectionPending(value);
   };
 

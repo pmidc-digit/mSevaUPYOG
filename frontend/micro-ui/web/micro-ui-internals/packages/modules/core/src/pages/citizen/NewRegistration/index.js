@@ -243,7 +243,7 @@ const NewRegistration = ({ stateCode }) => {
                 <span> *</span>
               </div>
 
-              <Dropdown option={genders} optionKey="name" id="name" selected={getGender} select={setGender} placeholder={t("COMMON_TABLE_SEARCH")} />
+              <Dropdown option={genders} optionKey="name" id="name" selected={getGender} select={setGender} placeholder={t("CORE_COMMON_GENDER")} />
             </div>
             {step === "FORM" && (
               <RegistrationForm

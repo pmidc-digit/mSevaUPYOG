@@ -8,7 +8,7 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
   const { t } = useTranslation();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
+  const userInfo = Digit.UserService.getUser().info;
   // const userUlbs = ulbs
   //   .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
   //   .sort(alphabeticalSortFunctionForTenantsBasedOnName);
@@ -17,26 +17,31 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
   //   return filtered;
   // }, [ulbs]);
 
-   let isTenantFound= true;
-    let userUlbs = ulbs
-      .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
-      .sort(alphabeticalSortFunctionForTenantsBasedOnName);
-    if(userUlbs?.length===0){
-      isTenantFound = false;
-     userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
+  let isTenantFound = true;
+  let userUlbs = ulbs
+    .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
+    .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+  if (userUlbs?.length === 0) {
+    //   isTenantFound = false;
+    //  userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]
+    isTenantFound = false;
+    //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]
+    let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
+    if (tenantId === "pb.punjab") {
+      userUlbs = [adduserUlbs, ...ulbs];
+    } else {
+      userUlbs = [adduserUlbs];
     }
-    const selectedTenat = useMemo(() => {
-      if(userUlbs?.length>0 && isTenantFound===true){
-      
+  }
+  const selectedTenat = useMemo(() => {
+    if (userUlbs?.length > 0 && isTenantFound === true) {
       const filtered = ulbs.filter((item) => item.code === tenantId);
       return filtered;
-      }
-      else{
-        
-         const filtered = userUlbs.filter((item) => item.code === tenantId);
+    } else {
+      const filtered = userUlbs.filter((item) => item.code === tenantId);
       return filtered;
-      }
-    }, [ulbs]);
+    }
+  }, [ulbs]);
   //   const isActiveOptions = [
   //     { id: false, name: "False" },
   //     { id: true, name: "True" },
@@ -53,11 +58,12 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
     Digit.Surveys.searchCategory(payload)
       .then((response) => {
         //console.log("Category Options: ", response);
-        const categoryOptions = (response && response.Categories)
-          ? response.Categories.map(function (item) {
-            return { name: t(item.label), i18Key: item.label, value: item.id };
-          })
-          : [];
+        const categoryOptions =
+          response && response.Categories
+            ? response.Categories.map(function (item) {
+                return { name: t(item.label), i18Key: item.label, value: item.id };
+              })
+            : [];
         setCategoryOptions(categoryOptions);
       })
       .catch((error) => {

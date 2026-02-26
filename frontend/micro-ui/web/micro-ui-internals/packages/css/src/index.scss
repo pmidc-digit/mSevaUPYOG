@@ -1000,12 +1000,12 @@
 }
 
 .options-card {
-  max-height: 350px;  
-  overflow-y: auto; 
-  overflow-x: hidden; 
-  border: 1px solid #ccc; 
+  max-height: 350px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #ccc;
   border-radius: 8px;
-  background-color: #fff; 
+  background-color: #fff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   padding: 4px 0;
 }
@@ -2401,14 +2401,31 @@ input[type="date"] {
     width: 100%;
   }
 }
-.hrms-text-transform{
+.hrms-text-transform {
   text-transform: none !important;
 }
-
 
 .noc-popupStyles {
   width: unset;
   min-width: 360px;
   max-width: 600px;
   padding: 20px;
+}
+
+.engagementForm {
+  width: 70%;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.surveyCardSection {
+  background: white;
+  display: block;
+  padding: 15px;
+  justify-self: center;
+  width: 50%;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }

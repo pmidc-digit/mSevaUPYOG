@@ -29,26 +29,29 @@ const CLUDocumentTableView = ({ documents }) => {
     },
   ];
 
-  const documentObj = {
-    value: {
-      workflowDocs: documents?.map((doc) => ({
-        documentType: doc?.documentType || "",
-        filestoreId: doc?.filestoreId || "",
-        documentUid: doc?.documentUid || "",
-        documentAttachment: doc?.documentAttachment || "",
-      })),
-    },
-  };
+  const documentObj = useMemo(() => {
+    return {
+      value: {
+        workflowDocs: documents?.map((doc) => ({
+          documentType: doc?.documentType || "",
+          filestoreId: doc?.filestoreId || doc?.fileStoreId || "",
+          documentUid: doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "",
+          documentAttachment: doc?.documentAttachment || "",
+        })),
+      },
+    };
+  }, [documents]);
 
   const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
     enabled: documents?.length > 0 ? true : false,
   });
 
   const mappedDocuments = documents?.map((doc) => {
-    const { documentUid, documentType } = doc;
-    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
+    const docUid = doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "";
+    const { documentType } = doc;
+    const url = urlsList?.pdfFiles?.[docUid];
     return {
-      documentUid,
+      documentUid: docUid,
       documentType,
       url,
     };
@@ -78,6 +81,8 @@ const CLUDocumentTableView = ({ documents }) => {
           autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
+          pageSizeLimit={100}
+          initialState={{ pageSize: 100 }}
         />
       )}
     </div>

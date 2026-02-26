@@ -26,6 +26,8 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
     setShowTermsPopupOwner(false);
   };
 
+  const isMobile = window.innerWidth <= 640;
+
   const {
     control,
     handleSubmit,
@@ -68,10 +70,40 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
       overflowX: "hidden",
       textAlign: "justify",
       boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-      maxHeight: "80vh",
+      maxHeight: isMobile ? "47vh" : "80vh",
       overflowY: "auto",
       lineHeight: "2",
     },
+  };
+
+  const convertDobToEpoch = (dob) => {
+    if (!dob) return null;
+
+    // If already epoch (number), return as is
+    if (typeof dob === "number") return dob;
+
+    // If string like "2000-01-01"
+    if (typeof dob === "string") {
+      return new Date(dob + "T00:00:00").getTime();
+    }
+
+    return null;
+  };
+
+  const isMinimum18Years = (dob) => {
+    if (!dob) return false;
+
+    const today = new Date();
+    const birthDate = new Date(dob);
+
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      return age - 1 >= 18;
+    }
+
+    return age >= 18;
   };
 
   const onSubmit = async (data) => {
@@ -83,13 +115,14 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
       updatedFields.gender = data.gender.code;
     }
 
-    if (data?.emailId) {
-      updatedFields.emailId = data.emailId;
-    }
+    // if (data?.emailId) {
+    //   updatedFields.emailId = data.emailId;
+    // }
 
-    if (data?.dob) {
-      updatedFields.dob = new Date(data.dob).getTime();
-      // updatedFields.dob = data.dob; // or convert to epoch if required
+    const finalDob = data?.dob ? convertDobToEpoch(data.dob) : convertDobToEpoch(getUserDetails?.dob);
+
+    if (finalDob) {
+      updatedFields.dob = finalDob;
     }
 
     const { pwdExpiryDate, createdDate, lastModifiedDate, ...cleanUserDetails } = getUserDetails || {};
@@ -99,7 +132,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
       ...updatedFields,
     };
     // 🔥 Ensure DOB is always epoch
-    userData.dob = new Date(`${userData.dob}T00:00:00`).getTime();
+    // userData.dob = new Date(`${userData.dob}T00:00:00`).getTime();
 
     console.log("userData", userData);
     // return;
@@ -193,6 +226,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
                       name="dob"
                       rules={{
                         required: "DOB is required",
+                        validate: (value) => isMinimum18Years(value) || "Minimum age should be 18 years",
                       }}
                       render={(props) => (
                         <TextInput
@@ -205,6 +239,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
                             props.onBlur(e);
                           }}
                           t={t}
+                          max={new Date().toISOString().split("T")[0]} // prevents future date
                         />
                       )}
                     />
@@ -214,7 +249,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
               )}
 
               {/* email */}
-              {!getUserDetails?.emailId && (
+              {/* {!getUserDetails?.emailId && (
                 <div className="label-field-pair" style={{ marginBottom: "20px" }}>
                   <CardLabel>
                     {`${t("NOC_APPLICANT_EMAIL_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -246,7 +281,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
                     {errors?.emailId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.emailId.message}</p>}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
             {showToast && (
               <Toast

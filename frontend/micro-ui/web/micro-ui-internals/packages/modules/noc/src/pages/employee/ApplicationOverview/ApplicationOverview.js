@@ -131,10 +131,11 @@ const NOCEmployeeApplicationOverview = () => {
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
   const [distances, setDistances] = useState([]);  
-  console.log("applicationDetails here==>", applicationDetails);
-
+  // console.log("applicationDetails here==>", applicationDetails);
+  const stateId = Digit.ULBService.getStateId();
+  const { data: allowedDistance, isLoading: isDistanceLoading } = Digit.Hooks.useCommonMDMS(stateId, "common-masters", ["AllowedDistance"]);
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
-   console.log("businessService here==>", businessServiceCode);
+  //  console.log("businessService here==>", businessServiceCode);
 
    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -151,11 +152,11 @@ const NOCEmployeeApplicationOverview = () => {
     moduleCode: businessServiceCode,//businessService
   });
 
-  console.log("workflowDetails here=>", workflowDetails);
+  // console.log("workflowDetails here=>", workflowDetails);
 
  const { data: searchChecklistData, refetch: refetchChecklist } =  Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
- console.log('searchChecklistData', searchChecklistData)
+//  console.log('searchChecklistData', searchChecklistData)
 
   useEffect(() => {
       if (eSignError) {
@@ -167,6 +168,11 @@ const NOCEmployeeApplicationOverview = () => {
       }
     }, [eSignError]);
 
+    let nocDistance; 
+
+    if(!isDistanceLoading){
+      nocDistance = allowedDistance?.["common-masters"]?.AllowedDistance?.find((item) => item?.module === "NOC" && item?.active)?.value ?? null;
+    }
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -777,9 +783,9 @@ const validateSiteImages = (action) => {
     if (distances?.length > 0) {
       for (let i = 0; i < distances.length; i++) {
         const d = distances[i];
-        if (d > 50) {
+        if (d > nocDistance) {
           // return with index (human-friendly: +1)
-          return `Site image ${i + 1} is not within 50 meters`;
+          return `Site image ${i + 1} is not within ${nocDistance} meters`;
         }
       }
     }

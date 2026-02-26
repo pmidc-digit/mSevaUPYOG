@@ -76,13 +76,13 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
 	              (DefaultOAuth2AccessToken) super.enhance(token, authentication);
 
 	      // 🔐 If password login → hide token values
-	      if (isPasswordType) {
-	          enhancedToken.setValue(null);
-	          enhancedToken.setRefreshToken(null);
-	          enhancedToken.setExpiration(null);
-	          enhancedToken.setScope(null);
-	          enhancedToken.setTokenType(null);
-	      }
+//	      if (isPasswordType) {
+//	          enhancedToken.setValue(null);
+//	          enhancedToken.setRefreshToken(null);
+//	          enhancedToken.setExpiration(null);
+//	          enhancedToken.setScope(null);
+//	          enhancedToken.setTokenType(null);
+//	      }
 
 	      // ✅ Save session
 	      String ipAddress = "";

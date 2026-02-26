@@ -184,7 +184,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }, [siteImages]);
 
-  console.log('geoLocations', geoLocations)
+  // console.log('geoLocations', geoLocations)
   const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
     title: value?.documentType,
     fileStoreId: value?.filestoreId,
@@ -243,7 +243,7 @@ const NOCEmployeeApplicationOverview = () => {
         try{
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
-        console.log("wf=>", wf);
+        // console.log("wf=>", wf);
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
         }catch(e){
@@ -391,7 +391,7 @@ const handleDownloadPdf = async () => {
 
   const printCertificateWithESign = async () => {
     try {
-      console.log("🎯 Starting certificate eSign process...");
+      // console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getSanctionLetterReceipt({
         tenantId: reciept_data?.Payments[0]?.tenantId,
@@ -526,7 +526,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
   const menuRef = useRef();
 
 
-  console.log('user', user)
+  // console.log('user', user)
 
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
@@ -536,19 +536,19 @@ const [displayMenu, setDisplayMenu] = useState(false);
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
 
-  console.log('sitePhotos', sitePhotos)
+  // console.log('sitePhotos', sitePhotos)
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
   const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
-  console.log('coordinates', coordinates)
+  // console.log('coordinates', coordinates)
 
  
 
   useEffect(() => {
   const status = applicationDetails?.Noc?.[0]?.applicationStatus;
   const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
-  console.log('additionalDetails', additionalDetails)
+  // console.log('additionalDetails', additionalDetails)
   if (status === "DOCUMENTVERIFY") { 
      setDocumentVerifier( 
       additionalDetails?.documentVerifier || user?.info?.name || "" ); 
@@ -589,7 +589,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  // console.log("actions here", actions);
 
   useEffect(() => {    
     const nocObject = applicationDetails?.Noc?.[0];
@@ -619,7 +619,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
       setDisplayData(finalDisplayData);
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       const lastModified = nocObject?.auditDetails?.lastModifiedTime;
-      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
+      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
       const time = formatDuration(totalTime);
 
@@ -627,7 +627,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
-      console.log('nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending', nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending)
+      // console.log('nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending', nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending)
       setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
@@ -683,7 +683,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
   }
   function onActionSelect(action) {
     const validationMsg = validateSiteImages(action);
-    console.log("selected action", action);
+    // console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
     const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
@@ -757,12 +757,12 @@ useEffect(() => {
               parseFloat(loc?.longitude)
             );
             const minDistance = Math.min(d1, d2);
-            console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
+            // console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
             return minDistance;
           })
         );
         setDistances(results);
-        console.log("Final distances (m):", results);
+        // console.log("Final distances (m):", results);
       } catch (err) {
         console.error("Error fetching distances:", err);
       }
@@ -794,7 +794,7 @@ const validateSiteImages = (action) => {
 };
 
 
-console.log('distances', distances)
+// console.log('distances', distances)
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
@@ -812,7 +812,7 @@ console.log('distances', distances)
 };
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
-    console.log("payloadData", payloadData);
+    // console.log("payloadData", payloadData);
     const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
     const filtData = data?.Licenses?.[0];
@@ -833,7 +833,7 @@ console.log('distances', distances)
       }
 
       if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
-        console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
+        // console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
         if (fieldInspectionPending?.length === 0) {
           closeModal();
           setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
@@ -935,7 +935,7 @@ console.log('distances', distances)
         },
       },
     };
-    console.log("updatedApplicant", updatedApplicant);
+    // console.log("updatedApplicant", updatedApplicant);
 
         
     if (filtData?.action === "UPDATE_ZONE") {
@@ -963,7 +963,7 @@ console.log('distances', distances)
       Noc: { ...updatedApplicant },
     };
 
-    console.log("final Payload ", finalPayload);
+    // console.log("final Payload ", finalPayload);
 
     try {
       if (["SENDBACKTOCITIZEN", "REJECT"].includes(filtData?.action)) {
@@ -1031,7 +1031,7 @@ console.log('distances', distances)
               }, 3000);
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling employee response page");
+          // console.log("We are calling employee response page");
           history.replace({
             pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
@@ -1084,7 +1084,7 @@ console.log('distances', distances)
   };
 
   const onChangeReport = (key, value) => {
-    console.log("key,value", key, value);
+    // console.log("key,value", key, value);
     setFieldInspectionPending(value);
   }
 
@@ -1103,7 +1103,7 @@ console.log('distances', distances)
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  console.log("displayData here", displayData);
+  // console.log("displayData here", displayData);
   
   
 

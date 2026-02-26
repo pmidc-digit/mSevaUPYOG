@@ -25,8 +25,8 @@ const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const history = useHistory();
   const { t } = useTranslation();
-  const location = useLocation();
   const url = window.location.href;
+  const location = useLocation();
   const stateId = Digit.ULBService.getStateId();
   const tenant = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser()?.info || {};
@@ -64,8 +64,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState();
   const isUserArchitect = window.location.href.includes("citizen") && userInfo?.roles?.some((role) => role.code.includes("BPA_ARCHITECT"));
 
-  console.log("location", location);
-
   const getUserInfo = async () => {
     const uuid = userInfo?.uuid;
     if (uuid) {
@@ -76,10 +74,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    console.log("userDetails", userDetails);
-  }, [userDetails]);
 
   React.useEffect(() => {
     window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
@@ -159,7 +153,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     setSelectedCorrespondentDistrict(userDetails?.correspondenceDistrict);
     setCorrespondenceAddress(userDetails?.correspondenceAddress);
     setSelectedCorrespondentState(userDetails?.correspondenceState);
-    setSelectedState(userDetails?.permanentState);
+    setSelectedState(userDetails?.permanentState || "Punjab");
 
     if (userDetails?.isAddressSame) {
       setIsAddressSame(userDetails?.isAddressSame);
@@ -432,8 +426,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
           });
         }
       }
-      // http://localhost:3000/digit-ui/citizen/engagement/surveys/fill-survey
-      // http://localhost:3000/digit-ui/citizen/engagement/surveys/fill-survey
     } catch (error) {
       const errorObj = JSON.parse(error);
       showToast(errorObj.type, t(errorObj.message), 5000);
@@ -512,22 +504,13 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
 
   if (loading) return <Loader></Loader>;
 
+  console.log("stateOptions", stateOptions);
+
   return (
     <div className="user-profile">
       <section className={`user-profile-section-wrapper ${userType === "employee" ? "employee" : ""}`}>
         {userType === "citizen" ? (
-          <h6
-            onClick={() => history.push("/digit-ui/citizen")}
-            style={{
-              marginTop: "60px",
-              paddingLeft: "13px",
-              fontSize: "16px",
-              fontWeight: "bolder",
-              cursor: "pointer",
-            }}
-          >
-            Home
-          </h6>
+          <BackButton></BackButton>
         ) : (
           <BreadCrumb
             crumbs={[
@@ -542,7 +525,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 show: url.includes("/user/profile"),
               },
             ]}
-          />
+          ></BreadCrumb>
         )}
       </section>
       <div className={`user-profile-main-container ${userType === "employee" ? "employee" : ""}`}>
@@ -607,7 +590,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 </div>
 
                 <div className="user-profile-field-wrapper">
-                  <CardLabel className="user-profile-label">{`${t("CORE_COMMON_PROFILE_EMAIL")}`}</CardLabel>
+                  <CardLabel className="user-profile-label">{`${t("CORE_COMMON_PROFILE_EMAIL")}`}*</CardLabel>
                   <TextInput
                     t={t}
                     type={"email"}
@@ -668,7 +651,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
                     selected={selectedState}
                     select={SelectState}
-                    disable={editScreen}
+                    disable={true}
                   />
                 </div>
 

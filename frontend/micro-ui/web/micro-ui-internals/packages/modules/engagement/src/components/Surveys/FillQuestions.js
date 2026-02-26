@@ -17,13 +17,14 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import Dialog from "../Modal/Dialog";
 import { ChevronIcon } from "../../components/SvgIndex";
+import UpdateProfile from "../../components/UpdateProfile";
 
 const FillQuestions = (props) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({});
   const { uuid } = useParams();
   const decodedUUID = decodeURIComponent(uuid);
-
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [city, setCity] = useState(null);
   const location = useLocation();
@@ -31,6 +32,7 @@ const FillQuestions = (props) => {
   const userInfo = Digit.UserService.getUser()?.info || {};
 
   const [submitted, setSubmitted] = useState(false);
+  const [getComment, setComment] = useState();
   const [localityList, setLocalityList] = useState(null);
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
   const [geoLocation, setGeoLocation] = useState({
@@ -47,7 +49,6 @@ const FillQuestions = (props) => {
     (async () => {
       setLoading(true);
       let response = await Digit.LocationService.getLocalities("pb.testing");
-      console.log("response==", response);
       setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary?.length > 0) {
@@ -67,7 +68,6 @@ const FillQuestions = (props) => {
         })
         ?.sort((a, b) => a.wardNumber - b.wardNumber);
 
-      console.log("localityDropdownOptions==", localityDropdownOptions);
       setLocalityList(localityDropdownOptions);
     })();
   }, [city]);
@@ -141,7 +141,6 @@ const FillQuestions = (props) => {
   const prevFormDataRef = useRef({});
 
   let data = prevProps?.surveyDetails;
-  console.log("data", data);
 
   data = {
     ...data,
@@ -166,7 +165,7 @@ const FillQuestions = (props) => {
     let payload = {
       surveyUuid: data.uuid,
       citizenId: userInfo.uuid,
-      tenantId: city === null ? (window.location.href.includes("/employee") ? prevProps?.citizenData?.city?.code : city) : city,
+      tenantId: city === null ? (window.location.href?.includes("/employee") ? prevProps?.citizenData?.city?.code : city) : city,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
@@ -211,13 +210,11 @@ const FillQuestions = (props) => {
       citizenId: userInfo.uuid,
       tenantId:
         city === null || city === undefined
-          ? window.location.href.includes("/employee")
+          ? window.location.href?.includes("/employee")
             ? prevProps?.citizenData?.city?.code
             : localStorage.getItem("CITIZEN.CITY")
           : city,
     };
-    console.log("payload", payload);
-    console.log("userInfo", userInfo);
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
         setFetchAnswers(response);
@@ -414,20 +411,20 @@ const FillQuestions = (props) => {
         //tenantId: city,
         tenantId:
           city === null
-            ? window.location.href.includes("/employee")
+            ? window.location.href?.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
             : city,
         city:
           city === null
-            ? window.location.href.includes("/employee")
+            ? window.location.href?.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
             : city,
         locality: locality,
         tenantId:
           city === null
-            ? window.location.href.includes("/employee")
+            ? window.location.href?.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
             : city,
@@ -512,7 +509,7 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
-          tenantId: window.location.href.includes("/employee") ? prevProps?.citizenData?.city?.code : localStorage.getItem("CITIZEN.CITY"),
+          tenantId: window.location.href?.includes("/employee") ? prevProps?.citizenData?.city?.code : localStorage.getItem("CITIZEN.CITY"),
           answerDetails: [
             {
               answerType: formData[sectionId][questionId].answerType,
@@ -540,17 +537,18 @@ const FillQuestions = (props) => {
         surveyUuid: data.uuid,
         // tenantId: city,
         status: "Submit",
+        comments: getComment,
         locality: locality,
         // coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         tenantId:
           city === null
-            ? window.location.href.includes("/employee")
+            ? window.location.href?.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
             : city,
         city:
           city === null
-            ? window.location.href.includes("/employee")
+            ? window.location.href?.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
             : city,
@@ -558,7 +556,6 @@ const FillQuestions = (props) => {
         answers: answerArr,
       },
     };
-
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
         setLoading(false);
@@ -637,7 +634,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
+            {/* <div
             //style={{fontWeight:'bold'}}
             >
               {" "}
@@ -656,12 +653,12 @@ const FillQuestions = (props) => {
                   message: t("EXCEEDS_500_CHAR_LIMIT"),
                 },
               })}
-            />
-            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength && (
+            /> */}
+            {/* {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength && (
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
       case "LONG_ANSWER_TYPE":
@@ -700,8 +697,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
-            //style={{fontWeight:'bold'}}
+            {/* <div
             >
               {" "}
               {"Add Suggestions/Comments"}
@@ -719,12 +715,12 @@ const FillQuestions = (props) => {
                   message: t("EXCEEDS_500_CHAR_LIMIT"),
                 },
               })}
-            />
-            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength && (
+            /> */}
+            {/* {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength && (
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
       case "DROP_DOWN_MENU_ANSWER_TYPE":
@@ -763,8 +759,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
-            //style={{fontWeight:'bold'}}
+            {/* <div
             >
               {" "}
               {"Add Suggestions/Comments"}
@@ -787,7 +782,7 @@ const FillQuestions = (props) => {
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
       case "MULTIPLE_ANSWER_TYPE":
@@ -828,7 +823,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div> {"Add Suggestions/Comments"}</div>
+            {/* <div> {"Add Suggestions/Comments"}</div>
             <TextArea
               name={question.uuid}
               value={formData[section.uuid]?.[question.uuid]?.comments}
@@ -846,7 +841,7 @@ const FillQuestions = (props) => {
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
       case "CHECKBOX_ANSWER_TYPE":
@@ -859,7 +854,7 @@ const FillQuestions = (props) => {
                     style={{ width: "25px", height: "25px", marginRight: "10px" }}
                     type="checkbox"
                     value={option?.optionText}
-                    checked={formData[section.uuid]?.[question.uuid]?.answer.includes(option.optionText) || false}
+                    checked={formData[section.uuid]?.[question.uuid]?.answer?.includes(option.optionText) || false}
                     onChange={(e) => {
                       const value = e.target.value;
                       const checked = e.target.checked;
@@ -897,8 +892,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
-            //style={{fontWeight:'bold'}}
+            {/* <div
             >
               {" "}
               {"Add Suggestions/Comments"}
@@ -921,7 +915,7 @@ const FillQuestions = (props) => {
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
 
@@ -954,8 +948,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
-            //style={{fontWeight:'bold'}}
+            {/* <div
             >
               {" "}
               {"Add Suggestions/Comments"}
@@ -978,7 +971,7 @@ const FillQuestions = (props) => {
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
 
@@ -1011,8 +1004,7 @@ const FillQuestions = (props) => {
                 {errors?.[section.uuid]?.[question.uuid]?.answerLength}
               </CardLabelError>
             )}
-            <div
-            //style={{fontWeight:'bold'}}
+            {/* <div
             >
               {" "}
               {"Add Suggestions/Comments"}
@@ -1035,7 +1027,7 @@ const FillQuestions = (props) => {
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                 {errors?.[section.uuid]?.[question.uuid]?.commentsLength}
               </CardLabelError>
-            )}
+            )} */}
           </>
         );
 
@@ -1115,15 +1107,17 @@ const FillQuestions = (props) => {
   ) : userInfo?.type?.toUpperCase() === "EMPLOYEE" ||
     prevProps?.citizenFill ||
     (userInfo?.type?.toUpperCase() === "CITIZEN" && hasCitizenDetails === true) ? (
-    <div className="employeeCard surveyCardSection">
-      <div className="category-card">
+    <div style={{ background: "#f7f7f7" }} className="employeeCard surveyCardSection">
+      <div style={{ background: "#ffffff" }} className="category-card">
         <div>
-          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
-            Survey Name: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyTitle}</span>
+          <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#00769a" }}>
+            Survey Name: <span style={{ fontWeight: "normal", color: "#6b6565" }}>{data.surveyTitle}</span>
           </h2>
-          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
-            Survey Description: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyDescription}</span>
-          </h2>
+          {data.surveyDescription && (
+            <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#00769a" }}>
+              Survey Description: <span style={{ fontWeight: "normal", color: "#6b6565" }}>{data.surveyDescription}</span>
+            </h2>
+          )}
         </div>
         {userInfo?.type?.toUpperCase() === "EMPLOYEE" ? (
           <>
@@ -1215,7 +1209,7 @@ const FillQuestions = (props) => {
             </div>
           </>
         )}
-        <form style={{ width: "70%" }} onSubmit={handleSubmit}>
+        <form className="engagementForm" onSubmit={handleSubmit}>
           {data.sections?.length > 0
             ? data.sections.map((section) => (
                 <div key={section.uuid} style={{ marginBottom: "20px" }}>
@@ -1223,16 +1217,16 @@ const FillQuestions = (props) => {
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
+                      justifyContent: " space-between",
                       alignItems: "center",
                       cursor: "pointer",
-                      background: "#f5f5f5",
-                      padding: "10px",
-                      borderRadius: "4px",
+                      background: "rgb(101 183 182 / 19%)",
+                      padding: " 10px",
+                      borderRadius: "10px",
                     }}
                     onClick={() => toggleSection(section.uuid)}
                   >
-                    <h2 style={{ margin: 0 }}>{section.title}</h2>
+                    <h2 style={{ margin: 0, width: "fit-content" }}>{section.title}</h2>
                     {/* <span style={{ fontSize: "18px" }}>{openSections[section.uuid] ? "▲" : "▼"}</span> */}
                     <ChevronIcon isOpen={openSections[section.uuid]} />
                   </div>
@@ -1260,7 +1254,18 @@ const FillQuestions = (props) => {
               ))
             : null}
 
-          <button type="submit" style={{ marginLeft: "10px" }}>
+          <div> Add Suggestions/Comments</div>
+          <TextArea
+            name="comment"
+            maxLength={500}
+            onChange={(e) => {
+              setComment(e?.target?.value);
+            }}
+            style={{ maxWidth: "none", marginBottom: "0px" }}
+            inputRef={register()}
+          />
+
+          <button type="submit" style={{ marginTop: "20px" }}>
             Submit
           </button>
         </form>
@@ -1273,15 +1278,16 @@ const FillQuestions = (props) => {
       <h4 style={{ fontSize: "16px" }}>Click on below button to fill in your details</h4>
       <button
         onClick={() => {
-          history.push({
-            pathname: "/digit-ui/citizen/user/profile",
-            state: {
-              from: `/digit-ui/citizen/engagement/surveys/fill-survey`,
-              surveyDetails: location.state?.surveyDetails,
-              userInfo: location.state?.userInfo,
-              userType: location.state?.userType,
-            },
-          });
+          setShowTermsPopup(true);
+          // history.push({
+          //   pathname: "/digit-ui/citizen/user/profile",
+          //   state: {
+          //     from: `/digit-ui/citizen/engagement/surveys/fill-survey`,
+          //     surveyDetails: location.state?.surveyDetails,
+          //     userInfo: location.state?.userInfo,
+          //     userType: location.state?.userType,
+          //   },
+          // });
         }}
         style={{
           padding: "10px 20px",
@@ -1293,9 +1299,22 @@ const FillQuestions = (props) => {
           //cursor: "pointer"
         }}
       >
-        Fill your details : Name, Gender, DOB and Email are required
+        Fill your details : Name, Gender, DOB are required
       </button>
       {loading && <Loader />}
+      {showTermsPopup && (
+        <UpdateProfile
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getData={[]}
+          // getModalData={getModalData}
+          // getUser={getUser}
+          // getShowOtp={getShowOtp}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
+        />
+      )}
     </div>
   ) : null;
 };

@@ -6,7 +6,7 @@ const ChevronIcon = ({ isOpen }) => (
       width: "32px",
       height: "32px",
       borderRadius: "50%",
-      background: "#000000",
+      background: "#cfe6fa",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -24,7 +24,7 @@ const ChevronIcon = ({ isOpen }) => (
       }}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path d="M6 9L12 15L18 9" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 9L12 15L18 9" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </div>
 );

@@ -1,11 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { FormStep, Dropdown } from "@mseva/digit-ui-react-components";
+import { FormStep } from "@mseva/digit-ui-react-components";
 import { subYears, format } from "date-fns";
-const genders = [
-  { name: "Male", code: "Male" },
-  { name: "Female", code: "Female" },
-];
+
 const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
   //example input format : "2018-10-02"
   try {
@@ -61,7 +58,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
               label: "CORE_COMMON_MOBILE_NUMBER",
               type: "text",
               name: "mobileNumber",
-              error: "CORE_COMMON_MOBILE_NUMBER_VALIDMSG",
+                error: "CORE_COMMON_MOBILE_NUMBER_VALIDMSG",
               labelChildren: <span style={{ color: "red" }}> *</span>,
               validation: {
                 required: true,
@@ -117,7 +114,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
           WebkitBoxShadow: "none",
           padding: "0",
           margin: "0",
-          maxWidth: "550px",
+          maxWidth:"550px",
         }}
       />
     </div>

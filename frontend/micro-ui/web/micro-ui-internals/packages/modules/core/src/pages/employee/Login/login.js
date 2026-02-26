@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import Background from "../../../components/Background";
 import Header from "../../../components/Header";
-import OtpInput from "../../citizen/NewLogin/NewSelectOtp";
+import OtpInput from "../NewSelectOtp";
 
 /* set employee details to enable backward compatiable */
 const setEmployeeDetail = (userObject, token) => {
@@ -65,11 +65,10 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     //   redirectPath = "/digit-ui/employee/dss/landing/home";
     // }
 
-    history.replace(redirectPath);
+    // history.replace(redirectPath);
   }, [user]);
 
   const onLogin = async (data) => {
-    alert("test");
     if (!data.city) {
       alert("Please Select City!");
       return;
@@ -90,8 +89,8 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         userType: "EMPLOYEE",
         type: "login",
       };
-      // setShowOTP(true);
-      // sendOtp({ otp: data });
+      setShowOTP(true);
+      sendOtp({ otp: data });
       Digit.SessionStorage.set("Employee.tenantId", info?.tenantId);
       setUser({ info, ...tokens });
     } catch (err) {
@@ -230,9 +229,9 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   }
 
   const sendOtp = async (data) => {
-    setDisable(true);
     try {
       const res = await Digit.UserService.sendOtp(data, user?.info?.tenantId);
+      setDisable(true);
       return [res, null];
     } catch (err) {
       console.log("err", err);
@@ -240,9 +239,19 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     }
   };
 
-  const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange", data);
-    setDisable(false);
+  const prevRef = React.useRef({});
+
+  const onFormValueChange = (setValue, data) => {
+    const prev = prevRef.current;
+
+    const isChanged = prev?.city?.code !== data?.city?.code || prev?.username !== data?.username || prev?.password !== data?.password;
+
+    if (isChanged) {
+      setDisable(false);
+      setShowOTP(false);
+    }
+
+    prevRef.current = data;
   };
 
   return isLoading || isStoreLoading ? (

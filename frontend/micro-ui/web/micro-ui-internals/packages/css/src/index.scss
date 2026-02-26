@@ -2311,3 +2311,9 @@ input[type="date"] {
 .margin-right-50 {
   margin-right: 50px;
 }
+.engagementForm {
+  width: 70%;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}

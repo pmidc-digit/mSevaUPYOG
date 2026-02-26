@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 // import { useTranslation } from "react-i18next";
 import { useRouteMatch, Switch, Route, Link } from "react-router-dom";
 import { CollectPayment } from "./payment-collect";
+import { SelectPaymentType } from "./payment-type";
 import { SuccessfulPayment, FailedPayment } from "./response";
 // import { SubformComposer } from "../../hoc";
 // import { subFormRegistry } from "../../hoc/subFormClass";
@@ -35,7 +36,14 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
         <Route path={`${currentPath}/collect/:businessService/:consumerCode`}>
           <CollectPayment {...commonProps} basePath={currentPath} />
         </Route>
+        <Route path={`${currentPath}/challan/collect/:businessService/:consumerCode`}>
+          <SelectPaymentType {...commonProps} basePath={currentPath} stateCode={stateCode} />
+        </Route>
+
         <Route path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
+          <SuccessfulPayment {...commonProps} />
+        </Route>
+        <Route path={`${currentPath}/challan/success/:businessService`}>
           <SuccessfulPayment {...commonProps} />
         </Route>
         <Route path={`${currentPath}/integration/:moduleName/:pageName`}>

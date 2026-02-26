@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import Background from "../../../components/Background";
 import Header from "../../../components/Header";
+import OtpInput from "../../citizen/NewLogin/NewSelectOtp";
 
 /* set employee details to enable backward compatiable */
 const setEmployeeDetail = (userObject, token) => {
@@ -27,7 +28,11 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [user, setUser] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [disable, setDisable] = useState(false);
-   const [isForgotPasswordView, setIsForgotPasswordView] = useState(false)
+  const [isForgotPasswordView, setIsForgotPasswordView] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [isOtpValid, setIsOtpValid] = useState(true);
+  const [canSubmit, setCanSubmit] = useState(true);
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
@@ -44,30 +49,31 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     Digit.UserService.setUser(user);
     setEmployeeDetail(user?.info, user?.access_token);
     let redirectPath = "/digit-ui/employee";
+    console.log("loggin user as well", user);
 
     /* logic to redirect back to same screen where we left off  */
     if (window?.location?.href?.includes("from=")) {
       redirectPath = decodeURIComponent(window?.location?.href?.split("from=")?.[1]) || "/digit-ui/employee";
     }
 
-    /*  RAIN-6489 Logic to navigate to National DSS home incase user has only one role [NATADMIN]*/
-    if (user?.info?.roles && user?.info?.roles?.length > 0 && user?.info?.roles?.every((e) => e.code === "NATADMIN")) {
-      redirectPath = "/digit-ui/employee/dss/landing/NURT_DASHBOARD";
-    }
-    /*  RAIN-6489 Logic to navigate to National DSS home incase user has only one role [NATADMIN]*/
-    if (user?.info?.roles && user?.info?.roles?.length > 0 && user?.info?.roles?.every((e) => e.code === "STADMIN")) {
-      redirectPath = "/digit-ui/employee/dss/landing/home";
-    }
+    // /*  RAIN-6489 Logic to navigate to National DSS home incase user has only one role [NATADMIN]*/
+    // if (user?.info?.roles && user?.info?.roles?.length > 0 && user?.info?.roles?.every((e) => e.code === "NATADMIN")) {
+    //   redirectPath = "/digit-ui/employee/dss/landing/NURT_DASHBOARD";
+    // }
+    // /*  RAIN-6489 Logic to navigate to National DSS home incase user has only one role [NATADMIN]*/
+    // if (user?.info?.roles && user?.info?.roles?.length > 0 && user?.info?.roles?.every((e) => e.code === "STADMIN")) {
+    //   redirectPath = "/digit-ui/employee/dss/landing/home";
+    // }
 
     history.replace(redirectPath);
   }, [user]);
 
   const onLogin = async (data) => {
+    alert("test");
     if (!data.city) {
       alert("Please Select City!");
       return;
     }
-    setDisable(true);
 
     const requestData = {
       ...data,
@@ -77,13 +83,22 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     delete requestData.city;
     try {
       const { UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      console.log("info===", info);
+      const data = {
+        mobileNumber: info?.mobileNumber,
+        tenantId: info?.tenantId,
+        userType: "EMPLOYEE",
+        type: "login",
+      };
+      // setShowOTP(true);
+      // sendOtp({ otp: data });
       Digit.SessionStorage.set("Employee.tenantId", info?.tenantId);
       setUser({ info, ...tokens });
     } catch (err) {
+      setDisable(false);
       setShowToast(err?.response?.data?.error_description || "Invalid login credentials!");
       setTimeout(closeToast, 5000);
     }
-    setDisable(false);
   };
 
   const closeToast = () => {
@@ -92,15 +107,16 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
 
   const onForgotPassword = () => {
     sessionStorage.getItem("User") && sessionStorage.removeItem("User");
-     setIsForgotPasswordView(true)
+    setIsForgotPasswordView(true);
     history.push("/digit-ui/employee/user/forgot-password");
   };
 
-    const onBackToLogin = () => {
-    setIsForgotPasswordView(false)
-  }
+  const onBackToLogin = () => {
+    setIsForgotPasswordView(false);
+  };
 
   const [userId, password, city] = propsConfig.inputs;
+
   const config = [
     {
       body: [
@@ -129,7 +145,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         //     component: (props, customProps) => (
         //       <Dropdown
         //         option={cities}
-                
+
         //         optionKey="i18nKey"
         //         select={(d) => {
         //           props.onChange(d);
@@ -148,27 +164,87 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
             name: city.name,
             customProps: {},
             component: (props, customProps) => (
-              <Dropdown
-                option={cities}
-
-                optionKey="i18nKey"
-                select={(d) => props.onChange(d)}
-                t={t}
-                {...customProps}
-              />
+              <Dropdown option={cities} optionKey="i18nKey" select={(d) => props.onChange(d)} t={t} {...customProps} />
             ),
           },
           isMandatory: true,
-        }
-
+        },
       ],
     },
   ];
-    useEffect(() => {
-      const script = document.createElement("script");
-      script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
-      script.async = true;document.body.appendChild(script);
-    }, []);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  const resendOtp = async () => {
+    const data = {
+      mobileNumber: user?.info?.mobileNumber,
+      tenantId: user?.info?.tenantId,
+      userType: "employee",
+      type: "login",
+    };
+    const [res, err] = await sendOtp({ otp: data });
+  };
+
+  async function onVerifyOtp() {
+    console.log("coming here");
+    try {
+      setIsOtpValid(true);
+      setCanSubmit(false);
+
+      // Login flow only
+      const requestData = {
+        username: user?.info?.userName,
+        password: otp,
+        tenantId: user?.info?.tenantId,
+        userType: "EMPLOYEE",
+      };
+      console.log("requestData", requestData);
+      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      setUser({ info, ...tokens });
+      history.push("/digit-ui/employee");
+      console.log("new info", info);
+      console.log("tokens", tokens);
+      // Role-based access control
+      // if (location.state?.role) {
+      //   const roleInfo = info.roles.find((userRole) => userRole.code === location.state.role);
+      //   if (!roleInfo || !roleInfo.code) {
+      //     setError(t("ES_ERROR_USER_NOT_PERMITTED"));
+      //     setTimeout(() => history.replace(DEFAULT_REDIRECT_URL), 5000);
+      //     return;
+      //   }
+      // }
+
+      // if (window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
+      //   info.tenantId = Digit.ULBService.getStateId();
+      // }
+    } catch (e) {
+      console.log("e====", e);
+      setCanSubmit(true);
+      setIsOtpValid(false);
+    }
+  }
+
+  const sendOtp = async (data) => {
+    setDisable(true);
+    try {
+      const res = await Digit.UserService.sendOtp(data, user?.info?.tenantId);
+      return [res, null];
+    } catch (err) {
+      console.log("err", err);
+      return [null, err];
+    }
+  };
+
+  const onFormValueChange = (setValue = true, data) => {
+    console.log("onFormValueChange", data);
+    setDisable(false);
+  };
+
   return isLoading || isStoreLoading ? (
     <Loader />
   ) : (
@@ -196,7 +272,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
 
     // </Background>
     <Background>
-       <div className='language-plugin'>
+      <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
       </div>
       <div className="employee-login-container">
@@ -218,33 +294,44 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
             )}
 
             {!isForgotPasswordView ? (
-              <FormComposer
-                onSubmit={onLogin}
-                isDisabled={isDisabled || disable}
-                noBoxShadow
-                inline
-                submitInForm
-                config={config}
-                label={propsConfig.texts.submitButtonLabel}
-                secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
-                onSecondayActionClick={onForgotPassword}
-                heading={propsConfig.texts.header}
-                description={"Enter your details to access your account"}
-                headingStyle={{ textAlign: "left", fontSize: "32px", fontWeight: "600", marginBottom: "8px" }}
-                className="employee-login-form"
-                buttonStyle={{
-                  maxWidth: "100%",
-                  width: "100%",
-                  backgroundColor: "#5243E9",
-                  borderRadius: "8px",
-                  padding: "12px",
-                }}
-              />
+              <React.Fragment>
+                <FormComposer
+                  onSubmit={onLogin}
+                  isDisabled={disable}
+                  noBoxShadow
+                  inline
+                  submitInForm
+                  config={config}
+                  label={propsConfig.texts.submitButtonLabel}
+                  secondaryActionLabel={propsConfig.texts.secondaryButtonLabel}
+                  onSecondayActionClick={onForgotPassword}
+                  heading={propsConfig.texts.header}
+                  onFormValueChange={onFormValueChange}
+                  description={"Enter your details to access your account"}
+                  headingStyle={{ textAlign: "left", fontSize: "32px", fontWeight: "600", marginBottom: "8px" }}
+                  className="employee-login-form"
+                  buttonStyle={{
+                    maxWidth: "100%",
+                    width: "100%",
+                    backgroundColor: "#5243E9",
+                    borderRadius: "8px",
+                    padding: "12px",
+                  }}
+                />
+                {showOTP && (
+                  <OtpInput
+                    otp={otp}
+                    onOtpChange={setOtp}
+                    onVerifyOtp={onVerifyOtp}
+                    onResendOtp={resendOtp}
+                    canSubmit={canSubmit}
+                    isOtpValid={isOtpValid}
+                  />
+                )}
+              </React.Fragment>
             ) : (
               <div className="employee-forgot-password-content">
-                <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px", color: "#0b0c0c" }}>
-                  Forgot Password?
-                </h2>
+                <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px", color: "#0b0c0c" }}>Forgot Password?</h2>
                 <p style={{ fontSize: "16px", color: "#686677", lineHeight: "1.5" }}>
                   Please contact your system administrator to reset your password.
                 </p>

@@ -25,6 +25,7 @@ export const CollectPayment = (props) => {
   let { consumerCode, businessService } = useParams();
   console.log("businessService", businessService);
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const location = useLocation();
   const search = useLocation().search;
   if (window.location.href.includes("ISWSAPP")) consumerCode = new URLSearchParams(search).get("applicationNumber");
   if (window.location.href.includes("ISWSCON") || ModuleWorkflow === "WS") consumerCode = decodeURIComponent(consumerCode);
@@ -50,7 +51,7 @@ export const CollectPayment = (props) => {
   //   moduleCode: businessService.split(".")[0],
   //   language: Digit.StoreData.getCurrentLanguage(),
   // });
-
+  const [formState, setFormState] = useState({});
   const { cardConfig } = useCardPaymentDetails(props, t);
   const { chequeConfig } = useChequeDetails(props, t);
   const { cashConfig } = useCashPaymentDetails(props, t);
@@ -60,8 +61,9 @@ export const CollectPayment = (props) => {
   const { postalOrderConfig } = usePostalDetails(props, t);
   const { qrConfig } = useQRDetails(props, t);
 
-  const [formState, setFormState] = useState({});
   const [toast, setToast] = useState(null);
+
+  const isChallanGeneration = location.pathname.includes("Challan_Generation");
 
   useEffect(() => {
     if (paymentdetails?.Bill && paymentdetails.Bill.length === 0) {
@@ -72,12 +74,13 @@ export const CollectPayment = (props) => {
   const defaultPaymentModes = [
     { code: "CASH", label: t("COMMON_MASTERS_PAYMENTMODE_CASH") },
     { code: "CHEQUE", label: t("COMMON_MASTERS_PAYMENTMODE_CHEQUE") },
-    { code: "CARD", label: t("COMMON_MASTERS_PAYMENTMODE_CREDIT/DEBIT CARD") },
+    ...(!isChallanGeneration ? [{ code: "CARD", label: t("COMMON_MASTERS_PAYMENTMODE_CREDIT/DEBIT CARD") }] : []),
     { code: "DD", label: "Demand Draft" },
-    { code: "OFFLINE_NEFT", label: "NEFT" },
-    { code: "OFFLINE_RTGS", label: "RTGS" },
-    { code: "POSTAL_ORDER", label: "Postal Order" },
-    { code: "QR_CODE", label: "QR Code" },
+    ...(isChallanGeneration ? [{ code: "ONLINE", label: "Online" }] : []),
+    ...(!isChallanGeneration ? [{ code: "OFFLINE_NEFT", label: "NEFT" }] : []),
+    ...(!isChallanGeneration ? [{ code: "OFFLINE_RTGS", label: "RTGS" }] : []),
+    ...(!isChallanGeneration ? [{ code: "POSTAL_ORDER", label: "Postal Order" }] : []),
+    ...(!isChallanGeneration ? [{ code: "QR_CODE", label: "QR Code" }] : []),
   ];
 
   const formConfigMap = {
@@ -322,6 +325,7 @@ export const CollectPayment = (props) => {
               <RadioButtons
                 selectedOption={props.value}
                 onSelect={(d) => {
+                  console.log("d", d);
                   props.onChange(d);
                 }}
                 {...customProps}
@@ -353,7 +357,11 @@ export const CollectPayment = (props) => {
       config.splice(0, 1);
     }
     let conf = config.concat(formConfigMap[formState?.paymentMode?.code] || []);
-    conf = conf?.concat(cashConfig);
+    // ✅ Only add cashConfig when NOT ONLINE
+    if (formState?.paymentMode?.code !== "ONLINE") {
+      conf = conf.concat(cashConfig);
+    }
+    // conf = conf?.concat(cashConfig);
     return BillDetailsFormConfig({ consumerCode, businessService }, t)[
       ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
     ]
@@ -369,7 +377,7 @@ export const CollectPayment = (props) => {
   }
 
   return (
-   <React.Fragment>
+    <React.Fragment>
       <Header styles={{ marginLeft: "15px" }}>{checkFSM ? t("PAYMENT_COLLECT_LABEL") : t("PAYMENT_COLLECT")}</Header>
       <FormComposer
         cardStyle={{ paddingBottom: "100px" }}

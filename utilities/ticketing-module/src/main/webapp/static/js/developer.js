@@ -266,7 +266,6 @@ function genrateTicketForm() {
 
 function viewAssignedTicket(tktId, userId, tyId, tyVal, userType, location, operation)
 {
-	debugger
 	var htm1 = '';
 	$('#loading').show();
 	$("#comment").val('');

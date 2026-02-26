@@ -79,7 +79,7 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
 	      if (isPasswordType) {
 	          enhancedToken.setValue(null);
 	          enhancedToken.setRefreshToken(null);
-//	          enhancedToken.setExpiration(null);
+	          enhancedToken.setExpiration(null);
 	          enhancedToken.setScope(null);
 	          enhancedToken.setTokenType(null);
 	      }

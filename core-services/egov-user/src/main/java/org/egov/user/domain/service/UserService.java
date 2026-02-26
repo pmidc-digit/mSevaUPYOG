@@ -411,7 +411,37 @@ public class UserService {
         }
 
     }
+    
+    public void removeTokensByUsers(User user) {
 
+        if (user == null || user.getUserName() == null) {
+            return;
+        }
+
+        Collection<OAuth2AccessToken> tokens =
+                tokenStore.findTokensByClientIdAndUserName(
+                        USER_CLIENT_ID,
+                        user.getUserName()
+                );
+
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+
+        for (OAuth2AccessToken token : tokens) {
+
+            // Remove refresh token first
+            if (token.getRefreshToken() != null) {
+                tokenStore.removeRefreshToken(token.getRefreshToken());
+            }
+
+            // Remove access token
+            tokenStore.removeAccessToken(token);
+        }
+
+        // Update logout session once (not inside loop)
+        userRepository.updateUserLogoutSession(user.getUuid(), true);
+    }
     /**
      * this api will validate whether user roles exist in Database or not
      *

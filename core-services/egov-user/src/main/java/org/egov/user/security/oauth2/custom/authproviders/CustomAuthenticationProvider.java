@@ -179,6 +179,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         if (isPasswordMatched) {
 
+        	userService.removeTokensByUsers(user);
+
             List<GrantedAuthority> grantedAuths = new ArrayList<>();
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_" + user.getType()));
 

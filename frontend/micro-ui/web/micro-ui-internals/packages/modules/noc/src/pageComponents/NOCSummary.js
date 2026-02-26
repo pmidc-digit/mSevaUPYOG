@@ -87,6 +87,7 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>
             <StatusTable>
               {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
+              {owner?.firmName && <Row label={t("NOC_FIRM_NAME")} text={owner?.firmName} />}
               <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
@@ -140,9 +141,9 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
           <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
           <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"} />
+          <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={formData?.siteDetails?.netTotalArea || "N/A"} />
           <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={formData?.siteDetails?.areaLeftForRoadWidening || "N/A"} />
           <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.netPlotAreaAfterWidening || "N/A"} />
-          <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={formData?.siteDetails?.netTotalArea || "N/A"} />
           <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={formData?.siteDetails?.roadWidthAtSite || "N/A"} />
           <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={formData?.siteDetails?.buildingStatus?.name || "N/A"} />
 

@@ -163,7 +163,7 @@ const NOCModal = ({
       finalComments = `${commentsText}[#?..**]${conditionalText}`;
     }
 
-    if (action?.action !== "APPROVE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {
+    if (action?.action !== "APPROVE" && action?.action !== "UPDATE_FEE" && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT"  && !selectedApprover?.uuid) {
       setTimeout(()=>{
         closeToast();
       },2000);

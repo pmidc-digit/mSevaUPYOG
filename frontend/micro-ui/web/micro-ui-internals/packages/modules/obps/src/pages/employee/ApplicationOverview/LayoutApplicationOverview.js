@@ -555,7 +555,7 @@ const LayoutEmployeeApplicationOverview = () => {
           if (filtData?.action === "UPDATE_ZONE") {
               setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
               workflowDetails.revalidate();
-              refetch();
+              // refetch();
               setShowZoneModal(false);
               setSelectedAction(null);
               setTimeout(() => {
@@ -738,11 +738,11 @@ const LayoutEmployeeApplicationOverview = () => {
   }
 
 
-  const handleZoneSubmit = (selectedZone) => {
+  const handleZoneSubmit = (selectedZone, comment) => {
   const payload = {
     Licenses: [{
       action: "UPDATE_ZONE",
-      comment: "",
+      comment: comment,
       // Pass the zone object which contains both code and name
       zone: selectedZone
     }]

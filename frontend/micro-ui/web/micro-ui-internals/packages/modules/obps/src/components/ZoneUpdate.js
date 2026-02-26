@@ -7,11 +7,15 @@ import {
   ActionBar,
   SubmitBar,
   CardSectionHeader,
-  Loader
+  Loader,
+  TextArea,
+  CardLabelError
 } from "@mseva/digit-ui-react-components";
 
 const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode }) => {
   const [selectedZone, setSelectedZone] = useState(null);
+  const [comments, setComments] = useState("");
+  const [error, setError] = useState(null);
 console.log('defaultZoneCode', defaultZoneCode)
   let tenantId;
   if (window.location.pathname.includes("employee")) {
@@ -59,6 +63,14 @@ console.log('zoneOptions', zoneOptions)
 }, [defaultZoneCode, zoneOptions]);
 
   const handleSubmit = () => {
+    if(comments === ""){
+      setError({error: true, message: "Comments are Mandatory"})
+      return
+    }
+    if(!selectedZone){
+      setError({error: true, message: "Zone is Mandatory"})
+      return
+    }
     if (selectedZone && onSelect) {
       onSelect(selectedZone);
     }
@@ -89,6 +101,26 @@ console.log('zoneOptions', zoneOptions)
             </div>
           </LabelFieldPair>
         </div>
+        <div>
+          <LabelFieldPair style={{ marginBottom: "20px" }}>
+            <CardLabel className="card-label-smaller">
+              {"Comments"}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <TextArea
+              value={comments}
+              onChange={(e) =>
+                setComments(e.target.value)
+              }
+              disabled={false}
+              // className="custom-fee-table-textarea"
+              placeholder="Enter Comments"
+              />
+            </div>
+          </LabelFieldPair>
+        </div>
+        {error?.error && <CardLabelError>{error?.message}</CardLabelError>}
         <BreakLine />
       </div>
       <ActionBar>

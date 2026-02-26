@@ -32,6 +32,7 @@ const FillQuestions = (props) => {
   const userInfo = Digit.UserService.getUser()?.info || {};
 
   const [submitted, setSubmitted] = useState(false);
+  const [getComment, setComment] = useState();
   const [localityList, setLocalityList] = useState(null);
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
   const [geoLocation, setGeoLocation] = useState({
@@ -536,6 +537,7 @@ const FillQuestions = (props) => {
         surveyUuid: data.uuid,
         // tenantId: city,
         status: "Submit",
+        comments: getComment,
         locality: locality,
         // coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         tenantId:
@@ -554,7 +556,6 @@ const FillQuestions = (props) => {
         answers: answerArr,
       },
     };
-
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
         setLoading(false);
@@ -1208,7 +1209,7 @@ const FillQuestions = (props) => {
             </div>
           </>
         )}
-        <form style={{ width: "70%" }} onSubmit={handleSubmit}>
+        <form className="engagementForm" onSubmit={handleSubmit}>
           {data.sections?.length > 0
             ? data.sections.map((section) => (
                 <div key={section.uuid} style={{ marginBottom: "20px" }}>
@@ -1225,7 +1226,7 @@ const FillQuestions = (props) => {
                     }}
                     onClick={() => toggleSection(section.uuid)}
                   >
-                    <h2 style={{ margin: 0 }}>{section.title}</h2>
+                    <h2 style={{ margin: 0, width: "fit-content" }}>{section.title}</h2>
                     {/* <span style={{ fontSize: "18px" }}>{openSections[section.uuid] ? "▲" : "▼"}</span> */}
                     <ChevronIcon isOpen={openSections[section.uuid]} />
                   </div>
@@ -1253,7 +1254,18 @@ const FillQuestions = (props) => {
               ))
             : null}
 
-          <button type="submit" style={{ marginLeft: "10px" }}>
+          <div> Add Suggestions/Comments</div>
+          <TextArea
+            name="comment"
+            maxLength={500}
+            onChange={(e) => {
+              setComment(e?.target?.value);
+            }}
+            style={{ maxWidth: "none", marginBottom: "0px" }}
+            inputRef={register()}
+          />
+
+          <button type="submit" style={{ marginTop: "20px" }}>
             Submit
           </button>
         </form>
@@ -1287,7 +1299,7 @@ const FillQuestions = (props) => {
           //cursor: "pointer"
         }}
       >
-        Fill your details : Name, Gender, DOB and Email are required
+        Fill your details : Name, Gender, DOB are required
       </button>
       {loading && <Loader />}
       {showTermsPopup && (

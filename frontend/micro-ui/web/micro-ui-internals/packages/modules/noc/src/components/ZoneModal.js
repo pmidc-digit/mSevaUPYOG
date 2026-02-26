@@ -21,12 +21,7 @@ const ZoneModal = ({ onClose, onSelect, currentZoneCode }) => {
   return (
     <Modal
       headerBarEnd={<CloseBtn onClick={onClose} />}
-      popupStyles={{
-        width: "unset",
-        minWidth: "360px",
-        maxWidth: "600px",
-        padding: "20px",
-      }}
+      className="noc-popupStyles"
       hideSubmit={true}
     >
       <ZoneUpdate

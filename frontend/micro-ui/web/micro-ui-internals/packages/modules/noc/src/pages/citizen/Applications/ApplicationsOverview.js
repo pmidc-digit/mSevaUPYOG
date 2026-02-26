@@ -109,7 +109,8 @@ const CitizenApplicationOverview = () => {
        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
    } : {})
   
-  console.log('applicationD', applicationDetails)
+  // console.log('applicationD', applicationDetails)
+ const [approverComment , setApproverComment] = useState(null);
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();

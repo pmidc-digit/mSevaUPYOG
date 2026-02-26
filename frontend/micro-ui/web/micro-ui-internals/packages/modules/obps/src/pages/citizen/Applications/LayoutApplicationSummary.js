@@ -33,6 +33,8 @@ import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
+import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
+import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
 
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -166,14 +168,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
     return null;
   };
 
-  console.log("=== LayoutApplicationSummary Debug ===")
-  console.log("Raw data from hook:", data)
-  console.log("applicationDetails (data?.resData):", applicationDetails)
-  console.log("Layout array:", applicationDetails?.Layout)
-  console.log("First Layout object:", applicationDetails?.Layout?.[0])
-  console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
-  console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
-  console.log("=== End Debug ===")
+  //console.log("=== LayoutApplicationSummary Debug ===")
+  //console.log("Raw data from hook:", data)
+  //console.log("applicationDetails (data?.resData):", applicationDetails)
+  //console.log("Layout array:", applicationDetails?.Layout)
+  //console.log("First Layout object:", applicationDetails?.Layout?.[0])
+  //console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
+  //console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
+  //console.log("=== End Debug ===")
   const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
@@ -207,9 +209,9 @@ const [viewTimeline, setViewTimeline] = useState(false);
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
 
-    console.log("=== useEffect for displayData ===")
-    console.log("layoutObject:", layoutObject)
-    console.log("layoutObject?.documents:", layoutObject?.documents)
+    //console.log("=== useEffect for displayData ===")
+    //console.log("layoutObject:", layoutObject)
+    //console.log("layoutObject?.documents:", layoutObject?.documents)
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
@@ -217,8 +219,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
       const Documents = layoutObject?.documents || []
 
-      console.log("Documents array:", Documents)
-      console.log("Documents length:", Documents.length)
+      //console.log("Documents array:", Documents)
+      //console.log("Documents length:", Documents.length)
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -227,7 +229,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
         Documents: Documents.length > 0 ? Documents : [],
       }
 
-      console.log("finalDisplayData:", finalDisplayData)
+      //console.log("finalDisplayData:", finalDisplayData)
       setDisplayData(finalDisplayData)
     }
   }, [applicationDetails?.Layout])
@@ -235,7 +237,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
-      businessService: "layout", // Changed from Layout_mcUp to LAYOUT to match employee side
+      businessService: "LAYOUT.PAY1", // Changed from Layout_mcUp to LAYOUT to match employee side
       consumerCodes: id,
       isEmployee: false,
     },
@@ -259,7 +261,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
 
   const dowloadOptions = []
-  if (applicationDetails?.Layout?.[0]?.applicationStatus === "APPROVED") {
+  if (applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") {
 
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
@@ -356,7 +358,13 @@ const [viewTimeline, setViewTimeline] = useState(false);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload)
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/citizen/payment/collect/layout/${appNo}/${tenantId}?tenantId=${tenantId}`) // Changed from Layout_mcUp to LAYOUT
+      let businessService
+      if(applicationDetails?.Layout?.[0]?.applicationStatus === "PENDINGAPPLICATIONPAYMENT"){
+        businessService = "LAYOUT.PAY1"
+      }else{
+        businessService = "LAYOUT.PAY2"
+      }
+      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${appNo}/${tenantId}?tenantId=${tenantId}`) // Changed from Layout_mcUp to LAYOUT
     } else {
       setSelectedAction(action)
     }
@@ -364,7 +372,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
-    console.log("payload data======> ",payloadData);
+    //console.log("payload data======> ",payloadData);
 
 
 
@@ -415,7 +423,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
       setLoading(true);
       let response = null;
       const fee = payments?.totalAmountPaid;
-      console.log("fee here here", fee);
+      //console.log("fee here here", fee);
       const amountinwords = amountToWords(fee);
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
@@ -496,6 +504,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
     return <LoaderNew page={true} />;
   }
 
+  //console.log("dowloadOptions",dowloadOptions)
+
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
@@ -541,7 +551,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
     )}
 
  {/* -------------------- APPLICANT DETAILS -------------------- */}
-    <Card>
+    {/* <Card>
       <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
       {displayData?.applicantDetails?.map((detail, index) => (
         <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -559,7 +569,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
           </StatusTable>
         </div>
       ))}
-    </Card>
+    </Card> */}
 
     {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
     {displayData?.applicantDetails?.[0]?.professionalName &&
@@ -705,7 +715,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
           <Card>
             <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
             <StatusTable>
-              <LayoutDocumentView documents={displayData.Documents} />
+              {/* <LayoutDocumentView documents={displayData.Documents} /> */}
+              <LayoutDocumentTableView documents={displayData.Documents} />
             </StatusTable>
           </Card>
         )}
@@ -715,7 +726,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
           <Card>
             <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
 
-            <LayoutFeeEstimationDetails
+            <LayoutFeeEstimationDetailsTable
               formData={{
                 apiData: { ...applicationDetails },
                 applicationDetails: {
@@ -725,12 +736,14 @@ const [viewTimeline, setViewTimeline] = useState(false);
                   ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
                 },
               }}
+              feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => {}} disable={true}
             />
           </Card>
         )}
 
-
+      <div id="timeline">
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+      </div>
 
       {actions && actions.length > 0 && (
         <ActionBar>

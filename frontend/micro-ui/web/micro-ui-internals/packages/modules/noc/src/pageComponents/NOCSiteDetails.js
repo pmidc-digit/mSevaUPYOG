@@ -125,7 +125,7 @@ const sortedRoadType = useMemo(
   //   t
   // );
 
-  console.log('localities in step 2 edit', localities)
+  // console.log('localities in step 2 edit', localities)
 
   // useEffect(() => {
   // if (fetchedLocalities?.length > 0) {

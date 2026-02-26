@@ -210,7 +210,8 @@ const NOCApplicantDetails = (_props) => {
     address: "",
     ownerType: null,
     propertyVasikaNo: "",
-    propertyVasikaDate: ""
+    propertyVasikaDate: "",
+    firmName:""
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -256,6 +257,7 @@ const NOCApplicantDetails = (_props) => {
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
             ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
+            firmName: o.firmName || ""
           }))
 
       : [defaultOwner()];
@@ -693,34 +695,66 @@ const NOCApplicantDetails = (_props) => {
             )}
 
             {index === 0 && (
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
-                  {`${t("NOC_OWNER_TYPE_LABEL")}`}
-                  <span className="requiredField">*</span>
-                </CardLabel>
-                <div className="field">
-                  <Controller
-                    control={control}
-                    name={`owners[${index}].ownerType`}
-                    rules={{ required: t("REQUIRED_FIELD") }}
-                    render={(props) => (
-                      <Dropdown
-                        t={t}
-                        option={ownerTypeOptions}
-                        optionKey="i18nKey"
-                        select={(e) => {
-                          props.onChange(e);
-                        }}
-                        selected={props.value}
-                      />
-                    )}
-                  />
+              <>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">
+                    {`${t("NOC_OWNER_TYPE_LABEL")}`}
+                    <span className="requiredField">*</span>
+                  </CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={`owners[${index}].ownerType`}
+                      rules={{ required: t("REQUIRED_FIELD") }}
+                      render={(props) => (
+                        <Dropdown
+                          t={t}
+                          option={ownerTypeOptions}
+                          optionKey="i18nKey"
+                          select={(e) => {
+                            props.onChange(e);
+                          }}
+                          selected={props.value}
+                        />
+                      )}
+                    />
 
-                  {errors?.owners?.[index]?.ownerType && (
-                    <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
-                  )}
-                </div>
-              </LabelFieldPair>
+                    {errors?.owners?.[index]?.ownerType && (
+                      <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
+                    )}
+                  </div>
+                </LabelFieldPair>
+
+                {watch(`owners[${index}].ownerType`)?.code === "Firm" && (
+                  <LabelFieldPair>
+                    <CardLabel>
+                      {t("Firm Name")} <span className="mandatory-asterisk">*</span>
+                    </CardLabel>
+                    <div className="form-field">
+                      <Controller
+                        control={control}
+                        name={`owners[${index}].firmName`}
+                        rules={{ required: { value: true, message: t("FIRM_NAME_REQUIRED") } }}
+                        render={(props) => (
+                          <TextInput
+                            value={props.value}
+                            onChange={(e) => {
+                              props.onChange(e.target.value);
+                            }}
+                            onBlur={(e) => {
+                              props.onBlur(e);
+                            }}
+                            t={t}
+                          />
+                        )}
+                      />
+                      {errors?.owners?.[index]?.firmName && (
+                        <p style={{ color: "red", marginBottom: 0 }}>{errors?.owners?.[index]?.firmName?.message}</p>
+                      )}
+                    </div>
+                  </LabelFieldPair>
+                )}
+              </>
             )}
 
             <LabelFieldPair>

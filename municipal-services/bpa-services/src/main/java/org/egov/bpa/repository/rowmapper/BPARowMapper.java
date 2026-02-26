@@ -141,6 +141,7 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 					.fileStoreId(rs.getString("bpa_doc_filestore"))
 					.id(documentId)
 					.additionalDetails(docDetails)
+					.order(rs.getInt("doc_order"))
 					.documentUid(rs.getString("documentUid")).build();
 			bpa.addDocumentsItem(document);
 		}

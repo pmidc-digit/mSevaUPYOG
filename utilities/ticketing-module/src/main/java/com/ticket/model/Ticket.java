@@ -36,6 +36,7 @@ public class Ticket implements Serializable {
 	private String issueFeedbackName;
 	private MultipartFile [] files;
 	private int readStatus;
+	private String imageUrl;
 
 	public Ticket() {
 		super();
@@ -47,7 +48,7 @@ public class Ticket implements Serializable {
 			int assignedToId, String tktSummary, String tktDescription, String attachment, int tktPriority,
 			String priority, int status, String raisedDate, String updatedDate, String closedDate, int issueCategoryId,
 			String issueCategoryName, int issueFeedbackId, String issueFeedbackName, MultipartFile[] files,
-			int readStatus) {
+			int readStatus, String imageUrl) {
 		super();
 		this.tktId = tktId;
 		this.ulbId = ulbId;
@@ -77,6 +78,7 @@ public class Ticket implements Serializable {
 		this.issueFeedbackName = issueFeedbackName;
 		this.files = files;
 		this.readStatus = readStatus;
+		this.imageUrl= imageUrl;
 	}
 
 	@Override
@@ -90,7 +92,7 @@ public class Ticket implements Serializable {
 				+ ", updatedDate=" + updatedDate + ", closedDate=" + closedDate + ", issueCategoryId=" + issueCategoryId
 				+ ", issueCategoryName=" + issueCategoryName + ", issueFeedbackId=" + issueFeedbackId
 				+ ", issueFeedbackName=" + issueFeedbackName + ", files=" + Arrays.toString(files) + ", readStatus="
-				+ readStatus + "]";
+				+ readStatus + ", imageUrl=" + imageUrl + "]";
 	}
 
 	public int getTktId() {
@@ -315,6 +317,14 @@ public class Ticket implements Serializable {
 
 	public void setReadStatus(int readStatus) {
 		this.readStatus = readStatus;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	

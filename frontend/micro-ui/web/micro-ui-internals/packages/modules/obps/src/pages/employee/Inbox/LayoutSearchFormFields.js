@@ -13,11 +13,11 @@ const LayoutSearchFormFields = ({ registerRef, searchFormState, searchFieldCompo
             <div className="complaint-input-container">
               <div className="search-field">
                 <label>{t("LAYOUT_APPLICATION_NUMBER_LABEL")}</label>
-                <input type="text" name="applicationNumber" ref={registerRef({})} />
+                <input type="text" name="applicationNumber" placeholder={t("LAYOUT_APPLICATION_NUMBER_LABEL")} ref={registerRef({})} />
               </div>
               <div className="search-field">
                 <label>{t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")}</label>
-                <input type="text" name="mobileNumber" ref={registerRef({})} />
+                <input type="text" name="mobileNumber" placeholder={t("LAYOUT_APPLICANT_MOBILE_NO_LABEL")} ref={registerRef({})} />
               </div>
               <div className="search-action-wrapper">
                 {searchFieldComponents}

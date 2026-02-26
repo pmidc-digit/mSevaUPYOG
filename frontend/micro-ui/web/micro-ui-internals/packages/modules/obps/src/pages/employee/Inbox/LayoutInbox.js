@@ -335,10 +335,10 @@ const { isLoading: isInboxLoading, data: inboxData } =
           registerRef={registerSearchFormField}
           searchFormState={formState?.searchForm}
           searchFieldComponents={
-            <div className="layout-search-actions">
+            <div className="custom-search-actions">
               <button
                 type="button"
-                className="layout-search-button layout-search-button-secondary"
+                className="custom-search-button custom-search-button-secondary"
                 onClick={() => {
                   onSearchFormReset(setSearchFormValue)
                 }}
@@ -347,7 +347,7 @@ const { isLoading: isInboxLoading, data: inboxData } =
               </button>
               <button
                 type="button"
-                className="layout-search-button layout-search-button-primary"
+                className="custom-search-button custom-search-button-primary"
                 onClick={handleSearchFormSubmit(onSearchFormSubmit)}
               >
                 {t("ES_COMMON_SEARCH")}

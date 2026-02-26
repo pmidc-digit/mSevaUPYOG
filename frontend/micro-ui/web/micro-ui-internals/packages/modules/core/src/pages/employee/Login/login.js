@@ -49,7 +49,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     Digit.UserService.setUser(user);
     setEmployeeDetail(user?.info, user?.access_token);
     let redirectPath = "/digit-ui/employee";
-    console.log("loggin user as well", user);
 
     /* logic to redirect back to same screen where we left off  */
     if (window?.location?.href?.includes("from=")) {
@@ -82,7 +81,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     delete requestData.city;
     try {
       const { UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
-      console.log("info===", info);
       const data = {
         mobileNumber: info?.mobileNumber,
         tenantId: info?.tenantId,
@@ -190,7 +188,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   };
 
   async function onVerifyOtp() {
-    console.log("coming here");
     try {
       setIsOtpValid(true);
       setCanSubmit(false);
@@ -202,12 +199,9 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         tenantId: user?.info?.tenantId,
         userType: "EMPLOYEE",
       };
-      console.log("requestData", requestData);
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
       setUser({ info, ...tokens });
       history.push("/digit-ui/employee");
-      console.log("new info", info);
-      console.log("tokens", tokens);
       // Role-based access control
       // if (location.state?.role) {
       //   const roleInfo = info.roles.find((userRole) => userRole.code === location.state.role);
@@ -222,7 +216,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       //   info.tenantId = Digit.ULBService.getStateId();
       // }
     } catch (e) {
-      console.log("e====", e);
       setCanSubmit(true);
       setIsOtpValid(false);
     }
@@ -234,7 +227,6 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       setDisable(true);
       return [res, null];
     } catch (err) {
-      console.log("err", err);
       return [null, err];
     }
   };

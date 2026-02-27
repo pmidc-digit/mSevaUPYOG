@@ -13,7 +13,7 @@ const LayoutDocumentTableView = ({documents}) => {
         {
           Header: t("BPA_DOCUMENT_NAME"),
           accessor: "title",
-          Cell: ({ value }) => t(value) || t("CS_NA"),
+          Cell: ({ value }) => <strong>{t(value)}</strong> || t("CS_NA"),
         },
         {
           Header: t("BPA_DOCUMENT_FILE"),
@@ -48,7 +48,7 @@ const LayoutDocumentTableView = ({documents}) => {
     }
   );
   
-  const mappedDocuments = documents?.map(doc => {
+  const mappedDocuments = documents?.sort((a,b) => b?.order - a?.order)?.map(doc => {
    const { documentUid, documentType } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
    return {

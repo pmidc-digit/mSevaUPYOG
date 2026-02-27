@@ -29,7 +29,7 @@ const LayoutSiteDetails = (_props) => {
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch, cluValidationRef, getValues } = _props;
   const applicationNo = currentStepData?.applicationNo || watch("applicationNo");
-  console.log(applicationNo, getValues("residentialType"), "applicationNo in layout site details");
+  //console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
   const isEditMode = !!applicationNo;
   const [netArea, setNetArea] = useState("0.00");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening"); // A = Total Plot Area
@@ -70,13 +70,13 @@ const LayoutSiteDetails = (_props) => {
   // Sync cluDocumentUpload form field with cluDocumentUploadedFile state
   useEffect(() => {
     if (cluDocumentUploadedFile?.fileStoreId) {
-      console.log("Syncing cluDocumentUpload field with fileStoreId:", cluDocumentUploadedFile.fileStoreId);
+      //console.log("Syncing cluDocumentUpload field with fileStoreId:", cluDocumentUploadedFile.fileStoreId);
       setValue("cluDocumentUpload", cluDocumentUploadedFile.fileStoreId, { shouldValidate: true });
     }
   }, [cluDocumentUploadedFile, setValue]);
 
-  console.log("STEPERDFATA", currentStepData);
-  console.log(isEditMode, "LOOK EDIT");
+  //console.log("STEPERDFATA", currentStepData);
+  //console.log(isEditMode, "LOOK EDIT");
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00");
@@ -89,7 +89,7 @@ const LayoutSiteDetails = (_props) => {
 
   const floorAreaValues = watch("floorArea");
   const basementAreaValues = watch("basementArea");
-  console.log(currentStepData, "DTATA TO BE MAPPED", getValues("isCluRequired"), isCluRequired);
+  //console.log(currentStepData, "DTATA TO BE MAPPED", getValues("isCluRequired"), isCluRequired);
 
   // Watch percentage fields to display calculated values
   const watchedEWSPct = watch("areaUnderEWSInPct");
@@ -150,7 +150,7 @@ const LayoutSiteDetails = (_props) => {
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
-  console.log(roadType, buildingType, "RRRRRRR");
+  //console.log(roadType, buildingType, "RRRRRRR");
 
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
@@ -168,8 +168,9 @@ const LayoutSiteDetails = (_props) => {
     const sum = ((isNaN(a) ? 0 : a) - (isNaN(b) ? 0 : b) - c).toFixed(2);
 
     setNetArea(sum);
-    setValue("netTotalArea", sum);
-  }, [NetPlotArea, AreaLeftForRoadWidening, EWSArea, setValue]);
+    setValue("netTotalArea", sum);//totalSiteArea //netTotalArea
+    // setNetArea(sum-totalSiteArea)
+  }, [NetPlotArea, AreaLeftForRoadWidening, totalSiteArea, EWSArea, setValue]);
 
   useEffect(() => {
     if (ulbName) {
@@ -254,7 +255,7 @@ const LayoutSiteDetails = (_props) => {
     // Second priority: auto-select based on tenantId
     if (tenantId && allCities?.length > 0) {
       const defaultCity = allCities.find((city) => city.code === tenantId);
-      console.log(defaultCity, "DDDDD");
+      //console.log(defaultCity, "DDDDD");
       if (defaultCity) {
         setSelectedCity(defaultCity);
         // Use trigger to validate and update the field
@@ -358,9 +359,9 @@ const LayoutSiteDetails = (_props) => {
     const totalSiteAreaNum = parseFloat(total) || 0;
     const tolerance = 0.01; // Allow small rounding differences
 
-    if (Math.abs(totalSiteAreaNum - balanceArea) > tolerance && totalSiteAreaNum > 0) {
+    if (Math.abs(netArea-totalSiteArea) !== 0) {
       setAreaMismatchNotification(
-        `Area Mismatch: Total Site Area (${total} Sq M) does not match Net Site Area / Balance Area (${balanceArea.toFixed(2)} Sq M)`
+        `Area Mismatch: Total Site Area (${netArea} Sq M) does not match Net Site Area (${totalSiteArea} Sq M), Balance Area is (${(netArea-totalSiteArea).toFixed(2)} Sq M)`
       );
     } else {
       setAreaMismatchNotification(null);
@@ -375,6 +376,7 @@ const LayoutSiteDetails = (_props) => {
     watchedParkingArea,
     watchedOtherAmenitiesArea,
     netArea,
+    totalSiteArea
   ]);
 
   // Watch all SqM fields for auto-calculation of percentages
@@ -520,7 +522,7 @@ const LayoutSiteDetails = (_props) => {
               )}
 
               {/* ===== Online CLU Section ===== */}
-              {cluType?.code === "ONLINE" || cluType === "ONLINE" ? (
+              {(cluType?.code === "ONLINE" || cluType === "ONLINE" || getValues("cluType")?.code === "ONLINE" || getValues("cluType") === "ONLINE") ? (
                 <React.Fragment>
                   {/* CLU Number - Online */}
                   <LabelFieldPair>
@@ -646,12 +648,12 @@ const LayoutSiteDetails = (_props) => {
                             
                             if (response?.data?.files?.length > 0) {
                               const fileStoreId = response.data.files[0].fileStoreId;
-                              console.log("✅ CLU Document uploaded successfully:", fileStoreId);
+                              //console.log("✅ CLU Document uploaded successfully:", fileStoreId);
                               setCluDocumentUploadedFile({
                                 fileStoreId: fileStoreId,
                                 fileName: file.name
                               });
-                              console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
+                              //console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
                             } else {
                               console.error("❌ File upload failed - no fileStoreId in response");
                               setCluDocumentError("File upload failed");
@@ -1342,7 +1344,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Area Left For Road Widening field (A) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("Total Plot Area")}`} <span className="requiredField">*</span>
+              {`${t("Total Plot Area in sqm")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1383,7 +1385,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Net Plot Area After Widening field (B) */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("Total Road Widening Area")}`} <span className="requiredField">*</span>
+              {`${t("Area left for Road Widening in sqm")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
@@ -1424,7 +1426,7 @@ const LayoutSiteDetails = (_props) => {
           {/* Add Area Under EWS field (C) - Input and Percentage */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              Area Under EWS <span className="requiredField">*</span>
+              Area Under EWS in sqm<span className="requiredField">*</span>
             </CardLabel>
       
               {/* EWS Area Input */}
@@ -1460,7 +1462,7 @@ const LayoutSiteDetails = (_props) => {
                         onBlur={(e) => {
                           props.onBlur(e);
                         }}
-                        placeholder="Sq M"
+                        // placeholder="Sq M"
                         disable={currentStepData?.apiData?.applicationNo ? true : false}
                       />
                     )}
@@ -1651,7 +1653,7 @@ const LayoutSiteDetails = (_props) => {
                       select={props.onChange}
                       selected={props.value}
                       option={[
-                        { code: "RESIDENTIAL_PLOTTED", name: "Residential Ploted" },
+                        { code: "RESIDENTIAL_PLOTTED", name: "Residential Plotted" },
                         { code: "AFFORDABLE", name: "Affordable Housing" },
                         { code: "EWS", name: "EWS Housing" },
                       ]}
@@ -1695,7 +1697,7 @@ const LayoutSiteDetails = (_props) => {
             </LabelFieldPair>
           )}
 
-          {(selectedBuildingCategory?.name?.toLowerCase().includes("residential") || !selectedBuildingCategory) && (
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("residential")) && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
@@ -1767,6 +1769,7 @@ const LayoutSiteDetails = (_props) => {
                           props.onBlur(e);
                         }}
                         readOnly={true}
+                        disabled={true}
                       />
                     )}
                   />
@@ -1779,7 +1782,7 @@ const LayoutSiteDetails = (_props) => {
             </React.Fragment>
           )}
 
-          {(selectedBuildingCategory?.name?.toLowerCase().includes("commercial") || !selectedBuildingCategory) && (
+          {(selectedBuildingCategory?.name?.toLowerCase().includes("commercial")) && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
@@ -1851,6 +1854,7 @@ const LayoutSiteDetails = (_props) => {
                           props.onBlur(e);
                         }}
                         readOnly={true}
+                        disabled={true}
                       />
                     )}
                   />
@@ -1865,8 +1869,7 @@ const LayoutSiteDetails = (_props) => {
 
           {(selectedBuildingCategory?.name?.toLowerCase().includes("industrial") ||
             selectedBuildingCategory?.name?.toLowerCase().includes("warehouse") ||
-            selectedBuildingCategory?.name?.toLowerCase().includes("institutional") ||
-            !selectedBuildingCategory) && (
+            selectedBuildingCategory?.name?.toLowerCase().includes("institutional")) && (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">
@@ -1960,6 +1963,7 @@ const LayoutSiteDetails = (_props) => {
                           props.onBlur(e);
                         }}
                         readOnly={true}
+                        disabled={true}
                       />
                     )}
                   />
@@ -2165,6 +2169,7 @@ const LayoutSiteDetails = (_props) => {
                           props.onBlur(e);
                         }}
                         readOnly={true}
+                        disabled={true}
                       />
                     )}
                   />
@@ -2239,6 +2244,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     readOnly={true}
+                    disabled={true}
                   />
                 )}
               />
@@ -2311,6 +2317,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     readOnly={true}
+                    disabled={true}
                   />
                 )}
               />
@@ -2383,6 +2390,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     readOnly={true}
+                    disabled={true}
                     
                   />
                 )}
@@ -2456,6 +2464,7 @@ const LayoutSiteDetails = (_props) => {
                       props.onBlur(e);
                     }}
                     readOnly={true}
+                    disabled={true}
                   />
                 )}
               />
@@ -2486,7 +2495,7 @@ const LayoutSiteDetails = (_props) => {
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`}</CardLabel>
             <div className="field">
-              <TextInput className="form-field" value={parseFloat(netArea).toFixed(2) || "0.00"} disable="true" />
+              <TextInput className="form-field" value={parseFloat(netArea-totalSiteArea).toFixed(2) || "0.00"} disable="true" />
             </div>
           </LabelFieldPair>
         </div>

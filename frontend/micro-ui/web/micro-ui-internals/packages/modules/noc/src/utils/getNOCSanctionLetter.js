@@ -6,18 +6,27 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
     year: "numeric",
   });
 
-const owners = application?.owners || [];
-let ownersString = "NA";
+  const firmName = application?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+  const owners = application?.owners || [];
+  let ownersString = "NA";
 
-if(!approverComment){
-  approverComment= " "
-}
+  if (!approverComment) {
+    approverComment = {
+      ConditionLine: " ",
+      ConditionText: " ",
+    };
+  }
 
-if (owners.length > 1) {
-  ownersString = owners.map((o, idx) => o?.name ? o.name : `owner ${idx+1}`).join(", ");
-} else if (owners.length === 1) {
-  ownersString = owners[0]?.name || "owner 1";
-}
+  if (!firmName) {
+    if (owners?.length > 1) {
+      ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
+    } else if (owners?.length === 1) {
+      ownersString = owners[0]?.name || "owner 1";
+    }
+  } else {
+    ownersString = firmName;
+  }
+
 
   let regularized_label ="";
   const getFloorLabel = (index) => {

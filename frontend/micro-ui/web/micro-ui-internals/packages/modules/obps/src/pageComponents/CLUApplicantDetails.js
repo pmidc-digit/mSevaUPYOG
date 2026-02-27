@@ -68,7 +68,7 @@ const CLUApplicantDetails = (_props) => {
            const newItem = { 
             filestoreId: fileId,
             fileName: file.name,
-            documentType: index === 0 ? "Primary Owner Id": `Owner${index+1} Id`,
+            documentType: index === 0 ? "Primary Owner ID": `Owner${index+1} ID`,
             documentUid: fileId
           };
 

@@ -75,32 +75,36 @@ const EmployeeApp = ({ path, url, userType }) => {
   return (
     <React.Fragment>
       <div className="ground-container">
-        {!isRes ? <div style={{ marginLeft: "10px" }}><GCBreadCrumbs location={location} t={t} /></div> : null}
-            {/* <PrivateRoute exact path={`${path}/`} component={() => <CHBLinks matchPath={path} userType={userType} />} /> */}
-            <PrivateRoute
-              path={`${path}/inbox`}
-              component={() => (
-                <Inbox
-                  useNewInboxAPI={true}
-                  parentRoute={path}
-                  businessService="chb"
-                  filterComponent="CHB_INBOX_FILTER"
-                  initialStates={inboxInitialState}
-                  isInbox={true}
-                />
-              )}
-            />
-            {/* <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ChallanApplicationDetails} /> */}
-
-            <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-            <PrivateRoute path={`${path}/create-application`} component={CHBCreate} />
-            <PrivateRoute path={`${path}/generate-bill`} component={GenerateBill} />
-            <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
-            {/* <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} /> */}
-            <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
+        {!isRes ? (
+          <div style={{ marginLeft: "10px" }}>
+            <GCBreadCrumbs location={location} t={t} />
           </div>
-        </React.Fragment>
-      );
-    };
+        ) : null}
+        {/* <PrivateRoute exact path={`${path}/`} component={() => <CHBLinks matchPath={path} userType={userType} />} /> */}
+        <PrivateRoute
+          path={`${path}/inbox`}
+          component={() => (
+            <Inbox
+              useNewInboxAPI={true}
+              parentRoute={path}
+              businessService="chb"
+              filterComponent="CHB_INBOX_FILTER"
+              initialStates={inboxInitialState}
+              isInbox={true}
+            />
+          )}
+        />
+        {/* <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ChallanApplicationDetails} /> */}
+
+        <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
+        <PrivateRoute path={`${path}/create-application`} component={CHBCreate} />
+        <PrivateRoute path={`${path}/generate-bill`} component={GenerateBill} />
+        <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
+        {/* <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} /> */}
+        <PrivateRoute path={`${path}/response/:id`} component={GCResponseCitizen} />
+      </div>
+    </React.Fragment>
+  );
+};
 
 export default EmployeeApp;

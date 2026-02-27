@@ -2,14 +2,15 @@ import { config } from "../../../../config/employee/RenewApplicationStepFormConf
 import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
-import { SET_tlNewApplication, UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
+import { SET_tlNewApplication, UPDATE_tlNewApplication, RESET_tlNewApplicationForm } from "../../../../redux/action/TLNewApplicationActions";
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import cloneDeep from "lodash/cloneDeep";
 import { convertEpochToDate, stringReplaceAll } from "../../../../utils";
 import { mapApplicationDataToDefaultValues } from "../../../../utils/mapApplicationDataToDefaultValues";
+import { Loader } from "../../../../components/Loader";
 
 const renewEmployeeConfig = [
   {
@@ -66,29 +67,59 @@ const renewEmployeeConfig = [
   },
 ];
 
-// Attach correct currStepConfig
-const updatedRenewEmployeeConfig = renewEmployeeConfig.map((item) => {
-  return {
-    ...item,
-    currStepConfig: config.filter((conf) => conf.stepNumber === item.stepNumber),
-  };
-});
-
 const RenewTLStepForm = (props) => {
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
+  const [isReduxReady, setIsReduxReady] = useState(false);
+  const { id: applicationNumber } = useParams();
+
+  const isEditApplication = window.location.href.includes("edit-application-details");
+
+  // Attach correct currStepConfig and dynamic submit label
+  const updatedRenewEmployeeConfig = useMemo(() => renewEmployeeConfig.map((item) => {
+    const stepConfig = {
+      ...item,
+      currStepConfig: config.filter((conf) => conf.stepNumber === item.stepNumber),
+    };
+    // For edit (INITIATED) flow, change Step 4 button from "SUBMIT FOR RENEWAL" to "SUBMIT"
+    if (item.stepNumber === 4 && isEditApplication) {
+      stepConfig.texts = { ...item.texts, submitBarLabel: "TL_COMMON_BUTTON_SUBMIT" };
+    }
+    return stepConfig;
+  }), [isEditApplication]);
 
   const formState = useSelector((state) => state.tl.tlNewApplicationForm);
   const formData = formState.formData;
   const step = formState.step;
-  const applicationData = cloneDeep(props?.location?.state?.applicationData) || {};
-  const applicationDetails = props?.location?.state?.applicationDetails || [];
+
+  // Try to get data from route state first
+  const stateApplicationData = props?.location?.state?.applicationData;
+  const stateApplicationDetails = props?.location?.state?.applicationDetails;
+  const hasStateData = !!stateApplicationData?.applicationNumber;
+
+  // Fallback: fetch from API when route state is missing (direct URL navigation / page refresh)
+  const tenantIdForSearch = Digit.ULBService.getCurrentTenantId();
+  const { data: searchResult, isLoading: isSearchLoading } = Digit.Hooks.tl.useTradeLicenseSearch(
+    {
+      tenantId: tenantIdForSearch,
+      filters: { applicationNumber },
+    },
+    {
+      enabled: !hasStateData && !!applicationNumber,
+    }
+  );
+
+  const applicationData = hasStateData
+    ? cloneDeep(stateApplicationData)
+    : cloneDeep(searchResult?.Licenses?.[0]) || {};
+
+  const applicationDetails = stateApplicationDetails || [];
 
   const propertyId =
     new URLSearchParams(window.location.search).get("propertyId") ||
-    applicationDetails.find((details) => details?.title === "PT_DETAILS")?.values.find((value) => value?.title === "TL_PROPERTY_ID")?.value;
+    applicationDetails.find((details) => details?.title === "PT_DETAILS")?.values?.find((value) => value?.title === "TL_PROPERTY_ID")?.value;
 
   const tenantId = applicationData?.tenantId || "";
   const isImmovable = applicationData?.tradeLicenseDetail?.structureType?.split(".")[0] === "IMMOVABLE";
@@ -103,9 +134,13 @@ const RenewTLStepForm = (props) => {
 
   const defaultValues = mapApplicationDataToDefaultValues(applicationData, t, propertyId, propertyDetails);
 
+  const hasApplicationData = !!applicationData?.applicationNumber;
+
   useEffect(() => {
-    //console.log("RenewTLStepForm props: ", props);
-    //console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
+    if (!hasApplicationData) return; // Don't dispatch empty defaults
+
+    // Clear stale Redux state (e.g. CreatedResponse from a previous flow)
+    dispatch(RESET_tlNewApplicationForm());
 
     const updatedDefaultValues = JSON.parse(JSON.stringify(defaultValues));
 
@@ -117,11 +152,11 @@ const RenewTLStepForm = (props) => {
     Object.entries(updatedDefaultValues).forEach(([key, value]) => {
       dispatch(UPDATE_tlNewApplication(key, value));
     });
- }, []); // Important to depend on defaultValues
+    setIsReduxReady(true);
+  }, [hasApplicationData]); // Re-run when application data becomes available
 
 
   // useEffect(() => {
-  //   console.log("RenewTLStepForm formData: ", formData);
   // }, [formData]);
 
   const setStep = (updatedStepNumber) => {
@@ -131,6 +166,11 @@ const RenewTLStepForm = (props) => {
   const handleSubmit = () => {
     // Final API call after Summary Submit
   };
+
+  // Show loader while fetching data from API or waiting for Redux to be populated
+  if (!isReduxReady || (!hasStateData && (isSearchLoading || !hasApplicationData))) {
+    return <Loader page={true} />;
+  }
 
   return (
     <div className="card">

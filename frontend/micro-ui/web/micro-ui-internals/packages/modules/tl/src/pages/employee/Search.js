@@ -96,7 +96,6 @@ const Search = ({ path }) => {
     filters: { businessIds: searchReult?.map((license) => license?.applicationNumber).join(",") },
     config: { ...workFlowConfig },
   });
-  //console.log("searchReult in TL: ", searchReult);
 
   return (
     <Search

@@ -141,6 +141,7 @@
 @import "./modules/hrms/index.scss";
 @import "./modules/BPA/index.scss";
 @import "./pages/common/sitePhotoGraphs.scss";
+@import "./modules/TL/index.scss";
 
 .display-none {
   display: none;
@@ -999,16 +1000,14 @@
 }
 
 .options-card {
-  max-height: 350px; /* Upper limit to trigger scrolling */
-  min-height: 20px; /* Always some visible height */
-  overflow-y: auto; /* Vertical scrolling only */
-  overflow-x: hidden; /* No horizontal scroll */
-  border: 1px solid #ccc; /* Optional: visual boundary */
-  border-radius: 8px; /* Rounded corners for a modern look */
-  background-color: #fff; /* Ensure readable background */
+  max-height: 350px;  
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  border: 1px solid #ccc; 
+  border-radius: 8px;
+  background-color: #fff; 
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   padding: 4px 0;
-  z-index: 1000; /* Ensure it appears above other elements */
 }
 
 /* ===== TimelineHOC CSS ===== */
@@ -2402,3 +2401,20 @@ input[type="date"] {
 .margin-right-50 {
   margin-right: 50px;
 }
+<<<<<<< HEAD
+=======
+
+.surveyCardSection {
+  background: white;
+  display: block;
+  padding: 15px;
+  justify-self: center;
+  width: 50%;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+.hrms-text-transform{
+  text-transform: none !important;
+}
+>>>>>>> cdc8faf668d732021fdf4cad38c2eb692fcb641a

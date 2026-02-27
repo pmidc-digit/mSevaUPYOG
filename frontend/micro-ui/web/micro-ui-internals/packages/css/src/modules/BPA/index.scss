@@ -50,11 +50,11 @@
 
 /* Button */
 .upload-file-button {
-  height: auto;
-  min-height: 40px;
-  max-height: 40px;
-  width: 43%;
-  padding: 0;
+  position: absolute;
+  height: 40px;  
+  width: 175px;  
+  top: 10px;
+  left: 15px;
 }
 
 /* Hide elements */
@@ -88,6 +88,12 @@
 /* Error text */
 .error-text {
   color: red;
+}
+
+.advisory-text {
+  font-size: 13px;
+  color: red;
+  margin: 0;
 }
 
 /* Mobile */

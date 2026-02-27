@@ -70,7 +70,7 @@ const App = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
-    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
+    <span className="chb-citizen TL-chb-container" >
       <Switch>
         <AppContainer>
           {!isResponse ? (

@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import cloneDeep from "lodash/cloneDeep";
 import { useParams } from "react-router-dom";
-import { Header, MultiLink, LinkButton } from "@mseva/digit-ui-react-components";
+import { Header, MultiLink, LinkButton, Loader, Toast, Card } from "@mseva/digit-ui-react-components";
 import get from "lodash/get";
 import orderBy from "lodash/orderBy";
 import getPDFData from "../../utils/getTLAcknowledgementData";
+import BreakupModal from "../../components/BreakupModal";
+import AdhocRebatePenaltyModal from "../../components/AdhocRebatePenaltyModal";
 
 const ApplicationDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -33,6 +35,17 @@ const ApplicationDetails = () => {
   sessionStorage.setItem("applicationNumber", applicationNumber);
   const { renewalPending } = Digit.Hooks.useQueryParams();
 
+  // Fee Estimation states
+  const [showBreakupModal, setShowBreakupModal] = useState(false);
+  const [breakupData, setBreakupData] = useState(null);
+  const [breakupLoading, setBreakupLoading] = useState(false);
+  const [billData, setBillData] = useState(null);
+
+  // ADHOC Rebate/Penalty states
+  const [showAdhocPopup, setShowAdhocPopup] = useState(false);
+  const [isAdhocUpdating, setIsAdhocUpdating] = useState(false);
+  const [adhocLicenseData, setAdhocLicenseData] = useState(null);
+
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.tl.useApplicationDetail(t, tenantId, applicationNumber);
 
   const stateId = Digit.ULBService.getStateId();
@@ -45,6 +58,16 @@ const ApplicationDetails = () => {
     error: updateError,
     mutate,
   } = Digit.Hooks.tl.useApplicationActions(tenantId);
+
+  // Sanitize null document arrays to prevent server NPE in EnrichmentService.enrichTLUpdateRequest
+  const safeMutate = (data, ...rest) => {
+    if (data?.Licenses?.[0]?.tradeLicenseDetail) {
+      const detail = data.Licenses[0].tradeLicenseDetail;
+      if (!detail.applicationDocuments) detail.applicationDocuments = [];
+      if (!detail.verificationDocuments) detail.verificationDocuments = [];
+    }
+    return mutate(data, ...rest);
+  };
 
   let EditRenewalApplastModifiedTime = Digit.SessionStorage.get("EditRenewalApplastModifiedTime");
 
@@ -61,6 +84,32 @@ const ApplicationDetails = () => {
   };
 
   const { data: paymentsHistory } = Digit.Hooks.tl.useTLPaymentHistory(tenantId, applicationDetails?.applicationData?.applicationNumber);
+
+  // Fetch bill data for fee estimation section
+  // Check if PAY is a next action in workflow (handles NEWTL.HAZ where status is APPLIED but payment is pending)
+  const hasPayAction = workflowDetails?.data?.nextActions?.some?.((a) => a.action === "PAY");
+  useEffect(() => {
+    const fetchBill = async () => {
+      const status = applicationDetails?.applicationData?.status;
+      if (status === "PENDINGPAYMENT" || status === "APPROVED" || status === "EXPIRED" || hasPayAction) {
+        try {
+          const appTenantId = applicationDetails?.applicationData?.tenantId || tenantId;
+          const consumerCode = applicationDetails?.applicationData?.applicationNumber;
+          const result = await Digit.PaymentService.fetchBill(appTenantId, {
+            businessService: "TL",
+            consumerCode: consumerCode,
+          });
+          setBillData(result?.Bill?.[0]);
+        } catch (err) {
+          console.error("Error fetching bill", err);
+        }
+      }
+    };
+    if (applicationDetails?.applicationData?.applicationNumber) {
+      fetchBill();
+    }
+  }, [applicationDetails?.applicationData?.status, applicationDetails?.applicationData?.applicationNumber, hasPayAction]);
+
   useEffect(() => {
     if (applicationDetails?.numOfApplications?.length > 0) {
       let financialYear = cloneDeep(applicationDetails?.applicationData?.financialYear);
@@ -112,12 +161,19 @@ const ApplicationDetails = () => {
 
   if (workflowDetails?.data?.processInstances?.length > 0) {
     let filteredActions = [];
-    filteredActions = get(workflowDetails?.data?.processInstances[0], "nextActions", [])?.filter((item) => item.action != "ADHOC");
+    filteredActions = get(workflowDetails?.data?.processInstances[0], "nextActions", [])?.filter((item) => item.action != "ADHOC" && item.action != "INITIATE");
     let actions = orderBy(filteredActions, ["action"], ["desc"]);
     if ((!actions || actions?.length == 0) && workflowDetails?.data?.actionState) workflowDetails.data.actionState.nextActions = [];
 
     workflowDetails?.data?.actionState?.nextActions?.forEach((data) => {
       if (data.action == "RESUBMIT") {
+        (data.redirectionUrl = {
+          pathname: `/digit-ui/employee/tl/edit-application-details/${applicationNumber}`,
+          state: applicationDetails,
+        }),
+          (data.tenantId = stateId);
+      }
+      if (data.action == "APPLY") {
         (data.redirectionUrl = {
           pathname: `/digit-ui/employee/tl/edit-application-details/${applicationNumber}`,
           state: applicationDetails,
@@ -200,7 +256,7 @@ const ApplicationDetails = () => {
     }
   }
 
-  if (rolearray && applicationDetails?.applicationData?.status === "PENDINGPAYMENT") {
+  if (rolearray && (applicationDetails?.applicationData?.status === "PENDINGPAYMENT" || hasPayAction)) {
     workflowDetails?.data?.nextActions?.map((data) => {
       if (data.action === "PAY") {
         workflowDetails = {
@@ -392,8 +448,343 @@ const ApplicationDetails = () => {
       });
     }
   };
+  const getTaxHeadLabel = (taxHeadCode) => {
+    const labels = {
+      TL_TAX: "Trade License Tax",
+      TL_ADHOC_PENALTY: "Adhoc Penalty",
+      TL_ADHOC_REBATE: "Adhoc Rebate",
+      TL_RENEWAL_REBATE: "Renewal Rebate",
+      TL_RENEWAL_PENALTY: "Penalty",
+    };
+    return t(taxHeadCode) !== taxHeadCode ? t(taxHeadCode) : labels[taxHeadCode] || taxHeadCode;
+  };
+
+  // Helper to get bill account details from bill or payment history
+  const getBillAccountDetails = () => {
+    if (billData?.billDetails?.[0]?.billAccountDetails) {
+      return billData.billDetails[0].billAccountDetails;
+    }
+    if (paymentsHistory?.Payments?.[0]?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails) {
+      return paymentsHistory.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails;
+    }
+    return [];
+  };
+
+  const getTotalAmount = () => {
+    if (billData?.totalAmount !== undefined && billData?.totalAmount !== null) return billData.totalAmount;
+    if (paymentsHistory?.Payments?.[0]?.totalAmountPaid !== undefined) return paymentsHistory.Payments[0].totalAmountPaid;
+    return 0;
+  };
+
+  // Get summarized fee line items for the fee card
+  const getFeeLineItems = () => {
+    const details = getBillAccountDetails();
+    const tlTax = details.find(d => d.taxHeadCode === "TL_TAX")?.amount || 0;
+    const renewalRebate = details.find(d => d.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
+    const renewalPenalty = details.find(d => d.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
+    const adhocPenalty = details.find(d => d.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0;
+    const adhocRebate = details.find(d => d.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0;
+
+    // Get reasons from license data for tooltips
+    const licData = adhocLicenseData || applicationDetails?.applicationData;
+    const penaltyReason = licData?.tradeLicenseDetail?.adhocPenaltyReason || "";
+    const rebateReason = licData?.tradeLicenseDetail?.adhocExemptionReason || "";
+
+    const items = [
+      { label: "Trade License Tax", amount: tlTax },
+      { label: "Renewal Rebate", amount: renewalRebate },
+      { label: "Penalty", amount: renewalPenalty },
+    ];
+    // Only show adhoc rows when they have non-zero values
+    if (adhocPenalty !== 0) {
+      items.push({ label: "Adhoc Penalty", amount: adhocPenalty, tooltip: penaltyReason });
+    }
+    if (adhocRebate !== 0) {
+      items.push({ label: "Adhoc Rebate", amount: adhocRebate, tooltip: rebateReason });
+    }
+    return items;
+  };
+
+  // Open ADHOC popup — pre-populate with existing values from license data
+  const openAdhocPopup = async () => {
+    try {
+      // Fetch fresh license data so modal has latest values
+      const res = await Digit.TLService.TLsearch({
+        tenantId: applicationDetails?.applicationData?.tenantId || tenantId,
+        filters: { applicationNumber: applicationDetails?.applicationData?.applicationNumber },
+      });
+      const license = res?.Licenses?.[0];
+      if (license) {
+        setAdhocLicenseData(license);
+      }
+    } catch (err) {
+      console.error("Error fetching license for ADHOC:", err);
+    }
+    setShowAdhocPopup(true);
+  };
+
+  // Handle ADHOC submit — update license, then refresh bill + breakup
+  const handleAdhocSubmit = async ({ adhocPenalty, adhocPenaltyReason, penaltyComments, adhocExemption, adhocExemptionReason, rebateComments }) => {
+    setIsAdhocUpdating(true);
+    try {
+      // Fetch fresh license data
+      const res = await Digit.TLService.TLsearch({
+        tenantId: applicationDetails?.applicationData?.tenantId || tenantId,
+        filters: { applicationNumber: applicationDetails?.applicationData?.applicationNumber },
+      });
+      const license = res?.Licenses?.[0];
+      if (!license) {
+        throw new Error("License not found");
+      }
+
+      // Set ADHOC fields on license
+      license.action = "ADHOC";
+      license.assignee = [];
+      license.tradeLicenseDetail.adhocPenalty = adhocPenalty; // string
+      license.tradeLicenseDetail.adhocExemption = adhocExemption; // negative number
+      license.tradeLicenseDetail.adhocPenaltyReason = adhocPenaltyReason;
+      license.tradeLicenseDetail.adhocExemptionReason = adhocExemptionReason;
+      license.tradeLicenseDetail.additionalDetail = {
+        ...license.tradeLicenseDetail.additionalDetail,
+        penaltyComments: penaltyComments,
+        rebateComments: rebateComments,
+      };
+
+      // Call _update API
+      const updateRes = await Digit.TLService.update({ Licenses: [license] }, tenantId);
+      const updatedLicense = updateRes?.Licenses?.[0];
+
+      if (updatedLicense) {
+        setAdhocLicenseData(updatedLicense);
+      }
+
+      // Refresh bill + breakup data
+      await refreshAfterAdhocUpdate();
+
+      setShowAdhocPopup(false);
+      setShowToast({ key: "success", label: "Adhoc Penalty/Rebate added successfully" });
+    } catch (err) {
+      console.error("Error submitting ADHOC update:", err);
+      setShowToast({ key: "error", error: true, label: err?.message || "Failed to add Adhoc Penalty/Rebate" });
+    } finally {
+      setIsAdhocUpdating(false);
+    }
+  };
+
+  // Re-fetch bill + breakup data after ADHOC update
+  const refreshAfterAdhocUpdate = async () => {
+    try {
+      const appTenantId = applicationDetails?.applicationData?.tenantId || tenantId;
+      const consumerCode = applicationDetails?.applicationData?.applicationNumber;
+
+      // 1. Re-fetch bill from billing-service
+      const billResult = await Digit.PaymentService.fetchBill(appTenantId, {
+        businessService: "TL",
+        consumerCode: consumerCode,
+      });
+      setBillData(billResult?.Bill?.[0]);
+
+      // 2. Clear cached breakup data so VIEW BREAKUP re-fetches
+      setBreakupData(null);
+
+      // 3. Pre-fetch tl-calculator _getbill
+      const getbillRes = await Digit.TLService.getbill({
+        tenantId: appTenantId,
+        filters: { consumerCode, businessService: "TL" },
+      });
+      const billingSlabIds = getbillRes?.billingSlabIds || {};
+      const tradeSlabEntries = billingSlabIds?.tradeTypeBillingSlabIds || [];
+      const accessorySlabEntries = billingSlabIds?.accesssoryBillingSlabIds || [];
+
+      const allSlabIds = [...tradeSlabEntries, ...accessorySlabEntries]
+        .map((entry) => entry?.split("|")?.[0])
+        .filter(Boolean);
+
+      // 4. Pre-fetch billing slabs
+      let slabs = [];
+      if (allSlabIds.length > 0) {
+        const slabRes = await Digit.TLService.billingslab({
+          tenantId: appTenantId,
+          filters: { ids: allSlabIds.join(",") },
+        });
+        slabs = slabRes?.billingSlab || [];
+      }
+
+      // 5. Rebuild breakup data
+      const bill = billResult?.Bill?.[0];
+      const billAccDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
+
+      const tradeUnitBreakup = tradeSlabEntries.map((entry) => {
+        const slabId = entry?.split("|")?.[0];
+        const slab = slabs.find((s) => s.id === slabId);
+        return {
+          name: t(formatTradeType(slab?.tradeType)) || "Trade Unit",
+          rate: slab?.rate || 0,
+        };
+      });
+
+      const accessoryBreakup = (accessorySlabEntries || []).map((entry) => {
+        const slabId = entry?.split("|")?.[0];
+        const slab = slabs.find((s) => s.id === slabId);
+        const catFormatted = slab?.accessoryCategory?.replace(/\./g, "_")?.replace(/-/g, "_");
+        return {
+          name: t(`TRADELICENSE_ACCESSORIESCATEGORY_${catFormatted}`) || slab?.accessoryCategory || "Accessory",
+          rate: slab?.rate || 0,
+        };
+      });
+
+      const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
+      const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
+      const validityYears = applicationDetails?.applicationData?.tradeLicenseDetail?.additionalDetail?.validityYears || 1;
+
+      const tlTax = billAccDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
+      const rebate = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0) +
+                     (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0);
+      const penalty = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0) +
+                      (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0);
+
+      setBreakupData({
+        tradeUnitBreakup,
+        accessoryBreakup,
+        tradeUnitTotal,
+        accessoryTotal,
+        validityYears,
+        tlTax,
+        rebate,
+        penalty,
+        totalAmount: bill?.totalAmount || tlTax,
+        finalAmount: (tradeUnitTotal + accessoryTotal) * validityYears,
+      });
+    } catch (err) {
+      console.error("Error refreshing after ADHOC update:", err);
+    }
+  };
+
+  const formatTradeType = (tradeType) => {
+    if (!tradeType) return "NA";
+    const formatted = tradeType.replace(/\./g, '_').replace(/-/g, '_');
+    return `TRADELICENSE_TRADETYPE_${formatted}`;
+  };
+
+  // Fetch detailed calculation breakup data for the modal
+  const fetchBreakupData = async () => {
+    if (breakupData) {
+      setShowBreakupModal(true);
+      return;
+    }
+    setBreakupLoading(true);
+    try {
+      const appTenantId = applicationDetails?.applicationData?.tenantId || tenantId;
+      const consumerCode = applicationDetails?.applicationData?.applicationNumber;
+
+      // Step 1: Fetch bill — for paid apps, fetchBill may return empty, so fall back to payment history
+      let bill = null;
+      let billAccDetails = [];
+      try {
+        const fetchBillRes = await Digit.PaymentService.fetchBill(appTenantId, {
+          businessService: "TL",
+          consumerCode: consumerCode,
+        });
+        bill = fetchBillRes?.Bill?.[0];
+        billAccDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
+      } catch (billErr) {
+        console.warn("fetchBill failed (possibly paid), falling back to payment history", billErr);
+      }
+
+      // Fallback: use payment history bill data for paid applications
+      if (billAccDetails.length === 0 && paymentsHistory?.Payments?.length > 0) {
+        const paymentBill = paymentsHistory.Payments[0]?.paymentDetails?.[0]?.bill;
+        bill = paymentBill || bill;
+        billAccDetails = paymentBill?.billDetails?.[0]?.billAccountDetails || [];
+      }
+
+      // Step 2: Fetch TL calculator bill to get billingSlabIds
+      const getbillRes = await Digit.TLService.getbill({ tenantId: appTenantId, filters: { consumerCode, businessService: "TL" } });
+      const billingSlabIds = getbillRes?.billingSlabIds || {};
+      const tradeSlabEntries = billingSlabIds?.tradeTypeBillingSlabIds || [];
+      const accessorySlabEntries = billingSlabIds?.accesssoryBillingSlabIds || [];
+
+      // Collect all slab IDs (format: "slabId|value|someId")
+      const allSlabIds = [...tradeSlabEntries, ...accessorySlabEntries]
+        .map((entry) => entry?.split("|")?.[ 0])
+        .filter(Boolean);
+
+      // Step 3: Fetch billing slabs
+      let slabs = [];
+      if (allSlabIds.length > 0) {
+        const slabRes = await Digit.TLService.billingslab({ tenantId: appTenantId, filters: { ids: allSlabIds.join(",") } });
+        slabs = slabRes?.billingSlab || [];
+      }
+
+      // Build trade unit breakup
+      const tradeUnitBreakup = tradeSlabEntries.map((entry) => {
+        const parts = entry?.split("|") || [];
+        const slabId = parts[0];
+        const slab = slabs.find((s) => s.id === slabId);
+        return {
+          name: t(formatTradeType(slab?.tradeType)) || "Trade Unit",
+          rate: slab?.rate || 0,
+        };
+      });
+
+      // Build accessory breakup
+      const accessoryBreakup = accessorySlabEntries.map((entry) => {
+        const parts = entry?.split("|") || [];
+        const slabId = parts[0];
+        const slab = slabs.find((s) => s.id === slabId);
+        const catFormatted = slab?.accessoryCategory?.replace(/\./g, "_")?.replace(/-/g, "_");
+        return {
+          name: t(`TRADELICENSE_ACCESSORIESCATEGORY_${catFormatted}`) || slab?.accessoryCategory || "Accessory",
+          rate: slab?.rate || 0,
+        };
+      });
+
+      const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
+      const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
+      const validityYears = applicationDetails?.applicationData?.tradeLicenseDetail?.additionalDetail?.validityYears || 1;
+
+      // Get tax head amounts from bill
+      const tlTax = billAccDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
+      const rebate = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0) +
+                     (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0);
+      const penalty = (billAccDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0) +
+                      (billAccDetails.find((a) => a.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0);
+      const totalAmount = bill?.totalAmount || tlTax;
+
+      setBreakupData({
+        tradeUnitBreakup,
+        accessoryBreakup,
+        tradeUnitTotal,
+        accessoryTotal,
+        validityYears,
+        tlTax,
+        rebate,
+        penalty,
+        totalAmount,
+        finalAmount: (tradeUnitTotal + accessoryTotal) * validityYears,
+      });
+      setShowBreakupModal(true);
+    } catch (error) {
+      console.error("Error fetching breakup data:", error);
+    } finally {
+      setBreakupLoading(false);
+    }
+  };
+
   const [isDisplayDownloadMenu, setIsDisplayDownloadMenu] = useState(false);
+  const [isDisplayPrintMenu, setIsDisplayPrintMenu] = useState(false);
   const applicationStatus = applicationDetails?.applicationData?.status;
+
+  // Check if payment has been done for this application (from payment history)
+  const appConsumerCode = applicationDetails?.applicationData?.applicationNumber;
+  const hasPaymentDone = paymentsHistory?.Payments?.some(
+    (p) => p.paymentDetails?.some((pd) => pd.bill?.consumerCode === appConsumerCode)
+  );
+
+  const isPaid = applicationStatus === "APPROVED" || applicationStatus === "EXPIRED" || hasPaymentDone;
+  const isPendingPayment = (applicationStatus === "PENDINGPAYMENT" || hasPayAction) && !hasPaymentDone;
+  // Show fee section whenever we have bill data or payment history for this app (any flow, any status)
+  const showFeeSection = billData || hasPaymentDone;
 
   const dowloadOptions =
     applicationStatus === "APPROVED"
@@ -410,10 +801,33 @@ const ApplicationDetails = () => {
             label: t("TL_APPLICATION"),
             onClick: handleDownloadPdf,
           },
+          // {
+          //   label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
+          //   onClick: printCertificateWithESign,
+          //   disabled: eSignLoading,
+          // },
+        ]
+      : [
           {
-            label: eSignLoading ? "🔄 Preparing eSign..." : "📤 eSign Certificate",
-            onClick: printCertificateWithESign,
-            disabled: eSignLoading,
+            label: t("TL_APPLICATION"),
+            onClick: handleDownloadPdf,
+          },
+        ];
+
+  const printOptions =
+    applicationStatus === "APPROVED"
+      ? [
+          {
+            label: t("TL_CERTIFICATE"),
+            onClick: printCertificate,
+          },
+          {
+            label: t("TL_RECEIPT"),
+            onClick: printReciept,
+          },
+          {
+            label: t("TL_APPLICATION"),
+            onClick: handleDownloadPdf,
           },
         ]
       : [
@@ -425,22 +839,37 @@ const ApplicationDetails = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+      <div className={"employee-application-details TL-mb-15"}>
         <Header>
           {applicationDetails?.applicationData?.workflowCode == "NewTL" && applicationDetails?.applicationData?.status !== "APPROVED"
             ? t("TL_TRADE_APPLICATION")
             : t("TL_TRADE_LICENSE_DETAILS_LABEL")}
         </Header>
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div style={{ zIndex: "10", position: "relative" }}>
+        <div className="TL-flex-center-start-gap10">
+          <div className="TL-z10-relative">
             <MultiLink
               className="multilinkWrapper"
-              onHeadClick={() => setIsDisplayDownloadMenu(!isDisplayDownloadMenu)}
+              onHeadClick={() => { setIsDisplayDownloadMenu(!isDisplayDownloadMenu); setIsDisplayPrintMenu(false); }}
+              showOptions={(val) => { setIsDisplayDownloadMenu(val); }}
               displayOptions={isDisplayDownloadMenu}
               options={dowloadOptions}
               downloadBtnClassName={"employee-download-btn-className"}
-              optionsClassName={"employee-options-btn-className"}
-              optionStyle={{ padding: "10px" }}
+              optionsStyle={{ position: "absolute", top: "100%", right: 0, margin: 0, zIndex: 20, width: "max-content", boxShadow: "0 1px 4px rgba(0,0,0,0.16)", backgroundColor: "#fff", borderRadius: "2px" }}
+              optionStyle={{ padding: "10px", cursor: "pointer" }}
+            />
+          </div>
+          <div className="TL-z10-relative">
+            <MultiLink
+              className="multilinkWrapper"
+              icon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none"><path d="M17 5H3C1.34 5 0 6.34 0 8V14H4V18H16V14H20V8C20 6.34 18.66 5 17 5ZM14 16H6V11H14V16ZM17 9C16.45 9 16 8.55 16 8C16 7.45 16.45 7 17 7C17.55 7 18 7.45 18 8C18 8.55 17.55 9 17 9ZM16 0H4V4H16V0Z" fill="#1359C8"/></svg>}
+              label={"Print"}
+              onHeadClick={() => { setIsDisplayPrintMenu(!isDisplayPrintMenu); setIsDisplayDownloadMenu(false); }}
+              showOptions={(val) => { setIsDisplayPrintMenu(val); }}
+              displayOptions={isDisplayPrintMenu}
+              options={printOptions}
+              downloadBtnClassName={"employee-download-btn-className"}
+              optionsStyle={{ position: "absolute", top: "100%", right: 0, margin: 0, zIndex: 20, width: "max-content", boxShadow: "0 1px 4px rgba(0,0,0,0.16)", backgroundColor: "#fff", borderRadius: "2px" }}
+              optionStyle={{ padding: "10px", cursor: "pointer" }}
             />
           </div>
           {/* <div>
@@ -448,12 +877,115 @@ const ApplicationDetails = () => {
           </div> */}
         </div>
       </div>
+
+      {/* Fee Estimation / Amount Section */}
+      {showFeeSection && (
+        <Card style={{ marginTop: "16px" }}>
+          <div className="TL-fee-layout">
+            {/* Left: Always-visible fee line items */}
+            <div className="TL-flex-1">
+              <table className="TL-fee-table">
+                <tbody>
+                  {getFeeLineItems().map((item, idx) => (
+                    <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? "#f0f0f0" : "white" }}>
+                      <td className="TL-fee-td-label">
+                        {item.label}
+                        {item.tooltip && (
+                          <span
+                            title={item.tooltip}
+                            className="TL-tooltip-icon"
+                          >
+                            i
+                          </span>
+                        )}
+                      </td>
+                      <td className="TL-fee-td-right">
+                        {item.amount}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="TL-fee-total-row">
+                    <td className="TL-fee-td-total-label">
+                      Total Amount
+                    </td>
+                    <td className="TL-fee-td-total-amount">
+                      {getTotalAmount()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right: Total Amount Summary */}
+            <div className="TL-fee-summary-box">
+              <div className="TL-fee-summary-label">Total Amount</div>
+              <div className="TL-fee-summary-amount">
+                {`Rs ${getTotalAmount()}`}
+              </div>
+              <div
+                style={{
+                  color: isPaid ? "#00703C" : "#d4351c",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                }}
+              >
+                {isPaid ? "Paid Successfully" : "Not Paid"}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Links */}
+          <div className="TL-fee-actions">
+            <span
+              className="TL-action-link"
+              onClick={fetchBreakupData}
+            >
+              {breakupLoading ? "Loading..." : "VIEW BREAKUP"}
+            </span>
+            {isPendingPayment && !hasPaymentDone && (
+              <span
+                className="TL-action-link"
+                onClick={openAdhocPopup}
+              >
+                ADD REBATE/PENALTY
+              </span>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Calculation Breakup Modal */}
+      {showBreakupModal && breakupData && (
+        <BreakupModal
+          breakupData={breakupData}
+          onClose={() => setShowBreakupModal(false)}
+        />
+      )}
+
+      {/* ADHOC Rebate/Penalty Modal */}
+      {showAdhocPopup && (
+        <AdhocRebatePenaltyModal
+          t={t}
+          licenseData={adhocLicenseData || applicationDetails?.applicationData}
+          onClose={() => setShowAdhocPopup(false)}
+          onSubmit={handleAdhocSubmit}
+          isUpdating={isAdhocUpdating}
+        />
+      )}
+
+      {/* Loader overlay when ADHOC is updating */}
+      {isAdhocUpdating && (
+        <div className="TL-loader-overlay">
+          <Loader />
+        </div>
+      )}
+
       <ApplicationDetailsTemplate
         applicationDetails={applicationDetails}
         isLoading={isLoading}
         isDataLoading={isLoading}
         applicationData={applicationDetails?.applicationData}
-        mutate={mutate}
+        mutate={safeMutate}
         id={"timeline"}
         workflowDetails={workflowDetails}
         businessService={businessService}
@@ -464,6 +996,7 @@ const ApplicationDetails = () => {
         timelineStatusPrefix={"WF_NEWTL_"}
         showTimeLine={false}
       />
+
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
     </div>
   );

@@ -167,6 +167,7 @@ const CLUApplicantDetails = (_props) => {
   const defaultOwner = () => ({
     mobileNumber: "",
     ownerOrFirmName: "",
+    firmName: "", // Added firmName
     emailId: "",
     fatherOrHusbandName: "",
     gender: null,
@@ -184,7 +185,6 @@ const CLUApplicantDetails = (_props) => {
   const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
 
   useEffect(() => {
-    console.log("currentStepData1", currentStepData);
     const formattedData = currentStepData?.applicationDetails;
 
     if (!formattedData) return;
@@ -194,6 +194,7 @@ const CLUApplicantDetails = (_props) => {
         ? formattedData.owners.map((o) => ({
             mobileNumber: o.mobileNumber || "",
             ownerOrFirmName: o.ownerOrFirmName || o.name || "",
+            firmName: o.firmName || "", // Added firmName
             emailId: o.emailId || "",
             fatherOrHusbandName: o.fatherOrHusbandName || "",
             gender: findGenderOption(o.gender),
@@ -282,8 +283,6 @@ const getOwnerDetails = async (idx) => {
     
   }
 
-  console.log("ownerIdList (local)==>", ownerIdList);
-  console.log("ownerPhotoList (local)==>", ownerPhotoList);
 
   return (
     <React.Fragment>
@@ -312,7 +311,7 @@ const getOwnerDetails = async (idx) => {
             {index === 0 && (
               <LabelFieldPair style={{ marginBottom: "20px" }}>
                 <CardLabel className="card-label-smaller">
-                  {`${t("NOC_OWNER_TYPE_LABEL")}`}
+                  {`${t("CLU_OWNER_TYPE_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
                 <div className="field">
@@ -378,8 +377,46 @@ const getOwnerDetails = async (idx) => {
               </div>
             </LabelFieldPair>
 
+            {watch(`owners[${index}].ownerType`)?.code === "Firm" && (
+              <LabelFieldPair style={{ marginBottom: "20px" }}>
+                <CardLabel className="card-label-smaller">
+                  {`${t("CLU_FIRM_NAME_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].firmName`}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      maxLength: {
+                        value: 100,
+                        message: t("MAX_100_CHARACTERS_ALLOWED"),
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                        disabled={isEdit}
+                      />
+                    )}
+                  />
+                  {errors?.owners?.[index]?.firmName && (
+                    <p style={errorStyle}>{errors?.owners?.[index]?.firmName?.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
+
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("CLU_APPLICANT_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}

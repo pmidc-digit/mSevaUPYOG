@@ -113,6 +113,10 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       action: action?.action,
       comment: data?.comments,
       assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+      additionalDetails: {
+        ...(applicationData?.additionalDetails || {}),
+        ...(data?.name || data?.date ? { forwardedBy: data?.name || "", forwardedDate: data?.date || "" } : {}),
+      },
       // assignee: action?.isTerminateState ? [] : [selectedApprover?.uuid],
       wfDocuments: uploadedFile
         ? [

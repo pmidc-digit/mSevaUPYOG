@@ -145,7 +145,7 @@ const Urls = {
     search: "/rl-services/allotment/v1/_search",
     getReports: "/rl-services/property/_report",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
-    search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
+    search_bill: "/egov-searcher/bill-genie/rentandleasebills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
     download_pdf: "/egov-pdf/download/UC/mcollect-challan",
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
@@ -174,6 +174,7 @@ const Urls = {
     download_pdf: "/egov-pdf/download/TL/",
     update: "/tl-services/v1/_update",
     billingslab: "/tl-calculator/billingslab/_search",
+    getbill: "/tl-calculator/v1/_getbill",
   },
   receipts: {
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
@@ -386,7 +387,7 @@ const Urls = {
     location: "/egov-location/location/v11/boundarys/_search",
     validateConnection: "/gc-services/gc/_validateConnection",
     scheduler: "/gc-calculator/garbagecharges/scheduler/_create",
-    billGenie: "/egov-searcher/bill-genie/garbagecollectionbills/_get",
+    billGenieSearch: "/egov-searcher/bill-genie/garbagecollectionbills/_get",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

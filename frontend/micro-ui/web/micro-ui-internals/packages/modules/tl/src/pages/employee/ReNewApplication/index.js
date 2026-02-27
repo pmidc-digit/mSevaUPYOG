@@ -205,12 +205,28 @@ const ReNewApplication = (props) => {
       EDITRENEWAL = false;
       sendBackToCitizen = true;
     }
+    // Also detect RESUBMIT: employee editing an application sent back to citizen
+    if (
+      !sendBackToCitizen &&
+      window.location.href.includes("edit-application-details") &&
+      data?.tradedetils1?.status === "CITIZENACTIONREQUIRED"
+    ) {
+      EDITRENEWAL = false;
+      sendBackToCitizen = true;
+    }
 
     if (data?.owners?.length > 0) {
       data?.owners.forEach((data) => {
         data.gender = data?.gender?.code;
         data.relationship = data?.relationship?.code;
         data.ownerType = data?.ownerType?.code;
+        // Convert dob to epoch for server (form provides "YYYY-MM-DD" date string)
+        if (typeof data.dob === "string" && /^\d{4}-\d{1,2}-\d{1,2}$/.test(data.dob)) {
+          data.dob = convertDateToEpoch(data.dob);
+        } else if (typeof data.dob !== "number" || isNaN(data.dob)) {
+          // "NA", empty, null, or invalid → remove so the original epoch survives the spread merge
+          delete data.dob;
+        }
       });
     }
 
@@ -316,7 +332,14 @@ const ReNewApplication = (props) => {
       if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
       if (data?.accessories?.length > 0) formData.tradeLicenseDetail.accessories = data?.accessories;
       if (data?.tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = data?.tradeUnits;
-      if (data?.owners?.length > 0) formData.tradeLicenseDetail.owners = data?.owners;
+      if (data?.owners?.length > 0) {
+        // Preserve id/uuid from original application owners; overlay with form-updated values
+        const originalOwners = formData.tradeLicenseDetail.owners || [];
+        formData.tradeLicenseDetail.owners = data?.owners.map((owner, index) => {
+          const original = originalOwners.find(o => o.id && o.id === owner.id) || originalOwners[index] || {};
+          return { ...original, ...owner };
+        });
+      }
       if (structureType) formData.tradeLicenseDetail.structureType = structureType;
       if (subOwnerShipCategory|| data?.owners?.[0]?.subOwnerShipCategory?.code) formData.tradeLicenseDetail.subOwnerShipCategory = formData?.tradeLicenseDetail?.owners?.[0]?.subOwnerShipCategory?.code?.includes("INSTITUTIONAL") ? data?.owners?.[0]?.subOwnerShipCategory.code : subOwnerShipCategory;
       if (formData?.tradeLicenseDetail?.owners?.[0]?.subOwnerShipCategory?.code?.includes("INSTITUTIONAL")) formData.tradeLicenseDetail.institution = {
@@ -359,7 +382,16 @@ const ReNewApplication = (props) => {
       if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
       if (data?.accessories?.length > 0) formData.tradeLicenseDetail.accessories = data?.accessories;
       if (data?.tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = data?.tradeUnits?.filter((ob) => ob?.active !== false);
-      if (data?.owners?.length > 0) formData.tradeLicenseDetail.owners = data?.owners?.filter((ob) => ob?.active !== false);
+      if (data?.owners?.length > 0) {
+        // Preserve id/uuid from original application owners; overlay with form-updated values
+        const originalOwners = formData.tradeLicenseDetail.owners || [];
+        formData.tradeLicenseDetail.owners = data?.owners
+          .map((owner, index) => {
+            const original = originalOwners.find(o => o.id && o.id === owner.id) || originalOwners[index] || {};
+            return { ...original, ...owner };
+          })
+          .filter((ob) => ob?.active !== false);
+      }
       if (data?.address) formData.tradeLicenseDetail.address = data?.address;
       if (data?.cpt?.details?.address||propertyDetails) {
         let address = {};
@@ -439,7 +471,7 @@ const ReNewApplication = (props) => {
 
   return (
     <div>
-      <div style={{ marginLeft: "15px" }}>
+      <div className="Tl-ml-15">
         <Header>
           {window.location.href.includes("employee/tl/edit-application-details")
             ? t("ES_TITLE_RE_NEW_TRADE_LICESE_APPLICATION")

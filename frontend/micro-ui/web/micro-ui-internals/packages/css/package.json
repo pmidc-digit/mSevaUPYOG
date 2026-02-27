@@ -1,6 +1,10 @@
 {
   "name": "@pmidc/upyog-css",
+<<<<<<< HEAD
   "version": "1.2.36-UAT.3",
+=======
+  "version": "1.2.36-dev.1.2",
+>>>>>>> cdc8faf668d732021fdf4cad38c2eb692fcb641a
   "license": "MIT",
   "main": "dist/index.css",
   "engines": {

@@ -215,6 +215,8 @@ const FillQuestions = (props) => {
             : localStorage.getItem("CITIZEN.CITY")
           : city,
     };
+    console.log("payload", payload);
+    console.log("userInfo", userInfo);
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
         setFetchAnswers(response);

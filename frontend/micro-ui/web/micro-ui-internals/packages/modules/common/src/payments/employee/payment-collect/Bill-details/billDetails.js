@@ -366,7 +366,8 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
       </table>
     );
   };
-
+const isTL = businessService === "TL";
+console.log("billDetails==????",billDetails)
   return (
     <React.Fragment>
       <StatusTable>
@@ -378,7 +379,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
               else acc = acc[key];
               return acc;
             }, bill);
-            return <Row key={index + "bill"} label={t(obj.keyValue)} text={value} />;
+            return <Row key={index + "bill"} label={t(obj.keyValue)} text={value} {...(isTL ? { textStyle: { textAlign: "right" } } : {})} />;
           })}
       </StatusTable>
       {checkFSM ? (
@@ -418,15 +419,15 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
         </StatusTable>
       ) : (
         <StatusTable style={{ paddingTop: "46px" }}>
-          <Row label={t("ES_PAYMENT_TAXHEADS")} textStyle={{ fontWeight: "bold" }} text={t("ES_PAYMENT_AMOUNT")} />
-          <hr style={{ width: "40%" }} className="underline" />
+          <Row label={t("ES_PAYMENT_TAXHEADS")} textStyle={{ fontWeight: "bold", ...(isTL ? { textAlign: "right", maxWidth: "none", width: "40%" } : {}) }} text={t("ES_PAYMENT_AMOUNT")} />
+          <hr style={isTL ? { width: "100%" } : { width: "40%" }} className="underline" />
           {billDetails?.billAccountDetails
             ?.sort((a, b) => a.order - b.order)
             .map((amountDetails, index) => (
               <Row
                 key={index + "taxheads"}
                 labelStyle={{ fontWeight: "normal" }}
-                textStyle={{ textAlign: "right", maxWidth: "100px" }}
+                textStyle={isTL ? { textAlign: "right", maxWidth: "none", width: "40%" } : { textAlign: "right", maxWidth: "100px" }}
                 label={t(amountDetails.taxHeadCode)}
                 text={"₹ " + amountDetails.amount?.toFixed(2)}
               />
@@ -435,16 +436,16 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
           {arrears?.toFixed?.(2) ? (
             <Row
               labelStyle={{ fontWeight: "normal" }}
-              textStyle={{ textAlign: "right", maxWidth: "100px" }}
+              textStyle={isTL ? { textAlign: "right", maxWidth: "none", width: "40%" } : { textAlign: "right", maxWidth: "100px" }}
               label={t("COMMON_ARREARS")}
               text={"₹ " + arrears?.toFixed?.(2) || Number(0).toFixed(2)}
             />
           ) : null}
 
-          <hr style={{ width: "40%" }} className="underline" />
+          <hr style={isTL ? { width: "100%" } : { width: "40%" }} className="underline" />
           <Row
             label={t("CS_PAYMENT_TOTAL_AMOUNT")}
-            textStyle={{ fontWeight: "bold", textAlign: "right", maxWidth: "100px" }}
+            textStyle={isTL ? { fontWeight: "bold", textAlign: "right", maxWidth: "none", width: "40%" } : { fontWeight: "bold", textAlign: "right", maxWidth: "100px" }}
             text={"₹ " + Number(getTotal()).toFixed(2)}
           />
 

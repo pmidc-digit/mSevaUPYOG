@@ -1,0 +1,768 @@
+.TL-response-dFlex-endBaseL{
+     display:flex !important;
+     justify-content: flex-end !important;
+     align-items: baseline  !important;
+}
+
+.TL-response-dFlex-endGapW{
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+    width: auto !important;
+}
+
+.TL-ml-unset{
+    margin-left: unset !important;
+}
+
+.TL-mt-16{
+    margin-top: 16px;
+}
+.TL-mb-10{
+    margin-bottom: 10px;
+}
+.TL-ml-16{
+    margin-left: 16px;
+}
+
+.TL-wAuto{
+    width:auto !important;
+}
+
+.Tl-ml-15{
+    margin-left: 15px !important;
+}
+
+.TL-mr-1{
+    margin-right: 1rem !important;
+}
+
+.TL-ground-ml-0 {
+  margin-left: 0px !important;
+}
+
+.TL-ground-full-width {
+  width: 100% !important;
+}
+.TL-breadcrumb-offset {
+  margin-left: 15px !important;
+  margin-top: 3rem !important;
+}
+
+.TL-chb-container {
+  width: 100% !important;
+  padding-right: 25px !important;
+  padding-left: 25px !important;
+}
+
+.TL-page-title {
+  color: #000 !important;
+  font-family: "Noto Sans", sans-serif !important;
+  font-size: 28px !important;
+  font-weight: 500 !important;
+  margin: 0 !important; 
+}
+
+.TL-divider {
+  border: 1px solid #DFE0E2 !important;
+  margin-bottom: 50px !important;
+  width: 100% !important; 
+}
+
+.TL-full-width-container {
+  width: 100% !important;
+}
+
+.TL-label-inline-100 {
+  width: 100px !important;
+  display: inline !important;
+}
+
+/* ===== ApplicationDetails - Header & Layout ===== */
+
+.TL-mb-15 {
+  margin-bottom: 15px !important;
+}
+
+.TL-flex-center-start-gap10 {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+
+.TL-z10-relative {
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* ===== Fee Estimation Card ===== */
+
+.TL-fee-layout {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+}
+
+.TL-flex-1 {
+  flex: 1 !important;
+}
+
+.TL-fee-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.TL-fee-td-label {
+  padding: 12px 16px !important;
+  color: #0b4da2 !important;
+  font-weight: 600 !important;
+}
+
+.TL-tooltip-icon {
+  display: inline-block !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  background-color: #6c757d !important;
+  color: white !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  line-height: 16px !important;
+  margin-left: 6px !important;
+  cursor: pointer !important;
+}
+
+.TL-fee-td-right {
+  padding: 12px 16px !important;
+  text-align: right !important;
+}
+
+.TL-fee-total-row {
+  border-top: 2px solid #0b4da2 !important;
+}
+
+.TL-fee-td-total-label {
+  padding: 12px 16px !important;
+  font-weight: bold !important;
+  color: #0b4da2 !important;
+}
+
+.TL-fee-td-total-amount {
+  padding: 12px 16px !important;
+  text-align: right !important;
+  font-weight: bold !important;
+}
+
+.TL-fee-summary-box {
+  text-align: right !important;
+  margin-left: 40px !important;
+  min-width: 200px !important;
+}
+
+.TL-fee-summary-label {
+  color: #0b4da2 !important;
+  font-size: 14px !important;
+}
+
+.TL-fee-summary-amount {
+  font-size: 36px !important;
+  font-weight: bold !important;
+}
+
+.TL-fee-actions {
+  padding-top: 16px !important;
+  display: flex !important;
+  gap: 24px !important;
+}
+
+.TL-action-link {
+  color: #d4351c !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  text-transform: uppercase !important;
+  font-size: 14px !important;
+}
+
+/* ===== Modal - Shared ===== */
+
+.TL-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.TL-modal-content-sm {
+  background-color: #fff !important;
+  border-radius: 4px !important;
+  padding: 24px !important;
+  min-width: 400px !important;
+  max-width: 550px !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.TL-modal-content-md {
+  background-color: #fff !important;
+  border-radius: 4px !important;
+  padding: 24px !important;
+  min-width: 500px !important;
+  max-width: 600px !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.TL-modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 16px !important;
+}
+
+.TL-modal-header-lg {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 20px !important;
+}
+
+.TL-modal-title {
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.TL-modal-close {
+  cursor: pointer !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  color: #666 !important;
+}
+
+/* ===== Breakup Modal ===== */
+
+.TL-breakup-section-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.TL-breakup-section-title-mt {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-top: 12px !important;
+  margin-bottom: 8px !important;
+}
+
+.TL-breakup-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 4px 0 !important;
+  font-size: 13px !important;
+}
+
+.TL-breakup-row-bold {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 4px 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.TL-breakup-subtotal {
+  display: flex !important;
+  justify-content: space-between !important;
+  border-top: 1px solid #ddd !important;
+  padding: 6px 0 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  margin-top: 4px !important;
+}
+
+.TL-breakup-final-section {
+  border-top: 2px solid #333 !important;
+  margin-top: 12px !important;
+  padding-top: 8px !important;
+}
+
+.TL-breakup-rebate-section {
+  border-top: 1px solid #ddd !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+}
+
+.TL-breakup-grand-total {
+  display: flex !important;
+  justify-content: space-between !important;
+  border-top: 2px solid #333 !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+}
+
+/* ===== Loader Overlay ===== */
+
+.TL-loader-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* ===== ADHOC Modal Form ===== */
+
+.TL-mb-20 {
+  margin-bottom: 20px !important;
+}
+
+.TL-adhoc-section-title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+  color: #0b4da2 !important;
+}
+
+.TL-form-label {
+  display: block !important;
+  font-size: 13px !important;
+  margin-bottom: 4px !important;
+  color: #505A5F !important;
+}
+
+.TL-form-input {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 1px solid #d6d5d4 !important;
+  border-radius: 2px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+}
+
+.TL-form-select {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 1px solid #d6d5d4 !important;
+  border-radius: 2px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  background-color: #fff !important;
+}
+
+.TL-form-textarea {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 1px solid #d6d5d4 !important;
+  border-radius: 2px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+}
+
+.TL-adhoc-divider {
+  border: none !important;
+  border-top: 1px solid #d6d5d4 !important;
+  margin: 16px 0 !important;
+}
+
+.TL-adhoc-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-top: 16px !important;
+}
+
+.TL-btn-cancel {
+  padding: 10px 24px !important;
+  border: 1px solid #0b4da2 !important;
+  background-color: #fff !important;
+  color: #0b4da2 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border-radius: 2px !important;
+  text-transform: uppercase !important;
+}
+
+.TL-btn-submit {
+  padding: 10px 24px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-radius: 2px !important;
+  text-transform: uppercase !important;
+}
+
+.TL-btn-disabled {
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.TL-max-width-960 {
+  max-width: 960px !important;
+}
+
+.TL-multi-box {
+  border: groove !important;
+  background: #FAFAFA !important;
+  border-radius: 4px !important;
+  padding-inline: 10px !important;
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.TL-doc-container {
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
+  border-radius: 4px !important;
+  border: 1px solid #E0E4E8 !important;
+  background-color: #F9F9F9 !important;
+  padding: 16px !important;
+}
+
+.TL-no-doc-placeholder {
+  padding: 16px !important;
+  text-align: center !important;
+  color: #7A8A96 !important;
+  background-color: #ffffff !important;
+  border-radius: 4px !important;
+}
+
+.TL-alignC{
+  text-align: center !important;
+}
+
+.TL-stepper-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 18px !important;
+  background: linear-gradient(180deg, #ffffff, #f8fafc) !important;
+  border: 1px solid rgba(15, 23, 42, 0.04) !important;
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.06) !important;
+  border-radius: 12px !important;
+  min-width: 120px !important;
+  max-width: 320px !important;
+}
+
+.TL-step-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex: 0 0 auto !important;
+  padding: 14px 12px !important;
+  width: 260px !important;
+  margin-bottom: 18px !important;
+}
+
+.TL-step-item-last {
+  margin-bottom: 6px !important;
+}
+
+.TL-step-active {
+  color: #0D43A7 !important;
+}
+
+.TL-step-inactive {
+  color: #9CA3AF !important;
+}
+
+.TL-step-sub-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  margin: 10px !important;
+}
+
+.TL-step-circle {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 8px !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  position: relative !important;
+}
+
+.TL-step-circle-completed {
+  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18) !important;
+}
+
+.TL-step-circle-pending {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(2, 6, 23, 0.04) !important;
+}
+
+
+.TL-search-wAuto {
+  width: auto !important;
+}
+
+.TL-search-ml-24 {
+  margin-left: 24px !important;
+}
+
+.TL-text-start {
+  text-align: start !important;
+}
+
+.TL-search-error {
+  font-weight: 700 !important;
+  color: rgba(212, 53, 28) !important;
+  padding-left: 8px !important;
+  margin-top: -10px !important;
+  font-size: 12px !important;
+}
+
+.TL-search-clear-wrapper {
+  width: 240px !important;
+  text-align: right !important;
+  margin-left: 96px !important;
+  margin-top: 8px !important;
+}
+
+.TL-w-full {
+  width: 100% !important;
+}
+
+.TL-pt-9 {
+  padding-top: 9px !important;
+}
+
+.TL-p-0 {
+  padding: 0 !important;
+}
+
+.TL-color-error {
+  color: #a82227 !important;
+}
+
+.TL-property-search-field {
+  margin-top: 20px !important;
+  display: flex !important;
+}
+
+.TL-btn-white {
+  color: white !important;
+}
+
+.TL-search-btn {
+  padding: 8px 16px !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  min-width: 80px !important;
+  height: 38px !important;
+  transition: all 0.2s ease !important;
+}
+
+.TL-search-btn-active {
+  background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+  cursor: pointer !important;
+}
+
+.TL-search-btn-searching {
+  background: #94a3b8 !important;
+  cursor: not-allowed !important;
+}
+
+.TL-mb-16 {
+  margin-bottom: 16px !important;
+}
+
+.TL-mb-24 {
+  margin-bottom: 24px !important;
+}
+
+.TL-mt-4 {
+  margin-top: 4px !important;
+}
+
+.TL-doc-note {
+  font-size: 13px !important;
+  color: #505A5F !important;
+  margin-bottom: 12px !important;
+}
+
+.TL-download-btn {
+  background-color: #5e5e5e !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  letter-spacing: 0.5px !important;
+}
+
+.TL-doc-file-info {
+  font-size: 12px !important;
+  color: #505A5F !important;
+  margin-top: 4px !important;
+}
+
+/* ===== TLSummaryPage ===== */
+
+.TL-mt-5 {
+  margin-top: 5px !important;
+}
+
+.TL-mt-12 {
+  margin-top: 12px !important;
+}
+
+.TL-fw-600 {
+  font-weight: 600 !important;
+}
+
+.TL-breakup-link {
+  color: #a82227 !important;
+  cursor: pointer !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+  font-size: 14px !important;
+}
+
+.TL-modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.TL-modal-content {
+  background-color: #fff !important;
+  border-radius: 4px !important;
+  padding: 24px !important;
+  min-width: 400px !important;
+  max-width: 550px !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.TL-modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 16px !important;
+}
+
+.TL-modal-title {
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.TL-modal-close {
+  cursor: pointer !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  color: #666 !important;
+}
+
+.TL-breakup-section-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.TL-breakup-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 4px 0 !important;
+  font-size: 13px !important;
+}
+
+.TL-breakup-subtotal-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  border-top: 1px solid #ddd !important;
+  padding: 6px 0 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  margin-top: 4px !important;
+}
+
+.TL-breakup-strong-section {
+  border-top: 2px solid #333 !important;
+  margin-top: 12px !important;
+  padding-top: 8px !important;
+}
+
+.TL-breakup-light-section {
+  border-top: 1px solid #ddd !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+}
+
+.TL-breakup-grand-total {
+  display: flex !important;
+  justify-content: space-between !important;
+  border-top: 2px solid #333 !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+}
+
+.TL-item-index {
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.TL-declaration-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  margin-top: 20px !important;
+}
+
+.TL-declaration-checkbox {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer !important;
+}
+
+.TL-declaration-label {
+  cursor: pointer !important;
+  margin: 0 !important;
+}

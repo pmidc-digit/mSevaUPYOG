@@ -146,10 +146,10 @@ const CreateTradeLicence = ({ parentRoute }) => {
         return (
           <Route path={`${match.path}/${routeObj.route}`} key={index}>
             <div className="card">
-              <h1 style={{ color: "black", fontFamily: "Noto Sans,sans-serif", fontSize: "28px", fontWeight: "500" }}>
+              <h1 className="TL-card-title">
                 {t("Trade Licence New Application")}
               </h1>
-              <div style={{ border: "1px solid #DFE0E2", marginBottom: "50px" }}></div>
+              <div className="TL-divider"></div>
               <Component
                 config={{ texts, inputs, key, isSkipEnabled }}
                 onSelect={handleSelect}
@@ -165,10 +165,10 @@ const CreateTradeLicence = ({ parentRoute }) => {
       })}
       <Route path={`${match.path}/check`}>
         <div className="card">
-          <h1 style={{ color: "black", fontFamily: "Noto Sans,sans-serif", fontSize: "28px", fontWeight: "500" }}>
+          <h1 className="TL-card-title">
             {t("Trade Licence New Application")}
           </h1>
-          <div style={{ border: "1px solid #DFE0E2", marginBottom: "50px" }}></div>
+          <div className="TL-divider"></div>
           <CheckPage onSubmit={createProperty} value={params} />
         </div>
       </Route>

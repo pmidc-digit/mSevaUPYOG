@@ -11,16 +11,16 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates?.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates?.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationDate", desc: false }]);
+  const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationDate", desc: true }]);
   const [setSearchFieldsBackToOriginalState, setSetSearchFieldsBackToOriginalState] = useState(false);
   const [searchParams, setSearchParams] = useState(initialStates?.searchParams || {});
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(undefined);
 
   const ttID = localStorage.getItem("punjab-tenantId");
   const tenantIdCheck = ttID || tenantId;
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
-  console.log("localities in TL: ", localities);
+ 
 
   let isMobile = window.Digit.Utils.browser.isMobile();
   let paginationParams = isMobile
@@ -33,18 +33,17 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
     config: {},
   });
 
-  useEffect(() => {
-    (async () => {
-      // debugger;
-      console.log("searchParams here ", searchParams);
-      // const applicationStatus = searchParams?.filters?.tlfilters?.applicationStatus?.map((e) => e.code).join(",");
-      // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
-      // let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-      // if (response?.count) {
-      //   setTotalRecords(response.count);
-      // }
-    })();
-  }, [searchParams, pageOffset, pageSize]);
+  // useEffect(() => {
+  //   (async () => {
+  //     // debugger;
+  //     // const applicationStatus = searchParams?.filters?.tlfilters?.applicationStatus?.map((e) => e.code).join(",");
+  //     // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
+  //     // let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+  //     // if (response?.count) {
+  //     //   setTotalRecords(response.count);
+  //     // }
+  //   })();
+  // }, [searchParams, pageOffset, pageSize]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -62,8 +61,13 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
     setSearchParams({ ...searchParams, search: params });
   };
 
+  // const handleSort = useCallback((args) => {
+  //   if (args.length === 0) return;
+  //   setSortParams(args);
+  // }, []);
+
   const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
+    if (args?.length === 0) return;
     setSortParams(args);
   }, []);
 
@@ -80,17 +84,46 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
         placeholder: t("TL_HOME_SEARCH_RESULTS_APP_NO_PLACEHOLDER"),
       },
       {
+        label: t("TL_HOME_SEARCH_RESULTS_TRADE_LICENSE_NO_LABEL"),
+        name: "tradeLicenseNumber",
+        placeholder: t("TL_HOME_SEARCH_RESULTS_TRADE_LICENSE_NO_PLACEHOLDER"),
+      },
+      {
         label: t("CORE_COMMON_MOBILE_NUMBER"),
         name: "mobileNumber",
         placeholder: t("TL_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER"),
         maxlength: 10,
-
         pattern: Digit.Utils.getPattern("MobileNo"),
-
         type: "mobileNumber",
-
         title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
         componentInFront: "+91",
+      },
+      {
+        label: t("TL_APPLICATION_TYPE_LABEL"),
+        name: "applicationType",
+        placeholder: t("TL_SELECT_APPLICATION_TYPE"),
+        type: "dropdown",
+        options: [
+          { code: "NEW", i18nKey: "TL_NEW" },
+          { code: "RENEWAL", i18nKey: "TL_RENEWAL" },
+        ],
+      },
+      {
+        label: t("TL_FROM_DATE_LABEL"),
+        name: "fromDate",
+        type: "date",
+        placeholder: t("TL_FROM_DATE_PLACEHOLDER"),
+      },
+      {
+        label: t("TL_TO_DATE_LABEL"),
+        name: "toDate",
+        type: "date",
+        placeholder: t("TL_TO_DATE_PLACEHOLDER"),
+      },
+      {
+        label: t("TL_OWNER_NAME_LABEL"),
+        name: "ownerName",
+        placeholder: t("TL_ENTER_OWNER_NAME"),
       },
     ];
   };

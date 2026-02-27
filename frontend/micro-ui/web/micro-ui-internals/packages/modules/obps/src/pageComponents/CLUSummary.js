@@ -8,7 +8,6 @@ import CLUFeeEstimationDetails from "./CLUFeeEstimationDetails";
 import CLUSitePhotographs from "./CLUSitePhotographs";
 
 function CLUSummary({ currentStepData: formData, t }) {
-  console.log("formData in Summary Page", formData);
 
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
@@ -22,9 +21,6 @@ function CLUSummary({ currentStepData: formData, t }) {
     return state.obps.OBPSFormReducer.ownerIds;
   });
 
-  //console.log("coordinates in summary page", coordinates);
-  console.log("ownerPhotos(redux)", ownerPhotos);
-  console.log("ownerFileStoreId", ownerPhotos?.ownerPhotoList?.[0]?.fileStoreId);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -33,13 +29,18 @@ function CLUSummary({ currentStepData: formData, t }) {
   };
 
   let docs = formData?.documents?.documents?.documents;
-  console.log("documents here in summary", docs);
   const sitePhotographs = formData?.documents?.documents?.documents?.filter(
     (doc) => doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   );
-  const remainingDocs = formData?.documents?.documents?.documents?.filter(
-    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
-  );
+  const remainingDocs = formData?.documents?.documents?.documents
+    ?.filter((doc) => !(
+      doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
+      doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
+      doc?.documentType?.includes("Owner Id") || 
+      doc?.documentType?.includes("Owner Photo")
+    ))
+    ?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+
 
   return (
     <div className="employee-main-application-details">
@@ -58,7 +59,8 @@ function CLUSummary({ currentStepData: formData, t }) {
 
             <StatusTable>
               {index === 0 && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={owner?.ownerType?.code || owner?.ownerType || "N/A"} />}
-              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
+              {owner?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={owner?.firmName} />}
+              <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
               <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
               <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"} />

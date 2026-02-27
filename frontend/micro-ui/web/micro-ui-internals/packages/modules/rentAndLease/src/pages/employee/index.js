@@ -5,6 +5,7 @@ import { Switch, useLocation, Link } from "react-router-dom";
 import { PrivateRoute, BackButton, BreadCrumb } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import RALApplicationDetails from "./RALApplicationDetails";
+import BillGenie from "./BillGenie";
 
 const RALBreadCrumbs = ({ location, t }) => {
   const crumbs = [
@@ -27,6 +28,11 @@ const RALBreadCrumbs = ({ location, t }) => {
       path: "/digit-ui/employee/rentandlease/property",
       content: "Application Overview",
       show: location.pathname.includes("/rentandlease/property") || location.pathname.includes("/rentAndLease/property") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/rentandlease/bill-genie",
+      content: t("RAL_BILL_GENIE_HEADER"),
+      show: location.pathname.includes("/rentandlease/bill-genie") ? true : false,
     },
   ];
 
@@ -73,6 +79,7 @@ const EmployeeApp = ({ path, url, userType }) => {
         <PrivateRoute path={`${path}/allot-property/:id?`} component={NewRentAndLeaseStepperForm} />
         <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
         <PrivateRoute path={`${path}/response/:applicationNumber`} component={RALResponse} />
+        <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
       </div>
     </React.Fragment>
   );

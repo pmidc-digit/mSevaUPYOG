@@ -272,6 +272,7 @@ const WrapPaymentComponent = (props) => {
     const state = Digit.ULBService.getStateId();
     const fee = paymentData?.totalAmountPaid;
     const amountinwords = amountToWords(fee);
+    console.log('amountinwords', amountinwords)
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
       //if not filestoreid

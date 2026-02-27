@@ -25,6 +25,7 @@ const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const history = useHistory();
   const { t } = useTranslation();
+  const location = useLocation();
   const url = window.location.href;
   const location = useLocation();
   const stateId = Digit.ULBService.getStateId();
@@ -63,6 +64,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const [selectedCorrespondentDistrict, setSelectedCorrespondentDistrict] = useState();
   const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState();
   const isUserArchitect = window.location.href.includes("citizen") && userInfo?.roles?.some((role) => role.code.includes("BPA_ARCHITECT"));
+
+  console.log("location", location);
 
   const getUserInfo = async () => {
     const uuid = userInfo?.uuid;
@@ -426,6 +429,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
           });
         }
       }
+      // http://localhost:3000/digit-ui/citizen/engagement/surveys/fill-survey
+      // http://localhost:3000/digit-ui/citizen/engagement/surveys/fill-survey
     } catch (error) {
       const errorObj = JSON.parse(error);
       showToast(errorObj.type, t(errorObj.message), 5000);
@@ -510,7 +515,18 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     <div className="user-profile">
       <section className={`user-profile-section-wrapper ${userType === "employee" ? "employee" : ""}`}>
         {userType === "citizen" ? (
-          <BackButton></BackButton>
+          <h6
+            onClick={() => history.push("/digit-ui/citizen")}
+            style={{
+              marginTop: "60px",
+              paddingLeft: "13px",
+              fontSize: "16px",
+              fontWeight: "bolder",
+              cursor: "pointer",
+            }}
+          >
+            Home
+          </h6>
         ) : (
           <BreadCrumb
             crumbs={[
@@ -525,7 +541,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 show: url.includes("/user/profile"),
               },
             ]}
-          ></BreadCrumb>
+          />
         )}
       </section>
       <div className={`user-profile-main-container ${userType === "employee" ? "employee" : ""}`}>

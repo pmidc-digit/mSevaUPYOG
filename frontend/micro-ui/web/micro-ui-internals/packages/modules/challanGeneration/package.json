@@ -1,6 +1,10 @@
 {
   "name": "@mseva/digit-ui-module-challangeneration",
+<<<<<<< HEAD
   "version": "1.0.29-UAT.1",
+=======
+  "version": "1.0.29-dev.2",
+>>>>>>> cdc8faf668d732021fdf4cad38c2eb692fcb641a
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

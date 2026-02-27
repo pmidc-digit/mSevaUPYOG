@@ -323,26 +323,30 @@ async function getExifDataFromUrl (fileUrl) {
 
 const getDocuments = async (appData, t) => {
   const filteredDocs = appData?.documents?.filter(
-    (doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
-  );
+    (doc) =>
+      doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" &&
+      doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
+  ) || [];
 
-  const filesArray = filteredDocs?.map((value) => value?.uuid);
+  const sortedDocs = filteredDocs?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
+  const filesArray = sortedDocs?.map((value) => value?.uuid);
 
-  console.log("res here==>", res);
+  const res =
+    filesArray.length > 0 &&
+    (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
     values:
-      filteredDocs?.length > 0
-        ? filteredDocs.map((document, index) => {
-            const documentLink = pdfDownloadLink(res?.data, document?.uuid);
-            return {
-              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,              value: " ",
-              link: documentLink || ""
-            };
-          })
+      sortedDocs.length > 0
+        ? sortedDocs?.map((document, index) => ({
+            title: `${index + 1}. ${
+              t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")
+            }`,
+            value: " ",
+            link: pdfDownloadLink(res?.data, document?.uuid) || "",
+          }))
         : [
             {
               title: t("PT_NO_DOCUMENTS"),

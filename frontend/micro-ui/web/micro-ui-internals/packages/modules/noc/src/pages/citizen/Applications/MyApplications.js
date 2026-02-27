@@ -2,7 +2,7 @@ import { Header, Loader, Table, Card, SubmitBar } from "@mseva/digit-ui-react-co
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
-
+import { format } from "date-fns";
 const MyApplications = ({ view }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -64,30 +64,48 @@ const MyApplications = ({ view }) => {
         accessor: (row) => row?.Applications?.applicationNo,
         Cell: ({ row }) => (
           <Link to={`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`}>
-            {GetCell(row.original?.Applications?.applicationNo)}
+            <b>{GetCell(row.original?.Applications?.applicationNo)}</b>
           </Link>
         ),
       },
       {
         Header: t("Owner Name"),
         accessor: (row) => row?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName,
-        Cell: ({ row }) => GetCell(row.original?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
+        Cell: ({ row }) =>
+          GetCell(row.original?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
       },
-     
+
       {
         Header: t("NOC_APPLICATION_STATUS"),
         accessor: (row) => row?.Applications?.applicationStatus,
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
       },
+      // {
+      //   Header: t("Action"),
+      //   accessor: "action",
+      //   Cell: ({ row }) => (
+      //     <SubmitBar
+      //       label={t("TL_VIEW_DETAILS")}
+      //       onSubmit={() => history.push(`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`)}
+      //     />
+      //   ),
+      // },
       {
-        Header: t("Action"),
-        accessor: "action",
-        Cell: ({ row }) => (
-          <SubmitBar
-            label={t("TL_VIEW_DETAILS")}
-            onSubmit={() => history.push(`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`)}
-          />
-        ),
+        Header: t("Application Date"),
+        accessor: (row) => row?.Applications?.nocDetails?.additionalDetails?.SubmittedOn,
+        Cell: ({ row }) => {
+          const submittedOn = row?.original?.Applications?.nocDetails?.additionalDetails?.SubmittedOn;
+          if (!submittedOn) {
+            return GetCell("-");
+          }
+
+          const date = new Date(Number(submittedOn));
+          if (isNaN(date?.getTime())) {
+            return GetCell("-");
+          }
+
+          return GetCell(format(date, "dd/MM/yyyy"));
+        },
       },
     ],
     [t]

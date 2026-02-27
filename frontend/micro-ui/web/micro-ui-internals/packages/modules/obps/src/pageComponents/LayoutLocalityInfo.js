@@ -33,7 +33,7 @@ const LayoutLocalityInfo = (_props) => {
 
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
+    //console.log("currentStepData4", currentStepData);
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
       //console.log("coming here", formattedData);

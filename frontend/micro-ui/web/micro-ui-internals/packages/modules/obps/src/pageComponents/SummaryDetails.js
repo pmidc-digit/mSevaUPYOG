@@ -649,7 +649,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // setShowModal(true);
         // setSelectedAction(action);
         console.log("Selected Action", action?.action, otpVerifiedTimestamp, isArchitectDeclared, agree);
-        if(action?.action !== "SAVE_AS_DRAFT" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
+        if(action?.action !== "SAVE_AS_DRAFT" && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
             if(!agree){
                 setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
                 return
@@ -1421,7 +1421,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 <div className="bpa-stepper-form-section">
                     {/* <CardSubHeader className="bpa-section-header">{t("BPA_FEE_ESTIMATION_DETAILS")}</CardSubHeader> */}
                     <div className="bpa-table-container">
-                        {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation                    
+                        {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation
+                            disable = {currentStepData?.createdResponse?.businessService != "BPA_LOW"}
                             currentStepData={currentStepData}                        
                             development={development}
                             otherCharges={otherCharges}
@@ -1437,11 +1438,11 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             setAdjustedAmounts={setAdjustedAmounts}
                         />}
                     </div>
-                    <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />
+                    {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />}
                 </div>
 
 
-                <div className="bpa-stepper-form-section">
+                {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <div className="bpa-stepper-form-section">
                     {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader className="bpa-section-header">{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
                     {/* {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && (
                         <div>
@@ -1487,7 +1488,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         )}
                     </div>
 
-                </div>
+                </div>}
                 <ActionBar>
                     <SubmitBar className="back-submit-button"
                         label="Back"

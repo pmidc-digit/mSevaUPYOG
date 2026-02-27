@@ -306,6 +306,8 @@ const InspectionReportForm = (_props) => {
         return fieldoptions;
     }
 
+    
+
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
     return (
         <React.Fragment>
@@ -425,14 +427,20 @@ const InspectionReportForm = (_props) => {
                         <table className="customTable table-border-style">
                             <thead>
                                 <tr>
+                                    <th style={{width:"100px"}}>{t("SR_NO")}</th>
                                     <th>{t("BPA_CHECK_LIST_DETAILS")}</th>
                                     <th>{t("BPA_REMARKS")}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {questionList && questionList.map((ob, ind) => (
+                                {questionList && questionList.map((ob, ind) => {
+                                    const questionText = t(ob?.question) || t("CS_NA");
+                                    // Remove all leading numbers, dots, colons, and spaces
+                                    const cleanedQuestion = questionText.replace(/^[\d\s.:]+/, '').trim();
+                                    return (
                                     <tr key={ind}>
-                                        <td>{t(ob?.question)|| t("CS_NA")}</td>
+                                        <td style={{width:"100px"}}>{ind + 1}</td>
+                                        <td>{cleanedQuestion}</td>
                                         <td>
                                             <Controller
                                                 control={control}
@@ -450,8 +458,10 @@ const InspectionReportForm = (_props) => {
                                             />
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}                              
                                 <tr>
+                                    <td>{questionList?.length + 1 || 1}</td>
                                     <td>{t("BPA_RECOMMENDATIONS_MIN_MESSAGE")}</td>
                                     <td>
                                         <Controller
@@ -468,10 +478,15 @@ const InspectionReportForm = (_props) => {
                                             render={(props) => (                                                
                                                 <TextArea 
                                                     value={props.value}
-                                                    onChange={(e) => props.onChange(e.target.value)}
+                                                    onChange={(e) => {
+                                                        e.target.style.height = "auto";
+                                                        e.target.style.height = e.target.scrollHeight + "px";
+                                                        props.onChange(e.target.value);
+                                                    }}
                                                     placeholder={t("BPA_ENTER_RECOMMENDATIONS")}
                                                     onBlur={props.onBlur}
                                                     className="checklist-table-textarea"
+                                                    style={{ overflow: "hidden" }}
                                                 />
                                             )}
                                         />

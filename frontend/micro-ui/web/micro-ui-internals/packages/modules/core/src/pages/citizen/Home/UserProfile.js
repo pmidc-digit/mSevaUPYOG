@@ -16,7 +16,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import UploadDrawer from "./ImageUpload/UploadDrawer";
 import { subYears, format, differenceInYears } from "date-fns";
 
@@ -26,6 +26,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const history = useHistory();
   const { t } = useTranslation();
   const url = window.location.href;
+  const location = useLocation();
   const stateId = Digit.ULBService.getStateId();
   const tenant = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser()?.info || {};
@@ -73,10 +74,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    console.log("userDetails", userDetails);
-  }, [userDetails]);
 
   React.useEffect(() => {
     window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
@@ -156,7 +153,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     setSelectedCorrespondentDistrict(userDetails?.correspondenceDistrict);
     setCorrespondenceAddress(userDetails?.correspondenceAddress);
     setSelectedCorrespondentState(userDetails?.correspondenceState);
-    setSelectedState(userDetails?.permanentState);
+    setSelectedState(userDetails?.permanentState || "Punjab");
 
     if (userDetails?.isAddressSame) {
       setIsAddressSame(userDetails?.isAddressSame);
@@ -418,6 +415,16 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         }
       } else if (responseInfo?.status && responseInfo.status === "200") {
         showToast("success", t("CORE_COMMON_PROFILE_UPDATE_SUCCESS"), 5000);
+        if (location?.state?.from.includes("/engagement/surveys")) {
+          history.push({
+            pathname: location.state.from,
+            state: {
+              surveyDetails: location.state.surveyDetails,
+              userInfo: location.state.userInfo,
+              userType: location.state.userType,
+            },
+          });
+        }
       }
     } catch (error) {
       const errorObj = JSON.parse(error);
@@ -496,6 +503,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   };
 
   if (loading) return <Loader></Loader>;
+
+  console.log("stateOptions", stateOptions);
 
   return (
     <div className="user-profile">
@@ -581,7 +590,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 </div>
 
                 <div className="user-profile-field-wrapper">
-                  <CardLabel className="user-profile-label">{`${t("CORE_COMMON_PROFILE_EMAIL")}`}</CardLabel>
+                  <CardLabel className="user-profile-label">{`${t("CORE_COMMON_PROFILE_EMAIL")}`}*</CardLabel>
                   <TextInput
                     t={t}
                     type={"email"}
@@ -642,7 +651,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
                     selected={selectedState}
                     select={SelectState}
-                    disable={editScreen}
+                    disable={true}
                   />
                 </div>
 
@@ -725,12 +734,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "center" , width: "100%"}}>
-                <button
-                  onClick={updateProfile}
-                  className="selector-button-primary"
-                  style={{ width: "100%", height: "46px", marginTop: "24px" }}
-                >
+              <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                <button onClick={updateProfile} className="selector-button-primary" style={{ width: "100%", height: "46px", marginTop: "24px" }}>
                   {t("CORE_COMMON_SAVE")}
                 </button>
               </div>

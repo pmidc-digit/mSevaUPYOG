@@ -34,7 +34,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY,formatDuration } from "../../../utils/index";
+import { convertToDDMMYYYY,formatDuration, amountToWords } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
@@ -93,7 +93,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
-  console.log('id', id.length)
+  // console.log('id', id.length)
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -110,7 +110,6 @@ const CitizenApplicationOverview = () => {
    } : {})
   
   console.log('applicationD', applicationDetails)
- const [approverComment , setApproverComment] = useState(null);
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -171,7 +170,7 @@ const CitizenApplicationOverview = () => {
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       const lastModified = nocObject?.auditDetails?.lastModifiedTime;
-      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
       const time = formatDuration(totalTime)
       
@@ -224,8 +223,10 @@ const CitizenApplicationOverview = () => {
       if (!application) {
         throw new Error("Noc Application data is missing");
       }
-      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, approverComment);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc }] }, pdfkey);
+      const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
+       const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
@@ -242,10 +243,10 @@ const CitizenApplicationOverview = () => {
     let application = applicationDetails?.Noc?.[0]
 
     let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    console.log("fileStoreId before create", fileStoreId);
+    // console.log("fileStoreId before create", fileStoreId);
 
     if (!fileStoreId) {
-      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, approverComment);
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
 
       const response = await Digit.PaymentService.generatePdf(
         tenantId,
@@ -397,33 +398,58 @@ const CitizenApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  // console.log("actions here", actions);
 
-  useEffect(() => {
-  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-    const commentsobj = workflowDetails?.data?.timeline
+//   useEffect(() => {
+//   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+//     const commentsobj = workflowDetails?.data?.timeline
+//       ?.filter((item) => item?.performedAction === "APPROVE")
+//       ?.flatMap((item) => item?.wfComment || []);
+    
+//     const approvercomments = commentsobj?.[0];
+
+//     // Extract only the part after [#?..**]
+//     let conditionText = "";
+//     if (approvercomments?.includes("[#?..**]")) {
+//       conditionText = approvercomments.split("[#?..**]")[1] || "";
+//     }
+
+//     const finalComment = conditionText
+//       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+//       : "";
+
+//     setApproverComment(finalComment);
+//   }
+// }, [workflowDetails]);
+
+
+const finalComment = useMemo(() => {
+    if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
+      return "";
+    }
+
+    const commentsobj = workflowDetails.data.timeline
       ?.filter((item) => item?.performedAction === "APPROVE")
       ?.flatMap((item) => item?.wfComment || []);
-    
+
     const approvercomments = commentsobj?.[0];
 
-    // Extract only the part after [#?..**]
     let conditionText = "";
     if (approvercomments?.includes("[#?..**]")) {
       conditionText = approvercomments.split("[#?..**]")[1] || "";
     }
 
-    const finalComment = conditionText
-      ? `The above approval is subjected to the following conditions:\n${conditionText}`
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
       : "";
-
-    setApproverComment(finalComment);
-  }
-}, [workflowDetails]);
+  }, [workflowDetails]);
 
 
   function onActionSelect(action) {
-    console.log("selected action", action);
+    // console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
 
     const payload = {
@@ -459,7 +485,7 @@ const CitizenApplicationOverview = () => {
       vasikaDate, // add vasikaDate
       workflow: {},
     };
-    console.log("updatedApplicant", updatedApplicant);
+    // console.log("updatedApplicant", updatedApplicant);
     const filtData = data?.Licenses?.[0];
     //console.log("filtData", filtData);
 
@@ -484,7 +510,7 @@ const CitizenApplicationOverview = () => {
           setSelectedAction(null);
         } else {
           //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling citizen response page");
+          // console.log("We are calling citizen response page");
           history.replace({
             pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
@@ -520,20 +546,25 @@ const CitizenApplicationOverview = () => {
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  console.log("displayData=>", displayData);
+  // console.log("displayData=>", displayData);
+  const order = {
+    "OWNER.SITEPHOTOGRAPHONE": 1,
+    "OWNER.SITEPHOTOGRAPHTWO": 2,
+  };
   const sitePhotos = displayData?.Documents?.filter(
-    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+    (doc) => doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  )?.sort((a, b) => order[a?.documentType] - order[b?.documentType]);
+
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
-  console.log("remainingDocs", remainingDocs);
+  // console.log("remainingDocs", remainingDocs);
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-  console.log("combinerOwnersName", combinedOwnersName);
+  // console.log("combinerOwnersName", combinedOwnersName);
 
 
   
@@ -553,20 +584,20 @@ const CitizenApplicationOverview = () => {
           />
         )}
       </div>
-
-      <NOCImageView
-        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-      />
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <NOCImageView
+          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+        />
+      </Card>
 
       {id.length > 0 && (
         <React.Fragment>
           <Card>
-          
-              <StatusTable>
-                <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
-              </StatusTable>
-          
+            <StatusTable>
+              <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+            </StatusTable>
           </Card>
         </React.Fragment>
       )}
@@ -578,6 +609,7 @@ const CitizenApplicationOverview = () => {
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
                 {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
+                {detail?.firmName && <Row label={t("NOC_FIRM_NAME")} text={detail?.firmName} />}
                 <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
@@ -633,9 +665,9 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
               <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
+              <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
               <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
               <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={detail?.netPlotAreaAfterWidening || "N/A"} />
-              <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
@@ -738,50 +770,49 @@ const CitizenApplicationOverview = () => {
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos].reverse()
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 
-       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
-              <Card>
-                <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
-                <StatusTable
-                  style={{
-                    display: "flex",
-                    gap: "20px",
-                    flexWrap: "wrap",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  {documentData?.length > 0 &&
-                    documentData.map((doc) => (
-                      <NocUploadedDocument
-                        key={doc?.fileStoreId || doc?.uuid}
-                        filestoreId={doc?.fileStoreId || doc?.uuid}
-                        documentType={doc?.title}
-                        documentName={doc?.title}
-                        latitude={doc?.latitude}
-                        longitude={doc?.longitude}
-                      />
-                    ))}
-                </StatusTable>
-      
-                {geoLocations?.length > 0 && (
-                  <>
-                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                    <CustomLocationSearch position={geoLocations} />
-                  </>
-                )}
-              </Card>
-            )}
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+          <StatusTable
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            {documentData?.length > 0 &&
+              documentData.map((doc) => (
+                <NocUploadedDocument
+                  key={doc?.fileStoreId || doc?.uuid}
+                  filestoreId={doc?.fileStoreId || doc?.uuid}
+                  documentType={doc?.title}
+                  documentName={doc?.title}
+                  latitude={doc?.latitude}
+                  longitude={doc?.longitude}
+                />
+              ))}
+          </StatusTable>
+
+          {geoLocations?.length > 0 && (
+            <>
+              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CustomLocationSearch position={geoLocations} />
+            </>
+          )}
+        </Card>
+      )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
@@ -793,8 +824,9 @@ const CitizenApplicationOverview = () => {
       </Card>
 
       <Card>
-      <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-      <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable></Card>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+      </Card>
 
       {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>

@@ -3,7 +3,7 @@ import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
-const CLUFeeEstimationDetails = ({ formData, feeType }) => {
+const CLUFeeEstimationDetails = ({ formData, feeType, hasPayments }) => {
   const { t } = useTranslation();
 
   const payload = useMemo(
@@ -62,8 +62,17 @@ const CLUFeeEstimationDetails = ({ formData, feeType }) => {
     //const totalAmount = data?.Calculation?.[0]?.totalAmount || "N/A";
     const totalAmount= data?.Calculation?.[0]?.taxHeadEstimates?.reduce((acc,item)=> acc+(item?.estimateAmount || 0),0) || "N/A";
 
-    return [{ id: "1", title: t("BPA_FEE_LABEL"), amount: totalAmount }];
-  }, [data, t]);
+    const rows = [{ id: "1", title: t("BPA_FEE_LABEL"), amount: totalAmount }];
+    
+    rows.push({
+      id: "status",
+      title: t("BPA_STATUS_LABEL"),
+      amount: hasPayments ? t("BPA_PAID_LABEL") : t("BPA_UNPAID_LABEL"),
+      isStatus: true
+    });
+
+    return rows;
+  }, [data, t, hasPayments]);
 
   const applicationFeeColumns = [
     {
@@ -74,7 +83,12 @@ const CLUFeeEstimationDetails = ({ formData, feeType }) => {
     {
       Header: t("BPA_AMOUNT_LABEL"),
       accessor: "amount",
-      Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
+      Cell: ({ row, value }) => {
+        if (row.original.isStatus) {
+          return <span style={{ color: "green", fontWeight: "bold" }}>{value}</span>;
+        }
+        return (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA"));
+      },
     },
   ];
 

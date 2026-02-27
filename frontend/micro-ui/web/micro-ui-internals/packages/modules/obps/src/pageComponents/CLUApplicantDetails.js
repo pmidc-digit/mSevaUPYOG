@@ -24,6 +24,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { composeInitialProps } from "react-i18next";
 import _ from "lodash";
 
+const ownerTypeOptions = [
+  { i18nKey: "NOC_OWNER_TYPE_INDIVIDUAL", code: "Individual", value: "Individual" },
+  { i18nKey: "NOC_OWNER_TYPE_FIRM", code: "Firm", value: "Firm" },
+];
+
 const CLUApplicantDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList } = _props;
 
@@ -31,13 +36,15 @@ const CLUApplicantDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
   const dispatch = useDispatch();
 
-  const ownerIds = useSelector(function (state) {
+  const ownerIds =
+    useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.ownerIds;
-  }) ?? {};
+    }) ?? {};
 
-  const ownerPhotos = useSelector(function (state) {
+  const ownerPhotos =
+    useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.ownerPhotos;
-  }) || {};
+    }) || {};
 
   const [loader, setLoader] = useState(false);
 
@@ -61,7 +68,7 @@ const CLUApplicantDetails = (_props) => {
            const newItem = { 
             filestoreId: fileId,
             fileName: file.name,
-            documentType: index === 0 ? "Primary Owner Id": `Owner${index+1} Id`,
+            documentType: index === 0 ? "Primary Owner ID": `Owner${index+1} ID`,
             documentUid: fileId
           };
 
@@ -160,12 +167,14 @@ const CLUApplicantDetails = (_props) => {
   const defaultOwner = () => ({
     mobileNumber: "",
     ownerOrFirmName: "",
+    firmName: "", // Added firmName
     emailId: "",
     fatherOrHusbandName: "",
     gender: null,
     dateOfBirth: "",
     address: "",
-    ownershipInPct: ""
+    ownershipInPct: "",
+    ownerType: null,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -176,7 +185,6 @@ const CLUApplicantDetails = (_props) => {
   const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
 
   useEffect(() => {
-    console.log("currentStepData1", currentStepData);
     const formattedData = currentStepData?.applicationDetails;
 
     if (!formattedData) return;
@@ -186,12 +194,14 @@ const CLUApplicantDetails = (_props) => {
         ? formattedData.owners.map((o) => ({
             mobileNumber: o.mobileNumber || "",
             ownerOrFirmName: o.ownerOrFirmName || o.name || "",
+            firmName: o.firmName || "", // Added firmName
             emailId: o.emailId || "",
             fatherOrHusbandName: o.fatherOrHusbandName || "",
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
-            ownershipInPct: o.ownershipInPct || ""
+            ownershipInPct: o.ownershipInPct || "",
+            ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
           }))
         : [defaultOwner()];
 
@@ -273,8 +283,6 @@ const getOwnerDetails = async (idx) => {
     
   }
 
-  console.log("ownerIdList (local)==>", ownerIdList);
-  console.log("ownerPhotoList (local)==>", ownerPhotoList);
 
   return (
     <React.Fragment>
@@ -299,6 +307,37 @@ const getOwnerDetails = async (idx) => {
             >
               {!isEdit && fields.length > 1 && `❌`}
             </div>
+
+            {index === 0 && (
+              <LabelFieldPair style={{ marginBottom: "20px" }}>
+                <CardLabel className="card-label-smaller">
+                  {`${t("CLU_OWNER_TYPE_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].ownerType`}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    render={(props) => (
+                      <Dropdown
+                        t={t}
+                        option={ownerTypeOptions}
+                        optionKey="i18nKey"
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        selected={props.value}
+                      />
+                    )}
+                  />
+
+                  {errors?.owners?.[index]?.ownerType && (
+                    <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -338,8 +377,46 @@ const getOwnerDetails = async (idx) => {
               </div>
             </LabelFieldPair>
 
+            {watch(`owners[${index}].ownerType`)?.code === "Firm" && (
+              <LabelFieldPair style={{ marginBottom: "20px" }}>
+                <CardLabel className="card-label-smaller">
+                  {`${t("CLU_FIRM_NAME_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].firmName`}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      maxLength: {
+                        value: 100,
+                        message: t("MAX_100_CHARACTERS_ALLOWED"),
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                        disabled={isEdit}
+                      />
+                    )}
+                  />
+                  {errors?.owners?.[index]?.firmName && (
+                    <p style={errorStyle}>{errors?.owners?.[index]?.firmName?.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
+
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("CLU_APPLICANT_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -529,7 +606,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                 <p style={errorStyle}>{errors?.owners?.[index]?.gender?.message}</p>
+                <p style={errorStyle}>{errors?.owners?.[index]?.gender?.message}</p>
               </div>
             </LabelFieldPair>
 
@@ -580,7 +657,6 @@ const getOwnerDetails = async (idx) => {
                   }}
                   uploadedFile={ownerPhotoList?.[index]?.filestoreId}
                   message={ownerPhotoList?.[index]?.filestoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-
                   uploadMessage=""
                   accept="image/*"
                   disabled={isEdit}

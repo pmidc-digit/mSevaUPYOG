@@ -5,6 +5,16 @@ import { useTranslation } from "react-i18next";
 const NOCDocumentTableView = ({documents}) => {
   const { t } = useTranslation();
 
+  const srNoStyle = `
+    .noc-document-table-view table tbody tr td:first-child,
+    .noc-document-table-view table thead tr th:first-child {
+      width: 100px !important;
+      max-width: 100px !important;
+      min-width: 100px !important;
+      flex: 0 0 100px !important;
+    }
+  `;
+
   function routeTo(jumpTo) {
     window.open(jumpTo, "_blank");
   }
@@ -13,8 +23,7 @@ const NOCDocumentTableView = ({documents}) => {
         {
           Header: t("SR_NO"),
           accessor: "srNo",
-          width:"20px",
-          Cell: ({ row }) => <div style={{width: "20px"}}>{row.index + 1}</div>,
+          Cell: ({ row }) => <div style={{textAlign: "center"}}>{row.index + 1}</div>,
         },
         {
           Header: t("BPA_DOCUMENT_NAME"),
@@ -42,7 +51,8 @@ const NOCDocumentTableView = ({documents}) => {
       documentType: doc?.documentType || "",
       filestoreId: doc?.filestoreId || "",
       documentUid: doc?.documentUid || "",
-      documentAttachment: doc?.documentAttachment || ""
+      documentAttachment: doc?.documentAttachment || "",
+      order: doc?.order || null
     }))
    }
   };
@@ -55,40 +65,53 @@ const NOCDocumentTableView = ({documents}) => {
   );
   
   const mappedDocuments = documents?.map(doc => {
-   const { documentUid, documentType } = doc;
+   const { documentUid, documentType, order } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
    return {
     documentUid,
     documentType,
-    url
+    url,
+    order
   };
   });
 
   const documentsData = useMemo(() => {
-     return (mappedDocuments)?.map((doc, index) => ({
+    if (!mappedDocuments) return [];
+
+    const sortedDocs = [...mappedDocuments]?.sort((a, b) => {
+      if (a.order === null) return 1;
+      if (b.order === null) return -1;
+      return a?.order - b?.order;
+    });
+
+    return sortedDocs.map((doc, index) => ({
       id: index,
       srNo: index + 1,
       title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
-      fileUrl: doc.url,
-     }));
-    }, [mappedDocuments]);
+      fileUrl: doc?.url,
+    }));
+  }, [mappedDocuments]);
 
   return (
-    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
-      {documentsData && (
-        <Table
-          className="customTable table-border-style"
-          t={t}
-          data={documentsData}
-          columns={documentsColumns}
-          getCellProps={(cellInfo) => (cellInfo.column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
-          getHeaderProps={(column) => (column.id === "srNo" ? { style: { width: "20px", textAlign: "center" } } : {})}
-          style={{ width: "100%", minWidth: "400px", tableLayout: "auto" }}          disableSort={true}
-          autoSort={false}
-          manualPagination={false}
-          isPaginationRequired={false}
-        />
-      )}
+    <div className='checklist-document-table-wrapper'>
+      <style>{srNoStyle}</style>
+      <div className="noc-document-table-view checklist-document-table">
+        {documentsData && (
+          <Table
+            className="customTable table-border-style"
+            t={t}
+            data={documentsData}
+            columns={documentsColumns}
+            getCellProps={() => ({})}
+            getHeaderProps={() => ({})}
+            style={{ width: "100%", tableLayout: "fixed" }}
+            disableSort={true}
+            autoSort={false}
+            manualPagination={false}
+            isPaginationRequired={false}
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -7,6 +7,12 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   const [localRemarks, setLocalRemarks] = useState({});
   const [isMobile, setIsMobile] = useState(false);
 
+  const sortedDocuments = [...(documents || [])].sort((a, b) => {
+    if (!a?.order) return 1;
+    if (!b?.order) return -1;
+    return a.order - b.order;
+  });
+
   // fetch urls and checklist data as before...
   const { data: urlsList } = Digit.Hooks.noc.useNOCDocumentSearch(
     { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
@@ -42,7 +48,7 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   const renderMobileCardView = () => {
     return (
       <div className="checklist-mobile-cards">
-        {documents?.map((doc, i) => {
+        {sortedDocuments?.map((doc, i) => {
           const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
           return (
             <div key={doc.documentUid || i} className="checklist-mobile-card">
@@ -68,10 +74,15 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                   ) : (
                     <TextArea
                       value={localRemarks[doc.documentUid] ?? ""}
-                      onChange={(e) => handleRemarkChange(doc.documentUid, e.target.value)}
+                      onChange={(e) => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = e.target.scrollHeight + "px";
+                        handleRemarkChange(doc.documentUid, e.target.value);
+                      }}
                       disabled={false}
                       className="checklist-table-textarea"
                       placeholder="Enter remarks"
+                      style={{ overflow: "hidden" }}
                     />
                   )}
                 </div>
@@ -99,7 +110,7 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
               </tr>
             </thead>
             <tbody>
-              {documents?.map((doc, i) => {
+              {sortedDocuments?.map((doc, i) => {
                 const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
                 return (
                   <tr key={doc.documentUid || i}>
@@ -118,10 +129,15 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                       ) : (
                         <TextArea
                           value={localRemarks[doc.documentUid] ?? ""}
-                          onChange={(e) => handleRemarkChange(doc.documentUid, e.target.value)}
+                          onChange={(e) => {
+                            e.target.style.height = "auto";
+                            e.target.style.height = e.target.scrollHeight + "px";
+                            handleRemarkChange(doc.documentUid, e.target.value);
+                          }}
                           disabled={false}
                           className="checklist-table-textarea"
                           placeholder="Enter remarks"
+                          style={{ overflow: "hidden" }}
                         />
                       )}
                     </td>

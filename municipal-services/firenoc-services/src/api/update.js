@@ -1,9 +1,10 @@
 import { Router } from "express";
-import producer from "../kafka/producer";
+//import producer from "../kafka/producer";
+import logger from "../config/logger";
 import envVariables from "../envVariables";
 const asyncHandler = require("express-async-handler");
 import mdmsData from "../utils/mdmsData";
-import { addUUIDAndAuditDetails, updateStatus,  enrichAssignees} from "../utils/create";
+import { addUUIDAndAuditDetails, updateStatus, enrichAssignees } from "../utils/create";
 import { getApprovedList } from "../utils/update";
 
 import {
@@ -17,16 +18,25 @@ import filter from "lodash/filter";
 import { validateFireNOCModel } from "../utils/modelValidation";
 import set from "lodash/set";
 import get from "lodash/get";
+const { initializeProducer } = require("../kafka/producer");
+let producer;
+initializeProducer().then((p) => {
+  producer = p;
 
+  logger.info('Kafka producer connected');
+}).catch((error) => {
+  logger.error(error.stack || error);
+  process.exit(1);
+});
 export default ({ config }) => {
   let api = Router();
   api.post(
     "/_update",
     asyncHandler(async ({ body }, res, next) => {
-      let isPrimaryowner = true 
-      body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0] ={...body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0], "isPrimaryowner" : true};
+      let isPrimaryowner = true
+      body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0] = { ...body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0], "isPrimaryowner": true };
       let response = await updateApiResponse({ body }, true, next);
-      if(response.Errors)
+      if (response.Errors)
         res.status(400);
       res.json(response);
     })
@@ -34,8 +44,9 @@ export default ({ config }) => {
   return api;
 };
 export const updateApiResponse = async ({ body }, next = {}) => {
-  console.log("Update Body: "+JSON.stringify(body));
-  let payloads = [];
+  console.log("Update Body: " + JSON.stringify(body));
+  let payloads = {};
+  payloads.messages = [];
   let mdms = await mdmsData(body.RequestInfo, body.FireNOCs[0].tenantId);
   //model validator
   //location data
@@ -51,7 +62,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   );
 
   let errors = await validateFireNOCModel(body, mdms);
-  console.log("Error Check:"+JSON.stringify(errors));
+  console.log("Error Check:" + JSON.stringify(errors));
   if (errors.length > 0) {
     return next({
       errorType: "custom",
@@ -63,7 +74,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
     return;
   }
 
-  body = await addUUIDAndAuditDetails(body);
+  body = await addUUIDAndAuditDetails(body, "_update");
 
   //Check records for approved
   // let approvedList=await getApprovedList(cloneDeep(body));
@@ -73,39 +84,84 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   //console.log("workflowResponse"+JSON.stringify(workflowResponse));
 
   //calculate call
+  let firenocResponse
   let { FireNOCs = [], RequestInfo = {} } = body;
   for (var i = 0; i < FireNOCs.length; i++) {
-    let firenocResponse = await calculate(FireNOCs[i], RequestInfo);
+    firenocResponse = await calculate(FireNOCs[i], RequestInfo);
   }
 
-  body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
-  console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
+  var validityYears =
+    (firenocResponse &&
+      firenocResponse.Calculation &&
+      firenocResponse.Calculation[0] &&
+      firenocResponse.Calculation[0].taxHeadEstimates &&
+      firenocResponse.Calculation[0].taxHeadEstimates[0] &&
+      firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears) != null
+      ? firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+      : 1;
 
-  payloads.push({
-    topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
-    messages: JSON.stringify(body)
-  });
+  body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
+
+  //if (body.FireNOCs[0].fireNOCDetails.applicationDate <= '1756252740000' || body.FireNOCs[0].dateOfApplied <= '1756252740000') {
+  //if (body.FireNOCs[0].dateOfApplied <= '1756252740000') {
+  if (body.FireNOCs[0].fireNOCDetails.auditDetails.lastModifiedTime <= '1756252740000') {
+
+    body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+      ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+      validityYears: 1
+    };
+  } else {
+    body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+      ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+      validityYears: validityYears
+    };
+  }
+
+  // console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
+
+  // payloads.push({
+  //   topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
+  //   messages: JSON.stringify(body),
+  //   key : body.FireNOCs[0].fireNOCDetails.id
+  // });
+  payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_UPDATE;
+  payloads.messages.push({ value: JSON.stringify(body) });
 
   //check approved list
-  const approvedList = filter(body.FireNOCs, function(fireNoc) {
+  const approvedList = filter(body.FireNOCs, function (fireNoc) {
     return fireNoc.fireNOCNumber;
   });
 
   // console.log("list length",approvedList.length);
   if (approvedList.length > 0) {
-    payloads.push({
-      topic: envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
-      messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList })
-    });
+    // payloads.push({
+    //   topic: envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
+    //   messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList }),
+    //    key : body.FireNOCs[0].fireNOCDetails.id
+    // });
+    payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW;
+    payloads.messages.push({ value: JSON.stringify({ RequestInfo, FireNOCs: approvedList }) })
   }
   console.log(JSON.stringify(body));
   let response = {
     ResponseInfo: requestInfoToResponseInfo(body.RequestInfo, true),
     FireNOCs: body.FireNOCs
   };
-  producer.send(payloads, function(err, data) {
-    if (err) console.log(err);
-  });
-
+  // initializeProducer.send(payloads, function(err, data) {
+  //   if (err) console.log(err);
+  // });
+  producer.send(payloads).then((data) => {
+    logger.info('Message sent to Kafka:', data);
+    //logger.info("jobid: " + jobid + ": published to kafka successfully");
+    //  successCallback({
+    //      message: "Success"
+    //     //jobid: jobid,
+    //  })
+  }).catch(err => {
+    logger.error(err.stack || err);
+    // errorCallback({
+    //   message: `error while publishing to kafka: ${err.message}`
+    // });
+  })
   return response;
 };

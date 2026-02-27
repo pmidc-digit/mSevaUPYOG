@@ -40,6 +40,7 @@ const CitizenApplicationOverview = () => {
   const [appDetails, setAppDetails] = useState({});
   const [showToast, setShowToast] = useState(null);
   const [approver, setApprover] = useState(null);
+  const[approverStatement, setApproverStatement]= useState(null)
   const [showOptions, setShowOptions] = useState(false);
   
   const [ndcDatils, setNdcDetails] = useState([]);
@@ -61,11 +62,10 @@ const CitizenApplicationOverview = () => {
 
   useEffect(() => {
     if (workflowDetails) {
-      console.log("workflowDetails here", workflowDetails);
-      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
-
-      const name = approveInstance?.assigner?.name || "NA";
-
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
+      const name = approveInstance?.assigner?.name || "NA";          
+      const status = applicationDetails?.Applications?.[0]?.applicationStatus;
+      setApproverStatement(status ? `${t(status)} By` : "");
       setApprover(name);
     }
   }, [workflowDetails]);
@@ -212,7 +212,7 @@ const CitizenApplicationOverview = () => {
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
       }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {

@@ -622,7 +622,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
       const time = formatDuration(totalTime);
-
+      // console.log('time full', time)
       setTimeObj(time);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
 
@@ -632,7 +632,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
     }
   }, [applicationDetails?.Noc]);
 
-
+// console.log('timeObj', timeObj)
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId)
   }
@@ -1137,12 +1137,14 @@ const validateSiteImages = (action) => {
           />
         )}
       </div>
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
 
-      <NOCImageView
-        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-      />
-
+        <NOCImageView
+          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+        />
+      </Card>
       {id.length > 0 && (
         <React.Fragment>
           <Card>
@@ -1299,7 +1301,6 @@ const validateSiteImages = (action) => {
         </StatusTable>
       </Card>
 
-
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
         <Card>
           <div id="fieldInspection"></div>
@@ -1359,8 +1360,10 @@ const validateSiteImages = (action) => {
           />
         </Card>
       )}
+      
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ? (
-        <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div>
+        <Card>
+        <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div></Card>
       ) : (
         applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
@@ -1431,8 +1434,7 @@ const validateSiteImages = (action) => {
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={
-              applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"            }
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
           />
         )}
@@ -1475,7 +1477,7 @@ const validateSiteImages = (action) => {
         </Modal>
       )}
 
-{showModal ? (
+      {showModal ? (
         <NOCModal
           t={t}
           action={selectedAction}
@@ -1499,13 +1501,7 @@ const validateSiteImages = (action) => {
         />
       ) : null}
 
-      {showZoneModal && (
-        <ZoneModal
-          onClose={() => setShowZoneModal(false)}
-          onSelect={handleZoneSubmit}
-          currentZoneCode={currentZoneCode}
-        />
-      )}
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
       {showToast && (
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />

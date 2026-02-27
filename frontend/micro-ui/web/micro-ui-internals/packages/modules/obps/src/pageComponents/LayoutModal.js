@@ -60,8 +60,8 @@ t,
   const [financialYears, setFinancialYears] = useState([])
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null)
 
-  console.log(action, "CHECK11111122222");
-  console.log(getEmployees, "eeee11111122222");
+  //console.log(action, "CHECK11111122222");
+  //console.log(getEmployees, "eeee11111122222");
 
   const checkRole = action?.state?.actions;
 
@@ -78,7 +78,7 @@ t,
     },
     { enabled: !action?.isTerminateState }
   );
-  console.log(approverData, "Ooooooooo");
+  //console.log(approverData, "Ooooooooo");
   
 
   const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.pt.useMDMS(
@@ -155,7 +155,7 @@ t,
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action)
 
-    console.log(checkCommentsMandatory, "CHECK1111111111");
+    //console.log(checkCommentsMandatory, "CHECK1111111111");
 
     if (action?.isTerminateState) {
       checkCommentsMandatory = true

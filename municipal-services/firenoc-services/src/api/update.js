@@ -4,7 +4,7 @@ import logger from "../config/logger";
 import envVariables from "../envVariables";
 const asyncHandler = require("express-async-handler");
 import mdmsData from "../utils/mdmsData";
-import { addUUIDAndAuditDetails, updateStatus,  enrichAssignees} from "../utils/create";
+import { addUUIDAndAuditDetails, updateStatus, enrichAssignees } from "../utils/create";
 import { getApprovedList } from "../utils/update";
 
 import {
@@ -21,7 +21,7 @@ import get from "lodash/get";
 const { initializeProducer } = require("../kafka/producer");
 let producer;
 initializeProducer().then((p) => {
-   producer = p;
+  producer = p;
 
   logger.info('Kafka producer connected');
 }).catch((error) => {
@@ -33,10 +33,10 @@ export default ({ config }) => {
   api.post(
     "/_update",
     asyncHandler(async ({ body }, res, next) => {
-      let isPrimaryowner = true 
-      body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0] ={...body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0], "isPrimaryowner" : true};
+      let isPrimaryowner = true
+      body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0] = { ...body.FireNOCs[0].fireNOCDetails.applicantDetails.owners[0], "isPrimaryowner": true };
       let response = await updateApiResponse({ body }, true, next);
-      if(response.Errors)
+      if (response.Errors)
         res.status(400);
       res.json(response);
     })
@@ -44,9 +44,9 @@ export default ({ config }) => {
   return api;
 };
 export const updateApiResponse = async ({ body }, next = {}) => {
-  console.log("Update Body: "+JSON.stringify(body));
+  console.log("Update Body: " + JSON.stringify(body));
   let payloads = {};
-  payloads.messages =[];
+  payloads.messages = [];
   let mdms = await mdmsData(body.RequestInfo, body.FireNOCs[0].tenantId);
   //model validator
   //location data
@@ -62,7 +62,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   );
 
   let errors = await validateFireNOCModel(body, mdms);
-  console.log("Error Check:"+JSON.stringify(errors));
+  console.log("Error Check:" + JSON.stringify(errors));
   if (errors.length > 0) {
     return next({
       errorType: "custom",
@@ -87,10 +87,10 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   let firenocResponse
   let { FireNOCs = [], RequestInfo = {} } = body;
   for (var i = 0; i < FireNOCs.length; i++) {
-      firenocResponse = await calculate(FireNOCs[i], RequestInfo);
+    firenocResponse = await calculate(FireNOCs[i], RequestInfo);
   }
 
-var validityYears =
+  var validityYears =
     (firenocResponse &&
       firenocResponse.Calculation &&
       firenocResponse.Calculation[0] &&
@@ -103,7 +103,9 @@ var validityYears =
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
 
   //if (body.FireNOCs[0].fireNOCDetails.applicationDate <= '1756252740000' || body.FireNOCs[0].dateOfApplied <= '1756252740000') {
-  if (body.FireNOCs[0].dateOfApplied <= '1756252740000') {
+  //if (body.FireNOCs[0].dateOfApplied <= '1756252740000') {
+  if (body.FireNOCs[0].fireNOCDetails.auditDetails.lastModifiedTime <= '1756252740000') {
+
     body.FireNOCs[0].fireNOCDetails.additionalDetail = {
       ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
       validityYears: 1
@@ -115,18 +117,18 @@ var validityYears =
     };
   }
 
- // console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
+  // console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
 
   // payloads.push({
   //   topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
   //   messages: JSON.stringify(body),
   //   key : body.FireNOCs[0].fireNOCDetails.id
   // });
-    payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_UPDATE;
-    payloads.messages.push({ value: JSON.stringify(body)});
+  payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_UPDATE;
+  payloads.messages.push({ value: JSON.stringify(body) });
 
   //check approved list
-  const approvedList = filter(body.FireNOCs, function(fireNoc) {
+  const approvedList = filter(body.FireNOCs, function (fireNoc) {
     return fireNoc.fireNOCNumber;
   });
 
@@ -138,7 +140,7 @@ var validityYears =
     //    key : body.FireNOCs[0].fireNOCDetails.id
     // });
     payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW;
-    payloads.messages.push({ value: JSON.stringify({ RequestInfo, FireNOCs: approvedList })})
+    payloads.messages.push({ value: JSON.stringify({ RequestInfo, FireNOCs: approvedList }) })
   }
   console.log(JSON.stringify(body));
   let response = {

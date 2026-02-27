@@ -1,7 +1,8 @@
 package org.egov.pt.web.controllers;
-import org.springframework.http.MediaType;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import java.util.Map;
 
 import javax.validation.constraints.NotBlank;
 
@@ -19,15 +20,19 @@ public class thirdpartywrapper {
 			@RequestParam @NotBlank String ulb,
 			@RequestParam @NotBlank String uidNo) {
 		String response = "";
-		if(ulb.equalsIgnoreCase("MCB")){
+		if (ulb.equalsIgnoreCase("MCB")) {
 			response = curlWrapperService.fetchBathindaData(ulb, uidNo);
-		}else{
+		} else {
 			response = curlWrapperService.fetchData(ulb, uidNo);
 		}
 
 		return ResponseEntity.ok(response);
 	}
 
-
+	@PostMapping("/fetchByBlock")
+	public ResponseEntity<String> fetchByBlock(@RequestBody Map<String, Object> requestParam) {
+		String response = curlWrapperService.fetchDataByBlock(requestParam);
+		return ResponseEntity.ok(response);
+	}
 
 }

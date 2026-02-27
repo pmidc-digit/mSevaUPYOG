@@ -23,18 +23,47 @@ import {
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-
+import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentTableView";
 
 import LayoutFeeEstimationDetails from "../../../pageComponents/LayoutFeeEstimationDetails";
 // import LayoutDocumentView from "../../../pageComponents/LayoutDocumentView";
 import { getLayoutAcknowledgementData } from "../../../utils/getLayoutAcknowledgementData";
 import { amountToWords } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import LayoutImageView from "../../../pageComponents/LayoutImageView";
-import LayoutSitePhotographs from "../../../pageComponents/LayoutSitePhotographs";
+import { LoaderNew } from "../../../components/LoaderNew";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
-import { convertToDDMMYYYY } from "../../../utils/index";
-import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
+import LayoutSitePhotographs from "../../../components/LayoutSitePhotographs";
+// Component to render document link for owner documents
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
+
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
+  return (
+    <LinkButton
+     
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
+  );
+};
+
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -139,11 +168,12 @@ const LayoutApplicationSummary = () => {
 
   const handleDownloadPdf = async () => {
     try {
-      const Property = layoutData;
+      setLoading(true);
+      const Property = applicationDetails?.Layout?.[0];
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t);
-      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+      await Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -151,30 +181,36 @@ const LayoutApplicationSummary = () => {
     }
   };
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "layout",
-      consumerCodes: id,
-      isEmployee: false,
-    },
-    { enabled: id ? true : false }
-  );
+  
 
-  const dowloadOptions = [];
-  if (layoutData?.applicationStatus === "APPROVED") {
-    dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
-      onClick: handleDownloadPdf,
-    });
+  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
+      
+       try {
+        setLoading(true);
+        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage,amountinwords }] }, pdfkey);
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+        window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  
+      } catch (error) {
+        console.error("receipt download error:", error);
+        }
+        finally { setLoading(false); }
+      }
 
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0] }),
-      });
-    }
-  }
+  // const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  //   {
+  //     tenantId: tenantId,
+  //     businessService: "layout",
+  //     consumerCodes: id,
+  //     isEmployee: false,
+  //   },
+  //   { enabled: id ? true : false }
+  // );
+
+ 
 
   const [showToast, setShowToast] = useState(null);
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -195,12 +231,51 @@ const LayoutApplicationSummary = () => {
 
   const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
 
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "LAYOUT.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+  const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "LAYOUT.PAY2",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode,
   });
 
+   const dowloadOptions = [];
+  if (layoutData?.applicationStatus === "APPROVED") {
+    dowloadOptions.push({
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: handleDownloadPdf,
+    });
+  }
+
+  if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_1"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey:"layout-receipt" }),
+      });
+    }
+    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_2"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"layoutreceipt-second" }),
+      });
+    }
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -330,8 +405,8 @@ const LayoutApplicationSummary = () => {
   const ownersList = displayData?.owners?.map((item)=> item.name);
   const combinedOwnersName = ownersList?.join(", ");
 
-  if (isLoading) {
-    return <Loader />;
+  if (isLoading || loading) {
+    return <LoaderNew page={true} />;
   }
 
   return (

@@ -1081,3 +1081,10 @@ config:
         image-name: "search-api"
         dockerfile: 'build/Dockerfile'
 
+  - name: "builds/upyog/business-services/dashboard-ingest-v2"
+    build:
+      - work-dir: "business-services/dashboard-ingest-v2"
+        image-name: "dashboard-ingest-v2"
+        dockerfile: "build/maven/Dockerfile"
+
+

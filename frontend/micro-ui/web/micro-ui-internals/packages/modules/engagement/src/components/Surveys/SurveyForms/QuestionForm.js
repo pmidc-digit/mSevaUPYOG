@@ -115,24 +115,6 @@ const QuestionForm = ({
   // Function to render the appropriate answer component based on the question type
   const renderAnswerComponent = (type) => {
     switch (type?.value) {
-      // case "LONG_ANSWER_TYPE":
-      //   return (
-      //     <div>
-      //       <TextArea
-      //         placeholder={t("LONG_ANSWER_TYPE")}
-      //         disabled={isInputDisabled}
-      //         name={"longAnsDescription"}
-      //         inputRef={register({
-      //           maxLength: { value: 500, message: t("EXCEEDS_500_CHAR_LIMIT") },
-      //         })}
-      //       />
-      //       {formState?.errors && <CardLabelError>{formState?.errors?.longAnsDescription?.message}</CardLabelError>}
-      //     </div>
-      //   );
-      // case "DATE_ANSWER_TYPE":
-      //   return <DatePicker stylesForInput={{ width: "calc(100% - 290px)" }} style={{ width: "202px" }} disabled={isInputDisabled} />;
-      // case "TIME_ANSWER_TYPE":
-      //   return <TextInput type="time" textInputStyle={{ width: "202px" }} disable={isInputDisabled} />;
       case "MULTIPLE_ANSWER_TYPE":
         return (
           <div>
@@ -271,20 +253,7 @@ const QuestionForm = ({
             />
           </div>
         );
-      // case "SHORT_ANSWER_TYPE":
-      //   return (
-      //     <div>
-      //       <TextInput
-      //         placeholder={t("SHORT_ANSWER_TYPE")}
-      //         name={"shortAnsDescription"}
-      //         disabled={isInputDisabled}
-      //         inputRef={register({
-      //           maxLength: { value: 200, message: t("EXCEEDS_200_CHAR_LIMIT") },
-      //         })}
-      //       />
-      //       {formState?.errors && <CardLabelError>{formState?.errors?.shortAnsDescription?.message}</CardLabelError>}
-      //     </div>
-      //   );
+
       default:
         return null;
     }

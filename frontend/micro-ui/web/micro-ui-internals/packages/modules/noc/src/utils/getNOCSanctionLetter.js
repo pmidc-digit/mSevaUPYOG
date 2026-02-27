@@ -6,14 +6,14 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
     year: "numeric",
   });
 
-  const firmName = application?.additionalDetails?.nocDetails?.applicationDetails?.owners?.[0]?.firmName
+  const firmName = application?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
   const owners = application?.owners || [];
   let ownersString = "NA";
 
   if (!approverComment) {
     approverComment = {
-      ConditionLine: "",
-      ConditionText: "",
+      ConditionLine: " ",
+      ConditionText: " ",
     };
   }
 

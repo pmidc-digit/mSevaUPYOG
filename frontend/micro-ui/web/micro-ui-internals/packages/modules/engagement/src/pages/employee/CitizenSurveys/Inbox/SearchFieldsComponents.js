@@ -14,8 +14,10 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   const userInfo = Digit.UserService.getUser().info;
   let isTenantFound = true;
   let userUlbs = ulbs
-    .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
+    .filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+
+  console.log("userUlbs", userUlbs);
   if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
     isTenantFound = false;
     //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]
@@ -36,23 +38,12 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
     }
   }, [ulbs]);
 
-  /**
-   * ToDo how to display default value correctly ask @egov-saurabh
-   */
-
   return (
     <>
       <SearchField>
         <label>
           {t("City")} <span style={{ color: "red" }}>*</span>
         </label>
-        {/* <Controller
-          rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={tenantId}
-          render={(props) => <Dropdown option={cities} optionKey={"name"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
-          name={"tenantIds"}
-          control={controlSearchForm}
-        /> */}
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }}
           defaultValue={selectedTenat?.[0]}
@@ -76,18 +67,6 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
         />
         <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError>
       </SearchField>
-      {/* <SearchField>
-            <label>{t("EVENTS_POSTEDBY_LABEL")}</label>
-            <TextInput name="postedBy" type="text" inputRef={registerRef({
-                maxLength: {
-                    value: 30,
-                    message: t("EXCEEDS_30_CHAR_LIMIT")
-                },
-            })} />
-            <CardLabelError>
-                {searchFormState?.errors?.["postedBy"]?.message}
-            </CardLabelError>
-        </SearchField> */}
     </>
   );
 };

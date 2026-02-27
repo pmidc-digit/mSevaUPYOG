@@ -324,7 +324,7 @@ const WrapPaymentComponent = (props) => {
         } else if (
           paymentData.paymentDetails[0].businessService.includes("BPA") ||
           paymentData.paymentDetails[0].businessService.includes("clu") ||
-          paymentData.paymentDetails[0].businessService.includes("layout")
+          paymentData.paymentDetails[0].businessService.includes("LAYOUT")
         ) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
           let updatedpayments;

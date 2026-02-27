@@ -79,8 +79,8 @@ const LayoutResponseCitizen = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("My Application")} onSubmit={onGoToLayout} />
-          <SubmitBar label={t(" New Application")} onSubmit={onGoToNewLayoutApplication} />
-          <SubmitBar label={t(" Search Application")} onSubmit={onGoToSearchApplication} />
+          {/* <SubmitBar label={t(" New Application")} onSubmit={onGoToNewLayoutApplication} />
+          <SubmitBar label={t(" Search Application")} onSubmit={onGoToSearchApplication} /> */}
         </ActionBar>
       </Card>
     </div>

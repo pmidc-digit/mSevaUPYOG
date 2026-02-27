@@ -144,39 +144,53 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }, [zoneOptions, siteDetails?.zone, setValue]);
 
   const onSubmit = async (data) => {
-    //console.log("========== FORM SUBMIT START ==========");
-    //console.log("Form Submit - Raw data:", data);
-    //console.log("Form errors BEFORE trigger:", errors);
-    
-    // Validate all form fields
+    console.log("DatacheckForValidation",data);
     const isValid = await trigger();
-    //console.log("Form validation result:", isValid);
-    //console.log("Form errors AFTER trigger:", errors);
+    console.log("DatacheckForValidation",data);
+
+    const {
+      areaUnderResidentialUseInSqM: watchedResidentialArea,
+      areaUnderCommercialUseInSqM: watchedCommercialArea,
+      areaUnderInstutionalUseInSqM: watchedInstitutionalArea,
+      areaUnderCommunityCenterInSqM: watchedCommunityCenterArea,
+      areaUnderParkInSqM: watchedParkArea,
+      areaUnderRoadInSqM: watchedRoadArea,
+      areaUnderParkingInSqM: watchedParkingArea,
+      areaUnderOtherAmenitiesInSqM: watchedOtherAmenitiesArea,
+      netTotalArea: netArea
+    } = data;
+
+    const residential = parseFloat(watchedResidentialArea) || 0;
+    const commercial = parseFloat(watchedCommercialArea) || 0;
+    const institutional = parseFloat(watchedInstitutionalArea) || 0;
+    const communityCenter = parseFloat(watchedCommunityCenterArea) || 0;
+    const park = parseFloat(watchedParkArea) || 0;
+    const road = parseFloat(watchedRoadArea) || 0;
+    const parking = parseFloat(watchedParkingArea) || 0;
+    const otherAmenities = parseFloat(watchedOtherAmenitiesArea) || 0;
+
+    const total = (residential + commercial + institutional + communityCenter + park + road + parking + otherAmenities).toFixed(2);
+
+    if (Math.abs(netArea-total) !== 0) {      
+      setShowToast({ key: "true", error: true, message: `Area Mismatch: Total Site Area (${total} Sq M) does not match Net Site Area (${netArea} Sq M)` })
+      return;
+    }
     
     if (!isValid) {
-      //console.log("❌ FORM VALIDATION FAILED - Listing all errors:");
+      
       Object.keys(errors).forEach(key => {
         if (errors[key]) {
-          //console.log(`  - ${key}:`, errors[key].message);
+
         }
       });
       setShowToast({ key: "true", error: true, message: "Please fill all required fields correctly" })
       return;
-    }
+    }    
 
-    //console.log("✅ Form validation PASSED");
-
-    // Validation for CLU - ONLY when CLU is NOT required (isCluRequired = "NO")
-    // When isCluRequired = "YES", CLU Type doesn't show, so skip this validation
     const cluNotRequired = data?.isCluRequired?.code === "NO" || data?.isCluRequired === "NO";
     const cluType = data?.cluType?.code || data?.cluType;
     
-    //console.log("CLU Validation - isCluRequired:", data?.isCluRequired, "cluNotRequired:", cluNotRequired, "cluType:", cluType);
-    //console.log("CLU data:", { 
-    //   cluDocumentUpload: data?.cluDocumentUpload,
-    //   cluNumberOffline: data?.cluNumberOffline,
-    //   cluApprovalDate: data?.cluApprovalDate
-    // });
+    
     
     if (cluNotRequired && cluType === "ONLINE") {
       // For online CLU, check if it was validated by user
@@ -206,12 +220,8 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
     // If create api is already called then move to next step
     if (isEditApplication || currentStepData?.apiData?.Layout?.applicationNo) {
-      //console.log("Edit mode or API already called, calling onGoNext");
-      // callUpdateAPI({ ...currentStepData, siteDetails: { ...data } });
       onGoNext()
-    } else {
-      // Call Create API and move to next Page
-      //console.log("New application, calling Create API");
+    } else {    
       callCreateAPI({ ...currentStepData, siteDetails: { ...data } })
     }
   }

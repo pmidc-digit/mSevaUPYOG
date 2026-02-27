@@ -382,7 +382,8 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         };
       });
       
-      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
+      // const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
+      const overallDocs = newlyAddedDocs;
       //console.log("[v0] EDIT MODE - overallDocs:", overallDocs);
       
       overallDocs.forEach((doc) => {
@@ -395,6 +396,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
+          ...doc,
           order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,

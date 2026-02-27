@@ -36,6 +36,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
+import CustomOwnerImage from "../../../components/CustomOwnerImage";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
@@ -817,6 +818,10 @@ const LayoutEmployeeApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
+      <CustomOwnerImage
+        ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto}
+        ownerName={displayData?.owners?.[0]?.name}
+      />
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
@@ -1133,7 +1138,7 @@ const LayoutEmployeeApplicationOverview = () => {
         )}
       </Card>
 
-      {siteImages?.documents?.length > 0 && (
+      {/* {siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
           <StatusTable
@@ -1158,7 +1163,7 @@ const LayoutEmployeeApplicationOverview = () => {
               ))}
           </StatusTable>
         </Card>
-      )}
+      )} */}
 
       <CheckBox
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant. I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}

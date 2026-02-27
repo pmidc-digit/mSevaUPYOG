@@ -833,15 +833,15 @@ const LayoutApplicantDetails = (_props) => {
               padding: "10px 12px",
 
               borderRadius: "4px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               marginTop: "10px",
               display: "flex",
               justifyContent: "end",
             }}
           >
             <p className="advisory-text">
-              {/* <strong>Accepted File Types:</strong> JPEG, JPG, PNG */}
-              Only <strong>.png, .jpeg, .jpg</strong> files are accepted with maximum size of <strong>5 MB</strong>
+              {/* Accepted File Types: JPEG, JPG, PNG */}
+              Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
             </p>
           </div>
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
@@ -867,7 +867,7 @@ const LayoutApplicantDetails = (_props) => {
                     message={getValues("documentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                     error={applicantErrors[0]?.document}
                     uploadMessage=""
-                    accept=".pdf"
+                    accept=".pdf, image/*"
                   />
                   )}
               />
@@ -882,13 +882,13 @@ const LayoutApplicantDetails = (_props) => {
               justifyContent: "end",
 
               borderRadius: "4px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               marginTop: "10px",
             }}
           >
             <p className="advisory-text">
-              {/* <strong>Accepted File Types:</strong> PDF */}
-              Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+              {/* Accepted File Types: PDF */}
+              Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
             </p>
           </div>
           {/* PAN Document */}
@@ -915,7 +915,7 @@ const LayoutApplicantDetails = (_props) => {
                     message={getValues("panDocumentUploadedFiles") ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   error={applicantErrors[0]?.panDocument}
                   uploadMessage=""
-                  accept=".pdf"
+                  accept=".pdf, image/*"
                 />
                 )}
               />
@@ -930,13 +930,13 @@ const LayoutApplicantDetails = (_props) => {
               justifyContent: "end",
 
               borderRadius: "4px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               marginTop: "10px",
             }}
           >
             <p className="advisory-text">
-              {/* <strong>Accepted File Types:</strong> PDF */}
-              Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+              {/* Accepted File Types: PDF */}
+              Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
             </p>
           </div>
 
@@ -998,7 +998,7 @@ const LayoutApplicantDetails = (_props) => {
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
-                          marginBottom: "20px",
+                          marginBottom: "10px",
                           paddingBottom: "10px",
                           borderBottom: "1px solid #d1d5db",
                         }}
@@ -1166,13 +1166,13 @@ const LayoutApplicantDetails = (_props) => {
                           justifyContent: "end",
 
                           borderRadius: "4px",
-                          marginBottom: "20px",
+                          marginBottom: "10px",
                           marginTop: "10px",
                         }}
                       >
                         <p className="advisory-text">
-                          {/* <strong>Accepted File Types:</strong> PDF */}
-                          Only <strong>.png, .jpeg, .jpg</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                          {/* Accepted File Types: PDF */}
+                          Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
                         </p>
                       </div>
 
@@ -1194,7 +1194,7 @@ const LayoutApplicantDetails = (_props) => {
                             message={applicant.documentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.document}
                             uploadMessage=""
-                            accept=".pdf"
+                            accept="image/*, .pdf"
                           />
                         </div>
                       </LabelFieldPair>
@@ -1206,13 +1206,13 @@ const LayoutApplicantDetails = (_props) => {
                           justifyContent: "end",
 
                           borderRadius: "4px",
-                          marginBottom: "20px",
+                          marginBottom: "10px",
                           marginTop: "10px",
                         }}
                       >
                         <p className="advisory-text">
-                          {/* <strong>Accepted File Types:</strong> PDF */}
-                          Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                          {/* Accepted File Types: PDF */}
+                          Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
                         </p>
                       </div>
 
@@ -1237,7 +1237,7 @@ const LayoutApplicantDetails = (_props) => {
                             message={applicant.panDocumentUploadedFiles ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                             error={applicantErrors[index]?.panDocument}
                             uploadMessage=""
-                            accept=".pdf"
+                            accept="image/*, .pdf"
                           />
                         </div>
                       </LabelFieldPair>
@@ -1249,13 +1249,13 @@ const LayoutApplicantDetails = (_props) => {
                           justifyContent: "end",
 
                           borderRadius: "4px",
-                          marginBottom: "20px",
+                          marginBottom: "10px",
                           marginTop: "10px",
                         }}
                       >
                         <p className="advisory-text">
-                          {/* <strong>Accepted File Types:</strong> PDF */}
-                          Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                          {/* Accepted File Types: PDF */}
+                          Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB
                         </p>
                       </div>
 

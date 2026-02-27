@@ -35,6 +35,7 @@ import { LoaderNew } from "../../../components/LoaderNew";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import LayoutFeeEstimationDetailsTable from "../../../pageComponents/LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "../../../pageComponents/LayoutDocumentsView";
+import CustomOwnerImage from "../../../components/CustomOwnerImage";
 
 // Component to render document link for owner documents
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -135,6 +136,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const sitePhotos = layoutDocuments?.filter(
             (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
           );
+  console.log("sitePhotos",sitePhotos);
 
   // Helper function to find document by type and owner index
   // Searches in both API documents (documents array) and owner's additionalDetails
@@ -162,6 +164,9 @@ const [viewTimeline, setViewTimeline] = useState(false);
       }
       if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
         return owners[ownerIndex]?.additionalDetails?.documentFile;
+      }
+      if (docType === "OWNERPAN" && owners[ownerIndex]?.additionalDetails?.documentFile) {
+        return owners[ownerIndex]?.additionalDetails?.panDocument;
       }
     }
 
@@ -243,6 +248,17 @@ const [viewTimeline, setViewTimeline] = useState(false);
     },
     { enabled: id ? true : false },
   )
+  const { data: reciept_data_pay, isLoading: recieptDataLoadingPay } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "LAYOUT.PAY2", // Changed from Layout_mcUp to LAYOUT to match employee side
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false },
+  )
+
+  
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
@@ -264,14 +280,20 @@ const [viewTimeline, setViewTimeline] = useState(false);
   if (applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") {
 
     dowloadOptions.push({
-      label: t("DOWNLOAD_CERTIFICATE"),
+      label: t("Download Application"),
       onClick: handleDownloadPdf,
     });
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
+        label: t("Pay 1 Fee"),
         onClick: () => getRecieptSearch({ tenantId: state, payments: reciept_data?.Payments[0] }),
+      });
+    }
+    if (reciept_data_pay && reciept_data_pay?.Payments.length > 0 && !recieptDataLoadingPay) {
+      dowloadOptions.push({
+        label: t("Pay 2 Fee"),
+        onClick: () => getRecieptSearch({ tenantId: state, payments: reciept_data_pay?.Payments[0] }),
       });
     }
   }
@@ -508,11 +530,17 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
   return (
     <div className={"employee-main-application-details"}>
+      <CustomOwnerImage
+        ownerFileStoreId={findOwnerDocument(0, "OWNERPHOTO")}
+        ownerName={applicationDetails?.Layout?.[0]?.owners?.[0]?.name}
+      />
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("Application Overview")}</Header>
          <LinkButton  label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
         {dowloadOptions && dowloadOptions.length > 0 && (
+          (recieptDataLoading || recieptDataLoadingPay)? 
+          <Loader /> :
           <div>
 
           <MultiLink
@@ -542,8 +570,10 @@ const [viewTimeline, setViewTimeline] = useState(false);
               <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
               <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
               <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
+              <RenderRow label={t("Pan No")} value={applicant?.pan || "N/A"} />
               <Row label={t("Photo") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
               <Row label={t("ID Proof") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
+              <Row label={t("Pan") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
             </StatusTable>
           </div>
         ))}
@@ -726,7 +756,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
           <Card>
             <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
 
-            <LayoutFeeEstimationDetailsTable
+            <LayoutFeeEstimationDetails
               formData={{
                 apiData: { ...applicationDetails },
                 applicationDetails: {

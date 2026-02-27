@@ -114,7 +114,23 @@ public class EstimationService {
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 
+	@Value("${pt.tax.residential.slab1.area.max}")
+	private double slab1AreaMax;
 
+	@Value("${pt.tax.residential.slab1.land.max}")
+	private double slab1LandMax;
+
+	@Value("${pt.tax.residential.slab1.tax}")
+	private double slab1Tax;
+
+	@Value("${pt.tax.residential.slab2.area.max}")
+	private double slab2AreaMax;
+
+	@Value("${pt.tax.residential.slab2.land.max}")
+	private double slab2LandMax;
+
+	@Value("${pt.tax.residential.slab2.tax}")
+	private double slab2Tax;
 
 	/**
 	 * Calculates tax and creates demand for the given assessment number
@@ -1958,15 +1974,15 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 					String st = slab.getAreaType();
 					id = slab.getId();
 					log.info("Matching locality found in BillingSlab: {}, {}", st, id);
-					if (usageMajor.equalsIgnoreCase("RESIDENTIAL")) {
+					if (usageMajor.equalsIgnoreCase("RESIDENTIAL") && slab.getUsageCategoryMajor().equalsIgnoreCase("RESIDENTIAL")) {
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;
-					} else if (usageMajor.contains("INDUSTRIAL") || usageMinor.contains("INDUSTRIAL")) {
+					} else if (usageMajor.equalsIgnoreCase("INDUSTRIAL") && slab.getUsageCategoryMajor().equalsIgnoreCase("INDUSTRIAL")) {
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;
-					} else {
+					} else if (usageMajor.equalsIgnoreCase("COMMERCIAL")  && slab.getUsageCategoryMajor().equalsIgnoreCase("COMMERCIAL")) {
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;
@@ -1990,12 +2006,19 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			}
 
 			JsonNode units = propertyDetails.get("units");
-			//	double floorNo = Double.parseDouble(String.valueOf(units.get("floorNo")));
+			int noOfFloors = propertyDetails.get("noOfFloors").asInt();
 			String floorNo = "0";
 			ArrayNode updatedUnits = mapper.createArrayNode();
+			boolean landValueUsedInAnyUnit = false;
+			boolean isResidentialOcc = false;
+			double totalUnitAreaSy = 0.0;
+			double totalUnitAreaSqFt =0.0;
 
 			if (units != null && units.isArray()) {
 				for (JsonNode unit : units) {
+					if (unit.has("active") && !unit.get("active").asBoolean(true)) {
+						continue;
+					}
 
 					ObjectNode unitObj = (ObjectNode) unit;
 					floorNo = unit.get("floorNo").asText("");
@@ -2005,6 +2028,8 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 					String usageSub = unit.path("usageCategorySubMinor").asText("");
 					double unitAreaSqYard = unit.get("unitArea").asDouble(0.0);
 					double unitAreaSqFt = unitAreaSqYard * 9;
+					totalUnitAreaSy += unitAreaSqYard;
+					totalUnitAreaSqFt += unitAreaSqFt;
 					double unitTax = 0.0;
 
 					if ("RENTED".equalsIgnoreCase(occ)) {
@@ -2021,12 +2046,28 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 							unitTax = annualRent * 10 / 100.0;
 							FireCess += unitTax * 5 / 100.0;
 						}
-					} else {
+					}
+					else if ("UNOCCUPIED".equalsIgnoreCase(occ)) {
 						double constructionCost = unitAreaSqFt * 500;
 						double netConst = constructionCost - constructionCost * 10 / 100;
-						double annualValue = (netConst + landValue) * 5 / 100;
+						double unitLandValue = landValueUsedInAnyUnit ? 0 : landValue;
+						landValueUsedInAnyUnit = true;
 
+						double annualValue = (netConst + unitLandValue) * 5 / 100;
+						unitTax = annualValue * 0.20 / 100;
+						if (!"RESIDENTIAL".equalsIgnoreCase(usage)) {
+							FireCess += unitTax * 5 / 100;
+						}
+					}
+					else {
+						double constructionCost = unitAreaSqFt * 500;
+						double netConst = constructionCost - constructionCost * 10 / 100;
+						//double annualValue = (netConst + landValue) * 5 / 100;
+						double unitLandValue = landValueUsedInAnyUnit ? 0 : landValue;
+						landValueUsedInAnyUnit = true;
+						double annualValue = (netConst + unitLandValue) * 5 / 100;
 						if (usage.equalsIgnoreCase("RESIDENTIAL")) {
+							isResidentialOcc = true;
 							if (landArea <= 500) unitTax = annualValue * 0.5 / 100;
 							else unitTax = annualValue * 1 / 100;
 						} else if (usage.contains("INDUSTRIAL") || usageSub.contains("WAREHOUSE")) {
@@ -2036,6 +2077,7 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 							unitTax = annualValue * 3 / 100;
 							FireCess += unitTax * 5 / 100.0;
 						}
+
 					}
 
 					PT_TAX += unitTax;
@@ -2051,6 +2093,24 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				((ObjectNode) propertyDetails).set("units", updatedUnits);
 			}
 
+			int floorNoInt = 0;  /// TODO NoOfFloors
+			if (floorNo != null && !floorNo.trim().isEmpty()) {
+				try {
+					floorNoInt = Integer.parseInt(floorNo.trim());
+				} catch (NumberFormatException e) {
+					log.warn("Invalid floorNo value received: {}", floorNo);
+					floorNoInt = 0;
+                }
+			}
+			 
+
+			if (isResidentialOcc &&   !"MIXED".equalsIgnoreCase(usageMajor) ) {
+				if (totalUnitAreaSqFt <= slab1AreaMax  && landArea <= slab1LandMax) {
+					PT_TAX = (noOfFloors == 1) ? slab1Tax : slab2Tax;
+				} else if (totalUnitAreaSqFt <= slab2AreaMax && landArea <= slab2LandMax && noOfFloors == 1) {
+					PT_TAX = slab2Tax;
+				}
+			}
 			JsonNode owners = propertyDetails.get("owners");
 			if (owners == null || !owners.isArray() || owners.size() == 0) {
 				log.warn("No owners found for property. Setting exemption to 0.");

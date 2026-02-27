@@ -223,6 +223,10 @@ public class ScorecardSurveyService {
         String uuid = answerRequest.getUser().getUuid();
         surveyValidator.validateAnswers(surveyResponse);
 
+        if (surveyResponse.getComments() == null) {
+            surveyResponse.setComments("");
+        }
+
         List<Section> sections = sectionRepository.getSectionsBySurveyId(answerRequest.getSurveyResponse().getSurveyUuid());
         Map<String, BigDecimal> sectionWeightageMap = sections.stream()
                 .collect(Collectors.toMap(Section::getUuid, Section::getWeightage));

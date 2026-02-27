@@ -73,12 +73,14 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
     <div className="employee-main-application-details">
       <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
 
-      <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
       <StatusTable style={{ border: "none" }}>
+        <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
         <NOCImageView
           ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
           ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
         />
+        </Card>
       </StatusTable>
 
       {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {

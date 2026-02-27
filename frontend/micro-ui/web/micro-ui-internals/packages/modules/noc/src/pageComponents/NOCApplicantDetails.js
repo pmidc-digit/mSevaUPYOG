@@ -211,7 +211,8 @@ const NOCApplicantDetails = (_props) => {
     ownerType: null,
     propertyVasikaNo: "",
     propertyVasikaDate: "",
-    firmName:""
+    firmName:"",
+    localityAreaType: null
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -253,6 +254,7 @@ const NOCApplicantDetails = (_props) => {
             PropertyOwnerPlotArea: o.PropertyOwnerPlotArea || null,
             propertyVasikaNo: o.propertyVasikaNo || null,
             propertyVasikaDate: o.propertyVasikaDate || null,
+            localityAreaType: o.localityAreaType || null,
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
@@ -479,6 +481,7 @@ const NOCApplicantDetails = (_props) => {
                 PropertyOwnerPlotArea: property?.landArea,
                 propertyVasikaNo: property?.additionalDetails?.vasikaNo,
                 propertyVasikaDate: property?.additionalDetails?.vasikaDate,
+                localityAreaType: property?.address?.locality,
                 ...(currentIndex === 0 && {
                   ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
                   mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
@@ -497,7 +500,8 @@ const NOCApplicantDetails = (_props) => {
         vasikaNumber: property?.additionalDetails?.vasikaNo,
         vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
         netTotalArea: property?.landArea,
-        proposedSiteAddress : property?.owners?.[0]?.permanentAddress
+        proposedSiteAddress : property?.owners?.[0]?.permanentAddress,
+        localityAreaType: property?.address?.locality
       })
     );
   }
@@ -589,6 +593,7 @@ const NOCApplicantDetails = (_props) => {
                                     vasikaDate: null,
                                     netTotalArea: null,
                                     proposedSiteAddress: "",
+                                    localityAreaType:null
                                   })
                                 );
                                 reset({
@@ -675,6 +680,8 @@ const NOCApplicantDetails = (_props) => {
                 <Controller control={control} name={`owners[${index}].propertyVasikaNo`} />
 
                 <Controller control={control} name={`owners[${index}].propertyVasikaDate`} />
+                <Controller control={control} name={`owners[${index}].localityAreaType`} />
+
 
                 <div className="field">
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

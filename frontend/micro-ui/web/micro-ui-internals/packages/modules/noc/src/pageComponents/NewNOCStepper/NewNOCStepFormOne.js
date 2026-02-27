@@ -73,7 +73,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           ownerType:"",
           propertyVasikaDate: "",
           propertyVasikaNo:"",
-          firmName:""
+          firmName:"",
+          localityAreaType:null
         },
       ],
     },

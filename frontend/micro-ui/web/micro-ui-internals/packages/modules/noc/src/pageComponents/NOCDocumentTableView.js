@@ -93,9 +93,9 @@ const NOCDocumentTableView = ({documents}) => {
   }, [mappedDocuments]);
 
   return (
-    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
+    <div className='checklist-document-table-wrapper'>
       <style>{srNoStyle}</style>
-      <div className="noc-document-table-view">
+      <div className="noc-document-table-view checklist-document-table">
         {documentsData && (
           <Table
             className="customTable table-border-style"

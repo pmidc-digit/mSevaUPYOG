@@ -584,20 +584,20 @@ const finalComment = useMemo(() => {
           />
         )}
       </div>
-
-      <NOCImageView
-        ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
-        ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
-      />
+      <Card>
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <NOCImageView
+          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+        />
+      </Card>
 
       {id.length > 0 && (
         <React.Fragment>
           <Card>
-          
-              <StatusTable>
-                <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
-              </StatusTable>
-          
+            <StatusTable>
+              <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+            </StatusTable>
           </Card>
         </React.Fragment>
       )}
@@ -771,48 +771,48 @@ const finalComment = useMemo(() => {
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 
-       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
-              <Card>
-                <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
-                <StatusTable
-                  style={{
-                    display: "flex",
-                    gap: "20px",
-                    flexWrap: "wrap",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  {documentData?.length > 0 &&
-                    documentData.map((doc) => (
-                      <NocUploadedDocument
-                        key={doc?.fileStoreId || doc?.uuid}
-                        filestoreId={doc?.fileStoreId || doc?.uuid}
-                        documentType={doc?.title}
-                        documentName={doc?.title}
-                        latitude={doc?.latitude}
-                        longitude={doc?.longitude}
-                      />
-                    ))}
-                </StatusTable>
-      
-                {geoLocations?.length > 0 && (
-                  <>
-                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                    <CustomLocationSearch position={geoLocations} />
-                  </>
-                )}
-              </Card>
-            )}
+      {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
+          <StatusTable
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            {documentData?.length > 0 &&
+              documentData.map((doc) => (
+                <NocUploadedDocument
+                  key={doc?.fileStoreId || doc?.uuid}
+                  filestoreId={doc?.fileStoreId || doc?.uuid}
+                  documentType={doc?.title}
+                  documentName={doc?.title}
+                  latitude={doc?.latitude}
+                  longitude={doc?.longitude}
+                />
+              ))}
+          </StatusTable>
+
+          {geoLocations?.length > 0 && (
+            <>
+              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CustomLocationSearch position={geoLocations} />
+            </>
+          )}
+        </Card>
+      )}
 
       <Card>
         <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
@@ -824,8 +824,9 @@ const finalComment = useMemo(() => {
       </Card>
 
       <Card>
-      <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-      <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable></Card>
+        <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+      </Card>
 
       {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>

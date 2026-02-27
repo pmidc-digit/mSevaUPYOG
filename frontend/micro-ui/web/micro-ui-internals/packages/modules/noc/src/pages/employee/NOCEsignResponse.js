@@ -103,6 +103,7 @@ const NOCEsignResponse = () => {
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <p>{applicationNo}</p>
           {loading ? (
             <p>{t("E-Sign in Progress. Kindly Wait...")}</p>
           ) : (

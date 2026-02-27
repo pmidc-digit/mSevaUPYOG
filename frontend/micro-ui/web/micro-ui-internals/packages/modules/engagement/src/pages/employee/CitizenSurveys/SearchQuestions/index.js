@@ -30,11 +30,11 @@ const SearchQuestions = ({ parentRoute }) => {
   ];
 
   //Default values
+  const defaultTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
   const searchFormDefaultValues = {
-    // tenantIds: tenantId,
-    tenantIds: userUlbs[0],
+    tenantIds: defaultTenant,
     categoryName: "",
-    //question: "",
     questionStatement: "",
   };
 
@@ -70,11 +70,24 @@ const SearchQuestions = ({ parentRoute }) => {
 
   //Reset:
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("tenantIds", tenantId);
+    const resetTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
+    setSearchFormValue("tenantIds", resetTenant);
     setSearchFormValue("categoryName", "");
-    // setSearchFormValue("question", "");
     setSearchFormValue("questionStatement", "");
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+
+    dispatch({
+      action: "mutateSearchForm",
+      data: {
+        ...searchFormDefaultValues,
+        tenantIds: resetTenant,
+      },
+    });
+
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...tableOrderFormDefaultValues },
+    });
   };
 
   const onFilterFormReset = (setFilterFormValue) => {
@@ -104,20 +117,19 @@ const SearchQuestions = ({ parentRoute }) => {
   //
   let { data: { Questions = [], Errors = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyQuestionInbox(formState);
   const totalCount = Questions?.length;
-  const [sortedQuestions, setSortedQuestions] = useState([]);
-  useEffect(() => {
-    if (Questions.length > 0) {
-      const sorted = [...Questions].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
-      Questions = sorted;
-      setSortedQuestions(sorted);
-    }
-  }, [Questions]);
+
+  // const [sortedQuestions, setSortedQuestions] = useState([]);
   // useEffect(() => {
-  //   if (isSearchClicked && (Questions?.length === 0 || Errors?.length > 0)) {
-  //     setShowToast({ label: ERR_MESSAGE, isDleteBtn: "true", error: true });
-  //     setIsSearchClicked(false);
+  //   if (Questions.length > 0) {
+  //     const sorted = [...Questions].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+  //     Questions = sorted;
+  //     setSortedQuestions(sorted);
   //   }
-  // }, [Questions, Errors, isSearchClicked]);
+  // }, [Questions]);
+
+  const sortedQuestions = useMemo(() => {
+    return [...(Questions || [])].sort((a, b) => b.auditDetails.lastModifiedTime - a.auditDetails.lastModifiedTime);
+  }, [Questions]);
 
   //Props for links card:
   const PropsForInboxLinks = {

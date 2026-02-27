@@ -25,12 +25,11 @@ const SearchCategories = ({ parentRoute }) => {
     { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
-  //Default values:
+  const defaultTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
   const searchFormDefaultValues = {
-    //tenantIds: tenantId,
-    tenantIds: userUlbs[0],
+    tenantIds: defaultTenant,
     categoryName: "",
-    //isActive: null,
   };
 
   const filterFormDefaultValues = {
@@ -66,10 +65,23 @@ const SearchCategories = ({ parentRoute }) => {
 
   //Reset:
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("tenantIds", tenantId);
+    const resetTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
+    setSearchFormValue("tenantIds", resetTenant);
     setSearchFormValue("categoryName", "");
-    //setSearchFormValue("isActive", null);
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+
+    dispatch({
+      action: "mutateSearchForm",
+      data: {
+        ...searchFormDefaultValues,
+        tenantIds: resetTenant,
+      },
+    });
+
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...tableOrderFormDefaultValues },
+    });
   };
 
   // const onSortFormReset = (setSortFormValue) => {
@@ -108,15 +120,21 @@ const SearchCategories = ({ parentRoute }) => {
 
   //
   let { data: { Categories = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyCategoryInbox(formState);
+
   const totalCount = Categories?.length;
-  const [sortedCategories, setSortedCategories] = useState([]);
-  useEffect(() => {
-    if (Categories.length > 0) {
-      const sorted = [...Categories].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
-      Categories = sorted;
-      setSortedCategories(sorted);
-    }
+  // const [sortedCategories, setSortedCategories] = useState([]);
+  // useEffect(() => {
+  //   if (Categories.length > 0) {
+  //     const sorted = [...Categories].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+  //     Categories = sorted;
+  //     setSortedCategories(sorted);
+  //   }
+  // }, [Categories]);
+
+  const sortedCategories = useMemo(() => {
+    return [...(Categories || [])].sort((a, b) => b.auditDetails.lastModifiedTime - a.auditDetails.lastModifiedTime);
   }, [Categories]);
+
   //Props for links card:
   const PropsForInboxLinks = {
     // logoIcon: <DocumentIcon />,

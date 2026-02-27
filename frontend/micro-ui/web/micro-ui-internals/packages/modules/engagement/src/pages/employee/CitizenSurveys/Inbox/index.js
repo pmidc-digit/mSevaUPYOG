@@ -22,6 +22,7 @@ const Inbox = ({ parentRoute }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const userInfo = Digit.UserService.getUser().info;
+
   const userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
 
   const statuses = [
@@ -30,10 +31,10 @@ const Inbox = ({ parentRoute }) => {
     { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
+  const defaultTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
   const searchFormDefaultValues = {
-    // tenantIds: tenantId,
-    tenantIds: userUlbs[0],
-    // postedBy: "",
+    tenantIds: defaultTenant,
     title: "",
   };
 
@@ -64,11 +65,31 @@ const Inbox = ({ parentRoute }) => {
   }
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEY.INBOX");
 
+  // const onSearchFormReset = (setSearchFormValue) => {
+  //   // setSearchFormValue("postedBy", "");
+  //   setSearchFormValue("title", "");
+  //   setSearchFormValue("tenantIds", tenantId);
+  //   dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+  // };
+
   const onSearchFormReset = (setSearchFormValue) => {
-    // setSearchFormValue("postedBy", "");
+    const resetTenant = formState.searchForm.tenantIds;
+
     setSearchFormValue("title", "");
-    setSearchFormValue("tenantIds", tenantId);
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+    setSearchFormValue("tenantIds", resetTenant);
+
+    dispatch({
+      action: "mutateSearchForm",
+      data: {
+        ...searchFormDefaultValues,
+        tenantIds: resetTenant,
+      },
+    });
+
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...tableOrderFormDefaultValues },
+    });
   };
 
   const onFilterFormReset = (setFilterFormValue) => {

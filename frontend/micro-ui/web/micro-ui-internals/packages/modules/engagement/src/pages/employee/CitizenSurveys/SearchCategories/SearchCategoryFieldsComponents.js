@@ -9,22 +9,12 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser().info;
-  // const userUlbs = ulbs
-  //   .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
-  //   .sort(alphabeticalSortFunctionForTenantsBasedOnName);
-  // const selectedTenat = useMemo(() => {
-  //   const filtered = ulbs.filter((item) => item.code === tenantId);
-  //   return filtered;
-  // }, [ulbs]);
   let isTenantFound = true;
   let userUlbs = ulbs
-    .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
+    .filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
   if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
-    // isTenantFound = false;
-    // userUlbs = [{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.info.tenantId}` }];
     isTenantFound = false;
-    //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]
     let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
     if (tenantId === "pb.punjab") {
       userUlbs = [adduserUlbs, ...ulbs];
@@ -41,10 +31,6 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
       return filtered;
     }
   }, [ulbs]);
-  // const isActiveOptions = [
-  //   { id: true, name: "Yes" },
-  //   { id: false, name: "No" },
-  // ];
 
   // Options for the category dropdown
   const [categoryOptions, setCategoryOptions] = useState([]);
@@ -56,7 +42,6 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
     const payload = { tenantId: tenantId };
     Digit.Surveys.searchCategory(payload)
       .then((response) => {
-        //console.log("Category Options: ", response);
         const categoryOptions =
           response && response.Categories
             ? response.Categories.map(function (item) {
@@ -86,23 +71,6 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
         <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError>
       </SearchField>
 
-      {/* <SearchField>
-        <label>
-          {t("LABEL_FOR_ULB")} <span style={{ color: "red" }}>*</span>
-        </label>
-        <Dropdown
-          defaultValue={selectedTenat?.[0]}
-          t={t}
-          option={userUlbs}
-          optionKey={"i18nKey"}
-          name="tenantIds"
-          inputRef={registerRef({
-            required: t("REQUIRED_FIELD"), //t("ES_ERROR_REQUIRED"),
-          })}
-        />
-        <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError>
-      </SearchField> */}
-
       <SearchField>
         <label>{t("Category")}</label>
         <Controller
@@ -113,19 +81,7 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
           name={"categoryName"}
           control={controlSearchForm}
         />
-        {/* <CardLabelError>{searchFormState?.errors?.["categoryName"]?.message}</CardLabelError> */}
       </SearchField>
-
-      {/* <SearchField>
-        <label>{t("Is Active")}</label>
-        <Controller
-          rules={{ required: false }}
-          render={(props) => <Dropdown option={isActiveOptions} optionKey={"name"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
-          name={"isActive"}
-          control={controlSearchForm}
-        />
-        <CardLabelError>{searchFormState?.errors?.["isActive"]?.message}</CardLabelError>
-      </SearchField> */}
     </>
   );
 };

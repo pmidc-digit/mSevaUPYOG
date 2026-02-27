@@ -115,13 +115,13 @@ const CLUEmployeeApplicationDetails = () => {
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
   const [checklistRemarks, setChecklistRemarks] = useState({});
- // console.log("checkListRemarks==>", checklistRemarks);
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [empDesignation,setEmpDesignation] = useState(null);
+  const [showZoneModal, setShowZoneModal] = useState(false);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
@@ -134,13 +134,11 @@ const CLUEmployeeApplicationDetails = () => {
   const [distances, setDistances] = useState([]);  
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here===>", applicationDetails);
   const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
   } : []);
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
-  //console.log("businessService here", businessServiceCode, siteImages);
   
 const stateId = Digit.ULBService.getStateId();
   const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
@@ -152,7 +150,6 @@ const stateId = Digit.ULBService.getStateId();
     moduleCode: businessServiceCode,//dynamic moduleCode
   });
 
-  console.log("workflowDetails here=>", workflowDetails);
 
   const { data: searchChecklistData } =  Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo: id }, tenantId);
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
@@ -262,14 +259,12 @@ const stateId = Digit.ULBService.getStateId();
           }
           let conditionText = "";
           let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
-          console.log('fileStoreId HERE', fileStoreId)
         if (approvecomments?.includes("[#?..**]")) {
           conditionText = approvecomments.split("[#?..**]")[1] || "";
         }
          const finalComment = conditionText
           ? `The above approval is subjected to the following conditions: ${conditionText}`
           : "";
-        console.log('application', application)
         if (!application) {
           throw new Error("CLU Application data is missing");
         }
@@ -288,7 +283,6 @@ const stateId = Digit.ULBService.getStateId();
       }
   const printCertificateWithESign = async () => {
     try {
-      console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getRecieptSearch({
         tenantId: reciept_data2?.Payments[0]?.tenantId,
@@ -321,7 +315,6 @@ const stateId = Digit.ULBService.getStateId();
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
-            console.error("❌ eSign failed:", error);
             setShowToast({
               key: "true",
               error: true,
@@ -331,7 +324,6 @@ const stateId = Digit.ULBService.getStateId();
         }
       );
     } catch (error) {
-      console.error("❌ Certificate preparation failed:", error);
       setShowToast({
         key: "true",
         error: true,
@@ -346,7 +338,6 @@ const stateId = Digit.ULBService.getStateId();
     longitude: value?.longitude,
   })), [siteImages]);
 
-  //console.log("documentData here==>", documentData);
 
   const documentsColumnsSiteImage = [
     {
@@ -385,7 +376,6 @@ const stateId = Digit.ULBService.getStateId();
       try{
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
-        //console.log("wf=>", wf);
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
       }catch(e){
@@ -433,7 +423,6 @@ const stateId = Digit.ULBService.getStateId();
   }, [applicationDetails, data]);
 
 
- // console.log("getWorkflowService =>", getWorkflowService);
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -477,7 +466,6 @@ const stateId = Digit.ULBService.getStateId();
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
 
   useEffect(() => {
     const cluObject = applicationDetails?.Clu?.[0];
@@ -564,13 +552,15 @@ const stateId = Digit.ULBService.getStateId();
   }
 
   function onActionSelect(action) {
-    console.log("selected action", action);
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
     const validationMsg = validateSiteImages(action);
-    console.log('validationMsg', validationMsg)
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
+
+     if (validationMsg) {
+          alert(validationMsg);
+      }
 
     const payload = {
       Licenses: [action],
@@ -590,11 +580,13 @@ const stateId = Digit.ULBService.getStateId();
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    }else if(validationMsg){
-      setShowToast({ key: "true", error: true, message: validationMsg }); 
-      return;
-    }else {      
-      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+    }
+    // else if(validationMsg){
+    //   setShowToast({ key: "true", error: true, message: validationMsg }); 
+    //   return;
+    // }
+    else {      
+      if(action?.action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -604,10 +596,8 @@ const stateId = Digit.ULBService.getStateId();
   }
 
   const onChangeReport = (key, value) => {
-    //console.log("key,value", key, value);
     setFieldInspectionPending(value);
   }
-  //console.log("fieldInspectionPending state==>", fieldInspectionPending)
 
   const isFeeDisabled = applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
 
@@ -618,7 +608,6 @@ const stateId = Digit.ULBService.getStateId();
 
  function areAllRemarksFilled(record) {
   const remarkEntries = getRemarkEntries(record);
-  //console.log("remarksEntries==>", remarkEntries);
   return (
     remarkEntries.length > 0 &&
     remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
@@ -627,13 +616,9 @@ const stateId = Digit.ULBService.getStateId();
 
   function areAllRemarksFilledForDocumentCheckList(record){
     const entries = Object.entries(record);
-    console.log("entries==>", entries);
-    console.log("remainingDocs?.length==>", remainingDocs?.length);
-    console.log("checklistRemarks state==>", checklistRemarks);
     
     // Rule 1: Must have exact entries equal to remainingDocs
     if (entries.length !== remainingDocs?.length) {
-      console.log("Entries length mismatch: entries=", entries.length, "remainingDocs=", remainingDocs?.length);
       return false;
     }
 
@@ -644,19 +629,28 @@ const stateId = Digit.ULBService.getStateId();
       return isFilled;
     });
     
-    console.log("allFilled==>", allFilled);
     return allFilled;
 
   }
 
+  const handleZoneSubmit = (selectedZone, comment) => {
+  const payload = {
+    Licenses: [{
+      action: "UPDATE_ZONE",
+      comment: comment,
+      // Pass the zone object which contains both code and name
+      zone: selectedZone
+    }]
+  };
+  submitAction(payload);
+};
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
-    // console.log("data ==>", data);
-    //console.log("feeAdjustments==>", feeAdjustments);
+    const action = data?.Licenses?.[0]?.action;
 
     //Validation For Site CheckList AT JE/BI Label
-    if(applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
+    if(action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
      
       if(fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0){
         closeModal();
@@ -668,7 +662,6 @@ const stateId = Digit.ULBService.getStateId();
 
         const record = fieldInspectionPending?.[0] ?? {};
         const allRemarksFilled = areAllRemarksFilled(record);
-        //console.log("allRemarsFilled", allRemarksFilled);
 
         if(!allRemarksFilled){
          closeModal();
@@ -679,15 +672,10 @@ const stateId = Digit.ULBService.getStateId();
       }      
     }
 
-   // console.log("fieldInspectionPending",fieldInspectionPending)
 
     //Validation for Document CheckList At DM Level
-    if(applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
-      console.log("Validating document checklist remarks...");
-      console.log("Current checklistRemarks:", checklistRemarks);
-      console.log("remainingDocs:", remainingDocs);
+    if(action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
       const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
-      console.log("allRemarks at DM Level", allRemarksFilled);
 
         if(!allRemarksFilled){
          closeModal();
@@ -699,12 +687,10 @@ const stateId = Digit.ULBService.getStateId();
     }
    
     //Validation For Updating Fee At Any Level
-    if (!isFeeDisabled) {
+    if (action !== "UPDATE_ZONE" && !isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
-    //console.log("hasNonZeroFee==>",hasNonZeroFee);
-    //console.log("allRemarksFilled==>", allRemarksFilled);
 
     if (!hasNonZeroFee) {
       closeModal();
@@ -752,7 +738,6 @@ const stateId = Digit.ULBService.getStateId();
     };
 
     const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -782,6 +767,17 @@ const stateId = Digit.ULBService.getStateId();
         }),
       };
 
+      if (filtData?.action === "UPDATE_ZONE") {
+              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+              workflowDetails.revalidate();
+              // refetch();
+              setShowZoneModal(false);
+              setSelectedAction(null);
+              setTimeout(() => {
+                window.location.href = "/digit-ui/employee/obps/layout/inbox";
+              }, 3000);
+        }
+
       // Call checklist API before CLUUpdate but only incase of application status = "DOC_VERIFICATION_PENDING"
       if (applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0 && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
@@ -810,7 +806,6 @@ const stateId = Digit.ULBService.getStateId();
         }
         else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling employee response page");
           history.replace({
            pathname: `/digit-ui/employee/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
            state: { data: response }
@@ -855,16 +850,17 @@ const stateId = Digit.ULBService.getStateId();
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
-  console.log("displayData here", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  //console.log("coordinates==>", coordinates);
   const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
 
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc) => !(
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
+    doc?.documentType?.includes("Owner Id") || 
+    doc?.documentType?.includes("Owner Photo")
+  ))?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  //console.log("sitePhotoGrahphs==>", sitePhotographs);
-  //console.log("remainingDocs==>", remainingDocs);
 
   useEffect(() => {
     const fetchDistances = async () => {
@@ -885,7 +881,6 @@ const stateId = Digit.ULBService.getStateId();
                 parseFloat(loc?.longitude)
               );
               const minDistance = Math.min(d1, d2);
-              console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
               return minDistance;
             })
           );
@@ -901,6 +896,7 @@ const stateId = Digit.ULBService.getStateId();
   }, [coordinates, geoLocations]);
 
   const validateSiteImages = (action) => {
+    if (action?.action === "UPDATE_ZONE") return null;
     if (applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
       // Check distances
       if (distances?.length > 0) {
@@ -917,7 +913,6 @@ const stateId = Digit.ULBService.getStateId();
   };
 
 
-  console.log('distances here ', distances)
 
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
@@ -937,6 +932,8 @@ const stateId = Digit.ULBService.getStateId();
     setEmpDesignation(key);
   }
 
+
+  const currentZoneCode = applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.name || applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.code;
 
   if (isLoading) {
     return <Loader />;
@@ -973,7 +970,8 @@ const stateId = Digit.ULBService.getStateId();
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-                <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
+                <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
                 <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
@@ -1277,6 +1275,15 @@ const stateId = Digit.ULBService.getStateId();
             <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           )}
         </Modal>
+      )}
+
+
+      {showZoneModal && (
+        <ZoneModal
+          onClose={() => setShowZoneModal(false)}
+          onSelect={handleZoneSubmit}
+          currentZoneCode={currentZoneCode}
+        />
       )}
 
       {showModal ? (

@@ -28,7 +28,7 @@ import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
-import { amountToWords } from "../../../utils/index";
+import { amountToWords, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
@@ -94,6 +94,7 @@ const CLUApplicationDetails = () => {
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [empDesignation,setEmpDesignation] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
@@ -143,7 +144,14 @@ const CLUApplicationDetails = () => {
 
       const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
+
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+
+      const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = cluObject?.auditDetails?.lastModifiedTime;
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = totalTime ? formatDuration(totalTime) : null;
+      setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);
 
@@ -169,14 +177,19 @@ const CLUApplicationDetails = () => {
     { enabled: id ? true : false }
   );
 
-  console.log('businessServiceCode', businessServiceCode)
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+  const hasPayments = combinedPayments.length > 0;
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode, 
   });
 
-  console.log('workflowDetails', workflowDetails)
 
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -199,7 +212,6 @@ const CLUApplicationDetails = () => {
 
   }
 
- // console.log("Approve Comments:", approveComments);
 
 
   // const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
@@ -249,7 +261,6 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
        const finalComment = conditionText
         ? `The above approval is subjected to the following conditions: ${conditionText}`
         : "";
-      console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
@@ -258,9 +269,10 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
       const amountinwords = amountToWords(fee);
 
     let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
-     if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime, ownersString }] }, pdfkey);
-     
+
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
+      
 
       const updatedApplication = {
         ...application,
@@ -307,7 +319,6 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
        const finalComment = conditionText
         ? `The above approval is subjected to the following conditions: ${conditionText}`
         : "";
-      console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
@@ -413,10 +424,8 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  //console.log("actions here", actions);
 
   function onActionSelect(action) {
-    console.log("selected action", action);
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
     const applicationStatus = applicationDetails?.Clu?.[0]?.applicationStatus;
 
@@ -441,7 +450,6 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
-    // console.log("data ==>", data);
 
    // const vasikaNumber =  payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
    // const vasikaDate = convertToDDMMYYYY(payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
@@ -454,7 +462,6 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
     };
 
     const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -477,7 +484,6 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
           setSelectedAction(null);
         } else {
           //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling citizen response page");
           history.replace({
             pathname: `/digit-ui/citizen/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
             state: { data: response },
@@ -500,19 +506,19 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
   return `${day}/${month}/${year}`;
   };
 
-  console.log("displayData==>", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  //console.log("coordinates==>", coordinates);
   const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc) => !(
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
+    doc?.documentType?.includes("Owner Id") || 
+    doc?.documentType?.includes("Owner Photo")
+  ))?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  //console.log("sitePhotoGrahphs==>", sitePhotographs);
-  //console.log("remainingDocs==>", remainingDocs);
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-  //console.log("combinerOwnersName", combinedOwnersName);
 
   const siteInspectionEmp = useMemo(() => {
       return workflowDetails?.data?.processInstances
@@ -565,7 +571,8 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
           <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+              {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
+              <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
               <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
               <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
@@ -737,6 +744,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
               siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
             }}
             feeType="PAY1"
+            hasPayments={hasPayments}
           />
         )}
         </Card>
@@ -790,7 +798,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
         </Card>
       )} */}
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
 
       {actions && actions.length > 0 && (
         <ActionBar>

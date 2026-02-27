@@ -6,7 +6,7 @@ export const cluStepperConfig = [
       {
         component: "CLUApplicantDetails",
         withoutLabel: true,
-        key: "applicantDetails",
+        key: "applicationDetails",
         type: "component",
       },
       {

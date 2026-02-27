@@ -16,12 +16,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { id } = useParams();
   const applicationNo = useQueryParam("applicationNo");
   const isEditApplication = Boolean(id) || Boolean(applicationNo);
-  console.log("LOOK IN STEER",isEditApplication);
+  //console.log("LOOK IN STEER",isEditApplication);
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
   const cluValidationRef = useRef({ isCluValidated: false, isCluRequired: false });
-  console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
+  //console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
   const history = useHistory();  
 
   // Get Redux data BEFORE using it in useForm
@@ -29,7 +29,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.obps.LayoutNewApplicationFormReducer.formData;
   });
 
-  console.log(currentStepData, "FFFFFFFFFFF");
+  //console.log(currentStepData, "FFFFFFFFFFF");
 
   const {
     control,
@@ -144,74 +144,74 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }, [zoneOptions, siteDetails?.zone, setValue]);
 
   const onSubmit = async (data) => {
-    console.log("========== FORM SUBMIT START ==========");
-    console.log("Form Submit - Raw data:", data);
-    console.log("Form errors BEFORE trigger:", errors);
+    //console.log("========== FORM SUBMIT START ==========");
+    //console.log("Form Submit - Raw data:", data);
+    //console.log("Form errors BEFORE trigger:", errors);
     
     // Validate all form fields
     const isValid = await trigger();
-    console.log("Form validation result:", isValid);
-    console.log("Form errors AFTER trigger:", errors);
+    //console.log("Form validation result:", isValid);
+    //console.log("Form errors AFTER trigger:", errors);
     
     if (!isValid) {
-      console.log("❌ FORM VALIDATION FAILED - Listing all errors:");
+      //console.log("❌ FORM VALIDATION FAILED - Listing all errors:");
       Object.keys(errors).forEach(key => {
         if (errors[key]) {
-          console.log(`  - ${key}:`, errors[key].message);
+          //console.log(`  - ${key}:`, errors[key].message);
         }
       });
       setShowToast({ key: "true", error: true, message: "Please fill all required fields correctly" })
       return;
     }
 
-    console.log("✅ Form validation PASSED");
+    //console.log("✅ Form validation PASSED");
 
     // Validation for CLU - ONLY when CLU is NOT required (isCluRequired = "NO")
     // When isCluRequired = "YES", CLU Type doesn't show, so skip this validation
     const cluNotRequired = data?.isCluRequired?.code === "NO" || data?.isCluRequired === "NO";
     const cluType = data?.cluType?.code || data?.cluType;
     
-    console.log("CLU Validation - isCluRequired:", data?.isCluRequired, "cluNotRequired:", cluNotRequired, "cluType:", cluType);
-    console.log("CLU data:", { 
-      cluDocumentUpload: data?.cluDocumentUpload,
-      cluNumberOffline: data?.cluNumberOffline,
-      cluApprovalDate: data?.cluApprovalDate
-    });
+    //console.log("CLU Validation - isCluRequired:", data?.isCluRequired, "cluNotRequired:", cluNotRequired, "cluType:", cluType);
+    //console.log("CLU data:", { 
+    //   cluDocumentUpload: data?.cluDocumentUpload,
+    //   cluNumberOffline: data?.cluNumberOffline,
+    //   cluApprovalDate: data?.cluApprovalDate
+    // });
     
     if (cluNotRequired && cluType === "ONLINE") {
       // For online CLU, check if it was validated by user
       if (!cluValidationRef.current.isCluValidated) {
-        console.log("CLU Validation Failed - Not Validated");
+        //console.log("CLU Validation Failed - Not Validated");
         setShowToast({ key: "true", error: true, message: "CLU Number must be validated before proceeding. Please click 'Validate CLU' button." })
         return
       }
     } else if (cluNotRequired && cluType === "OFFLINE") {
       // For offline CLU, document must be uploaded (this is handled by form validation)
-      console.log("Checking OFFLINE CLU document upload...");
-      console.log("data?.cluDocumentUpload:", data?.cluDocumentUpload);
-      console.log("data?.cluNumberOffline:", data?.cluNumberOffline);
-      console.log("data?.cluApprovalDate:", data?.cluApprovalDate);
+      //console.log("Checking OFFLINE CLU document upload...");
+      //console.log("data?.cluDocumentUpload:", data?.cluDocumentUpload);
+      //console.log("data?.cluNumberOffline:", data?.cluNumberOffline);
+      //console.log("data?.cluApprovalDate:", data?.cluApprovalDate);
       
       if (!data?.cluDocumentUpload) {
-        console.log("CLU Validation Failed - Document not uploaded");
+        //console.log("CLU Validation Failed - Document not uploaded");
         setShowToast({ key: "true", error: true, message: "CLU Document is required for Offline CLU. Please upload." })
         return
       }
     }
 
-    console.log("All validations passed, proceeding...");
+    //console.log("All validations passed, proceeding...");
 
     // Save data in redux
     dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data))
 
     // If create api is already called then move to next step
     if (isEditApplication || currentStepData?.apiData?.Layout?.applicationNo) {
-      console.log("Edit mode or API already called, calling onGoNext");
+      //console.log("Edit mode or API already called, calling onGoNext");
       // callUpdateAPI({ ...currentStepData, siteDetails: { ...data } });
       onGoNext()
     } else {
       // Call Create API and move to next Page
-      console.log("New application, calling Create API");
+      //console.log("New application, calling Create API");
       callCreateAPI({ ...currentStepData, siteDetails: { ...data } })
     }
   }
@@ -219,7 +219,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const callCreateAPI = async (formData) => {
     const userInfo = Digit.UserService.getUser()?.info || {};
 
-    console.log("  Form data for CREATE API:", formData);
+    //console.log("  Form data for CREATE API:", formData);
 
     const transformedSiteDetails = {
       ...formData?.siteDetails,
@@ -271,6 +271,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         documentFile: formData?.applicationDetails?.documentUploadedFiles || null,
         ownerPhoto: formData?.applicationDetails?.photoUploadedFiles || null,
         panDocument: formData?.applicationDetails?.panDocumentUploadedFiles || null,
+        aplicantType: formData?.applicationDetails?.aplicantType || null
       },
       // additionalDetails: {
       //   documentFile: formData?.applicationDetails?.documentUploadedFiles || formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || null,
@@ -296,6 +297,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
             documentFile: applicant?.documentUploadedFiles || null,
             ownerPhoto: applicant?.photoUploadedFiles || null,
             panDocument: applicant?.panDocumentUploadedFiles || null,
+            aplicantType: applicant?.aplicantType || null
           },
           // additionalDetails: {
           //   documentFile: applicant?.documentUploadedFiles || formData?.documentUploadedFiles?.[index + 1]?.fileStoreId || formData?.documentUploadedFiles?.[index + 1] || null,
@@ -319,7 +321,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       primaryOwnerDocument: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || "",
     };
 
-    console.log("Checking applicants data: ", applicants)
+    //console.log("Checking applicants data: ", applicants)
 
     const payload = {
       Layout: {
@@ -344,17 +346,17 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       },
     };
 
-    console.log("  Final CREATE payload:", payload);
+    //console.log("  Final CREATE payload:", payload);
 
     try {
       const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
 
-      console.log("  CREATE API Response:", response);
-      console.log("  Response Layout:", response?.Layout);
-      console.log("  Response Status:", response?.ResponseInfo?.status);
+      //console.log("  CREATE API Response:", response);
+      //console.log("  Response Layout:", response?.Layout);
+      //console.log("  Response Status:", response?.ResponseInfo?.status);
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("  Success: create api executed successfully!");
+        //console.log("  Success: create api executed successfully!");
         
         // Restructure: Convert Layout array to object
         const restructuredResponse = {
@@ -362,14 +364,14 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           Layout: response?.Layout?.[0] || response?.Layout, // Get first element if array
         };
         
-        console.log("  Restructured response - Layout is now:", restructuredResponse?.Layout);
-        console.log("  Layout applicationNo:", restructuredResponse?.Layout?.applicationNo);
-        console.log("  Full restructured response:", restructuredResponse);
+        //console.log("  Restructured response - Layout is now:", restructuredResponse?.Layout);
+        //console.log("  Layout applicationNo:", restructuredResponse?.Layout?.applicationNo);
+        //console.log("  Full restructured response:", restructuredResponse);
         
         // Save API response to Redux
         dispatch(UPDATE_LayoutNewApplication_FORM("apiData", restructuredResponse));
         history.push(`/digit-ui/citizen/obps/layout/apply?applicationNo=${restructuredResponse?.Layout?.applicationNo}`);
-        console.log("  Dispatched to Redux, calling onGoNext()");        
+        //console.log("  Dispatched to Redux, calling onGoNext()");        
         onGoNext();
       } else {
         console.error("  Error: create api not executed properly!", response);
@@ -384,7 +386,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const callUpdateAPI = async (formData) => {
     const userInfo = Digit.UserService.getUser()?.info || {};
 
-    console.log("  Form data for CREATE API:", formData);
+    //console.log("  Form data for CREATE API:", formData);
 
     const transformedSiteDetails = {
       ...formData?.siteDetails,
@@ -484,7 +486,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       primaryOwnerDocument: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || "",
     };
 
-    console.log("Checking applicants data: ", applicants)
+    //console.log("Checking applicants data: ", applicants)
 
     const payload = {
       Layout: {
@@ -509,17 +511,17 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       },
     };
 
-    console.log("  Final CREATE payload:", payload);
+    //console.log("  Final CREATE payload:", payload);
 
     try {
       const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
 
-      console.log("  CREATE API Response:", response);
-      console.log("  Response Layout:", response?.Layout);
-      console.log("  Response Status:", response?.ResponseInfo?.status);
+      //console.log("  CREATE API Response:", response);
+      //console.log("  Response Layout:", response?.Layout);
+      //console.log("  Response Status:", response?.ResponseInfo?.status);
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("  Success: create api executed successfully!");
+        //console.log("  Success: create api executed successfully!");
         
         // Restructure: Convert Layout array to object
         const restructuredResponse = {
@@ -527,14 +529,14 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           Layout: response?.Layout?.[0] || response?.Layout, // Get first element if array
         };
         
-        console.log("  Restructured response - Layout is now:", restructuredResponse?.Layout);
-        console.log("  Layout applicationNo:", restructuredResponse?.Layout?.applicationNo);
-        console.log("  Full restructured response:", restructuredResponse);
+        //console.log("  Restructured response - Layout is now:", restructuredResponse?.Layout);
+        //console.log("  Layout applicationNo:", restructuredResponse?.Layout?.applicationNo);
+        //console.log("  Full restructured response:", restructuredResponse);
         
         // Save API response to Redux
         dispatch(UPDATE_LayoutNewApplication_FORM("apiData", restructuredResponse));
         history.push(`/digit-ui/citizen/obps/layout/apply?applicationNo=${restructuredResponse?.Layout?.applicationNo}`);
-        console.log("  Dispatched to Redux, calling onGoNext()");        
+        //console.log("  Dispatched to Redux, calling onGoNext()");        
         onGoNext();
       } else {
         console.error("  Error: create api not executed properly!", response);

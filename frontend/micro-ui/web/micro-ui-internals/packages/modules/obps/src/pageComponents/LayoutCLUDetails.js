@@ -37,9 +37,9 @@ const LayoutCLUDetails = (_props) => {
   const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
 
   useEffect(() => {
-    console.log("LayoutCLUDetails MDMS Data:", mdmsData);
-    console.log("Non-Scheme Type Options:", nonSchemeTypeOptions);
-    console.log("Area Type Options:", areaTypeOptions);
+    //console.log("LayoutCLUDetails MDMS Data:", mdmsData);
+    //console.log("Non-Scheme Type Options:", nonSchemeTypeOptions);
+    //console.log("Area Type Options:", areaTypeOptions);
   }, [mdmsData, nonSchemeTypeOptions, areaTypeOptions]);
 
   const cluOptions = [
@@ -54,7 +54,7 @@ const LayoutCLUDetails = (_props) => {
   ];
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
+    //console.log("currentStepData4", currentStepData);
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
       //console.log("coming here", formattedData);

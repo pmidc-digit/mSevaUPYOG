@@ -125,7 +125,7 @@ const sortedRoadType = useMemo(
   //   t
   // );
 
-  console.log('localities in step 2 edit', localities)
+  // console.log('localities in step 2 edit', localities)
 
   // useEffect(() => {
   // if (fetchedLocalities?.length > 0) {
@@ -1116,7 +1116,7 @@ const sortedRoadType = useMemo(
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {`${t("BPA_AREA_TYPE_LABEL")}`}
+              {`${t("NOC_LOCALITY_TYPE_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
@@ -1135,11 +1135,12 @@ const sortedRoadType = useMemo(
                       option={fetchedLocalities.sort((a, b) => a.name.localeCompare(b.name))}
                       optionKey="name"
                       t={t}
+                      disable={Boolean(currentStepData?.applicationDetails?.owners?.[0]?.localityAreaType?.name)}
                     />
                   )}
                 />
               )}
-              {errors?.localityAreaType ? errors?.localityAreaType?.message : ""}
+            {errors?.localityAreaType && (<CardLabelError className="ral-error-label">{errors?.localityAreaType?.message}</CardLabelError>)}
             </div>
           </LabelFieldPair>
         </div>

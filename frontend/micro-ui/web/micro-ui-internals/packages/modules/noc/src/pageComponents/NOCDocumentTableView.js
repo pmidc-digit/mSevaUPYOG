@@ -51,7 +51,8 @@ const NOCDocumentTableView = ({documents}) => {
       documentType: doc?.documentType || "",
       filestoreId: doc?.filestoreId || "",
       documentUid: doc?.documentUid || "",
-      documentAttachment: doc?.documentAttachment || ""
+      documentAttachment: doc?.documentAttachment || "",
+      order: doc?.order || null
     }))
    }
   };
@@ -64,28 +65,37 @@ const NOCDocumentTableView = ({documents}) => {
   );
   
   const mappedDocuments = documents?.map(doc => {
-   const { documentUid, documentType } = doc;
+   const { documentUid, documentType, order } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
    return {
     documentUid,
     documentType,
-    url
+    url,
+    order
   };
   });
 
   const documentsData = useMemo(() => {
-     return (mappedDocuments)?.map((doc, index) => ({
+    if (!mappedDocuments) return [];
+
+    const sortedDocs = [...mappedDocuments]?.sort((a, b) => {
+      if (a.order === null) return 1;
+      if (b.order === null) return -1;
+      return a?.order - b?.order;
+    });
+
+    return sortedDocs.map((doc, index) => ({
       id: index,
       srNo: index + 1,
       title: t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA"),
-      fileUrl: doc.url,
-     }));
-    }, [mappedDocuments]);
+      fileUrl: doc?.url,
+    }));
+  }, [mappedDocuments]);
 
   return (
-    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>
+    <div className='checklist-document-table-wrapper'>
       <style>{srNoStyle}</style>
-      <div className="noc-document-table-view">
+      <div className="noc-document-table-view checklist-document-table">
         {documentsData && (
           <Table
             className="customTable table-border-style"

@@ -24,11 +24,13 @@ import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { useHistory, useLocation } from "react-router-dom";
 import { UPDATE_LayoutNewApplication_FORM } from "../redux/actions/LayoutNewApplicationActions";
+import { LoaderNew } from "../components/LoaderNew";
 
 const useQueryParam = (key) => {
   const { search } = useLocation();
   return new URLSearchParams(search).get(key);
 };
+
 
 const LayoutApplicantDetails = (_props) => {
   const dispatch = useDispatch();
@@ -55,8 +57,9 @@ const LayoutApplicantDetails = (_props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
+  const [primaryApplicantType, setPrimaryApplicantType] = useState({});
 
-  console.log("userInfo here", userInfo);
+  //console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
 
   const { isLoading: genderTypeDataLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
@@ -80,7 +83,7 @@ const LayoutApplicantDetails = (_props) => {
 
   useEffect(() => {
     // Only restore data on mount, not on every change
-    console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
+    //console.log("[v0] LayoutApplicantDetails - Restoring from currentStepData on mount");
     const formattedData = currentStepData?.applicationDetails;
 
     if (formattedData) {
@@ -91,13 +94,13 @@ const LayoutApplicantDetails = (_props) => {
 
     // Restore additional applicants from currentStepData
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
-      console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
+      //console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
       setApplicants(currentStepData.applicants);
     }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
     else if (currentStepData?.apiData?.Layout?.[0]?.owners && currentStepData?.apiData?.Layout?.[0]?.owners?.length > 1) {
       const ownersFromApi = currentStepData.apiData.Layout[0].owners;
-      console.log("[v0] Mapping owners from API response:", ownersFromApi);
+      //console.log("[v0] Mapping owners from API response:", ownersFromApi);
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
       const additionalApplicants = ownersFromApi.slice(1).map((owner) => {
@@ -128,7 +131,7 @@ const LayoutApplicantDetails = (_props) => {
         };
       });
 
-      console.log("[v0] Mapped additional applicants:", additionalApplicants);
+      //console.log("[v0] Mapped additional applicants:", additionalApplicants);
 
       // Keep the first empty placeholder at index 0, then add additional applicants
       // This is because the render logic skips index 0 (index > 0)
@@ -146,19 +149,19 @@ const LayoutApplicantDetails = (_props) => {
 
     // Restore document uploaded files from Redux state
     if (currentStepData?.documentUploadedFiles && Object.keys(currentStepData.documentUploadedFiles).length > 0) {
-      console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
+      //console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
       setDocumentUploadedFiles(currentStepData.documentUploadedFiles);
     }
     
     // Restore photo uploaded files from Redux state
     if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
-      console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
+      //console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
       setPhotoUploadedFiles(currentStepData.photoUploadedFiles);
     }
 
     // Restore PAN document uploaded files from Redux state
     if (currentStepData?.panDocumentUploadedFiles && Object.keys(currentStepData.panDocumentUploadedFiles).length > 0) {
-      console.log("[v0] Restoring panDocumentUploadedFiles from Redux:", currentStepData.panDocumentUploadedFiles);
+      //console.log("[v0] Restoring panDocumentUploadedFiles from Redux:", currentStepData.panDocumentUploadedFiles);
       setPanDocumentUploadedFiles(currentStepData.panDocumentUploadedFiles);
     }
 
@@ -169,7 +172,7 @@ const LayoutApplicantDetails = (_props) => {
       (!currentStepData?.documentUploadedFiles || Object.keys(currentStepData.documentUploadedFiles).length === 0)
     ) {
       const ownersFromApi = currentStepData.apiData.Layout[0].owners;
-      console.log("[v0] Mapping documents from owners additionalDetails");
+      //console.log("[v0] Mapping documents from owners additionalDetails");
 
       const docFiles = {};
       const photoFiles = {};
@@ -188,9 +191,9 @@ const LayoutApplicantDetails = (_props) => {
         }
       });
 
-      console.log("[v0] Mapped document files:", docFiles);
-      console.log("[v0] Mapped photo files:", photoFiles);
-      console.log("[v0] Mapped PAN document files:", panDocFiles);
+      //console.log("[v0] Mapped document files:", docFiles);
+      //console.log("[v0] Mapped photo files:", photoFiles);
+      //console.log("[v0] Mapped PAN document files:", panDocFiles);
 
       if (Object.keys(docFiles).length > 0) {
         setDocumentUploadedFiles(docFiles);
@@ -217,7 +220,7 @@ const LayoutApplicantDetails = (_props) => {
 
     const userResponse = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
     setIsLoading(false);
-    console.log(userResponse, "PHOTO");
+    //console.log(userResponse, "PHOTO");
     if (!userResponse?.user?.length) {
       setShowToast({
         key: "true",
@@ -540,7 +543,7 @@ const LayoutApplicantDetails = (_props) => {
   return (
     <React.Fragment>
       {loader && <Loader />}
-      <div>
+      <div>        
         {/* <CardSectionHeader className="card-section-header" style={{ marginBottom: "15px" }}>
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader> */}
@@ -596,10 +599,41 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
+          <LabelFieldPair style={{ marginBottom: "15px" }}>
+            <CardLabel className="card-label-smaller">
+              {`${t("Applicant Type")}`} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+                <Controller
+                  control={control}
+                  name={"aplicantType"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      select={(e) => {                        
+                        props.onChange(e);
+                        setPrimaryApplicantType(e)
+                      }}
+                      selected={props.value}
+                      option={[
+                        {name: "Individual", code: "INDIVIDUAL"},
+                        {name: "Firm", code: "FIRM"},
+                      ]}
+                      optionKey="name"
+                      disable={isEditMode}
+                      t={t}
+                    />
+                  )}
+                />              
+              <CardLabelError style={errorStyle}>{errors?.aplicantType?.message || ""}</CardLabelError>
+            </div>
+          </LabelFieldPair>
+
           {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
-              {`${t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
+              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_NAME_LABEL") : t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
@@ -806,8 +840,9 @@ const LayoutApplicantDetails = (_props) => {
               justifyContent: "end",
             }}
           >
-            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
-              <strong>Accepted File Types:</strong> JPEG, JPG, PNG
+            <p className="advisory-text">
+              {/* <strong>Accepted File Types:</strong> JPEG, JPG, PNG */}
+              Only <strong>.png, .jpeg, .jpg</strong> files are accepted with maximum size of <strong>5 MB</strong>
             </p>
           </div>
           <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
@@ -852,8 +887,9 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
-              <strong>Accepted File Types:</strong> PDF
+            <p className="advisory-text">
+              {/* <strong>Accepted File Types:</strong> PDF */}
+              Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
             </p>
           </div>
           {/* PAN Document */}
@@ -899,8 +935,9 @@ const LayoutApplicantDetails = (_props) => {
               marginTop: "10px",
             }}
           >
-            <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>
-              <strong>Accepted File Types:</strong> PDF
+            <p className="advisory-text">
+              {/* <strong>Accepted File Types:</strong> PDF */}
+              Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
             </p>
           </div>
 
@@ -1004,7 +1041,7 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       {/* {applicantErrors[index]?.mobileNumber && <ErrorMessage>{applicantErrors[index].mobileNumber}</ErrorMessage>} */}
-                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.mobileNumber?.message || ""}</CardLabelError>                    
 
                       {/* Name */}
                       <LabelFieldPair style={{ marginBottom: "15px" }}>
@@ -1123,6 +1160,22 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.photo?.message || ""}</CardLabelError>
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "end",
+
+                          borderRadius: "4px",
+                          marginBottom: "20px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <p className="advisory-text">
+                          {/* <strong>Accepted File Types:</strong> PDF */}
+                          Only <strong>.png, .jpeg, .jpg</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                        </p>
+                      </div>
 
                       <LabelFieldPair style={{ marginBottom: "15px", marginTop: "3rem" }}>
                         <CardLabel className="card-label-smaller">
@@ -1147,6 +1200,22 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.document?.message || ""}</CardLabelError>
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "end",
+
+                          borderRadius: "4px",
+                          marginBottom: "20px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <p className="advisory-text">
+                          {/* <strong>Accepted File Types:</strong> PDF */}
+                          Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                        </p>
+                      </div>
 
                       {/* PAN Number */}
 
@@ -1174,6 +1243,22 @@ const LayoutApplicantDetails = (_props) => {
                         </div>
                       </LabelFieldPair>
                       <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panDocument?.message || ""}</CardLabelError>
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "end",
+
+                          borderRadius: "4px",
+                          marginBottom: "20px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <p className="advisory-text">
+                          {/* <strong>Accepted File Types:</strong> PDF */}
+                          Only <strong>.pdf</strong> files are accepted with maximum size of <strong>5 MB</strong>
+                        </p>
+                      </div>
 
                       <LabelFieldPair  >
                         <CardLabel className="card-label-smaller">

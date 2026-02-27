@@ -54,6 +54,8 @@ const ApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
+  const[approverStatement, setApproverStatement]= useState(null)
+  
   const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
@@ -297,7 +299,7 @@ const ApplicationOverview = () => {
       let acknowledgementData;
 
       if (empData) {
-        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData);
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
       }
       console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
@@ -453,11 +455,11 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     if (workflowDetails) {
-      console.log("workflowDetails here", workflowDetails);
       const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
 
       const name = approveInstance?.assigner?.name || "NA";
-
+      const status = applicationDetails?.Applications?.[0]?.applicationStatus;
+      setApproverStatement(status ? `${t(status)} By` : "");
       setApprover(name);
     }
   }, [workflowDetails]);

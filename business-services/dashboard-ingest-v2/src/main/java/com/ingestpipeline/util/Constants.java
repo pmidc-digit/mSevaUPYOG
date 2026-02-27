@@ -44,7 +44,7 @@ public interface Constants {
 	public static String TENANTID_PLACEHOLDER = "TENANTID_PLACEHOLDER";
 	public static String CONTENT_TYPE = "content-type";
 	public static String JSON = "application/json;charset=UTF-8";
-	public static String MDMS_URL = "http://localhost:8033/egov-mdms-service/v1/_search";
+	public static String MDMS_URL = "http://egov-mdms-service.egov:8080/egov-mdms-service/v1/_search";
 	public static String MDMS_RES = "MdmsRes";
 	public static String BUSINESS_SERVICE="BusinessService";
 	public static String BILLING_SERVICE = "BillingService";

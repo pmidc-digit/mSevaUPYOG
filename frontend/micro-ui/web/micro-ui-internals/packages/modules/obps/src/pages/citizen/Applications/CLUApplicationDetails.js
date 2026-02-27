@@ -230,6 +230,18 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
 
     const application = applicationDetails?.Clu;
         const approvecomments = approveComments?.[0];
+    const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+          const owners = application?.[0]?.owners || [];
+          let ownersString = "NA";
+          if (!firmName) {
+            if (owners?.length > 1) {
+              ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
+            } else if (owners?.length === 1) {
+              ownersString = owners[0]?.name || "owner 1";
+            }
+          } else {
+            ownersString = firmName;
+          }
         let conditionText = "";
       if (approvecomments?.includes("[#?..**]")) {
         conditionText = approvecomments.split("[#?..**]")[1] || "";
@@ -246,11 +258,9 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
       const amountinwords = amountToWords(fee);
 
     let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    console.log("fileStoreId before create", fileStoreId);
-
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
-      
+     if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime, ownersString }] }, pdfkey);
+     
 
       const updatedApplication = {
         ...application,

@@ -222,6 +222,18 @@ const CLUEmployeeApplicationDetails = () => {
         setLoader(true);
           const application = applicationDetails?.Clu;
           const approvecomments = approveComments?.[0];
+          const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+          const owners = application?.[0]?.owners || [];
+          let ownersString = "NA";
+          if (!firmName) {
+            if (owners?.length > 1) {
+              ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
+            } else if (owners?.length === 1) {
+              ownersString = owners[0]?.name || "owner 1";
+            }
+          } else {
+            ownersString = firmName;
+          }
           let conditionText = "";
           let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
           console.log('fileStoreId HERE', fileStoreId)
@@ -239,7 +251,7 @@ const CLUEmployeeApplicationDetails = () => {
         const fee = payments?.totalAmountPaid;
         const amountinwords = amountToWords(fee);
         if (!fileStoreId){
-          const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
+          const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime, ownersString }] }, pdfkey);
           fileStoreId = response?.filestoreIds[0];
         }
         return fileStoreId;  

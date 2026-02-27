@@ -16,8 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.TimeZone;
 
-
-@Import({TracerConfiguration.class})
+@Import({ TracerConfiguration.class })
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,19 +35,18 @@ public class PropertyConfiguration {
     @Bean
     @Autowired
     public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
-    MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-    converter.setObjectMapper(objectMapper);
-    return converter;
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper);
+        return converter;
     }
 
-
-    //PERSISTER
+    // PERSISTER
     @Value("${persister.save.property.topic}")
     private String savePropertyTopic;
 
     @Value("${persister.save.property.fuzzy.topic}")
     private String savePropertyFuzzyTopic;
-    
+
     @Value("${persister.update.property.topic}")
     private String updatePropertyTopic;
 
@@ -64,8 +62,6 @@ public class PropertyConfiguration {
     @Value("${persister.migration.batch.count.topic}")
     private String migartionBatchCountTopic;
 
-
-
     @Value("${pmidc.auth.host}")
     private String pmidcAuthHost;
 
@@ -78,32 +74,30 @@ public class PropertyConfiguration {
     @Value("${pmidc.auth.password:}")
     private String defaultPassword;
 
-
-    //USER
+    // USER
     @Value("${egov.user.host}")
     private String userHost;
-    
+
     @Value("${egov.user.search.path}")
     private String userSearchEndpoint;
 
     @Value("${egov.internal.microservice.user.uuid}")
     private String egovInternalMicroserviceUserUuid;
 
+    // IDGEN config
 
-    //IDGEN config
-    
     @Value("${egov.idgen.host}")
     private String idGenHost;
 
     @Value("${egov.idgen.path}")
     private String idGenPath;
-    
+
     @Value("${egov.idgen.ack.name}")
     private String ackIdGenName;
 
     @Value("${egov.idgen.ack.format}")
     private String ackIdGenFormat;
-    
+
     @Value("${egov.idgen.mutation.name}")
     private String mutationIdGenName;
 
@@ -118,7 +112,7 @@ public class PropertyConfiguration {
 
     @Value("${egov.idgen.ptid.name}")
     private String propertyIdGenName;
-    
+
     @Value("${egov.idgen.ptid.format}")
     private String propertyIdGenFormat;
 
@@ -128,17 +122,19 @@ public class PropertyConfiguration {
     @Value("${thirdParty.subUrl}")
     private String thirdPartysubUrl;
 
+    @Value("${thirdParty.fetchDataByBlockSubUrl}")
+    private String thirdPartyFetchDataByBlockSubUrl;
 
     @Value("${thirdPartyBhatinda.host}")
     private String thirdPartyBhatindahost;
 
     @Value("${thirdPartyBhatinda.subUrl}")
     private String thirdPartyBhatindasubUrl;
-    
+
     @Value("${thirdparty.key}")
-   private String thirdpartykey;
-    
-    //NOTIFICATION TOPICS
+    private String thirdpartykey;
+
+    // NOTIFICATION TOPICS
     @Value("${kafka.topics.notification.sms}")
     private String smsNotifTopic;
 
@@ -159,15 +155,15 @@ public class PropertyConfiguration {
 
     @Value("${notif.email.enabled}")
     private Boolean isEmailNotificationEnabled;
-    
-    // Notif variables 
-    
+
+    // Notif variables
+
     @Value("${egov.notif.commonpay}")
     private String commonPayLink;
-    
+
     @Value("${egov.notif.view.property}")
     private String viewPropertyLink;
-    
+
     @Value("${egov.notif.view.mutation}")
     private String viewMutationLink;
 
@@ -176,14 +172,14 @@ public class PropertyConfiguration {
 
     @Value("${egov.usr.events.view.history.link}")
     private String userEventViewPropertyLink;
-    
+
     @Value("${egov.usr.events.view.mutation.history.link}")
     private String userEventViewMutationLink;
 
     @Value("${egov.usr.events.download.receipt.link}")
     private String userEventReceiptDownloadLink;
-    
-    //Property Search Params
+
+    // Property Search Params
     @Value("${citizen.allowed.search.params}")
     private String citizenSearchParams;
 
@@ -192,17 +188,17 @@ public class PropertyConfiguration {
 
     @Value("${notification.url}")
     private String notificationURL;
-    
+
     @Value("${pt.search.pagination.default.limit}")
     private Long defaultLimit;
 
     @Value("${pt.search.pagination.default.offset}")
     private Long defaultOffset;
-    
+
     @Value("${pt.search.pagination.max.search.limit}")
     private Long maxSearchLimit;
 
-    //Localization
+    // Localization
     @Value("${egov.localization.host}")
     private String localizationHost;
 
@@ -214,38 +210,37 @@ public class PropertyConfiguration {
 
     @Value("${egov.localization.fallback.locale}")
     private String fallBackLocale;
-    //USER EVENTS
-	@Value("${egov.ui.app.host}")
-	private String uiAppHost;
-    
-	@Value("${egov.usr.events.create.topic}")
-	private String saveUserEventsTopic;
-		
-	@Value("${egov.usr.events.pay.link}")
-	private String payLink;
-	
-	@Value("${egov.usr.events.pay.code}")
-	private String payCode;
-	
-	@Value("${egov.user.event.notification.enabled}")
-	private Boolean isUserEventsNotificationEnabled;
+    // USER EVENTS
+    @Value("${egov.ui.app.host}")
+    private String uiAppHost;
+
+    @Value("${egov.usr.events.create.topic}")
+    private String saveUserEventsTopic;
+
+    @Value("${egov.usr.events.pay.link}")
+    private String payLink;
+
+    @Value("${egov.usr.events.pay.code}")
+    private String payCode;
+
+    @Value("${egov.user.event.notification.enabled}")
+    private Boolean isUserEventsNotificationEnabled;
 
     @Value("${egov.msg.download.receipt.link}")
     private String receiptDownloadLink;
-	
-	//Assessments V2
-	@Value("${egov.pt.assessment.create.topic}")
-	private String createAssessmentTopic;
-	
-	@Value("${egov.pt.assessment.update.topic}")
-	private String updateAssessmentTopic;
+
+    // Assessments V2
+    @Value("${egov.pt.assessment.create.topic}")
+    private String createAssessmentTopic;
+
+    @Value("${egov.pt.assessment.update.topic}")
+    private String updateAssessmentTopic;
 
     @Value("${egov.msg.pay.link}")
     private String payLinkSMS;
-	
 
     // Workflow
-	
+
     @Value("${pt.business.codes}")
     private List<String> businessServiceList;
 
@@ -263,66 +258,62 @@ public class PropertyConfiguration {
 
     @Value("${is.workflow.enabled}")
     private Boolean isWorkflowEnabled;
-    
+
     @Value("${property.create.workflow.name}")
     private String createPTWfName;
-    
+
     @Value("${property.legacy.entry.workflow.name}")
     private String LegacyPTWfName;
-    
+
     @Value("${property.update.workflow.name}")
     private String updatePTWfName;
-    
+
     @Value("${is.mutation.workflow.enabled}")
     private Boolean isMutationWorkflowEnabled;
-    
+
     @Value("${mutation.workflow.name}")
     private String mutationWfName;
-    
+
     @Value("${mutation.workflow.open.state}")
     private String mutationOpenState;
-    
+
     @Value("${workflow.status.active}")
     private String wfStatusActive;
-    
-    // ##### mdms 
-    
+
+    // ##### mdms
+
     @Value("${egov.mdms.host}")
     private String mdmsHost;
 
     @Value("${egov.mdms.search.endpoint}")
     private String mdmsEndpoint;
-    
+
     // Billing-Service
-    
-    
+
     @Value("${egbs.host}")
     private String egbsHost;
 
     @Value("${egbs.fetchbill.endpoint}")
     private String egbsFetchBill;
-    	
-    // Registry 
-    
+
+    // Registry
+
     @Value("${property.min.landarea}")
-	private Double minumumLandArea;
-    
+    private Double minumumLandArea;
+
     @Value("${property.unit.landarea}")
-	private String landAreaUnit;
-    
+    private String landAreaUnit;
+
     @Value("${property.min.unit.builtuparea}")
-	private BigDecimal minUnitArea;
-    
+    private BigDecimal minUnitArea;
+
     @Value("${property.module.name}")
-	private String propertyModuleName;    
-
-
+    private String propertyModuleName;
 
     // Assessment Workflow
 
     @Value("${assessment.workflow.enabled}")
     private Boolean isAssessmentWorkflowEnabled;
-
 
     @Value("${assessment.workflow.trigger.param}")
     private String assessmentWorkflowTriggerParams;
@@ -333,8 +324,6 @@ public class PropertyConfiguration {
     @Value("${assessment.workflow.demand.trigger}")
     private String demandTriggerState;
 
-
-
     // Calculation
 
     @Value("${egov.calculation.host}")
@@ -343,20 +332,17 @@ public class PropertyConfiguration {
     @Value("${egov.calculation.context.path}")
     private String calculationContextPath;
 
-
     @Value("${egov.calculation.endpoint}")
     private String calculationEndpoint;
 
     @Value("${egov.updation.endpoint}")
     private String updateDemandEndpoint;
-   
+
     @Value("${egov.calculation.mutation.endpoint}")
     private String mutationCalculationEndpoint;
 
-
     @Value("${egov.localization.statelevel}")
     private Boolean isLocalizationStateLevel;
-
 
     // url shortner
 
@@ -368,7 +354,6 @@ public class PropertyConfiguration {
 
     @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
-
 
     // ES Config
 
@@ -398,7 +383,7 @@ public class PropertyConfiguration {
     @Value("${inbox.property.search.allowed}")
     private Boolean isInboxSearchAllowed;
 
-    //encryptOldDataStatus topic
+    // encryptOldDataStatus topic
     @Value("${property.oldDataEncryptionStatus.topic}")
     private String encryptionStatusTopic;
 

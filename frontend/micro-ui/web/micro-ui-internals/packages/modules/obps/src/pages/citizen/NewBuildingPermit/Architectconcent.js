@@ -128,7 +128,7 @@ console.log('currentStepData', currentStepData)
   }, [userSelected]);
 
 
-const selfdeclarationform = `
+const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?.isSelfCertification ? `
   <div style="font-family: 'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; padding:0; margin-top:-100px">
 
     <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
@@ -166,6 +166,99 @@ const selfdeclarationform = `
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
       That the drawings prepared and uploaded along with other necessary documents on this mSeva (OBPAS) portal are as per the provisions of Punjab Municipal Building Byelaws and this building plan has been applied under Self-Certification Scheme. I certify that:
+    </p>
+
+    <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
+      <li style="margin-top:-5px;margin-bottom:-5px;">1. That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and other applicable instructions/regulations, which are in force and I undertake to fulfil the same.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">2. That plans have been prepared within the framework of provisions of the Master Plan and applicable Building Bye Laws / Regulations.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">3. That site does not fall in any prohibited area/ government land/ encroachment or any other land restricted for building construction or in any unauthorized colony.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">4. That plan is in conformity to structural safety norms.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">5. That I have seen the originals of all the documents uploaded and nothing is concealed thereof.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">6. That all the requisite documents/NOC required to be uploaded have been uploaded on mSeva (OBPAS)  portal along with plan.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">7. That all the requisite fees required to be deposited have been mentioned.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">8. That above stated facts are true and all the requisite documents uploaded with this OBPAS plan have been signed by the owner/owners in my presence.</li>
+    </ol>
+
+   
+
+    <!-- Signature / details table (dotted cells like your doc) -->
+    ${TimeStamp !== ""?`<table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
+      <tr>
+        <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
+          <div style="font-weight:700; margin-bottom:6px;">Date:</div>
+          <div style="min-height:70px;">${DateOnly}</div>
+
+        </td>
+
+        <td style="width:52%; vertical-align:top; padding:0 0 0 0; border:1px dotted #000;">
+          <table style="width:100%; border-collapse:collapse;">
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; width:40%; font-weight:700;">Name of Professional:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architecname}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Registration No.:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architectid || '<Registration Number>'}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architectmobileNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">e-Mail:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${user?.info?.emailId}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; font-weight:700;">Signature:</td>
+              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || '<date> <time>'}</b></td>
+            </tr>
+          </table>`:""}
+        </td>
+      </tr>
+    </table>
+  </div>
+` :`
+  <div style="font-family: 'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; padding:0; margin-top:-100px">
+
+    <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
+      DECLARATION
+    </h2>
+    <div style="text-align:center; margin-top:-78px;">
+      <div style="font-size:16px; margin:0;">(For ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} Construction)</div>
+      <div style="font-size:16px; margin:2px 0 0 0;">(By Architect/ Civil Engineer/ Building Designer and Supervisor)</div>
+    </div>
+
+    <div style="margin-top:-52px;">
+      <p style="margin-bottom:-32px;"><strong>To</strong></p>
+      <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
+      <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
+      <p style="margin-bottom:-32px;">${currentStepData?.createdResponse?.additionalDetails?.UlbName}</p>
+    </div>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
+
+    <p style="margin-top:-30px;margin-bottom:-32px;">
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner(s) ${ownerDetails} for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      This site falls in Ward Number <b>${ward}</b>, Zone Number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} construction is permissible in this area.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      I am currently registered as <b>${architecttype || "<Professional's User Type>"}</b> with the Competent Authority.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      I hereby certify that I/we have been appointed by the owner to prepare the plans, sections and details, structural details as required under the Punjab Municipal Building Byelaws for the above-mentioned project.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      That the drawings prepared and uploaded along with other necessary documents on this mSeva (OBPAS) portal are as per the provisions of Punjab Municipal Building Byelaws. I certify that:
     </p>
 
     <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">

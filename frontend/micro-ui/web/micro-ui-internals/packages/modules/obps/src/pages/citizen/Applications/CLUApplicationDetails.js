@@ -237,6 +237,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
        const finalComment = conditionText
         ? `The above approval is subjected to the following conditions: ${conditionText}`
         : "";
+      console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
@@ -245,6 +246,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
       const amountinwords = amountToWords(fee);
 
     let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
+    console.log("fileStoreId before create", fileStoreId);
 
     if (!fileStoreId) {
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);

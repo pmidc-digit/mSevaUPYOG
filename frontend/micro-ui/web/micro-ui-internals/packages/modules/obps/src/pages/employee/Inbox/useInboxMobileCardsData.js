@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { SearchField, RadioButtons } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
 
-const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
+const useInboxMobileCardsData = ({parentRoute, tableData: table, getRedirectionLink}) => {
     const { t } = useTranslation()
 
     const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType,businessService, locality, status, owner, sla, state}) => ({

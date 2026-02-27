@@ -24,6 +24,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { composeInitialProps } from "react-i18next";
 import _ from "lodash";
 
+const ownerTypeOptions = [
+  { i18nKey: "NOC_OWNER_TYPE_INDIVIDUAL", code: "Individual", value: "Individual" },
+  { i18nKey: "NOC_OWNER_TYPE_FIRM", code: "Firm", value: "Firm" },
+];
+
 const CLUApplicantDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList } = _props;
 
@@ -31,13 +36,15 @@ const CLUApplicantDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
   const dispatch = useDispatch();
 
-  const ownerIds = useSelector(function (state) {
+  const ownerIds =
+    useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.ownerIds;
-  }) ?? {};
+    }) ?? {};
 
-  const ownerPhotos = useSelector(function (state) {
+  const ownerPhotos =
+    useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.ownerPhotos;
-  }) || {};
+    }) || {};
 
   const [loader, setLoader] = useState(false);
 
@@ -165,7 +172,8 @@ const CLUApplicantDetails = (_props) => {
     gender: null,
     dateOfBirth: "",
     address: "",
-    ownershipInPct: ""
+    ownershipInPct: "",
+    ownerType: null,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -191,7 +199,8 @@ const CLUApplicantDetails = (_props) => {
             gender: findGenderOption(o.gender),
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
-            ownershipInPct: o.ownershipInPct || ""
+            ownershipInPct: o.ownershipInPct || "",
+            ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
           }))
         : [defaultOwner()];
 
@@ -299,6 +308,37 @@ const getOwnerDetails = async (idx) => {
             >
               {!isEdit && fields.length > 1 && `❌`}
             </div>
+
+            {index === 0 && (
+              <LabelFieldPair style={{ marginBottom: "20px" }}>
+                <CardLabel className="card-label-smaller">
+                  {`${t("NOC_OWNER_TYPE_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].ownerType`}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    render={(props) => (
+                      <Dropdown
+                        t={t}
+                        option={ownerTypeOptions}
+                        optionKey="i18nKey"
+                        select={(e) => {
+                          props.onChange(e);
+                        }}
+                        selected={props.value}
+                      />
+                    )}
+                  />
+
+                  {errors?.owners?.[index]?.ownerType && (
+                    <p style={{ color: "red", marginBottom: "0" }}>{errors?.owners?.[index]?.ownerType?.message}</p>
+                  )}
+                </div>
+              </LabelFieldPair>
+            )}
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
               <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
@@ -529,7 +569,7 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                 <p style={errorStyle}>{errors?.owners?.[index]?.gender?.message}</p>
+                <p style={errorStyle}>{errors?.owners?.[index]?.gender?.message}</p>
               </div>
             </LabelFieldPair>
 
@@ -580,7 +620,6 @@ const getOwnerDetails = async (idx) => {
                   }}
                   uploadedFile={ownerPhotoList?.[index]?.filestoreId}
                   message={ownerPhotoList?.[index]?.filestoreId ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-
                   uploadMessage=""
                   accept="image/*"
                   disabled={isEdit}

@@ -266,10 +266,8 @@ const FillQuestions = (props) => {
           // setCitizenFound(true)
           if (
             response?.user[0]?.gender === null ||
-            response?.user[0]?.emailId === null ||
             response?.user[0]?.dob === null ||
             response?.user[0]?.gender === "" ||
-            response?.user[0]?.emailId === "" ||
             response?.user[0]?.dob === ""
           ) {
             setHasCitizenDetails(false);

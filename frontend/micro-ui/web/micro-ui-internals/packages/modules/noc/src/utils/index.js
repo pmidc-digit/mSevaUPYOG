@@ -316,6 +316,43 @@ export const formatDateForInput = (dateString) => {
   return date.toISOString().split("T")[0];
 };
 
+export const downloadPdf = (blob, fileName) => {
+    if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {
+      var reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = function () {
+        var base64data = reader.result;
+        mSewaApp.downloadBase64File(base64data, fileName);
+      };
+    } else {
+      const link = document.createElement("a");
+      // create a blobURI pointing to our Blob
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      // some browser needs the anchor to be in the doc
+      document.body.append(link);
+      link.click();
+      link.remove();
+      // in case the Blob uses a lot of memory
+      setTimeout(() => URL.revokeObjectURL(link.href), 7000);
+    }
+};
+
+export const downloadPdfFromURL = async (receiptUrl) => {
+  const urlObj = new URL(receiptUrl);
+  const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
+  try {
+    const res = await fetch(downloadUrl);
+    const blob = await res.blob();
+
+    // Use your helper to force download
+    downloadPdf(blob, "Document.pdf");
+  } catch (err) {
+    console.log(err, "error in receipt download");
+    window.open(downloadUrl, "_blank");
+  }
+};
+
 
 
 

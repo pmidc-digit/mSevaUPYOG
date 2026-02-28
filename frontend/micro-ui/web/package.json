@@ -64,7 +64,7 @@
     "@mseva/upyog-ui-module-chb": "1.1.91-dev.1.6",
     "@mseva/upyog-ui-module-asset": "1.1.44-dev.1.6",
     "@mseva/upyog-ui-module-pgrai": "1.1.33-dev.1.5",
-    "@mseva/digit-ui-module-ndc": "1.0.72-dev.1.4",
+    "@mseva/digit-ui-module-ndc": "1.0.72-dev.1.5",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",

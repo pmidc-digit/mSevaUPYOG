@@ -106,6 +106,14 @@ export const CollectPayment = (props) => {
   const [selectedPaidBy, setselectedPaidBy] = useState(formState?.paidBy || { code: "OWNER", name: t("COMMON_OWNER") });
 
   const onSubmit = async (data) => {
+    console.log("data", data);
+    console.log("location==", location);
+    console.log("location==", consumerCode, businessService);
+    if (data?.paymentMode?.code == "ONLINE") {
+      history.push(`/digit-ui/employee/payment/challan/collect/${businessService}/${consumerCode}/${tenantId}?tenantId=${tenantId}`);
+      return;
+    }
+
     bill.totalAmount = Math.round(bill.totalAmount);
     data.paidBy = data.paidBy.code;
 

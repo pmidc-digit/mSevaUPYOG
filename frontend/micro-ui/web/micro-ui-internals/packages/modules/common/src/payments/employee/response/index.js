@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { Banner, Card, CardText, SubmitBar, ActionBar, DownloadPrefixIcon, Loader, Menu } from "@mseva/digit-ui-react-components";
-import { useHistory, useParams, Link, LinkLabel } from "react-router-dom";
+import { useHistory, useParams, Link, LinkLabel, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { format } from "date-fns";
@@ -23,6 +23,7 @@ export const convertEpochToDate = (dateEpoch) => {
 };
 export const SuccessfulPayment = (props) => {
   const history = useHistory();
+  const location = useLocation();
   const { addParams, clearParams } = props;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -34,9 +35,21 @@ export const SuccessfulPayment = (props) => {
   const [printing, setPrinting] = useState(false);
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   props.setLink(combineResponseFSM);
+  const checkParam = useParams();
+  const queryParams = new URLSearchParams(location.search);
+
+  const egPgTxnId = queryParams.get("eg_pg_txnid");
+  const razorpayPaymentId = queryParams.get("razorpayPaymentId");
+  const razorpayOrderId = queryParams.get("razorpayOrderId");
+  const razorpaySignature = queryParams.get("razorpaySignature");
+
+  console.log("eg_pg_txnid:", egPgTxnId);
+
   let { consumerCode, receiptNumber, businessService } = useParams();
 
-  console.log("consummennene", consumerCode);
+  console.log("checkParam", checkParam);
+  console.log("egPgTxnId", egPgTxnId);
+  console.log("businessService", businessService);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   receiptNumber = receiptNumber?.replace(/%2F/g, "/");
   const { data = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
@@ -56,6 +69,13 @@ export const SuccessfulPayment = (props) => {
     const selectedTenantData = cities.data.find((item) => item.city.districtTenantCode === loginCity);
     ulbType = selectedTenantData?.city?.ulbGrade;
   }
+
+  const { isLoading, data: dataCheck, isError } = Digit.Hooks.usePaymentUpdate({ egId: egPgTxnId }, businessService, {
+    enabled: !!egPgTxnId,
+    retry: false,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
 
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 

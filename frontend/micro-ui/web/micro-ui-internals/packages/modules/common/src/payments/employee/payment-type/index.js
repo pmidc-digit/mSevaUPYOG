@@ -141,7 +141,8 @@ export const SelectPaymentType = (props) => {
         // window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
-        callbackUrl: `${baseURL}/digit-ui/employee/payment/success/${businessService}`,
+        callbackUrl: `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}`,
+
         // `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
         //       resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
         //     }?IsDisconnectionFlow=${IsDisconnectionFlow}`,
@@ -166,7 +167,7 @@ export const SelectPaymentType = (props) => {
         },
       },
     };
-
+    console.log("coming here", filterData);
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       console.log("data=========", data);
@@ -187,6 +188,7 @@ export const SelectPaymentType = (props) => {
         setPaymentLoading(false);
       }
     } catch (error) {
+      console.log("error", error);
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";
       if (error.response?.data?.Errors?.[0]) {
         const { code, message } = error.response?.data?.Errors?.[0];

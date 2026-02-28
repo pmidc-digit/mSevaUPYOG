@@ -34,7 +34,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY,formatDuration, amountToWords } from "../../../utils/index";
+import { convertToDDMMYYYY,formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
@@ -169,9 +169,9 @@ const CitizenApplicationOverview = () => {
       setDisplayData(finalDisplayData);
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
-      const lastModified = nocObject?.auditDetails?.lastModifiedTime;
+      const endTime = Date.now();
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
-      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime)
       
       setTimeObj(time);
@@ -228,7 +228,8 @@ const CitizenApplicationOverview = () => {
       const amountinwords = amountToWords(fee);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      const receiptUrl = fileStore[response.filestoreIds[0]];
+      await downloadPdfFromURL(receiptUrl);
     } catch (error) {
       console.error("Sanction Letter download error:", error);
     } finally {
@@ -279,7 +280,8 @@ const CitizenApplicationOverview = () => {
 
     // Print receipt
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
+    const receiptUrl = fileStore[fileStoreId];
+      await downloadPdfFromURL(receiptUrl);
 
   } catch (error) {
     console.error("Sanction Letter download error:", error);
@@ -563,7 +565,8 @@ const finalComment = useMemo(() => {
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
+  const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
   // console.log("combinerOwnersName", combinedOwnersName);
 
 

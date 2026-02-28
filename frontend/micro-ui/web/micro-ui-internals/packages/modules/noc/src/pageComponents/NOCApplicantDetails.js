@@ -593,7 +593,7 @@ const NOCApplicantDetails = (_props) => {
                                     vasikaDate: null,
                                     netTotalArea: null,
                                     proposedSiteAddress: "",
-                                    localityAreaType:null
+                                    localityAreaType: null,
                                   })
                                 );
                                 reset({
@@ -682,7 +682,6 @@ const NOCApplicantDetails = (_props) => {
                 <Controller control={control} name={`owners[${index}].propertyVasikaDate`} />
                 <Controller control={control} name={`owners[${index}].localityAreaType`} />
 
-
                 <div className="field">
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {watch(`owners[${index}].PropertyOwnerName`) && (
@@ -741,7 +740,7 @@ const NOCApplicantDetails = (_props) => {
                       <Controller
                         control={control}
                         name={`owners[${index}].firmName`}
-                        rules={{ required: { value: true, message: t("FIRM_NAME_REQUIRED") } }}
+                        rules={{ required: { value: true, message: t("REQUIRED_FIELD") } }}
                         render={(props) => (
                           <TextInput
                             value={props.value}
@@ -822,7 +821,11 @@ const NOCApplicantDetails = (_props) => {
 
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {`${t("NOC_FIRM_OWNER_NAME_LABEL")}`}
+                {(typeof watch(`owners[${index}].ownerType`) === "string"
+                  ? watch(`owners[${index}].ownerType`)
+                  : watch(`owners[${index}].ownerType`)?.code) === "Firm"
+                  ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
+                  : t("APPLICANT_NAME")}
                 <span className="requiredField">*</span>
               </CardLabel>
               <div className="field">

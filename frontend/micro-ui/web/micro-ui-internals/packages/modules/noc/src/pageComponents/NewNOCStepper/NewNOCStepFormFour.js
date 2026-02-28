@@ -340,8 +340,8 @@ console.log('calculatorData', calculatorData)
   if (nocCalculatorLoading) return <Loader />;
 
   const ownersList= currentStepData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
-  console.log('combinedOwnersName here', combinedOwnersName)
+  const firmName = currentStepData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
 
   return (
     <React.Fragment>

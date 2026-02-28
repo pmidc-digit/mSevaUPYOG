@@ -424,12 +424,23 @@ const getSitePhotographs = async (appData, t, stateCode) => {
 const getChecklistDetails = (appData, checklistData, t) => {
   const checkList = checklistData?.checkList || [];
   const documents = appData?.documents || [];
+  const sortedDocs = documents?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  
+  const orderMap = {};
+    sortedDocs?.forEach((doc, idx) => {
+      orderMap[doc.uuid] = doc.order ?? idx + 1; // fallback to index
+    });
+  
+  const sortedChecklist = [...checkList].sort(
+      (a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0)
+    );
+
 
   let values = [];
 
-  if (checkList?.length > 0) {
-    values = checkList?.map((item, index) => {
-      const matchedDoc = documents?.find(
+  if (sortedChecklist?.length > 0) {
+    values = sortedChecklist?.map((item, index) => {
+      const matchedDoc = sortedDocs?.find(
         (doc) => doc?.uuid === item?.documentuid
       );
       const docName = matchedDoc
@@ -513,7 +524,6 @@ const getLatestCalculationDetails = (appData, t) => {
   const latestCalc = appData?.nocDetails?.additionalDetails?.calculations?.find(
     (calc) => calc.isLatest
   );
-
   if (!latestCalc) {
     return {
       title: t("NOC_FEE_DETAILS_LABEL"),
@@ -523,9 +533,8 @@ const getLatestCalculationDetails = (appData, t) => {
 
   // Map taxHeadEstimates to display taxHeadCode, remarks, and updatedBy
   const values = latestCalc.taxHeadEstimates.map((estimate, index) => ({
-    title: `${t(estimate.taxHeadCode) || estimate.taxHeadCode}`, // Label: taxHeadCode
-    value: estimate.remarks || "N/A",                           // Value: remarks
-    updatedBy: latestCalc.updatedBy || "N/A"                    // Extra field: last updated by
+    title: `${t(estimate?.taxHeadCode)}`, 
+    value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A",                           // Value: remarks
   }));
 
   return {
@@ -580,7 +589,10 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
 
       // Inspection report only if employee and inspection data exists
       isEmployee && appData?.nocDetails?.additionalDetails?.fieldinspection_pending?.[0] ? getInspectionDetails(appData, t) : null,
-      await getDocuments(appData, t),
+      isEmployee && checklistData?.checkList?.length > 0 
+        ? null 
+        : await getDocuments(appData, t),
+
       await getSitePhotographs(appData, t, stateCode),
       // JE site images only if employee and jeSiteImages exist
       isEmployee && appData?.nocDetails?.additionalDetails?.siteImages?.length ? await getJESiteImages(appData, t, stateCode) : null,

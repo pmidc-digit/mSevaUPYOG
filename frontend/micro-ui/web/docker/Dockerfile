@@ -7,7 +7,7 @@ RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
 RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
-RUN yarn add @mseva/digit-ui-module-noc@1.0.78-dev.1.9
+RUN yarn add @mseva/digit-ui-module-noc@1.0.78-dev.2.1
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.23
 RUN yarn add @mseva/digit-ui-module-core@1.0.66-dev.1.2
@@ -27,7 +27,7 @@ RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-dev.1.5
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29-dev.2
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-dev.1.2
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-dev.1.9
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-dev.1.3
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-dev.1.4
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

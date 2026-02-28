@@ -17,22 +17,30 @@ const updateDefaultBounds = (center) => {
   };
 };
 
-const loadGoogleMaps = (callback) => {
-  const key = globalConfigs?.getConfig("GMAPS_API_KEY");
-  const loader = new Loader({
-    apiKey: key,
-    version: "weekly",
-    libraries: ["places"],
-  });
+let __gmapsLoaderPromise;
 
-  loader
-    .load()
-    .then(() => {
-      if (callback) callback();
-    })
-    .catch((e) => {
-      // do something
+const loadGoogleMaps = (callback) => {
+  const key = globalConfigs?.getConfig?.("GMAPS_API_KEY");
+  if (!key) return;
+
+  if (window.google?.maps) {
+    callback?.();
+    return;
+  }
+
+  if (!__gmapsLoaderPromise) {
+    const loader = new Loader({
+      apiKey: key,
+      version: "weekly",
+      libraries: ["places"],
+      id: "gmaps-script"
     });
+    __gmapsLoaderPromise = loader.load();
+  }
+
+  __gmapsLoaderPromise
+    .then(() => callback?.())
+    .catch(() => {});
 };
 
 const mapStyles = [
@@ -199,6 +207,7 @@ const mapStyles = [
 
 
 const initAutocomplete = (position) => {
+  if (!window.google?.maps) return;
     const isMobile = window.Digit.Utils.browser.isMobile();
     if (position?.length === 0) return;
     const map = new window.google.maps.Map(document.getElementById("map"), {

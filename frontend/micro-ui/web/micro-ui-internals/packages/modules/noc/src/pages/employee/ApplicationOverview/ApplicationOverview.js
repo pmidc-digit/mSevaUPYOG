@@ -37,7 +37,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
-import { convertToDDMMYYYY, formatDuration } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
@@ -333,10 +333,9 @@ const NOCEmployeeApplicationOverview = () => {
 
     // Use printReciept to fetch the actual file URL
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-
+    const receiptUrl = fileStore[fileStoreId];
     // Open in new tab/popup
-    window.open(fileStore[fileStoreId], "_blank");
-
+    await downloadPdfFromURL(receiptUrl);
   } catch (error) {
     console.error("Sanction Letter popup error:", error);
   } finally {
@@ -618,10 +617,11 @@ const [displayMenu, setDisplayMenu] = useState(false);
 
       setDisplayData(finalDisplayData);
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
-      const lastModified = nocObject?.auditDetails?.lastModifiedTime;
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
-      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
-      const time = formatDuration(totalTime);
+      const endTime = Date.now();
+      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+        const time = formatDuration(totalTime);
       // console.log('time full', time)
       setTimeObj(time);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
@@ -737,7 +737,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
 
 useEffect(() => {
   const fetchDistances = async () => {
-    if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0) {
+    if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0 && applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
       try {
         const results = await Promise.all(
           geoLocations.map(async (loc, idx) => {
@@ -1105,7 +1105,8 @@ const validateSiteImages = (action) => {
   
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
+  const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 

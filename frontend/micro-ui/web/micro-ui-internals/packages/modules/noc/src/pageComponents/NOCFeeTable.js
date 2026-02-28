@@ -56,7 +56,7 @@ export const NOCFeeTable = ({
                   lineHeight: "1.3",
                 }}
               >
-                Rupees {amountToWords(row.grandTotal).replace(' Rupees', '')} only
+               {amountToWords(row.grandTotal)} only
               </div>
             </div>
           );

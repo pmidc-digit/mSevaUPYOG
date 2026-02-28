@@ -56,6 +56,13 @@ const MyApplications = ({ view }) => {
 
   const list = data?.data || [];
   const total = data?.count ?? 0;
+  const getPrimaryOwner = (row) => row?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
+  const getDisplayApplicantName = (row) => {
+    const owner = getPrimaryOwner(row);
+    const firm = owner?.firmName?.trim?.();
+    const name = owner?.ownerOrFirmName?.trim?.();
+    return firm || name || "-";
+  };
 
   const columns = useMemo(
     () => [
@@ -70,9 +77,8 @@ const MyApplications = ({ view }) => {
       },
       {
         Header: t("Owner Name"),
-        accessor: (row) => row?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName,
-        Cell: ({ row }) =>
-          GetCell(row.original?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
+        accessor: (row) => getDisplayApplicantName(row),
+        Cell: ({ row }) => GetCell(getDisplayApplicantName(row.original)),
       },
 
       {

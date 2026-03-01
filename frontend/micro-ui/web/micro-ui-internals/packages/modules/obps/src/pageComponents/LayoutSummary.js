@@ -231,7 +231,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
 
   const valueStyle = {
     textAlign: "right",
-    flex: "0 0 55%",
+    // flex: "0 0 55%",
     wordBreak: "break-word",
     color: "#555",
   };

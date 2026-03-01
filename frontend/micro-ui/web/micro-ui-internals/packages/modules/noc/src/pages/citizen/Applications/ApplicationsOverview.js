@@ -34,7 +34,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY,formatDuration, amountToWords } from "../../../utils/index";
+import { convertToDDMMYYYY,formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
@@ -109,7 +109,7 @@ const CitizenApplicationOverview = () => {
        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
    } : {})
   
-  console.log('applicationD', applicationDetails)
+  // console.log('applicationD', applicationDetails)
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -169,9 +169,9 @@ const CitizenApplicationOverview = () => {
       setDisplayData(finalDisplayData);
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
-      const lastModified = nocObject?.auditDetails?.lastModifiedTime;
+      const endTime = Date.now();
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
-      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime)
       
       setTimeObj(time);
@@ -210,7 +210,7 @@ const CitizenApplicationOverview = () => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+      // console.error("Error generating acknowledgement:", error);
     } finally {
       setLoading(false);
     }
@@ -228,9 +228,10 @@ const CitizenApplicationOverview = () => {
       const amountinwords = amountToWords(fee);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      const receiptUrl = fileStore[response.filestoreIds[0]];
+      await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+      // console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
     }
@@ -279,10 +280,11 @@ const CitizenApplicationOverview = () => {
 
     // Print receipt
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
+    const receiptUrl = fileStore[fileStoreId];
+      await downloadPdfFromURL(receiptUrl);
 
   } catch (error) {
-    console.error("Sanction Letter download error:", error);
+    // console.error("Sanction Letter download error:", error);
   } finally {
     setLoading(false);
   }
@@ -563,7 +565,8 @@ const finalComment = useMemo(() => {
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
+  const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
   // console.log("combinerOwnersName", combinedOwnersName);
 
 
@@ -610,10 +613,17 @@ const finalComment = useMemo(() => {
               <StatusTable>
                 {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 {detail?.firmName && <Row label={t("NOC_FIRM_NAME")} text={detail?.firmName} />}
-                <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+                <Row
+                  label={
+                    (typeof detail?.ownerType === "string" ? detail?.ownerType : detail?.ownerType?.code) === "Firm"
+                      ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
+                      : t("APPLICANT_NAME")
+                  }
+                  text={detail?.ownerOrFirmName || "N/A"}
+                />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-                <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
                 <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
                 <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
                 <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />

@@ -80,16 +80,23 @@ const getApplicantDetails = (appData, t) => {
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
     values: [
-      owner?.ownerType?.code && { 
-        title: t("NOC_OWNER_TYPE_LABEL"), 
-        value: owner?.ownerType?.code 
+      owner?.ownerType?.code && {
+        title: t("NOC_OWNER_TYPE_LABEL"),
+        value: owner?.ownerType?.code
       },
-      owner?.firmName && { 
-        title: t("NOC_FIRM_NAME"), 
-        value: owner?.firmName 
+      owner?.firmName && {
+        title: t("NOC_FIRM_NAME"),
+        value: owner?.firmName
       },
       {
-        title: t("NOC_FIRM_OWNER_NAME_LABEL"),
+        title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
+        value: owner?.mobileNumber || "NA",
+      },
+      {
+        title:
+          (typeof owner?.ownerType === "string" ? owner?.ownerType : owner?.ownerType?.code) === "Firm"
+            ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
+            : t("APPLICANT_NAME"),
         value: owner?.ownerOrFirmName || "NA",
       },
       {
@@ -99,10 +106,6 @@ const getApplicantDetails = (appData, t) => {
       {
         title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
         value: owner?.fatherOrHusbandName || "NA",
-      },
-      {
-        title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
-        value: owner?.mobileNumber || "NA",
       },
       {
         title: t("NOC_APPLICANT_DOB_LABEL"),
@@ -116,9 +119,9 @@ const getApplicantDetails = (appData, t) => {
         title: t("NOC_APPLICANT_ADDRESS_LABEL"),
         value: owner?.address || "NA",
       },
-      owner?.propertyId && { 
-        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"), 
-        value: owner.propertyId 
+      owner?.propertyId && {
+        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
+        value: owner.propertyId
       }
     ].filter(Boolean),
   }));
@@ -323,26 +326,30 @@ async function getExifDataFromUrl (fileUrl) {
 
 const getDocuments = async (appData, t) => {
   const filteredDocs = appData?.documents?.filter(
-    (doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
-  );
+    (doc) =>
+      doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" &&
+      doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
+  ) || [];
 
-  const filesArray = filteredDocs?.map((value) => value?.uuid);
+  const sortedDocs = filteredDocs?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
+  const filesArray = sortedDocs?.map((value) => value?.uuid);
 
-  console.log("res here==>", res);
+  const res =
+    filesArray.length > 0 &&
+    (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
     values:
-      filteredDocs?.length > 0
-        ? filteredDocs.map((document, index) => {
-            const documentLink = pdfDownloadLink(res?.data, document?.uuid);
-            return {
-              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,              value: " ",
-              link: documentLink || ""
-            };
-          })
+      sortedDocs.length > 0
+        ? sortedDocs?.map((document, index) => ({
+            title: `${index + 1}. ${
+              t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")
+            }`,
+            value: " ",
+            link: pdfDownloadLink(res?.data, document?.uuid) || "",
+          }))
         : [
             {
               title: t("PT_NO_DOCUMENTS"),
@@ -420,12 +427,23 @@ const getSitePhotographs = async (appData, t, stateCode) => {
 const getChecklistDetails = (appData, checklistData, t) => {
   const checkList = checklistData?.checkList || [];
   const documents = appData?.documents || [];
+  const sortedDocs = documents?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  
+  const orderMap = {};
+    sortedDocs?.forEach((doc, idx) => {
+      orderMap[doc.uuid] = doc.order ?? idx + 1; // fallback to index
+    });
+  
+  const sortedChecklist = [...checkList].sort(
+      (a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0)
+    );
+
 
   let values = [];
 
-  if (checkList?.length > 0) {
-    values = checkList?.map((item, index) => {
-      const matchedDoc = documents?.find(
+  if (sortedChecklist?.length > 0) {
+    values = sortedChecklist?.map((item, index) => {
+      const matchedDoc = sortedDocs?.find(
         (doc) => doc?.uuid === item?.documentuid
       );
       const docName = matchedDoc
@@ -509,7 +527,6 @@ const getLatestCalculationDetails = (appData, t) => {
   const latestCalc = appData?.nocDetails?.additionalDetails?.calculations?.find(
     (calc) => calc.isLatest
   );
-
   if (!latestCalc) {
     return {
       title: t("NOC_FEE_DETAILS_LABEL"),
@@ -519,9 +536,8 @@ const getLatestCalculationDetails = (appData, t) => {
 
   // Map taxHeadEstimates to display taxHeadCode, remarks, and updatedBy
   const values = latestCalc.taxHeadEstimates.map((estimate, index) => ({
-    title: `${t(estimate.taxHeadCode) || estimate.taxHeadCode}`, // Label: taxHeadCode
-    value: estimate.remarks || "N/A",                           // Value: remarks
-    updatedBy: latestCalc.updatedBy || "N/A"                    // Extra field: last updated by
+    title: `${t(estimate?.taxHeadCode)}`, 
+    value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A",                           // Value: remarks
   }));
 
   return {
@@ -576,7 +592,10 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
 
       // Inspection report only if employee and inspection data exists
       isEmployee && appData?.nocDetails?.additionalDetails?.fieldinspection_pending?.[0] ? getInspectionDetails(appData, t) : null,
-      await getDocuments(appData, t),
+      isEmployee && checklistData?.checkList?.length > 0 
+        ? null 
+        : await getDocuments(appData, t),
+
       await getSitePhotographs(appData, t, stateCode),
       // JE site images only if employee and jeSiteImages exist
       isEmployee && appData?.nocDetails?.additionalDetails?.siteImages?.length ? await getJESiteImages(appData, t, stateCode) : null,

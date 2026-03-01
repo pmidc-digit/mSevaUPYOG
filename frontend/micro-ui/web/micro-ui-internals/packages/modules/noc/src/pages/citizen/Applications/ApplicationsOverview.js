@@ -109,7 +109,7 @@ const CitizenApplicationOverview = () => {
        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
    } : {})
   
-  console.log('applicationD', applicationDetails)
+  // console.log('applicationD', applicationDetails)
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -210,7 +210,7 @@ const CitizenApplicationOverview = () => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+      // console.error("Error generating acknowledgement:", error);
     } finally {
       setLoading(false);
     }
@@ -231,7 +231,7 @@ const CitizenApplicationOverview = () => {
       const receiptUrl = fileStore[response.filestoreIds[0]];
       await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+      // console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
     }
@@ -284,7 +284,7 @@ const CitizenApplicationOverview = () => {
       await downloadPdfFromURL(receiptUrl);
 
   } catch (error) {
-    console.error("Sanction Letter download error:", error);
+    // console.error("Sanction Letter download error:", error);
   } finally {
     setLoading(false);
   }

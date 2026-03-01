@@ -266,6 +266,48 @@ const getSpecificationDetails = (appData, t) => {
 
 
 
+const getInspectionReportDetails = (appData, t) => {
+  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending ?? [];
+  if (fiReport.length === 0) return null;
+
+  return {
+    title: t("BPA_FI_REPORT"),
+    values: fiReport.map((item) => ({
+      title: t(item.question),
+      value: t(item.answer) || t("CS_NA"),
+    })),
+  };
+};
+
+const getChecklistDetails = (searchChecklistData, t) => {
+  const checklist = searchChecklistData?.CheckList ?? [];
+  if (checklist.length === 0) return null;
+
+  return {
+    title: t("BPA_CHECKLIST_DETAILS"),
+    values: checklist.map((item) => ({
+      title: t(item.docType),
+      value: item.remarks || t("BPA_NO_REMARKS"),
+    })),
+  };
+};
+
+const getFeeCalculation = (appData, t) => {
+  const calculations = appData?.cluDetails?.additionalDetails?.calculations || [];
+  if (calculations.length === 0) return null;
+
+  const latestCalc = calculations.find((c) => c.isLatest);
+  if (!latestCalc) return null;
+
+  return {
+    title: t("BPA_FEE_DETAILS_LABEL"),
+    values: (latestCalc.taxHeadEstimates || []).map((tax) => ({
+      title: t(tax.taxHeadCode),
+      value: `Rs. ${tax.estimateAmount}`,
+    })),
+  };
+};
+
 const getDocuments = async (appData, t) => {
   const filteredDocs = appData?.documents?.filter(
     (doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
@@ -351,8 +393,8 @@ const getSitePhotographs = async (appData, t) => {
   };
 };
 
+export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, searchChecklistData) => {
 
-export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
@@ -367,6 +409,10 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
   imageURL = fileData?.url || "";
 
   if (appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalName) detailsArr.push(getProfessionalDetails(appData, t));
+
+  const inspectionReport = getInspectionReportDetails(appData, t);
+  const checklistDetails = getChecklistDetails(searchChecklistData, t);
+  const feeCalculation = getFeeCalculation(appData, t);
 
   return {
     t: t,
@@ -383,6 +429,9 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getLocationInfo(appData, t),
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
+      ...(inspectionReport ? [inspectionReport] : []),
+      ...(checklistDetails ? [checklistDetails] : []),
+      ...(feeCalculation ? [feeCalculation] : []),
       await getDocuments(appData, t),
       await getSitePhotographs(appData, t),
     ],
@@ -391,3 +440,4 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
     ulbName
   };
 };
+

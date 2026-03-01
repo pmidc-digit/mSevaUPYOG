@@ -104,19 +104,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
   const documentUploadedFiles = formData?.documentUploadedFiles || {};
   const panDocumentUploadedFiles = formData?.panDocumentUploadedFiles || {};
 
-  console.log(formData, "FORM DATA");
-
-  console.log("formData in Summary Page", formData)
-  console.log("isEditMode in Summary Page", isEditMode)
-  console.log("layoutData in Summary Page", layoutData)
-  console.log("ownersFromApi in Summary Page", ownersFromApi)
-  console.log("applicantsFromRedux in Summary Page", applicantsFromRedux)
-  console.log("newlyAddedApplicants in Summary Page", newlyAddedApplicants)
-  console.log("merged owners in Summary Page", owners)
-  console.log("layoutDocuments in Summary Page", layoutDocuments)
-  console.log("photoUploadedFiles in Summary Page", photoUploadedFiles)
-  console.log("documentUploadedFiles in Summary Page", documentUploadedFiles)
-  console.log("panDocumentUploadedFiles in Summary Page", panDocumentUploadedFiles)
+  
 
   // Helper function to find document by type and owner index
   // Searches in both API documents (edit mode) and Redux state (fresh application)
@@ -290,7 +278,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
             (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
           )?.sort((a,b) => a?.order-b?.order);
 
-  console.log("documents here in summary", docs, sitePhotos)
 
   return (
     <div style={pageStyle}>

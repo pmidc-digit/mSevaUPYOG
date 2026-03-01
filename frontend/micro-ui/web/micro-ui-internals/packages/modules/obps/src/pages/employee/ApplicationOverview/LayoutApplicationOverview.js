@@ -452,7 +452,6 @@ const LayoutEmployeeApplicationOverview = () => {
 
     try {
       const filtData = data?.Licenses?.[0];
-      console.log(" filtData:", filtData);
 
 
 

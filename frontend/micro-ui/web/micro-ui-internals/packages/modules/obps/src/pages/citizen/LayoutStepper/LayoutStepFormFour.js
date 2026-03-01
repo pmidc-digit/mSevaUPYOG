@@ -134,7 +134,6 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-  console.log("currentStepData", currentStepData)
 
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {

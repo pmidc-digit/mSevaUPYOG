@@ -144,9 +144,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }, [zoneOptions, siteDetails?.zone, setValue]);
 
   const onSubmit = async (data) => {
-    console.log("DatacheckForValidation",data);
     const isValid = await trigger();
-    console.log("DatacheckForValidation",data);
 
     const {
       areaUnderResidentialUseInSqM: watchedResidentialArea,

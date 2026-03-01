@@ -62,7 +62,6 @@ const LayoutDocumentsRequired = ({
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
 
-  console.log("currentStepData in Step 3", currentStepData)
   useEffect(()=>{
     setDocuments(currentStepData?.documents?.documents?.documents)
   },[currentStepData])
@@ -175,7 +174,6 @@ const LayoutDocumentsRequired = ({
     const document = formData.documents
     let documentStep
     documentStep = { ...document, documents: documents }
-    console.log("filteredDocs and documents", filteredDocuments, documents)
     onSelect(config.key, documentStep)
   }
 
@@ -408,7 +406,6 @@ function LayoutSelectDocument({
     if (doc?.code) {
       if(uploadedFile){
       setDocuments((prev) => {
-        console.log("documents in childStep three - All Docs", doc?.code, uploadedFile  )
         const filteredDocumentsByDocumentType = (prev || []).filter(
           (item) => item?.documentType !== doc?.code,
         )

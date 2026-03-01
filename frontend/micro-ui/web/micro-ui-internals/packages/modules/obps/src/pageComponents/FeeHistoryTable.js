@@ -13,8 +13,7 @@ export const FeeHistoryTable = ({
   
 const [showHistory, setShowHistory] = useState(false);
 
- console.log('feeHistory', feeHistory)
- console.log("feeHistory keys", Object.keys(feeHistory || {}));
+ 
   return (
     <div className="noc-table-container">      
       {feeHistory && Object.keys(feeHistory).length > 0 && (

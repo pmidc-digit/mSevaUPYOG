@@ -136,7 +136,6 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const sitePhotos = layoutDocuments?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   )?.sort((a,b) => a?.order-b?.order);
-  console.log("sitePhotos",sitePhotos);
 
   // Helper function to find document by type and owner index
   // Searches in both API documents (documents array) and owner's additionalDetails

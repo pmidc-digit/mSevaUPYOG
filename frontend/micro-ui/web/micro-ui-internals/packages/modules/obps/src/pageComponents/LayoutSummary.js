@@ -269,12 +269,28 @@ function LayoutSummary({ currentStepData: formData, t }) {
   const userInfo = Digit.UserService.getUser()
   const currentUser = userInfo?.info?.type
 
+  const convertDateToISO = (dateStr) => {
+  if (!dateStr) return "";
+
+  const parts = dateStr.split("-");
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[2].length === 4) {
+    return dateStr;
+  }
+
+  // dd-mm-yyyy → yyyy-mm-dd
+  const [yyyy, mm, dd,] = parts;
+  return `${dd}/${mm}/${yyyy}`;
+};
+
   const docs = formData?.documents?.documents?.documents
-  console.log("documents here in summary", docs)
 
   const sitePhotos = docs?.filter(
             (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
+          )?.sort((a,b) => a?.order-b?.order);
+
+  console.log("documents here in summary", docs, sitePhotos)
 
   return (
     <div style={pageStyle}>
@@ -430,7 +446,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             {renderLabel(t("BPA_PROFESSIONAL_REGISTRATION_ID_LABEL"), formData?.applicationDetails?.professionalRegId)}
             {renderLabel(t("BPA_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("BPA_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
-            {renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), formData?.applicationDetails?.professionalRegistrationValidity)}
+            {renderLabel(t("BPA_CERTIFICATE_EXPIRY_DATE"), convertDateToISO(formData?.applicationDetails?.professionalRegistrationValidity))}
             
             {/* Professional Photo */}
             {formData?.applicationDetails?.primaryOwnerPhoto && (
@@ -467,7 +483,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           <div style={headerRow}>
             <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
           </div>
-          <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_CLU_DETAILS")}</CardLabel>
+          {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_CLU_DETAILS")}</CardLabel> */}
           {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), formData?.siteDetails?.isCluRequired?.code || formData?.siteDetails?.isCluRequired)}
           {(formData?.siteDetails?.isCluRequired?.code === "NO" || formData?.siteDetails?.isCluRequired === "NO") && (
             <React.Fragment>
@@ -476,7 +492,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
                 renderLabel(t("BPA_CLU_NUMBER_LABEL"), formData?.siteDetails?.cluNumber)}
               {(formData?.siteDetails?.cluType?.code === "OFFLINE" || formData?.siteDetails?.cluType === "OFFLINE") &&
                 renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), formData?.siteDetails?.cluNumberOffline)}
-              {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formData?.siteDetails?.cluApprovalDate)}
+              {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(formData?.siteDetails?.cluApprovalDate))}
             </React.Fragment>
           )}
           {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && (
@@ -484,9 +500,9 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderLabel(t("Application Applied Under"), formData?.siteDetails?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder)}              
             </React.Fragment>
           )}
-          {renderLabel(t("BPA_IS_CLU_APPROVED_LABEL"), formData?.siteDetails?.cluIsApproved?.code)}
+          {renderLabel(t("Type Of Application"), formData?.siteDetails?.typeOfApplication?.name)}
 
-          <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel>
+          {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
           {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), formData?.siteDetails?.proposedSiteAddress)}
           {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), formData?.siteDetails?.wardNo)}
           {renderLabel(t("BPA_KHASRA_NO_LABEL"), formData?.siteDetails?.khasraNo)}
@@ -494,7 +510,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("BPA_HADBAST_NO_LABEL"), formData?.siteDetails?.hadbastNo)}
           {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
           {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), formData?.siteDetails?.vasikaNumber)}
-          {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formData?.siteDetails?.vasikaDate)}
+          {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(formData?.siteDetails?.vasikaDate))}
           {renderLabel(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
           {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
           {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isAreaUnderMasterPlan?.i18nKey)}
@@ -506,7 +522,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("BPA_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}                            
           
 
-          <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel>
+          {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
           {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
           {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), formData?.siteDetails?.residentialType?.name || formData?.siteDetails?.buildingCategory?.name)}
           {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}

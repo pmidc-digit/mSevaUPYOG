@@ -134,8 +134,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
   const applicationDetails = data?.resData
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
   const sitePhotos = layoutDocuments?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  )?.sort((a,b) => a?.order-b?.order);
   console.log("sitePhotos",sitePhotos);
 
   // Helper function to find document by type and owner index
@@ -286,14 +286,15 @@ const [viewTimeline, setViewTimeline] = useState(false);
 
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
-        label: t("Pay 1 Fee"),
-        onClick: () => getRecieptSearch({ tenantId: state, payments: reciept_data?.Payments[0] }),
+        label: t("CLU_FEE_RECEIPT_1"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey:"layout-receipt" }),
       });
     }
     if (reciept_data_pay && reciept_data_pay?.Payments.length > 0 && !recieptDataLoadingPay) {
       dowloadOptions.push({
         label: t("Pay 2 Fee"),
-        onClick: () => getRecieptSearch({ tenantId: state, payments: reciept_data_pay?.Payments[0] }),
+        label: t("CLU_FEE_RECEIPT_2"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data_pay?.Payments[0]?.tenantId, payments: reciept_data_pay?.Payments[0], pdfkey:"layoutreceipt-second" }),
       });
     }
   }
@@ -440,26 +441,43 @@ const [viewTimeline, setViewTimeline] = useState(false);
     }
   }
 
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    try {
-      setLoading(true);
-      let response = null;
-      const fee = payments?.totalAmountPaid;
-      //console.log("fee here here", fee);
-      const amountinwords = amountToWords(fee);
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, amountinwords, usage }] }, "layout-receipt");
+  // async function getRecieptSearch({ tenantId, payments, ...params }) {
+  //   try {
+  //     setLoading(true);
+  //     let response = null;
+  //     const fee = payments?.totalAmountPaid;
+  //     //console.log("fee here here", fee);
+  //     const amountinwords = amountToWords(fee);
+  //     if (payments?.fileStoreId) {
+  //       response = { filestoreIds: [payments?.fileStoreId] };
+  //     } else {
+  //       response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, amountinwords, usage }] }, "layout-receipt");
+  //     }
+  //     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+  //     window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  //   } catch (error) {
+  //     console.error("Sanction Letter download error:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
+
+  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
+      
+       try {
+        setLoading(true);
+        const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, usage,amountinwords }] }, pdfkey);
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+        window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  
+      } catch (error) {
+        console.error("receipt download error:", error);
+        }
+        finally { setLoading(false); }
       }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    } catch (error) {
-      console.error("Sanction Letter download error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
     const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
@@ -516,9 +534,30 @@ const [viewTimeline, setViewTimeline] = useState(false);
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
+  const renderLabel = (label, value) => {
+    return (
+      <RenderRow label={t(label)} value={value} />
+    )
+  }
+
   const RenderRow = ({ label, value }) => {
   if (!value) return null;
   return <Row label={label} text={value} />;
+};
+
+  const convertDateToISO = (dateStr) => {
+  if (!dateStr) return "";
+
+  const parts = dateStr.split("-");
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[2].length === 4) {
+    return dateStr;
+  }
+
+  // dd-mm-yyyy → yyyy-mm-dd
+  const [yyyy, mm, dd,] = parts;
+  return `${dd}/${mm}/${yyyy}`;
 };
 
 
@@ -580,26 +619,6 @@ const [viewTimeline, setViewTimeline] = useState(false);
       </Card>
     )}
 
- {/* -------------------- APPLICANT DETAILS -------------------- */}
-    {/* <Card>
-      <CardSubHeader>{t("LAYOUT_APPLICANT_DETAILS")}</CardSubHeader>
-      {displayData?.applicantDetails?.map((detail, index) => (
-        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-          <StatusTable>
-
-            <RenderRow label={t("NOC_FIRM_OWNER_NAME_LABEL")} value={detail?.applicantOwnerOrFirmName} />
-            <RenderRow label={t("NOC_APPLICANT_EMAIL_LABEL")} value={detail?.applicantEmailId} />
-            <RenderRow label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={detail?.applicantFatherHusbandName} />
-            <RenderRow label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={detail?.applicantMobileNumber} />
-            <RenderRow label={t("NOC_APPLICANT_DOB_LABEL")} value={detail?.applicantDateOfBirth} />
-            <RenderRow label={t("NOC_APPLICANT_GENDER_LABEL")} value={detail?.applicantGender?.code || detail?.applicantGender} />
-            <RenderRow label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={detail?.applicantAddress} />
-            <RenderRow label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} value={detail?.applicantPropertyId} />
-
-          </StatusTable>
-        </div>
-      ))}
-    </Card> */}
 
     {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
     {displayData?.applicantDetails?.[0]?.professionalName &&
@@ -614,7 +633,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
               <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
               <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
               <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-              <RenderRow label={t("Registration Date")} value={detail?.professionalRegistrationValidity} />
+              <RenderRow label={t("Registration Expire Date")} value={convertDateToISO(detail?.professionalRegistrationValidity)} />
 
             </StatusTable>
           </div>
@@ -625,58 +644,139 @@ const [viewTimeline, setViewTimeline] = useState(false);
     <Card>
       <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
       {displayData?.siteDetails?.map((detail, index) => (
-        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+        <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>          
           <StatusTable>
-
-            <RenderRow label={t("NOC_PLOT_NO_LABEL")} value={detail?.plotNo} />
-            <RenderRow label={t("NOC_PROPOSED_SITE_ADDRESS")} value={detail?.proposedSiteAddress} />
-            <RenderRow label={t("NOC_ULB_NAME_LABEL")} value={detail?.ulbName?.name || detail?.ulbName} />
-            <RenderRow label={t("NOC_ULB_TYPE_LABEL")} value={detail?.ulbType} />
-            <RenderRow label={t("NOC_KHASRA_NO_LABEL")} value={detail?.khasraNo} />
-            <RenderRow label={t("NOC_HADBAST_NO_LABEL")} value={detail?.hadbastNo} />
-            <RenderRow label={t("NOC_ROAD_TYPE_LABEL")} value={detail?.roadType?.name || detail?.roadType} />
-            <RenderRow label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} value={detail?.areaLeftForRoadWidening} />
-            <RenderRow label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} value={detail?.netPlotAreaAfterWidening} />
-            <RenderRow label={t("NOC_NET_TOTAL_AREA_LABEL")} value={detail?.netTotalArea} />
-            <RenderRow label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} value={detail?.roadWidthAtSite} />
-
-            {/* Building Status */}
-            <RenderRow label={t("NOC_BUILDING_STATUS_LABEL")} value={detail?.buildingStatus?.name || detail?.buildingStatus} />
-
-            {/* Basement Availability */}
-            <RenderRow label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} value={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable} />
-
-            {/* Basement Area */}
-            {detail?.buildingStatus === "Built Up" && (
-              <RenderRow label={t("NOC_BASEMENT_AREA_LABEL")} value={detail?.basementArea} />
+            {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
+            {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
+              <React.Fragment>
+                {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
+                {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
+                  renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
+                {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
+                  renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
+              </React.Fragment>
             )}
-
-            {/* Floor Areas */}
-            {detail?.buildingStatus === "Built Up" &&
-              detail?.floorArea?.map((floor, idx) => (
-                <RenderRow key={idx} label={getFloorLabel(idx)} value={floor?.value} />
-              ))}
-
-            {/* Total Floor Area */}
-            {detail?.buildingStatus === "Built Up" && (
-              <RenderRow label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} value={detail?.totalFloorArea} />
+            {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
+              <React.Fragment>
+                {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+              </React.Fragment>
             )}
+            {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
 
-            <RenderRow label={t("NOC_DISTRICT_LABEL")} value={detail?.district?.name || detail?.district} />
-            <RenderRow label={t("NOC_ZONE_LABEL")} value={detail?.zone?.name || detail?.zone} />
-            <RenderRow label={t("NOC_SITE_WARD_NO_LABEL")} value={detail?.wardNo} />
-            <RenderRow label={t("NOC_SITE_VILLAGE_NAME_LABEL")} value={detail?.villageName} />
-            <RenderRow label={t("NOC_SITE_COLONY_NAME_LABEL")} value={detail?.colonyName} />
-            <RenderRow label={t("NOC_SITE_VASIKA_NO_LABEL")} value={detail?.vasikaNumber} />
-            <RenderRow label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} value={detail?.khewatAndKhatuniNo} />
+            {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
+            {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
+            {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+            {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
+            {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
+            {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+            {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+            {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
+            {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
+            {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
+            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
+            {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
+            {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
+            {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
+            {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+            {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
+            {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
+            {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)}
 
+
+            {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
+            {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
+            {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
+            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
+            {renderLabel(t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
+            {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
+            {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWSInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
+            {renderLabel(t("Net Total Area"), detail?.netTotalArea)}
+            {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL"), detail?.areaUnderParkInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL"), detail?.areaUnderRoadInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL"), detail?.areaUnderRoadInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL"), detail?.areaUnderParkingInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL"), detail?.areaUnderParkingInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
+
+            {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
+            {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
           </StatusTable>
+                  
         </div>
       ))}
     </Card>
 
+      {/* 3️⃣ FEE DETAILS CARD */}
+      {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
+        <Card>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
+            }}
+            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+          />
+        </Card>
+      )}
+
+      {/* 1️⃣ SITE COORDINATES CARD */}
+      {displayData?.coordinates && displayData.coordinates.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+          <StatusTable
+            style={{
+              display: "flex",
+              gap: "20px",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            {sitePhotos?.length > 0 &&
+              [...sitePhotos]
+                .map((doc) => (
+                  <NocSitePhotographs
+                    key={doc?.filestoreId || doc?.uuid}
+                    filestoreId={doc?.filestoreId || doc?.uuid}
+                    documentType={doc?.documentType}
+                    coordinates={displayData?.coordinates?.[0]}
+                  />
+                ))}
+          </StatusTable>
+        </Card>
+      )}
+
+      {/* 2️⃣ DOCUMENTS CARD */}
+        {displayData?.Documents && displayData.Documents.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
+            <StatusTable>
+              {/* <LayoutDocumentView documents={displayData.Documents} /> */}
+              <LayoutDocumentTableView documents={displayData?.Documents?.sort((a,b) => b?.order - a?.order)} />
+            </StatusTable>
+          </Card>
+        )}
+
     {/* -------------------- SPECIFICATIONS -------------------- */}
-    <Card>
+    {/* <Card>
       <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
       {displayData?.siteDetails?.map((detail, index) => (
         <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -691,85 +791,11 @@ const [viewTimeline, setViewTimeline] = useState(false);
           </StatusTable>
         </div>
       ))}
-    </Card>
+    </Card> */}
 
-        {/* 1️⃣ SITE COORDINATES CARD */}
-        {displayData?.coordinates && displayData.coordinates.length > 0 && (
-          // <Card>
-          //   <CardSubHeader>{t("LAYOUT_SITE_COORDINATES_LABEL")}</CardSubHeader>
+      
 
-          //   {displayData.coordinates.map((detail, index) => (
-          //     <div
-          //       key={index}
-          //       style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}
-          //     >
-          //       <StatusTable>
-          //         <RenderRow label={t("COMMON_LATITUDE1_LABEL")} value={detail?.Latitude1} />
-          //         <RenderRow label={t("COMMON_LONGITUDE1_LABEL")} value={detail?.Longitude1} />
-          //         <RenderRow label={t("COMMON_LATITUDE2_LABEL")} value={detail?.Latitude2} />
-          //         <RenderRow label={t("COMMON_LONGITUDE2_LABEL")} value={detail?.Longitude2} />
-          //         <RenderRow label={t("COMMON_LATITUDE3_LABEL")} value={detail?.Latitude3} />
-          //         <RenderRow label={t("COMMON_LONGITUDE3_LABEL")} value={detail?.Longitude3} />
-          //         <RenderRow label={t("COMMON_LATITUDE4_LABEL")} value={detail?.Latitude4} />
-          //         <RenderRow label={t("COMMON_LONGITUDE4_LABEL")} value={detail?.Longitude4} />
-          //       </StatusTable>
-          //     </div>
-          //   ))}
-          // </Card>
-          <Card>
-        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={displayData?.coordinates?.[0]}
-                />
-              ))}
-        </StatusTable>
-      </Card>
-        )}
-
-        {/* 2️⃣ DOCUMENTS CARD */}
-        {displayData?.Documents && displayData.Documents.length > 0 && (
-          <Card>
-            <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
-            <StatusTable>
-              {/* <LayoutDocumentView documents={displayData.Documents} /> */}
-              <LayoutDocumentTableView documents={displayData.Documents} />
-            </StatusTable>
-          </Card>
-        )}
-
-        {/* 3️⃣ FEE DETAILS CARD */}
-        {applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails && (
-          <Card>
-            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-
-            <LayoutFeeEstimationDetails
-              formData={{
-                apiData: { ...applicationDetails },
-                applicationDetails: {
-                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-                },
-                siteDetails: {
-                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-                },
-              }}
-              feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => {}} disable={true}
-            />
-          </Card>
-        )}
+        
 
       <div id="timeline">
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />

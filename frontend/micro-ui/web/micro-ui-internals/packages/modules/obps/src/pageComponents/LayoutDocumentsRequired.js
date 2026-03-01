@@ -33,8 +33,8 @@ const LayoutDocumentsRequired = ({
   formState,
 }) => {
   const tenantId = Digit.ULBService.getStateId()
-  const [documents, setDocuments] = useState(formData?.documents?.documents)
-  // console.log("documents in childStep three", documents, formData)
+  const [documents, setDocuments] = useState([])
+  console.log("documents in childStep three", documents, formData)
   const [error, setError] = useState(null)
   const [enableSubmit, setEnableSubmit] = useState(true)
   const [checkRequiredFields, setCheckRequiredFields] = useState(false)
@@ -61,23 +61,11 @@ const LayoutDocumentsRequired = ({
   //console.log("geocoordinates", geocoordinates)
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  // const applicationNo = currentStepData?.apiData?.Layout?.applicationNo || ""
-  // const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false
-  
-  // // Get CLU approval status from siteDetails - Check multiple possible locations
-  // const cluApprovedValue = currentStepData?.siteDetails?.isCluRequired?.code || currentStepData?.siteDetails?.isCluRequired
-  // const isCluApproved = cluApprovedValue === "YES" || cluApprovedValue === true || false
-  
-  // const isRestrictedArea = currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES" || false
-  // const isUnderMasterPlan = currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES" || false
 
-  // // Get road type to check if National Highway
-  // const roadType = currentStepData?.siteDetails?.roadType?.name || currentStepData?.siteDetails?.roadType || ""
-  // const isNationalHighway = roadType?.toLowerCase().includes("national") || roadType?.toLowerCase().includes("nh")
-
-  // // Get building category to check if Institution
-  // const buildingCategory = currentStepData?.siteDetails?.buildingCategory?.code || currentStepData?.siteDetails?.buildingCategory || ""
-  // const isInstitution = buildingCategory?.toLowerCase().includes("institution") || buildingCategory === "INSTITUTION"
+  console.log("currentStepData in Step 3", currentStepData)
+  useEffect(()=>{
+    setDocuments(currentStepData?.documents?.documents?.documents)
+  },[currentStepData])
 
   const [applicationNo, setApplicationNo] = useState("");
   const [isVacant, setIsVacant] = useState(false);
@@ -145,45 +133,11 @@ const LayoutDocumentsRequired = ({
 
 
 
-  // console.log("🔍 CLU Status Check:")
-  // console.log("  cluIsApproved value:", currentStepData?.siteDetails?.cluIsApproved, currentStepData, documents)
-  // // console.log("  Extracted cluApprovedValue:", cluApprovedValue)
-  // console.log("  isCluApproved boolean:", isCluApproved)
-  // console.log("Restricted Area:", isRestrictedArea, currentStepData?.siteDetails?.specificationRestrictedArea)
-  // console.log("Under Master Plan:", isUnderMasterPlan, currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan)
-
-
-  // NOTE: Document requirements are now determined by backend config:
-  // - If cluRequired: true → document mandatory only when CLU = YES
-  // - If required: true → document always mandatory (unless overridden by condition)
-  // - Hardcoded arrays below kept for reference only (using backend config instead)
-
-  const cluYesMandatoryDocs = [
-    "OWNER.REVENUEPLANAKSHSHAJRA",           // Revenue Plan / Aksh Shajra
-    "OWNER.SITEMARKEDONLATHAPARTPLAN",      // Site marked on Latha Part Plan
-    "OWNER.SITEMARKEDONMASTERPLAN",         // Site marked on Master Plan
-    "OWNER.SITEMARKEDONSATELLITEPLAN",      // Site marked on Satellite Plan
-    "OWNER.MUSTARKALANDAFFIDAVIT",          // Mustarka Land (Kabja) Affidavit
-  ]
-
-  const cluNoMandatoryDocs = [
-    "OWNER.LAYOUTDRAWINGWITHSUPERIMPOSEDKHASRNO",  // Layout Drawing with Superimposed Khasra no.
-    "OWNER.CIRCLEREVENUEOFFICERREPORT",             // Circle Revenue Officer report
-    "OWNER.NONENCUMBRANCECERTIFICATEFROMTEHSILDAR", // NON-Encumbrance certificate from Tehsildar
-    "OWNER.REVENUEPLAN",                            // Revenue Plan
-    "OWNER.SITEMARKEDONPLAN",                       // Site marked on Google Plan in Case of non-scheme Areas and Part Layout in case of Scheme Areas
-  ]
 
   // Filter documents based on building status, CLU approval, road type, and category
   const filteredDocuments = useMemo(() => {
-    // console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
     let docs = data?.LAYOUT?.LayoutDocuments || []
     
-    // console.log("=== FILTER DEBUG ===")
-    // console.log("Initial docs count:", docs.length, docs)
-    // console.log("isCluApproved:", isCluApproved)
-    // console.log("isNationalHighway:", isNationalHighway)
-    // console.log("isInstitution:", isInstitution)
     
     // Filter and process documents
     const processedDocs = docs
@@ -200,15 +154,7 @@ const LayoutDocumentsRequired = ({
         // National Highway NOC is mandatory only when it's a National Highway
         else if (doc.code === "OWNER.NATIONALHIGHWAYNOC") {
           isRequired = isNationalHighway
-        }
-        // When CLU = YES: Make specific CLU documents mandatory
-        // else if (isCluApproved && doc.cluRequired) {
-        //   isRequired = true
-        // }
-        // When CLU = NO: CLU-required docs become NOT mandatory, but regular required docs stay mandatory
-        // else if (!isCluApproved && doc.cluRequired) {
-        //   isRequired = false
-        // }
+        }        
         
         // Filter out building drawing if vacant
         if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
@@ -219,9 +165,6 @@ const LayoutDocumentsRequired = ({
       }).filter(doc => !(doc?.cluRequired && !isCluApproved))
       .filter(doc => doc !== null)
     
-    // console.log("Final docs count:", processedDocs.length)
-    // console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
-    // console.log("=== END DEBUG ===")
     
     return processedDocs
   }, [isVacant, isCluApproved, isNationalHighway, isInstitution, data?.LAYOUT?.LayoutDocuments?.length])
@@ -232,7 +175,7 @@ const LayoutDocumentsRequired = ({
     const document = formData.documents
     let documentStep
     documentStep = { ...document, documents: documents }
-    // console.log("filteredDocs and documents", filteredDocuments, documents)
+    console.log("filteredDocs and documents", filteredDocuments, documents)
     onSelect(config.key, documentStep)
   }
 
@@ -291,12 +234,14 @@ const LayoutDocumentsRequired = ({
       ) : null}
 
       {!isLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+        // <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+        <React.Fragment>
           {filteredDocuments?.map((document, index) => {
             return (
               <LayoutSelectDocument
                 key={index}
                 document={document}
+                value={documents?.find(val => val?.documentType === document?.code)?.filestoreId}
                 t={t}
                 error={error}
                 setError={setError}
@@ -312,7 +257,8 @@ const LayoutDocumentsRequired = ({
             )
           })}
           {error && <Toast label={error} isDleteBtn={true} onClose={() => setError(null)} error />}
-        </FormStep>
+          </React.Fragment>
+        // </FormStep>
       ) : (
         <Loader />
       )}
@@ -334,22 +280,12 @@ function LayoutSelectDocument({
   setGeoCoordinates,
   dispatch,
   previewLink,
+  value
 }) {
   const filteredDocument = (documents || []).filter((item) => item?.documentType?.includes(doc?.code))[0]
-
-  const tenantId = Digit.ULBService.getCurrentTenantId()
-  const [selectedDocument, setSelectedDocument] = useState(
-    filteredDocument
-      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
-      : doc?.dropdownData?.length === 1
-        ? doc?.dropdownData[0]
-        : {},
-  )
-
   const [file, setFile] = useState(null)
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null)
+  const [uploadedFile, setUploadedFile] = useState(() => value || null)
 
-  const handlePTRSelectDocument = (value) => setSelectedDocument(value)
 
   function selectfile(e) {
     const selectedFile = e.target.files[0]
@@ -462,28 +398,38 @@ function LayoutSelectDocument({
     // console.log("selectedFile here", selectedFile)
   }
 
-  const { dropdownData } = doc
-  var dropDownData = dropdownData
+  // const { dropdownData } = doc
+  // var dropDownData = dropdownData
 
   const [isHidden, setHidden] = useState(false)
   const [getLoading, setLoading] = useState(false)
 
   useEffect(() => {
     if (doc?.code) {
+      if(uploadedFile){
       setDocuments((prev) => {
+        console.log("documents in childStep three - All Docs", doc?.code, uploadedFile  )
         const filteredDocumentsByDocumentType = (prev || []).filter(
           (item) => item?.documentType !== doc?.code,
         )
 
+        const selectedDocument = (prev || []).filter(
+          (item) => item?.documentType === doc?.code
+        )
+
+        // console.log("All Docs filteredDocumentsByDocumentType", filteredDocumentsByDocumentType)
         if (uploadedFile?.length === 0 || uploadedFile === null) {
           return filteredDocumentsByDocumentType
         }
 
-        const filteredDocumentsByFileStoreId =
-          filteredDocumentsByDocumentType.filter((item) => item?.filestoreId !== uploadedFile) || []
+        // const filteredDocumentsByFileStoreId =
+        //   filteredDocumentsByDocumentType.filter((item) => item?.filestoreId !== uploadedFile) || []
+
+        // console.log("All Docs filteredDocumentsByFileStoreId", filteredDocumentsByFileStoreId)
         return [
-          ...filteredDocumentsByFileStoreId,
+          ...filteredDocumentsByDocumentType,
           {
+            ...selectedDocument?.[0],
             documentType: doc?.code,
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
@@ -493,7 +439,14 @@ function LayoutSelectDocument({
         ]
       })
     }
+    }
   }, [uploadedFile, doc])
+
+  useEffect(() => {
+    if(value && value != uploadedFile){
+      setUploadedFile(value);
+    }
+  }, [value])
 
   useEffect(() => {
     if ((documents || []).length > 0) {
@@ -502,26 +455,26 @@ function LayoutSelectDocument({
     }
   }, [documents])
 
-  useEffect(() => {
-    if (action === "update") {
-      const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0]
-      const docType = dropDownData
-        .filter((e) => e.code === originalDoc?.documentType)
-        .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0]
-      if (!docType) setHidden(true)
-      else {
-        setSelectedDocument(docType)
-        setUploadedFile(originalDoc?.fileStoreId)
-      }
-    } else if (action === "create") {
-    }
-  }, [])
+  // useEffect(() => {
+  //   if (action === "update") {
+  //     const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0]
+  //     const docType = dropDownData
+  //       .filter((e) => e.code === originalDoc?.documentType)
+  //       .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0]
+  //     if (!docType) setHidden(true)
+  //     else {
+  //       setSelectedDocument(docType)
+  //       setUploadedFile(originalDoc?.fileStoreId)
+  //     }
+  //   } else if (action === "create") {
+  //   }
+  // }, [])
 
-  useEffect(() => {
-    if (!doc?.hasDropdown) {
-      setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") })
-    }
-  }, [])
+  // useEffect(() => {
+  //   if (!doc?.hasDropdown) {
+  //     setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") })
+  //   }
+  // }, [])
 
   useEffect(() => {
     ;(async () => {
@@ -550,9 +503,9 @@ function LayoutSelectDocument({
     })()
   }, [file])
 
-  useEffect(() => {
-    if (isHidden) setUploadedFile(null)
-  }, [isHidden])
+  // useEffect(() => {
+  //   if (isHidden) setUploadedFile(null)
+  // }, [isHidden])
 
   function convertToDecimal(coordinate) {
     const degrees = coordinate[0]
@@ -597,6 +550,7 @@ function LayoutSelectDocument({
 
       <div className="field" style={{display: "flex", flexDirection:"column", gap: "10px"}}>
         {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
+          <div>
           <CustomUploadFile
             id={"clu-doc"}
             onUpload={selectfileWithCordinates}
@@ -608,7 +562,12 @@ function LayoutSelectDocument({
             textStyles={{ width: "100%" }}
             accept=".jpeg, .jpg, .png"
           />
+          <p className="advisory-text">              
+              {t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5MB")}
+          </p>
+          </div>
         ):(
+          <div>
           <CustomUploadFile
             id={"clu-doc"}
             onUpload={selectfile}
@@ -620,6 +579,10 @@ function LayoutSelectDocument({
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
+          <p className="advisory-text">              
+              {t("Only .png, .jpeg, .jpg, .pdf files are accepted with maximum size of 5MB")}
+          </p>
+          </div>
         )}
 
             {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p style={{ padding: "10px", fontSize: "14px" }}>Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}

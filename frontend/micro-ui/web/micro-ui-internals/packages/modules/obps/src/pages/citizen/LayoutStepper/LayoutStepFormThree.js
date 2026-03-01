@@ -147,6 +147,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   //console.log("coordinates from redux", coordinates);
 
   function goNext(finaldata) {
+    console.log("finalData", finaldata)
     const missingFields = validation(finaldata);
 
     if (missingFields.length > 0) {
@@ -170,6 +171,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
+    onFormValueChange(true, finaldata)
     onGoNext();
   }
 
@@ -228,6 +230,8 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   //   return []
   // }
 
+  console.log("currentStepData",currentStepData)
+
   function validation(documents) {
   if (isLoading || isDocLoading) return [];
 
@@ -256,6 +260,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
+    console.log("onformchange finalData", data)
     if (!_.isEqual(data, currentStepData)) {
        dispatch(UPDATE_LayoutNewApplication_FORM(config.key, data))
     }
@@ -273,7 +278,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           defaultValues={currentStepData}
           config={config.currStepConfig}
           onSubmit={goNext}
-          onFormValueChange={onFormValueChange}
+          // onFormValueChange={onFormValueChange}
           label={t(`${config.texts.submitBarLabel}`)}
           currentStep={config.currStepNumber}
           onBackClick={onGoBack}

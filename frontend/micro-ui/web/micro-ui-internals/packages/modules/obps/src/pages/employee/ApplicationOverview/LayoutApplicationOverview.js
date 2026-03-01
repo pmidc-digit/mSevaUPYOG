@@ -36,6 +36,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import { SiteInspection } from "../../../../../noc/src/pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
+import CustomOwnerImage from "../../../components/CustomOwnerImage";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   //console.log("checkpoint here", checkpoint);
@@ -87,6 +88,36 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
+const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const result = await Digit.UploadServices.Filefetch([fileStoreId], stateCode);
+          if (result?.data?.fileStoreIds?.[0]?.url) {
+            setUrl(result.data.fileStoreIds[0].url);
+          }
+        } catch (error) {
+          console.error("Error fetching document:", error);
+        }
+      }
+    };
+    fetchUrl();
+  }, [fileStoreId, stateCode]);
+
+  if (!url) return <span>{t("CS_NA") || "NA"}</span>;
+
+  return (
+    <LinkButton
+     
+      label={t("View") || "View"}
+      onClick={() => window.open(url, "_blank")}
+    />
+  );
+};
+
 const LayoutEmployeeApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -116,7 +147,7 @@ const LayoutEmployeeApplicationOverview = () => {
   // States for site inspection images
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
-  const [siteImages, setSiteImages] = useState({});
+  const [siteImages, setSiteImages] = useState({})
 
   // States for field inspection
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
@@ -135,7 +166,7 @@ const LayoutEmployeeApplicationOverview = () => {
   // Status DOCUMENTVERIFY_DM means DM is in the process, so don't fetch checklist yet (it will be created on their first submit)
   // For other statuses, checklist should already exist from previous submissions
   const shouldFetchChecklist = applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM";
-  
+  const stateCode = Digit.ULBService.getStateId();
   const { data: checklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useLayoutCheckListSearch(
     { applicationNo: id }, 
     tenantId,
@@ -225,7 +256,7 @@ const LayoutEmployeeApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  //console.log("actions here", actions);
+  // console.log("actions here", actions);
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0];
@@ -255,7 +286,7 @@ const LayoutEmployeeApplicationOverview = () => {
   // Initialize site images and field inspection data from application details
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0];
-    if (layoutObject) {
+    if (layoutObject && JSON.stringify(siteImages) === "{}") {
       const siteImagesFromData = layoutObject?.layoutDetails?.additionalDetails?.siteImages;
       setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
       setFieldInspectionPending(layoutObject?.layoutDetails?.additionalDetails?.fieldinspection_pending || []);
@@ -421,7 +452,14 @@ const LayoutEmployeeApplicationOverview = () => {
 
     try {
       const filtData = data?.Licenses?.[0];
-      //console.log(" filtData:", filtData);
+      console.log(" filtData:", filtData);
+
+
+
+      // if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
+      //   filtData.assignee = user?.info?.uuid;        
+      // }
+      
 
       if (!filtData) {
         console.error(" ERROR: filtData is undefined");
@@ -850,6 +888,21 @@ const LayoutEmployeeApplicationOverview = () => {
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
+  const convertDateToISO = (dateStr) => {
+    if (!dateStr) return "";
+
+    const parts = dateStr.split("-");
+
+    // yyyy-mm-dd (already ISO)
+    if (parts[2].length === 4) {
+      return dateStr;
+    }
+
+    // dd-mm-yyyy → yyyy-mm-dd
+    const [yyyy, mm, dd,] = parts;
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
   const onChangeReport = (key, value) => {
     //console.log("key,value", key, value);
     setFieldInspectionPending(value);
@@ -860,12 +913,34 @@ const LayoutEmployeeApplicationOverview = () => {
     return <Row label={label} text={value} />;
   };
 
+  const findOwnerDocument = (ownerIndex, docType) => {
+    // Then check owner's additionalDetails (same keys as LayoutSummary.js)
+    const owners = displayData?.owners || [];
+    if (owners && owners[ownerIndex]?.additionalDetails) {
+      if (docType === "OWNERPHOTO" && owners[ownerIndex]?.additionalDetails?.ownerPhoto) {
+        return owners[ownerIndex]?.additionalDetails?.ownerPhoto;
+      }
+      if (docType === "OWNERVALIDID" && owners[ownerIndex]?.additionalDetails?.documentFile) {
+        return owners[ownerIndex]?.additionalDetails?.documentFile;
+      }
+      if (docType === "OWNERPAN" && owners[ownerIndex]?.additionalDetails?.documentFile) {
+        return owners[ownerIndex]?.additionalDetails?.panDocument;
+      }
+    }
+
+    return null;
+  };
+
   if (isLoading) {
     return <Loader />;
   }
 
   return (
     <div className={"employee-main-application-details"}>
+      <CustomOwnerImage
+        ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto}
+        ownerName={displayData?.owners?.[0]?.name}
+      />
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
@@ -909,19 +984,24 @@ const LayoutEmployeeApplicationOverview = () => {
       {/* -------------------- OWNERS / APPLICANTS DETAILS -------------------- */}
       {displayData?.owners &&
         displayData?.owners.length > 0 &&
-        displayData?.owners.map((detail, index) => (
+        displayData?.owners?.map((applicant, index) => (
           <React.Fragment key={index}>
             <Card>
               <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.name || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.dob ? new Date(detail?.dob).toLocaleDateString() : "N/A"} />
-                  <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender || "N/A"} />
-                  <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.permanentAddress || "N/A"} />
+                  <Row label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_NAME_LABEL") : t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
+                  {index === 0 && <Row label={`Applicant Type`} value={applicant?.additionalDetails?.aplicantType?.name} />}
+                  <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
+                  <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
+                  <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} value={applicant?.mobileNumber} />
+                  <Row label={t("NOC_APPLICANT_DOB_LABEL")} value={applicant?.dob ? new Date(applicant?.dob).toLocaleDateString() : ""} />
+                  <Row label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
+                  <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
+                  <Row label={t("Pan No")} value={applicant?.pan || "N/A"} />
+                  <Row label={t("Photo") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
+                  <Row label={t("ID Proof") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
+                  <Row label={t("Pan") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
                 </StatusTable>
               </div>
             </Card>
@@ -934,57 +1014,72 @@ const LayoutEmployeeApplicationOverview = () => {
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
-              {renderLabel(t("NOC_PLOT_NO_LABEL"), detail?.plotNo)}
-              {renderLabel(t("BPA_PLOT_AREA_LABEL"), detail?.specificationPlotArea)}
-              {renderLabel("Net Total Area", detail?.netTotalArea)}
-              {renderLabel(t("NOC_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
-              {renderLabel(t("NOC_ULB_NAME_LABEL"), detail?.ulbName?.name || detail?.ulbName)}
-              {renderLabel("ULB Type", detail?.ulbType)}
-              {renderLabel(t("NOC_KHASRA_NO_LABEL"), detail?.khasraNo)}
-              {renderLabel("Khanuti No", detail?.khanutiNo)}
-              {renderLabel(t("NOC_HADBAST_NO_LABEL"), detail?.hadbastNo)}
-              {renderLabel(t("NOC_ROAD_TYPE_LABEL"), detail?.roadType?.name || detail?.roadType)}
-              {renderLabel("Road Width at Site (m)", detail?.roadWidthAtSite)}
-              {renderLabel(t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
-              {renderLabel(t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
-              {renderLabel(t("NOC_SITE_WARD_NO_LABEL"), detail?.wardNo)}
-              {renderLabel(t("NOC_DISTRICT_LABEL"), detail?.district?.name || detail?.district)}
-              {renderLabel(t("NOC_ZONE_LABEL"), detail?.zone)}
-              {renderLabel(t("NOC_SITE_VASIKA_NO_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("NOC_SITE_VASIKA_DATE_LABEL"), formatDateVasika(detail?.vasikaDate))}
-              {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
-
-              {/* Additional Site Details */}
-              {renderLabel("CLU Type", detail?.cluType)}
-              {renderLabel("CLU Number", detail?.cluNumber)}
-              {renderLabel("CLU is Approved", detail?.cluIsApproved?.name || detail?.cluIsApproved?.code)}
-              {renderLabel("CLU Approval Date", formatDate(detail?.cluApprovalDate))}
-              {renderLabel("Is CLU Required", detail?.isCluRequired)}
-              {renderLabel("Residential Type", detail?.residentialType?.name || detail?.residentialType)}
-              {renderLabel("Building Category", detail?.buildingCategory?.name || detail?.buildingCategory)}
-              {renderLabel("Building Status", detail?.buildingStatus)}
-              {renderLabel("Layout Area Type", detail?.layoutAreaType?.name || detail?.layoutAreaType)}
-              {renderLabel("Layout Scheme Name", detail?.layoutSchemeName)}
-              {renderLabel("Type of Application", detail?.typeOfApplication?.name || detail?.typeOfApplication)}
-              {renderLabel("Is Area Under Master Plan", detail?.isAreaUnderMasterPlan?.name || detail?.isAreaUnderMasterPlan?.code)}
-
-              {/* Area Breakdown */}
-              {renderLabel("Area Under EWS (sq.mt)", detail?.areaUnderEWS)}
-              {renderLabel("Area Under Road (sq.mt)", detail?.areaUnderRoadInSqM)}
-              {renderLabel("Area Under Road (%)", detail?.areaUnderRoadInPct)}
-              {renderLabel("Area Under Park (sq.mt)", detail?.areaUnderParkInSqM)}
-              {renderLabel("Area Under Park (%)", detail?.areaUnderParkInPct)}
-              {renderLabel("Area Under Parking (sq.mt)", detail?.areaUnderParkingInSqM)}
-              {renderLabel("Area Under Parking (%)", detail?.areaUnderParkingInPct)}
-              {renderLabel("Area Under Other Amenities (sq.mt)", detail?.areaUnderOtherAmenitiesInSqM)}
-              {renderLabel("Area Under Other Amenities (%)", detail?.areaUnderOtherAmenitiesInPct)}
-              {renderLabel("Area Under Residential Use (sq.mt)", detail?.areaUnderResidentialUseInSqM)}
-              {renderLabel("Area Under Residential Use (%)", detail?.areaUnderResidentialUseInPct)}
-
-              {/* Floor Area Details */}
-              {detail?.floorArea && detail?.floorArea?.length > 0 && (
-                <>{detail?.floorArea?.map((floor, idx) => renderLabel(`Floor ${idx + 1} Area (sq.mt)`, floor?.value))}</>
+              {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
+              {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
+                <React.Fragment>
+                  {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
+                  {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
+                    renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
+                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
+                </React.Fragment>
               )}
+              {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && (
+                <React.Fragment>
+                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+                </React.Fragment>
+              )}
+              {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
+
+              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
+              {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
+              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+              {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
+              {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
+              {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+              {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+              {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
+              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
+              {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
+              {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
+              {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
+              {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
+              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
+              {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+              {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
+              {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
+              {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)}
+
+
+              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
+              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
+              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
+              {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
+              {renderLabel(t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
+              {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
+              {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWSInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
+              {renderLabel(t("Net Total Area"), detail?.netTotalArea)}
+              {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL"), detail?.areaUnderParkInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL"), detail?.areaUnderRoadInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL"), detail?.areaUnderRoadInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL"), detail?.areaUnderParkingInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL"), detail?.areaUnderParkingInPct)}
+              {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
+              {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
+
+              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
+              {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)}
             </StatusTable>
           </div>
         ))}
@@ -1182,7 +1277,7 @@ const LayoutEmployeeApplicationOverview = () => {
         )}
       </Card>
 
-      {siteImages?.documents?.length > 0 && (
+      {/* {siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("SITE_INPECTION_IMAGES")}</CardSubHeader>
           <StatusTable
@@ -1207,10 +1302,10 @@ const LayoutEmployeeApplicationOverview = () => {
               ))}
           </StatusTable>
         </Card>
-      )}
+      )} */}
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant. I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant ( ${displayData?.owners?.map(applicant => applicant?.name)?.join(", ")} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
       <div id="timeline">

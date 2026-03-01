@@ -48,6 +48,8 @@ const LayoutSiteDetails = (_props) => {
   const [cluValidationLoading, setCluValidationLoading] = useState(false);
   const [cluValidationError, setCluValidationError] = useState(null);
   const [isCluValidated, setIsCluValidated] = useState(false);
+  const [totalPlotArea, setTotalPlotArea] = useState("0.00");
+  const [areaLeftforRoadWidning, setAreaLeftforRoadWidning] = useState("0.00");
 
   // Update parent ref when CLU validation status changes
   useEffect(() => {
@@ -56,6 +58,13 @@ const LayoutSiteDetails = (_props) => {
       cluValidationRef.current.isCluRequired = isCluRequired;
     }
   }, [isCluValidated, isCluRequired, cluValidationRef]);
+
+  useEffect(() => {
+    const roadwidningArea = getValues("netPlotAreaAfterWidening");
+    const tpArea = getValues("areaLeftForRoadWidening");
+    if(roadwidningArea) setAreaLeftforRoadWidning(roadwidningArea)
+    if(tpArea) setTotalPlotArea(tpArea)
+  }, [currentStepData])
 
   // Restore CLU document from edit data
   useEffect(() => {
@@ -231,7 +240,7 @@ const LayoutSiteDetails = (_props) => {
   useEffect(() => {
     if (isDistrictInitialized && prevSelectedCityRef.current?.code !== selectedCity?.code) {
       setLocalities([]);
-      setValue("zone", null);
+      // setValue("zone", null);
     }
     prevSelectedCityRef.current = selectedCity;
   }, [selectedCity, setValue, isDistrictInitialized]);
@@ -287,16 +296,16 @@ const LayoutSiteDetails = (_props) => {
   const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.buildingCategory || null);
 
   // Map zone object to match zoneOptions format
-  useEffect(() => {
-    if (zoneOptions?.length > 0 && currentStepData?.siteDetails?.zone) {
-      const zoneName = currentStepData?.siteDetails?.zone?.name || currentStepData?.siteDetails?.zone;
-      const matchedZone = zoneOptions?.find((zone) => zone.name === zoneName);
+  // useEffect(() => {
+  //   if (zoneOptions?.length > 0 && currentStepData?.siteDetails?.zone) {
+  //     const zoneName = currentStepData?.siteDetails?.zone?.name || currentStepData?.siteDetails?.zone;
+  //     const matchedZone = zoneOptions?.find((zone) => zone.name === zoneName);
 
-      if (matchedZone) {
-        setValue("zone", matchedZone);
-      }
-    }
-  }, [zoneOptions, currentStepData?.siteDetails?.zone, setValue]);
+  //     if (matchedZone) {
+  //       setValue("zone", matchedZone);
+  //     }
+  //   }
+  // }, [zoneOptions, currentStepData?.siteDetails?.zone, setValue]);
 
   useEffect(() => {
     const formattedData = currentStepData?.siteDetails;
@@ -361,7 +370,7 @@ const LayoutSiteDetails = (_props) => {
 
     if (Math.abs(netArea-totalSiteArea) !== 0) {
       setAreaMismatchNotification(
-        `Area Mismatch: Total Site Area (${netArea} Sq M) does not match Net Site Area (${totalSiteArea} Sq M), Balance Area is (${(netArea-totalSiteArea).toFixed(2)} Sq M)`
+        `Area Mismatch: Total Site Area (${totalSiteArea} Sq M) does not match Net Site Area (${netArea} Sq M)`
       );
     } else {
       setAreaMismatchNotification(null);
@@ -455,6 +464,7 @@ const LayoutSiteDetails = (_props) => {
           <CardSectionHeader>CLU Details</CardSectionHeader>
 
           {/* Is CLU Required? - Yes/No Dropdown */}
+          <React.Fragment>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               {`Is CLU Required?`} <span className="requiredField">*</span>
@@ -484,6 +494,7 @@ const LayoutSiteDetails = (_props) => {
           {errors?.isCluRequired && (
             <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.isCluRequired.message}</p>
           )}
+          </React.Fragment>
 
           {/* ===== CLU Details Section (when isCluRequired = NO) ===== */}
           {getValues("isCluRequired") === "NO" || getValues("isCluRequired")?.code === "NO" || isCluRequired?.code === "NO" || isCluRequired === "NO" ? (
@@ -1367,6 +1378,7 @@ const LayoutSiteDetails = (_props) => {
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      setTotalPlotArea(e.target.value)
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -1408,6 +1420,7 @@ const LayoutSiteDetails = (_props) => {
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
+                      setAreaLeftforRoadWidning(e.target.value)
                     }}
                     onBlur={(e) => {
                       props.onBlur(e);
@@ -1420,6 +1433,31 @@ const LayoutSiteDetails = (_props) => {
               {errors?.netPlotAreaAfterWidening && (
                 <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}> {errors.netPlotAreaAfterWidening.message}</p>
               )}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`}</CardLabel>
+            <div className="field">
+              {/* <Controller
+                control={control}
+                name="balanceArea"
+                defaultValue=""
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => ( */}
+              <TextInput className="form-field"  value={parseFloat(totalPlotArea-areaLeftforRoadWidning).toFixed(2) || "0.00"} disable="true" />
+               {/* )}
+               /> */}
             </div>
           </LabelFieldPair>
 
@@ -1443,7 +1481,7 @@ const LayoutSiteDetails = (_props) => {
                       },
                       validate: (value) => {
                         const ewsArea = parseFloat(value) || 0;
-                        const totalArea = parseFloat(AreaLeftForRoadWidening) || 0;
+                        const totalArea = parseFloat(totalPlotArea-areaLeftforRoadWidning) || 0;
                         const ewsPercentage = totalArea > 0 ? (ewsArea / totalArea) * 100 : 0;
 
                         if (ewsPercentage < 5 && ewsArea > 0) {
@@ -1483,7 +1521,7 @@ const LayoutSiteDetails = (_props) => {
                     className="form-field"
                     value={
                       parseFloat(AreaLeftForRoadWidening) > 0
-                        ? ((parseFloat(EWSArea || 0) / parseFloat(AreaLeftForRoadWidening)) * 100).toFixed(2)
+                        ? ((parseFloat(EWSArea || 0) / parseFloat(totalPlotArea-areaLeftforRoadWidning)) * 100).toFixed(2)
                         : "0.00"
                     }
                     disabled={true}
@@ -2492,12 +2530,12 @@ const LayoutSiteDetails = (_props) => {
             </div>
           )}
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("BPA_BALANCE_AREA_IN_SQ_M_LABEL")}`}</CardLabel>
             <div className="field">
               <TextInput className="form-field" value={parseFloat(netArea-totalSiteArea).toFixed(2) || "0.00"} disable="true" />
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
         </div>
         <BreakLine />
         {}

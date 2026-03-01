@@ -45,6 +45,7 @@ import InspectionReportDisplay from "../../../pageComponents/InspectionReportDis
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
+import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -131,6 +132,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
   const [distances, setDistances] = useState([]);  
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
   // console.log("applicationDetails here==>", applicationDetails);
   const stateId = Digit.ULBService.getStateId();
   const { data: allowedDistance, isLoading: isDistanceLoading } = Digit.Hooks.useCommonMDMS(stateId, "common-masters", ["AllowedDistance"]);
@@ -323,25 +326,42 @@ const NOCEmployeeApplicationOverview = () => {
   // }
 
   async function openSanctionLetterPopup({ tenantId, EmpData }) {
-  try {
-    setLoader(true);
+    try {
+      setLoader(true);
 
-    // Get filestoreId from sanction letter function
-    const fileStoreId = await getSanctionLetterReceipt({ tenantId, payments : reciept_data?.Payments[0], EmpData });
+      const fileStoreId = await getSanctionLetterReceipt({
+        tenantId,
+        payments: reciept_data?.Payments?.[0],
+        EmpData,
+      });
+      if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-    if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore?.[fileStoreId];
+      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
+      const urlObj = new URL(receiptUrl);
+      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
 
-    // Use printReciept to fetch the actual file URL
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    const receiptUrl = fileStore[fileStoreId];
-    // Open in new tab/popup
-    await downloadPdfFromURL(receiptUrl);
-  } catch (error) {
-    console.error("Sanction Letter popup error:", error);
-  } finally {
-    setLoader(false);
+      const res = await fetch(downloadUrl);
+      const blob = await res.blob();
+
+      // Create blob URL -> allowed in iframe!
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Show modal
+      setPdfUrl(blobUrl);
+      setShowPdfModal(true);
+    } catch (error) {
+      console.error("Sanction Letter popup error:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "Failed to open sanction letter. Please try again.",
+      });
+    } finally {
+      setLoader(false);
+    }
   }
-}
 
 const handleDownloadPdf = async () => {
     try {
@@ -713,8 +733,11 @@ const [displayMenu, setDisplayMenu] = useState(false);
         setShowToast(null);
       }, 3000);
     } else if (action?.action == "ESIGN") {
-      // Automatically trigger the eSign process for the certificate
-      printCertificateWithESign();
+      // Automatically trigger the eSign process for the certificate      
+      openSanctionLetterPopup({
+        tenantId,
+        EmpData,
+      });
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
 }     else if (action?.action == "UPDATE_ZONE") {
@@ -1118,7 +1141,7 @@ const validateSiteImages = (action) => {
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
-        {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Noc?.[0]?.applicationStatus) && (
+        {/* {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Noc?.[0]?.applicationStatus) && (
           <SubmitBar
             label={t("OPEN_SANCTION_LETTER")}
             onSubmit={() =>
@@ -1128,7 +1151,7 @@ const validateSiteImages = (action) => {
               })
             }
           />
-        )}
+        )} */}
         {dowloadOptions && dowloadOptions.length > 0 && (
           <MultiLink
             className="multilinkWrapper"
@@ -1361,10 +1384,11 @@ const validateSiteImages = (action) => {
           />
         </Card>
       )}
-      
+
       {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ? (
         <Card>
-        <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div></Card>
+          <div>{t("BPA_NO_INSPECTION_REPORT_AVAILABLE_LABEL")}</div>
+        </Card>
       ) : (
         applicationDetails?.Noc?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
@@ -1476,6 +1500,22 @@ const validateSiteImages = (action) => {
             <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           )}
         </Modal>
+      )}
+
+      {showPdfModal && (
+        <PdfPreviewModal
+          open={showPdfModal}
+          url={pdfUrl}
+          onClose={() => {
+            setShowPdfModal(false);
+            setPdfUrl(null);
+          }}
+          title={t("NOC_SANCTION_LETTER")}
+        >
+          <ActionBar>
+            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+          </ActionBar>
+        </PdfPreviewModal>
       )}
 
       {showModal ? (

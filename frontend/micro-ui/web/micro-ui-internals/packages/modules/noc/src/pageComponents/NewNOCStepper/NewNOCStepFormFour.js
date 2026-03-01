@@ -338,9 +338,9 @@ console.log('calculatorData', calculatorData)
     //console.log("selectedAction here", action);
   }
   if (nocCalculatorLoading) return <Loader />;
-
-  const ownersList= currentStepData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
-  const firmName = currentStepData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+  const applicantDetails =  currentStepData?.applicationDetails?.owners
+  const ownersList= applicantDetails?.map((item)=> item.ownerOrFirmName) 
+  const firmName = applicantDetails?.[0]?.firmName
   const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
 
   return (

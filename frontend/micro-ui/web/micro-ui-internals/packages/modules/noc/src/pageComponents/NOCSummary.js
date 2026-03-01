@@ -90,10 +90,17 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
             <StatusTable>
               {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
               {owner?.firmName && <Row label={t("NOC_FIRM_NAME")} text={owner?.firmName} />}
-              <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={owner?.ownerOrFirmName || "N/A"} />
+              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"} />
+              <Row
+                label={
+                  (typeof owner?.ownerType === "string" ? owner?.ownerType : owner?.ownerType?.code) === "Firm"
+                    ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
+                    : t("APPLICANT_NAME")
+                }
+                text={owner?.ownerOrFirmName || "N/A"}
+              />
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"} />
               <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(owner?.dateOfBirth) || "N/A"} />
               <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"} />

@@ -25,7 +25,9 @@ const SearchCategories = ({ parentRoute }) => {
     { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
-  const defaultTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+  const defaultTenant = useMemo(() => {
+    return userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+  }, [userUlbs, tenantId]);
 
   const searchFormDefaultValues = {
     tenantIds: defaultTenant,
@@ -65,22 +67,22 @@ const SearchCategories = ({ parentRoute }) => {
 
   //Reset:
   const onSearchFormReset = (setSearchFormValue) => {
-    const resetTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+    // const resetTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
 
-    setSearchFormValue("tenantIds", resetTenant);
+    setSearchFormValue("tenantIds", defaultTenant);
     setSearchFormValue("categoryName", "");
 
     dispatch({
       action: "mutateSearchForm",
       data: {
-        ...searchFormDefaultValues,
-        tenantIds: resetTenant,
+        tenantIds: defaultTenant,
+        categoryName: "",
       },
     });
 
     dispatch({
       action: "mutateTableForm",
-      data: { ...tableOrderFormDefaultValues },
+      data: tableOrderFormDefaultValues,
     });
   };
 

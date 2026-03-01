@@ -62,7 +62,7 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
         </label>
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={selectedTenat?.[0]}
+          // defaultValue={selectedTenat?.[0]}
           render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
           name={"tenantIds"}
           control={controlSearchForm}

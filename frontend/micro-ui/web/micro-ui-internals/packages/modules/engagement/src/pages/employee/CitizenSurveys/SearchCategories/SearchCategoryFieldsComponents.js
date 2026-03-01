@@ -62,11 +62,11 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
           {t("City")} <span style={{ color: "red" }}>*</span>
         </label>
         <Controller
-          rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={selectedTenat?.[0]}
-          render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
           name={"tenantIds"}
           control={controlSearchForm}
+          rules={{ required: t("REQUIRED_FIELD") }}
+          // defaultValue={selectedTenat?.[0]}
+          render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
         />
         <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError>
       </SearchField>

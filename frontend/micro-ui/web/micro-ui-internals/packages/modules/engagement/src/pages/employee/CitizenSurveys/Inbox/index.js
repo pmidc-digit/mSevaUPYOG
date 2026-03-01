@@ -23,7 +23,7 @@ const Inbox = ({ parentRoute }) => {
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const userInfo = Digit.UserService.getUser().info;
 
-  const userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
+  const userUlbs = ulbs?.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
 
   const statuses = [
     { code: "ALL", name: `${t("ES_COMMON_ALL")}`, bool: null },

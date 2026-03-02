@@ -35,4 +35,16 @@ public class thirdpartywrapper {
 		return ResponseEntity.ok(response);
 	}
 
+	@PostMapping("/Property/GetLocalitiesList")
+	public ResponseEntity<String> getLocalitiesList(@RequestBody Map<String, Object> requestParam) {
+		String response = curlWrapperService.getLocalitiesList();
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/Property/GetLocalityPropertiesList")
+	public ResponseEntity<String> getLocalityPropertiesList(@RequestBody Map<String, Object> requestParam) {
+		String response = curlWrapperService.getLocalityPropertiesList(requestParam);
+		return ResponseEntity.ok(response);
+	}
+
 }

@@ -48,7 +48,6 @@ const useQuestionsInboxTableConfig = ({
   };
 
   function handleDisplayQuesDetails(question) {
-    console.log("question: ", question);
     setOpenQuesDetailsDialog(true);
     const content = (
       <div>
@@ -130,17 +129,18 @@ const useQuestionsInboxTableConfig = ({
           );
         },
       },
-      {
-        Header: t("Is Question Required"),
-        accessor: "isQuestionRequired",
-        Cell: ({ row }) => {
-          return (
-            <div>
-              <span>{t(row.original?.required)}</span>
-            </div>
-          );
-        },
-      },
+      // removed
+      // {
+      //   Header: t("Is Question Required"),
+      //   accessor: "isQuestionRequired",
+      //   Cell: ({ row }) => {
+      //     return (
+      //       <div>
+      //         <span>{t(row.original?.required)}</span>
+      //       </div>
+      //     );
+      //   },
+      // },
       {
         Header: t("Category"),
         accessor: "category",

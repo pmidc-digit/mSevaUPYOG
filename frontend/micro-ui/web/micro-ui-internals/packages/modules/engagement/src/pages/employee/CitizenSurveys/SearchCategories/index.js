@@ -1,5 +1,5 @@
-import React, { Fragment, useCallback, useMemo, useReducer, useState,useEffect } from "react";
-import {  DocumentIcon, Toast, Header, InboxComposer } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
+import { DocumentIcon, Toast, Header, InboxComposer } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchCategoryFieldsComponents from "./SearchCategoryFieldsComponents";
@@ -25,12 +25,13 @@ const SearchCategories = ({ parentRoute }) => {
     { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
-  //Default values:
+  const defaultTenant = useMemo(() => {
+    return userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+  }, [userUlbs, tenantId]);
+
   const searchFormDefaultValues = {
-    //tenantIds: tenantId,
-    tenantIds: userUlbs[0],
+    tenantIds: defaultTenant,
     categoryName: "",
-    //isActive: null,
   };
 
   const filterFormDefaultValues = {
@@ -66,10 +67,23 @@ const SearchCategories = ({ parentRoute }) => {
 
   //Reset:
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("tenantIds", tenantId);
+    // const resetTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
+    setSearchFormValue("tenantIds", defaultTenant);
     setSearchFormValue("categoryName", "");
-    //setSearchFormValue("isActive", null);
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+
+    dispatch({
+      action: "mutateSearchForm",
+      data: {
+        tenantIds: defaultTenant,
+        categoryName: "",
+      },
+    });
+
+    dispatch({
+      action: "mutateTableForm",
+      data: tableOrderFormDefaultValues,
+    });
   };
 
   // const onSortFormReset = (setSortFormValue) => {
@@ -108,24 +122,25 @@ const SearchCategories = ({ parentRoute }) => {
 
   //
   let { data: { Categories = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyCategoryInbox(formState);
+
   const totalCount = Categories?.length;
- const [sortedCategories,setSortedCategories]=useState([])
-  useEffect(()=>{
-if(Categories.length>0){
-  
+  // const [sortedCategories, setSortedCategories] = useState([]);
+  // useEffect(() => {
+  //   if (Categories.length > 0) {
+  //     const sorted = [...Categories].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+  //     Categories = sorted;
+  //     setSortedCategories(sorted);
+  //   }
+  // }, [Categories]);
 
-    const sorted = [...Categories].sort(
-      (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
-    );
-  Categories=sorted
-    setSortedCategories(sorted);
+  const sortedCategories = useMemo(() => {
+    return [...(Categories || [])].sort((a, b) => b.auditDetails.lastModifiedTime - a.auditDetails.lastModifiedTime);
+  }, [Categories]);
 
-}
-  },[Categories])
   //Props for links card:
   const PropsForInboxLinks = {
-    logoIcon: <DocumentIcon />,
-    headerText: "CS_COMMON_SURVEYS",
+    // logoIcon: <DocumentIcon />,
+    // headerText: "CS_COMMON_SURVEYS",
     links: [
       {
         text: t("Create New Survey"),
@@ -185,7 +200,6 @@ if(Categories.length>0){
 
   //
   const onSearchFormSubmit = (data) => {
-    console.log("onSearchFormSubmit: ", data);
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
     data.hasOwnProperty("") ? delete data?.[""] : null;
     dispatch({ action: "mutateSearchForm", data });
@@ -227,7 +241,7 @@ if(Categories.length>0){
     },
   });
 
-  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: sortedCategories,   setShowToast });
+  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: sortedCategories, setShowToast });
 
   //const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 

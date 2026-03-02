@@ -167,7 +167,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
   const documents = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values
   const docDetails = documents?.map((doc, index) => ({
-    title: t(`DOC_${doc.documentType}`) || "NA",
+    title: `${index + 1}.${t(`DOC_${doc.documentType}`)}` || "NA",
     value: " ",
     link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
   }));

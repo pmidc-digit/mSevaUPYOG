@@ -131,8 +131,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 user.getType().equals(UserType.CITIZEN);
 
         // ✅ Detect login type
-        boolean isPasswordType = !password.matches("\\d{6}");
-
+        boolean isPasswordType = !isCitizen
+                && !password.matches("\\d{6}");
         // ✅ Pass to TokenEnhancer
         details.put("isPasswordType", isPasswordType);
 
@@ -157,11 +157,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             }
 
         } else {
+        	log.info("Employee login - validating credentials for user: {}", userName);
 
             if (employeeLoginPasswordOtpEnabled
                     && password.equals(defaultEmployeePassword)
                     && !isPasswordType) {
-
+                    	log.info("Employee login - default password matched for user: {}", userName);
+                    	log.info("Employee Default Password is enabled", defaultEmployeePassword);
+                    	
                 isPasswordMatched = true;
 
             } else {

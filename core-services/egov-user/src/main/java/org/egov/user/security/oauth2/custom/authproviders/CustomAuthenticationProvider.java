@@ -158,13 +158,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         } else {
         	log.info("Employee login - validating credentials for user: {}", userName);
-
+        	log.info("Employee Default Password is enabled : {}", defaultEmployeePassword);
+        	log.info("Employee Login Password OTP Enabled : {}", employeeLoginPasswordOtpEnabled);
+        	log.info("Is Password Type Login : {}", isPasswordType);
+        	log.info("Password  equals default employee password : {}", password.equals(defaultEmployeePassword));
             if (employeeLoginPasswordOtpEnabled
                     && password.equals(defaultEmployeePassword)
                     && !isPasswordType) {
-                    	log.info("Employee login - default password matched for user: {}", userName);
-                    	log.info("Employee Default Password is enabled : {}", defaultEmployeePassword);
-                    	
                 isPasswordMatched = true;
 
             } else {

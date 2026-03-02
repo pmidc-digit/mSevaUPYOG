@@ -1,4 +1,4 @@
-import { Card, CardLabel, LabelFieldPair, SubmitBar, Loader, ActionBar, BackButton, Menu } from "@mseva/digit-ui-react-components";
+import { Card, CardLabel, LabelFieldPair, SubmitBar, Loader, ActionBar, BackButton, Menu, ArrowLeft } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
@@ -11,7 +11,6 @@ import BPADocuments from "../../../pageComponents/BPADocuments";
 
 const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const { t } = useTranslation();
-  const { id } = useParams();
   const { pathname: url } = useLocation();
   const history = useHistory();
   const match = useRouteMatch();
@@ -33,6 +32,8 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const { result, formData, documents, LicneseType } = safeValue;
   const isArchitect = formData?.LicneseType?.LicenseType?.code?.includes("Architect") || formData?.formData?.LicneseType?.LicenseType?.code?.includes("Architect") || LicneseType?.LicenseType?.code?.includes("Architect");
   const isRenewal = result?.Licenses?.[0]?.applicationType === "RENEWAL"
+  const id  = result?.Licenses?.[0]?.applicationNumber;
+
 
 console.log("FormData in CheckPage", result, formData, safeValue, value, isArchitect);
   const status = value?.result?.Licenses?.[0]?.status;  
@@ -55,7 +56,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
 
   const tradeTypeVal = finalDoc?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType;
   const [LicenseType, setLicenseType] = useState({});
-  const mainType = tradeTypeVal?.split(".")[0];
+  const mainType = result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0];
   const { data: EmployeeStatusData, isLoading: mdmsLoading } = Digit.Hooks.useCustomMDMS(tenant, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
   const formattedData = EmployeeStatusData?.StakeholderRegistraition?.TradeTypetoRoleMapping;
 
@@ -277,8 +278,17 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
 
   return (
     <div style={pageStyle}>
-      {/* {isopenlink && <div onClick={() => history.goBack()}>{t("CS_COMMON_BACK")}</div>} */}
-      {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />}
+      {<div style={{
+        cursor: "pointer",
+        width: "fit-content",
+        display: "flex",
+        fontFamily: "'Roboto Condensed', sans-serif",
+        color: "rgba(13, 67, 167, var(--text-opacity))",
+        fontSize: "16px",
+        lineHeight: "24px"
+      }} onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/professional-document-details")}>{(<React.Fragment><ArrowLeft />
+        <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+      {/* {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />} */}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={headingStyle}>{t("BPA_STEPPER_SUMMARY_HEADER")}</h2>
@@ -309,8 +319,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       </div>
     )
   })()}
-</div>
-
+</div>      
       {/* Application Details */}
       <div style={sectionStyle}>
         {renderLabel(t("BPA_APPLICATION_NUMBER_LABEL"), result?.Licenses?.[0]?.applicationNumber)}

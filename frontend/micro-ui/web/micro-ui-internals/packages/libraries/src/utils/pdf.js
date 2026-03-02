@@ -2126,7 +2126,7 @@ function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, email,
                 margin: [0, 15, 0, 4],
               },
               {
-                text: ulbType && ulb ? `${ulbType} ${ulb}` : `Municipal Corporation ${ulb}`,
+                text: ulbType && ulb ? `${ulbType} ${ulb}` : " ",
                 fontSize: 11,
                 alignment: "center",
               },

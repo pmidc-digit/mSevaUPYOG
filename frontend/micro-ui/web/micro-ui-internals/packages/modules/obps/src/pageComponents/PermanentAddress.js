@@ -14,6 +14,7 @@ import {
   SubmitBar,
   Toast,
   Loader,
+  ArrowLeft,
 } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect, useMemo } from "react";
 import Timeline from "../components/Timeline";
@@ -21,9 +22,11 @@ import { convertDateToEpoch } from "../utils";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 import { LoaderNew } from "../components/LoaderNew";
 import { set } from "lodash";
+import { useHistory, useRouteMatch } from "react-router-dom";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
+  const history = useHistory();
   const [loader, setLoader] = useState(false);
   const onSkip = () => onSelect();
   const [PermanentAddress, setPermanentAddress] = useState(
@@ -865,7 +868,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,                
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
-              },              
+              },
+              applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || []
             },         
             action: "SAVE_AS_DRAFT",            
           },
@@ -925,8 +929,17 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   return (
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {isopenlink && <BackButton>{t("CS_COMMON_BACK")}</BackButton>}
-        {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
+          {<div style={{
+                    cursor: "pointer",
+                    width: "fit-content",
+                    display: "flex",
+                    fontFamily: "'Roboto Condensed', sans-serif",
+                    color: "rgba(13, 67, 167, var(--text-opacity))",
+                    fontSize: "16px",
+                    lineHeight: "24px"
+                  }} onClick={() => {history.push("/digit-ui/citizen/obps/stakeholder/apply/licensee-details")}}>{(<React.Fragment><ArrowLeft />
+                <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+        {/* {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />} */}
         <FormStep
           config={config}
           // onSelect={goNext}

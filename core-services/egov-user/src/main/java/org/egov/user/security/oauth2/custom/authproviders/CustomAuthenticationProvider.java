@@ -50,8 +50,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private UserService userService;
 
- 
-    
     @Autowired
     private EncryptionDecryptionUtil encryptionDecryptionUtil;
 
@@ -63,7 +61,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${citizen.login.password.otp.fixed.value}")
     private String fixedOTPPassword;
-    
 
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
@@ -73,19 +70,18 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${otp.bypass.for}")
     private String thirdPartyCitizen;
-    
+
     @Value("${bypass.otp}")
     private String otpForThirdparty;
-    
+
     @Autowired
     private HttpServletRequest request;
-
 
     public CustomAuthenticationProvider(UserService userService) {
         this.userService = userService;
     }
 
-	@Override
+    @Override
 	public Authentication authenticate(Authentication authentication) {
 		String userName = authentication.getName();
 		String password = authentication.getCredentials().toString();
@@ -220,6 +216,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 			 * We assume that there will be only one type. If it is multiple then we have
 			 * change below code Separate by comma or other and iterate
 			 */
+                    	userService.removeTokensByUsers(user);
+
 			List<GrantedAuthority> grantedAuths = new ArrayList<>();
 			grantedAuths.add(new SimpleGrantedAuthority("ROLE_" + user.getType()));
 			final SecureUser secureUser = new SecureUser(getUser(user));
@@ -266,8 +264,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
-    
-   
     @SuppressWarnings("unchecked")
     private String getTenantId(Authentication authentication) {
         final LinkedHashMap<String, String> details = (LinkedHashMap<String, String>) authentication.getDetails();
@@ -283,13 +279,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     }
 
     private org.egov.user.web.contract.auth.User getUser(User user) {
-        org.egov.user.web.contract.auth.User authUser =  org.egov.user.web.contract.auth.User.builder().id(user.getId()).userName(user.getUserName()).uuid(user.getUuid())
+        org.egov.user.web.contract.auth.User authUser = org.egov.user.web.contract.auth.User.builder().id(user.getId())
+                .userName(user.getUserName()).uuid(user.getUuid())
                 .name(user.getName()).mobileNumber(user.getMobileNumber()).emailId(user.getEmailId())
                 .locale(user.getLocale()).active(user.getActive()).type(user.getType().name())
                 .roles(toAuthRole(user.getRoles())).tenantId(user.getTenantId())
                 .build();
 
-        if(user.getPermanentAddress()!=null)
+        if (user.getPermanentAddress() != null)
             authUser.setPermanentCity(user.getPermanentAddress().getCity());
 
         return authUser;

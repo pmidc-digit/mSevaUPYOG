@@ -95,13 +95,13 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
 
         userRepository.insertUserSession(session);
 
-        if (isPasswordType) {
-            ((DefaultOAuth2AccessToken) enhancedToken).setValue(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setRefreshToken(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setExpiration(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setScope(null);
-            ((DefaultOAuth2AccessToken) enhancedToken).setTokenType(null);
-        }
+        // if (isPasswordType) {
+        //     ((DefaultOAuth2AccessToken) enhancedToken).setValue(null);
+        //     ((DefaultOAuth2AccessToken) enhancedToken).setRefreshToken(null);
+        //     ((DefaultOAuth2AccessToken) enhancedToken).setExpiration(null);
+        //     ((DefaultOAuth2AccessToken) enhancedToken).setScope(null);
+        //     ((DefaultOAuth2AccessToken) enhancedToken).setTokenType(null);
+        // }
      
         return super.enhance(token, authentication);
     }

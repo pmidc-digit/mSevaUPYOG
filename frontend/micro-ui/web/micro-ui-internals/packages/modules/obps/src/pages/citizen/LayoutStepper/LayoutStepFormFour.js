@@ -80,67 +80,58 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const onSubmit = async (data, selectedAction) => {
-    //console.log("formData inside onSubmit", data);
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
       return;
     }
 
-    const finalPayload = mapToLayoutPayload(data, selectedAction);
-    //console.log("finalPayload here==>", finalPayload);
+    const finalPayload = mapToLayoutPayload(data, selectedAction);    
 
-    try {
-      const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
+    // try {
+    //   const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
 
-      if (response?.ResponseInfo?.status === "successful") {
-        //console.log("success: Update API ");
+    //   if (response?.ResponseInfo?.status === "successful") {
 
-        if (window.location.href.includes("citizen")) {
-          if (selectedAction.action === "CANCEL") {
-            setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
-            setTimeout(() => {
-              history.push(`/digit-ui/citizen/obps/layout/my-application`);
-            }, 3000);
-          } else {
-            //console.log("We are calling citizen response page");
-            history.replace({
-              pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
-              state: { data: response },
-            });
-          }
-        } else {
-          //console.log("we are calling employee response page");
+    //     if (window.location.href.includes("citizen")) {
+    //       if (selectedAction.action === "CANCEL") {
+    //         setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+    //         setTimeout(() => {
+    //           history.push(`/digit-ui/citizen/obps/layout/my-application`);
+    //         }, 3000);
+    //       } else {
+    //         history.replace({
+    //           pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
+    //           state: { data: response },
+    //         });
+    //       }
+    //     } else {
 
-          if (selectedAction.action === "CANCEL") {
-            setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
-            setTimeout(() => {
-              history.push(`/digit-ui/employee/obps/layout/inbox`);
-            }, 3000);
-          } else {
-            history.replace({
-              pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
-              state: { data: response },
-            });
-          }
-        }
-      } else {
-        console.error("Submission failed, not moving to next step.", response?.response);
-        setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
-      }
-    } catch (error) {
-      //console.log("errors here in goNext - catch block", error);
-      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }
+    //       if (selectedAction.action === "CANCEL") {
+    //         setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+    //         setTimeout(() => {
+    //           history.push(`/digit-ui/employee/obps/layout/inbox`);
+    //         }, 3000);
+    //       } else {
+    //         history.replace({
+    //           pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
+    //           state: { data: response },
+    //         });
+    //       }
+    //     }
+    //   } else {
+    //     console.error("Submission failed, not moving to next step.", response?.response);
+    //     setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+    //   }
+    // } catch (error) {
+    //   setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    // }
   };
 
 
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {
-  //console.log("[v0] layoutFormData", layoutFormData)
-  //console.log("[v0] layoutFormData.documents", layoutFormData?.documents)
-  //console.log("[v0] layoutFormData.documents.documents", layoutFormData?.documents?.documents)
-  //console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
+    console.log("Layout Data", data)
   
   // Check if we're in EDIT mode or NEW mode
   // Layout can be either an object (from CREATE response) or array (from some API responses)
@@ -149,13 +140,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const layoutData = isEditMode 
     ? layoutFormData?.apiData 
     : (isLayoutArray ? layoutFormData?.apiData?.Layout?.[0] : layoutFormData?.apiData?.Layout)
-  
-  //console.log("[v0] isEditMode:", isEditMode)
-  //console.log("[v0] layoutData:", layoutData)
 
   // Get documents from Redux (following CLU pattern - 3 levels deep)
   const docsArrayFromRedux = layoutFormData?.documents?.documents?.documents || [];
-  //console.log("[v0] docsArrayFromRedux:", docsArrayFromRedux);
 
     // For Update API: Merge original owners from API response with newly added applicants from Redux
     // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
@@ -218,15 +205,6 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // Merge: existing owners from API (updated) + newly added applicants
     const owners = [...updatedOwnersFromApi, ...mappedNewApplicants];
     
-    //console.log("[v0] ownersFromApi:", ownersFromApi);
-    //console.log("[v0] updatedOwnersFromApi:", updatedOwnersFromApi);
-    //console.log("[v0] applicantsFromRedux:", applicantsFromRedux);
-    //console.log("[v0] newlyAddedApplicants:", newlyAddedApplicants);
-    //console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
-    //console.log("[v0] final merged owners:", owners);
-
-  //console.log("[v0] isEditMode:", isEditMode);
-  //console.log("[v0] selectedAction:", selectedAction);
 
   const updatedApplication = {
     ...layoutData,
@@ -296,17 +274,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
     // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========
-    // CLU uses: cluFormData?.documents?.documents?.documents
-    //console.log("[v0] layoutFormData?.documents:", layoutFormData?.documents);
-    //console.log("[v0] layoutFormData?.documents?.documents:", layoutFormData?.documents?.documents);
-    //console.log("[v0] layoutFormData?.documents?.documents?.documents:", layoutFormData?.documents?.documents?.documents);
+    // CLU uses: cluFormData?.documents?.documents?.documents    
     
     if (isEditMode) {
       // EDIT MODE: Merge API documents with Redux documents (like CLU)
       const apiResponseDocuments = layoutFormData?.documents?.documents?.documents || [];
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
       
-      //console.log("[v0] EDIT MODE - apiResponseDocuments:", apiResponseDocuments);
       
       // Update existing API documents with new filestoreIds from Redux
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
@@ -342,8 +316,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId || doc?.documentAttachment,
         };
-      });
-      //console.log("[v0] EDIT MODE - overallDocs:", overallDocs);
+      });      
       
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({ ...doc });

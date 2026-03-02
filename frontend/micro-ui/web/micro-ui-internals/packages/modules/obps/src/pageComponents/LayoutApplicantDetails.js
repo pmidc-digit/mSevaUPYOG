@@ -649,6 +649,26 @@ const LayoutApplicantDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
 
+          {(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") &&<React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
+            <CardLabel className="card-label-smaller">
+              {t("NEW_LAYOUT_AUTHORISED_PERSON_NAME")}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="authorisedPerson"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} disabled={isEdit} t={t} />}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.authorisedPerson ? errors.authorisedPerson.message : ""}</CardLabelError>
+          </React.Fragment>}
+
           {/* Father/Husband Name */}
           <LabelFieldPair  >
             <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>

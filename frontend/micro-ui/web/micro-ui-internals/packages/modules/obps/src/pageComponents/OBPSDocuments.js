@@ -70,6 +70,7 @@ function OBPSDocument({
                   href={documentLink}
                   className="document-link"
                   key={index}
+                  style={{width: "250px"}}
                 >
                   <div className="document-card">
                     <div className="document-icon-wrapper">
@@ -81,9 +82,9 @@ function OBPSDocument({
                         : t(Code)
                       }
                     </p>
-                    <div className="document-action-label">
+                    {/* <div className="document-action-label">
                       View
-                    </div>
+                    </div> */}
                   </div>
                 </a>
               );

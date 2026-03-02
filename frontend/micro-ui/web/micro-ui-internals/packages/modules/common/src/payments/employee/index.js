@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 // import { useTranslation } from "react-i18next";
 import { useRouteMatch, Switch, Route, Link } from "react-router-dom";
 import { CollectPayment } from "./payment-collect";
+import { SelectPaymentType } from "./payment-type";
 import { SuccessfulPayment, FailedPayment } from "./response";
 // import { SubformComposer } from "../../hoc";
 // import { subFormRegistry } from "../../hoc/subFormClass";
@@ -23,11 +24,10 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
   const commonProps = { stateCode, cityCode, moduleCode, setLink };
 
   const isFsm = location?.pathname?.includes("fsm") || location?.pathname?.includes("FSM");
-  const isMobile = window.Digit.Utils.browser.isMobile()
-  
+
   return (
     <React.Fragment>
-      <p className="breadcrumb" style={{ marginLeft: "15px", marginTop: isMobile ? "70px" : "3rem" }}>
+      <p className="breadcrumb" style={{ marginLeft: "15px" }}>
         <Link to={`/digit-ui/employee`}>{t("ES_COMMON_HOME")}</Link>
         {isFsm ? <Link to={`/digit-ui/employee/fsm/home`}>/ {t("ES_TITLE_FSM")} </Link> : null}
         {isFsm ? <Link to={`/digit-ui/employee/fsm/inbox`}>/ {t("ES_TITLE_INBOX")}</Link> : null}/ {link}
@@ -36,7 +36,14 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
         <Route path={`${currentPath}/collect/:businessService/:consumerCode`}>
           <CollectPayment {...commonProps} basePath={currentPath} />
         </Route>
+        <Route path={`${currentPath}/challan/collect/:businessService/:consumerCode`}>
+          <SelectPaymentType {...commonProps} basePath={currentPath} stateCode={stateCode} />
+        </Route>
+
         <Route path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
+          <SuccessfulPayment {...commonProps} />
+        </Route>
+        <Route path={`${currentPath}/challan/success/:businessService/:consumerCode`}>
           <SuccessfulPayment {...commonProps} />
         </Route>
         <Route path={`${currentPath}/integration/:moduleName/:pageName`}>

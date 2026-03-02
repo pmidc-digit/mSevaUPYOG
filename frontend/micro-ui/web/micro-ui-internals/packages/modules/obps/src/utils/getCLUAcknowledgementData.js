@@ -265,7 +265,6 @@ const getSpecificationDetails = (appData, t) => {
 };
 
 
-
 const getInspectionReportDetails = (appData, t) => {
   const inspectionData = appData?.cluDetails?.additionalDetails?.fieldinspection_pending?.[0] || {};
   // Collect all remark fields dynamically

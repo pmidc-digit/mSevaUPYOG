@@ -22,7 +22,7 @@ COPY --from=build /app/src/main/resources/*.cer cert.cer 2>/dev/null || true
 
 # 2. If cert.cer exists, import it; otherwise, move to next step
 RUN if [ -f cert.cer ]; then \
-      keytool -importcert -alias smsgwsmsgovin -trustcacerts \
+      keytool -importcert -alias cert -trustcacerts \
       -keystore $JAVA_HOME/jre/lib/security/cacerts \
       -file cert.cer -storepass changeit -noprompt; \
     else \

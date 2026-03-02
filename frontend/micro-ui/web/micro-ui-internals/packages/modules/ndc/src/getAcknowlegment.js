@@ -62,7 +62,7 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
@@ -163,6 +163,7 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
     approvalDate,
     approver,
     designation,
+    approverStatement,
     ulbType,
     tenantId: appData?.tenantId,
     // Use readable city dynamically

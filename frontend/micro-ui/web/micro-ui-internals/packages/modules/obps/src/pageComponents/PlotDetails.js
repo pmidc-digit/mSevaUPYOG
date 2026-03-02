@@ -111,7 +111,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
     
     <div>
       <CardLabel>{label}</CardLabel>
-      <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => setValue(e.target.value)} disable={isDisabled}/>
+      <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => {setErrors((prev) => ({...prev, [errorKey]: null})); setValue(e.target.value)}} disable={isDisabled}/>
       {errors[errorKey] && (
         <CardLabelError >{errors[errorKey]}</CardLabelError>
       )}
@@ -525,22 +525,32 @@ useEffect(() => {
 
     if (!sourceofwater.trim()) {
       newErrors.sourceofwater = t("BPA_SOURCE_OF_WATER_REQUIRED");
+    } else if (!/^[A-Za-z\s]+$/.test(sourceofwater)) {
+      newErrors.sourceofwater = t("BPA__ONLY_STRING");
     }
 
-    if (!watercloset.trim()) {
+    if (!watercloset) {
       newErrors.watercloset = t("BPA_WATER_CLOSET_REQUIRED");
+    }else if(isNaN(watercloset)){
+      newErrors.watercloset = t("BPA_DISTANCE_FROM_SEWER_INVALID");
     }
 
     if (!materialused.trim()) {
       newErrors.materialused = t("BPA_MATERIAL_USED_REQUIRED");
+    } else if (!/^[A-Za-z\s]+$/.test(materialused)) {
+      newErrors.materialused = t("BPA__ONLY_STRING");
     }
 
     if (!materialusedinfloor.trim()) {
       newErrors.materialusedinfloor = t("BPA_MATERIAL_USED_IN_FLOOR_REQUIRED");
+    } else if (!/^[A-Za-z\s]+$/.test(materialusedinfloor)) {
+      newErrors.materialusedinfloor = t("BPA_ONLY_STRING");
     }
 
     if (!materialusedinroofs.trim()) {
       newErrors.materialusedinroofs = t("BPA_MATERIAL_USED_IN_ROOFS_REQUIRED");
+    } else if (!/^[A-Za-z\s]+$/.test(materialusedinroofs)) {
+      newErrors.materialusedinroofs = t("BPA__ONLY_STRING");
     }
 
     if (!estimatedCost.trim()) {
@@ -902,6 +912,25 @@ useEffect(() => {
     setShowModal(false)
   }
 
+  function setCost (val) {
+    const numberedVal = parseInt(val)
+    console.log("numberedVal",numberedVal)
+    if((numberedVal &&  numberedVal <= 500000000)){
+      setEstimatedCost(`${numberedVal}`)
+      setErrors((prev) => ({...prev, estimatedCost: null}))
+    }else if(val === ""){
+      setEstimatedCost(val)
+      setErrors((prev) => ({...prev, estimatedCost: null}))
+    }
+    else if(numberedVal > 500000000){
+      setErrors((prev) => ({...prev, estimatedCost: t("Cost_Can_Not_Exceed_50_CR")}))
+    }else if(numberedVal < 0){
+      setErrors((prev) => ({...prev, estimatedCost: t("Cost_Can_Not_Be_Less_Than_0")}))
+    }else{
+      setErrors((prev) => ({...prev, estimatedCost: t("Cost_Should_Be_Number")}))
+    }
+  }
+
   console.log("currentStepData in plot details", currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code);
 
 
@@ -930,7 +959,8 @@ useEffect(() => {
             <Dropdown
               placeholder={t("IS_PROPERTY_AVAILABLE")}
               selected={isPropertyAvailable}
-              select={setProperyAvailable}
+              // select={setProperyAvailable}
+              select={(e) => {setErrors((prev) => ({ ...prev, isPropertyAvailable: null })) ;setProperyAvailable(e)}}
               option={common}
               optionKey="i18nKey"
               t={t}
@@ -994,7 +1024,8 @@ useEffect(() => {
           <Dropdown
             placeholder={t("IS_CLUBBED_PLOT")}
             selected={isClubbedPlot}
-            select={setClubbedPlot}//setClubbedPlot
+            // select={setClubbedPlot}//setClubbedPlot
+            select={(e) => {setErrors((prev) => ({ ...prev, isClubbedPlot: null })) ;setClubbedPlot(e)}}
             option={common}
             optionKey="i18nKey"
             t={t}
@@ -1009,7 +1040,8 @@ useEffect(() => {
               <Dropdown
                 placeholder={t("BPA_IS_SELF_CERTIFICATION_REQUIRED")}
                 selected={isSelfCertification}
-                select={setSelfCertificationRequired}
+                // select={setSelfCertificationRequired}
+                select={(e) => {setErrors((prev) => ({ ...prev, isSelfCertification: null })) ;setSelfCertificationRequired(e)}}
                 option={common}
                 optionKey="i18nKey"
                 t={t}
@@ -1029,7 +1061,8 @@ useEffect(() => {
           <Dropdown
             placeholder={t("BPA_ZONE_NUMBER_LABEL")}
             selected={zonenumber}
-            select={setZoneNumber}//setClubbedPlot
+            // select={setZoneNumber}
+            select={(e) => {setErrors((prev) => ({ ...prev, zonenumber: null })) ;setZoneNumber(e)}}//setClubbedPlot
             option={zonesOptions}
             optionKey="name"
             t={t}
@@ -1049,7 +1082,7 @@ useEffect(() => {
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS")+"*", materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR")+"*", materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setEstimatedCost, "estimatedCost", "Please Provide Estimated Cost")}
+          {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setCost, "estimatedCost", "Please Provide Estimated Cost")}
 
           
           <ActionBar>

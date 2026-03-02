@@ -29,6 +29,13 @@ const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, d
   const tableColumnConfig = useMemo(() => {
     return [
       {
+        Header: t("EDCR_COMMON_TABLE_SCRUTINY_NO"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          return <div>{row.original?.edcrNumber !== "null" ? <span className="">{row.original["edcrNumber"]}</span> : "NA"}</div>;
+        },
+      },
+      {
         Header: t("EDCR_COMMON_TABLE_APPL_NO"),
         disableSortBy: true,
         Cell: ({ row }) => {
@@ -54,14 +61,7 @@ const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, d
         Header: t("EDCR_COMMON_TABLE_APPL_NAME"),
         accessor: (row) => row?.owner,
         disableSortBy: true,
-      },
-      {
-        Header: t("EDCR_COMMON_TABLE_SCRUTINY_NO"),
-        disableSortBy: true,
-        Cell: ({ row }) => {
-          return <div>{row.original?.edcrNumber !== "null" ? <span className="">{row.original["edcrNumber"]}</span> : "NA"}</div>;
-        },
-      },
+      },      
       {
         Header: t("EDCR_COMMON_TABLE_COL_STATUS"),
         accessor: (row) => GetStatusCell(row?.status),

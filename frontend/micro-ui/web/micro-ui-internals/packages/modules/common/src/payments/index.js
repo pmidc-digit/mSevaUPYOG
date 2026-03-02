@@ -184,7 +184,7 @@ export const amountToWords =(num) =>{
   };
 
   let [r,p] = num.toString().split(".").map(x=>+x||0);
-  return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
+  return (r? "Rupees "+ toWords(r):"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Rupees Zero ";
 }
 export const ChallanData = (tenantId, consumerCode) => {
   const wfData = Digit.Hooks.useWorkflowDetails({

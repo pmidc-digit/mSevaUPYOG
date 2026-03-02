@@ -29,8 +29,6 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["Documents"]);
-  console.log("data for documents here", data);
-  //console.log("formData here =====", formData);
 
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
@@ -42,9 +40,7 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     }
   }, [coordinates]);
 
-  console.log("coordinates (from redux)", coordinates);
 
-  console.log("geocoordinates", geocoordinates);
 
   const currentStepData = useSelector((state) => state?.obps?.OBPSFormReducer?.formData) || {};
 
@@ -58,21 +54,30 @@ const CLUDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   function onAdd() {}
 
   const isCluAppliedCategoryIndustry = currentStepData?.siteDetails?.appliedCluCategory?.code === "INDUSTRY_GODOWN_WAREHOUSING_COLD_STORE" || false;
-  console.log("isCluAppliedCategoryIndustry==>", isCluAppliedCategoryIndustry);
 
 
- const mdmsDocuments = useMemo(() => {
-  const docs = data?.CLU?.Documents;
-  
-  if (!Array.isArray(docs) || docs.length === 0) return [];
-
-  return docs.map((item) => {
-    if (item?.code === "OWNER.INDUSTRYCATEGORYSUPPORTINGDOCUMENT") {
-      return { ...item, required: isCluAppliedCategoryIndustry ? true : false };
-    }
-    return item;
+  const owners = currentStepData?.applicationDetails?.owners || [];
+  const isFirm = owners.some((owner) => {
+    const typeCode = owner?.ownerType?.code || owner?.ownerType;
+    return typeCode?.toString()?.toUpperCase() === "FIRM";
   });
- }, [isCluAppliedCategoryIndustry, data?.CLU?.Documents]);
+
+  const mdmsDocuments = useMemo(() => {
+    let docs = data?.CLU?.Documents;
+    
+    if (!Array.isArray(docs) || docs.length === 0) return [];
+
+    return docs.map((item) => {
+      if (item?.code === "OWNER.INDUSTRYCATEGORYSUPPORTINGDOCUMENT") {
+        return { ...item, required: isCluAppliedCategoryIndustry ? true : false };
+      }
+      if (item?.code === "OWNER.FIRMDOCUMENT") {
+        const updatedItem = { ...item, required: isFirm ? true : false };
+        return updatedItem;
+      }
+      return item;
+    }).sort((a, b) => (a.order || 0) - (b.order || 0));
+  }, [isCluAppliedCategoryIndustry, isFirm, data?.CLU?.Documents]);
 
 
   //logic for preview image feature
@@ -145,12 +150,11 @@ function CLUSelectDocument({
   previewLink,
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
+      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType, order: doc?.order }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]
       : {}
@@ -162,18 +166,13 @@ function CLUSelectDocument({
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    //console.log("e here==>", e);
-    //console.log("e.target.files[0] here==>", e.target.files[0]);
 
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
     // setFile(e.target.files[0]);
-    console.log("selectedFile here", selectedFile);
 
     if (selectedFile && selectedFile.type === "image/jpeg") {
       extractGeoLocation(selectedFile).then((location) => {
-        console.log("Latitude:", location.latitude);
-        console.log("Longitude:", location.longitude);
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
@@ -228,7 +227,6 @@ function CLUSelectDocument({
 
   useEffect(() => {
     if (selectedDocument?.code) {
-      // console.log("selectedDocument here", selectedDocument);
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -244,6 +242,7 @@ function CLUSelectDocument({
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
             documentAttachment: uploadedFile,
+            order: doc?.order,
           },
         ];
       });
@@ -252,7 +251,6 @@ function CLUSelectDocument({
 
   useEffect(() => {
     if (documents?.length > 0) {
-      //console.log("documents here", documents);
       handleSubmit();
     }
   }, [documents]);
@@ -319,18 +317,15 @@ function CLUSelectDocument({
   }
 
   function extractGeoLocation(file) {
-    //console.log("file", file);
 
     return new Promise((resolve) => {
       try {
         // if (file && file.type === "image/jpeg" && file.size > 1000) {
         EXIF.getData(file, function () {
-          // console.log("comign here as well");
 
           const lat = EXIF.getTag(this, "GPSLatitude");
           const lon = EXIF.getTag(this, "GPSLongitude");
 
-          console.log("lat====", lat);
           if (lat && lon) {
             // Convert GPS coordinates to decimal format
             const latDecimal = convertToDecimal(lat).toFixed(6);
@@ -349,7 +344,6 @@ function CLUSelectDocument({
         });
         // }
       } catch (error) {
-        console.log("EXIF parsing failed:", error);
         resolve({ latitude: null, longitude: null });
       }
     });

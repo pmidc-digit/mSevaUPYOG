@@ -13,6 +13,7 @@ import {
   SubmitBar,
   Loader,
   ActionBar,
+  SearchIcon,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
@@ -141,16 +142,20 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
       {/* {isMobile && <Timeline />} */}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { margin: "8px" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
+        <div className="bpa-owner-field-container">
         <TextInput
           className="searchInput"
           onKeyPress={handleKeyPress}
           onChange={event => setScrutinyNumber({ edcrNumber: event.target.value })} 
           value={scrutinyNumber?.edcrNumber} 
           signature={true} 
-          signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
+          // signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
           disable={disableVlaue}
-         
         />
+        {!disableVlaue && <div className="bpa-owner-search-icon-container" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null}>
+          <SearchIcon />
+        </div>}
+        </div>
       </div>
       {scrutinyNumber && basicData && (!riskType ?  <Loader /> :  <div>{basicData && (
         <Card>

@@ -17,7 +17,7 @@ const LayoutResponseCitizen = (props) => {
   
 
   const layoutData = state?.data?.Layout?.[0]
-  console.log("layoutData in response page", layoutData)
+  //console.log("layoutData in response page", layoutData)
 
   let tenantId;
   if(window.location.pathname.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -123,7 +123,7 @@ const LayoutResponseCitizen = (props) => {
     // Digit.Utils.pdf.generate(acknowledgementData);
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch(err){
-      console.log('err', err)
+      //console.log('err', err)
     }finally{
       setDownloading(false);
     }
@@ -142,8 +142,8 @@ const LayoutResponseCitizen = (props) => {
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         {downloading && <Loader />}
-        {layoutData?.applicationStatus !== "REJECTED" ? (
-          <div style={{display:"flex", justifyContent:"space-evenly"}}>
+        {layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" ? (
+          <div>
             <SubmitBar style={{ overflow: "hidden" }} label={t("COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
             {(layoutData?.applicationStatus === "PENDINGAPPLICATIONPAYMENT" || layoutData?.applicationStatus === "PENDINGSANCTIONPAYMENT") && <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />}
           </div>

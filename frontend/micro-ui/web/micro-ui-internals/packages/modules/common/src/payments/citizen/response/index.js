@@ -266,15 +266,11 @@ const WrapPaymentComponent = (props) => {
 
     if (sourceData) {
       fileNo = `PB/${districtCode}/${ulbCode}/${+sourceData?.approvalNo?.slice(-6) + 500000}`;
-      console.log("newCode", fileNo);
       usage = sourceData?.additionalDetails?.usage || sourceData?.additionalDetails?.siteDetails?.buildingCategory?.name;
-      console.log("usage", usage);
     }
 
-    console.log("licenseType:", licenseType);
     const state = Digit.ULBService.getStateId();
     const fee = paymentData?.totalAmountPaid;
-    console.log("fee here here", fee);
     const amountinwords = amountToWords(fee);
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
@@ -368,7 +364,7 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData,amountinwords }] }, generatePdfKey);
         }
       }
     }
@@ -380,8 +376,33 @@ const WrapPaymentComponent = (props) => {
         : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
 
     if (fileStore && fileStore[response.filestoreIds[0]]) {
-      window.open(fileStore[response.filestoreIds[0]], "_blank");
+      const receiptUrl = fileStore[response.filestoreIds[0]];
+
+      if (business_service === "obpas_noc") {
+        // Parse the original receiptUrl
+        const urlObj = new URL(receiptUrl);
+
+        // Build a new URL using window.origin but keep pathname and search
+        const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
+
+        try {
+          // Fetch the file as a Blob
+          const res = await fetch(downloadUrl);
+          const blob = await res.blob();
+
+          // Use your helper to force download
+          downloadPdf(blob, `receipt_${receiptNumber || "obpas_noc"}.pdf`);
+        } catch (err) {
+          window.open(downloadUrl, "_blank");
+        }
+
+        // Fallback: open in new tab
+      } else {
+        window.open(receiptUrl, "_blank");
+      }
     }
+
+
     setPrinting(false);
   };
 
@@ -1362,7 +1383,8 @@ const WrapPaymentComponent = (props) => {
           business_service === "adv-services" ||
           business_service === "chb-services" ||
           business_service === "NDC" ||
-          business_service === "Challan_Generation"
+          business_service === "Challan_Generation"||
+          business_service === "rl-services"
         ) && (
           <div
             style={{

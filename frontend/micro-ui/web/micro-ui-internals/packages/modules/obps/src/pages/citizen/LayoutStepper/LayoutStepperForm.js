@@ -154,6 +154,8 @@ const LayoutStepperForm = () => {
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
     aplicantType: primaryOwner?.additionalDetails?.aplicantType,
+    authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson,
+    
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -306,6 +308,7 @@ const LayoutStepperForm = () => {
           applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
           panNumber: applicantDetails?.panNumber || "",
           aplicantType: applicantDetails?.aplicantType,
+          authorisedPerson: applicantDetails?.authorisedPerson,
           // Professional details (if applicable)
           professionalName: applicantDetails?.professionalName || "",
           professionalEmailId: applicantDetails?.professionalEmailId || "",

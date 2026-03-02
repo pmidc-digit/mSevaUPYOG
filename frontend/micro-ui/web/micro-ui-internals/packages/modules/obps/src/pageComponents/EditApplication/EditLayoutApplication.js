@@ -120,6 +120,8 @@ const EditLayoutApplication = () => {
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
     aplicantType: primaryOwner?.additionalDetails?.aplicantType,
+    authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson,
+
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -479,6 +481,8 @@ const EditLayoutApplication = () => {
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
             aplicantType: applicantDetails?.aplicantType,
+            authorisedPerson: applicantDetails?.authorisedPerson,
+            
           };
     
           const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);

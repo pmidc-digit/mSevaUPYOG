@@ -40,6 +40,7 @@ const LayoutApplicantDetails = (_props) => {
 
   // Determine if in edit mode
   const applicationNo = currentStepData?.applicationNo || currentStepData?.apiData?.Layout?.[0]?.applicationNo;
+  console.log("currentStepData",currentStepData)
   const applicationNO = useQueryParam("applicationNo");
   const isEditMode = !!applicationNo || !!applicationNO;
 

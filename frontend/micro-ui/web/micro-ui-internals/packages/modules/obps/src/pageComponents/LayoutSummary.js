@@ -75,7 +75,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
       fatherOrHusbandName: formData.applicationDetails.applicantFatherHusbandName,
       permanentAddress: formData.applicationDetails.applicantAddress,
       pan: formData.applicationDetails.panNumber,
-      aplicantType: formData.applicationDetails.aplicantType
+      aplicantType: formData.applicationDetails.aplicantType,
+      authorisedPerson: formData.applicationDetails.authorisedPerson,
     };
   }
   
@@ -84,18 +85,21 @@ function LayoutSummary({ currentStepData: formData, t }) {
   // For fresh mode: combine primary owner (from applicationDetails) with newly added applicants
   let owners = [];
   
-  if (isEditMode && ownersFromApi.length > 0) {
-    // Edit mode: existing owners from API + new applicants
-    owners = [...ownersFromApi, ...newlyAddedApplicants.filter(newApp => 
-      !ownersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber)
-    )];
-  } else if (!isEditMode && primaryOwner) {
+  // if (isEditMode && ownersFromApi.length > 0) {
+  //   // Edit mode: existing owners from API + new applicants
+  //   owners = [...ownersFromApi, ...newlyAddedApplicants.filter(newApp => 
+  //     !ownersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber)
+  //   )];
+  // } else 
+  if (!isEditMode && primaryOwner) {
     // Fresh mode: primary owner + new applicants
     owners = [primaryOwner, ...newlyAddedApplicants];
   } else {
     // Fallback
     owners = ownersFromApi.length > 0 ? ownersFromApi : newlyAddedApplicants;
   }
+
+  console.log("owners",owners, newlyAddedApplicants, isEditMode, formData)
   
   const layoutDocuments = layoutData?.documents || [];
 

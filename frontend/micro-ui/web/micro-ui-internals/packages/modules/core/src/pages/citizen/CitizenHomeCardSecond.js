@@ -3,11 +3,13 @@
 import React from "react"
 import { useLocation } from "react-router-dom"
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next";
 
 const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
   const location = useLocation()
   const shouldRemoveGrid = location.pathname.endsWith("all-services")
+  const { t } = useTranslation()
 
   const cardColors = [
     { bg: "linear-gradient(135deg, rgb(102, 126, 234) 0%, rgb(208 189 227) 100%)", iconBg: "#667eea", textColor: "#1a202c" }, // Purple gradient
@@ -253,7 +255,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
         {getServiceIcon(link.i18nKey, index)}
       </div>
       <div style={contentStyle}>
-        <div style={titleStyle}>{link.i18nKey}</div>
+        <div style={titleStyle}>{t(link.i18nKey)}</div>
         {link.description && <div style={descriptionStyle}>{link.description}</div>}
       </div>
       <div style={getArrowContainerStyle(isHovered, index)}>
@@ -269,7 +271,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
       {header && (
         <div >
           <h2 style={headerStyle}>
-            {header}
+            {t(header)}
             <div style={headerUnderlineStyle}></div>
           </h2>
         </div>

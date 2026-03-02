@@ -162,16 +162,16 @@ const getSiteDetails = (appData, t) => {
       appData?.nocDetails?.additionalDetails?.siteDetails?.roadType || "N/A",
     },
     {
+      title: t("NOC_NET_TOTAL_AREA_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netTotalArea || "N/A",
+    },
+    {
       title: t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.areaLeftForRoadWidening || "N/A",
     },
     {
       title: t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.netPlotAreaAfterWidening || "N/A",
-    },
-    {
-      title: t("NOC_NET_TOTAL_AREA_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netTotalArea || "N/A",
     },
     {
       title: t("NOC_ROAD_WIDTH_AT_SITE_LABEL"),

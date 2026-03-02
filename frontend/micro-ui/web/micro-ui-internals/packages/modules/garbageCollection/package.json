@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-garbagecollection",
-  "version": "1.0.33",
+  "version": "1.0.33-UAT.1",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

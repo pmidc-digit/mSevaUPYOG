@@ -20,6 +20,7 @@ export const LayoutFeeTable = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const isCitizen = window.location.href.includes("citizen"); 
 
   useEffect(() => {
     const checkMobile = () => {
@@ -31,7 +32,7 @@ export const LayoutFeeTable = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const columns = [
+  let columns = [
     {
       key: "title",
       label: "BPA_TAXHEAD_CODE",
@@ -117,6 +118,65 @@ export const LayoutFeeTable = ({
       },
     },
   ];
+
+  if(isCitizen){
+    columns = [
+    {
+      key: "title",
+      label: "BPA_TAXHEAD_CODE",
+      headerLabel: "BPA_TAXHEAD_CODE",
+      type: "text",
+    },
+    {
+      key: "amount",
+      label: "BPA_AMOUNT",
+      headerLabel: "BPA_AMOUNT",
+      type: "custom",
+      render: (row, rowIndex, t) => {
+        if (row.taxHeadCode === "LAYOUT_TOTAL") {
+          return (
+            <div>
+              <strong style={{ fontSize: "14px" }}>
+                ₹ {row.grandTotal.toLocaleString("en-IN")}
+              </strong>
+              <div
+                style={{
+                  fontSize: "0.85em",
+                  color: "#555",
+                  marginTop: "4px",
+                  lineHeight: "1.3",
+                }}
+              >
+                {amountToWords(row.grandTotal)}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <TextInput
+            t={t}
+            type="number"
+            isMandatory={false}
+            value={feeData[row.index]?.adjustedAmount === 0
+              ? ""
+              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+            onChange={(e) => {
+              let val = e.target.value;
+              if (val.length > 1 && val.startsWith("0")) {
+                val = val.replace(/^0+/, "");
+              }
+              handleAdjustedAmountChange(row.index, val);
+            }}
+            disable={disable}
+            step={1}
+            onBlur={onAdjustedAmountBlur}
+          />
+        );
+      },
+    }
+  ];
+  }
+
 
   const renderHistoryCell = (h, key, t) => (
     <div className="custom-fee-history-content">

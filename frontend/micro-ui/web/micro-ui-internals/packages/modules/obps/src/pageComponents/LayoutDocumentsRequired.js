@@ -34,7 +34,7 @@ const LayoutDocumentsRequired = ({
 }) => {
   const tenantId = Digit.ULBService.getStateId()
   const [documents, setDocuments] = useState(formData?.documents?.documents)
-  console.log("documents in childStep three", documents)
+  // console.log("documents in childStep three", documents, formData)
   const [error, setError] = useState(null)
   const [enableSubmit, setEnableSubmit] = useState(true)
   const [checkRequiredFields, setCheckRequiredFields] = useState(false)
@@ -57,34 +57,100 @@ const LayoutDocumentsRequired = ({
     }
   }, [coordinates])
 
-  console.log("coordinates (from redux)", coordinates)
-  console.log("geocoordinates", geocoordinates)
+  // console.log("coordinates (from redux)", coordinates, data)
+  //console.log("geocoordinates", geocoordinates)
 
   const currentStepData = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.formData) || {}
-  const applicationNo = currentStepData?.apiData?.Layout?.applicationNo || ""
-  const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false
+  // const applicationNo = currentStepData?.apiData?.Layout?.applicationNo || ""
+  // const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false
   
-  // Get CLU approval status from siteDetails - Check multiple possible locations
-  const cluApprovedValue = currentStepData?.siteDetails?.cluIsApproved?.code || currentStepData?.siteDetails?.cluIsApproved
-  const isCluApproved = cluApprovedValue === "YES" || cluApprovedValue === true || false
+  // // Get CLU approval status from siteDetails - Check multiple possible locations
+  // const cluApprovedValue = currentStepData?.siteDetails?.isCluRequired?.code || currentStepData?.siteDetails?.isCluRequired
+  // const isCluApproved = cluApprovedValue === "YES" || cluApprovedValue === true || false
   
-  const isRestrictedArea = currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES" || false
-  const isUnderMasterPlan = currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES" || false
+  // const isRestrictedArea = currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES" || false
+  // const isUnderMasterPlan = currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES" || false
 
-  // Get road type to check if National Highway
-  const roadType = currentStepData?.siteDetails?.roadType?.name || currentStepData?.siteDetails?.roadType || ""
-  const isNationalHighway = roadType?.toLowerCase().includes("national") || roadType?.toLowerCase().includes("nh")
+  // // Get road type to check if National Highway
+  // const roadType = currentStepData?.siteDetails?.roadType?.name || currentStepData?.siteDetails?.roadType || ""
+  // const isNationalHighway = roadType?.toLowerCase().includes("national") || roadType?.toLowerCase().includes("nh")
 
-  // Get building category to check if Institution
-  const buildingCategory = currentStepData?.siteDetails?.buildingCategory?.code || currentStepData?.siteDetails?.buildingCategory || ""
-  const isInstitution = buildingCategory?.toLowerCase().includes("institution") || buildingCategory === "INSTITUTION"
+  // // Get building category to check if Institution
+  // const buildingCategory = currentStepData?.siteDetails?.buildingCategory?.code || currentStepData?.siteDetails?.buildingCategory || ""
+  // const isInstitution = buildingCategory?.toLowerCase().includes("institution") || buildingCategory === "INSTITUTION"
 
-  console.log("🔍 CLU Status Check:")
-  console.log("  cluIsApproved value:", currentStepData?.siteDetails?.cluIsApproved)
-  console.log("  Extracted cluApprovedValue:", cluApprovedValue)
-  console.log("  isCluApproved boolean:", isCluApproved)
-  console.log("Restricted Area:", isRestrictedArea, currentStepData?.siteDetails?.specificationRestrictedArea)
-  console.log("Under Master Plan:", isUnderMasterPlan, currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan)
+  const [applicationNo, setApplicationNo] = useState("");
+  const [isVacant, setIsVacant] = useState(false);
+  const [isCluApproved, setIsCluApproved] = useState(false);
+  const [isRestrictedArea, setIsRestrictedArea] = useState(false);
+  const [isUnderMasterPlan, setIsUnderMasterPlan] = useState(false);
+  const [isNationalHighway, setIsNationalHighway] = useState(false);
+  const [isInstitution, setIsInstitution] = useState(false);
+
+  useEffect(() => {
+    if (!currentStepData) return;
+
+    // Application No
+    setApplicationNo(
+      currentStepData?.apiData?.Layout?.applicationNo || ""
+    );
+
+    // Vacant
+    setIsVacant(
+      currentStepData?.siteDetails?.buildingStatus?.code === "VACANT"
+    );
+
+    // CLU Approved
+    const cluApprovedValue =
+      currentStepData?.siteDetails?.isCluRequired?.code ||
+      currentStepData?.siteDetails?.isCluRequired;
+
+    setIsCluApproved(
+      cluApprovedValue === "YES" || cluApprovedValue === true
+    );
+
+    // Restricted Area
+    setIsRestrictedArea(
+      currentStepData?.siteDetails?.specificationRestrictedArea?.code === "YES"
+    );
+
+    // Under Master Plan
+    setIsUnderMasterPlan(
+      currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code === "YES"
+    );
+
+    // National Highway
+    const roadType =
+      currentStepData?.siteDetails?.roadType?.name ||
+      currentStepData?.siteDetails?.roadType ||
+      "";
+
+    setIsNationalHighway(
+      roadType.toLowerCase().includes("national") ||
+      roadType.toLowerCase().includes("nh")
+    );
+
+    // Institution
+    const buildingCategory =
+      currentStepData?.siteDetails?.buildingCategory?.code ||
+      currentStepData?.siteDetails?.buildingCategory ||
+      "";
+
+    setIsInstitution(
+      buildingCategory === "INSTITUTION" ||
+      buildingCategory.toLowerCase().includes("institution")
+    );
+
+  }, [currentStepData]);
+
+
+
+  // console.log("🔍 CLU Status Check:")
+  // console.log("  cluIsApproved value:", currentStepData?.siteDetails?.cluIsApproved, currentStepData, documents)
+  // // console.log("  Extracted cluApprovedValue:", cluApprovedValue)
+  // console.log("  isCluApproved boolean:", isCluApproved)
+  // console.log("Restricted Area:", isRestrictedArea, currentStepData?.siteDetails?.specificationRestrictedArea)
+  // console.log("Under Master Plan:", isUnderMasterPlan, currentStepData?.siteDetails?.specificationIsSiteUnderMasterPlan)
 
 
   // NOTE: Document requirements are now determined by backend config:
@@ -110,14 +176,14 @@ const LayoutDocumentsRequired = ({
 
   // Filter documents based on building status, CLU approval, road type, and category
   const filteredDocuments = useMemo(() => {
-    console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
+    // console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
     let docs = data?.LAYOUT?.LayoutDocuments || []
     
-    console.log("=== FILTER DEBUG ===")
-    console.log("Initial docs count:", docs.length)
-    console.log("isCluApproved:", isCluApproved)
-    console.log("isNationalHighway:", isNationalHighway)
-    console.log("isInstitution:", isInstitution)
+    // console.log("=== FILTER DEBUG ===")
+    // console.log("Initial docs count:", docs.length, docs)
+    // console.log("isCluApproved:", isCluApproved)
+    // console.log("isNationalHighway:", isNationalHighway)
+    // console.log("isInstitution:", isInstitution)
     
     // Filter and process documents
     const processedDocs = docs
@@ -136,13 +202,13 @@ const LayoutDocumentsRequired = ({
           isRequired = isNationalHighway
         }
         // When CLU = YES: Make specific CLU documents mandatory
-        else if (isCluApproved && doc.cluRequired) {
-          isRequired = true
-        }
+        // else if (isCluApproved && doc.cluRequired) {
+        //   isRequired = true
+        // }
         // When CLU = NO: CLU-required docs become NOT mandatory, but regular required docs stay mandatory
-        else if (!isCluApproved && doc.cluRequired) {
-          isRequired = false
-        }
+        // else if (!isCluApproved && doc.cluRequired) {
+        //   isRequired = false
+        // }
         
         // Filter out building drawing if vacant
         if (isVacant && doc.code === "OWNER.BUILDINGDRAWING") {
@@ -150,20 +216,23 @@ const LayoutDocumentsRequired = ({
         }
         
         return { ...doc, required: isRequired }
-      })
+      }).filter(doc => !(doc?.cluRequired && !isCluApproved))
       .filter(doc => doc !== null)
     
-    console.log("Final docs count:", processedDocs.length)
-    console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
-    console.log("=== END DEBUG ===")
+    // console.log("Final docs count:", processedDocs.length)
+    // console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
+    // console.log("=== END DEBUG ===")
     
     return processedDocs
   }, [isVacant, isCluApproved, isNationalHighway, isInstitution, data?.LAYOUT?.LayoutDocuments?.length])
+
+  // console.log("filteredDocs and documents", filteredDocuments, documents)
 
   const handleSubmit = () => {
     const document = formData.documents
     let documentStep
     documentStep = { ...document, documents: documents }
+    // console.log("filteredDocs and documents", filteredDocuments, documents)
     onSelect(config.key, documentStep)
   }
 
@@ -285,12 +354,12 @@ function LayoutSelectDocument({
   function selectfile(e) {
     const selectedFile = e.target.files[0]
     setFile(selectedFile)
-    console.log("selectedFile here", selectedFile)
+    // console.log("selectedFile here", selectedFile, doc, selectedDocument)
 
     if (selectedFile && selectedFile.type === "image/jpeg") {
       extractGeoLocation(selectedFile).then((location) => {
-        console.log("Latitude:", location.latitude)
-        console.log("Longitude:", location.longitude)
+        // console.log("Latitude:", location.latitude)
+        // console.log("Longitude:", location.longitude)
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
@@ -332,7 +401,65 @@ function LayoutSelectDocument({
           }
         }
       })
+    }    
+  }
+
+  function selectfileWithCordinates(e) {
+    const selectedFile = e.target.files[0]
+
+    if (selectedFile && selectedFile.type === "image/jpeg") {
+      extractGeoLocation(selectedFile).then((location) => {
+        // console.log("Latitude:", location.latitude)
+        // console.log("Longitude:", location.longitude)        
+
+        if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+          if (location.latitude !== null && location.longitude !== null) {
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", location.latitude))
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", location.longitude))
+            setGeoCoordinates((prev) => {
+              return {
+                ...prev,
+                Latitude1: location.latitude,
+                Longitude1: location.longitude,
+              }
+            })
+          } else {
+            // if (window.location.pathname.includes("edit")) {
+            //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude1", ""))
+            //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude1", ""))
+            // }
+            alert("Please upload a photo with location details.")
+            return ;
+          }
+        }
+
+        if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
+          if (location.latitude !== null && location.longitude !== null) {
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", location.latitude))
+            dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", location.longitude))
+            setGeoCoordinates((prev) => {
+              return {
+                ...prev,
+                Latitude2: location.latitude,
+                Longitude2: location.longitude,
+              }
+            })
+          } else {
+            // if (window.location.pathname.includes("edit")) {
+            //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Latitude2", ""))
+            //   dispatch(UPDATE_LayoutNewApplication_CoOrdinates("Longitude2", ""))
+            // }
+            alert("Please upload a photo with location details.")
+            return
+          }
+        }
+
+        setFile(selectedFile)
+      })
     }
+
+    
+    // console.log("selectedFile here", selectedFile)
   }
 
   const { dropdownData } = doc
@@ -342,10 +469,10 @@ function LayoutSelectDocument({
   const [getLoading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (selectedDocument?.code) {
+    if (doc?.code) {
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = (prev || []).filter(
-          (item) => item?.documentType !== selectedDocument?.code,
+          (item) => item?.documentType !== doc?.code,
         )
 
         if (uploadedFile?.length === 0 || uploadedFile === null) {
@@ -357,19 +484,20 @@ function LayoutSelectDocument({
         return [
           ...filteredDocumentsByFileStoreId,
           {
-            documentType: selectedDocument?.code,
+            documentType: doc?.code,
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
             documentAttachment: uploadedFile,
+            order: doc?.order
           },
         ]
       })
     }
-  }, [uploadedFile, selectedDocument])
+  }, [uploadedFile, doc])
 
   useEffect(() => {
     if ((documents || []).length > 0) {
-      console.log("documents here", documents)
+      // console.log("documents here", documents)
       handleSubmit()
     }
   }, [documents])
@@ -440,7 +568,7 @@ function LayoutSelectDocument({
           const lat = EXIF.getTag(this, "GPSLatitude")
           const lon = EXIF.getTag(this, "GPSLongitude")
 
-          console.log("lat====", lat)
+          // console.log("lat====", lat)
           if (lat && lon) {
             const latDecimal = convertToDecimal(lat).toFixed(6)
             const lonDecimal = convertToDecimal(lon).toFixed(6)
@@ -453,7 +581,7 @@ function LayoutSelectDocument({
           }
         })
       } catch (error) {
-        console.log("EXIF parsing failed:", error)
+        //console.log("EXIF parsing failed:", error)
         resolve({ latitude: null, longitude: null })
       }
     })
@@ -471,14 +599,14 @@ function LayoutSelectDocument({
         {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
           <CustomUploadFile
             id={"clu-doc"}
-            onUpload={selectfile}
+            onUpload={selectfileWithCordinates}
             onDelete={() => {
               setUploadedFile(null);
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
-            accept=".pdf, .jpeg, .jpg, .png"
+            accept=".jpeg, .jpg, .png"
           />
         ):(
           <CustomUploadFile

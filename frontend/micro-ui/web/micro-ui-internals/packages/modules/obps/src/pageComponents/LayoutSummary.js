@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Card, CardLabel, LabelFieldPair, Table, LinkButton, ImageViewer } from "@mseva/digit-ui-react-components";
+import { Card, CardLabel, LabelFieldPair, Table, LinkButton, ImageViewer, CardSubHeader, StatusTable } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_OBPS_STEP } from "../redux/actions/OBPSActions";
@@ -8,6 +8,7 @@ import LayoutDocumentsView from "./LayoutDocumentsView";
 import LayoutImageView from "./LayoutImageView";
 import LayoutFeeEstimationDetailsTable from "./LayoutFeeEstimationDetailsTable";
 import LayoutDocumentTableView from "./LayoutDocumentsView";
+import NocSitePhotographs from "../components/NocSitePhotographs";
 
 // Component to render document link
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
@@ -72,6 +73,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       fatherOrHusbandName: formData.applicationDetails.applicantFatherHusbandName,
       permanentAddress: formData.applicationDetails.applicantAddress,
       pan: formData.applicationDetails.panNumber,
+      aplicantType: formData.applicationDetails.aplicantType
     };
   }
   
@@ -232,7 +234,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
   };
 
   const renderLabel = (label, value) => {
-    if (!value || value === "NA" || value === "" || value === null || value === undefined) {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
       return null;
     }
     
@@ -267,6 +269,10 @@ function LayoutSummary({ currentStepData: formData, t }) {
   const docs = formData?.documents?.documents?.documents
   console.log("documents here in summary", docs)
 
+  const sitePhotos = docs?.filter(
+            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+          );
+
   return (
     <div style={pageStyle}>
       {/* OWNERS DETAILS AND DOCUMENTS */}
@@ -276,9 +282,10 @@ function LayoutSummary({ currentStepData: formData, t }) {
           <Card style={{ marginBottom: "1.5rem" }}>
             <div style={sectionStyle}>
               <div style={headerRow}>
-                <h3 style={headingStyle}>{t("Primary Owner") || "Primary Owner"}</h3>
+                <CardSubHeader>{t("Primary Owner") || "Primary Owner"}</CardSubHeader>
               </div>
               {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owners[0]?.name)}
+              {renderLabel(t("Applicant Type"), owners[0]?.aplicantType?.name || "")}
               {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
               {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
               {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owners[0]?.gender?.code || owners[0]?.gender?.value || owners[0]?.gender)}
@@ -308,7 +315,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             <Card key={index + 1} style={{ marginBottom: "1.5rem" }}>
               <div style={sectionStyle}>
                 <div style={headerRow}>
-                  <h3 style={headingStyle}>{t("Additional Owner") || "Additional Owner"} {index + 1}</h3>
+                  <CardSubHeader>{t("Additional Owner") || "Additional Owner"} {index + 1}</CardSubHeader>
                 </div>
                 {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
                 {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
@@ -409,7 +416,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
         <Card style={{ marginBottom: "1.5rem" }}>
           <div style={sectionStyle}>
             <div style={headerRow}>
-              <h3 style={headingStyle}>{t("BPA_PROFESSIONAL_DETAILS")}</h3>
+              <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
             </div>
             {renderLabel(t("BPA_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("BPA_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
@@ -432,7 +439,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       )}
 
       {/* LOCALITY INFO */}
-      <Card style={{ marginBottom: "1.5rem" }}>
+      {/* <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("BPA_LOCALITY_INFO_LABEL")}</h3>
@@ -445,13 +452,13 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {formData?.siteDetails?.layoutAreaType?.code === "NON_SCHEME" &&
             renderLabel(t("BPA_NON_SCHEME_TYPE_LABEL"), formData?.siteDetails?.layoutNonSchemeType?.name)}
         </div>
-      </Card>
+      </Card> */}
 
       {/* SITE DETAILS */}
       <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_SITE_DETAILS")}</h3>
+            <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
           </div>
           {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), formData?.siteDetails?.vasikaNumber)}
           {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formData?.siteDetails?.vasikaDate)}
@@ -511,7 +518,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_SPECIFICATION_DETAILS")}</h3>
+            <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
           </div>
           {renderLabel(t("BPA_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
         </div>
@@ -521,10 +528,10 @@ function LayoutSummary({ currentStepData: formData, t }) {
       <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_CLU_DETAILS")}</h3>
+            <CardSubHeader>{t("BPA_CLU_DETAILS")}</CardSubHeader>
           </div>
           {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), formData?.siteDetails?.isCluRequired?.code || formData?.siteDetails?.isCluRequired)}
-          {(formData?.siteDetails?.isCluRequired?.code === "YES" || formData?.siteDetails?.isCluRequired === "YES") && (
+          {(formData?.siteDetails?.isCluRequired?.code === "NO" || formData?.siteDetails?.isCluRequired === "NO") && (
             <React.Fragment>
               {renderLabel(t("BPA_CLU_TYPE_LABEL"), formData?.siteDetails?.cluType?.code || formData?.siteDetails?.cluType)}
               {(formData?.siteDetails?.cluType?.code === "ONLINE" || formData?.siteDetails?.cluType === "ONLINE") &&
@@ -534,12 +541,17 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formData?.siteDetails?.cluApprovalDate)}
             </React.Fragment>
           )}
+          {(formData?.siteDetails?.isCluRequired?.code === "NO" || formData?.siteDetails?.isCluRequired === "NO") && (
+            <React.Fragment>
+              {renderLabel(t("Application Applied Under"), formData?.siteDetails?.applicationAppliedUnder?.code || formData?.siteDetails?.applicationAppliedUnder)}              
+            </React.Fragment>
+          )}
           {renderLabel(t("BPA_IS_CLU_APPROVED_LABEL"), formData?.siteDetails?.cluIsApproved?.code)}
         </div>
       </Card>
 
       {/* SITE COORDINATES */}
-      <Card style={{ marginBottom: "1.5rem" }}>
+      {/* <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
             <h3 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h3>
@@ -549,13 +561,36 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
           {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
         </div>
+      </Card> */}
+
+      <Card>
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {sitePhotos?.length > 0 &&
+            [...sitePhotos]
+              .map((doc) => (
+                <NocSitePhotographs
+                  key={doc?.filestoreId || doc?.uuid}
+                  filestoreId={doc?.filestoreId || doc?.uuid}
+                  documentType={doc?.documentType}
+                  coordinates={coordinates}
+                />
+              ))}
+        </StatusTable>
       </Card>
 
       {/* DOCUMENTS UPLOADED */}
       <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</h3>
+            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
           </div>
           <div style={{ padding: "0 1.5rem" }}>
             {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
@@ -567,7 +602,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
       <Card style={{ marginBottom: "1.5rem" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_FEE_DETAILS_LABEL")}</h3>
+            <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
           </div>
           <div style={{ padding: "0 1.5rem" }}>
             {formData && <LayoutFeeEstimationDetailsTable formData={formData} feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => {}} disable={false} />}

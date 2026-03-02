@@ -28,8 +28,6 @@ const RALApplicationDetails = () => {
     }
   };
 
-  console.log('applicationData', applicationData)
-
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -65,11 +63,18 @@ const RALApplicationDetails = () => {
     setLoader(true);
     try {
       let response = null;
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      } else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...applicationData }] }, "rentandlease-receipt");
-      }
+      
+        response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [
+              {
+                ...(payments || {}),
+                AllotmentDetails: [applicationData],
+              },
+            ], },
+          "rentandlease-receipt"
+        );
+      
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: response.filestoreIds[0],
       });

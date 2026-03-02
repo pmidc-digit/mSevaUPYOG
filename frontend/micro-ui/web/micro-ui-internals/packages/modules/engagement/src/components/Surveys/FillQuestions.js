@@ -15,6 +15,7 @@ const FillQuestions = (props) => {
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [city, setCity] = useState(null);
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const userInfo = Digit.UserService.getUser()?.info || {};
 

@@ -19,7 +19,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setSelectedCheckBox(e.target.checked);
   };
 
-  console.log("selectedCheckBox", selectedCheckBox);
+  //console.log("selectedCheckBox", selectedCheckBox);
 
   const currentStepData = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData || {});
   const coordinates = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.coordinates || {});
@@ -45,7 +45,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = (action) => {
-    console.log("formData in parent SummaryPage", currentStepData);
+    //console.log("formData in parent SummaryPage", currentStepData);
 
     onSubmit(currentStepData, action);
   };
@@ -75,15 +75,15 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ...newlyAddedApplicants.map(app => app.name)
     ].filter(name => name); // Filter out undefined/null names
     
-    console.log("[v0] getAllApplicantNames - primaryOwnerName:", primaryOwnerName);
-    console.log("[v0] getAllApplicantNames - newlyAddedApplicants:", newlyAddedApplicants);
-    console.log("[v0] getAllApplicantNames - allApplicantNames:", allApplicantNames);
+    //console.log("[v0] getAllApplicantNames - primaryOwnerName:", primaryOwnerName);
+    //console.log("[v0] getAllApplicantNames - newlyAddedApplicants:", newlyAddedApplicants);
+    //console.log("[v0] getAllApplicantNames - allApplicantNames:", allApplicantNames);
     
     return allApplicantNames.length > 0 ? allApplicantNames.join(", ") : "NA";
   };
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("formData inside onSubmit", data);
+    //console.log("formData inside onSubmit", data);
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
@@ -91,13 +91,13 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     const finalPayload = mapToLayoutPayload(data, selectedAction);
-    console.log("finalPayload here==>", finalPayload);
+    //console.log("finalPayload here==>", finalPayload);
 
     try {
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("success: Update API ");
+        //console.log("success: Update API ");
 
         if (window.location.href.includes("citizen")) {
           if (selectedAction.action === "CANCEL") {
@@ -106,14 +106,14 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
               history.push(`/digit-ui/citizen/obps/layout/my-application`);
             }, 3000);
           } else {
-            console.log("We are calling citizen response page");
+            //console.log("We are calling citizen response page");
             history.replace({
               pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
               state: { data: response },
             });
           }
         } else {
-          console.log("we are calling employee response page");
+          //console.log("we are calling employee response page");
 
           if (selectedAction.action === "CANCEL") {
             setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
@@ -132,7 +132,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
-      console.log("errors here in goNext - catch block", error);
+      //console.log("errors here in goNext - catch block", error);
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     }
   };
@@ -186,10 +186,10 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {
-  console.log("[v0] layoutFormData", layoutFormData)
-  console.log("[v0] layoutFormData.documents", layoutFormData?.documents)
-  console.log("[v0] layoutFormData.documents.documents", layoutFormData?.documents?.documents)
-  console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
+  //console.log("[v0] layoutFormData", layoutFormData)
+  //console.log("[v0] layoutFormData.documents", layoutFormData?.documents)
+  //console.log("[v0] layoutFormData.documents.documents", layoutFormData?.documents?.documents)
+  //console.log("[v0] layoutFormData.documents.documents.documents", layoutFormData?.documents?.documents?.documents)
   
   // Check if we're in EDIT mode or NEW mode
   // Layout can be either an object (from CREATE response) or array (from some API responses)
@@ -199,12 +199,12 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     ? layoutFormData?.apiData 
     : (isLayoutArray ? layoutFormData?.apiData?.Layout?.[0] : layoutFormData?.apiData?.Layout)
   
-  console.log("[v0] isEditMode:", isEditMode)
-  console.log("[v0] layoutData:", layoutData)
+  //console.log("[v0] isEditMode:", isEditMode)
+  //console.log("[v0] layoutData:", layoutData)
 
   // Get documents from Redux (following CLU pattern - 3 levels deep)
   const docsArrayFromRedux = layoutFormData?.documents?.documents?.documents || [];
-  console.log("[v0] docsArrayFromRedux:", docsArrayFromRedux);
+  //console.log("[v0] docsArrayFromRedux:", docsArrayFromRedux);
 
     // For Update API: Merge original owners from API response with newly added applicants from Redux
     // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
@@ -267,12 +267,15 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // Merge: existing owners from API (updated) + newly added applicants
     const owners = [...updatedOwnersFromApi, ...mappedNewApplicants];
     
-    console.log("[v0] ownersFromApi:", ownersFromApi);
-    console.log("[v0] updatedOwnersFromApi:", updatedOwnersFromApi);
-    console.log("[v0] applicantsFromRedux:", applicantsFromRedux);
-    console.log("[v0] newlyAddedApplicants:", newlyAddedApplicants);
-    console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
-    console.log("[v0] final merged owners:", owners);
+    //console.log("[v0] ownersFromApi:", ownersFromApi);
+    //console.log("[v0] updatedOwnersFromApi:", updatedOwnersFromApi);
+    //console.log("[v0] applicantsFromRedux:", applicantsFromRedux);
+    //console.log("[v0] newlyAddedApplicants:", newlyAddedApplicants);
+    //console.log("[v0] mappedNewApplicants:", mappedNewApplicants);
+    //console.log("[v0] final merged owners:", owners);
+
+  //console.log("[v0] isEditMode:", isEditMode);
+  //console.log("[v0] selectedAction:", selectedAction);
 
   console.log("[v0] isEditMode:", isEditMode);
   console.log("[v0] selectedAction:", selectedAction);
@@ -346,16 +349,16 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     // ========== DOCUMENT HANDLING (Following CLU Pattern) ==========
     // CLU uses: cluFormData?.documents?.documents?.documents
-    console.log("[v0] layoutFormData?.documents:", layoutFormData?.documents);
-    console.log("[v0] layoutFormData?.documents?.documents:", layoutFormData?.documents?.documents);
-    console.log("[v0] layoutFormData?.documents?.documents?.documents:", layoutFormData?.documents?.documents?.documents);
+    //console.log("[v0] layoutFormData?.documents:", layoutFormData?.documents);
+    //console.log("[v0] layoutFormData?.documents?.documents:", layoutFormData?.documents?.documents);
+    //console.log("[v0] layoutFormData?.documents?.documents?.documents:", layoutFormData?.documents?.documents?.documents);
     
     if (isEditMode) {
       // EDIT MODE: Merge API documents with Redux documents (like CLU)
-      const apiResponseDocuments = layoutData?.documents || [];
+      const apiResponseDocuments = layoutFormData?.documents?.documents?.documents || [];
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
       
-      console.log("[v0] EDIT MODE - apiResponseDocuments:", apiResponseDocuments);
+      //console.log("[v0] EDIT MODE - apiResponseDocuments:", apiResponseDocuments);
       
       // Update existing API documents with new filestoreIds from Redux
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
@@ -364,6 +367,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           || docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
         return {
           ...doc,
+          order: doc?.order,
           uuid: fileStoreId || doc.uuid,
           documentAttachment: fileStoreId || doc.documentAttachment,
         };
@@ -374,6 +378,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       const updatedNewlyAddedDocs = newlyAddedDocs?.map((doc) => {
         return {
+          order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId || doc?.documentAttachment,
@@ -381,7 +386,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       });
       
       const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-      console.log("[v0] EDIT MODE - overallDocs:", overallDocs);
+      //console.log("[v0] EDIT MODE - overallDocs:", overallDocs);
       
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({ ...doc });
@@ -389,10 +394,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
     } else {
       // NEW MODE: Use Redux documents directly (like CLU)
-      console.log("[v0] NEW MODE - docsArrayFromRedux:", docsArrayFromRedux);
+      //console.log("[v0] NEW MODE - docsArrayFromRedux:", docsArrayFromRedux);
       
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
+          order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId || doc?.documentAttachment,
@@ -424,7 +430,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       }
     });
 
-    console.log("[v0] final documents array:", updatedApplication.documents);
+    //console.log("[v0] final documents array:", updatedApplication.documents);
 
     const payload = {
       Layout: updatedApplication,
@@ -443,7 +449,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(null);
   };
 
-  console.log("currentStepData in StepFour", currentStepData);
+  //console.log("currentStepData in StepFour", currentStepData);
 
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
   const isEditMode = !currentStepData?.apiData?.Layout;
@@ -453,7 +459,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const applicationNo = layoutData?.applicationNo || "";
   const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
-  console.log("applicationNo here==>", applicationNo);
+  //console.log("applicationNo here==>", applicationNo);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -461,9 +467,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: businessServiceCode,
   });
 
-  console.log("workflow Details here layout==>", workflowDetails);
+  //console.log("workflow Details here layout==>", workflowDetails);
 
-    console.log("workflow Details here==>", workflowDetails)
+    //console.log("workflow Details here==>", workflowDetails)
 
   if (workflowDetails?.isLoading) {
     return <Loader />
@@ -477,7 +483,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+  //console.log("actions here", actions);
 
   function onActionSelect(action) {
     goNext(action);

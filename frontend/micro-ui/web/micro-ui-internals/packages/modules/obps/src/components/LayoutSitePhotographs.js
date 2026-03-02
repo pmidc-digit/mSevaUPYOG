@@ -86,4 +86,3 @@ const LayoutSitePhotographs = ({ filestoreId, documentType, coordinates, documen
 };
 
 export default LayoutSitePhotographs;
-

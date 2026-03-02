@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { TextArea, LinkButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, readOnly = false }) => {
+const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksChange, value, readOnly = false }) => {
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
   // Debug: Log readOnly status - handle both string and boolean
   const isReadOnly = readOnly === true || readOnly === "true";
-  console.log("LayoutDocumentChecklist - readOnly prop:", readOnly, "isReadOnly:", isReadOnly);
+  //console.log("LayoutDocumentChecklist - readOnly prop:", readOnly, "isReadOnly:", isReadOnly);
 
   // fetch urls
   const { data: urlsList } = Digit.Hooks.obps.useLayoutDocumentSearch(
@@ -17,27 +17,29 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
     { enabled: documents?.length > 0 }
   );
 
-  console.log(urlsList, "USER LIST");
+  //console.log(urlsList, "USER LIST");
 
   // Initialize remarks for each document
   useEffect(() => {
     if (documents?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
       documents.forEach(d => { 
-        initial[d.documentUid || d.uuid] = d.remarks || ""; 
+        initial[d.documentUid || d.uuid] = value?.[d.documentUid || d.uuid] || d.remarks || ""; 
       });
-      console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
-      console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
+      //console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
+      //console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }
   }, [documents]);
 
-  const handleBlur = (uid, value) => {
-    const updated = { ...localRemarks, [uid]: value };
-    setLocalRemarks(updated);
-    onRemarksChange(updated);
-  };
+  useEffect(() => {}, [localRemarks])
+
+//   const handleBlur = (uid, value) => {
+//     const updated = { ...localRemarks, [uid]: value };
+//     setLocalRemarks(updated);
+//     onRemarksChange(updated);
+//   };
 
   return (
     <div className="checklist-document-table-wrapper">
@@ -66,21 +68,21 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                   {isReadOnly ? (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={value[doc.documentUid] ?? ""}
                       disabled={true}
                       className="checklist-table-textarea"
                     />
                   ) : (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={value[doc.documentUid] ?? ""}
                       onChange={(e) => {
-                        console.log("onChange triggered - value:", e.target.value);
-                        setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
+                        //console.log("onChange triggered - value:", e.target.value);
+                        onRemarksChange(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
                       }}
                       onBlur={(e) => {
-                        console.log("onBlur triggered - final value:", e.target.value);
-                        handleBlur(doc.documentUid, e.target.value);
+                        //console.log("onBlur triggered - final value:", e.target.value);
+                        // handleBlur(doc.documentUid, e.target.value);
                       }}
                       className="checklist-table-textarea"
                     />

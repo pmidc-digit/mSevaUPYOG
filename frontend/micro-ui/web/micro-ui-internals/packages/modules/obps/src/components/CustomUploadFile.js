@@ -285,7 +285,7 @@ const CustomUploadFile = (props) => {
         <input
           // className={`input-mirror-selector-button upload-file-input ${props.disabled ? "disabled" : ""
           //   }`}
-          className={`upload-file-button ${props.disabled ? "upload-hidden" : ""}`}
+          className={`${props.disabled ? "upload-hidden" : ""}`}
           ref={inpRef}
           type="file"
           id={props.id || `document-${getRandomId()}`}

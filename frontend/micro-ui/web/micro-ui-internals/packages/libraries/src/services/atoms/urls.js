@@ -174,6 +174,7 @@ const Urls = {
     download_pdf: "/egov-pdf/download/TL/",
     update: "/tl-services/v1/_update",
     billingslab: "/tl-calculator/billingslab/_search",
+    getbill: "/tl-calculator/v1/_getbill",
   },
   receipts: {
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",

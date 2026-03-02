@@ -28,7 +28,7 @@ import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
-import { amountToWords } from "../../../utils/index";
+import { amountToWords, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
@@ -94,6 +94,7 @@ const CLUApplicationDetails = () => {
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [empDesignation,setEmpDesignation] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
 
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
@@ -103,6 +104,7 @@ const CLUApplicationDetails = () => {
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
+  const mutation = Digit.Hooks.obps.useCLUCreateAPI(tenantId, false);
 
   let user = Digit.UserService.getUser();
   const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS","INSPECTION_REPORT_PENDING"];
@@ -142,7 +144,14 @@ const CLUApplicationDetails = () => {
 
       const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
+
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+
+      const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = cluObject?.auditDetails?.lastModifiedTime;
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = totalTime ? formatDuration(totalTime) : null;
+      setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);
 
@@ -168,14 +177,19 @@ const CLUApplicationDetails = () => {
     { enabled: id ? true : false }
   );
 
-  console.log('businessServiceCode', businessServiceCode)
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+  const hasPayments = combinedPayments.length > 0;
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode, 
   });
 
-  console.log('workflowDetails', workflowDetails)
 
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -198,7 +212,6 @@ const CLUApplicationDetails = () => {
 
   }
 
- // console.log("Approve Comments:", approveComments);
 
 
   // const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
@@ -223,7 +236,76 @@ const CLUApplicationDetails = () => {
 };
 
 
+async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanctionletter", ...params }) {
+  try {
+    setLoading(true);
 
+    const application = applicationDetails?.Clu;
+        const approvecomments = approveComments?.[0];
+    const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
+          const owners = application?.[0]?.owners || [];
+          let ownersString = "NA";
+          if (!firmName) {
+            if (owners?.length > 1) {
+              ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
+            } else if (owners?.length === 1) {
+              ownersString = owners[0]?.name || "owner 1";
+            }
+          } else {
+            ownersString = firmName;
+          }
+        let conditionText = "";
+      if (approvecomments?.includes("[#?..**]")) {
+        conditionText = approvecomments.split("[#?..**]")[1] || "";
+      }
+       const finalComment = conditionText
+        ? `The above approval is subjected to the following conditions: ${conditionText}`
+        : "";
+      if (!application) {
+        throw new Error("CLU Application data is missing");
+      }
+      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+
+    let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
+
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
+      
+
+      const updatedApplication = {
+        ...application,
+        workflow: {
+          action: "ESIGN",
+        },
+        cluDetails: {
+          ...application?.cluDetails,
+          additionalDetails: {
+            ...application?.cluDetails?.additionalDetails,
+            sanctionLetterFilestoreId: response?.filestoreIds[0],
+          },
+        },
+      };
+
+      await mutation.mutateAsync({
+        Clu: updatedApplication,
+      });
+
+
+      fileStoreId = response?.filestoreIds[0]
+    }
+
+    // Print receipt
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
+
+  } catch (error) {
+    console.error("Sanction Letter download error:", error);
+  } finally {
+    setLoading(false);
+  }
+}
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
     
      try {
@@ -237,7 +319,6 @@ const CLUApplicationDetails = () => {
        const finalComment = conditionText
         ? `The above approval is subjected to the following conditions: ${conditionText}`
         : "";
-      console.log('application', application)
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
@@ -255,11 +336,21 @@ const CLUApplicationDetails = () => {
     }
 
   const dowloadOptions = [];
-  if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED") {
-      dowloadOptions.push({
-        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-sanctionletter" }),
-      });
+
+    if (applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
+      if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+        dowloadOptions.push({
+          label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+          onClick: () =>
+            getSanctionLetterReceipt({
+              tenantId: reciept_data2?.Payments[0]?.tenantId,
+              payments: reciept_data2?.Payments[0],
+              pdfkey: "clu-sanctionletter",
+            }),
+        });
+      }
+    }
+  if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
@@ -333,10 +424,8 @@ const CLUApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  //console.log("actions here", actions);
 
   function onActionSelect(action) {
-    console.log("selected action", action);
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
     const applicationStatus = applicationDetails?.Clu?.[0]?.applicationStatus;
 
@@ -361,7 +450,6 @@ const CLUApplicationDetails = () => {
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
-    // console.log("data ==>", data);
 
    // const vasikaNumber =  payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
    // const vasikaDate = convertToDDMMYYYY(payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
@@ -374,7 +462,6 @@ const CLUApplicationDetails = () => {
     };
 
     const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -397,7 +484,6 @@ const CLUApplicationDetails = () => {
           setSelectedAction(null);
         } else {
           //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling citizen response page");
           history.replace({
             pathname: `/digit-ui/citizen/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
             state: { data: response },
@@ -420,19 +506,19 @@ const CLUApplicationDetails = () => {
   return `${day}/${month}/${year}`;
   };
 
-  console.log("displayData==>", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  //console.log("coordinates==>", coordinates);
   const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc) => !(
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
+    doc?.documentType?.includes("Owner Id") || 
+    doc?.documentType?.includes("Owner Photo")
+  ))?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  //console.log("sitePhotoGrahphs==>", sitePhotographs);
-  //console.log("remainingDocs==>", remainingDocs);
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
-  //console.log("combinerOwnersName", combinedOwnersName);
 
   const siteInspectionEmp = useMemo(() => {
       return workflowDetails?.data?.processInstances
@@ -485,7 +571,8 @@ const CLUApplicationDetails = () => {
           <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-              <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+              {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
+              <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
               <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
               <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
               <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
@@ -657,6 +744,7 @@ const CLUApplicationDetails = () => {
               siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
             }}
             feeType="PAY1"
+            hasPayments={hasPayments}
           />
         )}
         </Card>
@@ -710,7 +798,7 @@ const CLUApplicationDetails = () => {
         </Card>
       )} */}
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
+      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
 
       {actions && actions.length > 0 && (
         <ActionBar>

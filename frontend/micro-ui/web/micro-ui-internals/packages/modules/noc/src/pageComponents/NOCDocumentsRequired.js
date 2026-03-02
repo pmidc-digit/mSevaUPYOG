@@ -66,7 +66,7 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
   }
   filteredDocuments = filteredDocuments?.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  console.log("filteredDocuments", filteredDocuments);
+  // console.log("filteredDocuments", filteredDocuments);
 
   useEffect(() => {
     setDocuments((prev) => {

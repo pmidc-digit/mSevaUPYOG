@@ -214,7 +214,7 @@ const CitizenApplicationOverview = () => {
       if (empData) {
         acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
       }
-      console.log("acknowledgementData", acknowledgementData);
+      // console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
       }, 0);

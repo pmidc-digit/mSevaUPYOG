@@ -387,8 +387,8 @@ const ApplicationDetails = () => {
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
-    if(bookingObj?.bookingStatus === "BOOKED" || bookingObj?.bookingStatus === "CANCELLED"){
-      downloadOptions.push({
+
+  downloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
     onClick: () => downloadAcknowledgement(application),
   });
@@ -404,8 +404,6 @@ const ApplicationDetails = () => {
       });
   }
 
-}
-  
   const cartData = transformAdsData(bookingObj?.cartDetails);
   const [expired, setExpired] = useState(false);
 
@@ -420,7 +418,7 @@ const ApplicationDetails = () => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Header styles={{ fontSize: "32px" }}>{t("ADS_APP_OVER_VIEW_HEADER")}</Header>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {downloadOptions && downloadOptions?.length > 0 && (
               <div style={{ position: "relative", zIndex: 10 }}>
                 <MultiLink
@@ -433,7 +431,7 @@ const ApplicationDetails = () => {
                 />
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 

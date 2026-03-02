@@ -195,7 +195,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("PROPERTY_ID"),
-        value: t(application?.additionalDetails?.propertyDetails?.[0]?.propertyId) || "NA",
+        value: t(application?.additionalDetails?.propertyId) || "NA",
       },
       {
         title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
@@ -203,41 +203,41 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
       },
       {
         title: t("Allotment Type"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.allotmentType || "NA",
+        value: application?.additionalDetails?.allotmentType || "NA",
       },
       {
         title: t("Property Name"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.propertyName || "NA",
+        value: application?.additionalDetails?.propertyName || "NA",
       },
       {
         title: t("Property Area"),
-        value: `${application?.additionalDetails?.propertyDetails?.[0]?.propertySizeOrArea || "NA"} sq. meters`,
+        value: `${application?.additionalDetails?.propertySizeOrArea || "NA"} sq. meters`,
       },
       {
         title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.propertyType || "NA",
+        value: application?.additionalDetails?.propertyType || "NA",
       },
       {
         title: t("Location Type"),
-        value: application?.additionalDetails?.propertyDetails?.[0]?.locationType || "NA",
+        value: application?.additionalDetails?.locationType || "NA",
       },
       {
         title: t("Security Deposit"),
-        value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit || "NA"}`,
+        value: `Rs. ${application?.additionalDetails?.securityDeposit || "NA"}`,
       },
       {
         title: t("Base Rent"),
-        value: `Rs. ${application?.additionalDetails?.propertyDetails?.[0]?.baseRent || "NA"}`,
+        value: `Rs. ${application?.additionalDetails?.baseRent || "NA"}`,
       },
       ...(application?.amountToBeDeducted
         ? [
             {
               title: t("Penalty Amount"),
-              value: `Rs. ${application?.amountToBeDeducted || 0}`,
+              value: `Rs. ${application?.amountToBeDeducted}`,
             },
             {
               title: t("Penalty Amount (After Security Deposit)"),
-              value: `Rs. ${Math.abs(Number(application?.additionalDetails?.propertyDetails?.[0]?.securityDeposit) - application?.amountToBeDeducted)  || 0}`,
+              value: `Rs. ${application?.amountToBeDeducted - (application?.additionalDetails?.securityDeposit || 0)}`,
             },
           ]
         : []),

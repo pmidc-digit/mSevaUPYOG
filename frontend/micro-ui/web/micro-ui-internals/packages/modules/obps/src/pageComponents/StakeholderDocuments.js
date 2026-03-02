@@ -11,13 +11,16 @@ import {
   BackButton,
   ActionBar,
   SubmitBar,
+  ArrowLeft,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { LoaderNew } from "../components/LoaderNew";
 import { useLocation } from "react-router-dom";
+import { useHistory, useRouteMatch } from "react-router-dom";
 import CustomUploadFile from "../components/CustomUploadFile";
 
 const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const history = useHistory();
   const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))
   const formData = sessionData?.value || {};
   const tenantId = localStorage.getItem("CITIZEN.CITY");
@@ -147,8 +150,17 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
   return (
     <div>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />}
+        {<div style={{
+                            cursor: "pointer",
+                            width: "fit-content",
+                            display: "flex",
+                            fontFamily: "'Roboto Condensed', sans-serif",
+                            color: "rgba(13, 67, 167, var(--text-opacity))",
+                            fontSize: "16px",
+                            lineHeight: "24px"
+                          }} onClick={() => {history.push("/digit-ui/citizen/obps/stakeholder/apply/Permanent-address"); window.location.reload()}}>{(<React.Fragment><ArrowLeft />
+                        <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+        {/* {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />} */}
         {!formData?.initiationFlow && (
           <CitizenInfoLabel
             info={t("CS_FILE_APPLICATION_INFO_LABEL")}

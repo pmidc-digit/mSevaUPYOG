@@ -141,7 +141,7 @@ export const SelectPaymentType = (props) => {
         // window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
-        callbackUrl: `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}`,
+        callbackUrl: `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}/${consumerCode}`,
 
         // `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
         //       resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
@@ -314,7 +314,7 @@ export const SelectPaymentType = (props) => {
             />
           )}
         </Card>
-        <Card>
+        <div className="card">
           <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
             <CardLabel className="dark">{t("PAYMENT_CS_PAYER_DETAILS")}</CardLabel>
           </div>
@@ -326,6 +326,7 @@ export const SelectPaymentType = (props) => {
               control={control}
               render={(props) => (
                 <Dropdown
+                  className="text-input-width"
                   selected={props.value}
                   option={userOptions}
                   select={(val) => {
@@ -352,6 +353,7 @@ export const SelectPaymentType = (props) => {
                 defaultValue={name || billDetails?.payerName || ""}
                 render={(props) => (
                   <TextInput
+                    className="text-input-width"
                     value={props.value}
                     onChange={(e) => {
                       props.onChange(e.target.value);
@@ -380,7 +382,7 @@ export const SelectPaymentType = (props) => {
               />
             </div>
           </LabelFieldPair>
-        </Card>
+        </div>
         {!showToast && (
           <Card>
             <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />

@@ -43,7 +43,7 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
         <Route path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
           <SuccessfulPayment {...commonProps} />
         </Route>
-        <Route path={`${currentPath}/challan/success/:businessService`}>
+        <Route path={`${currentPath}/challan/success/:businessService/:consumerCode`}>
           <SuccessfulPayment {...commonProps} />
         </Route>
         <Route path={`${currentPath}/integration/:moduleName/:pageName`}>

@@ -21,6 +21,7 @@ export const convertEpochToDate = (dateEpoch) => {
     return "NA";
   }
 };
+
 export const SuccessfulPayment = (props) => {
   const history = useHistory();
   const location = useLocation();
@@ -42,8 +43,6 @@ export const SuccessfulPayment = (props) => {
   const razorpayPaymentId = queryParams.get("razorpayPaymentId");
   const razorpayOrderId = queryParams.get("razorpayOrderId");
   const razorpaySignature = queryParams.get("razorpaySignature");
-
-  console.log("eg_pg_txnid:", egPgTxnId);
 
   let { consumerCode, receiptNumber, businessService } = useParams();
 
@@ -821,12 +820,19 @@ export const SuccessfulPayment = (props) => {
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
   };
-  if (businessService?.includes("BPA") && isBpaSearchLoading) return <Loader />;
+  if (isLoading) return <Loader />;
+
+  const checkRecieptNumber = dataCheck?.payments?.Payments?.[0]?.paymentDetails[0]?.receiptNumber;
 
   return (
     <React.Fragment>
       <Card>
-        <Banner message={getMessage()} info={t("PAYMENT_LOCALIZATION_RECIEPT_NO")} applicationNumber={receiptNumber} successful={true} />
+        <Banner
+          message={getMessage()}
+          info={t("PAYMENT_LOCALIZATION_RECIEPT_NO")}
+          applicationNumber={receiptNumber || checkRecieptNumber}
+          successful={true}
+        />
         <CardText>{getCardText()}</CardText>
         {generatePdfKey ? (
           <div style={{ display: "flex", justifyContent: "space-evenly" }}>

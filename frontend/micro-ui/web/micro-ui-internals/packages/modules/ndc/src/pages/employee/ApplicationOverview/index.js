@@ -459,7 +459,7 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     if (workflowDetails) {
-      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE"|| pi?.action === "REJECT");
 
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;

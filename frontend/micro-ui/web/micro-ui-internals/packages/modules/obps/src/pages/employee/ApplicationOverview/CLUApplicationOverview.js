@@ -43,6 +43,7 @@ import InspectionReportDisplay from "../../../pageComponents/InspectionReportDis
 import { amountToWords, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
+import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -132,6 +133,8 @@ const CLUEmployeeApplicationDetails = () => {
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [distances, setDistances] = useState([]);  
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
@@ -245,30 +248,42 @@ const stateId = Digit.ULBService.getStateId();
   }
 
   async function openSanctionLetterPopup() {
-  try {
-    setLoader(true);
+    try {
+      setLoader(true);
 
-    // Get filestoreId from sanction letter function
-    const fileStoreId = await getRecieptSearch({
-      tenantId: reciept_data2?.Payments[0]?.tenantId,
-      payments: reciept_data2?.Payments[0],
-      pdfkey: "clu-sanctionletter",
-    });
+      const fileStoreId = await getRecieptSearch({
+        tenantId: reciept_data2?.Payments[0]?.tenantId,
+        payments: reciept_data2?.Payments[0],
+        pdfkey: "clu-sanctionletter",
+      });
 
-    if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
+      if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-    // Use printReciept to fetch the actual file URL
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore?.[fileStoreId];
+      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
+      
+      const urlObj = new URL(receiptUrl);
+      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
 
-    // Open in new tab/popup
-    window.open(fileStore[fileStoreId], "_blank");
+      const res = await fetch(downloadUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
 
-  } catch (error) {
-    console.error("Sanction Letter popup error:", error);
-  } finally {
-    setLoader(false);
+      setPdfUrl(blobUrl);
+      setShowPdfModal(true);
+
+    } catch (error) {
+      console.error("Sanction Letter popup error:", error);
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "Failed to open sanction letter. Please try again.",
+      });
+    } finally {
+      setLoader(false);
+    }
   }
-}
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
       
@@ -605,8 +620,7 @@ const stateId = Digit.ULBService.getStateId();
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(()=>{setShowToast(null);},3000);
     } else if (action?.action == "ESIGN") {
-      // Automatically trigger the eSign process for the certificate
-      printCertificateWithESign();
+      openSanctionLetterPopup();
     }else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -1314,6 +1328,22 @@ const stateId = Digit.ULBService.getStateId();
             <img src={imageUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           )}
         </Modal>
+      )}
+
+      {showPdfModal && (
+        <PdfPreviewModal
+          open={showPdfModal}
+          url={pdfUrl}
+          onClose={() => {
+            setShowPdfModal(false);
+            setPdfUrl(null);
+          }}
+          title={t("CLU_SANCTION_LETTER")}
+        >
+          <ActionBar>
+            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+          </ActionBar>
+        </PdfPreviewModal>
       )}
 
 

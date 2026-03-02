@@ -131,6 +131,12 @@ public class PropertyConfiguration {
     @Value("${thirdPartyBhatinda.subUrl}")
     private String thirdPartyBhatindasubUrl;
 
+    @Value("${thirdPartyBhatinda.getLocalitiesListSubUrl}")
+    private String thirdPartyBhatindaGetLocalitiesListSubUrl;
+
+    @Value("${thirdPartyBhatinda.getLocalityPropertiesListSubUrl}")
+    private String thirdPartyBhatindaGetLocalityPropertiesListSubUrl;
+
     @Value("${thirdparty.key}")
     private String thirdpartykey;
 

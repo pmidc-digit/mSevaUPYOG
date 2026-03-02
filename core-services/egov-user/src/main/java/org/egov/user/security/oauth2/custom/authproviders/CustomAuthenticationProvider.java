@@ -163,7 +163,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                     && password.equals(defaultEmployeePassword)
                     && !isPasswordType) {
                     	log.info("Employee login - default password matched for user: {}", userName);
-                    	log.info("Employee Default Password is enabled", defaultEmployeePassword);
+                    	log.info("Employee Default Password is enabled : {}", defaultEmployeePassword);
                     	
                 isPasswordMatched = true;
 

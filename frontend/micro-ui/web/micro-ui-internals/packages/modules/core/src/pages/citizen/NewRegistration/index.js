@@ -172,10 +172,6 @@ const NewRegistration = ({ stateCode }) => {
     });
   };
 
-  useEffect(() => {
-    console.log("getGender", getGender);
-  }, [getGender]);
-
   return (
     <div className="login-page-cover">
       <div className="login-container">
@@ -243,7 +239,7 @@ const NewRegistration = ({ stateCode }) => {
                 <span> *</span>
               </div>
 
-              <Dropdown option={genders} optionKey="name" id="name" selected={getGender} select={setGender} placeholder={t("CORE_COMMON_GENDER")} />
+              <Dropdown option={genders} optionKey="name" id="name" selected={getGender} select={setGender} placeholder={t("COMMON_TABLE_SEARCH")} />
             </div>
             {step === "FORM" && (
               <RegistrationForm

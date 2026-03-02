@@ -180,6 +180,20 @@ const NewLogin = ({ stateCode }) => {
       selectedCity: selectedCity,
     });
   };
+
+  useEffect(() => {
+    // Clear everything
+    localStorage.clear();
+    // sessionStorage.clear();
+
+    // Optional: Clear specific Digit caches if needed
+    if (window?.caches) {
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
+      });
+    }
+  }, []);
+
   return (
     // <div className="login-page-cover">
 

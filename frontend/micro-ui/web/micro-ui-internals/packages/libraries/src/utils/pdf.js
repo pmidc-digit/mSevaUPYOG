@@ -380,6 +380,7 @@ const jsPdfGeneratorNDC = async ({
   approvalDate,
   approver,
   designation,
+  approverStatement,
   ulbType,
   t = (text) => text,
   imageURL,
@@ -438,7 +439,7 @@ const jsPdfGeneratorNDC = async ({
       ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
       {
         stack: [
-          { text: "Approved By  ", font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
+          { text: `${approverStatement}  `, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0], bold: true },
           { text: approver, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] },
           { text: designation, font: "Hind", fontSize: 11, margin: [0, 0, 0, 0] }
         ],
@@ -924,13 +925,14 @@ const generateTimelinePDF = async (data) => {
                           text: row.comment && row.comment !== '-'
                             ? [
                                 { text: 'Note: ', bold: true },
-                                { text: row.comment }
+                                { text: row.comment.split('').join('\u200B') }
                               ]
                             : { text: 'No Comments', color: '#777' },
                           fontSize: 11,
                           color: row.comment && row.comment !== '-' ? '#222' : '#777',
                           margin: [0, 5, 0, 0],
-                          lineHeight: 1.5
+                          lineHeight: 1.5,
+                          width: '*'
                         },
 
                         ...(row.hasDocuments ? [

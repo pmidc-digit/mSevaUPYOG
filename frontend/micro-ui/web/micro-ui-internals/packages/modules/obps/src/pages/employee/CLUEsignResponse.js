@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../../utils";
 
-const NOCEsignResponse = () => {
+const CLUEsignResponse = () => {
   const location = useLocation();
   const { pathname } = location;
   const { t } = useTranslation();
@@ -19,23 +19,23 @@ const NOCEsignResponse = () => {
   const applicationNo = parts[parts.length - 2];
   const fileStoreId = parts[parts.length - 1];
 
-  const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication(
-    { applicationNo },
+  const { isLoading, data} = Digit.Hooks.obps.useCLUSearchApplication(
+    { applicationNo : applicationNo },
     tenantId
   );
-  const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
+  const mutation = Digit.Hooks.obps.useCLUCreateAPI(tenantId, false);
 
   useEffect(() => {
-    if (!isLoading && data?.resData?.Noc?.[0] && fileStoreId) {
-      const application = data.resData.Noc[0];
+    if (!isLoading && data?.resData?.Clu?.[0] && fileStoreId) {
+      const application = data?.resData?.Clu[0];
 
       const updatedApplication = {
         ...application,
         workflow: { action: "ESIGN" },
-        nocDetails: {
-          ...application?.nocDetails,
+        cluDetails: {
+          ...application?.cluDetails,
           additionalDetails: {
-            ...application?.nocDetails?.additionalDetails,
+            ...application?.cluDetails?.additionalDetails,
             sanctionLetterFilestoreId: fileStoreId,
           },
         },
@@ -46,7 +46,7 @@ const NOCEsignResponse = () => {
 
       setLoading(true);
 
-      mutation.mutateAsync({ Noc: updatedApplication })
+      mutation.mutateAsync({ Clu: updatedApplication })
         .then(() => {
          
           setLoading(false);
@@ -61,7 +61,7 @@ const NOCEsignResponse = () => {
           }, 1000);
 
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/noc/inbox/application-overview/${applicationNo}`);
+            history.push(`/digit-ui/employee/obps/clu/application-overview/${applicationNo}`);
           }, 10000);
 
           return () => {
@@ -78,7 +78,7 @@ const NOCEsignResponse = () => {
 
           // redirect after showing toast
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/noc/inbox/application-overview/${applicationNo}`);
+            history.push(`/digit-ui/employee/obpas/clu/inbox/application-overview/${applicationNo}`);
           }, 10000);
 
           return () => clearTimeout(timeout);
@@ -97,13 +97,12 @@ const NOCEsignResponse = () => {
       <Card>
         <Banner
           message={t("NOC_APPLICATION_ESIGN_SUCCESS_HEADER")}
-          info={t(`${stringReplaceAll(data?.resData?.Noc?.[0]?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
+          info={t(`${stringReplaceAll(data?.resData?.Clu?.[0]?.cluType, ".", "_")}_APPLICATION_NUMBER`)}
           // successful={!!fileStoreId}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
-          <p>{applicationNo}</p>
           {loading ? (
             <p>{t("E-Sign in Progress. Kindly Wait...")}</p>
           ) : (
@@ -123,4 +122,4 @@ const NOCEsignResponse = () => {
   );
 };
 
-export default NOCEsignResponse;
+export default CLUEsignResponse;

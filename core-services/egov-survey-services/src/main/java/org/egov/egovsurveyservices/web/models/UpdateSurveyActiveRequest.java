@@ -22,9 +22,14 @@ public class UpdateSurveyActiveRequest {
     @JsonProperty("uuid")
     private String uuid;
 
-    @NotNull(message = "Active status is required")
     @JsonProperty("active")
     private Boolean active;
+
+    @JsonProperty("startDate")
+    private Long startDate;
+
+    @JsonProperty("endDate")
+    private Long endDate;
     
     @JsonProperty("lastModifiedTime")
     private Long lastModifiedTime;

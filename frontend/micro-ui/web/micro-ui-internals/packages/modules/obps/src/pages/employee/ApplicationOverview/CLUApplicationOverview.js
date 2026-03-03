@@ -40,7 +40,9 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-import { amountToWords } from "../../../utils";
+import { amountToWords, formatDuration } from "../../../utils";
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import { getDrivingDistance } from "../../../utils/getDistance";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -113,39 +115,41 @@ const CLUEmployeeApplicationDetails = () => {
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
   const [checklistRemarks, setChecklistRemarks] = useState({});
- // console.log("checkListRemarks==>", checklistRemarks);
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [empDesignation,setEmpDesignation] = useState(null);
+  const [showZoneModal, setShowZoneModal] = useState(false);
 
   const [getEmployees, setEmployees] = useState([]);
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
-
+  const [distances, setDistances] = useState([]);  
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here===>", applicationDetails);
   const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
       documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
   } : []);
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
-  //console.log("businessService here", businessServiceCode, siteImages);
   
+const stateId = Digit.ULBService.getStateId();
+  const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
+  
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode,//dynamic moduleCode
   });
 
-  console.log("workflowDetails here=>", workflowDetails);
 
   const { data: searchChecklistData } =  Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo: id }, tenantId);
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
@@ -159,6 +163,25 @@ const CLUEmployeeApplicationDetails = () => {
     },
     { enabled: id ? true : false }
   );
+
+  const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "CLU.PAY1",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data1?.Payments || [];
+    const p2 = reciept_data2?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data1, reciept_data2]);
+
+  const hasPayments = combinedPayments.length > 0;
+
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
       return siteImages?.documents?.map((img) => {
@@ -236,14 +259,12 @@ const CLUEmployeeApplicationDetails = () => {
           }
           let conditionText = "";
           let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
-          console.log('fileStoreId HERE', fileStoreId)
         if (approvecomments?.includes("[#?..**]")) {
           conditionText = approvecomments.split("[#?..**]")[1] || "";
         }
          const finalComment = conditionText
           ? `The above approval is subjected to the following conditions: ${conditionText}`
           : "";
-        console.log('application', application)
         if (!application) {
           throw new Error("CLU Application data is missing");
         }
@@ -262,7 +283,6 @@ const CLUEmployeeApplicationDetails = () => {
       }
   const printCertificateWithESign = async () => {
     try {
-      console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getRecieptSearch({
         tenantId: reciept_data2?.Payments[0]?.tenantId,
@@ -295,7 +315,6 @@ const CLUEmployeeApplicationDetails = () => {
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
-            console.error("❌ eSign failed:", error);
             setShowToast({
               key: "true",
               error: true,
@@ -305,7 +324,6 @@ const CLUEmployeeApplicationDetails = () => {
         }
       );
     } catch (error) {
-      console.error("❌ Certificate preparation failed:", error);
       setShowToast({
         key: "true",
         error: true,
@@ -320,7 +338,6 @@ const CLUEmployeeApplicationDetails = () => {
     longitude: value?.longitude,
   })), [siteImages]);
 
-  //console.log("documentData here==>", documentData);
 
   const documentsColumnsSiteImage = [
     {
@@ -359,7 +376,6 @@ const CLUEmployeeApplicationDetails = () => {
       try{
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
-        //console.log("wf=>", wf);
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
       }catch(e){
@@ -407,7 +423,6 @@ const CLUEmployeeApplicationDetails = () => {
   }, [applicationDetails, data]);
 
 
- // console.log("getWorkflowService =>", getWorkflowService);
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -451,7 +466,6 @@ const CLUEmployeeApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
 
   useEffect(() => {
     const cluObject = applicationDetails?.Clu?.[0];
@@ -482,6 +496,12 @@ const CLUEmployeeApplicationDetails = () => {
       setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
 
       setFieldInspectionPending(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending);
+
+      const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = cluObject?.auditDetails?.lastModifiedTime;
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = totalTime ? formatDuration(totalTime) : null;
+      setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);
 
@@ -532,12 +552,15 @@ const CLUEmployeeApplicationDetails = () => {
   }
 
   function onActionSelect(action) {
-    console.log("selected action", action);
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
-
+    const validationMsg = validateSiteImages(action);
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
+
+     if (validationMsg) {
+          alert(validationMsg);
+      }
 
     const payload = {
       Licenses: [action],
@@ -557,8 +580,13 @@ const CLUEmployeeApplicationDetails = () => {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
-    } else {      
-      if(applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+    }
+    // else if(validationMsg){
+    //   setShowToast({ key: "true", error: true, message: validationMsg }); 
+    //   return;
+    // }
+    else {      
+      if(action?.action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -568,10 +596,8 @@ const CLUEmployeeApplicationDetails = () => {
   }
 
   const onChangeReport = (key, value) => {
-    //console.log("key,value", key, value);
     setFieldInspectionPending(value);
   }
-  //console.log("fieldInspectionPending state==>", fieldInspectionPending)
 
   const isFeeDisabled = applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
 
@@ -582,7 +608,6 @@ const CLUEmployeeApplicationDetails = () => {
 
  function areAllRemarksFilled(record) {
   const remarkEntries = getRemarkEntries(record);
-  //console.log("remarksEntries==>", remarkEntries);
   return (
     remarkEntries.length > 0 &&
     remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
@@ -591,13 +616,9 @@ const CLUEmployeeApplicationDetails = () => {
 
   function areAllRemarksFilledForDocumentCheckList(record){
     const entries = Object.entries(record);
-    console.log("entries==>", entries);
-    console.log("remainingDocs?.length==>", remainingDocs?.length);
-    console.log("checklistRemarks state==>", checklistRemarks);
     
     // Rule 1: Must have exact entries equal to remainingDocs
     if (entries.length !== remainingDocs?.length) {
-      console.log("Entries length mismatch: entries=", entries.length, "remainingDocs=", remainingDocs?.length);
       return false;
     }
 
@@ -608,19 +629,28 @@ const CLUEmployeeApplicationDetails = () => {
       return isFilled;
     });
     
-    console.log("allFilled==>", allFilled);
     return allFilled;
 
   }
 
+  const handleZoneSubmit = (selectedZone, comment) => {
+  const payload = {
+    Licenses: [{
+      action: "UPDATE_ZONE",
+      comment: comment,
+      // Pass the zone object which contains both code and name
+      zone: selectedZone
+    }]
+  };
+  submitAction(payload);
+};
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
-    // console.log("data ==>", data);
-    //console.log("feeAdjustments==>", feeAdjustments);
+    const action = data?.Licenses?.[0]?.action;
 
     //Validation For Site CheckList AT JE/BI Label
-    if(applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
+    if(action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
      
       if(fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0){
         closeModal();
@@ -632,7 +662,6 @@ const CLUEmployeeApplicationDetails = () => {
 
         const record = fieldInspectionPending?.[0] ?? {};
         const allRemarksFilled = areAllRemarksFilled(record);
-        //console.log("allRemarsFilled", allRemarksFilled);
 
         if(!allRemarksFilled){
          closeModal();
@@ -643,15 +672,10 @@ const CLUEmployeeApplicationDetails = () => {
       }      
     }
 
-   // console.log("fieldInspectionPending",fieldInspectionPending)
 
     //Validation for Document CheckList At DM Level
-    if(applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
-      console.log("Validating document checklist remarks...");
-      console.log("Current checklistRemarks:", checklistRemarks);
-      console.log("remainingDocs:", remainingDocs);
+    if(action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
       const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
-      console.log("allRemarks at DM Level", allRemarksFilled);
 
         if(!allRemarksFilled){
          closeModal();
@@ -663,12 +687,10 @@ const CLUEmployeeApplicationDetails = () => {
     }
    
     //Validation For Updating Fee At Any Level
-    if (!isFeeDisabled) {
+    if (action !== "UPDATE_ZONE" && !isFeeDisabled) {
     const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
-    //console.log("hasNonZeroFee==>",hasNonZeroFee);
-    //console.log("allRemarksFilled==>", allRemarksFilled);
 
     if (!hasNonZeroFee) {
       closeModal();
@@ -716,7 +738,6 @@ const CLUEmployeeApplicationDetails = () => {
     };
 
     const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -746,6 +767,17 @@ const CLUEmployeeApplicationDetails = () => {
         }),
       };
 
+      if (filtData?.action === "UPDATE_ZONE") {
+              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+              workflowDetails.revalidate();
+              // refetch();
+              setShowZoneModal(false);
+              setSelectedAction(null);
+              setTimeout(() => {
+                window.location.href = "/digit-ui/employee/obps/layout/inbox";
+              }, 3000);
+        }
+
       // Call checklist API before CLUUpdate but only incase of application status = "DOC_VERIFICATION_PENDING"
       if (applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0 && checklistPayload?.checkList?.length > 0) {
         if (searchChecklistData?.checkList?.length > 0) {
@@ -774,7 +806,6 @@ const CLUEmployeeApplicationDetails = () => {
         }
         else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
-          console.log("We are calling employee response page");
           history.replace({
            pathname: `/digit-ui/employee/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
            state: { data: response }
@@ -819,16 +850,70 @@ const CLUEmployeeApplicationDetails = () => {
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
-  console.log("displayData here", displayData);
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  //console.log("coordinates==>", coordinates);
   const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
 
-  const remainingDocs = displayData?.Documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
+  const remainingDocs = displayData?.Documents?.filter((doc) => !(
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
+    doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
+    doc?.documentType?.includes("Owner Id") || 
+    doc?.documentType?.includes("Owner Photo")
+  ))?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-  //console.log("sitePhotoGrahphs==>", sitePhotographs);
-  //console.log("remainingDocs==>", remainingDocs);
+
+  useEffect(() => {
+    const fetchDistances = async () => {
+      if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0) {
+        try {
+          const results = await Promise.all(
+            geoLocations.map(async (loc, idx) => {
+              const d1 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude1),
+                parseFloat(coordinates?.Longitude1),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const d2 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude2),
+                parseFloat(coordinates?.Longitude2),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const minDistance = Math.min(d1, d2);
+              return minDistance;
+            })
+          );
+          setDistances(results);
+          console.log("Final distances (m):", results);
+        } catch (err) {
+          console.error("Error fetching distances:", err);
+        }
+      }
+    };
+
+    fetchDistances();
+  }, [coordinates, geoLocations]);
+
+  const validateSiteImages = (action) => {
+    if (action?.action === "UPDATE_ZONE") return null;
+    if (applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
+      // Check distances
+      if (distances?.length > 0) {
+        for (let i = 0; i < distances.length; i++) {
+          const d = distances[i];
+          if (d > 50) {
+            // return with index (human-friendly: +1)
+            return `Site image ${i + 1} is not within 50 meters`;
+          }
+        }
+      }
+    }
+    return null; // no error
+  };
+
+
+
 
   const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
@@ -848,6 +933,8 @@ const CLUEmployeeApplicationDetails = () => {
   }
 
 
+  const currentZoneCode = applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.name || applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.code;
+
   if (isLoading) {
     return <Loader />;
   }
@@ -857,7 +944,7 @@ const CLUEmployeeApplicationDetails = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-        {(isLoading || recieptDataLoading2) && <Loader />}
+        {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
         {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
           <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
         )}
@@ -883,7 +970,8 @@ const CLUEmployeeApplicationDetails = () => {
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-                <Row label={t("BPA_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
+                <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
                 <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
                 <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
@@ -1022,8 +1110,10 @@ const CLUEmployeeApplicationDetails = () => {
         </StatusTable>
       </Card>
 
-      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (
+{/* {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0) && (
         <Card>
+          <CardSubHeader>{`${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
         </Card>
       )}
@@ -1079,12 +1169,28 @@ const CLUEmployeeApplicationDetails = () => {
               calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
             }}
             feeType="PAY1"
+            hasPayments={hasPayments}
           />
+        )}
+        {hasPayments && (
+          <div style={{ marginTop: "16px" }}>
+            <PaymentHistory payments={combinedPayments} />
+          </div>
         )}
       </Card>
 
+{/* will not be shown on first step(FIELDINSPECTION_INPROGRESS) */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
       <div className="employeeCard">
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
+            <LinkButton
+              label={t("BPA_DOWNLOAD_FEE_NOTIFICATION")}
+              onClick={() => routeToImage(feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId)}
+            />
+          )}
+        </div>
 
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetailsTable
@@ -1102,6 +1208,7 @@ const CLUEmployeeApplicationDetails = () => {
           />
         )}
       </div>
+      )}
 
       <CheckBox
         label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
@@ -1137,7 +1244,8 @@ const CLUEmployeeApplicationDetails = () => {
         )}
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+         {/* <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/> */}
+       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
       </div>
 
       {actions?.length > 0 && (
@@ -1169,6 +1277,15 @@ const CLUEmployeeApplicationDetails = () => {
         </Modal>
       )}
 
+
+      {showZoneModal && (
+        <ZoneModal
+          onClose={() => setShowZoneModal(false)}
+          onSelect={handleZoneSubmit}
+          currentZoneCode={currentZoneCode}
+        />
+      )}
+
       {showModal ? (
         <CLUModal
           t={t}
@@ -1197,7 +1314,7 @@ const CLUEmployeeApplicationDetails = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {(isLoading || getLoader) && <Loader page={true} />}
+      {(isLoading || getLoader || recieptDataLoading1 || recieptDataLoading2) && <Loader page={true} />}
     </div>
   );
 };

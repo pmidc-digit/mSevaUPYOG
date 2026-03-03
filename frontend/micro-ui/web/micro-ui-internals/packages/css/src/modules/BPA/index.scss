@@ -90,6 +90,32 @@
   color: red;
 }
 
+.back-button-container {
+  cursor: pointer;
+  width: fit-content;
+  display: flex;
+  font-family: 'Roboto Condensed', sans-serif;
+  color: rgba(13, 67, 167, var(--text-opacity));
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.stepper-margin {
+  margin-left: 30px;
+}
+
+.document-link-bpa {
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 250px;
+
+  &:hover .document-card {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .upload-tag-container {

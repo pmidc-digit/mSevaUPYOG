@@ -1767,69 +1767,6 @@ const BpaApplicationDetail = () => {
           })}
         </div>
 
-        <Card>
-          {workflowDetails?.data?.timeline?.length > 0 && (
-            <React.Fragment>
-              <BreakLine />
-              {(workflowDetails?.isLoading || isLoading) && <Loader />}
-              {!workflowDetails?.isLoading && !isLoading && (
-                <Fragment>
-                  <div id="timeline">
-                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-                      {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
-                    </CardSectionHeader>
-                    {/* {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
-                      <CheckPoint
-                        isCompleted={true}
-                        label={t(`${timelineStatusPrefix}${workflowDetails?.data?.timeline[0]?.state}`)}
-                        customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0], workflowDetails?.data?.timeline)}
-                      />
-                    ) : (
-                      <ConnectingCheckPoints>
-                        {workflowDetails?.data?.timeline &&
-                          workflowDetails?.data?.timeline
-                            .slice(0, showAllTimeline ? workflowDetails?.data.timeline.length : 2)
-                            .filter(item => item?.performedAction !== "SAVE_AS_DRAFT")
-                            .map((checkpoint, index, arr) => {
-                              let timelineStatusPostfix = "";
-                              if (window.location.href.includes("/obps/")) {
-                                if (
-                                  workflowDetails?.data?.timeline[index - 1]?.state?.includes("BACK_FROM") ||
-                                  workflowDetails?.data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN")
-                                )
-                                  timelineStatusPostfix = `_NOT_DONE`;
-                                else if (checkpoint?.performedAction === "SEND_TO_ARCHITECT") timelineStatusPostfix = `_BY_ARCHITECT_DONE`;
-                                else timelineStatusPostfix = index == 0 ? "" : `_DONE`;
-                              }
-
-                              return (
-                                <React.Fragment key={index}>
-                                  <CheckPoint
-                                    keyValue={index}
-                                    isCompleted={index === 0}
-                                    info={checkpoint.comment}
-                                    label={t(
-                                      `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
-                                      }${timelineStatusPostfix}`
-                                    )}
-                                    customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}
-                                  />
-                                </React.Fragment>
-                              );
-                            })}
-                      </ConnectingCheckPoints>
-                    )} */}
-                    {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
-                    <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
-                    {/* {workflowDetails?.data?.timeline?.length > 2 && (
-                      <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
-                    )} */}
-                  </div>
-                </Fragment>
-              )}
-            </React.Fragment>
-          )}
-        </Card>
 
         <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
           {/* <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
@@ -1910,6 +1847,70 @@ const BpaApplicationDetail = () => {
             adjustedAmounts={adjustedAmounts}
             setAdjustedAmounts={setAdjustedAmounts}
           />}
+        </Card>
+
+        <Card>
+          {workflowDetails?.data?.timeline?.length > 0 && (
+            <React.Fragment>
+              <BreakLine />
+              {(workflowDetails?.isLoading || isLoading) && <Loader />}
+              {!workflowDetails?.isLoading && !isLoading && (
+                <Fragment>
+                  <div id="timeline">
+                    <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+                      {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
+                    </CardSectionHeader>
+                    {/* {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
+                      <CheckPoint
+                        isCompleted={true}
+                        label={t(`${timelineStatusPrefix}${workflowDetails?.data?.timeline[0]?.state}`)}
+                        customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0], workflowDetails?.data?.timeline)}
+                      />
+                    ) : (
+                      <ConnectingCheckPoints>
+                        {workflowDetails?.data?.timeline &&
+                          workflowDetails?.data?.timeline
+                            .slice(0, showAllTimeline ? workflowDetails?.data.timeline.length : 2)
+                            .filter(item => item?.performedAction !== "SAVE_AS_DRAFT")
+                            .map((checkpoint, index, arr) => {
+                              let timelineStatusPostfix = "";
+                              if (window.location.href.includes("/obps/")) {
+                                if (
+                                  workflowDetails?.data?.timeline[index - 1]?.state?.includes("BACK_FROM") ||
+                                  workflowDetails?.data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN")
+                                )
+                                  timelineStatusPostfix = `_NOT_DONE`;
+                                else if (checkpoint?.performedAction === "SEND_TO_ARCHITECT") timelineStatusPostfix = `_BY_ARCHITECT_DONE`;
+                                else timelineStatusPostfix = index == 0 ? "" : `_DONE`;
+                              }
+
+                              return (
+                                <React.Fragment key={index}>
+                                  <CheckPoint
+                                    keyValue={index}
+                                    isCompleted={index === 0}
+                                    info={checkpoint.comment}
+                                    label={t(
+                                      `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
+                                      }${timelineStatusPostfix}`
+                                    )}
+                                    customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}
+                                  />
+                                </React.Fragment>
+                              );
+                            })}
+                      </ConnectingCheckPoints>
+                    )} */}
+                    {/* <BPAApplicationTimeline application={data?.applicationData} id={id} /> */}
+                    <NewApplicationTimeline workflowDetails={workflowDetails?.data} t={t} />
+                    {/* {workflowDetails?.data?.timeline?.length > 2 && (
+                      <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
+                    )} */}
+                  </div>
+                </Fragment>
+              )}
+            </React.Fragment>
+          )}
         </Card>
 
         {(showModal && !isLoadingg) ? (

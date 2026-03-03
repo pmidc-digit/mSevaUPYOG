@@ -49,10 +49,10 @@ public class ScorecardSurveyController {
     }
 
     @PostMapping("/survey/active/_update")
-    public ResponseEntity<?> updateActiveSurvey(@Valid @RequestBody UpdateSurveyActiveRequest request) {
+    public ResponseEntity<?> updateSurvey(@Valid @RequestBody UpdateSurveyActiveRequest request) {
         try {
-            surveyService.updateSurveyActive(request);
-            return ResponseEntity.ok().body(Collections.singletonMap("message", "Survey active status updated successfully!"));
+            surveyService.updateSurvey(request);
+            return ResponseEntity.ok().body(Collections.singletonMap("message", "Survey updated successfully!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
@@ -76,8 +76,8 @@ public class ScorecardSurveyController {
     }
 
     @RequestMapping(value = "/survey/response/_plainsearch", method = RequestMethod.POST)
-    public ResponseEntity<ScorecardAnswerResponse> getAnswersForPlainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,@ModelAttribute AnswerFetchCriteria criteria) {
-        ScorecardAnswerResponse answerResponse = surveyService.getAnswersForPlainSearch(criteria);
+    public ResponseEntity<PlainSearchResponse> getAnswersForPlainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,@ModelAttribute AnswerFetchCriteria criteria) {
+        PlainSearchResponse answerResponse = surveyService.getAnswersForPlainSearch(criteria,requestInfoWrapper.getRequestInfo());
         ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
         answerResponse.setResponseInfo(responseInfo);
         return new ResponseEntity<>(answerResponse, HttpStatus.OK);

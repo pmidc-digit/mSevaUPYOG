@@ -145,4 +145,80 @@ public class ScorecardSurveyRepository {
         return jdbcTemplate.query(query, new Object[]{answerUuid}, (rs, rowNum) ->
                 AnswerDetail.builder().uuid(rs.getString("uuid")).build());
     }
+
+    // Fetch all survey UUIDs for a tenant
+    public List<String> getSurveyUuidsByTenant(String tenantId) {
+        String query = "SELECT uuid FROM eg_ss_survey_entity WHERE tenantid = ?";
+        return jdbcTemplate.query(query, new Object[]{tenantId}, (rs, rowNum) -> rs.getString("uuid"));
+    }
+
+    // Fetch answers for a given survey + tenant
+    public List<AnswerNew> getAnswersForSurvey(String surveyUuid, String tenantId) {
+        String query =
+                "SELECT ans.uuid, ans.sectionuuid, ans.questionuuid, ans.comments, " +
+                        "q.questionstatement, " +
+                        "qw.weightage AS question_weightage, " +
+                        "sec.weightage AS section_weightage, " +
+                        "ad.uuid AS answer_detail_uuid, ad.answertype AS answer_detail_type, " +
+                        "ad.answercontent AS answer_detail_content, ad.weightage AS answer_detail_weightage, " +
+                        "ans.createdby, ans.lastmodifiedby, ans.createdtime, ans.lastmodifiedtime " +
+                        "FROM eg_ss_answer ans " +
+                        "JOIN eg_ss_answer_detail ad ON ans.uuid = ad.answeruuid " +
+                        "JOIN eg_ss_question q ON ans.questionuuid = q.uuid " +
+                        "LEFT JOIN eg_ss_question_weightage qw ON ans.questionuuid = qw.questionuuid AND ans.sectionuuid = qw.sectionuuid " +
+                        "LEFT JOIN eg_ss_survey_section sec ON ans.sectionuuid = sec.uuid " +
+                        "JOIN eg_ss_survey_response sr ON ans.surveyresponseuuid = sr.uuid " +
+                        "WHERE sr.surveyuuid = ? AND sr.tenantid = ?";
+
+        return jdbcTemplate.query(query, new Object[]{surveyUuid, tenantId}, new AnswerRowMapper());
+    }
+
+    // Fetch survey responses (metadata) for a survey + tenant
+    public List<SurveyResponseNew> getSurveyResponsesBySurveyAndTenant(String surveyUuid, String tenantId) {
+        String query = "SELECT * FROM eg_ss_survey_response WHERE surveyuuid = ? AND tenantid = ?";
+        return jdbcTemplate.query(query, new Object[]{surveyUuid, tenantId}, new SurveyResponseRowMapper());
+    }
+
+    // Fetch question weightage for a given question + section
+    public Integer getQuestionWeightage(String questionUuid, String sectionUuid) {
+        String sql = "SELECT weightage " +
+                "FROM eg_ss_question_weightage " +
+                "WHERE questionuuid = ? AND sectionuuid = ?";
+        return jdbcTemplate.query(sql, new Object[]{questionUuid, sectionUuid}, rs -> {
+            if (rs.next()) {
+                return rs.getInt("weightage");
+            }
+            return null;
+        });
+    }
+
+    // Fetch section weightage for a given section
+    public Integer getSectionWeightage(String sectionUuid) {
+        String sql = "SELECT weightage " +
+                "FROM eg_ss_survey_section " +
+                "WHERE uuid = ?";
+        return jdbcTemplate.query(sql, new Object[]{sectionUuid}, rs -> {
+            if (rs.next()) {
+                return rs.getInt("weightage");
+            }
+            return null;
+        });
+    }
+
+//    public List<AnswerNew> getAnswersForSurvey(String surveyUuid, String tenantId) {
+//        String query =
+//                "SELECT " +
+//                        "ans.uuid, ans.sectionuuid, ans.questionuuid, ans.comments, " +
+//                        "q.questionstatement, " +
+//                        "ad.uuid AS answer_detail_uuid, ad.answertype AS answer_detail_type, " +
+//                        "ad.answercontent AS answer_detail_content, ad.weightage AS answer_detail_weightage, " +
+//                        "ans.createdby, ans.lastmodifiedby, ans.createdtime, ans.lastmodifiedtime " +
+//                        "FROM eg_ss_answer ans " +
+//                        "JOIN eg_ss_answer_detail ad ON ans.uuid = ad.answeruuid " +
+//                        "JOIN eg_ss_question q ON ans.questionuuid = q.uuid " +
+//                        "JOIN eg_ss_survey_response sr ON ans.surveyresponseuuid = sr.uuid " +
+//                        "WHERE sr.surveyuuid = ? AND sr.tenantid = ?";
+//
+//        return jdbcTemplate.query(query, new Object[]{surveyUuid, tenantId}, new AnswerRowMapper());
+//    }
 }

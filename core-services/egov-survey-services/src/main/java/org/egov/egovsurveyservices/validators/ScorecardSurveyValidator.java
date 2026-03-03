@@ -47,8 +47,8 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SS_USER_INFO_MISSING", "Please provide citizen info.");
         }
 
-        if(requestInfo.getUser().getType()==null || !requestInfo.getUser().getType().equalsIgnoreCase(CITIZEN))
-            throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Survey can only be answered by citizens.");
+//        if(requestInfo.getUser().getType()==null || !requestInfo.getUser().getType().equalsIgnoreCase(CITIZEN))
+//            throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Survey can only be answered by citizens.");
 
         if(StringUtils.isBlank(requestInfo.getUser().getUuid()))
             throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Provide a valid citizen uuid.");

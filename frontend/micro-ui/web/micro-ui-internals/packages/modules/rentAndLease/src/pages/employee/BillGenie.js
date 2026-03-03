@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  TextInput,
-  Header,
-  ActionBar,
-  SubmitBar,
-  Loader,
-  Toast,
-  Label,
-  MobileNumber,
-  CardLabelError,
-} from "@mseva/digit-ui-react-components";
+import { Card, TextInput, Header, ActionBar, SubmitBar, Toast, Label, MobileNumber, CardLabelError } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import ApplicationTable from "../../components/ApplicationTable";
+import { Loader } from "../../components/Loader";
 
 const defaultValues = {
   mobileNumber: "",
@@ -88,6 +78,7 @@ const BillGenie = () => {
   };
 
   const columns = [
+    { Header: t("Application Number"), accessor: "consumerCode" },
     { Header: t("UC_BILL_NO_LABEL"), accessor: "billNumber" },
     { Header: t("UC_CONSUMER_NAME_LABEL"), accessor: "payerName" },
     {
@@ -107,9 +98,21 @@ const BillGenie = () => {
       Header: t("Action"),
       accessor: "action",
       Cell: ({ row }) => {
+        console.log("row", row?.original);
         return (
-          <div>
+          <div style={{ display: "flex", gap: "15px" }}>
             <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} />
+            {row?.original?.status == "ACTIVE" && (
+              <SubmitBar
+                label="Pay"
+                onSubmit={() => {
+                  console.log("check row", row?.original?.uuid);
+                  const id = row?.original?.consumerCode;
+                  history.push(`/digit-ui/employee/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
+                }}
+              />
+            )}
+            {/* <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} /> */}
           </div>
         );
       },
@@ -117,19 +120,18 @@ const BillGenie = () => {
   ];
 
   const getReceiptSearch = async (bill) => {
+    setLoader(true);
     try {
-      setLoader(true);
       const response = await Digit.PaymentService.generatePdf(tenantId, { Bills: [bill] }, "rentandlease-bill");
-
+      setLoader(false);
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: response.filestoreIds[0],
       });
 
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
-      setShowToast({ error: true, label: t("CS_COMMON_ERROR_GENERATING_RECEIPT") });
-    } finally {
       setLoader(false);
+      setShowToast({ error: true, label: t("CS_COMMON_ERROR_GENERATING_RECEIPT") });
     }
   };
 
@@ -163,13 +165,7 @@ const BillGenie = () => {
                         message: t("CORE_INVALID_MOBILE_NUMBER"),
                       },
                     }}
-                    render={(props) => (
-                      <MobileNumber
-                        onChange={props.onChange}
-                        value={props.value}
-                        t={t}
-                      />
-                    )}
+                    render={(props) => <MobileNumber onChange={props.onChange} value={props.value} t={t} />}
                   />
                   {errors?.mobileNumber && <CardLabelError>{errors.mobileNumber.message}</CardLabelError>}
                 </span>
@@ -178,20 +174,14 @@ const BillGenie = () => {
               <div className="input-fields">
                 <span className="complaint-input">
                   <Label>{t("RAL_CONSUMER_CODE_APP_NO_LABEL")}</Label>
-                  <TextInput
-                    name="applicationNumber"
-                    inputRef={register}
-                  />
+                  <TextInput name="applicationNumber" inputRef={register} />
                 </span>
               </div>
 
               <div className="input-fields">
                 <span className="complaint-input">
                   <Label>{t("RENT_LEASE_PROPERTY_ID")}</Label>
-                  <TextInput
-                    name="propertyId"
-                    inputRef={register}
-                  />
+                  <TextInput name="propertyId" inputRef={register} />
                 </span>
               </div>
             </div>
@@ -229,6 +219,7 @@ const BillGenie = () => {
         </div>
       )}
       {showToast && <Toast error={showToast.error} label={showToast.label} isDleteBtn={true} onClose={closeToast} />}
+
       {loader && <Loader page={true} />}
     </React.Fragment>
   );

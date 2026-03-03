@@ -121,6 +121,7 @@ module.exports = function (app) {
     "/layout-calculator",
     "/gc-services",
     "/gc-calculator",
+    "/rl-calculator",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
   ["/api/Property/", "/api/Property/GetPropertyDetail", "/api/Authenticate", "/api/Authenticate/GetToken"].forEach((location) =>

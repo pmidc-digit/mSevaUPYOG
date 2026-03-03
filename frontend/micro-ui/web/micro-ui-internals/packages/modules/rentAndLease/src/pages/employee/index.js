@@ -6,6 +6,7 @@ import { PrivateRoute, BackButton, BreadCrumb } from "@mseva/digit-ui-react-comp
 import { useTranslation } from "react-i18next";
 import RALApplicationDetails from "./RALApplicationDetails";
 import BillGenie from "./BillGenie";
+import BillGenerate from "./BillGenerate";
 
 const RALBreadCrumbs = ({ location, t }) => {
   const crumbs = [
@@ -80,6 +81,7 @@ const EmployeeApp = ({ path, url, userType }) => {
         <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
         <PrivateRoute path={`${path}/response/:applicationNumber`} component={RALResponse} />
         <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
+        <PrivateRoute path={`${path}/bill-generate`} component={BillGenerate} />
       </div>
     </React.Fragment>
   );

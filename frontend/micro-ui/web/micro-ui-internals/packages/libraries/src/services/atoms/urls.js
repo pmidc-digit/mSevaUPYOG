@@ -154,6 +154,7 @@ const Urls = {
     reciept_search: "/collection-services/payments/:businessService/_search",
     generate_pdf: "/pdf-service/v1/_create",
     file_fetch: "/filestore/v1/files/url",
+    bill_generate: "/rl-calculator/v1/_generateBill",
   },
 
   hrms: {

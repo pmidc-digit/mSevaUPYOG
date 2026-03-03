@@ -41,6 +41,9 @@ public class ScorecardAnswerResponse {
     @JsonProperty("coordinates")
     private String coordinates;
 
+    @JsonProperty("comments")
+    private String comments;
+
     @JsonProperty("sectionResponses")
     private List<ScorecardSectionResponse> sectionResponses;
 

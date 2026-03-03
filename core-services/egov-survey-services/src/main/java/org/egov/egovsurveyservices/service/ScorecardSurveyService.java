@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
@@ -21,13 +20,11 @@ import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.SurveyStatus;
-import org.egov.egovsurveyservices.web.models.user.UserSearchRequest;
 import org.egov.egovsurveyservices.web.models.user.UserSearchResponseContent;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -139,16 +136,15 @@ public class ScorecardSurveyService {
         return new ArrayList<>();
     }
 
-	public void updateSurveyActive(@Valid UpdateSurveyActiveRequest request) {
+    public void updateSurvey(@Valid UpdateSurveyActiveRequest request) {
 		// Validate UUID
 	    if (request.getUuid() == null || request.getUuid().trim().isEmpty()) {
 	        throw new IllegalArgumentException("UUID must not be null or empty");
 	    }
 
-	    // Validate Active status
-	    if (request.getActive() == null) {
-	        throw new IllegalArgumentException("Active status must not be null");
-	    }
+        if (request.getActive() == null && request.getStartDate() == null && request.getEndDate() == null) {
+            throw new IllegalArgumentException("At least one of active/startDate/endDate must be provided");
+        }
 		ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
 
 		//check uuid is present in database
@@ -159,6 +155,28 @@ public class ScorecardSurveyService {
 			throw new IllegalArgumentException("UUID does not exist in database, Update failed!");
 		}
 		else {
+            ScorecardSurveyEntity existingSurvey = surveyEntities.get(0);
+
+            if (request.getActive() == null) {
+                request.setActive(existingSurvey.getActive());
+            }
+
+            if (request.getStartDate() == null) {
+                request.setStartDate(existingSurvey.getStartDate());
+            }
+
+            if (request.getEndDate() == null) {
+                request.setEndDate(existingSurvey.getEndDate());
+            }
+
+            if (request.getStartDate() == null || request.getEndDate() == null) {
+                throw new IllegalArgumentException("Start date and end date must not be null");
+            }
+
+            if (request.getStartDate() >= request.getEndDate()) {
+                throw new IllegalArgumentException("Start date must be before end date");
+            }
+
 			request.setLastModifiedTime(System.currentTimeMillis());
 			request.setLastModifiedBy(request.getRequestInfo().getUserInfo().getUuid());
 			producer.push(applicationProperties.getUpdateActiveSurveyTopic(), request);
@@ -204,6 +222,10 @@ public class ScorecardSurveyService {
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
         String uuid = answerRequest.getUser().getUuid();
         surveyValidator.validateAnswers(surveyResponse);
+
+        if (surveyResponse.getComments() == null) {
+            surveyResponse.setComments("");
+        }
 
         List<Section> sections = sectionRepository.getSectionsBySurveyId(answerRequest.getSurveyResponse().getSurveyUuid());
         Map<String, BigDecimal> sectionWeightageMap = sections.stream()
@@ -286,12 +308,11 @@ public class ScorecardSurveyService {
 
                                 surveyResponse.setCitizenId(uuid);
                                 return ScorecardQuestionResponse.builder()
-                                        .questionUuid(answer.getQuestionUuid())
-                                        .questionStatement(question.getQuestionStatement())
-                                        .answerUuid(answer.getUuid())
-                                        .comments(answer.getComments())
-                                        .answerResponse(answer)
-                                        .build();
+                                    .questionUuid(answer.getQuestionUuid())
+                                    .questionStatement(question.getQuestionStatement())
+                                    .answerUuid(answer.getUuid())
+                                    .answerResponse(answer)
+                                    .build();
                             }).collect(Collectors.toList());
                     producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
                     return ScorecardSectionResponse.builder()
@@ -301,15 +322,16 @@ public class ScorecardSurveyService {
                 }).collect(Collectors.toList());
 
         ScorecardAnswerResponse scorecardAnswerResponse = ScorecardAnswerResponse.builder()
-                .locality(surveyResponse.getLocality())
-                .coordinates(surveyResponse.getCoordinates())
-                .tenantId(surveyResponse.getTenantId())
-                .status(surveyResponse.getStatus().toString())
-                .surveyUuid(surveyResponse.getSurveyUuid())
-                .citizenId(surveyResponse.getCitizenId())
-                .sectionResponses(enrichedSectionResponses)
-                .auditDetails(auditDetails)
-                .build();
+            .locality(surveyResponse.getLocality())
+            .coordinates(surveyResponse.getCoordinates())
+            .tenantId(surveyResponse.getTenantId())
+            .status(surveyResponse.getStatus().toString())
+            .surveyUuid(surveyResponse.getSurveyUuid())
+            .citizenId(surveyResponse.getCitizenId())
+            .sectionResponses(enrichedSectionResponses)
+            .auditDetails(auditDetails)
+            .comments(surveyResponse.getComments())
+            .build();
 
         return ScorecardSubmitResponse.builder().scorecardAnswerResponse(scorecardAnswerResponse).build();
 
@@ -361,6 +383,7 @@ public class ScorecardSurveyService {
             scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
             scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
             scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+            scorecardAnswerResponse.setComments(surveyResponseNew.getComments());
         }
         return scorecardAnswerResponse;
     }
@@ -368,11 +391,10 @@ public class ScorecardSurveyService {
     private ScorecardAnswerResponse buildScorecardAnswerResponse(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
         Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
         for (AnswerNew answer : answers) {
-            ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
+                ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())
                     .questionStatement(answer.getQuestionStatement())
                     .answerUuid(answer.getUuid())
-                    .comments(answer.getComments())
                     .answerResponse(answer)
                     .build();
 
@@ -393,25 +415,121 @@ public class ScorecardSurveyService {
                 .build();
     }
 
-    public ScorecardAnswerResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+//    public ScorecardAnswerResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria) {
+//
+//        List<AnswerNew> answers = surveyRepository.getAnswersForPlainSearch(criteria.getSurveyUuid(),criteria.getCitizenId(),criteria.getTenantId());
+//        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId(), criteria.getTenantId());
+//        SurveyResponseNew surveyResponseNew;
+//        if (surveyResponseStatus.isEmpty()) {
+//            surveyResponseNew = null;
+//        }
+//        else {
+//            surveyResponseNew = surveyResponseStatus.get(0);
+//        }
+//        ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
+//        if(surveyResponseNew!=null) {
+//            scorecardAnswerResponse.setTenantId(surveyResponseNew.getTenantId());
+//            scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
+//            scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
+//            scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+//        }
+//        return scorecardAnswerResponse;
+//    }
 
-        List<AnswerNew> answers = surveyRepository.getAnswersForPlainSearch(criteria.getSurveyUuid(),criteria.getCitizenId(),criteria.getTenantId());
-        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId(), criteria.getTenantId());
-        SurveyResponseNew surveyResponseNew;
-        if (surveyResponseStatus.isEmpty()) {
-            surveyResponseNew = null;
+    public PlainSearchResponse getAnswersForPlainSearch(AnswerFetchCriteria criteria, RequestInfo requestInfo) {
+        List<String> surveyUuids = surveyRepository.getSurveyUuidsByTenant(criteria.getTenantId());
+        List<ScorecardAnswerResponse> responses = new ArrayList<>();
+
+        for (String surveyUuid : surveyUuids) {
+            List<AnswerNew> answers = surveyRepository.getAnswersForSurvey(surveyUuid, criteria.getTenantId());
+            for (AnswerNew answer : answers) {
+                Integer qWeight = surveyRepository.getQuestionWeightage(answer.getQuestionUuid(), answer.getSectionUuid());
+                Integer sWeight = surveyRepository.getSectionWeightage(answer.getSectionUuid());
+                answer.setQuestionWeightage(BigDecimal.valueOf(qWeight));
+                answer.setSectionWeightage(BigDecimal.valueOf(sWeight));
+            }
+
+            List<SurveyResponseNew> surveyResponses = surveyRepository.getSurveyResponsesBySurveyAndTenant(surveyUuid, criteria.getTenantId());
+
+            for (SurveyResponseNew sr : surveyResponses) {
+
+                // ✅ ✅ FETCH USER DETAILS USING citizenId
+                String citizenId = sr.getCitizenId();
+                Map<String, UserSearchResponseContent> userMap = null;
+                UserSearchResponseContent user;
+
+                try {
+                    userMap = userService.searchUser(requestInfo,
+                            Collections.singletonList(citizenId));
+                    user = userMap.get(citizenId);
+                } catch (Exception e) {
+                    user = new UserSearchResponseContent();
+                    user.setUuid(citizenId);
+                }
+
+                JsonNode userNode = mapper.convertValue(user, JsonNode.class);
+
+                // ✅ ✅ ATTACH userDetails to each answerDetail
+                for (AnswerNew answer : answers) {
+                    if (answer.getAnswerDetails() != null) {
+                        answer.getAnswerDetails().forEach(detail -> detail.setUserDetails(userNode));
+                    }
+                }
+
+
+
+
+                AnswerFetchCriteria scopedCriteria = AnswerFetchCriteria.builder()
+                        .surveyUuid(surveyUuid)
+                        .citizenId(sr.getCitizenId())
+                        .tenantId(criteria.getTenantId())
+                        .build();
+
+                ScorecardAnswerResponse response = buildScorecardAnswerResponseWithWeightage(answers, scopedCriteria);
+                response.setSurveyUuid(sr.getSurveyUuid());
+                response.setTenantId(sr.getTenantId());
+                response.setCitizenId(sr.getCitizenId());
+                response.setLocality(sr.getLocality());
+                response.setStatus(sr.getStatus().toString());
+                response.setCoordinates(sr.getCoordinates());
+                response.setComments(sr.getComments());
+                responses.add(response);
+            }
         }
-        else {
-            surveyResponseNew = surveyResponseStatus.get(0);
-        }
-        ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
-        if(surveyResponseNew!=null) {
-            scorecardAnswerResponse.setTenantId(surveyResponseNew.getTenantId());
-            scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
-            scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
-            scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
-        }
-        return scorecardAnswerResponse;
+
+        return PlainSearchResponse.builder()
+                .surveyResponses(responses)
+                .build();
     }
+
+    private ScorecardAnswerResponse buildScorecardAnswerResponseWithWeightage(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
+        Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
+        for (AnswerNew answer : answers) {
+
+
+                ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
+                    .questionUuid(answer.getQuestionUuid())
+                    .questionStatement(answer.getQuestionStatement())
+                    .answerUuid(answer.getUuid())
+                    .answerResponse(answer)
+                    .build();
+
+            sectionResponsesMap.computeIfAbsent(answer.getSectionUuid(), k -> new ArrayList<>()).add(questionResponse);
+        }
+
+        List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
+                .map(entry -> ScorecardSectionResponse.builder()
+                        .sectionUuid(entry.getKey())
+                        .questionResponses(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ScorecardAnswerResponse.builder()
+                .surveyUuid(criteria.getSurveyUuid())
+                .citizenId(criteria.getCitizenId())
+                .sectionResponses(sectionResponses)
+                .build();
+    }
+
 
 }

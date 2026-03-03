@@ -5,7 +5,7 @@ WORKDIR /app
 # copy the project files
 COPY ${WORK_DIR}/pom.xml ./pom.xml
 COPY build/maven/start.sh ./start.sh
-RUN ls -la
+
 COPY ${WORK_DIR}/src ./src
 RUN mvn -B -f /app/pom.xml package -Dmaven.test.skip=true -DskipTests
 
@@ -16,19 +16,21 @@ WORKDIR /opt/egov
 
 COPY --from=build /app/target/*.jar /app/start.sh /opt/egov/
 
-# --- NEW CONDITIONAL SECTION ---
+# --- NEW CONDITIONAL SECTION ----------------------------------------------
 # 1. Attempt to copy .cer files (the wildcard prevents error if none exist)
-COPY --from=build /app/src/main/resources/*.cer cert.cer 2>/dev/null || true
-RUN ls -la
-# 2. If cert.cer exists, import it; otherwise, move to next step
-RUN if [ -f cert.cer ]; then \
-      keytool -importcert -alias cert -trustcacerts \
-      -keystore $JAVA_HOME/jre/lib/security/cacerts \
-      -file cert.cer -storepass changeit -noprompt; \
+COPY --from=build /app/src/main/resources /tmp/resources
+
+# Import all .cer certificates if present
+RUN if ls /tmp/resources/*.cer 1> /dev/null 2>&1; then \
+      for cert in /tmp/resources/*.cer; do \
+        keytool -importcert -alias "$(basename $cert .cer)" -trustcacerts \
+        -keystore $JAVA_HOME/jre/lib/security/cacerts \
+        -file "$cert" -storepass changeit -noprompt; \
+      done; \
     else \
       echo "No certificate found, moving to next step..."; \
     fi
-# -------------------------------
+#--------------------------------------------------------------------
 
 RUN chmod +x /opt/egov/start.sh
 

@@ -2420,3 +2420,18 @@ input[type="date"] {
   max-width: 600px;
   padding: 20px;
 }
+
+.security-banner {
+  width: 100%;
+  max-width: 920px;
+  margin: 1px auto 20px auto;
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1e4db7, #3a7bd5);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  line-height: 1.6;
+}

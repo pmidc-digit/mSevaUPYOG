@@ -27,7 +27,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
   const [user, setUser] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [disable, setDisable] = useState(false);
-   const [isForgotPasswordView, setIsForgotPasswordView] = useState(false)
+  const [isForgotPasswordView, setIsForgotPasswordView] = useState(false)
 
   const history = useHistory();
   // const getUserType = () => "EMPLOYEE" || Digit.UserService.getType();
@@ -92,14 +92,27 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
 
   const onForgotPassword = () => {
     sessionStorage.getItem("User") && sessionStorage.removeItem("User");
-     setIsForgotPasswordView(true)
+    setIsForgotPasswordView(true)
     history.push("/digit-ui/employee/user/forgot-password");
   };
 
-    const onBackToLogin = () => {
+  const onBackToLogin = () => {
     setIsForgotPasswordView(false)
   }
-
+  const bannerStyle = {
+    width: "100%",
+    maxWidth: "920px",
+    margin: "30px auto 20px auto",
+    padding: "14px 22px",
+    borderRadius: "12px",
+    background: "linear-gradient(90deg, #1e4db7, #3a7bd5)",
+    color: "#ffffff",
+    fontSize: "15px",
+    fontWeight: "500",
+    textAlign: "center",
+    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
+    letterSpacing: "0.4px",
+  };
   const [userId, password, city] = propsConfig.inputs;
   const config = [
     {
@@ -129,7 +142,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
         //     component: (props, customProps) => (
         //       <Dropdown
         //         option={cities}
-                
+
         //         optionKey="i18nKey"
         //         select={(d) => {
         //           props.onChange(d);
@@ -164,11 +177,11 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       ],
     },
   ];
-    useEffect(() => {
-      const script = document.createElement("script");
-      script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
-      script.async = true;document.body.appendChild(script);
-    }, []);
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+    script.async = true; document.body.appendChild(script);
+  }, []);
   return isLoading || isStoreLoading ? (
     <Loader />
   ) : (
@@ -196,10 +209,12 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
 
     // </Background>
     <Background>
-       <div className='language-plugin'>
+      <div className='language-plugin'>
         <div className="bhashini-plugin-container"></div>
       </div>
+
       <div className="employee-login-container">
+
         <div className="employee-login-content">
           <div className="employee-login-icon-circle">
             <LoginIcon />
@@ -216,7 +231,21 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
                 ← Back to Login
               </button>
             )}
+            <div className="security-banner">
+              <span style={{ fontSize: "24px" }}>🔐</span>
 
+              <div style={{ fontSize: "15px" }}>
+                <div>
+                  Effective <strong>March 05, 2026</strong>, extra login security has been enabled.
+                  Please make sure your mobile number is updated to receive OTP verification.
+                </div>
+
+                <div style={{ marginTop: "8px", fontWeight: "500" }}>
+                  05 ਮਾਰਚ, 2026 ਤੋਂ, ਵਾਧੂ ਲੌਗਇਨ ਸੁਰੱਖਿਆ ਸਮਰੱਥ ਕੀਤੀ ਗਈ ਹੈ।
+                  ਕਿਰਪਾ ਕਰਕੇ ਇਹ ਯਕੀਨੀ ਬਣਾਓ ਕਿ ਤੁਹਾਡਾ ਮੋਬਾਈਲ ਨੰਬਰ OTP ਪੁਸ਼ਟੀਕਰਨ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ ਹੈ।
+                </div>
+              </div>
+            </div>
             {!isForgotPasswordView ? (
               <FormComposer
                 onSubmit={onLogin}

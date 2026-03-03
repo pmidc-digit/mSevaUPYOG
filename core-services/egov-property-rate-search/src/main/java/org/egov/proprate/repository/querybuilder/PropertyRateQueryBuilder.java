@@ -86,7 +86,7 @@ public class PropertyRateQueryBuilder {
     	     "STRING_AGG(o.userid, ',') OVER (PARTITION BY p.propertyid) AS ownerUuid, " +
     	     "STRING_AGG(CAST(o.ownerShipPercentage AS TEXT), ',') OVER (PARTITION BY p.propertyid) AS ownerPercentages, " +
     	     "p.landarea,p.nooffloors, p.superbuiltuparea, p.propertytype, p.usagecategory, " +
-    	     "add.doorno, add.plotno, add.street, add.landmark, add.city, add.pincode, add.district, add.state, add.latitude, add.longitude " +
+    	     "add.* " +
     	     "FROM eg_pt_property p " +
     	     "LEFT JOIN revenue_property_integration r ON p.propertyid = r.propertyid " +
     	     "LEFT JOIN eg_pt_address add ON p.id = add.propertyid " +

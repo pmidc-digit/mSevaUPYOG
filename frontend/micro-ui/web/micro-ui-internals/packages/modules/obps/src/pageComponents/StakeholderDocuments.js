@@ -150,16 +150,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
   return (
     <div>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
-        {<div style={{
-                            cursor: "pointer",
-                            width: "fit-content",
-                            display: "flex",
-                            fontFamily: "'Roboto Condensed', sans-serif",
-                            color: "rgba(13, 67, 167, var(--text-opacity))",
-                            fontSize: "16px",
-                            lineHeight: "24px"
-                          }} onClick={() => {history.push("/digit-ui/citizen/obps/stakeholder/apply/Permanent-address"); window.location.reload()}}>{(<React.Fragment><ArrowLeft />
-                        <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+        {<div className="back-button-container" onClick={() => {history.push("/digit-ui/citizen/obps/stakeholder/apply/Permanent-address"); window.location.reload()}}>{(<React.Fragment><ArrowLeft /><p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
         {/* {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />} */}
         {!formData?.initiationFlow && (
           <CitizenInfoLabel

@@ -278,16 +278,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
 
   return (
     <div style={pageStyle}>
-      {<div style={{
-        cursor: "pointer",
-        width: "fit-content",
-        display: "flex",
-        fontFamily: "'Roboto Condensed', sans-serif",
-        color: "rgba(13, 67, 167, var(--text-opacity))",
-        fontSize: "16px",
-        lineHeight: "24px"
-      }} onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/professional-document-details")}>{(<React.Fragment><ArrowLeft />
-        <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+      {<div className="back-button-container" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/professional-document-details")}>{(<React.Fragment><ArrowLeft /> <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
       {/* {isMobile && <Timeline currentStep={4} flow="STAKEHOLDER" />} */}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

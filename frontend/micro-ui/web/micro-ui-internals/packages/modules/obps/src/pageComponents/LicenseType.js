@@ -503,16 +503,7 @@ console.log("validTo",validTo);
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "60px" }}>
       <div style={{ flex: 1, marginRight: "20px" }}>
         <div className={isopenlink ? "OpenlinkContainer" : ""}>
-          {<div style={{
-            cursor: "pointer",
-            width: "fit-content",
-            display: "flex",
-            fontFamily: "'Roboto Condensed', sans-serif",
-            color: "rgba(13, 67, 167, var(--text-opacity))",
-            fontSize: "16px",
-            lineHeight: "24px"
-          }} onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required")}>{(<React.Fragment><ArrowLeft />
-        <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+          {<div className="back-button-container" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required")}>{(<React.Fragment><ArrowLeft /> <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
           {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
 
           <FormStep

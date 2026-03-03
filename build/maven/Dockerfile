@@ -19,7 +19,7 @@ COPY --from=build /app/target/*.jar /app/start.sh /opt/egov/
 # --- NEW CONDITIONAL SECTION ---
 # 1. Attempt to copy .cer files (the wildcard prevents error if none exist)
 COPY --from=build /app/src/main/resources/*.cer cert.cer 2>/dev/null || true
-
+RUN ls -la
 # 2. If cert.cer exists, import it; otherwise, move to next step
 RUN if [ -f cert.cer ]; then \
       keytool -importcert -alias cert -trustcacerts \

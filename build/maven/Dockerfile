@@ -5,7 +5,7 @@ WORKDIR /app
 # copy the project files
 COPY ${WORK_DIR}/pom.xml ./pom.xml
 COPY build/maven/start.sh ./start.sh
-
+RUN ls -la
 COPY ${WORK_DIR}/src ./src
 RUN mvn -B -f /app/pom.xml package -Dmaven.test.skip=true -DskipTests
 

@@ -1438,7 +1438,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             setAdjustedAmounts={setAdjustedAmounts}
                         />}
                     </div>
-                    {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />}
+                    {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} checked={isFeesDeclared} />}
                 </div>
 
 

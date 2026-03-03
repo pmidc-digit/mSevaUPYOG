@@ -2064,7 +2064,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
 
                 {/* to get Timeline values */}
                 {index === arr?.length - 1 && (
-                  <div>{<Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+                  <div>{<Card >
                     <FeeEstimation
                       currentStepData={{
                         createdResponse: {
@@ -2090,7 +2090,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                     {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && !isOCApplication && isBPA && (
                       <div>
                         <Card>
-                          <CardSubHeader style={{ fontSize: "20px", marginTop: "20px" }}>{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
+                          <CardSubHeader >{t("BPA_OWNER_UNDERTAKING")}</CardSubHeader>
                           <React.Fragment>
                             <div>
                               <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
@@ -2100,8 +2100,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                               workflowDetails?.data?.newNextAction?.length > 0 &&
                               !isFromSendBack &&
                               checkBoxVisible && (
-                                <CheckBox
-                                  styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                                <CheckBox                                  
                                   checked={isTocAccepted}
                                   label={getCheckBoxLable()}
                                   // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
@@ -2116,8 +2115,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                             <div>
                               <CheckBox
                                 label={checkLabels()}
-                                onChange={setdeclarationhandler}
-                                styles={{ height: "auto" }}
+                                onChange={setdeclarationhandler}                                
                                 //disabled={!agree}
                                 checked={agree}
                               />
@@ -2142,9 +2140,8 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                       workflowDetails?.data?.newNextAction?.length > 0 &&
                       !isFromSendBack &&
                       checkBoxVisible && (
-                        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
-                          <CheckBox
-                            styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                        <Card >
+                          <CheckBox                            
                             checked={isTocAccepted}
                             label={getCheckBoxLable()}
                             // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}

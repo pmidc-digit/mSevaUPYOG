@@ -68,9 +68,8 @@ function OBPSDocument({
                   target="_blank"
                   rel="noopener noreferrer"
                   href={documentLink}
-                  className="document-link"
+                  className="document-link-bpa"
                   key={index}
-                  style={{width: "250px"}}
                 >
                   <div className="document-card">
                     <div className="document-icon-wrapper">

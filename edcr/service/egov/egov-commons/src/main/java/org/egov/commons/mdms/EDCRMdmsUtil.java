@@ -52,6 +52,29 @@ public class EDCRMdmsUtil {
         edcrModuleDtls.setModuleName("EDCR");
         return Arrays.asList(edcrModuleDtls);
     }
+    
+    public List<ModuleDetail> getMDMSRolesRequest(String roleCode) {
+        // Create a list of MasterDetail objects
+        List<MasterDetail> masterDetails = new ArrayList<>();
+
+        // Build JSONPath filter dynamically based on roleCode
+        String filter = "$.[?(@.code=='" + roleCode + "')]";
+
+        // Create MasterDetail for "roles"
+        MasterDetail masterDetailRoles = new MasterDetail();
+        masterDetailRoles.setName("roles");
+        masterDetailRoles.setFilter(filter);
+        masterDetails.add(masterDetailRoles);
+
+        // Create ModuleDetail for "EDCR-ROLES"
+        ModuleDetail moduleDetail = new ModuleDetail();
+        moduleDetail.setModuleName("EDCR-ROLES");
+        moduleDetail.setMasterDetails(masterDetails);
+
+        // Return the module details list
+        return Arrays.asList(moduleDetail);
+    }
+
 
     /**
      * @param requestInfo
@@ -60,6 +83,19 @@ public class EDCRMdmsUtil {
      */
     private MdmsCriteriaReq getEDCRMDMSRequest(RequestInfo requestInfo, String tenantId) {
         List<ModuleDetail> moduleRequest = getEDCRModuleRequest();
+        List<ModuleDetail> moduleDetails = new LinkedList<>();
+        moduleDetails.addAll(moduleRequest);
+        MdmsCriteria mdmsCriteria = new MdmsCriteria();
+        mdmsCriteria.setModuleDetails(moduleDetails);
+        mdmsCriteria.setTenantId(tenantId);
+        MdmsCriteriaReq mdmsCriteriaReq = new MdmsCriteriaReq();
+        mdmsCriteriaReq.setMdmsCriteria(mdmsCriteria);
+        mdmsCriteriaReq.setRequestInfo(requestInfo);
+        return mdmsCriteriaReq;
+    }
+    
+    private MdmsCriteriaReq getEDCRMDMSRoleRequest(RequestInfo requestInfo, String tenantId, String roleCode) {
+        List<ModuleDetail> moduleRequest = getMDMSRolesRequest(roleCode);
         List<ModuleDetail> moduleDetails = new LinkedList<>();
         moduleDetails.addAll(moduleRequest);
         MdmsCriteria mdmsCriteria = new MdmsCriteria();
@@ -83,6 +119,13 @@ public class EDCRMdmsUtil {
         return result;
     }
 
+    public Object mdmsRolesCall(RequestInfo requestInfo, String tenantId, String roleCode) {
+        MdmsCriteriaReq mdmsCriteriaReq = getEDCRMDMSRoleRequest(requestInfo,
+                tenantId, roleCode);
+        Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+        return result;
+    }
+    
     public StringBuilder getMdmsSearchUrl() {
         return new StringBuilder().append(mdmsConfiguration.getMdmsHost()).append(mdmsConfiguration.getMdmsSearchUrl());
     }

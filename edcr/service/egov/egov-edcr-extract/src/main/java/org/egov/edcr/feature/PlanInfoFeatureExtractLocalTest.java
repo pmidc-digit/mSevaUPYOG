@@ -34,6 +34,7 @@ public class PlanInfoFeatureExtractLocalTest extends FeatureExtract {
 	public static final String MSG_ERROR_MANDATORY = "msg.error.mandatory.object.not.defined";
 	private String digitsRegex = "[^\\d.]";
 	private static final BigDecimal ONEHUDREDTWENTYFIVE = BigDecimal.valueOf(125);
+	public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
 	@Autowired
 	private LayerNames layerNames;
 	@Autowired
@@ -139,8 +140,10 @@ public class PlanInfoFeatureExtractLocalTest extends FeatureExtract {
 			b.setHeight(height);
 			b.getBuilding().setBuildingHeight(height);
 			b.getBuilding().setDeclaredBuildingHeight(height);
-			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
-				b.getBuilding().setIsHighRise(true);
+//			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
+//				b.getBuilding().setIsHighRise(true);
+			if (height.compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
+	              b.getBuilding().setIsHighRise(true);
 		}
 	}
 

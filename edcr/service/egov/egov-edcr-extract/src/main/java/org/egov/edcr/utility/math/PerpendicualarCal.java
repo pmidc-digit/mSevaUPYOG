@@ -1,6 +1,11 @@
 package org.egov.edcr.utility.math;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class PerpendicualarCal {
+	private static final Logger LOG = LogManager.getLogger(PerpendicualarCal.class);
 
     public static void main(String args[]) {
         getPerpendicularDistance();
@@ -28,7 +33,7 @@ public class PerpendicualarCal {
         double lambda = dx * (x3 - x1) + dy * (y3 - y1);
         double x4 = dx * lambda + x1;
         double y4 = dy * lambda + y1;
-        System.out.println(x4 + "," + y4);
+        LOG.info(x4 + "," + y4);
 
     }
 

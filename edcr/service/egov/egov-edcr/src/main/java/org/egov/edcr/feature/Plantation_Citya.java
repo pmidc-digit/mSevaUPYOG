@@ -168,12 +168,12 @@ public class Plantation_Citya extends FeatureProcess {
 					List<Map<String, Object>> permissibleValue = new ArrayList<>();
 
 					permissibleValue = fetchEdcrRulesMdms.getPermissibleValue(edcrRuleList, params, valueFromColumn);
-					System.out.println("permissibleValue");
+					LOGGER.info("permissibleValue");
 
 					if (!permissibleValue.isEmpty() && permissibleValue.get(0).containsKey("permissibleValue")) {
 						plantation = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("permissibleValue").toString()));
 						percent = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("percent").toString()));
-						System.out.println("perfff" + percent);
+						LOGGER.info("perfff" + percent);
 					}
 		
                 if (plantationPer.compareTo(plantation) >= 0) {

@@ -124,6 +124,7 @@ import org.egov.edcr.feature.StairCover;
 import org.egov.edcr.feature.StoreRoom;
 import org.egov.edcr.feature.SupplyLineUtility;
 import org.egov.edcr.feature.SurrenderRoad;
+import org.egov.edcr.feature.TerraceToilet;
 import org.egov.edcr.feature.TerraceUtilityService;
 import org.egov.edcr.feature.ToiletDetails;
 import org.egov.edcr.feature.TravelDistanceToExit;
@@ -213,8 +214,8 @@ public class PlanFeatureRepository {
         features.add(pf);
         
        
-        pf = new PlanFeature(StoreRoom.class);
-        features.add(pf);
+//        pf = new PlanFeature(StoreRoom.class);
+//        features.add(pf);
 
         pf = new PlanFeature(Kitchen.class);
         features.add(pf);
@@ -300,8 +301,8 @@ public class PlanFeatureRepository {
         pf = new PlanFeature(RecreationalSpace.class);
         features.add(pf);
 
-//        pf = new PlanFeature(TravelDistanceToExit.class);
-//        features.add(pf);
+        pf = new PlanFeature(TravelDistanceToExit.class);
+        features.add(pf);
 
         pf = new PlanFeature(AdditionalFeature.class);
         features.add(pf);
@@ -394,6 +395,8 @@ public class PlanFeatureRepository {
         pf = new PlanFeature(DxfToPdfConverter.class);
         features.add(pf);
         
+        pf = new PlanFeature(TerraceToilet.class);
+        features.add(pf);
 
         
         return features;

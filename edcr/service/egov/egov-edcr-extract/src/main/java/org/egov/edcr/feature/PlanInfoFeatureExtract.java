@@ -5,6 +5,7 @@ import static org.egov.edcr.constants.DxfFileConstants.OPENING_ABOVE_2_1_ON_SIDE
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 public class PlanInfoFeatureExtract extends FeatureExtract {
 	private static final Logger LOG = LogManager.getLogger(PlanInfoFeatureExtract.class);
 	public static final String MSG_ERROR_MANDATORY = "msg.error.mandatory.object.not.defined";
+	public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
 	private String digitsRegex = "[^\\d.]";
 	private static final BigDecimal ONEHUDREDTWENTYFIVE = BigDecimal.valueOf(125);
 	@Autowired
@@ -73,10 +75,19 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (!plotBoundaries.isEmpty()) {
 			DXFLWPolyline plotBndryPolyLine = plotBoundaries.get(0);
 			((PlotDetail) pl.getPlot()).setPolyLine(plotBndryPolyLine);
-			pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
-		} else
+			// pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
+			BigDecimal area = Util.getPolyLineArea(plotBndryPolyLine);
+			if (area == null) {
+				pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
+			} else {
+				pl.getPlot().setPlotBndryArea(area);
+				pl.getPlot().setArea(area.setScale(2, RoundingMode.HALF_UP));
+			}
+		} else {
+			pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			pl.addError(layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY"),
 					getLocaleMessage(OBJECTNOTDEFINED, layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY")));
+		}
 	}
 
 	private void extractBuildingFootprint(PlanDetail pl) {
@@ -106,6 +117,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 					setBack.setBuildingFootPrint(footPrint);
 					block.getSetBacks().add(setBack);
 					pl.getBlocks().add(block);
+					pl.getPlot().setBuildingFootPrint(footPrint);
 				} else {
 					Block block = pl.getBlockByName(s.split("_")[1]);
 					block.setName(s.split("_")[1]);
@@ -117,6 +129,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 					footPrint.setPresentInDxf(true);
 					setBack.setBuildingFootPrint(footPrint);
 					block.getSetBacks().add(setBack);
+					pl.getPlot().setBuildingFootPrint(footPrint);
 
 				}
 
@@ -134,13 +147,17 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			b.setHeight(height);
 			b.getBuilding().setBuildingHeight(height);
 			b.getBuilding().setDeclaredBuildingHeight(height);
-			
-			String layerName1 = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + b.getNumber() + "_"  + 
-					layerNames.getLayerName("LAYER_NAME_HEIGHT_OF_BUILDING_EXCLUDING_MP"); // building height excluding mumty and parapet
+
+			String layerName1 = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + b.getNumber() + "_"
+					+ layerNames.getLayerName("LAYER_NAME_HEIGHT_OF_BUILDING_EXCLUDING_MP"); // building height
+																								// excluding mumty and
+																								// parapet
 			BigDecimal heightExMP = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName1, pl);
-			b.getBuilding().setBuildingHeightExcludingMP(heightExMP);			
-			
-			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
+			b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
+
+//			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
+//				b.getBuilding().setIsHighRise(true);
+			if (height.compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
 				b.getBuilding().setIsHighRise(true);
 		}
 	}
@@ -218,6 +235,22 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			pl.setPlot(plot);
 		}
 
+		List<DXFLWPolyline> plotBoundaries = Util.getPolyLinesByLayer(pl.getDoc(),
+				layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY"));
+
+		if (!plotBoundaries.isEmpty()) {
+			DXFLWPolyline plotBndryPolyLine = plotBoundaries.get(0);
+			((PlotDetail) pl.getPlot()).setPolyLine(plotBndryPolyLine);
+			BigDecimal boundaryLength = Util.getPolyLineLength(plotBndryPolyLine);
+			if (boundaryLength == null) {
+				pi.setPlotBndryWallLength(BigDecimal.ZERO);
+			} else {
+				pi.setPlotBndryWallLength(boundaryLength);
+			}
+		} else {
+			pi.setPlotBndryWallLength(BigDecimal.valueOf(0.0));
+		}
+
 		String noOfSeats = planInfoProperties.get(DxfFileConstants.SEATS_SP_RESI);
 		if (StringUtils.isNotBlank(noOfSeats)) {
 			noOfSeats = noOfSeats.replaceAll("[^\\d.]", "");
@@ -256,10 +289,10 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			String value = crzZone;
 			if (value.equalsIgnoreCase(DcrConstants.YES)) {
 				pi.setCrzZoneArea(true);
-				//pi.setCrzZoneDesc(DcrConstants.YES);
+				// pi.setCrzZoneDesc(DcrConstants.YES);
 			} else if (value.equalsIgnoreCase(DcrConstants.NO)) {
 				pi.setCrzZoneArea(false);
-				//pi.setCrzZoneDesc(DcrConstants.NO);
+				// pi.setCrzZoneDesc(DcrConstants.NO);
 			} else
 				pl.addError(DxfFileConstants.CRZ_ZONE,
 						DxfFileConstants.CRZ_ZONE + " cannot be accepted , should be either YES/NO.");
@@ -272,10 +305,10 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (StringUtils.isNotBlank(securityZone))
 			if (securityZone.equalsIgnoreCase(DcrConstants.YES)) {
 				pi.setSecurityZone(true);
-				//pi.setSecurityZoneDesc(DcrConstants.YES);
+				// pi.setSecurityZoneDesc(DcrConstants.YES);
 			} else if (securityZone.equalsIgnoreCase(DcrConstants.NO)) {
 				pi.setSecurityZone(false);
-				//pi.setSecurityZoneDesc(DcrConstants.NO);
+				// pi.setSecurityZoneDesc(DcrConstants.NO);
 			} else
 				pl.addError(DxfFileConstants.SECURITY_ZONE,
 						DxfFileConstants.SECURITY_ZONE + " cannot be accepted , should be either YES/NO.");
@@ -286,7 +319,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			if (openingBelow2mside.equalsIgnoreCase(DcrConstants.YES)) {
 				// pi.setOpeningOnSideBelow2mts(true);
 				pi.setOpeningOnSide(true);
-				//pi.setOpeningOnSideBelow2mtsDesc(DcrConstants.YES);
+				// pi.setOpeningOnSideBelow2mtsDesc(DcrConstants.YES);
 			} /*
 				 * else if (openingBelow2mside.equalsIgnoreCase(DcrConstants.NO)) //
 				 * pi.setOpeningOnSideBelow2mts(false);
@@ -321,32 +354,34 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			if (openingAbove2mside.equalsIgnoreCase(DcrConstants.YES)) {
 				// pi.setOpeningOnSideAbove2mts(true);
 				pi.setOpeningOnSide(true);
-				//pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.YES);
-			} /*else if (openingAbove2mside.equalsIgnoreCase(DcrConstants.NO))
-				// pi.setOpeningOnSideAbove2mts(false);
-				pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.NO);
-			else
-				// pi.setOpeningOnSideAbove2mts(null);
-				pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.NA);*/
-		} /*else
-			// pi.setOpeningOnSideAbove2mts(null);
-			pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.NA);
-*/
+				// pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.YES);
+			} /*
+				 * else if (openingAbove2mside.equalsIgnoreCase(DcrConstants.NO)) //
+				 * pi.setOpeningOnSideAbove2mts(false);
+				 * pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.NO); else //
+				 * pi.setOpeningOnSideAbove2mts(null);
+				 * pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.NA);
+				 */
+		} /*
+			 * else // pi.setOpeningOnSideAbove2mts(null);
+			 * pi.setOpeningOnSideAbove2mtsDesc(DcrConstants.NA);
+			 */
 		// Labels changed check
-		/*String openingBelow2mrear = planInfoProperties.get(DxfFileConstants.OPENING_BELOW_2_1_ON_REAR_LESS_1M);
-		if (StringUtils.isNotBlank(openingBelow2mrear)) {
-			if (openingBelow2mrear.equalsIgnoreCase(DcrConstants.YES))
-				// pi.setOpeningOnRearBelow2mts(true);
-				pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.YES);
-			else if (openingBelow2mrear.equalsIgnoreCase(DcrConstants.NO))
-				// pi.setOpeningOnRearBelow2mts(false);
-				pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.NO);
-			else
-				// pi.setOpeningOnRearBelow2mts(null);
-				pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.NA);
-		} else
-			// pi.setOpeningOnRearBelow2mts(null);
-			pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.NA);*/
+		/*
+		 * String openingBelow2mrear =
+		 * planInfoProperties.get(DxfFileConstants.OPENING_BELOW_2_1_ON_REAR_LESS_1M);
+		 * if (StringUtils.isNotBlank(openingBelow2mrear)) { if
+		 * (openingBelow2mrear.equalsIgnoreCase(DcrConstants.YES)) //
+		 * pi.setOpeningOnRearBelow2mts(true);
+		 * pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.YES); else if
+		 * (openingBelow2mrear.equalsIgnoreCase(DcrConstants.NO)) //
+		 * pi.setOpeningOnRearBelow2mts(false);
+		 * pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.NO); else //
+		 * pi.setOpeningOnRearBelow2mts(null);
+		 * pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.NA); } else //
+		 * pi.setOpeningOnRearBelow2mts(null);
+		 * pi.setOpeningOnRearBelow2mtsDesc(DcrConstants.NA);
+		 */
 
 		// Labels changed check
 		String nocAbutSide = planInfoProperties.get(DxfFileConstants.NOC_TO_ABUT_SIDE);
@@ -424,10 +459,10 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (StringUtils.isNotBlank(depthCutting))
 			if (depthCutting.equalsIgnoreCase(DcrConstants.YES)) {
 				pi.setDepthCutting(true);
-				//pi.setDepthCuttingDesc(DcrConstants.YES);
+				// pi.setDepthCuttingDesc(DcrConstants.YES);
 			} else if (depthCutting.equalsIgnoreCase(DcrConstants.NO)) {
 				pi.setDepthCutting(false);
-				//pi.setDepthCuttingDesc(DcrConstants.NO);
+				// pi.setDepthCuttingDesc(DcrConstants.NO);
 			} else
 				pl.addError(DxfFileConstants.DEPTH_CUTTING,
 						DxfFileConstants.DEPTH_CUTTING + " cannot be accepted , should be either YES/NO.");
@@ -504,7 +539,7 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 				pi.setNocNearAirport(DcrConstants.NA);
 		} else
 			pi.setNocNearAirport(DcrConstants.NA);
-		
+
 		String nocFireDept = planInfoProperties.get(DxfFileConstants.NOC_FOR_FIRE_DEPT);
 		if (StringUtils.isNotBlank(nocFireDept)) {
 			if (nocFireDept.equalsIgnoreCase(DcrConstants.YES))
@@ -702,37 +737,41 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 //		String khataNo = planInfoProperties.get(DxfFileConstants.KHATA_NO);
 //		if (StringUtils.isNotBlank(khataNo))
 //			pi.setKhataNo(khataNo);
-		
+
 		String khatuniNo = planInfoProperties.get(DxfFileConstants.KHATUNI_NO);
 		if (StringUtils.isNotBlank(khatuniNo))
 			pi.setKhatuniNo(khatuniNo);
-		
+
 		// 3 NEW PARAMETERS ADDED IN PLANINFO AND IN REPORT
 		String ulbType = planInfoProperties.get(DxfFileConstants.ULB_TYPE);
-				if (StringUtils.isNotBlank(ulbType))
-					pi.setUlbType(ulbType);
-						
+		if (StringUtils.isNotBlank(ulbType))
+			pi.setUlbType(ulbType);
+
 		String numberOfFloors = planInfoProperties.get(DxfFileConstants.NUMBER_OF_FLOORS);
-				if (StringUtils.isNotBlank(numberOfFloors))
-					pi.setNumberOfFloors(numberOfFloors);
-						
+		if (StringUtils.isNotBlank(numberOfFloors))
+			pi.setNumberOfFloors(numberOfFloors);
+
 		String roadType = planInfoProperties.get(DxfFileConstants.ROAD_TYPE);
-				if (StringUtils.isNotBlank(roadType))
-					pi.setRoadType(roadType);
+		if (StringUtils.isNotBlank(roadType))
+			pi.setRoadType(roadType);
 
-		
 		String khasraNo = planInfoProperties.get(DxfFileConstants.KHASRA_NO);
-		if (StringUtils.isNotBlank(khasraNo))
+		if (StringUtils.isNotBlank(khasraNo)) {
 			pi.setKhasraNo(khasraNo);
-
+		} else {
+			pl.addError(DxfFileConstants.KHASRA_NO, "KHASRA NO is not defined in the Plan Information Layer");
+		}
 
 		String district = planInfoProperties.get(DxfFileConstants.DISTRICT);
 		if (StringUtils.isNotBlank(district))
 			pi.setDistrict(district);
-		
-		String city = planInfoProperties.get(DxfFileConstants.DISTRICT);
-		if (StringUtils.isNotBlank(city))
+
+		String city = planInfoProperties.get(DxfFileConstants.CITY);
+		if (StringUtils.isNotBlank(city)) {
 			pi.setCity(city);
+		}else {
+			pl.addError(DxfFileConstants.CITY, "CITY is not defined in the Plan Information Layer");
+		}
 
 //		String mauza = planInfoProperties.get(DxfFileConstants.MAUZA);
 //		if (StringUtils.isNotBlank(mauza))

@@ -58,6 +58,26 @@ public class FarDetails implements Serializable {
 
 	private Double permissableFar;
 	private Double providedFar;
+	
+	private Double purchasableFar;
+	private Double providedPurchasableFar;
+	
+
+	public Double getPurchasableFar() {
+		return purchasableFar;
+	}
+
+	public void setPurchasableFar(Double purchasableFar) {
+		this.purchasableFar = purchasableFar;
+	}
+
+	public Double getProvidedPurchasableFar() {
+		return providedPurchasableFar;
+	}
+
+	public void setProvidedPurchasableFar(Double providedPurchasableFar) {
+		this.providedPurchasableFar = providedPurchasableFar;
+	}
 
 	public Double getPermissableFar() {
 		return permissableFar;

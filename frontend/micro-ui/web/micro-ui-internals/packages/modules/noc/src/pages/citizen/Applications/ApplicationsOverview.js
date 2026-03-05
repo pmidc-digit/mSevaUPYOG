@@ -604,9 +604,15 @@ const finalComment = useMemo(() => {
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
-  const combinedOwnersName = [...(firmName?.trim() ? [firmName.trim()] : []), ...(ownersList || [])]
+  const isFirm = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+
+  const combinedOwnersName = [
+    ...(isFirm && firmName?.trim() ? [firmName.trim()] : []),
+    ...(ownersList || [])
+  ]
     .filter((v, i, arr) => v && arr.indexOf(v) === i)
     .join(", ");
+
   // console.log("combinerOwnersName", combinedOwnersName);
 
 

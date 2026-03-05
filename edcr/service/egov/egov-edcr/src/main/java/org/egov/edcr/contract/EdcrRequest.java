@@ -97,12 +97,83 @@ public class EdcrRequest {
     private Integer limit;
     
     private String orderBy;
+    
+    //New fields based on initial form
+    private String ulb;
+    private String areaType;
+    private String schemeArea;
+    private String schName;
+    private Boolean siteReserved;
+    private Boolean approvedCS;      
+    private Boolean cluApprove;
+    
+    //private File layoutFile;  
+    
+    
+    
 
     public RequestInfo getRequestInfo() {
         return requestInfo;
     }
 
-    public void setRequestInfo(RequestInfo requestInfo) {
+    
+    public String getUlb() {
+		return ulb;
+	}
+
+	public void setUlb(String ulb) {
+		this.ulb = ulb;
+	}
+
+	public String getAreaType() {
+		return areaType;
+	}
+
+	public void setAreaType(String areaType) {
+		this.areaType = areaType;
+	}
+
+	public String getSchemeArea() {
+		return schemeArea;
+	}
+
+	public void setSchemeArea(String schemeArea) {
+		this.schemeArea = schemeArea;
+	}
+
+	public String getSchName() {
+		return schName;
+	}
+
+	public void setSchName(String schName) {
+		this.schName = schName;
+	}
+
+	public Boolean getSiteReserved() {
+		return siteReserved;
+	}
+
+	public void setSiteReserved(Boolean siteReserved) {
+		this.siteReserved = siteReserved;
+	}
+
+	public Boolean getApprovedCS() {
+		return approvedCS;
+	}
+
+	public void setApprovedCS(Boolean approvedCS) {
+		this.approvedCS = approvedCS;
+	}
+
+	public Boolean getCluApprove() {
+		return cluApprove;
+	}
+
+	public void setCluApprove(Boolean cluApprove) {
+		this.cluApprove = cluApprove;
+	}
+
+	public void setRequestInfo(RequestInfo requestInfo) {
         this.requestInfo = requestInfo;
     }
 

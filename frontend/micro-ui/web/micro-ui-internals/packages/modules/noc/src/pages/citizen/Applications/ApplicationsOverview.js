@@ -294,6 +294,25 @@ const CitizenApplicationOverview = () => {
     
   }
 }
+  async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-rejectionletter", ...params }) {
+    try {
+      setLoading(true);
+      let fileStoreId = null;
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
+
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore[fileStoreId];
+      await downloadPdfFromURL(receiptUrl);
+    } catch (error) {
+      console.error("rejection Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
@@ -316,6 +335,25 @@ const CitizenApplicationOverview = () => {
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
           getSanctionLetterReceipt({
+            tenantId: reciept_data?.Payments[0]?.tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+          }),
+      });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }
+  }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED" ) {
+
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("DOWNLOAD_NOC_REJECTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
             tenantId: reciept_data?.Payments[0]?.tenantId,
             payments: reciept_data?.Payments[0],
             EmpData,
@@ -431,7 +469,7 @@ const CitizenApplicationOverview = () => {
     }
 
     const commentsobj = workflowDetails.data.timeline
-      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.filter((item) => ["APPROVE", "REJECT"].includes(item?.performedAction))
       ?.flatMap((item) => item?.wfComment || []);
 
     const approvercomments = commentsobj?.[0];

@@ -11,7 +11,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class DXFHelper {
+	private static final Logger LOG = LogManager.getLogger(DXFHelper.class);
 	public static void main(String[] args) {
 		DXFHelper rc = new DXFHelper();
 		String filePath = "/home/mani/Workspaces/bpa/eGov-Kozhikode-Implementation/egov/egov-edcr/src/test/resources/Sanity.dxf";
@@ -41,26 +45,26 @@ public class DXFHelper {
 			FileWriter rt = new FileWriter(fout);
 			while (line != null) {
 				/*
-				 * if(line.contains(having)) { System.out.println(line); }
+				 * if(line.contains(having)) { LOG.info(line); }
 				 */
 				if (line.equals(start)) {
 					sb = new StringBuilder();
 					sb.append(line).append("\n");
 					line = buf.readLine();
-					// System.out.println(line+" -----"+i++);
+					// LOG.info(line+" -----"+i++);
 					while (line != null && !end.toString().contains(line)) {
-						// System.out.println(line+" "+i);
+						// LOG.info(line+" "+i);
 						sb.append(line).append("\n");
 						line = buf.readLine();
 						if (line != null && end.toString().contains(line)) {
-							System.out.println(line +"   "+end.toString());
+							LOG.info(line +"   "+end.toString());
 						}
 					}
 					// rt.write(sb.toString()+"
 					// &&&&&&&&&&&"+sb.toString().contains(having));
 					if (sb.toString().contains(having)) {
 						result.add(sb.toString());
-						System.out.println("******************found " + i++);
+						LOG.info("******************found " + i++);
 					}
 				}else
 				line = buf.readLine();
@@ -70,7 +74,7 @@ public class DXFHelper {
 
 			is.close();
 			// fileAsString = sb.toString();
-			// System.out.println("Contents : " + fileAsString);
+			// LOG.info("Contents : " + fileAsString);
 
 			for (String s : result)
 				rt.write(s);

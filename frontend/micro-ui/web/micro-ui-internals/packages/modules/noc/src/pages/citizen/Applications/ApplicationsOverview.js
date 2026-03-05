@@ -602,7 +602,9 @@ const CitizenApplicationOverview = () => {
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
-  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
+  const combinedOwnersName = [...(firmName?.trim() ? [firmName.trim()] : []), ...(ownersList || [])]
+    .filter((v, i, arr) => v && arr.indexOf(v) === i)
+    .join(", ");
   // console.log("combinerOwnersName", combinedOwnersName);
 
   return (

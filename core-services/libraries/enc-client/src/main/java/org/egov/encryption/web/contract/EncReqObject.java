@@ -6,7 +6,7 @@ import lombok.*;
 /**
  * Encryption / Decryption Request Meta-data and Values
  */
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-10-11T17:31:52.360+05:30")
+@jakarta.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2018-10-11T17:31:52.360+05:30")
 
 @Getter
 @Setter
@@ -16,12 +16,12 @@ import lombok.*;
 public class EncReqObject {
 
     @JsonProperty("tenantId")
-    private String tenantId = null;
+    private String tenantId ;
 
     @JsonProperty("type")
-    private String type = null;
+    private String type ;
 
     @JsonProperty("value")
-    private Object value = null;
+    private Object value;
 
 }

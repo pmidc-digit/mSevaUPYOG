@@ -1,10 +1,10 @@
 package org.egov.hash;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
+import java.util.Base64;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,8 +22,10 @@ public class HashService {
 
     public String getHashValue(Object object) {
         String value = object.toString();
+        
         byte[] bytes = messageDigest.digest(value.getBytes(StandardCharsets.UTF_8));
-        return Base64.encodeBase64URLSafeString(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
+    
 
 }

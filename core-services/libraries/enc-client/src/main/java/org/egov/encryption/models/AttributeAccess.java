@@ -9,10 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 public class AttributeAccess {
 
-    private String attribute = null;
+    private String attribute ;
 
-    private Visibility firstLevelVisibility = null;
+    private Visibility firstLevelVisibility ;
 
-    private Visibility secondLevelVisibility = null;
+    private Visibility secondLevelVisibility ;
 
 }

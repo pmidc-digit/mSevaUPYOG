@@ -341,8 +341,9 @@ console.log('calculatorData', calculatorData)
   const applicantDetails =  currentStepData?.applicationDetails?.owners
   const ownersList= applicantDetails?.map((item)=> item.ownerOrFirmName) 
   const firmName = applicantDetails?.[0]?.firmName
-  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
-
+  const combinedOwnersName = [...(firmName?.trim() ? [firmName.trim()] : []), ...(ownersList || [])]
+    .filter((v, i, arr) => v && arr.indexOf(v) === i)
+    .join(", ");
   return (
     <React.Fragment>
       {nocCalculatorLoading && <Loader />}

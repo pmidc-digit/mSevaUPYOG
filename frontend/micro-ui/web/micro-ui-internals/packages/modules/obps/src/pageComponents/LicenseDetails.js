@@ -9,14 +9,17 @@ import {
   DatePicker,
   ActionBar,
   SubmitBar,
+  ArrowLeft,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/Timeline";
+import { useHistory, useRouteMatch } from "react-router-dom";
 
 const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
   const { pathname: url } = useLocation();
   // const userInfo = Digit.UserService.getUser();
+  const history = useHistory();
   const userInfo = Digit.UserService.getUser();
   let validation = {};
   const tenantId = localStorage.getItem("Citizen.tenant-id");
@@ -236,8 +239,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   return (
     <div>
       <div className={isOpenLinkFlow ? "OpenlinkContainer" : ""} style={{ paddingBottom: "30px" }}>
-        {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
+          {<div className="back-button-container" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/provide-license-type")}>{(<React.Fragment><ArrowLeft /><p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+        {/* {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />} */}
         {!isLoading || !isUserLoading ? (
           <FormStep
             config={config}

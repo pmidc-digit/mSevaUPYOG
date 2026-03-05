@@ -68,7 +68,7 @@ function OBPSDocument({
                   target="_blank"
                   rel="noopener noreferrer"
                   href={documentLink}
-                  className="document-link"
+                  className="document-link-bpa"
                   key={index}
                 >
                   <div className="document-card">
@@ -81,9 +81,9 @@ function OBPSDocument({
                         : t(Code)
                       }
                     </p>
-                    <div className="document-action-label">
+                    {/* <div className="document-action-label">
                       View
-                    </div>
+                    </div> */}
                   </div>
                 </a>
               );

@@ -54,15 +54,15 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
       (prev || []).map((item, i) => {
         if (i !== index) return item;
         const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
-        const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
-        if (isReverted) {
-          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
-        }
+        // const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
+        // if (isReverted) {
+        //   return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
+        // }        
         const adjustedDiffers = normalizedValue !== originalEstimate;
         const remarkEmpty = !currentRemark || currentRemark.trim() === "";
         return {
           ...item,
-          adjustedAmount: normalizedValue,
+          adjustedAmount: normalizedValue || 0,
           remark: currentRemark,
           edited: adjustedDiffers && remarkEmpty,
         };

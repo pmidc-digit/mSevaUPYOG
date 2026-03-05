@@ -60,6 +60,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
             date: parseInt(dataRes?.auditDetails?.createdTime),
             businessService: dataForm?.businessService,
             status: `${dataRes.applicationStatus}`,
+            applicationStatus: dataRes?.status,
           };
         });
 

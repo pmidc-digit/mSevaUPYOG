@@ -11,8 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 public class RoleBasedDecryptionPolicy {
 
-    private List<String> roles = null;
+    private List<String> roles;
 
-    private List<AttributeAccess> attributeAccessList = null;
+    private List<AttributeAccess> attributeAccessList;
 
 }

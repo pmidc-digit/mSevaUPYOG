@@ -210,7 +210,7 @@ const CitizenApplicationOverview = () => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+      // console.error("Error generating acknowledgement:", error);
     } finally {
       setLoading(false);
     }
@@ -231,7 +231,7 @@ const CitizenApplicationOverview = () => {
       const receiptUrl = fileStore[response.filestoreIds[0]];
       await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+      // console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
     }
@@ -284,11 +284,30 @@ const CitizenApplicationOverview = () => {
       await downloadPdfFromURL(receiptUrl);
 
   } catch (error) {
-    console.error("Sanction Letter download error:", error);
+    // console.error("Sanction Letter download error:", error);
   } finally {
     setLoading(false);
   }
 }
+  async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-rejectionletter", ...params }) {
+    try {
+      setLoading(true);
+      let fileStoreId = null;
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
+
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore[fileStoreId];
+      await downloadPdfFromURL(receiptUrl);
+    } catch (error) {
+      console.error("rejection Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
 
   const dowloadOptions = [];
@@ -314,6 +333,25 @@ const CitizenApplicationOverview = () => {
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
           getSanctionLetterReceipt({
+            tenantId: reciept_data?.Payments[0]?.tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+          }),
+      });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }
+  }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED" ) {
+
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("DOWNLOAD_NOC_REJECTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
             tenantId: reciept_data?.Payments[0]?.tenantId,
             payments: reciept_data?.Payments[0],
             EmpData,
@@ -431,7 +469,7 @@ const finalComment = useMemo(() => {
     }
 
     const commentsobj = workflowDetails.data.timeline
-      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.filter((item) => ["APPROVE", "REJECT"].includes(item?.performedAction))
       ?.flatMap((item) => item?.wfComment || []);
 
     const approvercomments = commentsobj?.[0];
@@ -566,7 +604,9 @@ const finalComment = useMemo(() => {
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
-  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
+  const combinedOwnersName = [...(firmName?.trim() ? [firmName.trim()] : []), ...(ownersList || [])]
+    .filter((v, i, arr) => v && arr.indexOf(v) === i)
+    .join(", ");
   // console.log("combinerOwnersName", combinedOwnersName);
 
 
@@ -613,10 +653,17 @@ const finalComment = useMemo(() => {
               <StatusTable>
                 {detail?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(detail?.ownerType?.code)} />}
                 {detail?.firmName && <Row label={t("NOC_FIRM_NAME")} text={detail?.firmName} />}
-                <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+                <Row
+                  label={
+                    (typeof detail?.ownerType === "string" ? detail?.ownerType : detail?.ownerType?.code) === "Firm"
+                      ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
+                      : t("APPLICANT_NAME")
+                  }
+                  text={detail?.ownerOrFirmName || "N/A"}
+                />
                 <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
                 <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-                <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
                 <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
                 <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
                 <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />

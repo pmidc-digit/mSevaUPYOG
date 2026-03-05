@@ -80,16 +80,23 @@ const getApplicantDetails = (appData, t) => {
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
     values: [
-      owner?.ownerType?.code && { 
-        title: t("NOC_OWNER_TYPE_LABEL"), 
-        value: owner?.ownerType?.code 
+      owner?.ownerType?.code && {
+        title: t("NOC_OWNER_TYPE_LABEL"),
+        value: owner?.ownerType?.code
       },
-      owner?.firmName && { 
-        title: t("NOC_FIRM_NAME"), 
-        value: owner?.firmName 
+      owner?.firmName && {
+        title: t("NOC_FIRM_NAME"),
+        value: owner?.firmName
       },
       {
-        title: t("NOC_FIRM_OWNER_NAME_LABEL"),
+        title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
+        value: owner?.mobileNumber || "NA",
+      },
+      {
+        title:
+          (typeof owner?.ownerType === "string" ? owner?.ownerType : owner?.ownerType?.code) === "Firm"
+            ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
+            : t("APPLICANT_NAME"),
         value: owner?.ownerOrFirmName || "NA",
       },
       {
@@ -99,10 +106,6 @@ const getApplicantDetails = (appData, t) => {
       {
         title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
         value: owner?.fatherOrHusbandName || "NA",
-      },
-      {
-        title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
-        value: owner?.mobileNumber || "NA",
       },
       {
         title: t("NOC_APPLICANT_DOB_LABEL"),
@@ -116,9 +119,9 @@ const getApplicantDetails = (appData, t) => {
         title: t("NOC_APPLICANT_ADDRESS_LABEL"),
         value: owner?.address || "NA",
       },
-      owner?.propertyId && { 
-        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"), 
-        value: owner.propertyId 
+      owner?.propertyId && {
+        title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
+        value: owner.propertyId
       }
     ].filter(Boolean),
   }));
@@ -159,16 +162,16 @@ const getSiteDetails = (appData, t) => {
       appData?.nocDetails?.additionalDetails?.siteDetails?.roadType || "N/A",
     },
     {
+      title: t("NOC_NET_TOTAL_AREA_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netTotalArea || "N/A",
+    },
+    {
       title: t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.areaLeftForRoadWidening || "N/A",
     },
     {
       title: t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.netPlotAreaAfterWidening || "N/A",
-    },
-    {
-      title: t("NOC_NET_TOTAL_AREA_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netTotalArea || "N/A",
     },
     {
       title: t("NOC_ROAD_WIDTH_AT_SITE_LABEL"),

@@ -12,7 +12,7 @@ import {
   CardLabel,
   TextInput,
   LinkButton,
-  MultiLink
+  MultiLink,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -54,8 +54,8 @@ const ApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
-  const[approverStatement, setApproverStatement]= useState(null)
-  
+  const [approverStatement, setApproverStatement] = useState(null);
+
   const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
@@ -130,21 +130,12 @@ const ApplicationOverview = () => {
       setLoader(true);
       WorkflowService = await Digit.WorkflowService.init(tenantId, "ndc-services");
       setLoader(false);
-      console.log("WorkflowService====", WorkflowService?.BusinessServices?.[0]?.states);
       setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       // setComplaintStatus(applicationStatus);
     })();
   }, [tenantId]);
 
   const empData = EmployeeData(tenantId, approver);
-
-  console.log("approver for ndc", approver);
-
-  console.log("officerData", empData);
-
-  // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
-
-  // console.log("WorkflowService====", WorkflowService);
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -163,15 +154,17 @@ const ApplicationOverview = () => {
       let application = applicationDetails?.Applications?.[0];
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
+      } else {
         response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [
+          {
+            Payments: [
               {
                 ...(payments || {}),
                 ...application,
               },
-            ], },
+            ],
+          },
           "ndc-receipt"
         );
       }
@@ -187,17 +180,20 @@ const ApplicationOverview = () => {
   }
   const dowloadOptions = [];
 
-  if(applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"){
+  if (
+    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
+  ) {
     dowloadOptions.push({
-    label: t("DOWNLOAD_CERTIFICATE"),
-    onClick: () => handleDownloadPdf(),
-  });
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-    dowloadOptions.push({
-      label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: () => handleDownloadPdf(),
     });
-  }
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PTR_FEE_RECIEPT"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      });
+    }
   }
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -207,11 +203,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  console.log('userRoles', userRoles)
-  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
-
-
-  console.log('isCemp', isCemp)
+  const isCemp = user?.info?.roles.find((role) => role.code == "NDCCEMP")?.code;
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -296,16 +288,13 @@ const ApplicationOverview = () => {
 
       Property.propertyOwnerNames = propertyOwnerNames;
 
-      console.log("propertyOwnerNames", propertyOwnerNames);
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-      console.log("tenantInfo", tenantInfo);
       const ulbType = tenantInfo?.city?.ulbType;
       let acknowledgementData;
 
       if (empData) {
         acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
       }
-      // console.log("acknowledgementData", acknowledgementData);
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
         setLoader(false);
@@ -316,27 +305,16 @@ const ApplicationOverview = () => {
     }
   };
   function onActionSelect(action) {
-    console.log("action====???", action?.state?.actions);
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
     const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
 
-    console.log("hasDuePending", hasDuePending);
-
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-
-    console.log("filterNexState====???", filterNexState[0]?.nextState);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("filterRoles====???", filterRoles);
-    console.log("action test", action?.action);
-
     const checkactionApp = action?.action == "APPROVE";
 
-    console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
-
     if (hasDuePending && checkactionApp) {
-      console.log("alwasy coming appprve");
       setLable("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
       setError(true);
       setShowToast(true);
@@ -459,7 +437,7 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     if (workflowDetails) {
-      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE"|| pi?.action === "REJECT");
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
@@ -485,8 +463,6 @@ const ApplicationOverview = () => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
-
-  console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

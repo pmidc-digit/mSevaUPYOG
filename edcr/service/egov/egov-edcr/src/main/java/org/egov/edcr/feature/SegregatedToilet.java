@@ -137,15 +137,15 @@ public class SegregatedToilet extends FeatureProcess {
                 details.put(REQUIRED, "1");
                 details.put(PROVIDED, String.valueOf(pl.getSegregatedToilet().getSegregatedToilets().size()));
                 details.put(STATUS, Result.Accepted.getResultVal());
-                scrutinyDetail.getDetail().add(details);
-                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                //scrutinyDetail.getDetail().add(details);
+                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             } else {
                 details.put(DESCRIPTION, SEGREGATEDTOILET_DESCRIPTION);
                 details.put(REQUIRED, "1");
                 details.put(PROVIDED, "0");
                 details.put(STATUS, Result.Not_Accepted.getResultVal());
-                scrutinyDetail.getDetail().add(details);
-                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                //scrutinyDetail.getDetail().add(details);
+                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             }
 
             if (minDimension != null && minDimension.compareTo(new BigDecimal(200)) >= 0) {
@@ -153,15 +153,15 @@ public class SegregatedToilet extends FeatureProcess {
                 details.put(REQUIRED, ">= 200");
                 details.put(PROVIDED, minDimension.toString());
                 details.put(STATUS, Result.Accepted.getResultVal());
-                scrutinyDetail.getDetail().add(details);
-                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                //scrutinyDetail.getDetail().add(details);
+                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             } else {
                 details.put(DESCRIPTION, SEGREGATEDTOILET_DIMENSION_DESCRIPTION);
                 details.put(REQUIRED, ">= 200");
                 details.put(PROVIDED, minDimension.toString());
                 details.put(STATUS, Result.Not_Accepted.getResultVal());
-                scrutinyDetail.getDetail().add(details);
-                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+                //scrutinyDetail.getDetail().add(details);
+                //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             }
 
         }

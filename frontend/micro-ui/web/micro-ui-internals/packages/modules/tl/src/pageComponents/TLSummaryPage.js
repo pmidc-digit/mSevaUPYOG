@@ -12,7 +12,9 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const formData = reduxFormData || propsFormData || {};
   
   const createdResponse = formData?.CreatedResponse || formData?.EditPayload || {};
+  console.log("➡️Summary Page - Created Response:", createdResponse);
   const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory, propertyId} = createdResponse;
+  console.log("➡️Summary Page - Trade License Detail:", tradeLicenseDetail);
   const [isChecked, setIsChecked] = useState(false);
   const [showBreakupModal, setShowBreakupModal] = useState(false);
   const [breakupData, setBreakupData] = useState(null);
@@ -23,6 +25,9 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const accessories = tradeLicenseDetail?.accessories || [];
   const address = tradeLicenseDetail?.address || {};
   const taxHeads = calculation?.taxHeadEstimates || [];
+
+  // Fallback address data from Redux form (for fields API doesn't return)
+  const reduxAddress = formData?.TraidDetails?.address || {};
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const consumerCode = createdResponse?.applicationNumber;
@@ -289,10 +294,10 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
         {renderLabel(t("Structure Type"), tradeLicenseDetail?.structureType?.split(".")[0])}
         {renderLabel(t("Structure Sub Type"), tradeLicenseDetail?.structureType?.split(".")[1])}
         {renderLabel(t("Trade Commencement Date"), formatDate(commencementDate))}
-        {renderLabel(t("Trade GST No."), tradeLicenseDetail?.gstNo)}
+        {renderLabel(t("Trade GST No."), tradeLicenseDetail?.additionalDetail?.gstNo)}
         {renderLabel(t("Operational Area (Sq Ft)"), tradeLicenseDetail?.operationalArea)}
         {renderLabel(t("No. Of Employees"), tradeLicenseDetail?.noOfEmployees)}
-        {renderLabel(t("Old Receipt No."), tradeLicenseDetail?.oldLicenseNumber)}
+        {renderLabel(t("Old Receipt No."), createdResponse?.oldLicenseNumber)}
         {renderLabel(t("Validity (In Years)"), tradeLicenseDetail?.additionalDetail?.validityYears)}
       </div>
 
@@ -313,14 +318,16 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
       {accessories.length > 0 ? accessories.map((acc, index) => (
         <div key={index} className="bpa-summary-section">
           <div className="TL-item-index">#{index + 1}</div>
-          {renderLabel(t("Accessory Category"), acc?.accessoryCategory)}
+          {renderLabel(t("Accessory Category"), acc?.accessoryCategory ? t(`TRADELICENSE_ACCESSORIESCATEGORY_${acc.accessoryCategory.replace(/-/g, "_")}`) : null)}
           {renderLabel(t("UOM"), acc?.uom)}
-          {renderLabel(t("Quantity"), acc?.uomValue)}
+          {renderLabel(t("UOM Value"), acc?.uomValue)}
+          {renderLabel(t("Quantity"), acc?.count)}
         </div>
       )) : (
         <div className="bpa-summary-section">
           {renderLabel(t("Accessory Category"), null)}
           {renderLabel(t("UOM"), null)}
+          {renderLabel(t("UOM Value"), null)}
           {renderLabel(t("Quantity"), null)}
         </div>
       )}
@@ -330,11 +337,11 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
         {renderLabel(t("Property Id"), propertyId || "NA")}
         {renderLabel(t("City"), address?.city?.split(".")[1]?.toUpperCase() || "NA")}
         {renderLabel(t("Door/House No."), address?.doorNo)}
-        {renderLabel(t("Building/Colony Name"), address?.buildingName)}
+        {renderLabel(t("Building/Colony Name"), address?.buildingName || reduxAddress?.buildingName)}
         {renderLabel(t("Street Name"), address?.street)}
         {renderLabel(t("Mohalla"), address?.locality?.name)}
         {renderLabel(t("Pincode"), address?.pincode)}
-        {renderLabel(t("Electricity Connection No."), address?.electricityNo)}
+        {renderLabel(t("Electricity Connection No."), address?.electricityNo || reduxAddress?.electricityNo)}
       </div>
 
       <h2 className="bpa-summary-heading">{t("Owner Details")}</h2>
@@ -345,7 +352,7 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
           {renderLabel(t("Mobile No."), owner?.mobileNumber)}
           {renderLabel(t("Gender"), owner?.gender)}
           {renderLabel(t("Father/Husband's Name"), owner?.fatherOrHusbandName)}
-          {renderLabel(t("Relationship"), owner?.relationship)}
+          {renderLabel(t("Relationship"), owner?.relationship ? t(`COMMON_RELATION_${owner.relationship.toUpperCase()}`) : null)}
           {renderLabel(t("Type Of ownership"), ownershipCategory)}
           {renderLabel(t("Type of sub-ownership"), subOwnerShipCategoryValue)}
           {renderLabel(t("Email"), owner?.emailId)}

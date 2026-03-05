@@ -12,16 +12,6 @@ export const RentAndLeaseService = {
       params: { tenantId, ...filters },
     }),
 
-  billGenerate: ({ tenantId, filters }) =>
-    Request({
-      url: Urls.rentAndLease.bill_generate,
-      useCache: false,
-      method: "POST",
-      auth: true,
-      userService: true,
-      params: { tenantId, ...filters },
-    }),
-
   create: (details, tenantId) =>
     Request({
       url: Urls.rentAndLease.create,

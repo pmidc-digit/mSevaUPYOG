@@ -74,16 +74,16 @@ const LayoutMyApplications = ({ view }) => {
       accessor: (row) => row?.Applications?.applicationStatus || "",
       Cell: ({ row }) => GetCell(t(`BPA_STATUS_${row.original?.Applications?.applicationStatus || row.original?.Applications?.status || "-"}`) || (row.original?.Applications?.applicationStatus || "-")),
     },
-    {
-      Header: t("Action"),
-      accessor: "action",
-      Cell: ({ row }) => (
-        <SubmitBar
-          label={t("TL_VIEW_DETAILS")}
-          onSubmit={() => history.push(`/digit-ui/citizen/obps/layout/${row.original?.Applications?.applicationNo}`)}
-        />
-      ),
-    },
+    // {
+    //   Header: t("Action"),
+    //   accessor: "action",
+    //   Cell: ({ row }) => (
+    //     <SubmitBar
+    //       label={t("TL_VIEW_DETAILS")}
+    //       onSubmit={() => history.push(`/digit-ui/citizen/obps/layout/${row.original?.Applications?.applicationNo}`)}
+    //     />
+    //   ),
+    // },
   ], [t]);
 
   if (isLoading) {

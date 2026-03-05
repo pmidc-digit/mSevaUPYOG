@@ -166,20 +166,20 @@ const LayoutStepperForm = () => {
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
   };
 
-  useEffect(() => {
-      if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-        const zoneName = siteDetails?.zone?.name || siteDetails?.zone
-        const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
-        if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
-          dispatch(
-            UPDATE_LayoutNewApplication_FORM("siteDetails", {
-              ...formData.siteDetails,
-              zone: matchedZone,
-            })
-          );
-        }
-      }
-    }, [fetchedLocalities, siteDetails?.zone]);
+  // useEffect(() => {
+  //     if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+  //       const zoneName = siteDetails?.zone?.name || siteDetails?.zone
+  //       const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
+  //       if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
+  //         dispatch(
+  //           UPDATE_LayoutNewApplication_FORM("siteDetails", {
+  //             ...formData.siteDetails,
+  //             zone: matchedZone,
+  //           })
+  //         );
+  //       }
+  //     }
+  //   }, [fetchedLocalities, siteDetails?.zone]);
   
     const options = [
       { code: "YES", i18nKey: "YES" },
@@ -206,10 +206,25 @@ const LayoutStepperForm = () => {
           value: `${genderDetails.code}`,
         });
       });
+  // const convertToISODate = (dateStr) => {
+  //   const [dd, mm, yyyy] = dateStr.split("-");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // };
+
   const convertToISODate = (dateStr) => {
-    const [dd, mm, yyyy] = dateStr.split("-");
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  if (!dateStr) return "";
+
+  const parts = dateStr.split("-");
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[0].length === 4) {
+    return dateStr;
+  }
+
+  // dd-mm-yyyy → yyyy-mm-dd
+  const [dd, mm, yyyy] = parts;
+  return `${yyyy}-${mm}-${dd}`;
+};
 
 
   useEffect(() => {
@@ -235,6 +250,7 @@ const LayoutStepperForm = () => {
               documentUid: doc?.documentUid || "",
               documentAttachment: doc?.documentAttachment || "",
               filestoreId: doc?.uuid || "",
+              layoutId: doc?.layoutId || null
             })),
           },
         };

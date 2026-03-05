@@ -35,6 +35,11 @@ const useLayoutTableConfig = ({
                  );
                  },
              },
+           {
+                 Header: t("CS_APPLICATION_DETAILS_APPLICATION_DATE"),
+                 accessor: "applicationDate",
+                 Cell: ({row}) => row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), 'dd/MM/yyyy')) : ""
+             },
             
     
              {

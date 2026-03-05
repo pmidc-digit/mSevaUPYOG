@@ -248,8 +248,8 @@ export const TLSearch = {
                 return {
                   title: Number(checkOwnerLength) > 1 ? "TL_PAYMENT_PAID_BY_PLACEHOLDER" : "",
                   values: [
-                    { title: "TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL", value: response?.tradeLicenseDetail?.subOwnerShipCategory ? `COMMON_MASTERS_OWNERSHIPCATEGORY_${response?.tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]}` : "NA" },
-                    { title: "TL_TYPE_OF_SUB_OWNERSHIP", value: subOwnerShipCategory },
+                    { title: "TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL", value: subOwnerShipCategory },
+                    { title: "TL_TYPE_OF_SUB_OWNERSHIP", value: response?.tradeLicenseDetail?.subOwnerShipCategory ? `COMMON_MASTERS_OWNERSHIPCATEGORY_${response?.tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]}` : "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_NAME_LABEL", value: owner?.name || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_MOB_NO_LABEL", value: owner?.mobileNumber || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL", value: owner?.fatherOrHusbandName || "NA" },

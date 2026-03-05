@@ -566,8 +566,7 @@ const TradeUnitForm = (_props) => {
               : ""}{" "}
           </CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none"
-             style={{ color: !unit?.tradeSubType?.uom ? "#9e9e9e" : "" }}>
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}`}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>
@@ -597,8 +596,7 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller hrms-text-transform-none"
-             style={{ color: !unit?.tradeSubType?.uom ? "#9e9e9e" : "" }}>
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>

@@ -158,21 +158,6 @@ const OwnerForm = (_props) => {
     trigger();
   }, []);
 
-  // Explicitly restore DOB on back-navigation (Controller defaultValue can lose it on remount)
-  useEffect(() => {
-    if (owner?.dob) {
-      let dobVal = owner.dob;
-      if (typeof dobVal === "number" || !isNaN(Number(dobVal))) {
-        const dt = new Date(Number(dobVal));
-        dobVal = isNaN(dt.getTime()) ? "" : dt.toISOString().split("T")[0];
-      } else if (typeof dobVal === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(dobVal)) {
-        const [dd, mm, yyyy] = dobVal.split("/");
-        dobVal = `${yyyy}-${mm}-${dd}`;
-      }
-      if (dobVal) setValue("dob", dobVal);
-    }
-  }, []);
-
   useEffect(() => {
     if (window.location.href.includes("tl/renew-application-details") && formData?.cpt?.details) {
     
@@ -233,39 +218,16 @@ const OwnerForm = (_props) => {
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
 
-   const [genderRestored, setGenderRestored] = useState(false);
   useEffect(function () {
-    if (genderRestored) return;
-    if (!genderTypeMenu || genderTypeMenu.length === 0) return;
-    if (owner && owner.gender) {
-      var genderCode = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
-      if (genderCode) {
-        var genderObj = genderTypeMenu.find(function (g) {
-          return g.code === genderCode;
-        });
-        if (genderObj) {
-          setValue("gender", genderObj);
-          setGenderRestored(true);
-        }
-      }
+  if (owner && owner.gender) {
+    var genderObj = genderTypeMenu.find(function (g) {
+      return g.code === owner.gender;
+    });
+    if (genderObj) {
+      setValue("gender", genderObj);
     }
-  }, [genderTypeMenu]);
-
-  const [relationshipRestored, setRelationshipRestored] = useState(false);
-  useEffect(function () {
-    if (relationshipRestored) return;
-    if (owner && owner.relationship) {
-      var relCode = typeof owner.relationship === "string" ? owner.relationship : owner.relationship?.code;
-      if (relCode) {
-        var relObj = {
-          code: relCode,
-          i18nKey: relCode === "Father" ? "COMMON_RELATION_FATHER" : "COMMON_RELATION_HUSBAND",
-        };
-        setValue("relationship", relObj);
-        setRelationshipRestored(true);
-      }
-    }
-  }, []);
+  }
+}, [owner]);
 
   return (
     <React.Fragment>
@@ -488,20 +450,7 @@ const OwnerForm = (_props) => {
                     type="button"
                     onClick={searchUserByMobile}
                     disabled={isSearching}
-                    style={{
-                      padding: "8px 16px",
-                      background: isSearching ? "#94a3b8" : "linear-gradient(135deg, #2563eb, #1e40af)",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: isSearching ? "not-allowed" : "pointer",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      whiteSpace: "nowrap",
-                      minWidth: "80px",
-                      height: "38px",
-                      transition: "all 0.2s ease",
-                    }}
+                    className={`TL-search-btn ${isSearching ? "TL-search-btn-searching" : "TL-search-btn-active"}`}
                   >
                     {isSearching ? t("CS_COMMON_SEARCHING") || "Searching..." : t("TL_SEARCH") || "Search"}
                   </button>
@@ -689,8 +638,7 @@ const OwnerForm = (_props) => {
 
                   defaultValue={owner?.gender
                     ? genderTypeMenu.find(function (g) {
-                      var code = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
-                      return g.code === code;
+                      return g.code === owner.gender;
                     }) || null
                     : null}
                   rules={{ required: t("REQUIRED_FIELD") }}
@@ -753,7 +701,7 @@ const OwnerForm = (_props) => {
                         onBlur={props.onBlur}
                         // disable={isRenewal}
                         // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
-                        // placeholder={t("Enter Official Correspondence Address")}
+                        placeholder={t("Enter Official Correspondence Address")}
                       />
                     )}
                   />
@@ -906,16 +854,17 @@ const OwnerForm = (_props) => {
                 <Controller
                   control={control}
                   name="relationship"
-                  defaultValue={(() => {
-                    const rel = owner?.relationship;
-                    if (!rel) return null;
-                    if (typeof rel === "object" && rel.code && typeof rel.code === "string") return rel;
-                    const relCode = typeof rel === "string" ? rel : (rel?.code || "");
-                    return {
-                      code: relCode,
-                      i18nKey: relCode === "Father" ? "COMMON_RELATION_FATHER" : "COMMON_RELATION_HUSBAND",
-                    };
-                  })()}
+                  defaultValue={
+                    owner?.relationship
+                      ? {
+                        code: owner.relationship,
+                        i18nKey:
+                          owner.relationship === "Father"
+                            ? "COMMON_RELATION_FATHER"
+                            : "COMMON_RELATION_HUSBAND",
+                      }
+                      : null
+                  }
                   rules={{ required: "RelationShip Required" }}
                   render={(props) => {
                     const selectedValue = props && props.value ? props.value : null;
@@ -964,12 +913,7 @@ const OwnerForm = (_props) => {
                 <Controller
                   control={control}
                   name="gender"
-                  defaultValue={owner.gender
-                    ? genderTypeMenu.find(function (g) {
-                      var code = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
-                      return g.code === code;
-                    }) || null
-                    : null}
+                  defaultValue={owner.gender}
                   rules={{ required: t("REQUIRED_FIELD") }}
                   render={function (props) {
                     var selectedValue = props && props.value ? props.value : null;

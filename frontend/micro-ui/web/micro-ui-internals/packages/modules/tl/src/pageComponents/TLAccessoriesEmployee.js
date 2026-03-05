@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, LinkLabel, CardLabelError, MobileNumber } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -158,26 +158,11 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
         <AccessoriersForm key={accessor.key} index={index} accessor={accessor} {...commonProps} />
       ))}
       {!isRenewal && (
-        <LinkLabel
-          style={{
-            display: "inline-block",
-            padding: "8px 16px",
-            background: "linear-gradient(135deg, #2563eb, #1e40af)",
-            color: "#FFFFFF",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "13px",
-            fontWeight: "600",
-            textDecoration: "none",
-            marginTop: "16px",
-            marginBottom: "8px",
-            border: "none",
-            transition: "background-color 0.2s ease",
-          }}
+        <LinkButton
+          label={`${t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}`}
           onClick={addAccessories}
-        >
-          {t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}
-        </LinkLabel>
+         
+        />
       )}
     </React.Fragment>
   );
@@ -235,6 +220,9 @@ const AccessoriersForm = (_props) => {
 
   useEffect(() => {
     const keys = Object.keys(formValue);
+    if (!formValue?.accessoryCategory?.uom) {
+      formValue.uomValue = "";
+    }
     const part = {};
     keys.forEach((key) => (part[key] = accessor[key]));
 
@@ -243,10 +231,7 @@ const AccessoriersForm = (_props) => {
     if (!_.isEqual(formValue, part)) {
       Object.keys(formValue).map((data) => {
         if (data != "key" && formValue[data] != undefined && formValue[data] != "" && formValue[data] != null && !isErrors) {
-          // Only flag errors if an accessory category is actually selected
-          if (formValue?.accessoryCategory?.code) {
-            setIsErrors(true); 
-          }
+          setIsErrors(true);
         }
       });
 
@@ -260,12 +245,8 @@ const AccessoriersForm = (_props) => {
   }, [formValue]);
 
   useEffect(() => {
-    // Only propagate errors to parent form when an accessory is actually selected
-    const hasAccessorySelected = accessor?.accessoryCategory?.code || formValue?.accessoryCategory?.code;
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
-      if (hasAccessorySelected) {
-        setError(config.key, { type: errors });
-      }
+      setError(config.key, { type: errors });
     } else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
       clearErrors(config.key);
     }
@@ -294,41 +275,11 @@ const AccessoriersForm = (_props) => {
         <div className="clu-doc-required-card no-width">
           {allAccessoriesList?.length > 1 ? (
             
-            <div
-            style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                marginBottom: "16px",
-                paddingRight: "8px",
-              }}>
-              <div onClick={() => removeAccessor(accessor)}
-                onMouseEnter={(e) => {
-                  const svg = e.currentTarget.querySelector("svg");
-                  const path = svg.querySelector("path");
-                  e.currentTarget.style.transform = "scale(1.1)";
-                  e.currentTarget.style.opacity = "0.8";
-                  path.style.fill = "#2341e9b2"; // Red color on hover
-                }}
-                onMouseLeave={(e) => {
-                  const svg = e.currentTarget.querySelector("svg");
-                  const path = svg.querySelector("path");
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.opacity = "1";
-                  path.style.fill = "#6b7280"; // Gray color default
-                }}
-                style={{
-                  cursor: "pointer",
-                  padding: "4px",
-                  borderRadius: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.2s ease",
-                  backgroundColor: "transparent",
-                }}>
+            <div >
+              <div onClick={() => removeAccessor(accessor)}>
                 <span>
                   <svg
-                    // style={{ float: "right", position: "relative", bottom: "5px" }}
+                    style={{ float: "right", position: "relative", bottom: "5px" }}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
@@ -361,7 +312,7 @@ const AccessoriersForm = (_props) => {
                     setUomvalues(accessor?.accessoryCategory?.uom);
                     setenableUOM(true);
                     setValue("uomValue", "");
-                    setValue("count", "1");
+                    setValue("count", "");
                   }}
                   onBlur={props.onBlur}
                   option={sortDropdownNames(accessories, "i18nKey", t) || []}
@@ -436,7 +387,7 @@ const AccessoriersForm = (_props) => {
                       setFocusIndex({ index: accessor.key, type: "uomValue" });
                     }}
                     // disable={/*getValues("uomValue")?!(accessor?.accessoryCategory?.uom) || accessor?.id:*/!(accessor?.accessoryCategory?.uom) }
-                    disable={isRenewal ? !enableUOM : !(accessor?.accessoryCategory?.uom)}
+                    disable={isRenewal ? !enableUOM : false}
                     onBlur={props.onBlur}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                   />

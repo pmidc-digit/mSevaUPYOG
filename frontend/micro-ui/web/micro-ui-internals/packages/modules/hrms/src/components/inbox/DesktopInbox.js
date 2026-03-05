@@ -120,9 +120,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         columns={columns}
         getCellProps={(cellInfo) => {
           return {
-            className: `p-5 text-base min-w-[150px] ${
-              cellInfo.column.Header == t("HR_EMP_ID_LABEL") ? "max-w-[150px]" : ""
-            }`,
+            className: `p-5 text-base min-w-[150px] ${cellInfo.column.Header == t("HR_EMP_ID_LABEL") ? "max-w-[150px]" : ""}`,
           };
         }}
         onPageSizeChange={props.onPageSizeChange}
@@ -167,9 +165,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
         />
-        <div className={`result flex-1 ${!props?.isSearch ? "ml-6" : ""}`}>
-          {result}
-        </div>
+        <div className={`result flex-1 ${!props?.isSearch ? "ml-6" : ""}`}>{result}</div>
       </div>
     </div>
   );

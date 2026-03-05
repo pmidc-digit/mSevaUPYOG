@@ -40,7 +40,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
         landmark: formData?.cpt?.details?.address?.landmark,
         locality: formData?.cpt?.details?.address?.locality?.name,
         city: formData?.cpt?.details?.address?.city || t(formData?.cpt?.details?.address?.tenantId),
-        pincode: formData?.cpt?.details?.address?.pincode || formData?.address?.pincode,
+        pincode: formData?.address?.pincode,
       };
       let addressDetails = "";
       for (const key in obj) {
@@ -61,7 +61,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
         landmark: formData?.cpt?.details?.address?.landmark,
         locality: formData?.cpt?.details?.address?.locality?.name,
         city: formData?.cpt?.details?.address?.city,
-        pincode: formData?.cpt?.details?.address?.pincode || formData?.address?.pincode,
+        pincode: formData?.address?.pincode,
       };
       let addressDetails = "";
       for (const key in obj) {

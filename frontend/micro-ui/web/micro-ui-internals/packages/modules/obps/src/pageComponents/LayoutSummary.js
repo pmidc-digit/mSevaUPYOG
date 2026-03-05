@@ -75,7 +75,8 @@ function LayoutSummary({ currentStepData: formData, t }) {
       fatherOrHusbandName: formData.applicationDetails.applicantFatherHusbandName,
       permanentAddress: formData.applicationDetails.applicantAddress,
       pan: formData.applicationDetails.panNumber,
-      aplicantType: formData.applicationDetails.aplicantType
+      aplicantType: formData.applicationDetails.aplicantType,
+      authorisedPerson: formData.applicationDetails.authorisedPerson,
     };
   }
   
@@ -84,18 +85,21 @@ function LayoutSummary({ currentStepData: formData, t }) {
   // For fresh mode: combine primary owner (from applicationDetails) with newly added applicants
   let owners = [];
   
-  if (isEditMode && ownersFromApi.length > 0) {
-    // Edit mode: existing owners from API + new applicants
-    owners = [...ownersFromApi, ...newlyAddedApplicants.filter(newApp => 
-      !ownersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber)
-    )];
-  } else if (!isEditMode && primaryOwner) {
+  // if (isEditMode && ownersFromApi.length > 0) {
+  //   // Edit mode: existing owners from API + new applicants
+  //   owners = [...ownersFromApi, ...newlyAddedApplicants.filter(newApp => 
+  //     !ownersFromApi.some(existingOwner => existingOwner.mobileNumber === newApp.mobileNumber)
+  //   )];
+  // } else 
+  if (!isEditMode && primaryOwner) {
     // Fresh mode: primary owner + new applicants
     owners = [primaryOwner, ...newlyAddedApplicants];
   } else {
     // Fallback
     owners = ownersFromApi.length > 0 ? ownersFromApi : newlyAddedApplicants;
   }
+
+  const activeApplicants = owners?.slice(1)?.filter(a => a?.status);
   
   const layoutDocuments = layoutData?.documents || [];
 
@@ -294,8 +298,9 @@ function LayoutSummary({ currentStepData: formData, t }) {
               <div style={headerRow}>
                 <CardSubHeader>{t("Primary Owner") || "Primary Owner"}</CardSubHeader>
               </div>
-              {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owners[0]?.name)}
-              {renderLabel(t("Applicant Type"), owners[0]?.aplicantType?.name || "")}
+              {renderLabel(owners[0]?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME"), owners[0]?.name)}
+              {renderLabel(t("CLU_OWNER_TYPE_LABEL"), owners[0]?.aplicantType?.name || "")}
+              {owners[0]?.aplicantType?.code === "FIRM" && renderLabel(t("NEW_LAYOUT_FIRM_NAME_LABEL"), owners[0]?.authorisedPerson || "N/A")}
               {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owners[0]?.mobileNumber)}
               {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owners[0]?.emailId)}
               {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owners[0]?.gender?.code || owners[0]?.gender?.value || owners[0]?.gender)}
@@ -305,11 +310,11 @@ function LayoutSummary({ currentStepData: formData, t }) {
               
               {/* Documents Section */}
               <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("Photo") || "Photo"}</CardLabel>
+                <CardLabel style={boldLabelStyle}>{t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}</CardLabel>
                 <div style={valueStyle}><DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} /></div>
               </div>
               <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("ID Proof") || "ID Proof"}</CardLabel>
+                <CardLabel style={boldLabelStyle}>{t("BPA_APPLICANT_ID_PROOF") || "ID Proof"}</CardLabel>
                 <div style={valueStyle}><DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} /></div>
               </div>
               <div style={labelFieldPairStyle}>
@@ -321,105 +326,45 @@ function LayoutSummary({ currentStepData: formData, t }) {
           </Card>
 
           {/* ADDITIONAL OWNERS */}
-          {owners.length > 1 && owners.slice(1).map((owner, index) => (
+          {owners.length > 1 && owners.slice(1).map((owner, index) => {
+            if (!owner?.status) return null;
+            const visibleIndex = activeApplicants.findIndex(a => a === owner);
+
+            return (
             <Card key={index + 1} style={{ marginBottom: "1.5rem" }}>
               <div style={sectionStyle}>
                 <div style={headerRow}>
-                  <CardSubHeader>{t("Additional Owner") || "Additional Owner"} {index + 1}</CardSubHeader>
+                  <CardSubHeader>{t("Additional Owner") || "Additional Owner"} {visibleIndex + 1}</CardSubHeader>
                 </div>
                 {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
                 {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
                 {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
                 {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender?.value || owner?.gender)}
-                {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dob ? (typeof owner.dob === 'number' ? new Date(owner.dob).toLocaleDateString() : owner.dob) : null)}
+                {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dob ? convertDateToISO(owner?.dob) : null)}
                 {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
                 {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress || owner?.address)}
                 
                 {/* Documents Section */}
                 <div style={labelFieldPairStyle}>
-                  <CardLabel style={boldLabelStyle}>{t("Photo") || "Photo"}</CardLabel>
-                  <div style={valueStyle}><DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERPHOTO")} stateCode={stateCode} t={t} /></div>
+                  <CardLabel style={boldLabelStyle}>{t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"}</CardLabel>
+                  <div style={valueStyle}><DocumentLink fileStoreId={owner?.photoUploadedFiles} stateCode={stateCode} t={t} /></div>
                 </div>
                 <div style={labelFieldPairStyle}>
-                  <CardLabel style={boldLabelStyle}>{t("ID Proof") || "ID Proof"}</CardLabel>
-                  <div style={valueStyle}><DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERVALIDID")} stateCode={stateCode} t={t} /></div>
+                  <CardLabel style={boldLabelStyle}>{t("BPA_APPLICANT_ID_PROOF") || "ID Proof"}</CardLabel>
+                  <div style={valueStyle}><DocumentLink fileStoreId={owner?.documentUploadedFiles} stateCode={stateCode} t={t} /></div>
                 </div>
                 <div style={labelFieldPairStyle}>
                   <CardLabel style={boldLabelStyle}>{t("BPA_PAN_DOCUMENT") || "PAN Document"}</CardLabel>
-                  <div style={valueStyle}><DocumentLink fileStoreId={findOwnerDocument(index + 1, "PANDOCUMENT")} stateCode={stateCode} t={t} /></div>
+                  <div style={valueStyle}><DocumentLink fileStoreId={owner?.panDocumentUploadedFiles} stateCode={stateCode} t={t} /></div>
                 </div>
                 {renderLabel(t("BPA_PAN_NUMBER_LABEL"), owner?.panNumber)}
               </div>
             </Card>
-          ))}
+          )})}
         </React.Fragment>
       )}
 
-      {/* APPLICANT DETAILS */}
-      {/* <Card style={{ marginBottom: "1.5rem" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_APPLICANT_DETAILS")}</h3>
-          </div>
-          {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
-          {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
-          {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
-          {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), formData?.applicationDetails?.applicantMobileNumber)}
-          {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
-          {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
-          {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
-          {renderLabel(t("BPA_PAN_NUMBER_LABEL"), formData?.applicationDetails?.panNumber)}
-        </div>
-      </Card> */}
-
-      {/* ADDITIONAL APPLICANTS DETAILS */}
-      {/* {owners && owners.length > 1 && owners.slice(1).map((owner, index) => (
-        <Card key={index + 1} style={{ marginBottom: "1.5rem" }}>
-          <div style={sectionStyle}>
-            <div style={headerRow}>
-              <h3 style={headingStyle}>{t("BPA_ADDITIONAL_APPLICANT_DETAILS_LABEL") || `Additional Applicant ${index + 1}`}</h3>
-            </div>
-            {renderLabel(t("BPA_FIRM_OWNER_NAME_LABEL"), owner?.name)}
-            {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
-            {renderLabel(t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), owner?.fatherOrHusbandName)}
-            {renderLabel(t("BPA_APPLICANT_MOBILE_NO_LABEL"), owner?.mobileNumber)}
-            {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), owner?.dob)}
-            {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), owner?.gender?.code || owner?.gender)}
-            {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress)}
-            {renderLabel(t("BPA_PAN_NUMBER_LABEL"), owner?.pan)}
-            
-         
-            {findOwnerDocument(index + 1, "OWNERPHOTO") && (
-              <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("BPA_PHOTO_LABEL") || "Photo"}</CardLabel>
-                <div style={valueStyle}>
-                  <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERPHOTO")} stateCode={stateCode} t={t} />
-                </div>
-              </div>
-            )}
-            
-        
-            {findOwnerDocument(index + 1, "OWNERVALIDID") && (
-              <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("BPA_ID_DOCUMENT_LABEL") || "ID Document"}</CardLabel>
-                <div style={valueStyle}>
-                  <DocumentLink fileStoreId={findOwnerDocument(index + 1, "OWNERVALIDID")} stateCode={stateCode} t={t} />
-                </div>
-              </div>
-            )}
-            
-       
-            {findOwnerDocument(index + 1, "PANDOCUMENT") && (
-              <div style={labelFieldPairStyle}>
-                <CardLabel style={boldLabelStyle}>{t("BPA_PAN_DOCUMENT_LABEL") || "PAN Document"}</CardLabel>
-                <div style={valueStyle}>
-                  <DocumentLink fileStoreId={findOwnerDocument(index + 1, "PANDOCUMENT")} stateCode={stateCode} t={t} />
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-      ))} */}
+      
 
       {/* PROFESSIONAL DETAILS */}
       {formData?.applicationDetails?.professionalName && (
@@ -448,21 +393,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </Card>
       )}
 
-      {/* LOCALITY INFO */}
-      {/* <Card style={{ marginBottom: "1.5rem" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("BPA_LOCALITY_INFO_LABEL")}</h3>
-          </div>
-          {renderLabel(t("BPA_AREA_TYPE_LABEL"), formData?.siteDetails?.layoutAreaType?.name)}
-          {formData?.siteDetails?.layoutAreaType?.code === "SCHEME_AREA" &&
-            renderLabel(t("BPA_SCHEME_NAME_LABEL"), formData?.siteDetails?.layoutSchemeName)}
-          {formData?.siteDetails?.layoutAreaType?.code === "APPROVED_COLONY" &&
-            renderLabel(t("BPA_APPROVED_COLONY_NAME_LABEL"), formData?.siteDetails?.layoutApprovedColonyName)}
-          {formData?.siteDetails?.layoutAreaType?.code === "NON_SCHEME" &&
-            renderLabel(t("BPA_NON_SCHEME_TYPE_LABEL"), formData?.siteDetails?.layoutNonSchemeType?.name)}
-        </div>
-      </Card> */}
 
       {/* SITE DETAILS */}
       <Card style={{ marginBottom: "1.5rem" }}>
@@ -499,7 +429,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), formData?.siteDetails?.vasikaNumber)}
           {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(formData?.siteDetails?.vasikaDate))}
           {renderLabel(t("BPA_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
-          {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
+          {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
           {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.isAreaUnderMasterPlan?.i18nKey)}
           {renderLabel(t("BPA_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}  
           {renderLabel(t("BPA_ULB_NAME_LABEL"), formData?.siteDetails?.ulbName?.name)}
@@ -512,12 +442,12 @@ function LayoutSummary({ currentStepData: formData, t }) {
           {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
           {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.buildingCategory?.name)}
           {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), formData?.siteDetails?.residentialType?.name || formData?.siteDetails?.buildingCategory?.name)}
-          {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
-          {renderLabel(t("BPA_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), formData?.siteDetails?.netPlotAreaAfterWidening)}
+          {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}          
+          {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.netPlotAreaAfterWidening)}
           {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(formData?.siteDetails?.areaLeftForRoadWidening-formData?.siteDetails?.netPlotAreaAfterWidening))}
-          {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderEWSInSqM)}
+          {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderEWS)}
           {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderEWSInPct)}
-          {renderLabel(t("Net Total Area"), formData?.siteDetails?.netTotalArea)}
+          {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), formData?.siteDetails?.netTotalArea)}
           {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderResidentialUseInSqM)}
           {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), formData?.siteDetails?.areaUnderResidentialUseInPct)}
           {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), formData?.siteDetails?.areaUnderCommercialUseInSqM)}
@@ -571,30 +501,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
         </div>
       </Card>
 
-      {/* CLU DETAILS */}
-      {/* <Card style={{ marginBottom: "1.5rem" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <CardSubHeader>{t("BPA_CLU_DETAILS")}</CardSubHeader>
-          </div>
-          
-          
-          
-        </div>
-      </Card> */}
-
-      {/* SITE COORDINATES */}
-      {/* <Card style={{ marginBottom: "1.5rem" }}>
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h3>
-          </div>
-          {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
-          {renderLabel(t("COMMON_LONGITUDE1_LABEL"), coordinates?.Longitude1)}
-          {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
-          {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
-        </div>
-      </Card> */}
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
@@ -626,7 +532,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
           </div>
           <div style={{ padding: "0 1.5rem" }}>
-            {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents} />}
+            {formData?.documents?.documents?.documents?.length > 0 && <LayoutDocumentTableView documents={formData?.documents?.documents?.documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />}
           </div>
         </div>
       </Card>

@@ -66,20 +66,20 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     let hasError = false;
     //console.log("errorFound: Step 1 validation started for applicants", applicants);
 
-    applicants.forEach((applicant, index) => {
+    applicants?.filter(obj => obj?.status)?.forEach((applicant, index) => {
       // Clear old errors for this applicant
-      clearErrors(`applicants.${index}`);
+      clearErrors(`applicants.${applicant?.actualIndex}`);
 
       /* ---------------- Mobile Number ---------------- */
       if (!applicant.mobileNumber) {
-        setError(`applicants.${index}.mobileNumber`, {
+        setError(`applicants.${applicant?.actualIndex}.mobileNumber`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
         //console.log("errorFound: mobile number error for applicant index", index);
       } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
-        setError(`applicants.${index}.mobileNumber`, {
+        setError(`applicants.${applicant?.actualIndex}.mobileNumber`, {
           type: "manual",
           message: t("INVALID_MOBILE_NUMBER"),
         });
@@ -89,7 +89,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- Name ---------------- */
       if (!applicant.name || !applicant.name.trim()) {
-        setError(`applicants.${index}.name`, {
+        setError(`applicants.${applicant?.actualIndex}.name`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
@@ -99,7 +99,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- Email ---------------- */
       if (!applicant.emailId) {
-        setError(`applicants.${index}.emailId`, {
+        setError(`applicants.${applicant?.actualIndex}.emailId`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
@@ -116,7 +116,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- Address ---------------- */
       if (!applicant.address || !applicant.address.trim()) {
-        setError(`applicants.${index}.address`, {
+        setError(`applicants.${applicant?.actualIndex}.address`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
@@ -126,7 +126,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- DOB (18+ validation) ---------------- */
       if (!applicant.dob) {
-        setError(`applicants.${index}.dob`, {
+        setError(`applicants.${applicant?.actualIndex}.dob`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
@@ -141,7 +141,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
         const d = today.getDate() - dob.getDate();
 
         if (age < 18 || (age === 18 && (m < 0 || (m === 0 && d < 0)))) {
-          setError(`applicants.${index}.dob`, {
+          setError(`applicants.${applicant?.actualIndex}.dob`, {
             type: "manual",
             message: t("DOB_MUST_BE_18_YEARS_OLD"),
           });
@@ -152,7 +152,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- Gender ---------------- */
       if (!applicant.gender) {
-        setError(`applicants.${index}.gender`, {
+        setError(`applicants.${applicant?.actualIndex}.gender`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
@@ -162,7 +162,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- Passport Photo ---------------- */
       if (!applicant.photoUploadedFiles) {
-        setError(`applicants.${index}.photo`, {
+        setError(`applicants.${applicant?.actualIndex}.photo`, {
           type: "manual",
           message: t("BPA_PASSPORT_PHOTO_REQUIRED"),
         });
@@ -172,7 +172,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- ID Proof ---------------- */
       if (!applicant.documentUploadedFiles) {
-        setError(`applicants.${index}.document`, {
+        setError(`applicants.${applicant?.actualIndex}.document`, {
           type: "manual",
           message: t("BPA_ID_PROOF_REQUIRED"),
         });
@@ -182,7 +182,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- PAN Document ---------------- */
       if (!applicant.panDocumentUploadedFiles) {
-        setError(`applicants.${index}.panDocument`, {
+        setError(`applicants.${applicant?.actualIndex}.panDocument`, {
           type: "manual",
           message: t("PAN_DOCUMENT_REQUIRED"),
         });
@@ -192,14 +192,14 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
       /* ---------------- PAN Number ---------------- */
       if (!applicant.panNumber) {
-        setError(`applicants.${index}.panNumber`, {
+        setError(`applicants.${applicant?.actualIndex}.panNumber`, {
           type: "manual",
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
         //console.log("errorFound: panNumber error for applicant index",index)
       } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(applicant.panNumber)) {
-        setError(`applicants.${index}.panNumber`, {
+        setError(`applicants.${applicant?.actualIndex}.panNumber`, {
           type: "manual",
           message: t("INVALID_PAN_FORMAT"),
         });
@@ -215,29 +215,10 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
 
 
-  // const onSubmit = (data) => {
-  //   //console.log("data in first step", data);
-  //   const applicants = currentStepData?.applicants || [];
-  //   const isApplicantsValid = validateApplicants(applicants);
-
-  //   console.log("total errorFound: ", errors)
-
-  //   if (!isApplicantsValid) {
-  //     return;
-  //   }
-  //   trigger();
-
-  //   if (errors.length > 0) {
-  //     console.log("Plz fill mandatory fields in Step1");
-  //     return;
-  //   }
-  //   goNext(data);
-  // };
-
   const onSubmit = async (data) => {
     const applicants = currentStepData?.applicants || [];
 
-    // 1. Validate applicants manually
+    // 1. Validate applicants manually    
     const isApplicantsValid = validateApplicants(applicants);
 
     if (!isApplicantsValid) {

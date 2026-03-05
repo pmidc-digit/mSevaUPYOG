@@ -154,6 +154,8 @@ const LayoutStepperForm = () => {
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
     aplicantType: primaryOwner?.additionalDetails?.aplicantType,
+    authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson,
+    
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -164,6 +166,7 @@ const LayoutStepperForm = () => {
     // Documents from primaryOwner
     primaryOwnerPhoto: primaryOwner?.additionalDetails?.ownerPhoto || professionalDetails?.primaryOwnerPhoto || "",
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
+    authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson || ""
   };
 
   // useEffect(() => {
@@ -305,6 +308,7 @@ const LayoutStepperForm = () => {
           applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
           panNumber: applicantDetails?.panNumber || "",
           aplicantType: applicantDetails?.aplicantType,
+          authorisedPerson: applicantDetails?.authorisedPerson,
           // Professional details (if applicable)
           professionalName: applicantDetails?.professionalName || "",
           professionalEmailId: applicantDetails?.professionalEmailId || "",
@@ -378,11 +382,12 @@ const LayoutStepperForm = () => {
         };
   
         // Map all owners including primary (index 0)
-        const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner) => {
+        const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner, index) => {
           const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
           const formattedDob = formatDobToDate(owner?.dob);
   
           return {
+            actualIndex: index,
             name: owner?.name || "",
             fatherOrHusbandName: owner?.fatherOrHusbandName || "",
             mobileNumber: owner?.mobileNumber || "",
@@ -398,6 +403,7 @@ const LayoutStepperForm = () => {
             // Store original owner data for reference
             uuid: owner?.uuid || "",
             id: owner?.id || "",
+            status: owner?.status
           };
         });
   

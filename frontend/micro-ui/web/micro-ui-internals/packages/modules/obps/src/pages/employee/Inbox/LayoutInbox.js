@@ -95,7 +95,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([])
   const [totalCountData, setTotalCountData] = useState(0)
 
-  const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
+  const { isLoading: isInboxLoading, data: inboxData, refetch } = Digit.Hooks.obps.useLayoutInbox({
     tenantId,
     filters: { ...formState },
   })
@@ -117,6 +117,7 @@ const LayoutInbox = ({ parentRoute }) => {
     if (inboxData) {
       inboxData.revalidate()
     }
+    refetch();
   }, [])
 
   const onPageSizeChange = (e) => {

@@ -206,7 +206,6 @@ const LayoutApplicantDetails = (_props) => {
   }, [currentStepData]);
 
   const getOwnerDetails = async () => {
-    console.log("mobileNumber", mobileNo)
     if (mobileNo === "" || mobileNo.length !== 10) {
       setShowToast({
         key: "true",

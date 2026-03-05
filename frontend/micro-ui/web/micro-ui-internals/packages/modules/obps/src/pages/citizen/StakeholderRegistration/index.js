@@ -283,7 +283,7 @@ const StakeholderRegistration = () => {
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
       {!(window.location.href.includes("stakeholder-docs-required") || window.location.href.includes("acknowledgement")) && !isMobile && (
-        <div className="stepper-margin">
+        <div>
           <Stepper stepsList={stepperConfig} step={currentStep} />
         </div>
       )}

@@ -4,17 +4,17 @@ import { format } from "date-fns";
 import { SearchField, RadioButtons } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
 
-const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
+const useInboxMobileCardsData = ({parentRoute, tableData: table, getRedirectionLink}) => {
     const { t } = useTranslation()
 
     const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType,businessService, locality, status, owner, sla, state}) => ({
             [t("BPA_APPLICATION_NUMBER_LABEL")]: applicationId,
             [t("CS_APPLICATION_DETAILS_APPLICATION_DATE")]: format(new Date(date), 'dd/MM/yyyy'),
             [t("BPA_SEARCH_APPLICATION_TYPE_LABEL")]: t(applicationType),
-            // [t("ES_INBOX_LOCALITY")]: t(locality),
-            [t("EVENTS_STATUS_LABEL")]: status ? t(`WF_LAYOUT_${status}`): t(`WF_LAYOUT_${status}`),
+            [t("ES_INBOX_LOCALITY")]: t(locality),
+            [t("EVENTS_STATUS_LABEL")]: state ? t(`WF_${businessService}_${state}`): t(`WF_${businessService}_${status}`),
             [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
-            // [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla
+            [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla
     }))
 
     const MobileSortFormValues = () => {

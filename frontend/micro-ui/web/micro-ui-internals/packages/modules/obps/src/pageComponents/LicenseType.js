@@ -1,10 +1,9 @@
-import { CardLabel, FormStep, RadioOrSelect, TextInput, OpenLinkContainer, BackButton, CheckBox, Dropdown, Loader, ActionBar, SubmitBar, ArrowLeft } from "@mseva/digit-ui-react-components";
+import { CardLabel, FormStep, RadioOrSelect, TextInput, OpenLinkContainer, BackButton, CheckBox, Dropdown, Loader, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/Timeline";
 import { CompetencyDescriptions } from "../constants/LicenseTypeConstants";
 import { useLocation } from "react-router-dom";
-import { useHistory, useRouteMatch } from "react-router-dom";
 // import useQualificationTypes from "../../../../libraries/src/hooks/obps/QualificationTypesForLicense";
 
 const LicenseType = ({ t, config, onSelect, userType, formData }) => {
@@ -17,7 +16,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   const { pathname } = useLocation();
   let currentPath = pathname.split("/").pop();
   let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
-  const history = useHistory();
 
   const [qualificationType, setQualificationType] = useState(() => {
     // const saved = localStorage.getItem("licenseForm_qualificationType");
@@ -503,7 +501,7 @@ console.log("validTo",validTo);
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: "60px" }}>
       <div style={{ flex: 1, marginRight: "20px" }}>
         <div className={isopenlink ? "OpenlinkContainer" : ""}>
-          {<div className="back-button-container" onClick={() => history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required")}>{(<React.Fragment><ArrowLeft /> <p>{t("CS_COMMON_BACK")}</p></React.Fragment>)}</div>}
+          {isopenlink && <BackButton >{t("CS_COMMON_BACK")}</BackButton>}
           {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
 
           <FormStep

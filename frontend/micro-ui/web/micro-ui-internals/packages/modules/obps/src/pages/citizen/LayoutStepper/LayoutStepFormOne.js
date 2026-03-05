@@ -19,6 +19,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.obps.LayoutNewApplicationFormReducer.formData;
   });
 
+  console.log("currentStepData in LayoutStepFormOne", currentStepData);
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo type here", userInfo?.info?.type);
 

@@ -342,14 +342,14 @@ const NOCEmployeeApplicationOverview = () => {
       const urlObj = new URL(receiptUrl);
       const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
 
-      const res = await fetch(downloadUrl);
-      const blob = await res.blob();
+      // const res = await fetch(downloadUrl);
+      // const blob = await res.blob();
 
-      // Create blob URL -> allowed in iframe!
-      const blobUrl = URL.createObjectURL(blob);
+      // // Create blob URL -> allowed in iframe!
+      // const blobUrl = URL.createObjectURL(blob);
 
       // Show modal
-      setPdfUrl(blobUrl);
+      setPdfUrl(downloadUrl);
       setShowPdfModal(true);
     } catch (error) {
       console.error("Sanction Letter popup error:", error);

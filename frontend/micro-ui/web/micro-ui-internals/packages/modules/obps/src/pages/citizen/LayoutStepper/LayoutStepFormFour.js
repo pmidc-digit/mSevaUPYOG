@@ -75,6 +75,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ...newlyAddedApplicants.map(app => app.name)
     ].filter(name => name); // Filter out undefined/null names
     
+    //console.log("[v0] getAllApplicantNames - primaryOwnerName:", primaryOwnerName);
+    //console.log("[v0] getAllApplicantNames - newlyAddedApplicants:", newlyAddedApplicants);
+    //console.log("[v0] getAllApplicantNames - allApplicantNames:", allApplicantNames);
     
     return allApplicantNames.length > 0 ? allApplicantNames.join(", ") : "NA";
   };
@@ -134,6 +137,52 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
+  // function mapToLayoutPayload(layoutFormData, selectedAction) {
+  //   console.log("layoutFormData", layoutFormData);
+
+  //   const updatedApplication = {
+  //     ...layoutFormData?.apiData, // ✅ CORRECT - spreads layoutNo, accountId, id, tenantId, etc.
+  //     workflow: {
+  //       action: selectedAction?.action || "",
+  //     },
+  //     layoutDetails: {
+  //       ...layoutFormData?.apiData?.layoutDetails, // ✅ CORRECT
+  //       additionalDetails: {
+  //         ...layoutFormData?.apiData?.layoutDetails?.additionalDetails,
+  //         applicationDetails: {
+  //           ...layoutFormData?.applicationDetails,
+  //           applicantGender: layoutFormData?.applicationDetails?.applicantGender?.code || "",
+  //         },
+  //         siteDetails: {
+  //           ...layoutFormData?.siteDetails,
+  //           ulbName: layoutFormData?.siteDetails?.ulbName?.name || "",
+  //           roadType: layoutFormData?.siteDetails?.roadType?.name || "",
+  //           buildingStatus: layoutFormData?.siteDetails?.buildingStatus?.name || "",
+  //           isBasementAreaAvailable: layoutFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
+  //           district: layoutFormData?.siteDetails?.district?.name || "",
+  //           zone: layoutFormData?.siteDetails?.zone?.name || "",
+  //         },
+  //         coordinates: { ...coordinates },
+  //       },
+  //     },
+  //     documents: [],
+  //   };
+
+  //   const docsArray = layoutFormData?.documents?.documents?.documents || [];
+  //   docsArray.forEach((doc) => {
+  //     updatedApplication.documents.push({
+  //       uuid: doc?.documentUid || doc?.uuid,
+  //       documentType: doc?.documentType,
+  //       documentAttachment: doc?.filestoreId || doc?.documentAttachment,
+  //     });
+  //   });
+
+  //   const payload = {
+  //     Layout: updatedApplication,
+  //   };
+
+  //   return payload;
+  // }
 
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {
@@ -227,6 +276,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   //console.log("[v0] isEditMode:", isEditMode);
   //console.log("[v0] selectedAction:", selectedAction);
+
+  console.log("[v0] isEditMode:", isEditMode);
+  console.log("[v0] selectedAction:", selectedAction);
 
   const updatedApplication = {
     ...layoutData,
@@ -333,16 +385,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         };
       });
       
-      // const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-      const overallDocs = newlyAddedDocs?.map((doc) => {
-        return {
-          layoutId: doc?.layoutId,
-          order: doc?.order,
-          uuid: doc?.documentUid || doc?.uuid,
-          documentType: doc?.documentType,
-          documentAttachment: doc?.filestoreId || doc?.documentAttachment,
-        };
-      });
+      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
       //console.log("[v0] EDIT MODE - overallDocs:", overallDocs);
       
       overallDocs.forEach((doc) => {
@@ -355,8 +398,6 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
-          // ...doc,
-          layoutId: doc?.layoutId,
           order: doc?.order,
           uuid: doc?.documentUid || doc?.uuid,
           documentType: doc?.documentType,

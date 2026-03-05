@@ -81,13 +81,4 @@ export const TLService = {
       userService: false,
       params: { tenantId, ...filters },
     }),
-  getbill: ({ tenantId, filters }) =>
-    Request({
-      url: Urls.tl.getbill,
-      useCache: false,
-      method: "POST",
-      auth: true,
-      userService: true,
-      params: { tenantId, ...filters },
-    }),
 };

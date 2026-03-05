@@ -170,7 +170,6 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    onFormValueChange(true, finaldata)
     onGoNext();
   }
 
@@ -229,7 +228,6 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   //   return []
   // }
 
-
   function validation(documents) {
   if (isLoading || isDocLoading) return [];
 
@@ -275,7 +273,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           defaultValues={currentStepData}
           config={config.currStepConfig}
           onSubmit={goNext}
-          // onFormValueChange={onFormValueChange}
+          onFormValueChange={onFormValueChange}
           label={t(`${config.texts.submitBarLabel}`)}
           currentStep={config.currStepNumber}
           onBackClick={onGoBack}

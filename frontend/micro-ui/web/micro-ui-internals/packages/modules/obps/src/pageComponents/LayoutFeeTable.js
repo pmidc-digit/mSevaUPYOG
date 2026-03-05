@@ -3,8 +3,6 @@ import { TextInput, TextArea } from "@mseva/digit-ui-react-components";
 
 import { amountToWords } from "../utils";
 import CustomFeeTable from "../../../templates/ApplicationDetails/components/CustomFeeTable";
-import { FeeHistoryTable } from "./FeeHistoryTable";
-import { useTranslation } from "react-i18next";
 
 export const LayoutFeeTable = ({
   feeDataWithTotal,
@@ -264,7 +262,7 @@ export const LayoutFeeTable = ({
           ))}
         </div>
 
-        {/* {feeHistory && Object.keys(feeHistory).length > 0 && (
+        {feeHistory && Object.keys(feeHistory).length > 0 && (
           <div className="custom-fee-mobile-history">
             <div 
               className="custom-fee-history-toggle-mobile"
@@ -299,10 +297,7 @@ export const LayoutFeeTable = ({
               </div>
             )}
           </div>
-        )} */}
-
-        <FeeHistoryTable feeHistory={feeHistory} t={t} />
-
+        )}
       </React.Fragment>
     );
   };

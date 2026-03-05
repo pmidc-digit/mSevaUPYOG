@@ -48,18 +48,26 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const { ownershipCategory, owners } = data || {};
     const missingFields = [];
 
-    if (!ownershipCategory?.value) {
+    // Support both .code and .value for ownershipCategory
+    const ownershipCode = ownershipCategory?.code || ownershipCategory?.value;
+
+    if (!ownershipCode) {
       missingFields.push("Ownership Category");
       return missingFields;
     }
 
-    if (!owners || owners.length === 0) {
+    // Filter out empty/default owners that may appear from back-navigation remounts
+    const validOwners = (owners || []).filter(
+      (o) => o.name || o.mobileNumber || o.fatherOrHusbandName
+    );
+
+    if (validOwners.length === 0) {
       missingFields.push("At least one Owner");
       return missingFields;
     }
 
-    const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
-    const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
+    const isSingleOwner = ownershipCode === "INDIVIDUAL.SINGLEOWNER";
+    const isMultipleOwner = ownershipCode === "INDIVIDUAL.MULTIPLEOWNERS";
 
     const validateOwner = (owner, index = 1) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
@@ -71,16 +79,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     if (isSingleOwner) {
-      if (owners.length !== 1) {
-        missingFields.push("Only one owner allowed for SINGLEOWNER");
-      } else {
-        validateOwner(owners[0], 1);
-      }
+      // For SINGLEOWNER, validate the first valid owner; ignore extra empty owners from remount
+      validateOwner(validOwners[0], 1);
     } else if (isMultipleOwner) {
-      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+      validOwners.forEach((owner, index) => validateOwner(owner, index + 1));
     } else {
       // For other ownership types like INSTITUTIONAL, apply same validations for now
-      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+      validOwners.forEach((owner, index) => validateOwner(owner, index + 1));
     }
 
     return missingFields;
@@ -166,11 +171,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (TraidDetails?.accessories?.length > 0) {
       TraidDetails.accessories.map((item) => {
         if (item?.accessoryCategory?.code) {
+          const hasUom = item.accessoryCategory.uom ? true : false;
           accessories.push({
             accessoryCategory: item.accessoryCategory.code || null,
             uom: item.accessoryCategory.uom || null,
             count: Number(item.count) || null,
-            uomValue: Number(item.uomValue) || null,
+            uomValue: hasUom && item.uomValue ? Number(item.uomValue) : null,
           });
         }
       });
@@ -196,6 +202,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
         address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
       if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
+      if (TraidDetails.address?.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address?.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
       if (TraidDetails.address?.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
     } else if (TraidDetails?.address) {
       address.city = TraidDetails.address.city?.code || null;
@@ -205,6 +213,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
       if (TraidDetails.address.street) address.street = TraidDetails.address.street;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
+      if (TraidDetails.address.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
       if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
     }
     if (TraidDetails.address?.geoLocation?.latitude) {
@@ -235,18 +245,21 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (owner.name) obj.name = owner.name;
         if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
         obj.permanentAddress = obj.permanentAddress || null;
+        if (owner.correspondenceAddress) obj.correspondenceAddress = owner.correspondenceAddress;
         if (owner.relationship) {
           const rel = owner.relationship;
+          let relCode = "";
           if (typeof rel === "string") {
-            obj.relationship = rel;
-          } else if (typeof rel?.code === "string") {
-            obj.relationship = rel.code;
-          } else if (typeof rel?.code?.code === "string") {
-            // Double-nested from back navigation
-            obj.relationship = rel.code.code;
-          } else {
-            obj.relationship = String(rel);
+            relCode = rel;
+          } else if (rel && typeof rel === "object") {
+            // Handle nested objects from back navigation: {code: {code: "Father"}} or {code: "Father"}
+            let temp = rel;
+            while (temp && typeof temp === "object" && temp.code !== undefined) {
+              temp = temp.code;
+            }
+            relCode = typeof temp === "string" ? temp : (rel.i18nKey || rel.name || JSON.stringify(rel));
           }
+          obj.relationship = relCode || null;
         }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
@@ -266,6 +279,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code || "";
     let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
     let validityYears = TraidDetails?.validityYears?.code || 1;
+    let oldReceiptNo = TraidDetails?.tradedetils?.[0]?.oldReceiptNo || "";
 
 
     let formData = {
@@ -287,6 +301,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
+    if (oldReceiptNo) formData.oldLicenseNumber = oldReceiptNo;
     if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
     if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
     if (accessories?.length > 0) formData.tradeLicenseDetail.accessories = accessories;

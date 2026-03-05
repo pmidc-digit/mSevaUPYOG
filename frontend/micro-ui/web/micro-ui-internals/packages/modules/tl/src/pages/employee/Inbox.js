@@ -171,7 +171,7 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
       );
     } else {
       return (
-        <div>
+        <div className="tjkjk">
           {isInbox && (
             <Header>
               {t("ES_COMMON_INBOX")}

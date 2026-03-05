@@ -156,6 +156,16 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
                     autoFocus={focusIndex?.index == index}
                     {...input?.validation}
                     placeholder={t(`${input.placeholder}`)}
+                    style={
+                      formData?.cpt?.details?.address?.[input.name]
+                        ? {
+                            color: "#505A5F",
+                            opacity: 1,
+                            WebkitTextFillColor: "#505A5F",
+                            backgroundColor: "#FFFFFF",
+                          }
+                        : {}
+                    }
                   />
                   <div className="TL-unmask-wrapper">
                     <WrapUnMaskComponent

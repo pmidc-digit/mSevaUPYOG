@@ -403,21 +403,37 @@ const OwnerForm1 = (_props) => {
           defaultValue={licenseTypeValue}
           control={control}
           render={(props) => (
-            <Dropdown
-              className="form-field"
-              selected={licenseTypeValue} //{licenseTypeList[1]}
-              // selected={licenseTypeNewValue}
-              disable={true}
-              option={licenseTypeList}
-              select={(e) => {
-                props.onChange(e);
-              }}
-              optionKey="i18nKey"
-              onBlur={props.onBlur}
-              t={t}
-              errorStyle={localFormState.touched.licenseType && errors?.licenseType?.message ? true : false}
-              placeholder={t("TL_NEW_TRADE_DETAILS_LIC_TYPE_PLACEHOLDER")}
-            />
+            <div className="form-field" style={{ pointerEvents: "none" }}>
+              <div style={{
+                height: "50px",
+                border: "1px solid #d1d5db",
+                borderRadius: "8px",
+                backgroundColor: "#fafafa",
+                display: "flex",
+                alignItems: "center",
+                paddingLeft: "10px",
+                fontSize: "16px",
+                color: "#333333",
+                marginBottom: "8px",
+              }}>
+                {licenseTypeValue?.i18nKey ? t(licenseTypeValue.i18nKey) : licenseTypeValue?.code || ""}
+              </div>
+            </div>
+            // <Dropdown
+            //   className="form-field"
+            //   selected={licenseTypeValue} //{licenseTypeList[1]}
+            //   // selected={licenseTypeNewValue}
+            //   disable={true}
+            //   option={licenseTypeList}
+            //   select={(e) => {
+            //     props.onChange(e);
+            //   }}
+            //   optionKey="i18nKey"
+            //   onBlur={props.onBlur}
+            //   t={t}
+            //   errorStyle={localFormState.touched.licenseType && errors?.licenseType?.message ? true : false}
+            //   placeholder={t("TL_NEW_TRADE_DETAILS_LIC_TYPE_PLACEHOLDER")}
+            // />
           )}
         />
       </LabelFieldPair>

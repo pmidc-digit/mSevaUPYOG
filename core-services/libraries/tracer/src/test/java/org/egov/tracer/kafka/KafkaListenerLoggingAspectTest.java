@@ -2,13 +2,11 @@ package org.egov.tracer.kafka;
 
 import org.egov.tracer.config.TracerConfiguration;
 import org.egov.tracer.config.TracerProperties;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -17,21 +15,23 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith({SpringExtension.class, OutputCaptureExtension.class})
 @ContextConfiguration(classes = {TracerConfiguration.class, TestConfiguration.class})
-public class KafkaListenerLoggingAspectTest {
+class KafkaListenerLoggingAspectTest {
 
     private static final String TEST_CORRELATION_ID = "testCorrelationId";
-    @Rule
-    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+   
 
     @Autowired
     private KafkaListenerWithOnlyPayloadAnnotatedHashMap kafkaListenerWithOnlyPayloadAnnotatedHashMap;
@@ -50,11 +50,13 @@ public class KafkaListenerLoggingAspectTest {
     @Autowired
     private TracerProperties tracerProperties;
 
-    @Before
+    @BeforeEach
     public void before() {
-        systemOutRule.clearLog();
+       
     }
+    
 
+    
     @Test
     public void test_should_retrieve_correlation_id_from_hash_map_payload_and_set_to_context() {
         final HashMap<String, Object> payload = new HashMap<>();
@@ -78,8 +80,8 @@ public class KafkaListenerLoggingAspectTest {
     }
 
     @Test
-    @Ignore
-    public void test_simple_log_message_should_mention_topic_name_is_unavailable_when_topic_header_annotation_is_not_present() {
+    @Disabled
+    public void test_simple_log_message_should_mention_topic_name_is_unavailable_when_topic_header_annotation_is_not_present(CapturedOutput output) {
         final HashMap<String, Object> payload = new HashMap<>();
         final HashMap<String, Object> requestInfo = new HashMap<>();
         requestInfo.put("foo", "abc");
@@ -88,12 +90,12 @@ public class KafkaListenerLoggingAspectTest {
 
         kafkaListenerWithOnlyPayloadAnnotatedHashMap.bar(payload);
 
-        assertTrue(systemOutRule.getLog().contains("Received message from topic: <NOT-AVAILABLE>"));
+        assertTrue(output.getOut().contains("Received message from topic: <NOT-AVAILABLE>"));
     }
 
     @Test
-    @Ignore
-    public void test_detail_message_should_print_unavailable_topic_name_and_stringified_payload() {
+    @Disabled
+    public void test_detail_message_should_print_unavailable_topic_name_and_stringified_payload(CapturedOutput output) {
         final HashMap<String, Object> payload = new HashMap<>();
         final HashMap<String, Object> requestInfo = new HashMap<>();
         requestInfo.put("foo", "abc");
@@ -104,7 +106,7 @@ public class KafkaListenerLoggingAspectTest {
 
         final String expectedBody = "{\"RequestInfo\":{\"foo\":\"abc\"}}";
         final String expectedMessage = "Received message from topic: <NOT-AVAILABLE> with body " + expectedBody;
-        assertTrue(systemOutRule.getLog().contains(expectedMessage));
+        assertTrue(output.getOut().contains(expectedMessage));
     }
 
     @Test
@@ -124,18 +126,18 @@ public class KafkaListenerLoggingAspectTest {
     }
 
     @Test
-    @Ignore
-    public void test_should_print_detailed_log_with_stringified_body_and_topic_name() {
+    @Disabled
+    public void test_should_print_detailed_log_with_stringified_body_and_topic_name(CapturedOutput output) {
         final String payload = "{\"RequestInfo\": { \"foo\": \"bar\"}}";
         when(tracerProperties.isRequestLoggingEnabled()).thenReturn(true);
         kafkaListenerStringPayloadWithTopicHeaderAnnotation.bar(payload, "actualTopic");
 
         final String expectedMessage = "Received message from topic: actualTopic with body " + payload;
-        assertTrue(systemOutRule.getLog().contains(expectedMessage));
+        assertTrue(output.getOut().contains(expectedMessage));
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void test_should_set_random_correlation_id_when_payload_parameter_is_not_annotated() {
         final HashMap<String, Object> payload = new HashMap<>();
         final HashMap<String, Object> requestInfo = new HashMap<>();
@@ -147,8 +149,8 @@ public class KafkaListenerLoggingAspectTest {
     }
 
     @Test
-    @Ignore
-    public void test_should_print_detailed_log_with_unavailable_body_and_unavailable_topic_name() {
+    @Disabled
+    public void test_should_print_detailed_log_with_unavailable_body_and_unavailable_topic_name(CapturedOutput output) {
         final HashMap<String, Object> payload = new HashMap<>();
         final HashMap<String, Object> requestInfo = new HashMap<>();
         requestInfo.put("foo", "abc");
@@ -157,19 +159,19 @@ public class KafkaListenerLoggingAspectTest {
         kafkaListenerWithoutPayloadAnnotationAndWithoutTopicHeaderAnnotation.bar(payload);
 
         final String expectedMessage = "Received message from topic: <NOT-AVAILABLE> with body <NOT-AVAILABLE>";
-        assertTrue(systemOutRule.getLog().contains(expectedMessage));
+        assertTrue(output.getOut().contains(expectedMessage));
     }
 
     @Test
-    @Ignore
-    public void test_should_print_detailed_log_with_stringified_body_and_unavailable_topic_name() {
+    @Disabled
+    public void test_should_print_detailed_log_with_stringified_body_and_unavailable_topic_name(CapturedOutput output) {
         final String payload = "{\"RequestInfo\": { \"foo\": \"bar\"}}";
         when(tracerProperties.isRequestLoggingEnabled()).thenReturn(true);
 
         kafkaListenerStringPayloadWithNonTopicHeaderAnnotation.bar(payload, 3);
 
         final String expectedMessage = "Received message from topic: <NOT-AVAILABLE> with body " + payload;
-        assertTrue(systemOutRule.getLog().contains(expectedMessage));
+        assertTrue(output.getOut().contains(expectedMessage));
     }
 
 }
@@ -188,10 +190,16 @@ class TestConfiguration {
     }
 
     @Bean
+    public io.micrometer.tracing.Tracer micrometerTracer() {
+        return mock(io.micrometer.tracing.Tracer.class);
+    }
+    
+    @Bean
     public KafkaListenerStringPayloadWithTopicHeaderAnnotation kafkaListenerStringPayloadWithAnnotation() {
         return new KafkaListenerStringPayloadWithTopicHeaderAnnotation();
     }
 
+    
     @Bean
     public KafkaListenerWithoutPayloadAnnotationAndWithoutTopicHeaderAnnotation
     kafkaListenerWithPayloadNotHavingPayloadAnnotation() {
@@ -239,7 +247,7 @@ class KafkaListenerWithoutPayloadAnnotationAndWithoutTopicHeaderAnnotation {
 class KafkaListenerStringPayloadWithNonTopicHeaderAnnotation {
 
     @KafkaListener(topics = "${my.topics2}")
-    public void bar(@Payload String payload, @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
+    public void bar(@Payload String payload, @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
 
     }
 }

@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.22.RELEASE</version>
+    <version>4.0.2</version>
     <relativePath></relativePath>
   </parent>
   <groupId>org.egov.services</groupId>
   <artifactId>services-common</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>services-common</name>
   <description>Shared classes among services</description>
  <distributionManagement>
@@ -30,9 +30,9 @@
 		</repository>
   </distributionManagement>
   <properties>
-    <log4j2.version>2.17.1</log4j2.version>
+    <log4j2.version>2.21.1</log4j2.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.8</java.version>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
@@ -43,30 +43,20 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.24</version>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
-      <version>1.6.5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>1.6.5</version>
-      <scope>test</scope>
-    </dependency>
+   <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>2.8.7</version>
     </dependency>
     <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
-      <version>2.0.2</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -88,7 +78,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
-        <version>3.7</version>
+          <version>3.28.0</version>
         <executions>
           <execution>
             <phase>verify</phase>
@@ -104,7 +94,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
         <executions>
           <execution>
             <id>default-deploy</id>
@@ -118,8 +107,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>8</source>
-          <target>8</target>
+          <source>21</source>
+          <target>21</target>
         </configuration>
       </plugin>
     </plugins>

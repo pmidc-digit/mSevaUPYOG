@@ -7,6 +7,7 @@ import static org.egov.tracer.constants.TracerConstants.TENANT_ID_HEADER;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -33,8 +34,9 @@ public class RestTemplateLoggingInterceptor implements ClientHttpRequestIntercep
     private static final String UTF_8 = "UTF-8";
     private static final String RESPONSE_BODY_ERROR_MESSAGE = "Error reading response body";
     private static final String EMPTY_BODY = "<NOT-AVAILABLE>";
+  
     private static final List<String> JSON_MEDIA_TYPES =
-            Arrays.asList(MediaType.APPLICATION_JSON_UTF8_VALUE, MediaType.APPLICATION_JSON_VALUE);
+	        Collections.singletonList(MediaType.APPLICATION_JSON_VALUE);
 
     private TracerProperties tracerProperties;
 

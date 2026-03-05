@@ -488,20 +488,7 @@ const OwnerForm = (_props) => {
                     type="button"
                     onClick={searchUserByMobile}
                     disabled={isSearching}
-                    style={{
-                      padding: "8px 16px",
-                      background: isSearching ? "#94a3b8" : "linear-gradient(135deg, #2563eb, #1e40af)",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: isSearching ? "not-allowed" : "pointer",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      whiteSpace: "nowrap",
-                      minWidth: "80px",
-                      height: "38px",
-                      transition: "all 0.2s ease",
-                    }}
+                    className={`TL-search-btn ${isSearching ? "TL-search-btn-searching" : "TL-search-btn-active"}`}
                   >
                     {isSearching ? t("CS_COMMON_SEARCHING") || "Searching..." : t("TL_SEARCH") || "Search"}
                   </button>

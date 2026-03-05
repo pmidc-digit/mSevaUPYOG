@@ -67,7 +67,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
     const applicantsFromRedux = currentStepData?.applicants || [];
-    const newlyAddedApplicants = applicantsFromRedux.slice(1).filter(app => app?.name);
+    const newlyAddedApplicants = applicantsFromRedux.filter(app => (app?.name && app?.status));
     
     // Get all applicant names (primary + additional)
     const allApplicantNames = [
@@ -88,50 +88,49 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     const finalPayload = mapToLayoutPayload(data, selectedAction);    
 
-    // try {
-    //   const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
+    try {
+      const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
 
-    //   if (response?.ResponseInfo?.status === "successful") {
+      if (response?.ResponseInfo?.status === "successful") {
 
-    //     if (window.location.href.includes("citizen")) {
-    //       if (selectedAction.action === "CANCEL") {
-    //         setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
-    //         setTimeout(() => {
-    //           history.push(`/digit-ui/citizen/obps/layout/my-application`);
-    //         }, 3000);
-    //       } else {
-    //         history.replace({
-    //           pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
-    //           state: { data: response },
-    //         });
-    //       }
-    //     } else {
+        if (window.location.href.includes("citizen")) {
+          if (selectedAction.action === "CANCEL") {
+            setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+            setTimeout(() => {
+              history.push(`/digit-ui/citizen/obps/layout/my-application`);
+            }, 3000);
+          } else {
+            history.replace({
+              pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
+              state: { data: response },
+            });
+          }
+        } else {
 
-    //       if (selectedAction.action === "CANCEL") {
-    //         setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
-    //         setTimeout(() => {
-    //           history.push(`/digit-ui/employee/obps/layout/inbox`);
-    //         }, 3000);
-    //       } else {
-    //         history.replace({
-    //           pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
-    //           state: { data: response },
-    //         });
-    //       }
-    //     }
-    //   } else {
-    //     console.error("Submission failed, not moving to next step.", response?.response);
-    //     setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
-    //   }
-    // } catch (error) {
-    //   setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    // }
+          if (selectedAction.action === "CANCEL") {
+            setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+            setTimeout(() => {
+              history.push(`/digit-ui/employee/obps/layout/inbox`);
+            }, 3000);
+          } else {
+            history.replace({
+              pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
+              state: { data: response },
+            });
+          }
+        }
+      } else {
+        console.error("Submission failed, not moving to next step.", response?.response);
+        setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+      }
+    } catch (error) {
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }
   };
 
 
 
   function mapToLayoutPayload(layoutFormData, selectedAction) {
-    console.log("Layout Data", data)
   
   // Check if we're in EDIT mode or NEW mode
   // Layout can be either an object (from CREATE response) or array (from some API responses)
@@ -150,7 +149,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     
     // Get newly added applicants from Redux state (starts from index 1, index 0 is placeholder)
     const applicantsFromRedux = layoutFormData?.applicants || [];
-    const newlyAddedApplicants = applicantsFromRedux.slice(1).filter(app => app?.name); // Filter out empty entries
+    const newlyAddedApplicants = applicantsFromRedux?.filter(app => app?.name); // Filter out empty entries
     
     // Get document files
     const docFiles = layoutFormData?.documentUploadedFiles || {};
@@ -163,12 +162,23 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         // Primary owner - update additionalDetails with new documents if provided
         return {
           ...owner,
+          mobileNumber: layoutFormData?.applicationDetails?.applicantMobileNumber || owner?.mobileNumber || "",
+          name: layoutFormData?.applicationDetails?.applicantOwnerOrFirmName || owner?.name || "",
+          emailId: layoutFormData?.applicationDetails?.applicantEmailId || owner?.emailId || "",
+          userName: layoutFormData?.applicationDetails?.applicantMobileNumber || owner?.userName || "",
+          gender: layoutFormData?.applicationDetails?.applicantGender?.code || layoutFormData?.applicationDetails?.applicantGender || owner?.gender || null,
+          dob: layoutFormData?.applicationDetails?.applicantDateOfBirth ? Digit.Utils.pt.convertDateToEpoch(layoutFormData?.applicationDetails?.applicantDateOfBirth) : owner?.dob || null,
+          fatherOrHusbandName: layoutFormData?.applicationDetails?.applicantFatherHusbandName || owner?.fatherOrHusbandName || "",
+          permanentAddress: layoutFormData?.applicationDetails?.applicantAddress || owner?.permanentAddress || "",
+          isPrimaryOwner: true,
           pan: layoutFormData?.applicationDetails?.panNumber || owner?.pan || null,
           additionalDetails: {
-            ...owner?.additionalDetails,
+            ...owner?.additionalDetails,            
             ownerPhoto: photoFiles[0]?.fileStoreId || owner?.additionalDetails?.ownerPhoto || null,
             documentFile: docFiles[0]?.fileStoreId || owner?.additionalDetails?.documentFile || null,
             panDocument: panDocFiles[0]?.fileStoreId || owner?.additionalDetails?.panDocument || null,
+            aplicantType: layoutFormData?.applicationDetails?.aplicantType || owner?.additionalDetails?.aplicantType || null,
+            authorisedPerson: layoutFormData?.applicationDetails?.aplicantType?.code === "FIRM" ? layoutFormData?.applicationDetails?.authorisedPerson || owner?.additionalDetails?.authorisedPerson : null,
           },
         };
       }
@@ -192,10 +202,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           dob: applicant.dob ? new Date(applicant.dob).getTime() : null,
           gender: applicant.gender?.code || applicant.gender,
           pan: applicant.panNumber || null,
+          status: applicant.status,
           additionalDetails: {
-            ownerPhoto: photoFiles[applicantIndex]?.fileStoreId || null,
-            documentFile: docFiles[applicantIndex]?.fileStoreId || null,
-            panDocument: panDocFiles[applicantIndex]?.fileStoreId || null,
+            ownerPhoto: applicant?.photoUploadedFiles || null,
+            documentFile: applicant?.documentUploadedFiles || null,
+            panDocument: applicant?.panDocumentUploadedFiles || null,
           },
         };
         
@@ -265,6 +276,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           ...(layoutFormData?.siteDetails?.vasikaNumber && { vasikaNumber: layoutFormData?.siteDetails?.vasikaNumber }),
           ...(layoutFormData?.siteDetails?.vasikaDate && { vasikaDate: convertToDDMMYYYY(layoutFormData?.siteDetails?.vasikaDate) }),
         },
+        selectedCheckBox,
         coordinates: { ...coordinates },
       },
     },

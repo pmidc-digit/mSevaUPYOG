@@ -297,6 +297,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           fatherOrHusbandName: applicant?.fatherOrHusbandName || "",
           permanentAddress: applicant?.address || "",
           pan: applicant?.panNumber || null,
+          status: applicant?.status,
           additionalDetails: {
             documentFile: applicant?.documentUploadedFiles || null,
             ownerPhoto: applicant?.photoUploadedFiles || null,

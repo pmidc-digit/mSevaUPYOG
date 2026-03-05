@@ -382,11 +382,12 @@ const LayoutStepperForm = () => {
         };
   
         // Map all owners including primary (index 0)
-        const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner) => {
+        const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner, index) => {
           const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
           const formattedDob = formatDobToDate(owner?.dob);
   
           return {
+            actualIndex: index,
             name: owner?.name || "",
             fatherOrHusbandName: owner?.fatherOrHusbandName || "",
             mobileNumber: owner?.mobileNumber || "",
@@ -402,6 +403,7 @@ const LayoutStepperForm = () => {
             // Store original owner data for reference
             uuid: owner?.uuid || "",
             id: owner?.id || "",
+            status: owner?.status
           };
         });
   

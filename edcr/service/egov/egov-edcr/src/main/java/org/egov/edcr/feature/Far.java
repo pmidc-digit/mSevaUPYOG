@@ -133,6 +133,12 @@ import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.BuildingRuleService;
+import org.egov.commons.mdms.MdmsResponseUtil;
+import org.egov.commons.mdms.MdmsRuleEngine;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.commons.mdms.config.MdmsConfiguration;
 import org.egov.commons.mdms.validator.MDMSValidator;
 import org.egov.edcr.constants.DxfFileConstants;
@@ -144,6 +150,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.egov.commons.edcr.mdms.dataParser.*;
 
 @Service
@@ -731,6 +741,8 @@ public class Far extends FeatureProcess {
 		if (mostRestrictiveOccupancyType != null && StringUtils.isNotBlank(typeOfArea) && roadWidth != null) {
 			// getting Rules from mdms
 			getMdmsMastersData(pl, mostRestrictiveOccupancyType.getType().getCode(), mostRestrictiveOccupancyType);
+			//getMdmsMastersData1(pl, mostRestrictiveOccupancyType.getType().getCode(), mostRestrictiveOccupancyType);
+
 			
 			if ((mostRestrictiveOccupancyType.getType() != null
 					&& DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))
@@ -2284,7 +2296,7 @@ public class Far extends FeatureProcess {
 	    return false;
 	}
 	
-	private void getMdmsMastersData(Plan pl, String occType, OccupancyTypeHelper occupancyType) {
+	private void getMdmsMastersData1(Plan pl, String occType, OccupancyTypeHelper occupancyType) {
 	    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
 	    if (Boolean.TRUE.equals(mdmsEnabled)) {
 	        try {
@@ -2313,6 +2325,48 @@ public class Far extends FeatureProcess {
 	            	LOG.info("No matching MasterPlan record found for OccupancyType=" 
                             + occType + ", area=" + plotArea);
 	            }
+	        } catch (Exception e) {
+	            LOG.error("Error while fetching details from MDMS", e);
+	        }
+	    }else {
+	    	LOG.info("MDSM enable property is : False , Skipping FAR calculation by MDMS.");
+	    }
+	}
+	
+	private void getMdmsMastersData(Plan pl, String occType, OccupancyTypeHelper occupancyType) {
+	    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+	    if (Boolean.TRUE.equals(mdmsEnabled)) {
+	        try {
+	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+	            Object mdmsData = null;
+	            
+	            if (occupancyType != null
+	                    && occupancyType.getSubtype() != null
+	                    && occupancyType.getSubtype().getCode() != null
+	                    && !DxfFileConstants.F.equalsIgnoreCase(occupancyType.getType().getCode())) {
+	                mdmsData = bpaMdmsUtil.mDMSCall(
+	                		new RequestInfo(),pl.getEdcrRequest(), occupancyType.getSubtype().getCode(), plotArea);	               
+	            }else {
+	            	mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occupancyType.getType().getCode(), plotArea);
+	            }		            
+
+	            if (mdmsData != null) {
+	                ObjectMapper mapper = new ObjectMapper();
+	                JsonNode root = mapper.valueToTree(mdmsData);
+	                JsonNode occupancy = MdmsResponseUtil.getOccupancyNode(root);
+	                if (occupancy != null) {
+//	                	if (pl.getMdmsRulesData() == null) {
+//	                	    pl.setMdmsRulesData(new HashMap<>());
+//	                	}
+	                    pl.getMdmsRulesData()
+	                    .putIfAbsent("masterMdmsData", occupancy);
+	                } else {
+	                    LOG.info("No MasterPlan record found for OccupancyType=" 
+	                            + occType + ", area=" + plotArea);
+	                }
+	            }
+
+
 	        } catch (Exception e) {
 	            LOG.error("Error while fetching details from MDMS", e);
 	        }
@@ -2401,21 +2455,31 @@ public class Far extends FeatureProcess {
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+	    	MdmsRuleEngine engine =
+			        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
+			
+	    	// For SLAB/FORMULA rules
+	    	RuleContext context = RuleContext.builder()
+	    	    .numericInput(plotArea) // The plot area	    	   
+	    	    .build();
+	    	RuleResult<JsonNode> farSlab = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR", context, JsonNode.class);
+			////JsonNode farSlab = engine.getObject("FAR", context);
 	    	// --- 1. Fetch & Initialize FAR values ---
 	    	Double regularPermissibleFar = 0.0;
 	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
 	    		BigDecimal farValue = calculateFarProgressively(plotArea, pl);
 	    		regularPermissibleFar = farValue.setScale(2, RoundingMode.HALF_UP).doubleValue();	    		
-	    	}else {	    		
-		        regularPermissibleFar = BpaMdmsUtil.extractMdmsValue(
-		                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class)
-		                .orElse(0.0);
-	    	}
+	    	}else {
+		        //regularPermissibleFar = ruleService.getNormalFAR().doubleValue();
+		        
+//		        regularPermissibleFar =
+//		                farSlab.path("normal").doubleValue();
+	    		regularPermissibleFar = farSlab.getValue().path("normal").asDouble();
 
-	        Double purchasablePermissibleFar = BpaMdmsUtil.extractMdmsValue(
-	                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.PURCHASABLE_FAR, Double.class)
-	                .orElse(0.0);
-	        
+	    	}
+	    	
+//	    	Double purchasablePermissibleFar = ruleService.getPurchasableFAR().doubleValue();
+	    	Double purchasablePermissibleFar = farSlab.getValue().path("purchasable").asDouble();
 	        Double providedFar = Optional.ofNullable(pl.getFarDetails())
 	                .map(FarDetails::getProvidedFar)
 	                .orElse(0.0);
@@ -2429,8 +2493,7 @@ public class Far extends FeatureProcess {
 	        Double finalTotalPermissibleFar = regularPermissibleFar; // Default total is just regular
 	        boolean isAccepted;
 
-	        // --- 2. Purchasable FAR Logic  ---
-	        
+	        // --- 2. Purchasable FAR Logic  ---	        
 	        if (Boolean.TRUE.equals(pl.getEdcrRequest().getPurchasableFar())) {
 	            LOG.info("Purchasable FAR is enabled. Applying conditional rules.");
 	            // Calculate purchasable FAR only if provided FAR exceeds regular permissible

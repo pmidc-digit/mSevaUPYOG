@@ -83,6 +83,8 @@ import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
@@ -468,6 +470,10 @@ private class FrontYardResult {
 	        HashMap<String, String> errors, Plan pl, BigDecimal plotArea, BigDecimal buildingHeight) {
 		
 		LOG.info("Processing FrontYardResult:");
+		
+		RuleContext context = RuleContext.builder()
+	    	    .numericInput(plotArea) // The plot area	    	   
+	    	    .build();
 
 	    BigDecimal minVal = BigDecimal.ZERO; 
 	    
@@ -498,12 +504,23 @@ private class FrontYardResult {
 		        pl.addErrors(errors);			        
 		    }
 			
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
-		        scOpt.ifPresent(sc -> LOG.info("Front Setback Value from mdms : " + sc));
-		        minVal = scOpt.get();
+//			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+//				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
+//		        scOpt.ifPresent(sc -> LOG.info("Front Setback Value from mdms : " + sc));
+//		        minVal = scOpt.get();
+//			}
+			
+			if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {					
+				//Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
+		        //scOpt.ifPresent(sc -> LOG.info("Front Setback Value from mdms : " + sc));
+		        //minVal = scOpt.get();
+		        //minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class).getValue();
+		        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class).getValue();
+		        LOG.info("Front Setback Value from mdms : " + minVal);
 			}
-	    }        
+			
+	    }    
+	    
 	    
 
 	    // Validate minimum and mean value

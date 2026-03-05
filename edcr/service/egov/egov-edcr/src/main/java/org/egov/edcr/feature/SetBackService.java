@@ -322,7 +322,7 @@ public class SetBackService extends FeatureProcess {
             for (ScrutinyDetail scrutinyDetail : blockDetails) {
                 String key = scrutinyDetail.getKey();
                 
-             // ✅ Extract occupancy from details
+             // Extract occupancy from details
                 String occupancyType = "";
                 boolean isSetbackCombine = false;
                 if (scrutinyDetail.getDetail() != null && !scrutinyDetail.getDetail().isEmpty()) {

@@ -72,11 +72,15 @@ import org.egov.common.entity.edcr.Room;
 import org.egov.common.entity.edcr.RoomHeight;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.Window;
+import org.egov.commons.mdms.RuleResult;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.service.ProcessHelper;
 import org.egov.edcr.utility.DcrConstants;
 import org.jfree.util.Log;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class HeightOfRoom extends FeatureProcess {
@@ -245,6 +249,30 @@ public class HeightOfRoom extends FeatureProcess {
 							String color = "";
 							BigDecimal minimumArea = BigDecimal.ZERO;
 
+							
+							BigDecimal minAcRoomHeight = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), 
+									"residentialAcRoom.height.min", null, BigDecimal.class).getValue();
+							System.out.println("residentialAcRoom.height.min : " + minAcRoomHeight);
+							
+							RuleResult<JsonNode> windowWidthRange = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), 
+									"window.width", null, JsonNode.class);
+
+							if (windowWidthRange.getValue() != null) {
+							    BigDecimal minW = new BigDecimal(windowWidthRange.getValue().path("min").asText());
+							    BigDecimal maxW = new BigDecimal(windowWidthRange.getValue().path("max").asText());
+							    System.out.println("minW : " + minW);
+							    System.out.println("maxW : " + maxW);
+							 
+							}
+							
+							Boolean isValidationNeeded = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"),
+								    "generalStaircase.riserValidation.mandatoryForAllFloorsExceptTop", 
+								    null, 
+								    Boolean.class
+								).getValue();
+							
+							System.out.println("isValidationNeeded : " + isValidationNeeded);
+							
 							if (A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))
 								color = DxfFileConstants.COLOR_RESIDENTIAL_ROOM;
 							else if (F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))

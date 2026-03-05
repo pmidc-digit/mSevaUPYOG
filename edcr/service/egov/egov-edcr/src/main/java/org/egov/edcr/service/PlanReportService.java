@@ -875,6 +875,7 @@ public class PlanReportService {
                 ScrutinyDetail front = null;
                 ScrutinyDetail rear = null;
                 ScrutinyDetail side = null;
+                ScrutinyDetail side2 = null;
 
 //                for (String blkFeature : blocks.get(blkName)) {
 //                	  LOG.info("Generate Report......."+blkFeature);
@@ -1128,7 +1129,7 @@ public class PlanReportService {
                     LOG.info("Generate Report......." + blkFeature);
 
                     if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
-                            || blkFeature.equals(SIDE_YARD_DESC)) {
+                            || blkFeature.equals(SIDE_YARD_DESC) || blkFeature.equals("Side Setback1") || blkFeature.equals("Side Setback2")) {
 
                         if (blkFeature.equals(FRONT_YARD_DESC)) {
                             front = allMap.get(blkName + blkFeature);
@@ -1144,7 +1145,8 @@ public class PlanReportService {
                             }
                         }
 
-                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+//                        if (blkFeature.equals(SIDE_YARD_DESC)) {
+                        if (blkFeature.equals("Side Setback1")) {
                             side = allMap.get(blkName + blkFeature);
                             if (side != null && !side.getDetail().isEmpty()) {
                                 int count = 1;
@@ -1152,9 +1154,26 @@ public class PlanReportService {
                                     String sideNumber = d.get(SIDENUMBER);
                                     if (StringUtils.isNotBlank(sideNumber)) {
                                         d.remove(SIDENUMBER);
-                                        d.put(SIDENUMBER_NAME, "Side Setback " + count);
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
                                     } else {
-                                        d.put(SIDENUMBER_NAME, "Side Setback " + count);
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+                        
+                        if (blkFeature.equals("Side Setback2")) {
+                            side2 = allMap.get(blkName + blkFeature);
+                            if (side2 != null && !side2.getDetail().isEmpty()) {
+                                int count = 1;
+                                for (Map<String, String> d : side2.getDetail()) {
+                                    String sideNumber = d.get(SIDENUMBER);
+                                    if (StringUtils.isNotBlank(sideNumber)) {
+                                        d.remove(SIDENUMBER);
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
+                                    } else {
+                                        d.put(SIDENUMBER_NAME, "Side Setback " + sideNumber.trim().charAt(sideNumber.length() - 1));
                                     }
                                     count++;
                                 }
@@ -1166,13 +1185,15 @@ public class PlanReportService {
                 // Determine Occupancy Type
              // Determine Occupancy Type (from any available detail)
                 String occupancyType = "";
-		Boolean isSetbackCombine = false;
+                Boolean isSetbackCombine = false;
                 if (front != null && !front.getDetail().isEmpty() && front.getDetail().get(0).get("Occupancy") != null) {
                     occupancyType = front.getDetail().get(0).get("Occupancy");
                 } else if (rear != null && !rear.getDetail().isEmpty() && rear.getDetail().get(0).get("Occupancy") != null) {
                     occupancyType = rear.getDetail().get(0).get("Occupancy");
                 } else if (side != null && !side.getDetail().isEmpty() && side.getDetail().get(0).get("Occupancy") != null) {
                     occupancyType = side.getDetail().get(0).get("Occupancy");
+                }else if (side2 != null && !side2.getDetail().isEmpty() && side2.getDetail().get(0).get("Occupancy") != null) {
+                    occupancyType = side2.getDetail().get(0).get("Occupancy");
                 }
 
                 LOG.info("Occupancy Type Detected for [{}] = {}", blkName, occupancyType);
@@ -1200,6 +1221,9 @@ public class PlanReportService {
                 }
                 if (isResidential && side != null && side.getDetail() != null && !side.getDetail().isEmpty()) {
                     combinedDetails.addAll(side.getDetail());
+                }
+                if (isResidential && side2 != null && side2.getDetail() != null && !side2.getDetail().isEmpty()) {
+                    combinedDetails.addAll(side2.getDetail());
                 }
 
                 // Only create a combined report if there's at least one detail
@@ -1369,7 +1393,7 @@ public class PlanReportService {
                 // This is only for rest
                 for (String blkFeature : blocks.get(blkName)) {
                     if (blkFeature.equals(FRONT_YARD_DESC) || blkFeature.equals(REAR_YARD_DESC)
-                            || blkFeature.equals(SIDE_YARD_DESC)) {
+                            || blkFeature.equals(SIDE_YARD_DESC) || blkFeature.equals("Side Setback1") || blkFeature.equals("Side Setback2")) {
                         continue;
                     } else {
                         j++;

@@ -120,7 +120,17 @@ public class BpaMdmsUtil {
 			finYear = (today.getYear()-1) + "-" + (today.getYear()) % 2000;
 		
 		//List<ModuleDetail> moduleRequest = getMDMSModuleRequest1("101", "SCHEME1", "2025-26", 1757496600979L, occType, plotArea);
-		List<ModuleDetail> moduleRequest = getMDMSModuleRequest1(MdmsConstants.MasterPlanCode, MdmsConstants.Scheme, finYear, System.currentTimeMillis(), occType, plotArea);
+//		List<ModuleDetail> moduleRequest = getMDMSModuleRequest1(MdmsConstants.MasterPlanCode, MdmsConstants.Scheme, finYear, System.currentTimeMillis(), occType, plotArea);
+
+		List<ModuleDetail> moduleRequest =
+			    getMDMSModuleRequest1(
+			        MdmsConstants.MasterPlanCode,
+			        MdmsConstants.Scheme,
+			        finYear,
+			        System.currentTimeMillis(),
+			        occType,
+			        "1.0.0"  // occVersion
+			    );
 
 		List<ModuleDetail> moduleDetails = new LinkedList<>();
 		moduleDetails.addAll(moduleRequest);
@@ -257,72 +267,74 @@ public class BpaMdmsUtil {
 		return Arrays.asList(bpaModuleDtls);
 	}
 
-	public List<ModuleDetail> getMDMSModuleRequest1(String code, String scheme, String fromFY, Long currentDate,
-			String occType, BigDecimal plotArea) {
+	public List<ModuleDetail> getMDMSModuleRequest1(
+        String code,
+        String scheme,
+        String fromFY,
+        Long currentDate,
+        String occType,
+        String occVersion) {
 
-		List<MasterDetail> bpaMasterDtls = new ArrayList<>();
+    List<MasterDetail> masterDetails = new ArrayList<>();
 
-// ApplicationType Master
-		MasterDetail masterDetailAppType = new MasterDetail();
-		masterDetailAppType.setName("ApplicationType");
-		masterDetailAppType.setFilter("$.[?(@.active==true)].code");
-		bpaMasterDtls.add(masterDetailAppType);
+    /* ================= MASTER PLAN FILTER ================= */
 
-// === Build dynamic JSONPath filter for MasterPlan ===
-		StringBuilder filterBuilder = new StringBuilder("$.[?(@.active==true");
+    StringBuilder filterBuilder = new StringBuilder("$[?(@.active==true");
 
-		if (code != null && !code.isEmpty()) {
-			filterBuilder.append(" && @.code=='").append(code).append("'");
-		}
-		if (scheme != null && !scheme.isEmpty()) {
-			filterBuilder.append(" && @.Scheme=='").append(scheme).append("'");
-		}
-		if (fromFY != null && !fromFY.isEmpty()) {
-			filterBuilder.append(" && @.fromFY=='").append(fromFY).append("'");
-		}
-		if (currentDate != null) {
-			filterBuilder.append(" && @.startingDate<=").append(currentDate).append(" && @.endingDate>=")
-					.append(currentDate);
-		}
+    if (code != null && !code.isEmpty()) {
+        filterBuilder.append(" && @.code=='").append(code).append("'");
+    }
 
-// Close MasterPlan condition
-		filterBuilder.append(")]");
+    if (scheme != null && !scheme.isEmpty()) {
+        filterBuilder.append(" && @.Scheme=='").append(scheme).append("'");
+    }
 
-// === Nested filter for OccType based on OccupancyType and Plot Area ===
-		if (occType != null && !occType.isEmpty() && plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
-		    filterBuilder.append(".OccType[?(@.OccupancyType=='")
-		            .append(occType)
-		            .append("' && @.minPlotArea<=")
-		            .append(plotArea.toPlainString()) // ✅ Safe BigDecimal to numeric string
-		            .append(" && @.maxPlotArea>=")
-		            .append(plotArea.toPlainString())
-		            .append(")]");
-		} else if (occType != null && !occType.isEmpty()) {
-			filterBuilder.append(".OccType[?(@.OccupancyType=='").append(occType).append("')]");
-		}
+    if (fromFY != null && !fromFY.isEmpty()) {
+        filterBuilder.append(" && @.fromFY=='").append(fromFY).append("'");
+    }
 
-// Final Filter String
-		String finalFilter = filterBuilder.toString();
+    if (currentDate != null) {
+        filterBuilder.append(" && @.startingDate<=").append(currentDate)
+                     .append(" && @.endingDate>=").append(currentDate);
+    }
 
-// MasterPlan Master
-		MasterDetail masterDetailMasterPlan = new MasterDetail();
-		masterDetailMasterPlan.setName("MasterPlan");
-		masterDetailMasterPlan.setFilter(finalFilter);
-		bpaMasterDtls.add(masterDetailMasterPlan);
+    // Close MasterPlan condition
+    filterBuilder.append(")]");
 
-// Usages Master
-		MasterDetail masterDetailUsages = new MasterDetail();
-		masterDetailUsages.setName("Usages");
-		masterDetailUsages.setFilter("$.[?(@.active==true)]");
-		bpaMasterDtls.add(masterDetailUsages);
+    /* ================= OCC TYPE FILTER ================= */
 
-// Module Detail
-		ModuleDetail bpaModuleDtls = new ModuleDetail();
-		bpaModuleDtls.setMasterDetails(bpaMasterDtls);
-		bpaModuleDtls.setModuleName("EDCR");
+    if (occType != null && !occType.isEmpty()) {
 
-		return Arrays.asList(bpaModuleDtls);
-	}
+        filterBuilder.append(".OccType[?(@.isActive==true")
+                     .append(" && @.OccupancyType=='").append(occType).append("'");
+
+        if (occVersion != null && !occVersion.isEmpty()) {
+            filterBuilder.append(" && @.occVersion=='")
+                         .append(occVersion)
+                         .append("'");
+        }
+
+        filterBuilder.append(")]");
+    }
+
+    String finalFilter = filterBuilder.toString();
+
+    /* ================= MASTER DETAIL ================= */
+
+    MasterDetail masterDetail = new MasterDetail();
+    masterDetail.setName("MasterPlan");
+    masterDetail.setFilter(finalFilter);
+    masterDetails.add(masterDetail);
+
+    /* ================= MODULE DETAIL ================= */
+
+    ModuleDetail moduleDetail = new ModuleDetail();
+    moduleDetail.setModuleName("edcrRules"); // ✅ correct module name
+    moduleDetail.setMasterDetails(masterDetails);
+
+    return Arrays.asList(moduleDetail);
+}
+
 	
 	public List<ModuleDetail> getUlbTypeRequest(String loggedInUlb) {
 

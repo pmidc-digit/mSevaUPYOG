@@ -85,6 +85,8 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.common.entity.edcr.Yard;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -289,12 +291,12 @@ public class SideYardService extends GeneralRule {
                         if (buildingHeight != null && (minlength > 0 || max > 0)) {
                             for (final Occupancy occupancy : block.getBuilding().getTotalArea()) {
                                 //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
-                            	scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback");
-                            	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback");
+                            	scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback1");
+                            	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback2");
                                 if (setback.getLevel() < 0) {
                                     //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
-                                    scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
-                                	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
+                                    scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Basement Side Yard1");
+                                	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Basement Side Yard2");
 
                                     checkSideYardBasement(pl, block.getBuilding(), buildingHeight, block.getName(),
                                             setback.getLevel(), plot, minlength, max, minMeanlength, maxMeanLength,
@@ -435,6 +437,14 @@ public class SideYardService extends GeneralRule {
     	BigDecimal minVal = BigDecimal.ZERO;
     	HashMap<String, String> errors = new HashMap<>();
     	
+    	Map<String, Object> variables = new HashMap<>();
+    	variables.put("buildingHeight", buildingHeight); // Replace 15.5 with your actual plan value
+
+    	// 2. Build the context
+    	RuleContext context = RuleContext.builder()
+    	        .formulaVariables(variables)    // Pass the map here
+    	        .build();
+    	
     	if(mostRestrictiveOccupancy!=null && (mostRestrictiveOccupancy.getSubtype()!=null
 	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
@@ -462,27 +472,51 @@ public class SideYardService extends GeneralRule {
 		        pl.addErrors(errors);			        
 		    }
 			
-			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+			if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
 
-			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-			            pl.getMdmsMasterData().get("masterMdmsData"),
-			            MdmsFilter.SIDE_SETBACK_PATH,
-			            BigDecimal.class
-			    );
-
-			    if (scOpt.isPresent()) {
-			        BigDecimal mdmsValue = scOpt.get();
-			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
-
+//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+//			            pl.getMdmsMasterData().get("masterMdmsData"),
+//			            MdmsFilter.SIDE_SETBACK_PATH,
+//			            BigDecimal.class
+//			    );
+//
+//			    if (scOpt.isPresent()) {
+//			        BigDecimal mdmsValue = scOpt.get();
+//			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
+//
+////			        BigDecimal oneFifthHeight = buildingHeight.divide(
+////			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
+////			        );
+////
+////			        minVal = oneFifthHeight.max(mdmsValue);
+//			        minVal = mdmsValue;
+//			    }else {
+//			    	LOG.error("No value found from mdms for the side setback");
+//			    }
+//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+//			            pl.getMdmsMasterData().get("masterMdmsData"),
+//			            MdmsFilter.SIDE_SETBACK_PATH,
+//			            BigDecimal.class
+//			    );
+//
+//			    if (scOpt.isPresent()) {
+//			        BigDecimal mdmsValue = scOpt.get();
+//			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
+//
 //			        BigDecimal oneFifthHeight = buildingHeight.divide(
 //			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
 //			        );
 //
 //			        minVal = oneFifthHeight.max(mdmsValue);
-			        minVal = mdmsValue;
-			    }else {
-			    	LOG.error("No value found from mdms for the side setback");
-			    }
+//			        minVal = mdmsValue;
+//			    }else {
+//			    	LOG.error("No value found from mdms for the side setback");
+//			    }
+			    
+			    minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.side1", context, BigDecimal.class).getValue();
+			    minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.side2", context, BigDecimal.class).getValue();
+		        LOG.info("Side  Setback Value from mdms : " + minVal);
+			    
 			}
 
 	    }

@@ -66,6 +66,7 @@ import org.egov.common.entity.bpa.Usage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
 
 
 
@@ -244,12 +245,21 @@ public class Plan implements Serializable {
     private List<String> nocDeptCodes = new ArrayList<String>();
     private HashMap<String, String> featureAmendments = new LinkedHashMap<>();
     private transient Map<String, List<Object>> mdmsMasterData;
+    private transient Map<String, JsonNode> mdmsRulesData = new HashMap<>();
     private transient Boolean mainDcrPassed = false;
     private List<ICT> icts = new ArrayList<>();
     
     private String coreArea;
     
-    private EdcrRequest edcrRequest;       
+    public Map<String, JsonNode> getMdmsRulesData() {
+		return mdmsRulesData;
+	}
+
+	public void setMdmsRulesData(Map<String, JsonNode> mdmsRulesData) {
+		this.mdmsRulesData = mdmsRulesData;
+	}
+
+	private EdcrRequest edcrRequest;       
 
     public EdcrRequest getEdcrRequest() {
 		return edcrRequest;

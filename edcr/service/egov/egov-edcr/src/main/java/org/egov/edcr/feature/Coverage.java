@@ -82,7 +82,15 @@ import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.BuildingRuleService;
+import org.egov.commons.mdms.MdmsRuleEngine;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 
 
@@ -255,6 +263,13 @@ public class Coverage extends FeatureProcess {
 //			}
 //		
 //		}
+		MdmsRuleEngine engine =
+		        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
+
+		RuleContext context = RuleContext.builder()
+	    	    .numericInput(plotArea) // The plot area	    	   
+	    	    .build();
+		
 		if (plotArea.compareTo(BigDecimal.valueOf(0)) > 0 && mostRestrictiveOccupancy != null &&
 				(A.equals(mostRestrictiveOccupancy.getType().getCode())
 				|| A_AF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
@@ -265,27 +280,20 @@ public class Coverage extends FeatureProcess {
 
 			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
 				permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
-				
-//				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-//					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-//			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-//			        permissibleCoverageValue = scOpt.get();
-//				}
-			}else {
-				// getting permissible value from mdms
-//				Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
-//				minPlotArea.ifPresent(min -> LOG.info("Min plot are required : " + min));
-//		        
-//				if (plotArea == null || plotArea.compareTo(minPlotArea.get()) <= 0) {
-//					errorMsgs.put("Plot Area Error:", "Plot area must be greater than : " + minPlotArea.get());
-//			        pl.addErrors(errorMsgs);			        
-//			    }
-				
-				if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-			        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-			        permissibleCoverageValue = scOpt.get();
-				}
+			}else {			
+				//permissibleCoverageValue = ruleService.getSiteCoverage();
+//				JsonNode coverageSlab =
+//						engine.getObject("siteCoverage", context);
+//
+//				permissibleCoverageValue = coverageSlab.path("percentage").decimalValue();
+				permissibleCoverageValue = BigDecimal.ZERO;
+//		    	RuleResult<JsonNode> siteCoverage = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage", context, BigDecimal.class);
+//		    	permissibleCoverageValue = siteCoverage.getValue().path("percentage");
+				//permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.value.percentage", context, BigDecimal.class).getValue();
+
+				permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+				System.out.println("Coverage %: " + permissibleCoverageValue);
+
 			}
 			
 				

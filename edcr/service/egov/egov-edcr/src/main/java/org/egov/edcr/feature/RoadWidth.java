@@ -85,6 +85,7 @@ import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.springframework.stereotype.Service;
 
@@ -249,11 +250,16 @@ public class RoadWidth extends FeatureProcess {
 //                break;
 //        }
 
-        if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_ROAD_WIDTH, BigDecimal.class);
-			scOpt.ifPresent(sc -> LOG.info("Min Road width Value: " + sc));
-			requiredRoadWidth = scOpt.get();
-		}
+//        if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+//			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_ROAD_WIDTH, BigDecimal.class);
+//			scOpt.ifPresent(sc -> LOG.info("Min Road width Value: " + sc));
+//			requiredRoadWidth = scOpt.get();
+//		}
+        if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
+        	requiredRoadWidth = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "roadWidth.min", null, BigDecimal.class).getValue();
+        	LOG.info("Min Road width Value: " + requiredRoadWidth);
+        }
+
         
         if (requiredRoadWidth != null && roadWidth.compareTo(requiredRoadWidth) < 0) {
             HashMap<String, String> errors = new HashMap<>();

@@ -84,6 +84,8 @@ import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
@@ -369,7 +371,7 @@ public class RearYardService extends GeneralRule {
 		String rule = REAR_YARD_DESC;
 		BigDecimal meanVal = BigDecimal.ZERO;
 		BigDecimal depthOfPlot = pl.getPlanInformation().getDepthOfPlot();
-		BigDecimal plotArea = pl.getPlanInformation().getPlotArea();
+		BigDecimal plotArea = pl.getPlot().getArea();
 
 		// Process only for A_R, A_AF, and A_ occupancy types
 //		if(mostRestrictiveOccupancy.getSubtype() != null
@@ -403,6 +405,9 @@ public class RearYardService extends GeneralRule {
 		LOG.info("Processing RearYardResult:");
 
 	    BigDecimal minVal = BigDecimal.ZERO; 
+	    RuleContext context = RuleContext.builder()
+	    	    .numericInput(plotArea) // The plot area	    	   
+	    	    .build();
 	    
 	    if(mostRestrictiveOccupancy!=null && (mostRestrictiveOccupancy.getSubtype()!=null
 	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
@@ -431,11 +436,19 @@ public class RearYardService extends GeneralRule {
 	    			pl.addErrors(errors);			        
 	    		}
 	    				
-	    		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-	    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
-	    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
-	    			minVal = scOpt.get();
-	    		}
+//	    		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+//	    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
+//	    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
+//	    			minVal = scOpt.get();
+//	    		}
+	    		if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {					
+					//Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
+			        //scOpt.ifPresent(sc -> LOG.info("Front Setback Value from mdms : " + sc));
+			        //minVal = scOpt.get();
+			        //minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class).getValue();
+			        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.rear", context, BigDecimal.class).getValue();
+			        LOG.info("Rear Setback Value from mdms : " + minVal);
+				}
 	    }        
 
 	    // Validate minimum and mean value

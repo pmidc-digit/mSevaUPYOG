@@ -82,7 +82,8 @@ import org.egov.common.entity.edcr.PlanInformation;
 import org.egov.edcr.config.properties.EdcrApplicationSettings;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.EdcrDetail;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
@@ -188,7 +189,7 @@ public class EdcrRestService {
         EdcrApplication edcrApplication = new EdcrApplication();
         edcrApplication.setMdmsMasterData(masterData);
         
-        System.out.println("coeArea " + edcrRequest.getCoreArea());
+        LOG.info("coeArea : " + edcrRequest.getCoreArea());
         EdcrApplicationDetail edcrApplicationDetail = new EdcrApplicationDetail();
         if (ApplicationType.OCCUPANCY_CERTIFICATE.toString().equalsIgnoreCase(edcrRequest.getAppliactionType())) {
             edcrApplicationDetail.setComparisonDcrNumber(edcrRequest.getComparisonEdcrNumber());
@@ -198,12 +199,18 @@ public class EdcrRestService {
         edcrApplicationDetails.add(edcrApplicationDetail);
         edcrApplication.setTransactionNumber(edcrRequest.getTransactionNumber());
         edcrApplication.setCoreArea(edcrRequest.getCoreArea());
-        System.out.println("-----"+ edcrApplication.getCoreArea());
+        LOG.info("-----"+ edcrApplication.getCoreArea());
         if (isNotBlank(edcrRequest.getApplicantName()))
             edcrApplication.setApplicantName(edcrRequest.getApplicantName());
         else
-            edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);
-        edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
+            edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);        
+        if(edcrRequest.getApplicantName()!=null) {
+        	//edcrApplication.setArchitectInformation(edcrRequest.getApplicantName());
+        	LOG.info("###Professional's name fro edcr report ####"+ edcrRequest.getRequestInfo().getUserInfo().getName());
+        	edcrApplication.setArchitectInformation(edcrRequest.getRequestInfo().getUserInfo().getName());
+        }else {
+        	edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
+        }
         edcrApplication.setServiceType(edcrRequest.getApplicationSubType());
         if (edcrRequest.getAppliactionType() == null)
             edcrApplication.setApplicationType(ApplicationType.PERMIT);
@@ -224,6 +231,11 @@ public class EdcrRestService {
                     ? edcrRequest.getRequestInfo().getUserInfo().getUuid()
                     : edcrRequest.getRequestInfo().getUserInfo().getId());
             String tenantId = "";
+            LOG.info("ApplicationThreadLocals.getTenantID() ---> " + ApplicationThreadLocals.getTenantID());
+            if(edcrRequest.getTenantId()!=null) {
+            	 LOG.info("edcrRequest tenant id  ---> " +  edcrRequest.getTenantId() );
+            }
+           
             if (StringUtils.isNotBlank(edcrRequest.getTenantId())) {
                 String[] tenantArr = edcrRequest.getTenantId().split("\\.");
                 String tenantFromReq;
@@ -231,6 +243,7 @@ public class EdcrRestService {
                     tenantFromReq = tenantArr[0];
                 else
                     tenantFromReq = tenantArr[1];
+                LOG.info("tenantFromReq : " + tenantFromReq);
                 if (tenantFromReq.equalsIgnoreCase(ApplicationThreadLocals.getTenantID()))
                     tenantId = edcrRequest.getTenantId();
             }
@@ -242,10 +255,12 @@ public class EdcrRestService {
             } else if (StringUtils.isBlank(tenantId)) {
                 tenantId = ApplicationThreadLocals.getTenantID();
             }
+            // setting setThirdPartyUserTenant
+            LOG.info("ThirdPartyUserTenant : " + tenantId);
             edcrApplication.setThirdPartyUserTenant(tenantId);
         }
 
-        edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication);
+        edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication,edcrRequest);
         
         //Code to push the data of edcr application to kafka index
         EdcrIndexData edcrIndexData = new EdcrIndexData();
@@ -407,11 +422,36 @@ public class EdcrRestService {
         if (edcrApplnDtl.getApplication().getServiceType() != null)
             edcrDetail.setApplicationSubType(edcrApplnDtl.getApplication().getServiceType());
         String tenantId;
-        String[] tenantArr = edcrApplnDtl.getApplication().getThirdPartyUserTenant().split("\\.");
-        if (tenantArr.length == 1)
+//        String[] tenantArr = edcrApplnDtl.getApplication().getThirdPartyUserTenant().split("\\.");
+//        if (tenantArr.length == 1)
+//            tenantId = tenantArr[0];
+//        else
+//            tenantId = tenantArr[1];
+        String thirdPartyTenant = edcrApplnDtl.getApplication().getThirdPartyUserTenant();
+        LOG.info("Third party tenant received: {}", thirdPartyTenant);
+
+        // Split tenant string
+        String[] tenantArr = thirdPartyTenant.split("\\.");
+
+        LOG.info("tenantArr length = {}", tenantArr.length);
+
+        // Print each array value
+        for (int i = 0; i < tenantArr.length; i++) {
+            LOG.info("tenantArr[{}] = {}", i, tenantArr[i]);
+        }
+
+        // Resolve tenantId
+        if (tenantArr.length == 1) {
             tenantId = tenantArr[0];
-        else
+            LOG.info("Resolved tenantId from tenantArr[0]: {}", tenantId);
+        } else {
             tenantId = tenantArr[1];
+            LOG.info("Resolved tenantId from tenantArr[1]: {}", tenantId);
+        }
+
+        // Final print
+        LOG.info("Final tenantId after resolution: {}", tenantId);
+
         if (edcrApplnDtl.getDxfFileId() != null)
             edcrDetail.setDxfFile(format(getFileDownloadUrl(edcrApplnDtl.getDxfFileId().getFileStoreId(), tenantId)));
 
@@ -566,9 +606,9 @@ public class EdcrRestService {
             userId = userInfo.getId();
         // When the user is ANONYMOUS, then search application by edcrno or transaction
         // number
-        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getPrimaryrole() != null
-                && !userInfo.getPrimaryrole().isEmpty()) {
-            List<String> roles = userInfo.getPrimaryrole().stream().map(Role::getCode).collect(Collectors.toList());
+        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+                && !userInfo.getRoles().isEmpty()) {
+            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
             LOG.info("****Roles***" + roles);
             if (roles.contains("ANONYMOUS"))
                 userId = "";
@@ -664,9 +704,9 @@ public class EdcrRestService {
         
         // When the user is ANONYMOUS, then search application by edcrno or transaction
         // number
-        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getPrimaryrole() != null
-                && !userInfo.getPrimaryrole().isEmpty()) {
-            List<String> roles = userInfo.getPrimaryrole().stream().map(Role::getCode).collect(Collectors.toList());
+        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+                && !userInfo.getRoles().isEmpty()) {
+            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
             LOG.info("****Roles***" + roles);
             if (roles.contains("ANONYMOUS"))
                 userId = "";
@@ -956,7 +996,7 @@ public class EdcrRestService {
             errorDetails.add(new ErrorDetail("BPA-29", "Comparison eDcr number is mandatory"));
         } else {
             EdcrApplicationDetail permitDcr = applicationDetailService.findByDcrNumberAndTPUserTenant(dcrNo,
-                    edcrRequest.getTenantId());
+            		edcrRequest.getTenantId());
 
             if (permitDcr != null && permitDcr.getApplication() != null
                     && StringUtils.isBlank(permitDcr.getApplication().getServiceType())) {
@@ -985,18 +1025,78 @@ public class EdcrRestService {
         return errorDetails;
     }
 
+//    public List<ErrorDetail> validateEdcrMandatoryFields(final EdcrRequest edcrRequest) {
+//        List<ErrorDetail> errors = new ArrayList<>();
+//        if (StringUtils.isBlank(edcrRequest.getAppliactionType())) {
+//            errors.add(new ErrorDetail("BPA-10", "Application type is missing"));
+//        }
+//
+//        if (StringUtils.isBlank(edcrRequest.getApplicationSubType())) {
+//            errors.add(new ErrorDetail("BPA-11", "Service type is missing"));
+//        }
+//
+//        return errors;
+//    }
+    
     public List<ErrorDetail> validateEdcrMandatoryFields(final EdcrRequest edcrRequest) {
         List<ErrorDetail> errors = new ArrayList<>();
+
+        // Application Type
         if (StringUtils.isBlank(edcrRequest.getAppliactionType())) {
             errors.add(new ErrorDetail("BPA-10", "Application type is missing"));
         }
 
+        // Application Sub Type
         if (StringUtils.isBlank(edcrRequest.getApplicationSubType())) {
             errors.add(new ErrorDetail("BPA-11", "Service type is missing"));
         }
 
+        // Applicant Name
+        if (StringUtils.isBlank(edcrRequest.getApplicantName())) {
+            errors.add(new ErrorDetail("BPA-12", "Applicant name is required"));
+        }
+
+        // ULB
+        if (StringUtils.isBlank(edcrRequest.getUlb())) {
+            errors.add(new ErrorDetail("BPA-13", "ULB name is required"));
+        }
+
+        // Area Type
+        if (StringUtils.isBlank(edcrRequest.getAreaType())) {
+            errors.add(new ErrorDetail("BPA-14", "Area type is required"));
+            return errors; // Can't continue further without area type
+        }
+
+        if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+            // Scheme Area Validations
+            if (StringUtils.isBlank(edcrRequest.getSchemeArea())) {
+                errors.add(new ErrorDetail("BPA-15", "Scheme type is required for Scheme Area"));
+            }
+            if (StringUtils.isBlank(edcrRequest.getSchName())) {
+                errors.add(new ErrorDetail("BPA-16", "Scheme name is required for Scheme Area"));
+            }
+            if (edcrRequest.getSiteReserved() == null) {
+                errors.add(new ErrorDetail("BPA-17", "Site reserved selection is required for Scheme Area"));
+            } else {
+                if (edcrRequest.getSiteReserved() && edcrRequest.getApprovedCS() == null) {
+                    errors.add(new ErrorDetail("BPA-18", "Approved control sheet selection is required when site is reserved"));
+                }
+            }
+        } else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+            // Non-Scheme Area Validations
+            if (edcrRequest.getCluApprove() == null) {
+                errors.add(new ErrorDetail("BPA-19", "CLU approval selection is required for Non-Scheme Area"));
+            }
+            if (edcrRequest.getCoreArea() == null) {
+                errors.add(new ErrorDetail("BPA-20", "Core area selection is required for Non-Scheme Area"));
+            }
+        } else {
+            errors.add(new ErrorDetail("BPA-21", "Invalid Area Type value"));
+        }
+
         return errors;
     }
+
 
     public ErrorDetail validateSearchRequest(final String edcrNumber, final String transactionNumber) {
         ErrorDetail errorDetail = null;

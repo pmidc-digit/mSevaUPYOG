@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.transaction.TransactionManager;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -64,12 +66,17 @@ import org.kabeja.dxf.helpers.StyledTextParagraph;
 import org.kabeja.math.MathUtils;
 import org.kabeja.xml.SAXSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Rectangle;
+
+
 
 @Service
 public class DxfToPdfConverterExtract extends FeatureExtract {
@@ -96,17 +103,23 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     private MDMSValidator mdmsValidator;
     @Autowired
     private CityService cityService;
+    
+    @Value("${plan.pdf}")
+    private Boolean planPdf;
 
     @Override
     public PlanDetail extract(PlanDetail planDetail) {
+    	LOG.info("inside extract()");
 
         Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
         boolean mdmsDxfToPdfEnabled = false;
         if (mdmsEnabled != null && mdmsEnabled) {
             City stateCity = cityService.fetchStateCityDetails();
-            String tenantID = ApplicationThreadLocals.getTenantID();
-            Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),
-                    new StringBuilder().append(stateCity.getCode()).append(".").append(tenantID).toString());
+            //String tenantID = ApplicationThreadLocals.getTenantID();
+            String tenantID = ApplicationThreadLocals.getStateName();
+//            Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),
+//                    new StringBuilder().append(stateCity.getCode()).append(".").append(tenantID).toString());
+            Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(), tenantID);
 
             if (mdmsData == null) {
                 tenantID = stateCity.getCode();
@@ -238,12 +251,16 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
             enablePrintableLayers(edcrPdfDetail, planDetail.getDxfDocument());
             sanitize(fileName, planDetail.getDxfDocument(), edcrPdfDetail, planDetail);
 
-            File file = convertDxfToPdf(planDetail.getDxfDocument(), fileName, edcrPdfDetail.getLayer(), edcrPdfDetail);
-            disablePrintableLayers(edcrPdfDetail, planDetail.getDxfDocument());
+            if(planPdf) {
+            	File file = convertDxfToPdf(planDetail.getDxfDocument(), fileName, edcrPdfDetail.getLayer(), edcrPdfDetail);
+                LOG.info("plan pdf : " + planPdf);               
+                disablePrintableLayers(edcrPdfDetail, planDetail.getDxfDocument());
 
-            if (file != null) {
-                edcrPdfDetail.setConvertedPdf(file);
+                if (file != null) {
+                    edcrPdfDetail.setConvertedPdf(file);
+                }
             }
+            
 
         }
 
@@ -259,14 +276,13 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
         }
 
         if (printSingleSheet) {
-
-            sanitize(fileName, planDetail.getDxfDocument(), printSingleSheetDetails, planDetail);
-
-            File file = convertDxfToPdf(planDetail.getDxfDocument(), fileName, printSingleSheetDetails.getLayer(),
-                    printSingleSheetDetails);
-
-            if (file != null) {
-                printSingleSheetDetails.setConvertedPdf(file);
+            sanitize(fileName, planDetail.getDxfDocument(), printSingleSheetDetails, planDetail);           
+            if(planPdf) {
+            	File file = convertDxfToPdf(planDetail.getDxfDocument(), fileName, printSingleSheetDetails.getLayer(),
+                      printSingleSheetDetails);
+	              if (file != null) {
+	                  printSingleSheetDetails.setConvertedPdf(file);
+	              }
             }
 
         }
@@ -277,6 +293,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     @Override
     public PlanDetail validate(PlanDetail planDetail) {
+    	LOG.info("inside validate()");
 
         List<EdcrPdfDetail> layerNameList = planDetail.getEdcrPdfDetails();
         // get a particular layer from the document and enable the layer
@@ -302,7 +319,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     private void sanitize2(String fileName, DXFDocument dxfDocument, EdcrPdfDetail edcrPdfDetail, PlanDetail pl) {
         // StringBuffer standardViolations = new StringBuffer();
-
+    	LOG.info("inside sanitize2()");
         boolean addMeasurement = false;
         if (edcrPdfDetail.getLayers() != null)
             Outer: for (String layer : edcrPdfDetail.getLayers()) {
@@ -409,7 +426,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     private void sanitize(String fileName, DXFDocument dxfDocument, EdcrPdfDetail edcrPdfDetail, PlanDetail pl) {
         // StringBuffer standardViolations = new StringBuffer();
-
+    	LOG.info("inside sanitize()");
         boolean addMeasurement = false;
         if (edcrPdfDetail.getLayers() != null)
             Outer: for (String layer : edcrPdfDetail.getLayers()) {
@@ -570,7 +587,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void enablePrintableLayers(EdcrPdfDetail edcrPdfDetail, DXFDocument dxfDocument) {
-
+    	LOG.info("inside enablePrintableLayers()");
         if (edcrPdfDetail.getLayers() != null)
             for (String layer : edcrPdfDetail.getLayers()) {
                 // Enable layer for Print
@@ -583,6 +600,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void disablePrintableLayers(EdcrPdfDetail edcrPdfDetail, DXFDocument dxfDocument) {
+    	LOG.info("inside disablePrintableLayers()");
         if (edcrPdfDetail.getLayers() != null)
             for (String layer : edcrPdfDetail.getLayers()) {
                 // Enable layer for Print
@@ -595,7 +613,8 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void addPolygonMeasurement(DXFLayer dxfLayer, DXFEntity e, EdcrPdfDetail detail, PlanDetail pl) {
-        DXFPolyline pline = (DXFPolyline) e;
+    	LOG.info("inside addPolygonMeasurement()");
+    	DXFPolyline pline = (DXFPolyline) e;
         Iterator vertexIterator = pline.getVertexIterator();
         DXFVertex point1 = null;
         DXFVertex first = null;
@@ -744,6 +763,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
 
     private void printNext(DXFLayer dxfLayer, EdcrPdfDetail detail, DXFPolyline pline, DXFVertex first,
             DXFVertex point2) {
+    	LOG.info("inside printNext()");
         String content;
         if (pline.isClosed()) {
             BigDecimal length = BigDecimal.valueOf(MathUtils.distance(first.getPoint(), point2.getPoint()))
@@ -778,57 +798,207 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
         }
     }
 
-    private File convertDxfToPdf(DXFDocument dxfDocument, String fileName, String layerName,
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public File convertDxfToPdf(
+            DXFDocument dxfDocument,
+            String fileName,
+            String layerName,
             EdcrPdfDetail edcrPdfDetail) {
+
+        LOG.info("convertDxfToPdf() → layer={}", layerName);
 
         File fileOut = new File(layerName + ".pdf");
 
-        if (fileOut != null) {
-            try {
+        try (FileOutputStream fout = new FileOutputStream(fileOut)) {
 
-                if (LOG.isDebugEnabled())
-                    LOG.debug("---------converting " + fileName + " - " + layerName + " to pdf----------");
-                FileOutputStream fout = new FileOutputStream(fileOut);
+            // --------------------------------------------------------------
+            // 1) Optional: Remove hatch/solid (FAST + SAFE)
+            // --------------------------------------------------------------
+            DXFDocument dxfToUse = dxfDocument;
 
-                DcrSvgGenerator generator = new DcrSvgGenerator();
-                SAXSerializer out = new SAXPDFSerializer();
-                out.setOutput(fout);
-                HashMap map = new HashMap();
-
-                Rectangle rectangle = PageSize.getRectangle(edcrPdfDetail.getPageSize().getSize());
-                // factor of 3.78 for setting page size
-                // A0 landscape = 841mm X 1189mm (w * h)
-
-                if (edcrPdfDetail.getPageSize().getOrientation().ordinal() == Orientation.PORTRAIT.ordinal()) {
-
-                    map.put("width", String.valueOf(rectangle.getWidth() * edcrPdfDetail.getPageSize().getEnlarge()));
-                    map.put("height", String.valueOf(rectangle.getHeight() * edcrPdfDetail.getPageSize().getEnlarge()));
-                } else {
-                    map.put("width", String.valueOf(rectangle.getHeight() * edcrPdfDetail.getPageSize().getEnlarge()));
-                    map.put("height", String.valueOf(rectangle.getWidth() * edcrPdfDetail.getPageSize().getEnlarge()));
-                }
-                map.put("margin", String.valueOf(0.5));
-                if (edcrPdfDetail.getPageSize().getRemoveHatch()) {
-                    map.put("stroke.width", new Double(0));
-                }
-
-                generator.generate(dxfDocument, out, map);
-                if (LOG.isDebugEnabled())
-                    LOG.debug("---------conversion success " + fileName + " - " + layerName + "----------");
-                fout.flush();
-                fout.close();
-                return fileOut.length() > 0 ? fileOut : null;
-            } catch (Exception ep) {
-                LOG.error("Pdf convertion failed for " + fileName + " - " + layerName + " due to " + ep.getMessage());
-                edcrPdfDetail.setFailureReasons(ep.getMessage());
+            if (edcrPdfDetail.getPageSize().getRemoveHatch()) {
+                long start = System.currentTimeMillis();
+                dxfToUse = removeHatchAndSolid(dxfDocument);
+                LOG.debug("Hatch removal took {} ms for layer {}", 
+                          (System.currentTimeMillis() - start), layerName);
             }
-        }
 
-        return null;
+            // --------------------------------------------------------------
+            // 2) Prepare Kabeja SVG → PDF generator
+            // --------------------------------------------------------------
+            DcrSvgGenerator generator = new DcrSvgGenerator();
+            SAXSerializer out = new SAXPDFSerializer();
+            out.setOutput(fout);
+
+            // --------------------------------------------------------------
+            // 3) Build Kabeja property map (VERY IMPORTANT)
+            // --------------------------------------------------------------
+            HashMap<String, Object> map = new HashMap<>();
+            Rectangle rect = PageSize.getRectangle(edcrPdfDetail.getPageSize().getSize());
+            double enlarge = edcrPdfDetail.getPageSize().getEnlarge();
+
+            double w, h;
+
+            if (edcrPdfDetail.getPageSize().getOrientation() == Orientation.PORTRAIT) {
+                w = rect.getWidth() * enlarge;
+                h = rect.getHeight() * enlarge;
+            } else {
+                w = rect.getHeight() * enlarge;
+                h = rect.getWidth() * enlarge;
+            }
+
+            // Kabeja expects STRING for width/height/margin → avoids ClassCastException
+            map.put("width",  String.valueOf(w));
+            map.put("height", String.valueOf(h));
+            map.put("margin", "0.5");
+
+            // Text speed optimization
+            map.put("text.as-shape", "false");     // DO NOT convert text to path
+            map.put("text.render", "normal");      // prevents heavy text shaping
+
+            // Hatch control (safe)
+            if (edcrPdfDetail.getPageSize().getRemoveHatch()) {
+                map.put("stroke.width", "0");      // MUST be string (this fixes your crash)
+            }
+
+            // Optional optimization
+            map.put("optimize", "true");
+            map.put("fastmode", "true");
+
+            // --------------------------------------------------------------
+            // 4) Generate PDF
+            // --------------------------------------------------------------
+            long startPdf = System.currentTimeMillis();
+            generator.generate(dxfToUse, out, map);
+            LOG.debug("PDF generation time for {} → {} ms", 
+                      layerName, (System.currentTimeMillis() - startPdf));
+
+            LOG.info("PDF generated {} ({} KB)", layerName, fileOut.length() / 1024);
+
+            return (fileOut.length() > 0) ? fileOut : null;
+
+        } catch (Exception e) {
+            LOG.error("PDF conversion failed for {}: {}", layerName, e.getMessage(), e);
+            edcrPdfDetail.setFailureReasons("PDF Error: " + e.getMessage());
+            return null;
+        }
     }
 
-    private List<String> checkNegetiveWidth(DXFLayer dxfLayer, EdcrPdfDetail pdfDetail) {
 
+
+
+    
+//    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+//    public File convertDxfToPdf(
+//            DXFDocument dxfDocument,
+//            String fileName,
+//            String layerName,
+//            EdcrPdfDetail edcrPdfDetail) {
+//
+//        LOG.info("inside convertDxfToPdf()");
+//        File fileOut = new File(layerName + ".pdf");
+//
+//        try (FileOutputStream fout = new FileOutputStream(fileOut)) {
+//
+//            if (LOG.isDebugEnabled())
+//                LOG.debug("---------converting " + fileName + " - " + layerName + " to pdf----------");
+//
+//            // === Setup PDF generator ===
+//            DcrSvgGenerator generator = new DcrSvgGenerator();
+//            SAXSerializer out = new SAXPDFSerializer();
+//            out.setOutput(fout);
+//
+//            HashMap<String, Object> map = new HashMap<>();
+//
+//            Rectangle rectangle = PageSize.getRectangle(edcrPdfDetail.getPageSize().getSize());
+//
+//            // Page size logic
+//            if (edcrPdfDetail.getPageSize().getOrientation() == Orientation.PORTRAIT) {
+//                map.put("width",  rectangle.getWidth()  * edcrPdfDetail.getPageSize().getEnlarge());
+//                map.put("height", rectangle.getHeight() * edcrPdfDetail.getPageSize().getEnlarge());
+//            } else {
+//                map.put("width",  rectangle.getHeight() * edcrPdfDetail.getPageSize().getEnlarge());
+//                map.put("height", rectangle.getWidth()  * edcrPdfDetail.getPageSize().getEnlarge());
+//            }
+//
+//            map.put("margin", 0.5);
+//
+//            if (edcrPdfDetail.getPageSize().getRemoveHatch()) {
+//                map.put("stroke.width", 0.0);
+//            }
+//
+//            // === Actual Conversion ===
+//            generator.generate(dxfDocument, out, map);
+//
+//            if (LOG.isDebugEnabled())
+//                LOG.debug("---------conversion success " + fileName + " - " + layerName + "----------");
+//
+//            return fileOut.length() > 0 ? fileOut : null;
+//
+//        } catch (Exception ep) {
+//            LOG.error("Pdf conversion failed for " + fileName + " - " + layerName + " due to " + ep.getMessage(), ep);
+//            edcrPdfDetail.setFailureReasons(ep.getMessage());
+//            return null;
+//        }
+//    }
+
+    
+//    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+//    private File convertDxfToPdf(DXFDocument dxfDocument, String fileName, String layerName,
+//            EdcrPdfDetail edcrPdfDetail) {
+//    	LOG.info("inside convertDxfToPdf()");
+//
+//        File fileOut = new File(layerName + ".pdf");
+//
+//        if (fileOut != null) {
+//            try {
+//
+//                if (LOG.isDebugEnabled())
+//                    LOG.debug("---------converting " + fileName + " - " + layerName + " to pdf----------");
+//                FileOutputStream fout = new FileOutputStream(fileOut);
+//
+//                DcrSvgGenerator generator = new DcrSvgGenerator();
+//                SAXSerializer out = new SAXPDFSerializer();
+//                out.setOutput(fout);
+//                HashMap map = new HashMap();
+//
+//                Rectangle rectangle = PageSize.getRectangle(edcrPdfDetail.getPageSize().getSize());
+//                // factor of 3.78 for setting page size
+//                // A0 landscape = 841mm X 1189mm (w * h)
+//
+//                if (edcrPdfDetail.getPageSize().getOrientation().ordinal() == Orientation.PORTRAIT.ordinal()) {
+//
+//                    map.put("width", String.valueOf(rectangle.getWidth() * edcrPdfDetail.getPageSize().getEnlarge()));
+//                    map.put("height", String.valueOf(rectangle.getHeight() * edcrPdfDetail.getPageSize().getEnlarge()));
+//                } else {
+//                    map.put("width", String.valueOf(rectangle.getHeight() * edcrPdfDetail.getPageSize().getEnlarge()));
+//                    map.put("height", String.valueOf(rectangle.getWidth() * edcrPdfDetail.getPageSize().getEnlarge()));
+//                }
+//                map.put("margin", String.valueOf(0.5));
+//                if (edcrPdfDetail.getPageSize().getRemoveHatch()) {
+//                    map.put("stroke.width", new Double(0));
+//                }
+//
+//                generator.generate(dxfDocument, out, map);
+//                if (LOG.isDebugEnabled())
+//                    LOG.debug("---------conversion success " + fileName + " - " + layerName + "----------");
+//                fout.flush();
+//                fout.close();
+//                return fileOut.length() > 0 ? fileOut : null;
+//            } catch (Exception ep) {
+//                LOG.error("Pdf convertion failed for " + fileName + " - " + layerName + " due to " + ep.getMessage());
+//                edcrPdfDetail.setFailureReasons(ep.getMessage());
+//            }
+//        }
+//
+//        return null;
+//    }
+    		
+    
+
+
+    private List<String> checkNegetiveWidth(DXFLayer dxfLayer, EdcrPdfDetail pdfDetail) {
+    	LOG.info("inside checkNegetiveWidth()");
         StringBuilder errorBuffer = new StringBuilder();
 
         List<String> blks = new ArrayList<>();
@@ -885,15 +1055,61 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
         return errors;
 
     }
+    
+    private DXFDocument removeHatchAndSolid(DXFDocument original) {
+        DXFDocument clean = new DXFDocument();
+        clean.setDXFHeader(original.getDXFHeader()); // copy header
+
+        Iterator<DXFLayer> layerIter = original.getDXFLayerIterator();
+        while (layerIter.hasNext()) {
+            DXFLayer oldLayer = layerIter.next();
+
+            // Correct way in Kabeja 0.4
+            DXFLayer newLayer = new DXFLayer();
+            newLayer.setName(oldLayer.getName());
+
+            // Copy properties (only these exist in Kabeja 0.4)
+            newLayer.setColor(oldLayer.getColor());
+            newLayer.setFlags(oldLayer.getFlags());           // contains frozen/locked/visible
+            newLayer.setLineType(oldLayer.getLineType());
+            newLayer.setLineWeight(oldLayer.getLineWeight());
+
+            // NO setVisible(), NO setFrozen() — use flags instead!
+            // Bit 1 = frozen, Bit 0 = visible (on/off) → we preserve via setFlags()
+
+            Iterator<String> typeIter = oldLayer.getDXFEntityTypeIterator();
+            while (typeIter.hasNext()) {
+                String type = typeIter.next();
+
+                // SKIP HATCH & SOLID → 50x–100x speed boost
+                if (DXFConstants.ENTITY_TYPE_HATCH.equals(type) ||
+                    DXFConstants.ENTITY_TYPE_SOLID.equals(type)) {
+                    continue;
+                }
+
+                // getDXFEntities() returns List<DXFEntity>, not ArrayList
+                List entities = oldLayer.getDXFEntities(type);  // raw List
+                for (Object obj : entities) {
+                    DXFEntity entity = (DXFEntity) obj;
+                    newLayer.addDXFEntity(entity);
+                }
+            }
+
+            clean.addDXFLayer(newLayer); // correct way
+        }
+
+        return clean;
+    }
 
     private boolean isDuplicatePresent(List<String> layerList) {
+    	LOG.info("inside isDuplicatePresent()");
         Set<String> duplicateLayerList = layerList.stream().filter(i -> Collections.frequency(layerList, i) > 1)
                 .collect(Collectors.toSet());
         return duplicateLayerList.isEmpty() ? false : true;
     }
 
     private void sanitizeTexts(EdcrPdfDetail pdfDetail, DXFDocument doc, DXFLayer dxfLayer) {
-
+    	LOG.info("inside sanitizeTexts()");
         List texts = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_TEXT);
         StringBuilder message = new StringBuilder();
         if (texts != null && texts.size() > 0) {
@@ -941,7 +1157,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void sanitizeMtext(EdcrPdfDetail pdfDetail, DXFDocument doc, DXFLayer dxfLayer) {
-
+    	LOG.info("inside sanitizeMtext()");
         List mtexts = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_MTEXT);
         StringBuilder message = new StringBuilder();
         if (mtexts != null && mtexts.size() > 0) {
@@ -1000,7 +1216,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void sanitizeDimension(EdcrPdfDetail pdfDetail, DXFDocument doc, DXFLayer dxfLayer) {
-
+    	LOG.info("inside sanitizeDimension()");
         List dimensions = dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_DIMENSION);
         StringBuilder message = new StringBuilder();
         if (dimensions != null && dimensions.size() > 0) {
@@ -1067,7 +1283,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private List<EdcrPdfDetail> getPdfLayerNames(PlanDetail planDetail, String appConfigValue) {
-
+    	LOG.info("inside getPdfLayerNames()");
         boolean evaluate = false;
         List<EdcrPdfDetail> pdfLayers = new ArrayList<>();
         EdcrPdfDetail pdfdetail = new EdcrPdfDetail();
@@ -1240,6 +1456,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private List<EdcrPdfDetail> getPdfLayerNames(PlanDetail planDetail, DxfToPdfLayerConfig config) {
+    	LOG.info("inside getPdfLayerNames()");
         List<EdcrPdfDetail> pdfLayers = new ArrayList<>();
         boolean evaluate = false;
         EdcrPdfDetail pdfdetail = new EdcrPdfDetail();
@@ -1375,6 +1592,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private String constructIntoSingleLineConfig(DxfToPdfLayerConfig config) {
+    	LOG.info("inside constructIntoSingleLineConfig()");
         StringBuilder layerRegEx = new StringBuilder();
         Iterator<PlanPdfLayerConfig> itr = config.getPlanPdfLayerConfigs().iterator();
         while (itr.hasNext()) {
@@ -1393,6 +1611,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void getLayerColorConfigs(PlanDetail planDetail, EdcrPdfDetail pdfdetail, String s) {
+    	LOG.info("inside getLayerColorConfigs()");
         if (s.indexOf(":") != -1) {
 
             String[] layerAndConf = s.split(":");
@@ -1446,6 +1665,7 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
     }
 
     private void getLayerColorConfigs(PlanDetail planDetail, EdcrPdfDetail pdfdetail, PlanPdfLayerConfig planLayer) {
+    	LOG.info("inside getLayerColorConfigs()");
 
         List<String> layerNamesLike = Util.getLayerNamesLike(planDetail.getDxfDocument(), planLayer.getLayerName());
 

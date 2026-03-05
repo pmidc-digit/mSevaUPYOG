@@ -404,18 +404,7 @@ const OwnerForm1 = (_props) => {
           control={control}
           render={(props) => (
             <div className="form-field" style={{ pointerEvents: "none" }}>
-              <div style={{
-                height: "50px",
-                border: "1px solid #d1d5db",
-                borderRadius: "8px",
-                backgroundColor: "#fafafa",
-                display: "flex",
-                alignItems: "center",
-                paddingLeft: "10px",
-                fontSize: "16px",
-                color: "#333333",
-                marginBottom: "8px",
-              }}>
+              <div className="TL-Tradetype-disabled" >
                 {licenseTypeValue?.i18nKey ? t(licenseTypeValue.i18nKey) : licenseTypeValue?.code || ""}
               </div>
             </div>

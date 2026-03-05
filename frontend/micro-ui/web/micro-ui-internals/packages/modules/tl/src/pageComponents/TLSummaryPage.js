@@ -12,9 +12,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const formData = reduxFormData || propsFormData || {};
   
   const createdResponse = formData?.CreatedResponse || formData?.EditPayload || {};
-  console.log("➡️Summary Page - Created Response:", createdResponse);
   const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory, propertyId} = createdResponse;
-  console.log("➡️Summary Page - Trade License Detail:", tradeLicenseDetail);
   const [isChecked, setIsChecked] = useState(false);
   const [showBreakupModal, setShowBreakupModal] = useState(false);
   const [breakupData, setBreakupData] = useState(null);

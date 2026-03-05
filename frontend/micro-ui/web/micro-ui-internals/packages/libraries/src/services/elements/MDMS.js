@@ -1586,7 +1586,7 @@ const getTLAccessoriesType = (MdmsRes) =>
   MdmsRes["TradeLicense"].AccessoriesCategory.filter((AccessoriesCategory) => AccessoriesCategory.active).map((TLAccessoryTypeList) => {
     return {
       ...TLAccessoryTypeList,
-      i18nKey: `TRADELICENSE_ACCESSORIESCATEGORY_${stringReplaceAll(TLAccessoryTypeList.code, ".", "_")}`,
+      i18nKey: `TRADELICENSE_ACCESSORIESCATEGORY_${stringReplaceAll(TLAccessoryTypeList.code, "-", "_")}`,
     };
   });
 
@@ -2164,7 +2164,7 @@ export const MdmsService = {
     return MdmsService.getDataByCriteria(tenantId, getTLStructureTypeList(tenantId, moduleCode), moduleCode);
   },
   getTLAccessoriesType: (tenantId, moduleCode, type) => {
-    return MdmsService.getDataByCriteria(tenantId, getTLAccessoriesTypeList(tenantId, moduleCode), moduleCode);
+    return MdmsService.getDataByCriteria(tenantId, getTLAccessoriesTypeList(tenantId, moduleCode, type), moduleCode);
   },
   getTLFinancialYear: (tenantId, moduleCode, type) => {
     return MdmsService.getDataByCriteria(tenantId, getTLFinancialYearList(tenantId, moduleCode), moduleCode);

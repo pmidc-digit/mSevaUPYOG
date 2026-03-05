@@ -187,20 +187,19 @@ const EditLayoutApplication = () => {
   }, [isLoading, isBuildingTypeLoading, isBuildingCategoryLoading, isRoadTypeLoading, isLayoutTypeLoading, isUlbListLoading, isMdmsLoading]);
 
   // First useEffect: Handle zone updates only
-  useEffect(() => {
-    if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-      const zoneName = siteDetails?.zone?.name || siteDetails?.zone
-      const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
-      if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
-        dispatch(
-          UPDATE_LayoutNewApplication_FORM("siteDetails", {
-            ...formData.siteDetails,
-            zone: matchedZone,
-          })
-        );
-      }
-    }
-  }, [fetchedLocalities, siteDetails?.zone]);
+  // useEffect(() => {
+  //   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+  //     const zoneName = siteDetails?.zone?.name || siteDetails?.zone
+  //     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
+  //     if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
+  //       dispatch(
+  //         UPDATE_LayoutNewApplication_FORM("siteDetails", {
+  //           ...formData.siteDetails,            
+  //         })
+  //       );
+  //     }
+  //   }
+  // }, [fetchedLocalities, siteDetails?.zone]);
 
    const options = [
       { code: "YES", i18nKey: "YES" },
@@ -235,10 +234,25 @@ const EditLayoutApplication = () => {
       });
     });
 
+  // const convertToISODate = (dateStr) => {
+  //   const [dd, mm, yyyy] = dateStr.split("-");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // };
+
   const convertToISODate = (dateStr) => {
-    const [dd, mm, yyyy] = dateStr.split("-");
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  if (!dateStr) return "";
+
+  const parts = dateStr.split("-");
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[0].length === 4) {
+    return dateStr;
+  }
+
+  // dd-mm-yyyy → yyyy-mm-dd
+  const [dd, mm, yyyy] = parts;
+  return `${yyyy}-${mm}-${dd}`;
+};
 
 
   // useEffect(() => {
@@ -400,6 +414,7 @@ const EditLayoutApplication = () => {
                 documentUid: doc?.documentUid || "",
                 documentAttachment: doc?.documentAttachment || "",
                 filestoreId: doc?.uuid || "",
+                layoutId: doc?.layoutId || null
               })),
             },
           };
@@ -487,7 +502,7 @@ const EditLayoutApplication = () => {
             // ),
             isCluRequired: options?.find((obj) => obj?.code === siteDetails?.isCluRequired?.code || obj?.code === siteDetails?.isCluRequired),
             applicationAppliedUnder: applicationAppliedUnderOptions?.find((obj) => obj?.code === siteDetails?.applicationAppliedUnder?.code || obj?.code === siteDetails?.applicationAppliedUnder),
-            // vasikaDate: convertToISODate(siteDetails?.vasikaDate),
+            vasikaDate: convertToISODate(siteDetails?.vasikaDate),
             // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
             // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),
             // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),

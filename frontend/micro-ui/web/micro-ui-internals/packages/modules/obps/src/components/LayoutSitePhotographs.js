@@ -60,7 +60,8 @@ const LayoutSitePhotographs = ({ filestoreId, documentType, coordinates, documen
     }
   };
 
-  const coords = getCoordinates();
+  // const coords = getCoordinates();
+  const coords = getCoordinates() || coordinates;
   const docTitle = t(actualDocumentType?.replaceAll(".", "_")) || t("CS_NA");
 
   return (

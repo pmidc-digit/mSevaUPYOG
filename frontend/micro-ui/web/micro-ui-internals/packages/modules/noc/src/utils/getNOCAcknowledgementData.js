@@ -367,13 +367,17 @@ const getDocuments = async (appData, t) => {
 };
 
 const getSitePhotographs = async (appData, t, stateCode) => {
-  const sitePhotoDocs = appData?.documents?.filter(
-    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+  const sitePhotoDocs = appData?.documents
+    ?.filter((doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+    ?.sort((a, b) => a.order - b.order); 
 
   const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid);
-
-  const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
+  const res =
+    fileStoreIds?.length > 0 &&
+    (await Digit.UploadServices.Filefetch(
+      fileStoreIds,
+      Digit.ULBService.getStateId()
+    ));
 
   const coords = appData?.nocDetails?.additionalDetails?.coordinates || {};
 

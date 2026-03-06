@@ -97,6 +97,10 @@ public class AppProperties {
     private final String internalMicroserviceUserMobilenumber;
 
     private final String internalMicroserviceUserType;
+    
+    private final String mdmsHost;
+
+    private final String mdmsSearchEndpoint; 
 
     @Autowired
     public AppProperties(Environment environment){
@@ -142,6 +146,8 @@ public class AppProperties {
         this.internalMicroserviceUserUsername = environment.getRequiredProperty("internal.microservice.user.username");
         this.internalMicroserviceUserMobilenumber = environment.getRequiredProperty("internal.microservice.user.mobilenumber");
         this.internalMicroserviceUserType = environment.getRequiredProperty("internal.microservice.user.type");
+        this.mdmsHost = environment.getRequiredProperty("egov.mdms.host");
+        this.mdmsSearchEndpoint = environment.getRequiredProperty("egov.mdms.search.endpoint");
     }
 
 }

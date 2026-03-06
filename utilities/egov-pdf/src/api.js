@@ -293,7 +293,22 @@ async function search_bill_genie_water_bills(data, requestinfo, headers) {
     headers: headers,
   });
 }
-
+async function search_billgeneiWater(data, requestinfo, headers) {
+  return await axios({
+    method: "post",
+    url: url.resolve(config.host.bill, config.paths.searcher_api_water),
+    data: Object.assign(requestinfo, data),
+    headers: headers,
+  });
+}
+async function search_billgeneiSewerage(data, requestinfo, headers) {
+  return await axios({
+    method: "post",
+    url: url.resolve(config.host.bill, config.paths.searcher_api_sewerage),
+    data: Object.assign(requestinfo, data),
+    headers: headers,
+  });
+}
 async function search_bill_genie_sewerage_bills(data, requestinfo, headers) {
   console.log("search_bill_genie_sewerage_bills data:", data);
   console.log("search_bill_genie_sewerage_bills requestinfo:", requestinfo);
@@ -306,6 +321,7 @@ async function search_bill_genie_sewerage_bills(data, requestinfo, headers) {
     headers: headers,
   });
 }
+
 
 async function search_billV2(tenantId, consumerCode, serviceId, requestinfo, headers) {
   //console.log("search_billV2 consumerCode--",consumerCode,"tenantId",tenantId,"serviceId",serviceId);
@@ -462,8 +478,8 @@ function checkIfCitizen(requestinfo) {
 }
 
 async function create_bulk_pdf(kafkaData) {
-  var restWater, restSewerage;
-  var waterBills, sewerageBills;
+  var restWater, restSewerage, waterBillsData;
+  var waterBills, sewerageBills, sewerageBillsData;
   var consolidatedResult = { Bill: [] };
   var propertyIdSet = [];
   var connectionnoToPropertyMap = {};
@@ -480,271 +496,313 @@ async function create_bulk_pdf(kafkaData) {
   // headers['tenantId']=headers.tenantid;
 
   try {
-    if (isConsolidated) {
+    // if (isConsolidated) {
+    //   try {
+
+    //     var searchCriteria = { searchCriteria: { locality: locality, tenantId: tenantId, connectionno: consumerCode } };
+
+    //     restWater = await search_waterOpenSearch(
+    //       searchCriteria,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+
+    //     restWater = restWater.data.WaterConnection;
+    //     console.log("restWater:", restWater);
+    //     if (restWater.length > 0) {
+    //       for (let water of restWater) {
+    //         if (water.connectionno) {
+    //           if (!connectionnoToPropertyMap[water.property_id]) {
+    //             connectionnoToPropertyMap[water.property_id] = [];
+    //           }
+    //           connectionnoToPropertyMap[water.property_id].push(water.connectionno);
+    //         }
+    //         if (!propertyIdSet.includes(water.property_id)) {
+    //           propertyIdSet.push(water.property_id);
+    //         }
+    //       }
+    //     }
+
+
+    //     restSewerage = await search_sewerageOpenSearch(
+    //       searchCriteria,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+
+    //     restSewerage = restSewerage.data.SewerageConnections;
+    //     console.log("restSewerage:", restSewerage);
+    //     if (restSewerage.length > 0) {
+    //       for (let sewerage of restSewerage) {
+    //         if (sewerage.connectionno) {
+    //           if (!connectionnoToPropertyMap[sewerage.property_id]) {
+    //             connectionnoToPropertyMap[sewerage.property_id] = [];
+    //           }
+    //           connectionnoToPropertyMap[sewerage.property_id].push(sewerage.connectionno);
+    //         }
+    //         if (!propertyIdSet.includes(sewerage.property_id)) {
+    //           propertyIdSet.push(sewerage.property_id);
+    //         }
+    //       }
+    //     }
+    //     console.log("propertyIdSet:", propertyIdSet);
+    //   }
+    //   catch (ex) {
+    //     if (ex.response && ex.response.data) logger.error(ex.response.data);
+    //     throw new Error("Failed to query details of water and sewerage connection");
+    //   }
+
+    //   try {
+    //     var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, propertyId: propertyIdSet } };
+
+    //     waterBills = await search_bill_genie_water_bills(
+    //       inputData,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+    //     waterBills = waterBills.data.Bills;
+    //     console.log("waterBills:", waterBills);
+    //     sewerageBills = await search_bill_genie_sewerage_bills(
+    //       inputData,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+    //     sewerageBills = sewerageBills.data.Bills;
+
+    //     if (waterBills.length > 0) {
+    //       for (let waterBill of waterBills) {
+    //         if (waterBill.status === 'EXPIRED') {
+    //           // var billresponse = await fetch_bill(
+    //           //   tenantId, waterBill.consumerCode,
+    //           //   waterBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
+    //           // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
+    //         }
+    //         else {
+    //           if (waterBill.status === 'ACTIVE')
+    //             consolidatedResult.Bill.push(waterBill);
+    //         }
+    //       }
+    //     }
+    //     console.log("sewerageBills:", sewerageBills);
+    //     if (sewerageBills.length > 0) {
+    //       for (let sewerageBill of sewerageBills) {
+    //         if (sewerageBill.status === 'EXPIRED') {
+    //           // var billresponse = await fetch_bill(
+    //           //   tenantId, sewerageBill.consumerCode,
+    //           //   sewerageBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
+    //           // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
+    //         }
+    //         else {
+    //           if (sewerageBill.status === 'ACTIVE')
+    //             consolidatedResult.Bill.push(sewerageBill);
+    //         }
+    //       }
+    //     }
+    //     console.log("consolidatedResult:", consolidatedResult);
+    //   }
+    //   catch (ex) {
+    //     if (ex.response && ex.response.data) logger.error(ex.response.data);
+    //     throw new Error('Failed to query bills for water and sewerage connection');
+    //   }
+
+
+    // }
+
+    // else if (!isConsolidated && bussinessService == 'WS') {
+
+    //   //get property ids
+    //   try {
+    //     var searchCriteria = { searchCriteria: { locality: locality, tenantId: tenantId, connectionno: consumerCode } };
+
+    //     restWater = await search_waterOpenSearch(
+    //       searchCriteria,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+
+    //     restWater = restWater.data.WaterConnection;
+    //     if (restWater.length > 0) {
+    //       for (let water of restWater) {
+    //         if (water.connectionno) {
+    //           if (!connectionnoToPropertyMap[water.property_id]) {
+    //             connectionnoToPropertyMap[water.property_id] = [];
+    //           }
+    //           connectionnoToPropertyMap[water.property_id].push(water.connectionno);
+    //         }
+    //         if (!propertyIdSet.includes(water.property_id)) {
+    //           propertyIdSet.push(water.property_id);
+    //         }
+    //       }
+    //     }
+
+    //   }
+    //   catch (ex) {
+    //     if (ex.response && ex.response.data) logger.error(ex.response.data);
+    //     throw new Error("Failed to query details of water connection");
+    //   }
+
+    //   //get water bills for the property ids
+    //   try {
+
+    //     var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, propertyId: propertyIdSet } };
+    //     waterBills = await search_bill_genie_water_bills(
+    //       inputData,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+
+    //     waterBills = waterBills.data.Bills;
+    //     if (waterBills.length > 0) {
+    //       for (let waterBill of waterBills) {
+    //         if (waterBill.status === 'EXPIRED') {
+    //           // var billresponse = await fetch_bill(
+    //           //   tenantId, waterBill.consumerCode,
+    //           //   waterBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
+
+    //           // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
+    //         }
+    //         else {
+    //           if (waterBill.status === 'ACTIVE')
+    //             consolidatedResult.Bill.push(waterBill);
+    //         }
+    //       }
+    //     }
+    //   }
+    //   catch (ex) {
+    //     if (ex.response && ex.response.data) logger.error(ex.response.data);
+    //     throw new Error(ex, `Failed to query bills for water connection`);
+    //   }
+    // }
+
+    // else if (!isConsolidated && bussinessService == 'SW') {
+
+    //   try {
+
+    //     var searchCriteria = { searchCriteria: { locality: locality, tenantId: tenantId, connectionno: consumerCode } };
+
+    //     restSewerage = await search_sewerageOpenSearch(
+    //       searchCriteria,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+
+    //     restSewerage = restSewerage.data.SewerageConnections;
+    //     if (restSewerage.length > 0) {
+    //       for (let sewerage of restSewerage) {
+    //         if (sewerage.connectionno) {
+    //           if (!connectionnoToPropertyMap[sewerage.property_id]) {
+    //             connectionnoToPropertyMap[sewerage.property_id] = [];
+    //           }
+    //           connectionnoToPropertyMap[sewerage.property_id].push(sewerage.connectionno);
+    //         }
+    //         if (!propertyIdSet.includes(sewerage.property_id)) {
+    //           propertyIdSet.push(sewerage.property_id);
+    //         }
+    //       }
+    //     }
+
+    //   }
+    //   catch (ex) {
+    //     if (ex.response && ex.response.data) logger.error(ex.response.data);
+    //     throw new Error("Failed to query details of sewerage connection");
+    //   }
+
+    //   try {
+    //     var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, propertyId: propertyIdSet } };
+
+    //     sewerageBills = await search_bill_genie_sewerage_bills(
+    //       inputData,
+    //       { RequestInfo: requestinfo.RequestInfo },
+    //       headers
+    //     );
+    //     sewerageBills = sewerageBills.data.Bills;
+
+    //     if (sewerageBills.length > 0) {
+    //       for (let sewerageBill of sewerageBills) {
+    //         if (sewerageBill.status === 'EXPIRED') {
+    //           // var billresponse = await fetch_bill(
+    //           //   tenantId, sewerageBill.consumerCode,
+    //           //   sewerageBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
+
+    //           // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
+    //         }
+    //         else {
+    //           if (sewerageBill.status === 'ACTIVE')
+    //             consolidatedResult.Bill.push(sewerageBill);
+    //         }
+    //       }
+    //     }
+
+    //   }
+    //   catch (ex) {
+    //     if (ex.response && ex.response.data) logger.error(ex.response.data);
+    //     throw new Error(ex, `Failed to query bills for sewerage connection`);
+    //   }
+
+    // }
+
+    // else {
+    //   throw new Error("There is no billfound for the criteria");
+    // }
+
+
+    if (!isConsolidated && bussinessService === 'WS') {
       try {
-
-        var searchCriteria = { searchCriteria: { locality: locality, tenantId: tenantId, connectionno: consumerCode } };
-
-        restWater = await search_waterOpenSearch(
-          searchCriteria,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-
-        restWater = restWater.data.WaterConnection;
-        console.log("restWater:", restWater);
-        if (restWater.length > 0) {
-          for (let water of restWater) {
-            if (water.connectionno) {
-              if (!connectionnoToPropertyMap[water.property_id]) {
-                connectionnoToPropertyMap[water.property_id] = [];
-              }
-              connectionnoToPropertyMap[water.property_id].push(water.connectionno);
-            }
-            if (!propertyIdSet.includes(water.property_id)) {
-              propertyIdSet.push(water.property_id);
-            }
+        var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, url : config.paths.searcher_api_water, businesService : bussinessService  } };
+           waterBillsData = await search_billgeneiWater(
+           inputData,
+           { RequestInfo: requestinfo.RequestInfo },
+           headers
+         );
+         waterBillsData = waterBillsData.data.Bills;
+          if (waterBillsData.length > 0) {
+            for (let waterBill of waterBillsData) {
+                if (waterBill.status !== 'EXPIRED' || waterBill.totalAmount > 0){
+                  consolidatedResult.Bill.push(waterBill);
+                }
+            } 
           }
-        }
-
-
-        restSewerage = await search_sewerageOpenSearch(
-          searchCriteria,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-
-        restSewerage = restSewerage.data.SewerageConnections;
-        console.log("restSewerage:", restSewerage);
-        if (restSewerage.length > 0) {
-          for (let sewerage of restSewerage) {
-            if (sewerage.connectionno) {
-              if (!connectionnoToPropertyMap[sewerage.property_id]) {
-                connectionnoToPropertyMap[sewerage.property_id] = [];
-              }
-              connectionnoToPropertyMap[sewerage.property_id].push(sewerage.connectionno);
-            }
-            if (!propertyIdSet.includes(sewerage.property_id)) {
-              propertyIdSet.push(sewerage.property_id);
-            }
-          }
-        }
-        console.log("propertyIdSet:", propertyIdSet);
+      }catch (err){
+        throw new Error ("Error in API "+ err)
       }
-      catch (ex) {
-        if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error("Failed to query details of water and sewerage connection");
-      }
-
+    }else if (!isConsolidated && bussinessService === 'SW') {
       try {
-        var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, propertyId: propertyIdSet } };
-
-        waterBills = await search_bill_genie_water_bills(
-          inputData,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-        waterBills = waterBills.data.Bills;
-        console.log("waterBills:", waterBills);
-        sewerageBills = await search_bill_genie_sewerage_bills(
-          inputData,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-        sewerageBills = sewerageBills.data.Bills;
-
-        if (waterBills.length > 0) {
-          for (let waterBill of waterBills) {
-            if (waterBill.status === 'EXPIRED') {
-              // var billresponse = await fetch_bill(
-              //   tenantId, waterBill.consumerCode,
-              //   waterBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
-              // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
-            }
-            else {
-              if (waterBill.status === 'ACTIVE')
-                consolidatedResult.Bill.push(waterBill);
-            }
+        var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, url : config.paths.searcher_api_water, businesService : bussinessService  } };
+           sewerageBillsData = await search_billgeneiSewerage(
+           inputData,
+           { RequestInfo: requestinfo.RequestInfo },
+           headers
+         );
+         sewerageBillsData = sewerageBillsData.data.Bills;
+          if (sewerageBillsData.length > 0) {
+            for (let sewerageBill of sewerageBillsData) {
+                if (sewerageBill.status !== 'EXPIRED' || sewerageBill.totalAmount > 0){
+                  consolidatedResult.Bill.push(sewerageBill);
+                }
+            } 
           }
-        }
-        console.log("sewerageBills:", sewerageBills);
-        if (sewerageBills.length > 0) {
-          for (let sewerageBill of sewerageBills) {
-            if (sewerageBill.status === 'EXPIRED') {
-              // var billresponse = await fetch_bill(
-              //   tenantId, sewerageBill.consumerCode,
-              //   sewerageBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
-              // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
-            }
-            else {
-              if (sewerageBill.status === 'ACTIVE')
-                consolidatedResult.Bill.push(sewerageBill);
-            }
-          }
-        }
-        console.log("consolidatedResult:", consolidatedResult);
+      }catch (err){
+        throw new Error ("Error in API "+ err)
       }
-      catch (ex) {
-        if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error('Failed to query bills for water and sewerage connection');
-      }
-
-
-    }
-
-    else if (!isConsolidated && bussinessService == 'WS') {
-
-      //get property ids
-      try {
-        var searchCriteria = { searchCriteria: { locality: locality, tenantId: tenantId, connectionno: consumerCode } };
-
-        restWater = await search_waterOpenSearch(
-          searchCriteria,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-
-        restWater = restWater.data.WaterConnection;
-        if (restWater.length > 0) {
-          for (let water of restWater) {
-            if (water.connectionno) {
-              if (!connectionnoToPropertyMap[water.property_id]) {
-                connectionnoToPropertyMap[water.property_id] = [];
-              }
-              connectionnoToPropertyMap[water.property_id].push(water.connectionno);
-            }
-            if (!propertyIdSet.includes(water.property_id)) {
-              propertyIdSet.push(water.property_id);
-            }
-          }
-        }
-
-      }
-      catch (ex) {
-        if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error("Failed to query details of water connection");
-      }
-
-      //get water bills for the property ids
-      try {
-
-        var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, propertyId: propertyIdSet } };
-        waterBills = await search_bill_genie_water_bills(
-          inputData,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-
-        waterBills = waterBills.data.Bills;
-        if (waterBills.length > 0) {
-          for (let waterBill of waterBills) {
-            if (waterBill.status === 'EXPIRED') {
-              // var billresponse = await fetch_bill(
-              //   tenantId, waterBill.consumerCode,
-              //   waterBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
-
-              // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
-            }
-            else {
-              if (waterBill.status === 'ACTIVE')
-                consolidatedResult.Bill.push(waterBill);
-            }
-          }
-        }
-      }
-      catch (ex) {
-        if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error(ex, `Failed to query bills for water connection`);
-      }
-    }
-
-    else if (!isConsolidated && bussinessService == 'SW') {
-
-      try {
-
-        var searchCriteria = { searchCriteria: { locality: locality, tenantId: tenantId, connectionno: consumerCode } };
-
-        restSewerage = await search_sewerageOpenSearch(
-          searchCriteria,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-
-        restSewerage = restSewerage.data.SewerageConnections;
-        if (restSewerage.length > 0) {
-          for (let sewerage of restSewerage) {
-            if (sewerage.connectionno) {
-              if (!connectionnoToPropertyMap[sewerage.property_id]) {
-                connectionnoToPropertyMap[sewerage.property_id] = [];
-              }
-              connectionnoToPropertyMap[sewerage.property_id].push(sewerage.connectionno);
-            }
-            if (!propertyIdSet.includes(sewerage.property_id)) {
-              propertyIdSet.push(sewerage.property_id);
-            }
-          }
-        }
-
-      }
-      catch (ex) {
-        if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error("Failed to query details of sewerage connection");
-      }
-
-      try {
-        var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, propertyId: propertyIdSet } };
-
-        sewerageBills = await search_bill_genie_sewerage_bills(
-          inputData,
-          { RequestInfo: requestinfo.RequestInfo },
-          headers
-        );
-        sewerageBills = sewerageBills.data.Bills;
-
-        if (sewerageBills.length > 0) {
-          for (let sewerageBill of sewerageBills) {
-            if (sewerageBill.status === 'EXPIRED') {
-              // var billresponse = await fetch_bill(
-              //   tenantId, sewerageBill.consumerCode,
-              //   sewerageBill.businessService, { RequestInfo: requestinfo.RequestInfo }, headers);
-
-              // consolidatedResult.Bill.push(billresponse.data.Bill[0]);
-            }
-            else {
-              if (sewerageBill.status === 'ACTIVE')
-                consolidatedResult.Bill.push(sewerageBill);
-            }
-          }
-        }
-
-      }
-      catch (ex) {
-        if (ex.response && ex.response.data) logger.error(ex.response.data);
-        throw new Error(ex, `Failed to query bills for sewerage connection`);
-      }
-
-    }
-
-    else {
+    }else{
       throw new Error("There is no billfound for the criteria");
     }
-
     var propertyDetails = await getPropertyDeatils({ RequestInfo: requestinfo.RequestInfo }, tenantId, propertyIdSet, connectionnoToPropertyMap, headers);
     console.log("propertyDetails:", propertyDetails);
     if (consolidatedResult && consolidatedResult.Bill && consolidatedResult.Bill.length > 0) {
       var pdfResponse;
       var pdfkey = pdfKey || config.pdf.wns_bill;
       try {
-        consolidatedResult.Bill = consolidatedResult.Bill.filter(function (e) { return e });
-        for (let i = 0; i < consolidatedResult.Bill.length; i++) {
-          let consumerCode = consolidatedResult.Bill[i].consumerCode;
-          let data = propertyDetails[consumerCode];
-          if (data) {
-            consolidatedResult.Bill[i].propertyUniqueId = data.propertyUniqueId;
-            consolidatedResult.Bill[i].propertyAddress = data.propertyAddress;
-            consolidatedResult.Bill[i].locality = data.locality;
-          }
-        }
+        //consolidatedResult.Bill = consolidatedResult.Bill.filter(function (e) { return e });
+        // for (let i = 0; i < consolidatedResult.Bill.length; i++) {
+        //   let consumerCode = consolidatedResult.Bill[i].consumerCode;
+        //   let data = propertyDetails[consumerCode];
+        //   if (data) {
+        //     consolidatedResult.Bill[i].propertyUniqueId = data.propertyUniqueId;
+        //     consolidatedResult.Bill[i].propertyAddress = data.propertyAddress;
+        //     consolidatedResult.Bill[i].locality = data.locality;
+        //   }
+        // }
 
         /*pdfResponse = await create_pdf(
           tenantId,

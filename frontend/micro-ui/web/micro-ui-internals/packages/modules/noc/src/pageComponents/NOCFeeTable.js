@@ -217,9 +217,13 @@ export const NOCFeeTable = ({
                         type="text"
                         isMandatory={false}
                         value={
-                          feeData[row.index]?.adjustedAmount === 0
+                          feeData[row.index] && feeData[row.index].adjustedAmount === 0
                             ? ""
-                            : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                            : feeData[row.index] && feeData[row.index].adjustedAmount !== null && feeData[row.index].adjustedAmount !== undefined
+                            ? feeData[row.index].adjustedAmount
+                            : row.amount !== null && row.amount !== undefined
+                            ? row.amount
+                            : ""
                         }
                         onChange={(e) => {
                           let val = e.target.value;
@@ -265,9 +269,7 @@ export const NOCFeeTable = ({
                   <div className="custom-fee-card-total-value">
                     <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                   </div>
-                  <div className="custom-fee-card-total-words">
-                    Rupees {amountToWords(row.grandTotal).replace(' Rupees', '')} only
-                  </div>
+                  <div className="custom-fee-card-total-words">Rupees {amountToWords(row.grandTotal).replace(" Rupees", "")} only</div>
                 </div>
               )}
             </div>
@@ -276,10 +278,7 @@ export const NOCFeeTable = ({
 
         {feeHistory && Object.keys(feeHistory).length > 0 && (
           <div className="custom-fee-mobile-history">
-            <div 
-              className="custom-fee-history-toggle-mobile"
-              onClick={() => setShowHistory(!showHistory)}
-            >
+            <div className="custom-fee-history-toggle-mobile" onClick={() => setShowHistory(!showHistory)}>
               <span className="custom-fee-history-title">{t("BPA_FEE_HISTORY_LABEL")}</span>
               <span className="custom-fee-history-icon">{showHistory ? "▲" : "▼"}</span>
             </div>

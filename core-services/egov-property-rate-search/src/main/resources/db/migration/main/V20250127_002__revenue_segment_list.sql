@@ -31,11 +31,7 @@ CREATE TABLE IF NOT EXISTS public.revenue_tehsil_master
     tehsil_name text COLLATE pg_catalog."default" NOT NULL,
     district_id integer NOT NULL,
     CONSTRAINT tehsil_master_pkey PRIMARY KEY (tehsil_id),
-    CONSTRAINT uk_tehsil_name_id UNIQUE (tehsil_name, tehsil_id),
-    CONSTRAINT fk_district FOREIGN KEY (district_id)
-        REFERENCES public.revenue_district_master_backup (district_id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+    CONSTRAINT uk_tehsil_name_id UNIQUE (tehsil_name, tehsil_id)
 );
 
 

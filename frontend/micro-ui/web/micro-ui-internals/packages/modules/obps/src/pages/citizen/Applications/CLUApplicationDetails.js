@@ -35,54 +35,7 @@ import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
 import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimationDetailsTable";
 import { convertToDDMMYYYY } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
-
-const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  const caption = {
-    date: checkpoint?.auditDetails?.lastModified,
-    time: checkpoint?.auditDetails?.timing,
-    name: checkpoint?.assigner?.name,
-    mobileNumber: checkpoint?.assigner?.mobileNumber,
-    source: checkpoint?.assigner?.source,
-  };
-
-  return (
-    <div>
-      {comment?.length > 0 && (
-        <div className="TLComments">
-          <h3>{t("WF_COMMON_COMMENTS")}</h3>
-          <p style={{ overflowX: "scroll" }}>{comment}</p>
-        </div>
-      )}
-
-      {thumbnailsToShow?.thumbs?.length > 0 && (
-        <DisplayPhotos
-          srcs={thumbnailsToShow.thumbs}
-          onClick={(src, idx) => {
-            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
-            Digit.Utils.zoomImage(fullImage);
-          }}
-        />
-      )}
-
-      {wfDocuments?.length > 0 && (
-        <div>
-          <div>
-            <CLUDocumentView value={{ workflowDocs: wfDocuments }} index={index} />
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginTop: "8px" }}>
-        {caption.time && <p>{caption.time}</p>}
-        {caption.date && <p>{caption.date}</p>}
-        {caption.name && <p>{caption.name}</p>}
-        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
-        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
-      </div>
-    </div>
-  );
-};
+import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 
 const CLUApplicationDetails = () => {
   const { id } = useParams();
@@ -350,24 +303,24 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
         });
       }
     }
-  if (applicationDetails?.Clu?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
+  if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
       onClick: handleDownloadPdf,
     });
+  }
 
-    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
-      dowloadOptions.push({
-        label: t("CLU_FEE_RECEIPT_1"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey:"clu-receipt" }),
-      });
-    }
-    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
-      dowloadOptions.push({
-        label: t("CLU_FEE_RECEIPT_2"),
-        onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-receiptsecond" }),
-      });
-    }
+  if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
+    dowloadOptions.push({
+      label: t("CLU_FEE_RECEIPT_1"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey:"clu-receipt" }),
+    });
+  }
+  if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+    dowloadOptions.push({
+      label: t("CLU_FEE_RECEIPT_2"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-receiptsecond" }),
+    });
   }
 
   useEffect(() => {
@@ -746,6 +699,11 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
             feeType="PAY1"
             hasPayments={hasPayments}
           />
+        )}
+        {hasPayments && (
+          <div style={{ marginTop: "16px" }}>
+            <PaymentHistory payments={combinedPayments} />
+          </div>
         )}
         </Card>
     

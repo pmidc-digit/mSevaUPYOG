@@ -39,7 +39,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const [selectedRow, setSelectedRow] = useState(null);
 
   console.log("apiDataCheck", apiDataCheck);
-  console.log("formData==?/??", formData);
+  console.log("formData==?/||", formData);
   console.log("checkApiDataCheck====", checkApiDataCheck?.Applications?.[0]);
 
   const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
@@ -250,7 +250,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         consumerCode: consumercodes,
       });
       setPropertyLoader(false);
-      const amount = result?.Bill[0]?.totalAmount ?? 0;
+      const amount = result?.Bill[0]?.totalAmount || 0;
 
       if (result?.Bill?.length > 0) {
         if (amount > 0) {

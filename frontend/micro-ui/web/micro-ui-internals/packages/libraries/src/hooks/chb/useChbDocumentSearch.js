@@ -21,7 +21,7 @@ const useChbDocumentSearch = ({ application }, config = {}, Code, index) => {
         .map((ob) => {
           newDocs.push(ob);
         });
-  console.log("newDocs==??", newDocs);
+  console.log("newDocs==||", newDocs);
   const filesArray = newDocs.map((value) => value?.fileStoreId || value?.filestoreId);
   console.log("filesArray", filesArray);
   const { isLoading, error, data } = useQuery([`chbDocuments-${bookingId}`, filesArray], () => Digit.UploadServices.Filefetch(filesArray, tenant));

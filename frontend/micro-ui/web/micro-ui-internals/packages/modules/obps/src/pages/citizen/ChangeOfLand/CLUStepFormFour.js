@@ -19,7 +19,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setSelectedCheckBox(e.target.checked);
   }
 
-
   const currentStepData = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.formData || {};
   });
@@ -57,23 +56,21 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = async (action) => {
-
     onSubmit(currentStepData, action);
   };
 
   const onSubmit = async (data, selectedAction) => {
-
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
-      setTimeout(()=>{
+      setTimeout(() => {
         setShowToast(null);
-      },3000);
+      }, 3000);
       return;
     }
 
     try {
       const finalPayload = mapToCLUPayload(data, selectedAction);
-      ("finalPayload here==>", finalPayload);
+      "finalPayload here==>", finalPayload;
 
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
@@ -114,18 +111,19 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       }
     } catch (error) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }finally{
-      setTimeout(()=>{setShowToast(null);},3000);
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
   function mapToCLUPayload(cluFormData, selectedAction) {
-
     {
       /**Change of Owner Feature Left and to be discussed*/
     }
 
-    // const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+    // const ownerData = (cluFormData?.applicationDetails?.owners || [])?.map((item,index)=>{
     //   return {
     //     mobileNumber: item?.mobileNumber || "",
     //     name: item?.ownerOrFirmName || "",
@@ -208,8 +206,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         };
       });
 
-   const overallDocs= [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
-   
+      const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
 
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({
@@ -252,7 +249,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: businessServiceCode,
   });
 
-
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
@@ -260,7 +256,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
-
 
   function onActionSelect(action) {
     goNext(action);

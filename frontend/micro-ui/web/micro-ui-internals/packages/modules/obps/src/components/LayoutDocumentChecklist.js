@@ -12,8 +12,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
 
   // fetch urls
   const { data: urlsList } = Digit.Hooks.obps.useLayoutDocumentSearch(
-    
-    { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
+    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
     { enabled: documents?.length > 0 }
   );
 
@@ -23,8 +22,8 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
   useEffect(() => {
     if (documents?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
-      documents.forEach(d => { 
-        initial[d.documentUid || d.uuid] = value?.[d.documentUid || d.uuid] || d.remarks || ""; 
+      documents.forEach((d) => {
+        initial[d.documentUid || d.uuid] = value?.[d.documentUid || d.uuid] || d.remarks || "";
       });
       //console.log("DEBUG LayoutDocumentChecklist: Initializing remarks:", initial);
       //console.log("DEBUG LayoutDocumentChecklist: Document details:", documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
@@ -33,13 +32,13 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
     }
   }, [documents]);
 
-  useEffect(() => {}, [localRemarks])
+  useEffect(() => {}, [localRemarks]);
 
-//   const handleBlur = (uid, value) => {
-//     const updated = { ...localRemarks, [uid]: value };
-//     setLocalRemarks(updated);
-//     onRemarksChange(updated);
-//   };
+  //   const handleBlur = (uid, value) => {
+  //     const updated = { ...localRemarks, [uid]: value };
+  //     setLocalRemarks(updated);
+  //     onRemarksChange(updated);
+  //   };
 
   return (
     <div className="checklist-document-table-wrapper">
@@ -57,28 +56,21 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
+                <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
                 <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
                 <td className="checklist-table-cell checklist-table-cell-file">
-                  {url ? (
-                    <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
-                  ) : t("CS_NA")}
+                  {url ? <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} /> : t("CS_NA")}
                 </td>
                 <td className="checklist-table-cell checklist-table-cell-remark">
                   {isReadOnly ? (
-                    <TextArea
-                      t={t}
-                      value={value[doc.documentUid] ?? ""}
-                      disabled={true}
-                      className="checklist-table-textarea"
-                    />
+                    <TextArea t={t} value={value[doc.documentUid] || ""} disabled={true} className="checklist-table-textarea" />
                   ) : (
                     <TextArea
                       t={t}
-                      value={value[doc.documentUid] ?? ""}
+                      value={value[doc.documentUid] || ""}
                       onChange={(e) => {
                         //console.log("onChange triggered - value:", e.target.value);
-                        onRemarksChange(prev => ({ ...prev, [doc.documentUid]: e.target.value }));
+                        onRemarksChange((prev) => ({ ...prev, [doc.documentUid]: e.target.value }));
                       }}
                       onBlur={(e) => {
                         //console.log("onBlur triggered - final value:", e.target.value);

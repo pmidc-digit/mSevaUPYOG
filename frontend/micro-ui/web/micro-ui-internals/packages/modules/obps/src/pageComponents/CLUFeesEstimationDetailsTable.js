@@ -15,80 +15,76 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
     const apiTax = data?.Calculation?.[0]?.taxHeadEstimates?.find((t) => t.taxHeadCode === taxHeadCode);
     const savedCalc = formData?.calculations?.find((c) => c.taxHeadCode === taxHeadCode);
     return {
-      originalEstimate: apiTax?.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-      originalRemark: apiTax?.remarks ?? savedCalc?.remarks ?? "",
+      originalEstimate: apiTax?.estimateAmount || savedCalc?.estimateAmount || 0,
+      originalRemark: apiTax?.remarks || savedCalc?.remarks || "",
     };
   };
 
-const handleAdjustedAmountChange = (index, value) => {
-  const normalizedValue = value === "" ? null : Number(value);
-  const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
-  const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
-  if (normalizedValue !== null && normalizedValue < 0) {
-    setTimeout(()=>{
-      setShowToast(null);
-    },3000)
-    setShowToast({ error: true, message: "BPA_AMOUNT_CANNOT_BE_NEGATIVE_LABEL" });
-    return;
-  }
-  setFeeAdjustments((prev) =>
-    (prev || []).map((item, i) => {
-      if (i !== index) return item;
-      const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
-      const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
-      if (isReverted) {
-        return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
-      }
-      const adjustedDiffers = normalizedValue !== originalEstimate;
-      const remarkEmpty = !currentRemark || currentRemark.trim() === "";
-      return {
-        ...item,
-        adjustedAmount: normalizedValue,
-        remark: currentRemark,
-        edited: adjustedDiffers && remarkEmpty,
-      };
-    })
-  );
-};
+  const handleAdjustedAmountChange = (index, value) => {
+    const normalizedValue = value === "" ? null : Number(value);
+    const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
+    const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
+    if (normalizedValue !== null && normalizedValue < 0) {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+      setShowToast({ error: true, message: "BPA_AMOUNT_CANNOT_BE_NEGATIVE_LABEL" });
+      return;
+    }
+    setFeeAdjustments((prev) =>
+      (prev || []).map((item, i) => {
+        if (i !== index) return item;
+        const currentRemark = (item?.remark || originalRemark || "") + "";
+        const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
+        if (isReverted) {
+          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark || "" };
+        }
+        const adjustedDiffers = normalizedValue !== originalEstimate;
+        const remarkEmpty = !currentRemark || currentRemark.trim() === "";
+        return {
+          ...item,
+          adjustedAmount: normalizedValue,
+          remark: currentRemark,
+          edited: adjustedDiffers && remarkEmpty,
+        };
+      })
+    );
+  };
 
   const handleRemarkChange = (index, value) => {
     const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
     const { originalEstimate } = getOriginals(taxHeadCode);
-    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount ?? 0;
+    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount || 0;
     const adjustedDiffers = currentAdjusted !== originalEstimate;
-    const remarkEmpty = (value ?? "").trim() === "";
+    const remarkEmpty = (value || "").trim() === "";
     setFeeAdjustments((prev) =>
       (prev || []).map((item, i) => (i === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item))
     );
   };
 
-    const handleFileUpload = async (index, e) => {
-      const file = e.target.files[0];
-      try {
-        setFeeAdjustments(prev =>
+  const handleFileUpload = async (index, e) => {
+    const file = e.target.files[0];
+    try {
+      setFeeAdjustments((prev) => prev.map((item, i) => (i === index ? { ...item, onDocumentLoading: true } : item)));
+      const response = await Digit.UploadServices.Filestorage("clu-upload", file, stateCode);
+      if (response?.data?.files?.length > 0) {
+        setFeeAdjustments((prev) =>
           prev.map((item, i) =>
-            i === index ? { ...item, onDocumentLoading: true } : item
+            i === index ? { ...item, filestoreId: response.data.files[0].fileStoreId, onDocumentLoading: false, documentError: null } : item
           )
         );
-        const response = await Digit.UploadServices.Filestorage("clu-upload", file, stateCode);
-        if (response?.data?.files?.length > 0) {
-          setFeeAdjustments(prev =>
-            prev.map((item, i) =>
-              i === index
-                ? { ...item, filestoreId: response.data.files[0].fileStoreId, onDocumentLoading: false, documentError: null }
-                : item
-            )
-          );
-        } else {
-          setShowToast({key: "true",  error: true, message: "PT_FILE_UPLOAD_ERROR" });
-        }
-      } catch(err) {
-        setShowToast({key: "true",  error: true, message: "PT_FILE_UPLOAD_ERROR" });
-        //console.log('err in file upload', err)
-      }finally{
-        setTimeout(()=>{setShowToast(null)},3000);
+      } else {
+        setShowToast({ key: "true", error: true, message: "PT_FILE_UPLOAD_ERROR" });
       }
-    };
+    } catch (err) {
+      setShowToast({ key: "true", error: true, message: "PT_FILE_UPLOAD_ERROR" });
+      //console.log('err in file upload', err)
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+    }
+  };
 
   const handleFileDelete = (index) => {
     setFeeAdjustments((prev) => prev.map((item, i) => (i === index ? { ...item, filestoreId: null } : item)));
@@ -185,12 +181,12 @@ const handleAdjustedAmountChange = (index, value) => {
         return {
           taxHeadCode: tax.taxHeadCode,
           category: tax.category,
-          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-          remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? savedCalc?.remarks ?? "",
-          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId ?? tax.filestoreId ?? null,
+          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount || savedCalc?.estimateAmount || 0,
+          remark: isEdited ? prevItem.remark || "" : tax.remarks || savedCalc?.remarks || "",
+          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId || tax.filestoreId || null,
           onDocumentLoading: false,
           documentError: null,
-          edited: prevItem.edited ?? false,
+          edited: prevItem.edited || false,
         };
       });
     });
@@ -199,8 +195,8 @@ const handleAdjustedAmountChange = (index, value) => {
   const applicationFeeDataWithTotal = useMemo(() => {
     if (!data?.Calculation?.[0]?.taxHeadEstimates) return [];
     const rows = data.Calculation[0].taxHeadEstimates.map((tax, index) => {
-      const adjustedAmount = feeAdjustments[index]?.adjustedAmount ?? tax.estimateAmount;
-      const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
+      const adjustedAmount = feeAdjustments[index]?.adjustedAmount || tax.estimateAmount;
+      const remarkValue = feeAdjustments[index]?.remark || tax.remarks || "";
 
       //console.log(`Row ${index}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, adjusted=${adjustedAmount}, remark=${remarkValue}`);
       return {
@@ -234,7 +230,7 @@ const handleAdjustedAmountChange = (index, value) => {
     ];
   }, [data, t, feeAdjustments]);
 
- // const lastUpdatedBy = formData?.calculations?.filter((calc) => calc?.isLatest === true)?.updatedBy || "";
+  // const lastUpdatedBy = formData?.calculations?.filter((calc) => calc?.isLatest === true)?.updatedBy || "";
   //console.log("lastUpdatedBy==>", lastUpdatedBy);
 
   if (cluCalculatorLoading) return <Loader />;
@@ -242,7 +238,7 @@ const handleAdjustedAmountChange = (index, value) => {
   //console.log("applicationStatus ===========>", applicationStatus);
 
   if (applicationStatus === "FIELDINSPECTION_INPROGRESS") {
-      return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
+    return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
   }
 
   return (

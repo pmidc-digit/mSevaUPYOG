@@ -12,12 +12,12 @@ import {
   ViewsIcon,
   CardSectionSubText,
   CardSectionHeader,
-  CardSubHeader
+  CardSubHeader,
 } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
 import { useDispatch, useSelector } from "react-redux";
 import { pdfDownloadLink } from "../utils";
-import { UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates} from "../redux/action/NOCNewApplicationActions";
+import { UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates } from "../redux/action/NOCNewApplicationActions";
 import NOCCustomUploadFile from "./NOCCustomUploadFile";
 
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
@@ -27,42 +27,42 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
-  const [geocoordinates,setGeoCoordinates]= useState(null);
+  const [geocoordinates, setGeoCoordinates] = useState(null);
 
   const stateId = Digit.ULBService.getStateId();
   const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  console.log("data for documents here", data)
+  console.log("data for documents here", data);
   console.log("formData here =====", formData);
 
   const coordinates = useSelector(function (state) {
-      return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+    return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
 
-  useEffect(()=>{
-    if(Object.keys(coordinates).length>0){
+  useEffect(() => {
+    if (Object.keys(coordinates).length > 0) {
       setGeoCoordinates(coordinates);
     }
-  },[coordinates]);
+  }, [coordinates]);
 
   console.log("coordinates (from redux)", coordinates);
 
   console.log("geocoordinates", geocoordinates);
 
-  const currentStepData= useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData)|| {};
+  const currentStepData = useSelector((state) => state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
 
-const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
-  const code = owner?.ownerType?.code ?? owner?.ownerType;
+  const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
+    const code = owner?.ownerType?.code || owner?.ownerType;
 
-  return String(code).toLowerCase() === "firm";
-});
-  const isVacant=currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+    return String(code).toLowerCase() === "firm";
+  });
+  const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
   //console.log("isVacant", isVacant);
 
-  let filteredDocuments = isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+  let filteredDocuments = isVacant ? data?.NOC?.Documents?.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
   if (isFirm) {
-    filteredDocuments = filteredDocuments?.map(doc => doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc);
+    filteredDocuments = filteredDocuments?.map((doc) => (doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc));
   }
   filteredDocuments = filteredDocuments?.sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -82,7 +82,6 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
     });
   }, [isFirm]);
 
-
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
@@ -100,7 +99,7 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
 
       let isRequired = false;
 
-      console.log('documents in pet', documents)
+      console.log("documents in pet", documents);
       documents?.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
@@ -112,36 +111,33 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
 
   //logic for buildingStatus
   useEffect(() => {
-  const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
+    const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
 
-  if (currentStatus === "VACANT") {
-    // Remove OWNER.BUILDINGDRAWING from documents state so that it can be updated in redux accoordingly
-    setDocuments((prevDocs) =>
-      prevDocs?.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING")
-    );
-  }
-}, [currentStepData?.siteDetails?.buildingStatus?.code]);
+    if (currentStatus === "VACANT") {
+      // Remove OWNER.BUILDINGDRAWING from documents state so that it can be updated in redux accoordingly
+      setDocuments((prevDocs) => prevDocs?.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING"));
+    }
+  }, [currentStepData?.siteDetails?.buildingStatus?.code]);
 
   //logic for preview image feature
   const documentObj = {
-  value: {
-    workflowDocs: documents?.map(doc => ({
-      documentType: doc.documentType,
-      filestoreId: doc.filestoreId,
-      documentUid: doc.documentUid,
-      documentAttachment: doc.documentAttachment,
-      order:doc?.order
-    }))
-   }
- };
+    value: {
+      workflowDocs: documents?.map((doc) => ({
+        documentType: doc.documentType,
+        filestoreId: doc.filestoreId,
+        documentUid: doc.documentUid,
+        documentAttachment: doc.documentAttachment,
+        order: doc?.order,
+      })),
+    },
+  };
 
- const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj);
+  const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj);
 
- const documentLinks = documents?.map(doc => ({
-  code: doc.documentType,
-  link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId)
- }));
-
+  const documentLinks = documents?.map((doc) => ({
+    code: doc.documentType,
+    link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId),
+  }));
 
   return (
     <div>
@@ -151,22 +147,22 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
           {filteredDocuments?.map((document, index) => {
             return (
               <div className="bpa-doc-required-card">
-              <PTRSelectDocument
-                key={index}
-                document={document}
-                t={t}
-                error={error}
-                setError={setError}
-                setDocuments={setDocuments}
-                documents={documents}
-                setCheckRequiredFields={setCheckRequiredFields}
-                handleSubmit={handleSubmit}
-                geocoordinates={geocoordinates}
-                setGeoCoordinates={setGeoCoordinates}
-                // coordinates={coordinates}
-                dispatch={dispatch}
-                previewLink={documentLinks?.find(link => link.code === document.code)?.link}
-              />
+                <PTRSelectDocument
+                  key={index}
+                  document={document}
+                  t={t}
+                  error={error}
+                  setError={setError}
+                  setDocuments={setDocuments}
+                  documents={documents}
+                  setCheckRequiredFields={setCheckRequiredFields}
+                  handleSubmit={handleSubmit}
+                  geocoordinates={geocoordinates}
+                  setGeoCoordinates={setGeoCoordinates}
+                  // coordinates={coordinates}
+                  dispatch={dispatch}
+                  previewLink={documentLinks?.find((link) => link.code === document.code)?.link}
+                />
               </div>
             );
           })}
@@ -179,14 +175,28 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch, previewLink }) {
+function PTRSelectDocument({
+  t,
+  document: doc,
+  setDocuments,
+  setError,
+  documents,
+  action,
+  formData,
+  handleSubmit,
+  id,
+  geocoordinates,
+  setGeoCoordinates,
+  dispatch,
+  previewLink,
+}) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   // console.log("filetetetetet",filteredDocument, documents, doc);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType , order: doc?.order }
+      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType, order: doc?.order }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]
       : {}
@@ -209,7 +219,10 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     const fileType = selectedFile.type.toLowerCase();
 
     // For site photos, check for GPS data and prevent upload if missing
-    if ((doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") && (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png"))) {
+    if (
+      (doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") &&
+      (fileType.includes("image/jpeg") || fileType.includes("image/jpg") || fileType.includes("image/png"))
+    ) {
       const reader = new FileReader();
       reader.onload = function () {
         const img = new Image();
@@ -236,7 +249,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
                 setGeoCoordinates((prev) => ({
                   ...prev,
                   Latitude1: latitude,
-                  Longitude1: longitude
+                  Longitude1: longitude,
                 }));
               } else if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
                 dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2", latitude));
@@ -244,7 +257,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
                 setGeoCoordinates((prev) => ({
                   ...prev,
                   Latitude2: latitude,
-                  Longitude2: longitude
+                  Longitude2: longitude,
                 }));
               }
             } else {
@@ -281,7 +294,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
               setGeoCoordinates((prev) => ({
                 ...prev,
                 Latitude1: location.latitude,
-                Longitude1: location.longitude
+                Longitude1: location.longitude,
               }));
             } else {
               if (window.location.pathname.includes("edit")) {
@@ -299,7 +312,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
               setGeoCoordinates((prev) => ({
                 ...prev,
                 Latitude2: location.latitude,
-                Longitude2: location.longitude
+                Longitude2: location.longitude,
               }));
             } else {
               if (window.location.pathname.includes("edit")) {
@@ -337,7 +350,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
             documentAttachment: uploadedFile,
-            order: doc?.order
+            order: doc?.order,
           },
         ];
       });
@@ -413,84 +426,94 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }
 
   function extractGeoLocation(file) {
-      console.log("file", file);
-  
-      return new Promise((resolve) => {
-        try {
-          // if (file && file.type === "image/jpeg" && file.size > 1000) {
-          EXIF.getData(file, function () {
-           // console.log("comign here as well");
-  
-            const lat = EXIF.getTag(this, "GPSLatitude");
-            const lon = EXIF.getTag(this, "GPSLongitude");
-  
-            console.log("lat====", lat);
-            if (lat && lon) {
-              // Convert GPS coordinates to decimal format
-              const latDecimal = convertToDecimal(lat).toFixed(6);
-              const lonDecimal = convertToDecimal(lon).toFixed(6);
-              resolve({ latitude: latDecimal, longitude: lonDecimal });
-            } else {
-              resolve({ latitude: null, longitude: null });
-              if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-                {
-                  alert("Please Upload a Photo with Location Details");
-                }
-              } else {
-                null;
+    console.log("file", file);
+
+    return new Promise((resolve) => {
+      try {
+        // if (file && file.type === "image/jpeg" && file.size > 1000) {
+        EXIF.getData(file, function () {
+          // console.log("comign here as well");
+
+          const lat = EXIF.getTag(this, "GPSLatitude");
+          const lon = EXIF.getTag(this, "GPSLongitude");
+
+          console.log("lat====", lat);
+          if (lat && lon) {
+            // Convert GPS coordinates to decimal format
+            const latDecimal = convertToDecimal(lat).toFixed(6);
+            const lonDecimal = convertToDecimal(lon).toFixed(6);
+            resolve({ latitude: latDecimal, longitude: lonDecimal });
+          } else {
+            resolve({ latitude: null, longitude: null });
+            if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+              {
+                alert("Please Upload a Photo with Location Details");
               }
+            } else {
+              null;
             }
-          });
-          // }
-        } catch (error) {
-          console.log("EXIF parsing failed:", error);
-          resolve({ latitude: null, longitude: null });
-        }
-      });
-    }
+          }
+        });
+        // }
+      } catch (error) {
+        console.log("EXIF parsing failed:", error);
+        resolve({ latitude: null, longitude: null });
+      }
+    });
+  }
 
   return (
-      <div className="bpa-doc-required-wrapper">
+    <div className="bpa-doc-required-wrapper">
       {getLoading && <Loader />}
 
-        <LabelFieldPair>
-          <CardLabel className="bpa-doc-required-label">
-            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>} 
-          </CardLabel>
+      <LabelFieldPair>
+        <CardLabel className="bpa-doc-required-label">
+          {t(doc?.code.replaceAll(".", "_"))} {doc?.required && <span className="requiredField">*</span>}
+        </CardLabel>
 
-      <div className="bpa-doc-required-field">
-        {(doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") ? (
-         <NOCCustomUploadFile
-            id={"noc-doc"}
-            onUpload={selectfile}
-            onDelete={() => {
-              setUploadedFile(null);
-            }}
-            uploadedFile={uploadedFile}
-            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-            textStyles={{ width: "100%" }}
-            accept=".jpg, .jpeg, .png"
-          />
-        ):(
-          <NOCCustomUploadFile
-            id={"noc-doc"}
-            onUpload={selectfile}
-            onDelete={() => {
-              setUploadedFile(null);
-            }}
-            uploadedFile={uploadedFile}
-            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-            textStyles={{ width: "100%" }}
-            accept=".pdf, .jpeg, .jpg, .png"
-          />
+        <div className="bpa-doc-required-field">
+          {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
+            <NOCCustomUploadFile
+              id={"noc-doc"}
+              onUpload={selectfile}
+              onDelete={() => {
+                setUploadedFile(null);
+              }}
+              uploadedFile={uploadedFile}
+              message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+              textStyles={{ width: "100%" }}
+              accept=".jpg, .jpeg, .png"
+            />
+          ) : (
+            <NOCCustomUploadFile
+              id={"noc-doc"}
+              onUpload={selectfile}
+              onDelete={() => {
+                setUploadedFile(null);
+              }}
+              uploadedFile={uploadedFile}
+              message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+              textStyles={{ width: "100%" }}
+              accept=".pdf, .jpeg, .jpg, .png"
+            />
+          )}
+        </div>
+
+        {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO" ? (
+          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+        ) : (
+          <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
         )}
-      </div>
-     
-      {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}
-      {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&  <p className="bpa-doc-required-coordinates">Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1} </p>}
-      {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  (geocoordinates?.Latitude2 && geocoordinates?.Longitude2) &&  <p className="bpa-doc-required-coordinates">Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}</p>}
-     
-
+        {doc?.code === "OWNER.SITEPHOTOGRAPHONE" && geocoordinates?.Latitude1 && geocoordinates?.Longitude1 && (
+          <p className="bpa-doc-required-coordinates">
+            Latitude: {geocoordinates.Latitude1} & Longitude: {geocoordinates.Longitude1}{" "}
+          </p>
+        )}
+        {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" && geocoordinates?.Latitude2 && geocoordinates?.Longitude2 && (
+          <p className="bpa-doc-required-coordinates">
+            Latitude: {geocoordinates.Latitude2} & Longitude: {geocoordinates.Longitude2}
+          </p>
+        )}
       </LabelFieldPair>
     </div>
   );

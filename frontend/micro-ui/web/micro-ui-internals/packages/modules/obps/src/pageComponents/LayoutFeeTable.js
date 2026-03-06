@@ -18,17 +18,17 @@ export const LayoutFeeTable = ({
   t,
   handleRemarkChange,
   onAdjustedAmountBlur,
-  feeHistory
+  feeHistory,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const isCitizen = window.location.href.includes("citizen"); 
+  const isCitizen = window.location.href.includes("citizen");
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -50,9 +50,7 @@ export const LayoutFeeTable = ({
         if (row.taxHeadCode === "LAYOUT_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>
-                ₹ {row.grandTotal.toLocaleString("en-IN")}
-              </strong>
+              <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
               <div
                 style={{
                   fontSize: "0.85em",
@@ -71,9 +69,7 @@ export const LayoutFeeTable = ({
             t={t}
             type="number"
             isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0
-              ? ""
-              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+            value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
             onChange={(e) => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith("0")) {
@@ -109,9 +105,7 @@ export const LayoutFeeTable = ({
         return (
           <TextArea
             value={feeData[row.index]?.remark || ""}
-            onChange={(e) =>
-              handleRemarkChange(row.index, e.target.value, row.amount)
-            }
+            onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
             disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
@@ -121,64 +115,59 @@ export const LayoutFeeTable = ({
     },
   ];
 
-  if(isCitizen){
+  if (isCitizen) {
     columns = [
-    {
-      key: "title",
-      label: "BPA_TAXHEAD_CODE",
-      headerLabel: "BPA_TAXHEAD_CODE",
-      type: "text",
-    },
-    {
-      key: "amount",
-      label: "BPA_AMOUNT",
-      headerLabel: "BPA_AMOUNT",
-      type: "custom",
-      render: (row, rowIndex, t) => {
-        if (row.taxHeadCode === "LAYOUT_TOTAL") {
-          return (
-            <div>
-              <strong style={{ fontSize: "14px" }}>
-                ₹ {row.grandTotal.toLocaleString("en-IN")}
-              </strong>
-              <div
-                style={{
-                  fontSize: "0.85em",
-                  color: "#555",
-                  marginTop: "4px",
-                  lineHeight: "1.3",
-                }}
-              >
-                {amountToWords(row.grandTotal)}
-              </div>
-            </div>
-          );
-        }
-        return (
-          <TextInput
-            t={t}
-            type="number"
-            isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0
-              ? ""
-              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
-            onChange={(e) => {
-              let val = e.target.value;
-              if (val.length > 1 && val.startsWith("0")) {
-                val = val.replace(/^0+/, "");
-              }
-              handleAdjustedAmountChange(row.index, val);
-            }}
-            disable={disable}
-            step={1}
-            onBlur={onAdjustedAmountBlur}
-          />
-        );
+      {
+        key: "title",
+        label: "BPA_TAXHEAD_CODE",
+        headerLabel: "BPA_TAXHEAD_CODE",
+        type: "text",
       },
-    }
-  ];
+      {
+        key: "amount",
+        label: "BPA_AMOUNT",
+        headerLabel: "BPA_AMOUNT",
+        type: "custom",
+        render: (row, rowIndex, t) => {
+          if (row.taxHeadCode === "LAYOUT_TOTAL") {
+            return (
+              <div>
+                <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+                <div
+                  style={{
+                    fontSize: "0.85em",
+                    color: "#555",
+                    marginTop: "4px",
+                    lineHeight: "1.3",
+                  }}
+                >
+                  {amountToWords(row.grandTotal)}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <TextInput
+              t={t}
+              type="number"
+              isMandatory={false}
+              value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
+              onChange={(e) => {
+                let val = e.target.value;
+                if (val.length > 1 && val.startsWith("0")) {
+                  val = val.replace(/^0+/, "");
+                }
+                handleAdjustedAmountChange(row.index, val);
+              }}
+              disable={disable}
+              step={1}
+              onBlur={onAdjustedAmountBlur}
+            />
+          );
+        },
+      },
+    ];
   }
-
 
   const renderHistoryCell = (h, key, t) => (
     <div className="custom-fee-history-content">
@@ -215,11 +204,7 @@ export const LayoutFeeTable = ({
                         t={t}
                         type="number"
                         isMandatory={false}
-                        value={
-                          feeData[row.index]?.adjustedAmount === 0
-                            ? ""
-                            : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-                        }
+                        value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
                         onChange={(e) => {
                           let val = e.target.value;
                           if (val.length > 1 && val.startsWith("0")) {
@@ -255,9 +240,7 @@ export const LayoutFeeTable = ({
                   <div className="custom-fee-card-total-value">
                     <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                   </div>
-                  <div className="custom-fee-card-total-words">
-                    {amountToWords(row.grandTotal)}
-                  </div>
+                  <div className="custom-fee-card-total-words">{amountToWords(row.grandTotal)}</div>
                 </div>
               )}
             </div>
@@ -302,12 +285,13 @@ export const LayoutFeeTable = ({
         )} */}
 
         <FeeHistoryTable feeHistory={feeHistory} t={t} />
-
       </React.Fragment>
     );
   };
 
-  return isMobile ? renderMobileCardView() : (
+  return isMobile ? (
+    renderMobileCardView()
+  ) : (
     <CustomFeeTable
       data={feeDataWithTotal}
       columns={columns}

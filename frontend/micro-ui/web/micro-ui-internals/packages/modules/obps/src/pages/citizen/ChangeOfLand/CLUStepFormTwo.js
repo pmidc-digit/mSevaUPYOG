@@ -19,12 +19,12 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     setValue,
     formState: { errors },
     trigger,
-    watch
-  } = useForm({ 
-     defaultValues: {
-       floorArea: [{ value: "" }] 
-  }
-});
+    watch,
+  } = useForm({
+    defaultValues: {
+      floorArea: [{ value: "" }],
+    },
+  });
 
   const errorStyle = { color: "red", marginTop: "4px", marginBottom: "0" };
 
@@ -33,27 +33,26 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   });
 
   const ownerIds = useSelector(function (state) {
-      return state.obps.OBPSFormReducer.ownerIds;
+    return state.obps.OBPSFormReducer.ownerIds;
   });
-  
+
   const ownerPhotos = useSelector(function (state) {
-      return state.obps.OBPSFormReducer.ownerPhotos;
+    return state.obps.OBPSFormReducer.ownerPhotos;
   });
 
   // console.log("ownerIds(redux)", ownerIds);
   // console.log("ownerPhotos (redux)", ownerPhotos);
 
-
-  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
+  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch };
 
   // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   let tenantId;
 
-  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
-
-  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
-
+  if (window.location.href.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  else {
+    tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }
 
   const toNum2 = (val) => {
     if (val === null || val === undefined) return NaN;
@@ -87,19 +86,19 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       return;
     }
 
-    try{
-    const searchResponse = await Digit.OBPSService.CLUSearch({
-      tenantId,
-      filters: {
-        vasikaNumber: data?.vasikaNumber,
-        vasikaDate: convertToDDMMYYYY(data?.vasikaDate),
-      },
-    });
-    
-    console.log("searchResponse in CLUStepFormTwo==>", searchResponse);
+    try {
+      const searchResponse = await Digit.OBPSService.CLUSearch({
+        tenantId,
+        filters: {
+          vasikaNumber: data?.vasikaNumber,
+          vasikaDate: convertToDDMMYYYY(data?.vasikaDate),
+        },
+      });
 
-    const applications = searchResponse?.Clu ?? [];
-    //console.log("applications==>", applications);
+      console.log("searchResponse in CLUStepFormTwo==>", searchResponse);
+
+      const applications = searchResponse?.Clu || [];
+      //console.log("applications==>", applications);
 
       const currentAppNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo;
       //console.log("currentAppNo==>", currentAppNo);
@@ -143,7 +142,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     };
     //  console.log("cluFormData ==>", cluFormData)
 
-    const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item, index) => {
+    const ownerData = (cluFormData?.applicationDetails?.owners || [])?.map((item, index) => {
       return {
         mobileNumber: item?.mobileNumber || "",
         name: item?.ownerOrFirmName || "",

@@ -115,6 +115,14 @@ public class EnrichmentService {
 		AuditDetails auditDetails = waterServicesUtil
 				.getAuditDetails(waterConnectionRequest.getRequestInfo().getUserInfo().getUuid(), true);
 		waterConnectionRequest.getWaterConnection().setAuditDetails(auditDetails);
+		String relatedSwConnection = waterConnectionRequest.getWaterConnection().getRelatedSwConnection();
+	    if (relatedSwConnection == null || relatedSwConnection.trim().isEmpty() ||
+	        "null".equalsIgnoreCase(relatedSwConnection.trim())) {	waterConnectionRequest.getWaterConnection().setRelatedSwConnection(null);	}
+	    else {
+	    	relatedSwConnection = relatedSwConnection.trim();
+	    	relatedSwConnection = relatedSwConnection.replaceAll("[^a-zA-Z0-9]", "");
+	    	waterConnectionRequest.getWaterConnection().setRelatedSwConnection(relatedSwConnection);
+	    }
 		waterConnectionRequest.getWaterConnection().setId(UUID.randomUUID().toString());
 		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.ACTIVE);
 		/*
@@ -348,7 +356,15 @@ public class EnrichmentService {
 	public void enrichUpdateWaterConnection(WaterConnectionRequest waterConnectionRequest) {
 		AuditDetails auditDetails = waterServicesUtil
 				.getAuditDetails(waterConnectionRequest.getRequestInfo().getUserInfo().getUuid(), false);
-		waterConnectionRequest.getWaterConnection().setAuditDetails(auditDetails);
+		String relatedSwConnection = waterConnectionRequest.getWaterConnection().getRelatedSwConnection();
+	    if (relatedSwConnection == null || relatedSwConnection.trim().isEmpty() ||
+	        "null".equalsIgnoreCase(relatedSwConnection.trim())) {	waterConnectionRequest.getWaterConnection().setRelatedSwConnection(null);	}
+	    else {
+	    	relatedSwConnection = relatedSwConnection.trim();
+	    	relatedSwConnection = relatedSwConnection.replaceAll("[^a-zA-Z0-9]", "");
+	    	waterConnectionRequest.getWaterConnection().setRelatedSwConnection(relatedSwConnection);
+	    }
+	    waterConnectionRequest.getWaterConnection().setAuditDetails(auditDetails);
 		WaterConnection connection = waterConnectionRequest.getWaterConnection();
 		if (!CollectionUtils.isEmpty(connection.getDocuments())) {
 			connection.getDocuments().forEach(document -> {
@@ -702,7 +718,8 @@ public class EnrichmentService {
 				auditObject.put("accessBy", requestInfo.getUserInfo().getUuid());
 				auditObject.put("purpose",DOCUMENT_ACCESS_AUDIT_MSG);
 
-				producer.push(config.getDocumentAuditTopic(), auditObject);
+				String key = uuid;
+				producer.push(config.getDocumentAuditTopic(), key, auditObject);
 			}
 
 

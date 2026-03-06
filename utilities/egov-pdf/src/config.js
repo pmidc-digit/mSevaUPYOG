@@ -67,7 +67,7 @@ module.exports = {
     pdf: process.env.EGOV_PDF_HOST || HOST,
     user: process.env.EGOV_USER_HOST || HOST,
     payments: process.env.EGOV_PAYMENTS_HOST || HOST,
-    bill: process.env.EGOV_SEARCHER_HOST || "http://localhost:8087",
+    bill: process.env.EGOV_SEARCHER_HOST || "http://localhost:9095",
     workflow: process.env.EGOV_WORKFLOW_HOST || HOST,
     challan: process.env.EGOV_ECHALLAN_HOST || 'http://echallan-services.egov:8080/',
     mcollectBilling: process.env.EGOV_BILLING_HOST || 'http://localhost:8086',
@@ -95,6 +95,8 @@ module.exports = {
     searcher_sewerage_open_search:"/egov-searcher/sewerage-services/sewerageopensearch/_get",
     bill_genie_waterBills:"/egov-searcher/bill-genie/waterbills/_get",
     bill_genie_sewerageBills:"/egov-searcher/bill-genie/seweragebills/_get",
-    fetch_bill: "/billing-service/bill/v2/_fetchbill"
+    fetch_bill: "/billing-service/bill/v2/_fetchbill",
+    searcher_api_water : "/egov-searcher/bill-genie/waterbills/_get?",
+    searcher_api_sewerage : "/egov-searcher/bill-genie/seweragebills/_get?"
   },
 };

@@ -129,11 +129,16 @@ public class UserService {
      */
     public User getUniqueUser(String userName, String tenantId, UserType userType) {
 
-        UserSearchCriteria userSearchCriteria = UserSearchCriteria.builder()
-                .userName(userName)
-                .tenantId(getStateLevelTenantForCitizen(tenantId, userType))
-                .type(userType)
-                .build();
+    	  UserSearchCriteria userSearchCriteria =null;
+        
+    	  boolean isMobileNumber = userName.matches("[1-9]\\d{9}");
+			if (isMobileNumber && !userType.equals(UserType.CITIZEN)) {
+				userSearchCriteria = UserSearchCriteria.builder().mobileNumber(userName)
+						.tenantId(getStateLevelTenantForCitizen(tenantId, userType)).type(userType).build();
+			} else {
+				userSearchCriteria = UserSearchCriteria.builder().userName(userName)
+						.tenantId(getStateLevelTenantForCitizen(tenantId, userType)).type(userType).build();
+			}
 
         if (isEmpty(userName) || isEmpty(tenantId) || isNull(userType)) {
             log.error("Invalid lookup, mandatory fields are absent");
@@ -406,7 +411,37 @@ public class UserService {
         }
 
     }
+    
+    public void removeTokensByUsers(User user) {
 
+        if (user == null || user.getUserName() == null) {
+            return;
+        }
+
+        Collection<OAuth2AccessToken> tokens =
+                tokenStore.findTokensByClientIdAndUserName(
+                        USER_CLIENT_ID,
+                        user.getUserName()
+                );
+
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+
+        for (OAuth2AccessToken token : tokens) {
+
+            // Remove refresh token first
+            if (token.getRefreshToken() != null) {
+                tokenStore.removeRefreshToken(token.getRefreshToken());
+            }
+
+            // Remove access token
+            tokenStore.removeAccessToken(token);
+        }
+
+        // Update logout session once (not inside loop)
+        userRepository.updateUserLogoutSession(user.getUuid(), true);
+    }
     /**
      * this api will validate whether user roles exist in Database or not
      *

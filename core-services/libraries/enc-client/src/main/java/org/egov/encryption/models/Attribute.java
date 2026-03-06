@@ -9,12 +9,12 @@ import lombok.*;
 @NoArgsConstructor
 public class Attribute {
 
-    private String name = null;
+    private String name ;
 
-    private String jsonPath = null;
+    private String jsonPath ;
 
-    private String patternId = null;
+    private String patternId ;
 
-    private Visibility defaultVisibility = null;
+    private Visibility defaultVisibility ;
 
 }

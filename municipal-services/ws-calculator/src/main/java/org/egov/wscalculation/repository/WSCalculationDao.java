@@ -84,4 +84,10 @@ public interface WSCalculationDao {
 	String getSwConnection(String tenantId, String consumerCode);
 
 		
+	/**
+	 * 
+	 * @param criteria would be meter reading criteria
+	 * @return List of meter readings based on criteria
+	 */
+	List<MeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria);
 }

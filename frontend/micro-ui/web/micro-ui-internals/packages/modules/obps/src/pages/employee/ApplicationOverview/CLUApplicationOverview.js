@@ -139,6 +139,9 @@ const CLUEmployeeApplicationDetails = () => {
   } : []);
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
+  const [showOptions, setShowOptions] = useState(false);
   
 const stateId = Digit.ULBService.getStateId();
   const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
@@ -211,6 +214,34 @@ const stateId = Digit.ULBService.getStateId();
     approvalDate = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.lastModified || "";
     approvalTime = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.timing || "";
 
+  }
+
+  const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const Property = applicationDetails?.Clu?.[0];
+      const site = Property?.cluDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name;
+
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property.tenantId);
+      const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t, searchChecklistData);
+
+      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoader(false);
+    }
+  };
+
+  const dowloadOptions = [];
+  if (applicationDetails?.Clu?.[0]) {
+    dowloadOptions.push({
+      label: t("Application Form"),
+      onClick: handleDownloadPdf,
+    });
   }
 
   async function openSanctionLetterPopup() {
@@ -941,13 +972,21 @@ const stateId = Digit.ULBService.getStateId();
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
+      <div className="cardHeaderWithOptions">
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
-        <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-        {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
-        {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
+          <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+          {dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )}
+          {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
+          {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
           <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
-        )}
+          )}
       </div>
 
       <Card>

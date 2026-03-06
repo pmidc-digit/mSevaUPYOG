@@ -470,6 +470,8 @@ public class DemandService {
 							det.setCollectionAmount(det.getTaxAmount());
 						}
 					}
+					// ADD THIS LINE: This recalculates the isPaymentCompleted flag based on new collection amounts
+				    util.updateDemandPaymentStatus(resD, true);
 
 					if (demandToBeUpdated.stream().noneMatch(u -> u.getId().equals(resD.getId()))) {
 						demandToBeUpdated.add(resD);

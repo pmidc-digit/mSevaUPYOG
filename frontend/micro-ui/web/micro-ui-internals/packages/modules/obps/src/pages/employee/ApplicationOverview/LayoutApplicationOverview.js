@@ -109,13 +109,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 
   if (!url) return <span>{t("CS_NA") || "NA"}</span>;
 
-  return (
-    <LinkButton
-     
-      label={t("View") || "View"}
-      onClick={() => window.open(url, "_blank")}
-    />
-  );
+  return <LinkButton label={t("View") || "View"} onClick={() => window.open(url, "_blank")} />;
 };
 
 const LayoutEmployeeApplicationOverview = () => {
@@ -147,7 +141,7 @@ const LayoutEmployeeApplicationOverview = () => {
   // States for site inspection images
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
-  const [siteImages, setSiteImages] = useState({})
+  const [siteImages, setSiteImages] = useState({});
 
   // States for field inspection
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
@@ -167,11 +161,9 @@ const LayoutEmployeeApplicationOverview = () => {
   // For other statuses, checklist should already exist from previous submissions
   const shouldFetchChecklist = applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM";
   const stateCode = Digit.ULBService.getStateId();
-  const { data: checklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useLayoutCheckListSearch(
-    { applicationNo: id }, 
-    tenantId,
-    { enabled: shouldFetchChecklist }
-  );
+  const { data: checklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useLayoutCheckListSearch({ applicationNo: id }, tenantId, {
+    enabled: shouldFetchChecklist,
+  });
   //console.log("DEBUG: Checklist data fetched:", checklistData, "Fetch enabled:", shouldFetchChecklist);
 
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
@@ -297,7 +289,7 @@ const LayoutEmployeeApplicationOverview = () => {
   useEffect(() => {
     if (checklistData?.checkList?.length > 0 && Object.keys(checklistRemarks).length === 0) {
       const remarksMap = {};
-      checklistData.checkList.forEach(item => {
+      checklistData.checkList.forEach((item) => {
         remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
       });
       //console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
@@ -307,12 +299,8 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // Show warning toast if desktop user is on FIELDINSPECTION_INPROGRESS status
   useEffect(() => {
-    if (
-      applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
-      hasRole &&
-      !isMobile
-    ) {
-     //console.log("Field_Inspection_Only_Available_On_Mobile");
+    if (applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && !isMobile) {
+      //console.log("Field_Inspection_Only_Available_On_Mobile");
     }
   }, [applicationDetails?.Layout?.[0]?.applicationStatus, hasRole, isMobile]);
 
@@ -325,7 +313,7 @@ const LayoutEmployeeApplicationOverview = () => {
       doc.documentType === "SITE.PHOTOGRAPHONE" ||
       doc.documentType === "SITE.PHOTOGRAPHTWO"
   );
-  const remainingDocs = displayData?.Documents?.sort((a,b) => b?.order - a?.order)?.filter(
+  const remainingDocs = displayData?.Documents?.sort((a, b) => b?.order - a?.order)?.filter(
     (doc) =>
       !(
         doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
@@ -434,16 +422,13 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // Helper function to get remark entries from inspection report
   function getRemarkEntries(record) {
-    return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+    return Object.entries(record || {}).filter(([k]) => k.startsWith("Remarks"));
   }
 
   // Helper function to check if all remarks are filled
   function areAllRemarksFilled(record) {
     const remarkEntries = getRemarkEntries(record);
-    return (
-      remarkEntries.length > 0 &&
-      remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
-    );
+    return remarkEntries.length > 0 && remarkEntries.every(([, v]) => typeof v === "string" && v.trim().length > 0);
   }
 
   const submitAction = async (data) => {
@@ -453,12 +438,9 @@ const LayoutEmployeeApplicationOverview = () => {
     try {
       const filtData = data?.Licenses?.[0];
 
-
-
       // if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
-      //   filtData.assignee = user?.info?.uuid;        
+      //   filtData.assignee = user?.info?.uuid;
       // }
-      
 
       if (!filtData) {
         console.error(" ERROR: filtData is undefined");
@@ -485,7 +467,7 @@ const LayoutEmployeeApplicationOverview = () => {
           setIsSubmitting(false);
           return;
         } else {
-          const record = fieldInspectionPending?.[0] ?? {};
+          const record = fieldInspectionPending?.[0] || {};
           const allRemarksFilled = areAllRemarksFilled(record);
 
           if (!allRemarksFilled) {
@@ -499,13 +481,13 @@ const LayoutEmployeeApplicationOverview = () => {
 
       // Validation For Document Remarks AT DM Level
       if (applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM") {
-        const isDM = user?.info?.roles?.some(role => role.code === "OBPAS_LAYOUT_DM");
+        const isDM = user?.info?.roles?.some((role) => role.code === "OBPAS_LAYOUT_DM");
         if (isDM && remainingDocs?.length > 0) {
           // Check if all documents have remarks filled
-          const allRemarksFilledForDocuments = remainingDocs.every(doc => {
+          const allRemarksFilledForDocuments = remainingDocs.every((doc) => {
             const remark = checklistRemarks[doc.documentUid || doc.uuid];
             //console.log("remarkdoc",remainingDocs,doc,checklistRemarks, checklistRemarks[doc.documentUid || doc.uuid])
-            return remark && typeof remark === 'string' && remark.trim().length > 0;
+            return remark && typeof remark === "string" && remark.trim().length > 0;
           });
 
           //console.log("allRemarksFilledForDocuments",allRemarksFilledForDocuments)
@@ -527,7 +509,7 @@ const LayoutEmployeeApplicationOverview = () => {
           .filter((row) => row.taxHeadCode !== "LAYOUT_TOTAL") // exclude UI-only total row
           .map((row) => ({
             taxHeadCode: row.taxHeadCode,
-            estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
+            estimateAmount: row.adjustedAmount || 0, // baseline + delta
             category: row.category,
             remarks: row.remark || null,
             filestoreId: row.filestoreId || null,
@@ -535,13 +517,14 @@ const LayoutEmployeeApplicationOverview = () => {
       };
 
       // Get old calculations and mark them as not latest
-      const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
+      const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));
 
       // Update documents with remarks from checklistRemarks
-      const updatedDocuments = displayData?.Documents?.map(doc => ({
-        ...doc,
-        remarks: checklistRemarks[doc.documentUid || doc.uuid] || doc.remarks || "",
-      })) || [];
+      const updatedDocuments =
+        displayData?.Documents?.map((doc) => ({
+          ...doc,
+          remarks: checklistRemarks[doc.documentUid || doc.uuid] || doc.remarks || "",
+        })) || [];
 
       // Ensure all nested data is properly preserved
       const updatedApplicant = {
@@ -590,19 +573,19 @@ const LayoutEmployeeApplicationOverview = () => {
           // At DM level: shouldFetchChecklist is false, so we ALWAYS CREATE on first DM submit
           // At other levels: shouldFetchChecklist is true, so checklistData contains existing records, and we UPDATE
           if (filtData?.action === "UPDATE_ZONE") {
-              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
-              workflowDetails.revalidate();
-              // refetch();
-              setShowZoneModal(false);
-              setSelectedAction(null);
-              setTimeout(() => {
-                window.location.href = "/digit-ui/employee/obps/layout/inbox";
-              }, 3000);
+            setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+            workflowDetails.revalidate();
+            // refetch();
+            setShowZoneModal(false);
+            setSelectedAction(null);
+            setTimeout(() => {
+              window.location.href = "/digit-ui/employee/obps/layout/inbox";
+            }, 3000);
           }
           if (!shouldFetchChecklist) {
             // DM ROLE: CREATE checklist on first submit
             const checklistPayload = {
-              checkList: (displayData?.Documents || []).map(doc => ({
+              checkList: (displayData?.Documents || []).map((doc) => ({
                 documentuid: doc.documentUid || doc.uuid,
                 applicationNo: id,
                 tenantId: tenantId,
@@ -618,8 +601,8 @@ const LayoutEmployeeApplicationOverview = () => {
           } else if (checklistData?.checkList?.length > 0) {
             // OTHER ROLES: UPDATE existing checklist records
             const checklistPayload = {
-              checkList: (displayData?.Documents || []).map(doc => {
-                const existing = checklistData.checkList.find(c => c.documentUid === doc.documentUid || c.documentuid === doc.documentUid);
+              checkList: (displayData?.Documents || []).map((doc) => {
+                const existing = checklistData.checkList.find((c) => c.documentUid === doc.documentUid || c.documentuid === doc.documentUid);
                 return {
                   id: existing?.id,
                   documentUid: doc.documentUid || doc.uuid,
@@ -763,7 +746,10 @@ const LayoutEmployeeApplicationOverview = () => {
       setShowZoneModal(true);
     } else {
       // Validation: Prevent forwarding without required site images during field inspection
-      if (applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)) {
+      if (
+        applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+        (!siteImages?.documents || siteImages?.documents?.length < 4)
+      ) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -774,18 +760,19 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   }
 
-
   const handleZoneSubmit = (selectedZone, comment) => {
-  const payload = {
-    Licenses: [{
-      action: "UPDATE_ZONE",
-      comment: comment,
-      // Pass the zone object which contains both code and name
-      zone: selectedZone
-    }]
+    const payload = {
+      Licenses: [
+        {
+          action: "UPDATE_ZONE",
+          comment: comment,
+          // Pass the zone object which contains both code and name
+          zone: selectedZone,
+        },
+      ],
+    };
+    submitAction(payload);
   };
-  submitAction(payload);
-};
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -849,7 +836,7 @@ const LayoutEmployeeApplicationOverview = () => {
     }
 
     // dd-mm-yyyy → yyyy-mm-dd
-    const [yyyy, mm, dd,] = parts;
+    const [yyyy, mm, dd] = parts;
     return `${dd}/${mm}/${yyyy}`;
   };
 
@@ -887,10 +874,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <CustomOwnerImage
-        ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto}
-        ownerName={displayData?.owners?.[0]?.name}
-      />
+      <CustomOwnerImage ownerFileStoreId={displayData?.owners?.[0]?.additionalDetails?.ownerPhoto} ownerName={displayData?.owners?.[0]?.name} />
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("LAYOUT_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline} />
@@ -925,7 +909,10 @@ const LayoutEmployeeApplicationOverview = () => {
               <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalRegId || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalMobileNumber || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={displayData?.applicantDetails?.[0]?.professionalAddress || "N/A"} />
-              <Row label={t("BPA_CERTIFICATE_EXPIRY_DATE")} text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")} />
+              <Row
+                label={t("BPA_CERTIFICATE_EXPIRY_DATE")}
+                text={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
+              />
             </StatusTable>
           </div>
         </Card>
@@ -940,7 +927,14 @@ const LayoutEmployeeApplicationOverview = () => {
               <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
               <div style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
-                  <Row label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? t("NEW_LAYOUT_FIRM_NAME_LABEL") : t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`} value={applicant?.name} />
+                  <Row
+                    label={`${index === 0 ? t("PRIMARY_OWNER") || "Primary Owner" : t("ADDITIONAL_OWNER") || "Additional Owner"} - ${
+                      applicant?.additionalDetails?.aplicantType?.code === "FIRM"
+                        ? t("NEW_LAYOUT_FIRM_NAME_LABEL")
+                        : t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")
+                    }`}
+                    value={applicant?.name}
+                  />
                   {index === 0 && <Row label={`Applicant Type`} value={applicant?.additionalDetails?.aplicantType?.name} />}
                   <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} value={applicant?.emailId} />
                   <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} value={applicant?.fatherOrHusbandName} />
@@ -949,9 +943,18 @@ const LayoutEmployeeApplicationOverview = () => {
                   <Row label={t("NOC_APPLICANT_GENDER_LABEL")} value={applicant?.gender} />
                   <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} value={applicant?.permanentAddress} />
                   <Row label={t("Pan No")} value={applicant?.pan || "N/A"} />
-                  <Row label={t("Photo") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
-                  <Row label={t("ID Proof") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
-                  <Row label={t("Pan") || "Pan"} text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />} />
+                  <Row
+                    label={t("Photo") || "Photo"}
+                    text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPHOTO")} stateCode={stateCode} t={t} />}
+                  />
+                  <Row
+                    label={t("ID Proof") || "ID Proof"}
+                    text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERVALIDID")} stateCode={stateCode} t={t} />}
+                  />
+                  <Row
+                    label={t("Pan") || "Pan"}
+                    text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
+                  />
                 </StatusTable>
               </div>
             </Card>
@@ -968,8 +971,7 @@ const LayoutEmployeeApplicationOverview = () => {
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
                 <React.Fragment>
                   {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
-                  {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
+                  {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
                   {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
                     renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
                   {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), convertDateToISO(detail?.cluApprovalDate))}
@@ -1000,7 +1002,6 @@ const LayoutEmployeeApplicationOverview = () => {
               {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
               {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
               {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)}
-
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
               {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
@@ -1107,24 +1108,42 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
-      {
-        applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" &&
+      {applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" && (
         <Card>
           <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
-            tenantId={tenantId} onRemarksChange={setChecklistRemarks} value={checklistRemarks} readOnly="true" />}</StatusTable>
+          <StatusTable>
+            {remainingDocs?.length > 0 && (
+              <LayoutDocumentChecklist
+                documents={remainingDocs}
+                applicationNo={id}
+                tenantId={tenantId}
+                onRemarksChange={setChecklistRemarks}
+                value={checklistRemarks}
+                readOnly="true"
+              />
+            )}
+          </StatusTable>
         </Card>
-      }
+      )}
 
       {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
-      {
-        applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" && (user?.info?.roles.filter(role => role.code === "OBPAS_LAYOUT_DM")?.length > 0) &&
-        <Card>
-          <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-          <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
-            tenantId={tenantId} onRemarksChange={setChecklistRemarks} value={checklistRemarks} />}</StatusTable>
-        </Card>
-      }
+      {applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM" &&
+        user?.info?.roles.filter((role) => role.code === "OBPAS_LAYOUT_DM")?.length > 0 && (
+          <Card>
+            <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+            <StatusTable>
+              {remainingDocs?.length > 0 && (
+                <LayoutDocumentChecklist
+                  documents={remainingDocs}
+                  applicationNo={id}
+                  tenantId={tenantId}
+                  onRemarksChange={setChecklistRemarks}
+                  value={checklistRemarks}
+                />
+              )}
+            </StatusTable>
+          </Card>
+        )}
 
       {/* FIELD INSPECTION UPLOAD SECTION - Allow JE/BI to upload site photographs (mobile-only capture enforced in ChallanDocuments) */}
       {applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && (
@@ -1255,7 +1274,11 @@ const LayoutEmployeeApplicationOverview = () => {
       )} */}
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant ( ${displayData?.owners?.map(applicant => applicant?.name)?.join(", ")} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant ( ${displayData?.owners
+          ?.map((applicant) => applicant?.name)
+          ?.join(
+            ", "
+          )} ). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
       />
       <div id="timeline">
@@ -1302,13 +1325,7 @@ const LayoutEmployeeApplicationOverview = () => {
         <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
 
-      {showZoneModal && (
-        <ZoneModal
-          onClose={() => setShowZoneModal(false)}
-          onSelect={handleZoneSubmit}
-          currentZoneCode={currentZoneCode}
-        />
-      )}
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
       {/* {(isLoading || getLoader) && <Loader page={true} />} */}
       {(isLoading || isDetailsLoading || getLoader) && <Loader page={true} />}

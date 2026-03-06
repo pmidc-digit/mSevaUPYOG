@@ -34,12 +34,13 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   const [isUploading, setIsUploading] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [userSelected, setUser] = useState(null);
-console.log('currentStepData', currentStepData)
+  console.log("currentStepData", currentStepData);
   // Map fields safely from params (these may be undefined)
   const architectid = currentStepData?.createdResponse?.additionalDetails?.architectid || "";
   const ownername = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.name || "";
   const mobile = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.mobileNumber || "";
-  const architecttype = currentStepData?.createdResponse?.additionalDetails?.typeOfArchitect || user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name || "";
+  const architecttype =
+    currentStepData?.createdResponse?.additionalDetails?.typeOfArchitect || user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name || "";
   const khasranumber = currentStepData?.createdResponse?.additionalDetails?.khasraNumber || "";
   const ulbname = currentStepData?.createdResponse?.additionalDetails?.District || "";
   const district = currentStepData?.createdResponse?.additionalDetails?.UlbName || "";
@@ -58,7 +59,7 @@ console.log('currentStepData', currentStepData)
     .join(", ");
 
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
-  // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
+  // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
   // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
   const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.TimeStamp?.TimeStamp || "");
   const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.TimeStamp?.isArchitectDeclared || "");
@@ -75,7 +76,8 @@ console.log('currentStepData', currentStepData)
     return new Date(year, month, Number(day), h, Number(minute), Number(second));
   };
   const d = TimeStamp === "" ? "" : parseFormattedTimestamp(TimeStamp);
-  const DateOnly = TimeStamp === "" ? "" : `${String(d?.getDate()).padStart(2, "0")}/${String(d?.getMonth() + 1).padStart(2, "0")}/${d?.getFullYear()}`;
+  const DateOnly =
+    TimeStamp === "" ? "" : `${String(d?.getDate()).padStart(2, "0")}/${String(d?.getMonth() + 1).padStart(2, "0")}/${d?.getFullYear()}`;
   // const DateOnly = TimeStamp
   // ? (() => {
   //     const d = new Date(TimeStamp);
@@ -92,11 +94,11 @@ console.log('currentStepData', currentStepData)
 
   useEffect(() => {
     console.log("currentStepDataInArchitectConsent", currentStepData);
-    if(currentStepData?.Timestamp?.TimeStamp){
-      setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp)
+    if (currentStepData?.Timestamp?.TimeStamp) {
+      setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp);
     }
-    if(currentStepData?.Timestamp?.isArchitectDeclared){
-      setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared)
+    if (currentStepData?.Timestamp?.isArchitectDeclared) {
+      setIsArchitectDeclared(currentStepData?.Timestamp?.isArchitectDeclared);
     }
   }, [currentStepData]);
 
@@ -127,21 +129,27 @@ console.log('currentStepData', currentStepData)
     setCitizenDetail(userSelected?.info, userSelected?.access_token, state);
   }, [userSelected]);
 
-
-const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?.isSelfCertification ? `
+  const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?.isSelfCertification
+    ? `
   <div style="font-family: 'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; padding:0; margin-top:-100px">
 
     <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
       DECLARATION UNDER SELF-CERTIFICATION SCHEME
     </h2>
     <div style="text-align:center; margin-top:-78px;">
-      <div style="font-size:16px; margin:0;">(For ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} Construction)</div>
+      <div style="font-size:16px; margin:0;">(For ${
+        currentStepData?.createdResponse?.additionalDetails?.usage || "<Type of Construction>"
+      } Construction)</div>
       <div style="font-size:16px; margin:2px 0 0 0;">(By Architect/ Civil Engineer/ Building Designer and Supervisor)</div>
     </div>
 
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To</strong></p>
-      <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
+      <p style="margin-bottom:-32px;"><strong>${
+        currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation"
+          ? "The Municipal Commissioner"
+          : "The Executive officer"
+      }</strong></p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
       <p style="margin-bottom:-32px;">${currentStepData?.createdResponse?.additionalDetails?.UlbName}</p>
     </div>
@@ -149,15 +157,25 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner(s) ${ownerDetails} for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype}</b> having Registration No. ${architectid}  is appointed by the owner(s) ${ownerDetails} for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${
+        currentStepData?.LocationDetails?.selectedCity?.city?.ulbType
+      }</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${
+        currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo +
+          " ," +
+          currentStepData?.createdResponse?.additionalDetails?.registrationDetails || "NA"
+      }</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      This site falls in Ward Number <b>${ward}</b>, Zone Number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} construction is permissible in this area.
+      This site falls in Ward Number <b>${ward}</b>, Zone Number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${
+        currentStepData?.createdResponse?.additionalDetails?.usage || "<Type of Construction>"
+      } construction is permissible in this area.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      I am currently registered as <b>${architecttype || "<Professional's User Type>"}</b> with the Competent Authority and empanelled under Self-Certification Scheme.
+      I am currently registered as <b>${
+        architecttype || "<Professional's User Type>"
+      }</b> with the Competent Authority and empanelled under Self-Certification Scheme.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
@@ -182,7 +200,9 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
    
 
     <!-- Signature / details table (dotted cells like your doc) -->
-    ${TimeStamp !== ""?`<table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
+    ${
+      TimeStamp !== ""
+        ? `<table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
       <tr>
         <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
           <div style="font-weight:700; margin-bottom:6px;">Date:</div>
@@ -198,11 +218,13 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Registration No.:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${architectid || '<Registration Number>'}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architectid || "<Registration Number>"}</td>
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${
+                currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"
+              }</td>
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
@@ -214,27 +236,36 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
             </tr>
             <tr>
               <td style="padding:6px; font-weight:700;">Signature:</td>
-              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || '<date> <time>'}</b></td>
+              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || "<date> <time>"}</b></td>
             </tr>
-          </table>`:""}
+          </table>`
+        : ""
+    }
         </td>
       </tr>
     </table>
   </div>
-` :`
+`
+    : `
   <div style="font-family: 'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; padding:0; margin-top:-100px">
 
     <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
       DECLARATION
     </h2>
     <div style="text-align:center; margin-top:-78px;">
-      <div style="font-size:16px; margin:0;">(For ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} Construction)</div>
+      <div style="font-size:16px; margin:0;">(For ${
+        currentStepData?.createdResponse?.additionalDetails?.usage || "<Type of Construction>"
+      } Construction)</div>
       <div style="font-size:16px; margin:2px 0 0 0;">(By Architect/ Civil Engineer/ Building Designer and Supervisor)</div>
     </div>
 
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To</strong></p>
-      <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
+      <p style="margin-bottom:-32px;"><strong>${
+        currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation"
+          ? "The Municipal Commissioner"
+          : "The Executive officer"
+      }</strong></p>
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
       <p style="margin-bottom:-32px;">${currentStepData?.createdResponse?.additionalDetails?.UlbName}</p>
     </div>
@@ -242,11 +273,19 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner(s) ${ownerDetails} for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo + " ," + currentStepData?.createdResponse?.additionalDetails?.registrationDetails) || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype}</b> having Registration No. ${architectid}  is appointed by the owner(s) ${ownerDetails} for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${
+        currentStepData?.LocationDetails?.selectedCity?.city?.ulbType
+      }</b> <b>${district}</b> Area <b>${area}</b> (Sq.mts), address <b>${
+        currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.plotNo +
+          " ," +
+          currentStepData?.createdResponse?.additionalDetails?.registrationDetails || "NA"
+      }</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      This site falls in Ward Number <b>${ward}</b>, Zone Number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} construction is permissible in this area.
+      This site falls in Ward Number <b>${ward}</b>, Zone Number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${
+        currentStepData?.createdResponse?.additionalDetails?.usage || "<Type of Construction>"
+      } construction is permissible in this area.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
@@ -275,7 +314,9 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
    
 
     <!-- Signature / details table (dotted cells like your doc) -->
-    ${TimeStamp !== ""?`<table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
+    ${
+      TimeStamp !== ""
+        ? `<table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
       <tr>
         <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
           <div style="font-weight:700; margin-bottom:6px;">Date:</div>
@@ -291,11 +332,13 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Registration No.:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${architectid || '<Registration Number>'}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architectid || "<Registration Number>"}</td>
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${
+                currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"
+              }</td>
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
@@ -307,16 +350,16 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
             </tr>
             <tr>
               <td style="padding:6px; font-weight:700;">Signature:</td>
-              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || '<date> <time>'}</b></td>
+              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || "<date> <time>"}</b></td>
             </tr>
-          </table>`:""}
+          </table>`
+        : ""
+    }
         </td>
       </tr>
     </table>
   </div>
 `;
-
-
 
   // right aligned check lines (constructed using current values)
   const isRightAlignedLine = (line) => {
@@ -344,7 +387,7 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
 
   const openModal = () => setShowTermsPopup(true);
   const closeModal = () => setShowTermsPopup(false);
-      
+
   const setCitizenDetail = (userObject, token, tenantId) => {
     let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
     localStorage.setItem("Citizen.tenant-id", tenantId);
@@ -361,8 +404,11 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
   const uploadSelfDeclaration = async (event) => {
     try {
       const timestamp = await handleVerifyOTPClick(event);
-      const addressee = currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"
-      if(timestamp === ""){
+      const addressee =
+        currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation"
+          ? "The Municipal Commissioner"
+          : "The Executive officer";
+      if (timestamp === "") {
         return;
       }
       setIsUploading(true);
@@ -371,13 +417,13 @@ const selfdeclarationform = currentStepData?.createdResponse?.additionalDetails?
         addressee,
         additionalDetails: {
           ...currentStepData?.createdResponse?.additionalDetails,
-          timestamp
+          timestamp,
         },
         edcrDetail: {
           ...currentStepData?.BasicDetails?.edcrDetails,
-        }
+        },
       };
-console.log('paramsWithTimestamp', paramsWithTimestamp)
+      console.log("paramsWithTimestamp", paramsWithTimestamp);
       const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [paramsWithTimestamp] }, "architectconsent");
 
       if (result?.filestoreIds?.[0]) {
@@ -385,7 +431,7 @@ console.log('paramsWithTimestamp', paramsWithTimestamp)
         // sessionStorage.setItem("ArchitectConsentdocFilestoreid", result.filestoreIds[0]);
         onSelect({
           isArchitectDeclared: result?.filestoreIds?.[0],
-          TimeStamp: timestamp
+          TimeStamp: timestamp,
         });
         setIsFileUploaded(true);
       } else {
@@ -437,7 +483,7 @@ console.log('paramsWithTimestamp', paramsWithTimestamp)
       userType: user?.info?.type,
     };
     try {
-      setSetOtpLoading(true)
+      setSetOtpLoading(true);
       // const response = await Digit.UserService.authenticate(requestData);
       const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
       if (ResponseInfo.status === "Access Token generated successfully") {
@@ -446,7 +492,7 @@ console.log('paramsWithTimestamp', paramsWithTimestamp)
         setOTPError(false);
         const currentTimestamp = new Date();
         const opts = {
-          timeZone: "Asia/Kolkata",  // ensures IST
+          timeZone: "Asia/Kolkata", // ensures IST
           weekday: "long",
           year: "numeric",
           month: "long",
@@ -455,11 +501,11 @@ console.log('paramsWithTimestamp', paramsWithTimestamp)
           minute: "2-digit",
           second: "2-digit",
           hour12: true,
-          timeZoneName: "short"
+          timeZoneName: "short",
         };
 
         const parts = new Intl.DateTimeFormat("en-IN", opts).formatToParts(currentTimestamp);
-        const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+        const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
 
         // assemble in required order: day month year weekday time dayPeriod timezone
         const formatted = `${map.day} ${map.month} ${map.year} ${map.weekday} ${map.hour}:${map.minute}:${map.second} ${map.dayPeriod} ${map.timeZoneName}`;
@@ -471,8 +517,8 @@ console.log('paramsWithTimestamp', paramsWithTimestamp)
       } else {
         // setIsOTPVerified(false);
         setOTPError(t("WRONG OTP"));
-        setSetOtpLoading(false)
-        return ""
+        setSetOtpLoading(false);
+        return "";
       }
     } catch (error) {
       console.error("Error verifying OTP:", error);
@@ -547,31 +593,38 @@ console.log('paramsWithTimestamp', paramsWithTimestamp)
               </React.Fragment>
             ))} */}
             <div dangerouslySetInnerHTML={{ __html: selfdeclarationform }} />
-
           </div>
 
-          {(isUploading || setOtpLoading) ? <Loader />: <div>
-            {(isArchitectDeclared === "") && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
-              <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
-              <SubmitBar label={t("BPA_UPLOAD")} onSubmit={handleGetOTPClick} disabled={getOtpLoading} />
-            </div>}
-            {/* uploadSelfDeclaration  - isUploading || isFileUploaded */}
+          {isUploading || setOtpLoading ? (
+            <Loader />
+          ) : (
+            <div>
+              {isArchitectDeclared === "" && (
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+                  <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+                  <SubmitBar label={t("BPA_UPLOAD")} onSubmit={handleGetOTPClick} disabled={getOtpLoading} />
+                </div>
+              )}
+              {/* uploadSelfDeclaration  - isUploading || isFileUploaded */}
 
-            {!(isArchitectDeclared === "") && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
-              <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
-            </div>}
+              {!(isArchitectDeclared === "") && (
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+                  <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+                </div>
+              )}
 
-            {showOTPInput && !TimeStamp && (
-              <React.Fragment>
-                <br></br>
-                <CardLabel>{t("BPA_OTP")}</CardLabel>
-                <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
-                {setOtpLoading ? <Loader /> : <SubmitBar label={t("VERIFY_OTP")} onSubmit={uploadSelfDeclaration} />}
-                {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
-                {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
-              </React.Fragment>
-            )}
-          </div>}
+              {showOTPInput && !TimeStamp && (
+                <React.Fragment>
+                  <br></br>
+                  <CardLabel>{t("BPA_OTP")}</CardLabel>
+                  <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
+                  {setOtpLoading ? <Loader /> : <SubmitBar label={t("VERIFY_OTP")} onSubmit={uploadSelfDeclaration} />}
+                  {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
+                  {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+                </React.Fragment>
+              )}
+            </div>
+          )}
         </div>
       </Modal>
     </div>

@@ -1,6 +1,6 @@
-import React ,{useMemo,useEffect} from "react";
+import React, { useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox,Loader } from "@mseva/digit-ui-react-components";
+import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox, Loader } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM, RESET_NOC_NEW_APPLICATION_FORM } from "../../redux/action/NOCNewApplicationActions";
 import { useState, useRef } from "react";
 import _ from "lodash";
@@ -79,17 +79,16 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     [currentStepData]
   );
 
-  const { isLoading: nocCalculatorLoading, data : calculatorData, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
+  const { isLoading: nocCalculatorLoading, data: calculatorData, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
     { payload: calculatorPayload },
     { enabled: !!calculatorPayload }
   );
 
   useEffect(() => {
-  revalidate();
-}, [currentStepData?.siteDetails, currentStepData?.applicationDetails]);
+    revalidate();
+  }, [currentStepData?.siteDetails, currentStepData?.applicationDetails]);
 
-
-console.log('calculatorData', calculatorData)
+  console.log("calculatorData", calculatorData);
 
   const onSubmit = async (data, selectedAction) => {
     console.log("formData inside onSubmit", data);
@@ -103,15 +102,15 @@ console.log('calculatorData', calculatorData)
     }
 
     const finalPayload = mapToNOCPayload(data, selectedAction);
-    
+
     const taxHeadEstimates = calculatorData?.Calculation?.[0]?.taxHeadEstimates || [];
 
     finalPayload.Noc.nocDetails.additionalDetails.calculations = [
       {
         isLatest: true,
         updatedBy: Digit.UserService.getUser()?.info?.name,
-        taxHeadEstimates: taxHeadEstimates
-      }
+        taxHeadEstimates: taxHeadEstimates,
+      },
     ];
     console.log("finalPayload here==>", finalPayload);
 
@@ -171,7 +170,7 @@ console.log('calculatorData', calculatorData)
 
     const updatedApplication = {
       ...nocFormData?.apiData?.Noc?.[0],
-      vasikaNumber: nocFormData?.siteDetails?.vasikaNumber || "", 
+      vasikaNumber: nocFormData?.siteDetails?.vasikaNumber || "",
       vasikaDate: nocFormData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.vasikaDate) : "",
       workflow: {
         action: selectedAction?.action || "",
@@ -180,7 +179,7 @@ console.log('calculatorData', calculatorData)
       },
       nocDetails: {
         ...nocFormData?.apiData?.Noc?.[0]?.nocDetails,
-                //update data with redux as we can not use old data for update api
+        //update data with redux as we can not use old data for update api
         additionalDetails: {
           ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
           applicationDetails: {
@@ -222,7 +221,7 @@ console.log('calculatorData', calculatorData)
       }
       return outerOwner;
     });
-    const transformedInnerOwners = (innerOwners ?? []).map((item, index) => ({
+    const transformedInnerOwners = (innerOwners || []).map((item, index) => ({
       mobileNumber: item?.mobileNumber || "",
       name: item?.ownerOrFirmName || "",
       emailId: item?.emailId || "",
@@ -232,19 +231,17 @@ console.log('calculatorData', calculatorData)
       gender: item?.gender?.code || "",
       dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
       additionalDetails: {
-        ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
-        ownerId: {...ownerIds?.ownerIdList?.[index]}
+        ownerPhoto: { ...ownerPhotos?.ownerPhotoList?.[index] },
+        ownerId: { ...ownerIds?.ownerIdList?.[index] },
       },
     }));
 
-  // Final owners array = outer owners + transformed inner owners
-    const newInnerOwners = transformedInnerOwners.filter(inner => { 
-      return !outerOwners.find(outer => outer.mobileNumber === inner.mobileNumber); 
+    // Final owners array = outer owners + transformed inner owners
+    const newInnerOwners = transformedInnerOwners.filter((inner) => {
+      return !outerOwners.find((outer) => outer.mobileNumber === inner.mobileNumber);
     });
 
-    outerOwners  = [...outerOwners, ...newInnerOwners];
-
-
+    outerOwners = [...outerOwners, ...newInnerOwners];
 
     const docsArrayFromRedux = nocFormData?.documents?.documents?.documents || [];
 
@@ -271,7 +268,7 @@ console.log('calculatorData', calculatorData)
           uuid: doc?.documentUid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId,
-          order: doc?.order
+          order: doc?.order,
         };
       });
 
@@ -290,13 +287,13 @@ console.log('calculatorData', calculatorData)
           uuid: doc?.documentUid,
           documentType: doc?.documentType,
           documentAttachment: doc?.filestoreId,
-          order: doc?.order
+          order: doc?.order,
         });
       });
     }
 
     const payload = {
-      Noc: { ...updatedApplication , owners: outerOwners },
+      Noc: { ...updatedApplication, owners: outerOwners },
     };
 
     return payload;
@@ -338,9 +335,9 @@ console.log('calculatorData', calculatorData)
     //console.log("selectedAction here", action);
   }
   if (nocCalculatorLoading) return <Loader />;
-  const applicantDetails =  currentStepData?.applicationDetails?.owners
-  const ownersList= applicantDetails?.map((item)=> item.ownerOrFirmName) 
-  const firmName = applicantDetails?.[0]?.firmName
+  const applicantDetails = currentStepData?.applicationDetails?.owners;
+  const ownersList = applicantDetails?.map((item) => item.ownerOrFirmName);
+  const firmName = applicantDetails?.[0]?.firmName;
   const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
 
   return (
@@ -349,12 +346,10 @@ console.log('calculatorData', calculatorData)
       <NOCSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       <CheckBox
-              label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-                combinedOwnersName
-              }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
-              onChange={(e) => handleCheckBox(e)}
-              value={selectedCheckBox}
-              checked={selectedCheckBox}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        onChange={(e) => handleCheckBox(e)}
+        value={selectedCheckBox}
+        checked={selectedCheckBox}
       />
 
       {actions && (

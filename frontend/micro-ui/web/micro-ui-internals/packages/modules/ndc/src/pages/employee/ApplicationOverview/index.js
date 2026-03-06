@@ -12,7 +12,7 @@ import {
   CardLabel,
   TextInput,
   LinkButton,
-  MultiLink
+  MultiLink,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -54,8 +54,8 @@ const ApplicationOverview = () => {
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
   const [approver, setApprover] = useState(null);
-  const[approverStatement, setApproverStatement]= useState(null)
-  
+  const [approverStatement, setApproverStatement] = useState(null);
+
   const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
@@ -163,15 +163,17 @@ const ApplicationOverview = () => {
       let application = applicationDetails?.Applications?.[0];
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
+      } else {
         response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [
+          {
+            Payments: [
               {
                 ...(payments || {}),
                 ...application,
               },
-            ], },
+            ],
+          },
           "ndc-receipt"
         );
       }
@@ -187,17 +189,20 @@ const ApplicationOverview = () => {
   }
   const dowloadOptions = [];
 
-  if(applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" || applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"){
+  if (
+    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
+  ) {
     dowloadOptions.push({
-    label: t("DOWNLOAD_CERTIFICATE"),
-    onClick: () => handleDownloadPdf(),
-  });
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-    dowloadOptions.push({
-      label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: () => handleDownloadPdf(),
     });
-  }
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PTR_FEE_RECIEPT"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      });
+    }
   }
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -312,7 +317,7 @@ const ApplicationOverview = () => {
     }
   };
   function onActionSelect(action) {
-    console.log("action====???", action?.state?.actions);
+    console.log("action====||?", action?.state?.actions);
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
     const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
 
@@ -320,11 +325,11 @@ const ApplicationOverview = () => {
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
 
-    console.log("filterNexState====???", filterNexState[0]?.nextState);
+    console.log("filterNexState====||?", filterNexState[0]?.nextState);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("filterRoles====???", filterRoles);
+    console.log("filterRoles====||?", filterRoles);
     console.log("action test", action?.action);
 
     const checkactionApp = action?.action == "APPROVE";
@@ -371,7 +376,7 @@ const ApplicationOverview = () => {
 
         return {
           ...detail,
-          isDuePending: isPending ?? detail.isDuePending ?? false,
+          isDuePending: isPending || detail.isDuePending || false,
           dueAmount:
             isPending === false
               ? 0 // ✅ Force 0 when "No"
@@ -455,7 +460,7 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     if (workflowDetails) {
-      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
       const name = approveInstance?.assigner?.name || "NA";
       const status = applicationDetails?.Applications?.[0]?.applicationStatus;
@@ -566,7 +571,7 @@ const ApplicationOverview = () => {
           const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
 
           const isMarked = markedPending[detail.consumerCode] || detail?.isDuePending;
-          const dueAmount = amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0;
+          const dueAmount = amounts?.[detail.consumerCode] || detail?.dueAmount || 0;
           const isRed = detail.dueAmount > 0;
 
           return (
@@ -593,7 +598,7 @@ const ApplicationOverview = () => {
                       // text={detail.dueAmount?.toString() || "0"}
                       text={(markedPending[detail.consumerCode] === false
                         ? "0"
-                        : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0
+                        : amounts?.[detail.consumerCode] || detail?.dueAmount || 0
                       ).toString()}
                     />
                   </div>
@@ -608,7 +613,7 @@ const ApplicationOverview = () => {
                           key={index}
                           control={control}
                           name={`amount[${index}]`}
-                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0}
+                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] || detail?.dueAmount || 0}
                           render={(props) => (
                             <TextInput
                               type="number"

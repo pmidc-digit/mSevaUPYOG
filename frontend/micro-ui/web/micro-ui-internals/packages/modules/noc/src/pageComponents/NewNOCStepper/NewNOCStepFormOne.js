@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
+import { Loader, Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos } from "../../redux/action/NOCNewApplicationActions";
 import { useState, useEffect } from "react";
 import NOCApplicantDetails from "../NOCApplicantDetails";
@@ -30,15 +30,14 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
-  console.log('ownerIds', ownerIds)
-  console.log('ownerPhotos', ownerPhotos)
-  useEffect(()=>{
-     console.log("useffect 8");
-      if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);
-  
-      if (!_.isEqual(ownerPhotoList, ownerPhotos)) setOwnerPhotoList(ownerPhotos?.ownerPhotoList);
-  
-  },[ownerIds, ownerPhotos]);
+  console.log("ownerIds", ownerIds);
+  console.log("ownerPhotos", ownerPhotos);
+  useEffect(() => {
+    console.log("useffect 8");
+    if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);
+
+    if (!_.isEqual(ownerPhotoList, ownerPhotos)) setOwnerPhotoList(ownerPhotos?.ownerPhotoList);
+  }, [ownerIds, ownerPhotos]);
 
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo type here", userInfo?.info?.type);
@@ -70,27 +69,43 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           PropertyOwnerMobileNumber: "",
           PropertyOwnerAddress: "",
           PropertyOwnerPlotArea: null,
-          ownerType:"",
+          ownerType: "",
           propertyVasikaDate: "",
-          propertyVasikaNo:"",
-          firmName:"",
-          localityAreaType:null
+          propertyVasikaNo: "",
+          firmName: "",
+          localityAreaType: null,
         },
       ],
     },
   });
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle,  reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList};
+  const commonProps = {
+    Controller,
+    control,
+    setValue,
+    errors,
+    trigger,
+    errorStyle,
+    reset,
+    useFieldArray,
+    watch,
+    getValues,
+    config,
+    ownerIdList,
+    setOwnerIdList,
+    ownerPhotoList,
+    setOwnerPhotoList,
+  };
 
   function checkValidation(data) {
     console.log("data in check val", data);
-    const owners = data?.owners ?? [];
+    const owners = data?.owners || [];
 
     console.log("ownerPhotoList", ownerPhotoList);
     // Filter photos/ids to only those that match current owners by mobileNumber
 
-    const ownerPhotoCount = ownerPhotoList?.length ?? 0;
-    const ownerIdCount = ownerIdList?.length ?? 0;
+    const ownerPhotoCount = ownerPhotoList?.length || 0;
+    const ownerIdCount = ownerIdList?.length || 0;
     console.log("ownerPhotoCount", ownerPhotoCount);
     const ownersCount = owners?.length;
     console.log("ownersCount", ownersCount);
@@ -134,16 +149,15 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     //console.log("data in first step", data);
     trigger();
 
-    if(!checkValidation(data))return;
+    if (!checkValidation(data)) return;
 
     goNext(data);
   };
 
   function goNext(data) {
-
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
-    dispatch(UPDATE_NOC_OwnerIds("ownerIdList",ownerIdList));
-    dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList",ownerPhotoList));
+    dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
+    dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
     onGoNext();
   }
 
@@ -155,9 +169,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setShowToast(null);
     setError("");
   };
-  
-  
-  const [isRegisteredStakeHolder, setIsRegisteredStakeHolder]=useState(currentStepData?.applicationDetails?.isRegisteredStakeHolder || false);
+
+  const [isRegisteredStakeHolder, setIsRegisteredStakeHolder] = useState(currentStepData?.applicationDetails?.isRegisteredStakeHolder || false);
   const stateCode = Digit.ULBService.getStateId();
   const [stakeHolderRoles, setStakeholderRoles] = useState(false);
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
@@ -168,60 +181,55 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     "TradeTypetoRoleMapping"
   );
 
-    useEffect(() => {
-       
-      if (!stakeHolderDetailsLoading) {
-        console.log("useffect 9");
-        let roles = [];
-        stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
-          type?.role?.map((role) => {
-            roles.push(role);
-          });
+  useEffect(() => {
+    if (!stakeHolderDetailsLoading) {
+      console.log("useffect 9");
+      let roles = [];
+      stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
+        type?.role?.map((role) => {
+          roles.push(role);
         });
-        const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
+      });
+      const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
 
-        uniqueRoles?.map((unRole) => {
-          if (userRoles?.includes(unRole)) {
-            setIsRegisteredStakeHolder(true);
-          }
-        });
-      
-      }
-    }, [stakeHolderDetailsLoading]);
+      uniqueRoles?.map((unRole) => {
+        if (userRoles?.includes(unRole)) {
+          setIsRegisteredStakeHolder(true);
+        }
+      });
+    }
+  }, [stakeHolderDetailsLoading]);
 
   useEffect(() => {
-     
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {
       console.log("useffect 10");
-     setValue("isRegisteredStakeHolder", "true");
+      setValue("isRegisteredStakeHolder", "true");
     }
   }, []);
-
-
 
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-            
-        {isRegisteredStakeHolder ? (
+          {isRegisteredStakeHolder ? (
             <React.Fragment>
-             <NOCProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-             <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <NOCProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
-          ): (
+          ) : (
             <React.Fragment>
-             <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
-          )
-        }   
+          )}
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
       </form>
 
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast}/>}
+      {showToast && (
+        <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
+      )}
     </React.Fragment>
   );
 };

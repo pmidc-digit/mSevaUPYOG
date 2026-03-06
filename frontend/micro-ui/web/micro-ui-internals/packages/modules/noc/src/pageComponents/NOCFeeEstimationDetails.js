@@ -1,126 +1,108 @@
-import React, { useEffect, Fragment , useState, useMemo } from "react";
+import React, { useEffect, Fragment, useState, useMemo } from "react";
 import { TextInput, Toast, Loader, CardSubHeader, Table } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import {NOCFeeTable} from './NOCFeeTable'
+import { NOCFeeTable } from "./NOCFeeTable";
 
 import { buildFeeHistoryByTax } from "../utils";
 import { formatDuration } from "../utils";
 
-const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustments = () => {} , disable = false, applicationStatus = null}) => {
+const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustments = () => {}, disable = false, applicationStatus = null }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
   const stateCode = Digit.ULBService.getStateId();
-  const [timeObj , setTimeObj] = useState(null);
-console.log('savedCalc', formData)
+  const [timeObj, setTimeObj] = useState(null);
+  console.log("savedCalc", formData);
 
   useEffect(() => {
-  console.log("Component mounted. Initial feeAdjustments:", feeAdjustments);
-}, []);
+    console.log("Component mounted. Initial feeAdjustments:", feeAdjustments);
+  }, []);
 
- 
+  const getOriginals = (taxHeadCode) => {
+    const apiTax = data?.Calculation?.[0]?.taxHeadEstimates?.find((t) => t.taxHeadCode === taxHeadCode);
 
-const getOriginals = (taxHeadCode) => {
-  const apiTax = data?.Calculation?.[0]?.taxHeadEstimates?.find(t => t.taxHeadCode === taxHeadCode);
-  const savedCalc = formData?.calculations?.find(c => c.taxHeadCode === taxHeadCode);
-  return {
-    originalEstimate: apiTax?.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-    originalRemark: apiTax?.remarks ?? savedCalc?.remarks ?? "",
+    const savedCalc = formData?.calculations?.find((c) => c.taxHeadCode === taxHeadCode);
+
+    return {
+      originalEstimate: (apiTax && apiTax.estimateAmount) || (savedCalc && savedCalc.estimateAmount) || 0,
+
+      originalRemark: (apiTax && apiTax.remarks) || (savedCalc && savedCalc.remarks) || "",
+    };
   };
-};
 
-  
-
-
-const handleAdjustedAmountChange = (index, value) => {
-  const normalizedValue = value === "" ? 0 : Number(value);
-  const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
-  const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
-  if (normalizedValue !== 0 && normalizedValue < 0) {
-    setShowToast({ error: true, message: "Amount_less_Than_Zero" });
-    return;
-  }
-  setFeeAdjustments((prev) =>
-    (prev || []).map((item, i) => {
-      if (i !== index) return item;
-      const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
-      const isReverted = normalizedValue === 0 ? originalEstimate === 0 : normalizedValue === originalEstimate;
-      if (isReverted) {
-        return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
-      }
-      const adjustedDiffers = normalizedValue !== originalEstimate;
-      const remarkEmpty = !currentRemark || currentRemark.trim() === "";
-      return {
-        ...item,
-        adjustedAmount: normalizedValue,
-        remark: currentRemark,
-        edited: adjustedDiffers && remarkEmpty,
-      };
-    })
-  );
-};
+  const handleAdjustedAmountChange = (index, value) => {
+    const normalizedValue = value === "" ? 0 : Number(value);
+    const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
+    const { originalEstimate, originalRemark } = getOriginals(taxHeadCode);
+    if (normalizedValue !== 0 && normalizedValue < 0) {
+      setShowToast({ error: true, message: "Amount_less_Than_Zero" });
+      return;
+    }
+    setFeeAdjustments((prev) =>
+      (prev || []).map((item, i) => {
+        if (i !== index) return item;
+        const currentRemark = ((item && item.remark) || originalRemark || "") + "";
+        const isReverted = normalizedValue === 0 ? originalEstimate === 0 : normalizedValue === originalEstimate;
+        if (isReverted) {
+          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark || "" };
+        }
+        const adjustedDiffers = normalizedValue !== originalEstimate;
+        const remarkEmpty = !currentRemark || currentRemark.trim() === "";
+        return {
+          ...item,
+          adjustedAmount: normalizedValue,
+          remark: currentRemark,
+          edited: adjustedDiffers && remarkEmpty,
+        };
+      })
+    );
+  };
   const handleRemarkChange = (index, value) => {
     const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
     const { originalEstimate } = getOriginals(taxHeadCode);
-    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount ?? 0;
+    const currentAdjusted = (feeAdjustments && feeAdjustments[index] && feeAdjustments[index].adjustedAmount) || 0;
     const adjustedDiffers = currentAdjusted !== originalEstimate;
-    const remarkEmpty = (value ?? "").trim() === "";
+    const remarkEmpty = (value || "").trim() === "";
     setFeeAdjustments((prev) =>
       (prev || []).map((item, i) => (i === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item))
     );
   };
 
-
-
-
-
-    const handleFileUpload = async (index, e) => {
-      const file = e.target.files[0];
-      try {
-        setFeeAdjustments(prev =>
+  const handleFileUpload = async (index, e) => {
+    const file = e.target.files[0];
+    try {
+      setFeeAdjustments((prev) => prev.map((item, i) => (i === index ? { ...item, onDocumentLoading: true } : item)));
+      const response = await Digit.UploadServices.Filestorage("noc-upload", file, stateCode);
+      if (response?.data?.files?.length > 0) {
+        setFeeAdjustments((prev) =>
           prev.map((item, i) =>
-            i === index ? { ...item, onDocumentLoading: true } : item
+            i === index ? { ...item, filestoreId: response.data.files[0].fileStoreId, onDocumentLoading: false, documentError: null } : item
           )
         );
-        const response = await Digit.UploadServices.Filestorage("noc-upload", file, stateCode);
-        if (response?.data?.files?.length > 0) {
-          setFeeAdjustments(prev =>
-            prev.map((item, i) =>
-              i === index
-                ? { ...item, filestoreId: response.data.files[0].fileStoreId, onDocumentLoading: false, documentError: null }
-                : item
-            )
-          );
-        } else {
-          setShowToast({ error: true, message: "PT_FILE_UPLOAD_ERROR" });
-        }
-      } catch(err) {
+      } else {
         setShowToast({ error: true, message: "PT_FILE_UPLOAD_ERROR" });
-        console.log('err in file upload', err)
       }
-    };
-
-    const handleFileDelete = (index) => {
-      setFeeAdjustments(prev =>
-        prev.map((item, i) =>
-          i === index ? { ...item, filestoreId: null } : item
-        )
-      );
-    };
-
-    const getUrlForDocumentView = async (filestoreId) => {
-      if (!filestoreId) return;
-      const result = await Digit.UploadServices.Filefetch([filestoreId], stateCode);
-      return result?.data?.[filestoreId] || null;
-    };
-
-    async function routeTo(filestoreId, index) {
-      const jumpTo = await getUrlForDocumentView(filestoreId, index);
-      if (jumpTo) window.open(jumpTo);
+    } catch (err) {
+      setShowToast({ error: true, message: "PT_FILE_UPLOAD_ERROR" });
+      console.log("err in file upload", err);
     }
+  };
 
+  const handleFileDelete = (index) => {
+    setFeeAdjustments((prev) => prev.map((item, i) => (i === index ? { ...item, filestoreId: null } : item)));
+  };
 
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (!filestoreId) return;
+    const result = await Digit.UploadServices.Filefetch([filestoreId], stateCode);
+    return result?.data?.[filestoreId] || null;
+  };
+
+  async function routeTo(filestoreId, index) {
+    const jumpTo = await getUrlForDocumentView(filestoreId, index);
+    if (jumpTo) window.open(jumpTo);
+  }
 
   const payload = useMemo(
     () => ({
@@ -170,22 +152,19 @@ const handleAdjustedAmountChange = (index, value) => {
     [formData]
   );
 
- const feeHistory = useMemo(() => {
-  const allCalcs = formData?.calculations || [];
+  const feeHistory = useMemo(() => {
+    const allCalcs = formData?.calculations || [];
 
-  // Discard any calculation where every taxHeadEstimate has estimateAmount = 0
-  const filteredCalcs = allCalcs.filter(calc =>
-    (calc?.taxHeadEstimates || []).some(tax => tax?.estimateAmount > 0)
-  );
+    // Discard any calculation where every taxHeadEstimate has estimateAmount = 0
+    const filteredCalcs = allCalcs.filter((calc) => (calc?.taxHeadEstimates || []).some((tax) => tax?.estimateAmount > 0));
 
-  return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
-}, [formData?.calculations]);
-
+    return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
+  }, [formData?.calculations]);
 
   console.log("[payload] built with formData:", formData);
-console.log("[payload] CalculationCriteria:", payload.CalculationCriteria);
+  console.log("[payload] CalculationCriteria:", payload.CalculationCriteria);
 
-  console.log('payload for calc apiiiii', payload)
+  console.log("payload for calc apiiiii", payload);
   const { isLoading: nocCalculatorLoading, data, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
     {
       payload,
@@ -194,111 +173,117 @@ console.log("[payload] CalculationCriteria:", payload.CalculationCriteria);
       enabled: !!payload,
     }
   );
- 
+
   console.log("[useNOCFeeCalculator] isLoading:", nocCalculatorLoading, "data:", data);
 
-  console.log('data from calc  api', data)
+  console.log("data from calc  api", data);
 
   console.log("Raw API taxHeadEstimates:", data?.Calculation?.[0]?.taxHeadEstimates);
-data?.Calculation?.[0]?.taxHeadEstimates?.forEach((tax, i) => {
-  console.log(`API row ${i}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, remarks=${tax.remarks}`);
-});
+  data?.Calculation?.[0]?.taxHeadEstimates?.forEach((tax, i) => {
+    console.log(`API row ${i}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, remarks=${tax.remarks}`);
+  });
 
   const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
   useEffect(() => {
-   if (!_.isEqual(prevSiteDetails, formData?.siteDetails)) {
-    console.log("[revalidate] siteDetails changed. Old:", prevSiteDetails, "New:", formData?.siteDetails);
-     revalidate();
-     setPrevSiteDetails(formData?.siteDetails);
-   }
-  }, [formData?.siteDetails])
-
+    if (!_.isEqual(prevSiteDetails, formData?.siteDetails)) {
+      console.log("[revalidate] siteDetails changed. Old:", prevSiteDetails, "New:", formData?.siteDetails);
+      revalidate();
+      setPrevSiteDetails(formData?.siteDetails);
+    }
+  }, [formData?.siteDetails]);
 
   const onAdjustedAmountBlur = () => {
-  return;
-};
+    return;
+  };
 
-//newedits
+  //newedits
 
- useEffect(() => {
-  if (!data?.Calculation?.[0]?.taxHeadEstimates) return;
+  useEffect(() => {
+    if (!data?.Calculation?.[0]?.taxHeadEstimates) return;
 
-  setFeeAdjustments((prev = []) => {
-    // map previous by taxHeadCode for robust matching
-    const prevByTax = (prev || []).reduce((acc, it) => {
-      if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
-      return acc;
-    }, {});
+    setFeeAdjustments((prev = []) => {
+      // map previous by taxHeadCode for robust matching
+      const prevByTax = (prev || []).reduce((acc, it) => {
+        if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+        return acc;
+      }, {});
 
-    return data.Calculation[0].taxHeadEstimates.map((tax) => {
-      const savedCalc = formData?.calculations?.find((c) => c.taxHeadCode === tax.taxHeadCode);
-      const prevItem = prevByTax[tax.taxHeadCode] || {};
-      const isEdited = !!prevItem.edited;
+      return data.Calculation[0].taxHeadEstimates.map((tax) => {
+        const savedCalc = formData?.calculations?.find((c) => c.taxHeadCode === tax.taxHeadCode);
+        const prevItem = prevByTax[tax.taxHeadCode] || {};
+        const isEdited = !!prevItem.edited;
 
-      return {
-        taxHeadCode: tax.taxHeadCode,
-        category: tax.category,
-        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? savedCalc?.remarks ?? "",
-        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId ?? tax.filestoreId ?? null,
-        onDocumentLoading: false,
-        documentError: null,
-        edited: prevItem.edited ?? false,
-      };
+        return {
+          taxHeadCode: tax.taxHeadCode,
+          category: tax.category,
+          adjustedAmount: isEdited ? prevItem.adjustedAmount : (tax && tax.estimateAmount) || (savedCalc && savedCalc.estimateAmount) || 0,
+          remark: isEdited ? prevItem.remark || "" : (tax && tax.remarks) || (savedCalc && savedCalc.remarks) || "",
+          filestoreId:
+            prevItem && prevItem.filestoreId !== undefined ? prevItem.filestoreId : (savedCalc && savedCalc.filestoreId) || tax.filestoreId || null,
+          onDocumentLoading: false,
+          documentError: null,
+          edited: prevItem && prevItem.edited ? prevItem.edited : false,
+        };
+      });
     });
-  });
-}, [data]);
+  }, [data]);
 
+  useEffect(() => {
+    if (formData) {
+      console.log("formData", formData);
+      const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn;
+      const lastModified = formData?.apiData?.Noc?.[0]?.auditDetails?.lastModifiedTime;
+      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
+      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
+      const time = formatDuration(totalTime);
 
- useEffect(() => {
-   if (formData) {
-    console.log('formData', formData)
-     const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn;
-     const lastModified = formData?.apiData?.Noc?.[0]?.auditDetails?.lastModifiedTime;
-     console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
-     const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
-     const time = formatDuration(totalTime)
-
-     setTimeObj(time);
-
-   }
- }, [formData]);
-
+      setTimeObj(time);
+    }
+  }, [formData]);
 
   const applicationFeeDataWithTotal = useMemo(() => {
-  if (!data?.Calculation?.[0]?.taxHeadEstimates) return [];
+    if (!data?.Calculation?.[0]?.taxHeadEstimates) return [];
     const rows = data.Calculation[0].taxHeadEstimates.map((tax, index) => {
-    const adjustedAmount = feeAdjustments[index]?.adjustedAmount ?? tax.estimateAmount;
-const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
+      const adjustedAmount = (feeAdjustments && feeAdjustments[index] && feeAdjustments[index].adjustedAmount) || tax.estimateAmount;
+      const remarkValue = (feeAdjustments && feeAdjustments[index] && feeAdjustments[index].remark) || tax.remarks || "";
 
-    console.log(`Row ${index}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, adjusted=${adjustedAmount}, remark=${remarkValue}`);
-    return {
-      index,
-      id: `tax-${index}`,
-      title: t(tax.taxHeadCode),
-      taxHeadCode: tax.taxHeadCode,
-      amount: tax.estimateAmount || 0,
-      category: tax.category,
-      adjustedAmount,
-      remark: remarkValue,
-      filestoreId: feeAdjustments[index]?.filestoreId || null,
-    };
-  });
-  console.log("[applicationFeeDataWithTotal] built rows:", rows);
+      console.log(`Row ${index}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, adjusted=${adjustedAmount}, remark=${remarkValue}`);
+      return {
+        index,
+        id: `tax-${index}`,
+        title: t(tax.taxHeadCode),
+        taxHeadCode: tax.taxHeadCode,
+        amount: tax.estimateAmount || 0,
+        category: tax.category,
+        adjustedAmount,
+        remark: remarkValue,
+        filestoreId: feeAdjustments[index]?.filestoreId || null,
+      };
+    });
+    console.log("[applicationFeeDataWithTotal] built rows:", rows);
 
+    const totalAmount = rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);
+    console.log("[applicationFeeDataWithTotal] grand total:", totalAmount);
 
-  const totalAmount = rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);  console.log("[applicationFeeDataWithTotal] grand total:", totalAmount);
-
-  console.log("Final rows with total:", rows);
-  return [...rows, { id: "total", taxHeadCode: "NOC_TOTAL", title: t("NOC_TOTAL"), amount: rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0), adjustedAmount: "", grandTotal: totalAmount }];
-}, [data, t, feeAdjustments]);
-
+    console.log("Final rows with total:", rows);
+    return [
+      ...rows,
+      {
+        id: "total",
+        taxHeadCode: "NOC_TOTAL",
+        title: t("NOC_TOTAL"),
+        amount: rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0),
+        adjustedAmount: "",
+        grandTotal: totalAmount,
+      },
+    ];
+  }, [data, t, feeAdjustments]);
 
   if (nocCalculatorLoading) return <Loader />;
 
   if (applicationStatus === "FIELDINSPECTION_INPROGRESS") {
-      return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
+    return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;
   }
   return (
     <div>

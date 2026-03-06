@@ -44,13 +44,16 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => {
         const tableData = data?.items?.map((application) => {
+          const ownerObj = application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
+          const displayOwner = ownerObj?.firmName?.trim?.() || ownerObj?.ownerOrFirmName?.trim?.() || "-";
+
           return {
             applicationId: application.businessObject?.applicationNo,
             date: parseInt(application.businessObject?.auditDetails?.createdTime),
             businessService: application?.ProcessInstance?.businessService,
             locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
             status: `${application.businessObject.applicationStatus}`,
-            owner: application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
+            owner: displayOwner,
             action: `${application?.ProcessInstance?.action}`
           };
         });

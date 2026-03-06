@@ -75,7 +75,7 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  const owners = appData?.nocDetails?.additionalDetails?.applicationDetails?.owners ?? [];
+  const owners = appData?.nocDetails?.additionalDetails?.applicationDetails?.owners || [];
 
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
@@ -428,7 +428,7 @@ const getChecklistDetails = (appData, checklistData, t) => {
   
   const orderMap = {};
     sortedDocs?.forEach((doc, idx) => {
-      orderMap[doc.uuid] = doc.order ?? idx + 1; // fallback to index
+      orderMap[doc.uuid] = doc.order || idx + 1; // fallback to index
     });
   
   const sortedChecklist = [...checkList].sort(

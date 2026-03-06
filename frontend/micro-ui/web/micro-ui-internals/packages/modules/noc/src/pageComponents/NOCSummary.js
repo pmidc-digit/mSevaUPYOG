@@ -83,7 +83,7 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
         </Card>
       </StatusTable>
 
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
+      {(formData?.applicationDetails?.owners || [])?.map((owner, index) => {
         return (
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>

@@ -84,13 +84,13 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   function checkValidation(data) {
     console.log("data in check val", data);
-    const owners = data?.owners ?? [];
+    const owners = data?.owners || [];
 
     console.log("ownerPhotoList", ownerPhotoList);
     // Filter photos/ids to only those that match current owners by mobileNumber
 
-    const ownerPhotoCount = ownerPhotoList?.length ?? 0;
-    const ownerIdCount = ownerIdList?.length ?? 0;
+    const ownerPhotoCount = ownerPhotoList?.length || 0;
+    const ownerIdCount = ownerIdList?.length || 0;
     console.log("ownerPhotoCount", ownerPhotoCount);
     const ownersCount = owners?.length;
     console.log("ownersCount", ownersCount);

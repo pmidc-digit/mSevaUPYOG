@@ -137,7 +137,7 @@ const NOCEmployeeApplicationOverview = () => {
   // console.log("applicationDetails here==>", applicationDetails);
   const stateId = Digit.ULBService.getStateId();
   const { data: allowedDistance, isLoading: isDistanceLoading } = Digit.Hooks.useCommonMDMS(stateId, "common-masters", ["AllowedDistance"]);
-  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
+  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService || null;
   //  console.log("businessService here==>", businessServiceCode);
 
    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
@@ -174,7 +174,7 @@ const NOCEmployeeApplicationOverview = () => {
     let nocDistance; 
 
     if(!isDistanceLoading){
-      nocDistance = allowedDistance?.["common-masters"]?.AllowedDistance?.find((item) => item?.module === "NOC" && item?.active)?.value ?? null;
+      nocDistance = allowedDistance?.["common-masters"]?.AllowedDistance?.find((item) => item?.module === "NOC" && item?.active)?.value || null;
     }
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -501,12 +501,12 @@ const handleDownloadPdf = async () => {
       return {
         taxHeadCode: tax.taxHeadCode,
         category: tax.category,
-        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
-        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
-        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
+        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount || saved?.estimateAmount || 0,
+        remark: isEdited ? prevItem.remark || "" : tax.remarks || saved?.remarks || "",
+        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId || saved?.filestoreId || null,
         onDocumentLoading: false,
         documentError: null,
-        edited: prevItem.edited ?? false,
+        edited: prevItem.edited || false,
       };
     });
 
@@ -886,16 +886,16 @@ const validateSiteImages = (action) => {
       if (!isFeeDisabled) {
         const hasNonZeroFee = (feeAdjustments || [])
           .filter((row) => row.taxHeadCode !== "NOC_COMPOUNDING_FEES")
-          .every((row) => (row.adjustedAmount ?? 0) > 0);
+          .every((row) => (row.adjustedAmount || 0) > 0);
 
         const latestCalc = (payloadData?.nocDetails?.additionalDetails?.calculations || []).find((c) => c.isLatest);
         const allRemarksFilled = (feeAdjustments || []).every((row) => {
           if (!row.edited) return true;
 
           // Find the original estimate for this taxHeadCode
-          const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks ?? "";
+          const originalRemark = latestCalc?.taxHeadEstimates?.find((th) => th.taxHeadCode === row.taxHeadCode)?.remarks || "";
 
-          const adjustedAmount = row.adjustedAmount ?? 0;
+          const adjustedAmount = row.adjustedAmount || 0;
 
           if (row?.taxHeadCode === "NOC_COMPOUNDING_FEES") {
             // Special case: only require remark if changed to non-zero
@@ -929,7 +929,7 @@ const validateSiteImages = (action) => {
         .filter((row) => row.taxHeadCode !== "NOC_TOTAL")
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: row.adjustedAmount ?? 0,
+          estimateAmount: row.adjustedAmount || 0,
           category: row.category,
           remarks: row.remark || null,
           filestoreId: row.filestoreId || null,

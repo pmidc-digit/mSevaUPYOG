@@ -222,7 +222,7 @@ console.log('calculatorData', calculatorData)
       }
       return outerOwner;
     });
-    const transformedInnerOwners = (innerOwners ?? []).map((item, index) => ({
+    const transformedInnerOwners = (innerOwners || []).map((item, index) => ({
       mobileNumber: item?.mobileNumber || "",
       name: item?.ownerOrFirmName || "",
       emailId: item?.emailId || "",

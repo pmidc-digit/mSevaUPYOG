@@ -12,8 +12,7 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
 
   // fetch urls
   const { data: urlsList } = Digit.Hooks.obps.useLayoutDocumentSearch(
-    
-    { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
+    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
     { enabled: documents?.length > 0 }
   );
 
@@ -55,25 +54,23 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
             const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
+                <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
                 <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
                 <td className="checklist-table-cell checklist-table-cell-file">
-                  {url ? (
-                    <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
-                  ) : t("CS_NA")}
+                  {url ? <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} /> : t("CS_NA")}
                 </td>
                 <td className="checklist-table-cell checklist-table-cell-remark">
                   {isReadOnly ? (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={localRemarks[doc.documentUid] || ""}
                       disabled={true}
                       className="checklist-table-textarea"
                     />
                   ) : (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={localRemarks[doc.documentUid] || ""}
                       onChange={(e) => {
                         console.log("onChange triggered - value:", e.target.value);
                         setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }));

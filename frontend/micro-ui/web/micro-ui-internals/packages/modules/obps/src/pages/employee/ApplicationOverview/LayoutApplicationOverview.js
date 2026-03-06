@@ -263,7 +263,7 @@ const LayoutEmployeeApplicationOverview = () => {
   useEffect(() => {
     if (checklistData?.checkList?.length > 0 && Object.keys(checklistRemarks).length === 0) {
       const remarksMap = {};
-      checklistData.checkList.forEach(item => {
+      checklistData.checkList.forEach((item) => {
         remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
       });
       console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
@@ -400,16 +400,13 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // Helper function to get remark entries from inspection report
   function getRemarkEntries(record) {
-    return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+    return Object.entries(record || {}).filter(([k]) => k.startsWith("Remarks"));
   }
 
   // Helper function to check if all remarks are filled
   function areAllRemarksFilled(record) {
     const remarkEntries = getRemarkEntries(record);
-    return (
-      remarkEntries.length > 0 &&
-      remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
-    );
+    return remarkEntries.length > 0 && remarkEntries.every(([, v]) => typeof v === "string" && v.trim().length > 0);
   }
 
   const submitAction = async (data) => {
@@ -445,7 +442,7 @@ const LayoutEmployeeApplicationOverview = () => {
           setIsSubmitting(false);
           return;
         } else {
-          const record = fieldInspectionPending?.[0] ?? {};
+          const record = fieldInspectionPending?.[0] || {};
           const allRemarksFilled = areAllRemarksFilled(record);
 
           if (!allRemarksFilled) {
@@ -459,10 +456,10 @@ const LayoutEmployeeApplicationOverview = () => {
 
       // Validation For Document Remarks AT DM Level
       if (applicationDetails?.Layout?.[0]?.applicationStatus === "DOCUMENTVERIFY_DM") {
-        const isDM = user?.info?.roles?.some(role => role.code === "OBPAS_LAYOUT_DM");
+        const isDM = user?.info?.roles?.some((role) => role.code === "OBPAS_LAYOUT_DM");
         if (isDM && remainingDocs?.length > 0) {
           // Check if all documents have remarks filled
-          const allRemarksFilledForDocuments = remainingDocs.every(doc => {
+          const allRemarksFilledForDocuments = remainingDocs.every((doc) => {
             const remark = checklistRemarks[doc.documentUid || doc.uuid];
             return remark && typeof remark === 'string' && remark.trim().length > 0;
           });
@@ -484,7 +481,7 @@ const LayoutEmployeeApplicationOverview = () => {
           .filter((row) => row.taxHeadCode !== "LAYOUT_TOTAL") // exclude UI-only total row
           .map((row) => ({
             taxHeadCode: row.taxHeadCode,
-            estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
+            estimateAmount: row.adjustedAmount || 0, // baseline + delta
             category: row.category,
             remarks: row.remark || null,
             filestoreId: row.filestoreId || null,
@@ -492,13 +489,14 @@ const LayoutEmployeeApplicationOverview = () => {
       };
 
       // Get old calculations and mark them as not latest
-      const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
+      const oldCalculations = (layoutObject?.layoutDetails?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));
 
       // Update documents with remarks from checklistRemarks
-      const updatedDocuments = displayData?.Documents?.map(doc => ({
-        ...doc,
-        remarks: checklistRemarks[doc.documentUid || doc.uuid] || doc.remarks || "",
-      })) || [];
+      const updatedDocuments =
+        displayData?.Documents?.map((doc) => ({
+          ...doc,
+          remarks: checklistRemarks[doc.documentUid || doc.uuid] || doc.remarks || "",
+        })) || [];
 
       // Ensure all nested data is properly preserved
       const updatedApplicant = {
@@ -565,8 +563,8 @@ const LayoutEmployeeApplicationOverview = () => {
           } else if (checklistData?.checkList?.length > 0) {
             // OTHER ROLES: UPDATE existing checklist records
             const checklistPayload = {
-              checkList: (displayData?.Documents || []).map(doc => {
-                const existing = checklistData.checkList.find(c => c.documentUid === doc.documentUid || c.documentuid === doc.documentUid);
+              checkList: (displayData?.Documents || []).map((doc) => {
+                const existing = checklistData.checkList.find((c) => c.documentUid === doc.documentUid || c.documentuid === doc.documentUid);
                 return {
                   id: existing?.id,
                   documentUid: doc.documentUid || doc.uuid,
@@ -977,14 +975,13 @@ const LayoutEmployeeApplicationOverview = () => {
       </Card>
 
       {/* Documents Uploaded - Read Only when NOT in DOCUMENTVERIFY_DM */}
-      {
-        applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" &&
+      {applicationDetails?.Layout?.[0]?.applicationStatus !== "DOCUMENTVERIFY_DM" && (
         <Card>
           <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
           <StatusTable>{remainingDocs?.length > 0 && <LayoutDocumentChecklist documents={remainingDocs} applicationNo={id}
             tenantId={tenantId} onRemarksChange={setChecklistRemarks} readOnly="true" />}</StatusTable>
         </Card>
-      }
+      )}
 
       {/* Documents Uploaded - Editable ONLY for DM role when in DOCUMENTVERIFY_DM */}
       {

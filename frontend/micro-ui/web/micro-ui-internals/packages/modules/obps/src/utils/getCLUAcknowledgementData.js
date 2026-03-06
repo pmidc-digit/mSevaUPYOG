@@ -320,11 +320,8 @@ const getChecklistDetails = (appData, checklistData, t) => {
   }
 
   return {
-    title: t("BPA_CHECKLIST_DETAILS"),
-    values: checklist.map((item) => ({
-      title: t(item.docType),
-      value: item.remarks || t("BPA_NO_REMARKS"),
-    })),
+    title: t("Document Checklist"),
+    values
   };
 };
 

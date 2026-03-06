@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  CardLabel,
-  TextInput,
-  ActionBar,
-  SubmitBar,
-} from "@mseva/digit-ui-react-components";
+import { CardLabel, TextInput, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
 const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
@@ -28,7 +23,7 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
     if (currentStepData) {
       // Populate from existing penalty object in Redux
       Object.entries(currentStepData).forEach(([key, value]) => {
-        setValue(key, value ?? "");
+        setValue(key, value || "");
       });
     }
   }, [currentStepData, setValue]);
@@ -52,22 +47,10 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
         render={(props) => (
           <div style={{ display: "flex", gap: "20px" }}>
             <label>
-              <input
-                type="radio"
-                value="Yes"
-                checked={props.value === "Yes"}
-                onChange={() => props.onChange("Yes")}
-              />{" "}
-              Yes
+              <input type="radio" value="Yes" checked={props.value === "Yes"} onChange={() => props.onChange("Yes")} /> Yes
             </label>
             <label>
-              <input
-                type="radio"
-                value="No"
-                checked={props.value === "No"}
-                onChange={() => props.onChange("No")}
-              />{" "}
-              No
+              <input type="radio" value="No" checked={props.value === "No"} onChange={() => props.onChange("No")} /> No
             </label>
           </div>
         )}
@@ -79,21 +62,13 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
         name="penaltyAmount"
         control={control}
         rules={{
-          validate: (val) =>
-            penaltyValue === "No" || !!val || t("This field is required"),
+          validate: (val) => penaltyValue === "No" || !!val || t("This field is required"),
         }}
         render={(props) => (
-          <TextInput
-            value={props.value ?? ""}
-            onChange={(e) => props.onChange(e.target.value)}
-            disabled={penaltyValue !== "Yes"}
-            t={t}
-          />
+          <TextInput value={props.value || ""} onChange={(e) => props.onChange(e.target.value)} disabled={penaltyValue !== "Yes"} t={t} />
         )}
       />
-      {errors.penaltyAmount && (
-        <p style={{ color: "red" }}>{errors.penaltyAmount.message}</p>
-      )}
+      {errors.penaltyAmount && <p style={{ color: "red" }}>{errors.penaltyAmount.message}</p>}
 
       {/* Reference ID */}
       <CardLabel>{t("Reference ID")}</CardLabel>
@@ -101,21 +76,13 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
         name="referenceId"
         control={control}
         rules={{
-          validate: (val) =>
-            penaltyValue === "No" || !!val || t("This field is required"),
+          validate: (val) => penaltyValue === "No" || !!val || t("This field is required"),
         }}
         render={(props) => (
-          <TextInput
-            value={props.value ?? ""}
-            onChange={(e) => props.onChange(e.target.value)}
-            disabled={penaltyValue !== "Yes"}
-            t={t}
-          />
+          <TextInput value={props.value || ""} onChange={(e) => props.onChange(e.target.value)} disabled={penaltyValue !== "Yes"} t={t} />
         )}
       />
-      {errors.referenceId && (
-        <p style={{ color: "red" }}>{errors.referenceId.message}</p>
-      )}
+      {errors.referenceId && <p style={{ color: "red" }}>{errors.referenceId.message}</p>}
 
       <ActionBar>
         <SubmitBar

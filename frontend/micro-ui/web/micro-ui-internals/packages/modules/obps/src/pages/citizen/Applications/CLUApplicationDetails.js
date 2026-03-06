@@ -18,7 +18,7 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
-  CheckBox
+  CheckBox,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,21 +47,25 @@ const CLUApplicationDetails = () => {
   const [loading, setLoading] = useState(false);
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const [empDesignation,setEmpDesignation] = useState(null);
+  const [empDesignation, setEmpDesignation] = useState(null);
   const [timeObj, setTimeObj] = useState(null);
   const [EmpData, setEmpData] = useState(null);
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
-      documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
-  } : []);
+  const [siteImages, setSiteImages] = useState(
+    applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
+      ? {
+          documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages,
+        }
+      : []
+  );
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const mutation = Digit.Hooks.obps.useCLUCreateAPI(tenantId, false);
 
   let user = Digit.UserService.getUser();
-  const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS","INSPECTION_REPORT_PENDING"];
+  const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"];
   const disableSiteInspectionImage = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS"];
 
   //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -84,22 +88,21 @@ const CLUApplicationDetails = () => {
 
       const Documents = cluObject?.documents || [];
 
-      const ownerPhotoList = cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];  
+      const ownerPhotoList = cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
-        ownerPhotoList: ownerPhotoList
+        ownerPhotoList: ownerPhotoList,
       };
 
       setDisplayData(finalDisplayData);
 
       const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
-
-      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
 
       const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
@@ -147,9 +150,8 @@ const CLUApplicationDetails = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: businessServiceCode, 
+    moduleCode: businessServiceCode,
   });
-
 
   const geoLocations = useMemo(() => {
     if (siteImages?.documents && siteImages?.documents.length > 0) {
@@ -157,13 +159,14 @@ const CLUApplicationDetails = () => {
         return {
           latitude: img?.latitude || "",
           longitude: img?.longitude || "",
-        }
-      })
+        };
+      });
     }
   }, [siteImages]);
 
-  let approveComments = []
-  let approvalDate ,approvalTime= ""
+  let approveComments = [];
+  let approvalDate,
+    approvalTime = "";
   // Assuming workflowDetails.timeline exists
   if (workflowDetails?.data && !workflowDetails.isLoading) {
     approveComments = workflowDetails?.data?.timeline
@@ -171,13 +174,10 @@ const CLUApplicationDetails = () => {
       ?.flatMap((item) => item?.wfComment || []);
     approvalDate = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.lastModified || "";
     approvalTime = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.timing || "";
-
   }
 
-
-
   // const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid;
-  
+
   const handleDownloadPdf = async () => {
   try {
     setLoading(true);
@@ -427,35 +427,6 @@ const CLUApplicationDetails = () => {
     setLoading(false);
   }
 }
-  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
-    
-     try {
-      setLoading(true);
-        const application = applicationDetails?.Clu;
-        const approvecomments = approveComments?.[0];
-        let conditionText = "";
-      if (approvecomments?.includes("[#?..**]")) {
-        conditionText = approvecomments.split("[#?..**]")[1] || "";
-      }
-       const finalComment = conditionText
-        ? `The above approval is subjected to the following conditions: ${conditionText}`
-        : "";
-      if (!application) {
-        throw new Error("CLU Application data is missing");
-      }
-      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name
-      const fee = payments?.totalAmountPaid;
-      const amountinwords = amountToWords(fee);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Clu: application, ApproverComment : finalComment, usage,amountinwords, approvalDate: approvalDate , approvalTime:approvalTime }] }, pdfkey);
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-
-    } catch (error) {
-      console.error("Sanction Letter download error:", error);
-      }
-      finally { setLoading(false); }
-    }
-
   
   const dowloadOptions = [];
   if (applicationDetails?.Clu?.[0]?.applicationStatus === "REJECTED") {
@@ -483,6 +454,7 @@ const CLUApplicationDetails = () => {
           }),
       });
     }
+  }
   if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({
       label: t("DOWNLOAD_CERTIFICATE"),
@@ -493,21 +465,23 @@ const CLUApplicationDetails = () => {
   if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
     dowloadOptions.push({
       label: t("CLU_FEE_RECEIPT_1"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey:"clu-receipt" }),
+      onClick: () =>
+        getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "clu-receipt" }),
     });
   }
   if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
     dowloadOptions.push({
       label: t("CLU_FEE_RECEIPT_2"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey:"clu-receiptsecond" }),
+      onClick: () =>
+        getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "clu-receiptsecond" }),
     });
   }
 
   useEffect(() => {
-      const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c?.isLatest);
-      if (latestCalc?.taxHeadEstimates) {
-        setFeeAdjustments(latestCalc.taxHeadEstimates);
-      }
+    const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c?.isLatest);
+    if (latestCalc?.taxHeadEstimates) {
+      setFeeAdjustments(latestCalc.taxHeadEstimates);
+    }
   }, [applicationDetails]);
 
   //here workflow details
@@ -527,9 +501,7 @@ const CLUApplicationDetails = () => {
   };
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
-  
 
-  
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -538,7 +510,6 @@ const CLUApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-  
   useEffect(() => {
     if (workflowDetails) {
       workflowDetails.revalidate();
@@ -557,7 +528,6 @@ const CLUApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-
   function onActionSelect(action) {
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
     const applicationStatus = applicationDetails?.Clu?.[0]?.applicationStatus;
@@ -570,7 +540,9 @@ const CLUApplicationDetails = () => {
       history.push(`/digit-ui/citizen/obps/clu/edit-application/${appNo}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000)
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -584,12 +556,12 @@ const CLUApplicationDetails = () => {
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
 
-   // const vasikaNumber =  payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
-   // const vasikaDate = convertToDDMMYYYY(payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
+    // const vasikaNumber =  payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
+    // const vasikaDate = convertToDDMMYYYY(payloadData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate) ||"";
 
     const updatedApplicant = {
       ...payloadData,
-     // vasikaNumber,
+      // vasikaNumber,
       //vasikaDate,
       workflow: {},
     };
@@ -628,44 +600,46 @@ const CLUApplicationDetails = () => {
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }finally{
-       setTimeout(()=>{setShowToast(null);},3000);
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
   const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   };
 
-
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
-  const remainingDocs = displayData?.Documents?.filter((doc) => !(
-    doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
-    doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
-    doc?.documentType?.includes("Owner Id") || 
-    doc?.documentType?.includes("Owner Photo")
-  ))?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  const sitePhotographs = displayData?.Documents?.filter(
+    (doc) => doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  )?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""));
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) =>
+      !(
+        doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
+        doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
+        doc?.documentType?.includes("Owner Id") ||
+        doc?.documentType?.includes("Owner Photo")
+      )
+  )?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
-
-  const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
 
   const siteInspectionEmp = useMemo(() => {
-      return workflowDetails?.data?.processInstances
-        ?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")
-        ?.assigner;
+    return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;
   }, [workflowDetails]);
-  
-    
-  const empUserName = siteInspectionEmp?.userName ?? "";
-  const empName = siteInspectionEmp?.name ?? "";
-  
-  const handleSetEmpDesignation = (key)=>{
-      setEmpDesignation(key);
-  }
+
+  const empUserName = siteInspectionEmp?.userName || "";
+  const empName = siteInspectionEmp?.name || "";
+
+  const handleSetEmpDesignation = (key) => {
+    setEmpDesignation(key);
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -687,8 +661,11 @@ const CLUApplicationDetails = () => {
       </div>
 
       <Card>
-      <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-      <CLUImageView ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId} ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName} />
+        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+        <CLUImageView
+          ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
+          ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+        />
       </Card>
 
       <Card>
@@ -696,33 +673,32 @@ const CLUApplicationDetails = () => {
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
         </StatusTable>
       </Card>
-   
 
-      {displayData?.applicantDetails?.[0]?.owners?.map((detail,index)=>(
-      <React.Fragment>
-         <Card>
-          <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index+1}`}</CardSubHeader>
+      {displayData?.applicantDetails?.[0]?.owners?.map((detail, index) => (
+        <React.Fragment>
+          <Card>
+            <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `OWNER ${index + 1}`}</CardSubHeader>
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
               <StatusTable>
-              {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
-              <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
-              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
-              <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
-              <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
-              <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
-              <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
-              <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
+                {detail?.firmName && <Row label={t("CLU_FIRM_NAME_LABEL")} text={detail?.firmName} />}
+                <Row label={t("CLU_APPLICANT_NAME_LABEL")} text={detail?.ownerOrFirmName || "N/A"} />
+                <Row label={t("BPA_APPLICANT_EMAIL_LABEL")} text={detail?.emailId || "N/A"} />
+                <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.fatherOrHusbandName || "N/A"} />
+                <Row label={t("BPA_APPLICANT_MOBILE_NO_LABEL")} text={detail?.mobileNumber || "N/A"} />
+                <Row label={t("BPA_APPLICANT_DOB_LABEL")} text={formatDate(detail?.dateOfBirth) || "N/A"} />
+                <Row label={t("BPA_APPLICANT_GENDER_LABEL")} text={detail?.gender?.code || detail?.gender || "N/A"} />
+                <Row label={t("BPA_APPLICANT_ADDRESS_LABEL")} text={detail?.address || "N/A"} />
+                <Row label={t("BPA_OWNERSHIP_IN_PCT_LABEL")} text={detail?.ownershipInPct || "N/A"} />
               </StatusTable>
             </div>
-         </Card>
+          </Card>
         </React.Fragment>
       ))}
 
-      {displayData?.applicantDetails?.some(detail => detail?.professionalName?.trim()?.length > 0) &&
+      {displayData?.applicantDetails?.some((detail) => detail?.professionalName?.trim()?.length > 0) &&
         displayData?.applicantDetails?.map((detail, index) => (
           <React.Fragment>
-              <Card>
+            <Card>
               <CardSubHeader>{t("BPA_PROFESSIONAL_DETAILS")}</CardSubHeader>
               <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
                 <StatusTable>
@@ -734,11 +710,11 @@ const CLUApplicationDetails = () => {
                   <Row label={t("BPA_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
                 </StatusTable>
               </div>
-              </Card>
+            </Card>
           </React.Fragment>
-       ))}
+        ))}
 
-        <Card>
+      <Card>
         <CardSubHeader>{t("BPA_LOCALITY_INFO_LABEL")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -752,14 +728,12 @@ const CLUApplicationDetails = () => {
               {detail?.localityAreaType?.code === "SCHEME_AREA" && (
                 <Row label={t("BPA_SCHEME_NAME_LABEL")} text={detail?.localitySchemeName || "N/A"} />
               )}
-
             </StatusTable>
           </div>
         ))}
-        </Card>
-   
+      </Card>
 
-        <Card>
+      <Card>
         <CardSubHeader>{t("BPA_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -803,10 +777,9 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
-        </Card>
-    
+      </Card>
 
-        <Card>
+      <Card>
         <CardSubHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -815,8 +788,7 @@ const CLUApplicationDetails = () => {
             </StatusTable>
           </div>
         ))}
-        </Card>
-    
+      </Card>
 
       {/* <Card>
         <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
@@ -834,40 +806,42 @@ const CLUApplicationDetails = () => {
       </Card> */}
 
       <Card>
-      <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-      <StatusTable>
-         {sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates}/>}
-      </StatusTable>
+        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
+        <StatusTable>{sitePhotographs?.length > 0 && <CLUSitePhotographs documents={sitePhotographs} coordinates={coordinates} />}</StatusTable>
       </Card>
 
-      {
-        applicationDetails?.Clu?.[0]?.applicationStatus && !disableSiteInspectionImage?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && siteImages?.documents?.length > 0 &&
-        <Card>
-          <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
-          <StatusTable>
-          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
-          </StatusTable>
-          {   geoLocations?.length > 0 &&
+      {applicationDetails?.Clu?.[0]?.applicationStatus &&
+        !disableSiteInspectionImage?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) &&
+        siteImages?.documents?.length > 0 && (
+          <Card>
+            <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
+            <StatusTable>
+              <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""))} />
+            </StatusTable>
+            {geoLocations?.length > 0 && (
               <React.Fragment>
                 <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
-                <CustomLocationSearch position={geoLocations}/>
+                <CustomLocationSearch position={geoLocations} />
               </React.Fragment>
-          }
-        </Card>
-      }
-    
+            )}
+          </Card>
+        )}
 
-        <Card>
+      <Card>
         <CardSubHeader>{t("BPA_UPLOADED_OWNER_ID")}</CardSubHeader>
-        <StatusTable>{applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />}</StatusTable>
-        </Card>
+        <StatusTable>
+          {applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds?.length > 0 && (
+            <CLUDocumentTableView documents={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.ownerIds} />
+          )}
+        </StatusTable>
+      </Card>
 
-        <Card>
+      <Card>
         <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <StatusTable>{remainingDocs?.length > 0 && <CLUDocumentTableView documents={remainingDocs} />}</StatusTable>
-        </Card>
+      </Card>
 
-        <Card>
+      <Card>
         <CardSubHeader>{t("BPA_FEE_DETAILS_LABEL")}</CardSubHeader>
         {applicationDetails?.Clu?.[0]?.cluDetails && (
           <CLUFeeEstimationDetails
@@ -885,36 +859,33 @@ const CLUApplicationDetails = () => {
             <PaymentHistory payments={combinedPayments} />
           </div>
         )}
-        </Card>
-    
-
-      {applicationDetails?.Clu?.[0]?.applicationStatus && !disableFeeTable?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && 
-        <Card>
-        <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
-        {applicationDetails?.Clu?.[0]?.cluDetails && (
-          <CLUFeeEstimationDetailsTable
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || []
-            }}
-            feeType="PAY2"
-            feeAdjustments={feeAdjustments}
-            setFeeAdjustments={setFeeAdjustments}
-            disable={true}
-            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
-          />
-        )}
       </Card>
-      }
+
+      {applicationDetails?.Clu?.[0]?.applicationStatus && !disableFeeTable?.includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
+        <Card>
+          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+          {applicationDetails?.Clu?.[0]?.cluDetails && (
+            <CLUFeeEstimationDetailsTable
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
+                siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
+                calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
+              }}
+              feeType="PAY2"
+              feeAdjustments={feeAdjustments}
+              setFeeAdjustments={setFeeAdjustments}
+              disable={true}
+              applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
+            />
+          )}
+        </Card>
+      )}
 
       <CheckBox
-        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${
-          combinedOwnersName
-        }). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
+        label={`I/We hereby solemnly affirm and declare that I am submitting this application on behalf of the applicant (${combinedOwnersName}). I/We along with the applicant have read the Policy and understand all the terms and conditions of the Policy. We are committed to fulfill/abide by all the terms and conditions of the Policy. The information/documents submitted are true and correct as per record and no part of it is false and nothing has been concealed/misrepresented therein.`}
         checked="true"
-      />      
+      />
 
       {/* {workflowDetails?.data?.timeline && (
         <Card>
@@ -936,7 +907,13 @@ const CLUApplicationDetails = () => {
         </Card>
       )} */}
 
-      <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
+      <NewApplicationTimeline
+        workflowDetails={workflowDetails}
+        t={t}
+        timeObj={timeObj}
+        empUserName={empUserName}
+        handleSetEmpDesignation={handleSetEmpDesignation}
+      />
 
       {actions && actions.length > 0 && (
         <ActionBar>

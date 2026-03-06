@@ -86,9 +86,9 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     // Defensive checks + normalise different shapes from backend
     if (Array.isArray(apiDataCheck) && apiDataCheck.length > 0 && Array.isArray(apiDataCheck[0].documents)) {
       const docs = apiDataCheck[0].documents.map((d) => {
-        const fileId = d?.fileStoreId ?? d?.filestoreId ?? d?.filestoreId ?? d?.documentUid ?? null;
+        const fileId = d?.fileStoreId || d?.filestoreId || d?.filestoreId || d?.documentUid || null;
         // documentType may sometimes be 'documentType' or 'type' or 'code' depending on backend
-        const documentType = d?.documentType ?? d?.type ?? d?.code ?? null;
+        const documentType = d?.documentType || d?.type || d?.code || null;
         return {
           documentType,
           filestoreId: fileId,

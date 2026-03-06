@@ -65,8 +65,8 @@ const MobileInbox = ({
     {
       Header: t("UC_COMMON_TOTAL_AMT"),
       Cell: ({ row }) => {
-        const total = row.original?.totalAmount ?? 0;
-        const waiver = row.original?.feeWaiver ?? 0;
+        const total = row.original?.totalAmount || 0;
+        const waiver = row.original?.feeWaiver || 0;
         const finalAmount = total - waiver;
 
         return GetCell(finalAmount);

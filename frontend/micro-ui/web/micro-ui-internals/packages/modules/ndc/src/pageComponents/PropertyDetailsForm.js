@@ -39,7 +39,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const [selectedRow, setSelectedRow] = useState(null);
 
   console.log("apiDataCheck", apiDataCheck);
-  console.log("formData==?/??", formData);
+  console.log("formData==?/||", formData);
   console.log("checkApiDataCheck====", checkApiDataCheck?.Applications?.[0]);
 
   const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({

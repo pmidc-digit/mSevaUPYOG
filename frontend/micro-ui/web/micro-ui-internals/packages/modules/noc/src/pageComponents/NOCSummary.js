@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable,Row } from "@mseva/digit-ui-react-components";
+import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable, Row } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
@@ -30,7 +30,6 @@ function NOCSummary({ currentStepData: formData, t }) {
   });
 
   console.log("coordinates in summary page", coordinates);
-
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -81,11 +80,11 @@ function NOCSummary({ currentStepData: formData, t }) {
 
       <StatusTable style={{ border: "none" }}>
         <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView
-          ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
-        />
+          <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+          <NOCImageView
+            ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
+            ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
+          />
         </Card>
       </StatusTable>
 
@@ -138,7 +137,7 @@ function NOCSummary({ currentStepData: formData, t }) {
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-           </StatusTable>
+          </StatusTable>
         </Card>
       )}
 
@@ -168,9 +167,9 @@ function NOCSummary({ currentStepData: formData, t }) {
           <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"} />
           <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || formData?.siteDetails?.ulbName || "N/A"} />
           <Row label={t("NOC_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"} />
-           <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
+          <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
           <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"} />
-         
+
           <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
           <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
           <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"} />
@@ -246,15 +245,14 @@ function NOCSummary({ currentStepData: formData, t }) {
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 

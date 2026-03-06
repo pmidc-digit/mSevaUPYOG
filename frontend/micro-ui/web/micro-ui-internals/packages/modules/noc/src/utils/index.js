@@ -95,30 +95,59 @@ export const pdfDocumentName = (documentLink = "", index = 0) => {
   return documentName;
 };
 
-export const amountToWords =(num) =>{
+export const amountToWords = (num) => {
   if (num == null || num === "") return "Zero Rupees";
-  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
-                "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
-                "Seventeen","Eighteen","Nineteen"],
-        tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"],
-        units = ["","Thousand","Lakh","Crore"];
+  const ones = [
+      "",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Seven",
+      "Eight",
+      "Nine",
+      "Ten",
+      "Eleven",
+      "Twelve",
+      "Thirteen",
+      "Fourteen",
+      "Fifteen",
+      "Sixteen",
+      "Seventeen",
+      "Eighteen",
+      "Nineteen",
+    ],
+    tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
+    units = ["", "Thousand", "Lakh", "Crore"];
 
-  const chunk = n => n < 20 ? ones[n] :
-                 n < 100 ? tens[Math.floor(n/10)] + (n%10? " " + ones[n%10]:"") :
-                 ones[Math.floor(n/100)] + " Hundred" + (n%100? " " + chunk(n%100):"");
+  const chunk = (n) =>
+    n < 20
+      ? ones[n]
+      : n < 100
+      ? tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "")
+      : ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + chunk(n % 100) : "");
 
-  const toWords = n => {
+  const toWords = (n) => {
     if (!n) return "";
-    let parts = [n%1000], res = "";
-    n = Math.floor(n/1000);
-    while(n){ parts.push(n%100); n=Math.floor(n/100); }
-    for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";
+    let parts = [n % 1000],
+      res = "";
+    n = Math.floor(n / 1000);
+    while (n) {
+      parts.push(n % 100);
+      n = Math.floor(n / 100);
+    }
+    for (let j = parts.length - 1; j >= 0; j--) if (parts[j]) res += chunk(parts[j]) + " " + units[j] + " ";
     return res.trim();
   };
 
-  let [r,p] = num.toString().split(".").map(x=>+x||0);
-  return (r? "Rupees "+toWords(r):"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Rupees Zero ";
-}
+  let [r, p] = num
+    .toString()
+    .split(".")
+    .map((x) => +x || 0);
+  return (r ? "Rupees " + toWords(r) : "") + (p ? (r ? " and " : "") + toWords(p) + " Paise" : "") || "Rupees Zero ";
+};
 
 export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
   let downloadLink = documents[fileStoreId] || "";
@@ -205,8 +234,6 @@ export const pdfDownloadLinkUpdated = (documents = {}, fileStoreId = "") => {
   return documents[fileStoreId] || "";
 };
 
-
-
 export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {
   const map = {};
   if (!Array.isArray(calculations)) return map;
@@ -219,23 +246,23 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
       const prev = prevEstimates[th.taxHeadCode];
-      const curr = th?.estimateAmount ?? null;
+      const curr = th?.estimateAmount || null;
       if (prev !== curr) anyChanged = true;
     });
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
-      prevEstimates[th.taxHeadCode] = th?.estimateAmount ?? null;
+      prevEstimates[th.taxHeadCode] = th?.estimateAmount || null;
     });
     if (!anyChanged) return;
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
       map[th.taxHeadCode] = map[th.taxHeadCode] || [];
       map[th.taxHeadCode].push({
-        who: calc?.updatedBy ?? null,
-        estimateAmount: th?.estimateAmount ?? null,
-        remarks: th?.remarks ?? null,
-        isLatest: calc?.isLatest ?? false,
-        when: calc?.when ?? null,
+        who: calc?.updatedBy || null,
+        estimateAmount: th?.estimateAmount || null,
+        remarks: th?.remarks || null,
+        isLatest: calc?.isLatest || false,
+        when: calc?.when || null,
       });
     });
   });
@@ -247,7 +274,6 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
   });
   return map;
 }
-
 
 export function formatDuration(totalTimeMs) {
   const totalSeconds = Math.floor(totalTimeMs / 1000);
@@ -261,32 +287,31 @@ export function formatDuration(totalTimeMs) {
 }
 
 export const convertToDDMMYYYY = (dateString) => {
-     if (!dateString) return "";
+  if (!dateString) return "";
 
-     const parts = dateString.split("-");
-     if (parts.length !== 3) return dateString; // fallback
+  const parts = dateString.split("-");
+  if (parts.length !== 3) return dateString; // fallback
 
-     const [a, b, c] = parts;
+  const [a, b, c] = parts;
 
-     // Case 1: already dd-mm-yyyy
-     if (a.length === 2 && c.length === 4) {
-       return dateString;
-     }
+  // Case 1: already dd-mm-yyyy
+  if (a.length === 2 && c.length === 4) {
+    return dateString;
+  }
 
-     // Case 2: yyyy-mm-dd → dd-mm-yyyy
-     if (a.length === 4) {
-       return `${c}-${b}-${a}`;
-     }
+  // Case 2: yyyy-mm-dd → dd-mm-yyyy
+  if (a.length === 4) {
+    return `${c}-${b}-${a}`;
+  }
 
-     // Case 3: mm-dd-yyyy → dd-mm-yyyy
-     if (c.length === 4 && a.length === 2 && b.length === 2) {
-       return `${b}-${a}-${c}`;
-     }
+  // Case 3: mm-dd-yyyy → dd-mm-yyyy
+  if (c.length === 4 && a.length === 2 && b.length === 2) {
+    return `${b}-${a}-${c}`;
+  }
 
-     // Fallback: return original
-     return dateString;
-   };
-
+  // Fallback: return original
+  return dateString;
+};
 
 export const formatDateForInput = (dateString) => {
   if (!dateString) return "";
@@ -317,25 +342,25 @@ export const formatDateForInput = (dateString) => {
 };
 
 export const downloadPdf = (blob, fileName) => {
-    if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {
-      var reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = function () {
-        var base64data = reader.result;
-        mSewaApp.downloadBase64File(base64data, fileName);
-      };
-    } else {
-      const link = document.createElement("a");
-      // create a blobURI pointing to our Blob
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      // some browser needs the anchor to be in the doc
-      document.body.append(link);
-      link.click();
-      link.remove();
-      // in case the Blob uses a lot of memory
-      setTimeout(() => URL.revokeObjectURL(link.href), 7000);
-    }
+  if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {
+    var reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = function () {
+      var base64data = reader.result;
+      mSewaApp.downloadBase64File(base64data, fileName);
+    };
+  } else {
+    const link = document.createElement("a");
+    // create a blobURI pointing to our Blob
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    // some browser needs the anchor to be in the doc
+    document.body.append(link);
+    link.click();
+    link.remove();
+    // in case the Blob uses a lot of memory
+    setTimeout(() => URL.revokeObjectURL(link.href), 7000);
+  }
 };
 
 export const downloadPdfFromURL = async (receiptUrl) => {
@@ -352,8 +377,3 @@ export const downloadPdfFromURL = async (receiptUrl) => {
     window.open(downloadUrl, "_blank");
   }
 };
-
-
-
-
-

@@ -21,7 +21,7 @@ import {
   MultiLink,
   Table,
   Modal,
-  CheckBox
+  CheckBox,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { composeInitialProps, useTranslation } from "react-i18next";
@@ -121,7 +121,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [displayData, setDisplayData] = useState({});
 
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const [empDesignation,setEmpDesignation] = useState(null);
+  const [empDesignation, setEmpDesignation] = useState(null);
   const [showZoneModal, setShowZoneModal] = useState(false);
 
   const [getEmployees, setEmployees] = useState([]);
@@ -137,27 +137,29 @@ const CLUEmployeeApplicationDetails = () => {
     const [showPdfModal, setShowPdfModal] = useState(false);
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
-      documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
-  } : []);
+  const [siteImages, setSiteImages] = useState(
+    applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
+      ? {
+          documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages,
+        }
+      : []
+  );
 
-  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || null;
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [showOptions, setShowOptions] = useState(false);
-  
-const stateId = Digit.ULBService.getStateId();
-  const {  data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
-  
+
+  const stateId = Digit.ULBService.getStateId();
+  const { data: feeData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "CLU", ["FeeNotificationChargesRule"]);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: businessServiceCode,//dynamic moduleCode
+    moduleCode: businessServiceCode, //dynamic moduleCode
   });
 
-
-  const { data: searchChecklistData } =  Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo: id }, tenantId);
+  const { data: searchChecklistData } = Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo: id }, tenantId);
   const [fieldInspectionPending, setFieldInspectionPending] = useState([]);
 
   const { data: reciept_data2, isLoading: recieptDataLoading2 } = Digit.Hooks.useRecieptSearch(
@@ -194,29 +196,31 @@ const stateId = Digit.ULBService.getStateId();
         return {
           latitude: img?.latitude || "",
           longitude: img?.longitude || "",
-        }
-      })
+        };
+      });
     }
   }, [siteImages]);
 
   useEffect(() => {
-        if (eSignError) {
-          setShowToast({
-            key: "true",
-            error: true,
-            message: "eSign process failed. Please try again.",
-          });
-        }
-      }, [eSignError]);
-  
-  let approveComments = []
-  let approvalDate ,approvalTime= ""
+    if (eSignError) {
+      setShowToast({
+        key: "true",
+        error: true,
+        message: "eSign process failed. Please try again.",
+      });
+    }
+  }, [eSignError]);
+
+  let approveComments = [];
+  let approvalDate,
+    approvalTime = "";
   // Assuming workflowDetails.timeline exists
   if (workflowDetails?.data && !workflowDetails.isLoading) {
-    approveComments = workflowDetails?.data?.timeline?.filter((item) => item?.performedAction === "APPROVE")?.flatMap((item) => item?.wfComment || []);
+    approveComments = workflowDetails?.data?.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
     approvalDate = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.lastModified || "";
     approvalTime = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.timing || "";
-
   }
 
   const handleDownloadPdf = async () => {
@@ -231,7 +235,6 @@ const stateId = Digit.ULBService.getStateId();
       const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t, searchChecklistData);
 
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
-
     } catch (err) {
       console.error(err);
     } finally {
@@ -323,61 +326,39 @@ const stateId = Digit.ULBService.getStateId();
       }
   const printCertificateWithESign = async () => {
     try {
+      setLoader(true);
 
+      // Get filestoreId from sanction letter function
       const fileStoreId = await getRecieptSearch({
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
-        pdfkey:"clu-sanctionletter",
+        pdfkey: "clu-sanctionletter",
       });
 
-      // Update application with sanctionLetterFilestoreId here
-      const application = applicationDetails?.Noc?.[0];
-      // const updatedApplication = {
-      //   ...application,
-      //   workflow: { action: "ESIGN" },
-      //   nocDetails: {
-      //     ...application?.nocDetails,
-      //     additionalDetails: {
-      //       ...application?.nocDetails?.additionalDetails,
-      //       sanctionLetterFilestoreId: fileStoreId,
-      //     },
-      //   },
-      // };
+      if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-      // await mutation.mutateAsync({ Noc: updatedApplication });
-      // refetch();
+      // Use printReciept to fetch the actual file URL
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${id}`;
-
-      // Trigger eSign
-      eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl },
-        {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
-          onError: (error) => {
-            setShowToast({
-              key: "true",
-              error: true,
-              message: error.message || "Failed to initiate digital signing process, Kindly check if the document is e-signed already",
-            });
-          },
-        }
-      );
+      // Open in new tab/popup
+      window.open(fileStore[fileStoreId], "_blank");
     } catch (error) {
-      setShowToast({
-        key: "true",
-        error: true,
-        message: error.message || "Failed to prepare certificate for eSign, Kindly check if the document is e-signed already",
-      });
+      console.error("Sanction Letter popup error:", error);
+    } finally {
+      setLoader(false);
     }
-  };
-  const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
-    title: value?.documentType,
-    fileStoreId: value?.filestoreId,
-    latitude: value?.latitude,
-    longitude: value?.longitude,
-  })), [siteImages]);
+  }
 
+  const documentData = useMemo(
+    () =>
+      siteImages?.documents?.map((value, index) => ({
+        title: value?.documentType,
+        fileStoreId: value?.filestoreId,
+        latitude: value?.latitude,
+        longitude: value?.longitude,
+      })),
+    [siteImages]
+  );
 
   const documentsColumnsSiteImage = [
     {
@@ -390,15 +371,12 @@ const stateId = Digit.ULBService.getStateId();
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
-          <LinkButton style={{ float: "right", display: "inline" }}
-            label={t("View")}
-            onClick={() => routeToImage(value)}
-          />
+          <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeToImage(value)} />
         ) : (
           t("CS_NA")
-        )
+        );
       },
-    }
+    },
   ];
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
@@ -411,58 +389,54 @@ const stateId = Digit.ULBService.getStateId();
 
   useEffect(() => {
     if (isLoading || !tenantId || !businessServiceCode) return;
-      
-     (async () => {
-      try{
+
+    (async () => {
+      try {
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
-      }catch(e){
-         console.error(e);
-      }finally{
+      } catch (e) {
+        console.error(e);
+      } finally {
         setLoader(false);
       }
-     })();
-    
+    })();
   }, [tenantId, businessServiceCode, isLoading]);
 
   useEffect(() => {
+    const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
+    const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
+    if (apiEstimates.length === 0) return;
 
-  const latestCalc = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
-  const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
-  if (apiEstimates.length === 0) return;
+    setFeeAdjustments((prev = []) => {
+      // build prev map
+      const prevByTax = (prev || []).reduce((acc, it) => {
+        if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
+        return acc;
+      }, {});
 
-  setFeeAdjustments((prev = []) => {
-    // build prev map
-    const prevByTax = (prev || []).reduce((acc, it) => {
-      if (it?.taxHeadCode) acc[it.taxHeadCode] = it;
-      return acc;
-    }, {});
+      // build merged but keep prev edited rows
+      const merged = apiEstimates.map((tax) => {
+        const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
+        const prevItem = prevByTax[tax.taxHeadCode] || {};
+        const isEdited = !!prevItem.edited;
 
-    // build merged but keep prev edited rows
-    const merged = apiEstimates.map((tax) => {
-      const saved = latestCalc?.taxHeadEstimates?.find((c) => c.taxHeadCode === tax.taxHeadCode);
-      const prevItem = prevByTax[tax.taxHeadCode] || {};
-      const isEdited = !!prevItem.edited;
+        return {
+          taxHeadCode: tax?.taxHeadCode,
+          category: tax?.category,
+          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount || saved?.estimateAmount || 0,
+          remark: isEdited ? prevItem.remark || "" : tax.remarks || saved?.remarks || "",
+          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId || saved?.filestoreId || null,
+          onDocumentLoading: false,
+          documentError: null,
+          edited: prevItem.edited || false,
+        };
+      });
 
-      return {
-        taxHeadCode: tax?.taxHeadCode,
-        category: tax?.category,
-        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
-        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
-        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
-        onDocumentLoading: false,
-        documentError: null,
-        edited: prevItem.edited ?? false,
-      };
+      return merged;
     });
-
-    return merged;
-  });
   }, [applicationDetails, data]);
-
-
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -488,15 +462,15 @@ const stateId = Digit.ULBService.getStateId();
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-  useEffect(()=>{
-        if(workflowDetails){
-          workflowDetails.revalidate();
-        }
-  
-        if(data){
-          data.revalidate();
-        }
-  },[]);
+  useEffect(() => {
+    if (workflowDetails) {
+      workflowDetails.revalidate();
+    }
+
+    if (data) {
+      data.revalidate();
+    }
+  }, []);
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -505,7 +479,6 @@ const stateId = Digit.ULBService.getStateId();
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
-
 
   useEffect(() => {
     const cluObject = applicationDetails?.Clu?.[0];
@@ -519,21 +492,21 @@ const stateId = Digit.ULBService.getStateId();
 
       const Documents = cluObject?.documents || [];
 
-      const ownerPhotoList = cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];  
+      const ownerPhotoList = cluObject?.cluDetails?.additionalDetails?.ownerPhotos || [];
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
         siteDetails: siteDetails ? [siteDetails] : [],
         coordinates: coordinates ? [coordinates] : [],
         Documents: Documents.length > 0 ? Documents : [],
-        ownerPhotoList: ownerPhotoList
+        ownerPhotoList: ownerPhotoList,
       };
 
       setDisplayData(finalDisplayData);
 
       const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
-      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
 
       setFieldInspectionPending(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending);
 
@@ -548,9 +521,9 @@ const stateId = Digit.ULBService.getStateId();
   }, [applicationDetails?.Clu]);
 
   function routeToImage(filestoreId) {
-    getUrlForDocumentView(filestoreId)
+    getUrlForDocumentView(filestoreId);
   }
-  
+
   const getUrlForDocumentView = async (filestoreId) => {
     if (filestoreId?.length === 0) return;
     try {
@@ -559,39 +532,39 @@ const stateId = Digit.ULBService.getStateId();
         const fileUrl = result.data[filestoreId];
         if (fileUrl) {
           // window.open(fileUrl, "_blank");
-          if(!isMobile){
+          if (!isMobile) {
             window.open(fileUrl, "_blank");
-          }else{
+          } else {
             setShowImageModal(true);
-            setImageUrl(fileUrl);            
-          }         
+            setImageUrl(fileUrl);
+          }
         } else {
           // if (props?.setError) {
           //   props?.setError(t("CS_FILE_FETCH_ERROR"));
           // } else {
-            console.error(t("CS_FILE_FETCH_ERROR"))
+          console.error(t("CS_FILE_FETCH_ERROR"));
           // }
         }
       } else {
         // if (props?.setError) {
         //   props?.setError(t("CS_FILE_FETCH_ERROR"));
         // } else {
-          console.error(t("CS_FILE_FETCH_ERROR"))
+        console.error(t("CS_FILE_FETCH_ERROR"));
         // }
       }
     } catch (e) {
       // if (props?.setError) {
       //   props?.setError(t("CS_FILE_FETCH_ERROR"));
       // } else {
-        console.error(t("CS_FILE_FETCH_ERROR"))
+      console.error(t("CS_FILE_FETCH_ERROR"));
       // }
     }
-  }
+  };
 
   const closeImageModal = () => {
     setShowImageModal(false);
     setImageUrl(null);
-  }
+  };
 
   function onActionSelect(action) {
     const appNo = applicationDetails?.Clu?.[0]?.applicationNo;
@@ -600,9 +573,9 @@ const stateId = Digit.ULBService.getStateId();
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions);
 
-     if (validationMsg) {
-          alert(validationMsg);
-      }
+    if (validationMsg) {
+      alert(validationMsg);
+    }
 
     const payload = {
       Licenses: [action],
@@ -610,11 +583,15 @@ const stateId = Digit.ULBService.getStateId();
 
     if (action?.action == "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_NOT_EDITABLE_HERE_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000);
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
       //cant be edited here
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
-      setTimeout(()=>{setShowToast(null);},3000);
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     } else if (action?.action == "ESIGN") {
       // opens the sanctionletter popup
       // printCertificateWithESign();
@@ -625,11 +602,15 @@ const stateId = Digit.ULBService.getStateId();
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
     }
     // else if(validationMsg){
-    //   setShowToast({ key: "true", error: true, message: validationMsg }); 
+    //   setShowToast({ key: "true", error: true, message: validationMsg });
     //   return;
     // }
-    else {      
-      if(action?.action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && (!siteImages?.documents || siteImages?.documents?.length < 4)){
+    else {
+      if (
+        action?.action !== "UPDATE_ZONE" &&
+        applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
+        (!siteImages?.documents || siteImages?.documents?.length < 4)
+      ) {
         setShowToast({ key: "true", error: true, message: "Please_Add_Site_Images_With_Geo_Location" });
         return;
       }
@@ -640,131 +621,132 @@ const stateId = Digit.ULBService.getStateId();
 
   const onChangeReport = (key, value) => {
     setFieldInspectionPending(value);
-  }
+  };
 
   const isFeeDisabled = applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
 
-  
   function getRemarkEntries(record) {
-   return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+    return Object.entries(record || {}).filter(([k]) => k.startsWith("Remarks"));
   }
 
- function areAllRemarksFilled(record) {
-  const remarkEntries = getRemarkEntries(record);
-  return (
-    remarkEntries.length > 0 &&
-    remarkEntries.every(([, v]) => typeof v === 'string' && v.trim().length > 0)
-  );
+  function areAllRemarksFilled(record) {
+    const remarkEntries = getRemarkEntries(record);
+    return remarkEntries.length > 0 && remarkEntries.every(([, v]) => typeof v === "string" && v.trim().length > 0);
   }
 
-  function areAllRemarksFilledForDocumentCheckList(record){
+  function areAllRemarksFilledForDocumentCheckList(record) {
     const entries = Object.entries(record);
-    
+
     // Rule 1: Must have exact entries equal to remainingDocs
     if (entries.length !== remainingDocs?.length) {
       return false;
     }
 
-   // Rule 2: Every value must be a non-empty string (trimmed)
+    // Rule 2: Every value must be a non-empty string (trimmed)
     const allFilled = entries.every(([key, value]) => {
-      const isFilled = typeof value === 'string' && value.trim().length > 0;
+      const isFilled = typeof value === "string" && value.trim().length > 0;
       if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
       return isFilled;
     });
-    
-    return allFilled;
 
+    return allFilled;
   }
 
   const handleZoneSubmit = (selectedZone, comment) => {
-  const payload = {
-    Licenses: [{
-      action: "UPDATE_ZONE",
-      comment: comment,
-      // Pass the zone object which contains both code and name
-      zone: selectedZone
-    }]
+    const payload = {
+      Licenses: [
+        {
+          action: "UPDATE_ZONE",
+          comment: comment,
+          // Pass the zone object which contains both code and name
+          zone: selectedZone,
+        },
+      ],
+    };
+    submitAction(payload);
   };
-  submitAction(payload);
-};
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Clu?.[0] || {};
     const action = data?.Licenses?.[0]?.action;
 
     //Validation For Site CheckList AT JE/BI Label
-    if(action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING"){
-     
-      if(fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0){
+    if (action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
+      if (fieldInspectionPending?.length === 0 || fieldInspectionPending?.[0]?.questionLength === 0) {
         closeModal();
-        setTimeout(()=>{setShowToast(null);},3000);
+        setTimeout(() => {
+          setShowToast(null);
+        }, 3000);
         setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENIDNG_VALIDATION_LABEL" });
         return;
-      }
-      else{
-
-        const record = fieldInspectionPending?.[0] ?? {};
+      } else {
+        const record = fieldInspectionPending?.[0] || {};
         const allRemarksFilled = areAllRemarksFilled(record);
 
-        if(!allRemarksFilled){
-         closeModal();
-         setTimeout(()=>{setShowToast(null);},3000);
-         setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENDING_QUESTION_VALIDATION_LABEL" });
-         return;
+        if (!allRemarksFilled) {
+          closeModal();
+          setTimeout(() => {
+            setShowToast(null);
+          }, 3000);
+          setShowToast({ key: "true", error: true, message: "BPA_FIELD_INSPECTION_REPORT_PENDING_QUESTION_VALIDATION_LABEL" });
+          return;
         }
-      }      
+      }
     }
-
 
     //Validation for Document CheckList At DM Level
-    if(action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING"){
+    if (action !== "UPDATE_ZONE" && applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING") {
       const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
 
-        if(!allRemarksFilled){
-         closeModal();
-         setTimeout(()=>{setShowToast(null);},3000);
-         setShowToast({ key: "true", error: true, message: "BPA_DOCUMENT_VERIFICATION_VALIDATION_LABEL" });
-         return;
-        }
-
+      if (!allRemarksFilled) {
+        closeModal();
+        setTimeout(() => {
+          setShowToast(null);
+        }, 3000);
+        setShowToast({ key: "true", error: true, message: "BPA_DOCUMENT_VERIFICATION_VALIDATION_LABEL" });
+        return;
+      }
     }
-   
+
     //Validation For Updating Fee At Any Level
     if (action !== "UPDATE_ZONE" && !isFeeDisabled) {
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
-    const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
+      const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount || 0) > 0);
+      const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
+      if (!hasNonZeroFee) {
+        closeModal();
+        setTimeout(() => {
+          setShowToast(null);
+        }, 3000);
+        setShowToast({ key: "true", error: true, message: "BPA_ENTER_FEE_ADD_LABEL" });
+        return;
+      }
 
-    if (!hasNonZeroFee) {
-      closeModal();
-      setTimeout(()=>{setShowToast(null);},3000);
-      setShowToast({ key: "true", error: true, message: "BPA_ENTER_FEE_ADD_LABEL" });
-      return;
+      if (!allRemarksFilled) {
+        closeModal();
+        setTimeout(() => {
+          setShowToast(null);
+        }, 3000);
+        setShowToast({ key: "true", error: true, message: "BPA_REMARKS_MANDATORY_LABEL" });
+        return;
+      }
     }
 
-    if (!allRemarksFilled) {
-      closeModal();
-      setTimeout(()=>{setShowToast(null);},3000);
-      setShowToast({ key: "true", error: true, message: "BPA_REMARKS_MANDATORY_LABEL" });
-      return;
-    }
-   }
-
-   const newCalculation = {
+    const newCalculation = {
       isLatest: true,
       updatedBy: Digit.UserService.getUser()?.info?.name,
       taxHeadEstimates: feeAdjustments
         .filter((row) => row.taxHeadCode !== "CLU_TOTAL") // exclude UI-only total row
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
+          estimateAmount: row.adjustedAmount || 0, // baseline + delta
           category: row.category,
           remarks: row.remark || null,
           filestoreId: row.filestoreId || null,
         })),
     };
 
-    const oldCalculations = (payloadData?.cluDetails?.additionalDetails?.calculations || [])?.map(c => ({ ...c, isLatest: false }));
+    const oldCalculations = (payloadData?.cluDetails?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));
 
     const updatedApplicant = {
       ...payloadData,
@@ -775,7 +757,7 @@ const stateId = Digit.ULBService.getStateId();
           siteImages: siteImages?.documents || [],
           calculations: [...oldCalculations, newCalculation],
           fieldinspection_pending: fieldInspectionPending,
-        }
+        },
       },
       workflow: {},
     };
@@ -794,7 +776,6 @@ const stateId = Digit.ULBService.getStateId();
     };
 
     try {
-
       // Build document checklist payload from remarks state
       const checklistPayload = {
         checkList: (remainingDocs || []).map((doc) => {
@@ -811,18 +792,22 @@ const stateId = Digit.ULBService.getStateId();
       };
 
       if (filtData?.action === "UPDATE_ZONE") {
-              setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
-              workflowDetails.revalidate();
-              // refetch();
-              setShowZoneModal(false);
-              setSelectedAction(null);
-              setTimeout(() => {
-                window.location.href = "/digit-ui/employee/obps/layout/inbox";
-              }, 3000);
-        }
+        setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
+        workflowDetails.revalidate();
+        // refetch();
+        setShowZoneModal(false);
+        setSelectedAction(null);
+        setTimeout(() => {
+          window.location.href = "/digit-ui/employee/obps/layout/inbox";
+        }, 3000);
+      }
 
       // Call checklist API before CLUUpdate but only incase of application status = "DOC_VERIFICATION_PENDING"
-      if (applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter(role => role.code === "OBPAS_CLU_DM")?.length > 0 && checklistPayload?.checkList?.length > 0) {
+      if (
+        applicationDetails?.Clu?.[0]?.applicationStatus === "DOC_VERIFICATION_PENDING" &&
+        user?.info?.roles.filter((role) => role.code === "OBPAS_CLU_DM")?.length > 0 &&
+        checklistPayload?.checkList?.length > 0
+      ) {
         if (searchChecklistData?.checkList?.length > 0) {
           await Digit.OBPSService.CLUCheckListUpdate({
             details: checklistPayload,
@@ -838,25 +823,23 @@ const stateId = Digit.ULBService.getStateId();
 
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
-      if(response?.ResponseInfo?.status === "successful"){
-        if(filtData?.action === "CANCEL"){
-          setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
+      if (response?.ResponseInfo?.status === "successful") {
+        if (filtData?.action === "CANCEL") {
+          setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
             history.push("/digit-ui/employee/obps/clu/inbox");
           }, 3000);
-        }
-        else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
+        } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           history.replace({
-           pathname: `/digit-ui/employee/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
-           state: { data: response }
+            pathname: `/digit-ui/employee/obps/clu/response/${response?.Clu?.[0]?.applicationNo}`,
+            state: { data: response },
           });
-        }
-        else{
-           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
-          setShowToast({ key: "true", success:true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
+        } else {
+          //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
+          setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
@@ -864,15 +847,16 @@ const stateId = Digit.ULBService.getStateId();
             window.location.reload();
           }, 3000);
         }
-      }
-      else{
-        setShowToast({ key: "true", warning:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
-        setSelectedAction(null); 
+      } else {
+        setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
+        setSelectedAction(null);
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-    }finally{
-      setTimeout(()=>{setShowToast(null);},3000);
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
@@ -882,9 +866,9 @@ const stateId = Digit.ULBService.getStateId();
   };
 
   const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   const handleViewTimeline = () => {
@@ -893,17 +877,20 @@ const stateId = Digit.ULBService.getStateId();
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
 
-
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
+  const sitePhotographs = displayData?.Documents?.filter(
+    (doc) => doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  )?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""));
 
-  const remainingDocs = displayData?.Documents?.filter((doc) => !(
-    doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
-    doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
-    doc?.documentType?.includes("Owner Id") || 
-    doc?.documentType?.includes("Owner Photo")
-  ))?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
-
+  const remainingDocs = displayData?.Documents?.filter(
+    (doc) =>
+      !(
+        doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
+        doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
+        doc?.documentType?.includes("Owner Id") ||
+        doc?.documentType?.includes("Owner Photo")
+      )
+  )?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
   useEffect(() => {
     const fetchDistances = async () => {
@@ -955,28 +942,23 @@ const stateId = Digit.ULBService.getStateId();
     return null; // no error
   };
 
-
-
-
-  const ownersList= applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item)=> item.ownerOrFirmName);
+  const ownersList = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const combinedOwnersName = ownersList?.join(", ");
 
   const siteInspectionEmp = useMemo(() => {
-    return workflowDetails?.data?.processInstances
-      ?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")
-      ?.assigner;
+    return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;
   }, [workflowDetails]);
 
-  
-  const empUserName = siteInspectionEmp?.userName ?? "";
-  const empName = siteInspectionEmp?.name ?? "";
+  const empUserName = siteInspectionEmp?.userName || "";
+  const empName = siteInspectionEmp?.name || "";
 
-  const handleSetEmpDesignation = (key)=>{
+  const handleSetEmpDesignation = (key) => {
     setEmpDesignation(key);
-  }
+  };
 
-
-  const currentZoneCode = applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.name || applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.code;
+  const currentZoneCode =
+    applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.name ||
+    applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.code;
 
   if (isLoading || getLoader) {
     return <Loader />;
@@ -1141,7 +1123,7 @@ const stateId = Digit.ULBService.getStateId();
         <Card>
           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable>
-          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
+            <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""))} />
           </StatusTable>
           {geoLocations?.length > 0 && (
             <React.Fragment>
@@ -1161,13 +1143,14 @@ const stateId = Digit.ULBService.getStateId();
         </StatusTable>
       </Card>
 
-{/* {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && */}
-      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0) && (
-        <Card>
-          <CardSubHeader>{`${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
-          <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
-        </Card>
-      )}
+      {/* {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" && */}
+      {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
+        applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+          <Card>
+            <CardSubHeader>{`${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
+            <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
+          </Card>
+        )}
 
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "DOC_VERIFICATION_PENDING" && (
         <Card>
@@ -1230,35 +1213,35 @@ const stateId = Digit.ULBService.getStateId();
         )}
       </Card>
 
-{/* will not be shown on first step(FIELDINSPECTION_INPROGRESS) */}
+      {/* will not be shown on first step(FIELDINSPECTION_INPROGRESS) */}
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && (
-      <div className="employeeCard">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
-          {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
-            <LinkButton
-              label={t("BPA_DOWNLOAD_FEE_NOTIFICATION")}
-              onClick={() => routeToImage(feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId)}
+        <div className="employeeCard">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <CardSubHeader>{t("BPA_FEE_DETAILS_TABLE_LABEL")}</CardSubHeader>
+            {feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId && (
+              <LinkButton
+                label={t("BPA_DOWNLOAD_FEE_NOTIFICATION")}
+                onClick={() => routeToImage(feeData?.CLU?.FeeNotificationChargesRule?.[0]?.fileStoreId)}
+              />
+            )}
+          </div>
+
+          {applicationDetails?.Clu?.[0]?.cluDetails && (
+            <CLUFeeEstimationDetailsTable
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
+                siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
+                calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
+              }}
+              feeType="PAY2"
+              feeAdjustments={feeAdjustments}
+              setFeeAdjustments={setFeeAdjustments}
+              disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+              applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
             />
           )}
         </div>
-
-        {applicationDetails?.Clu?.[0]?.cluDetails && (
-          <CLUFeeEstimationDetailsTable
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails },
-              siteDetails: { ...applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails },
-              calculations: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.calculations || [],
-            }}
-            feeType="PAY2"
-            feeAdjustments={feeAdjustments}
-            setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
-            applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
-          />
-        )}
-      </div>
       )}
 
       <CheckBox
@@ -1295,8 +1278,14 @@ const stateId = Digit.ULBService.getStateId();
         )}
 
       <div id="timeline">
-         {/* <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/> */}
-       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} timeObj={timeObj} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/>
+        {/* <NewApplicationTimeline workflowDetails={workflowDetails} t={t} empUserName={empUserName} handleSetEmpDesignation={handleSetEmpDesignation}/> */}
+        <NewApplicationTimeline
+          workflowDetails={workflowDetails}
+          t={t}
+          timeObj={timeObj}
+          empUserName={empUserName}
+          handleSetEmpDesignation={handleSetEmpDesignation}
+        />
       </div>
 
       {actions?.length > 0 && (
@@ -1328,14 +1317,7 @@ const stateId = Digit.ULBService.getStateId();
         </Modal>
       )}
 
-
-      {showZoneModal && (
-        <ZoneModal
-          onClose={() => setShowZoneModal(false)}
-          onSelect={handleZoneSubmit}
-          currentZoneCode={currentZoneCode}
-        />
-      )}
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
       {showPdfModal && (
         <PdfPreviewModal

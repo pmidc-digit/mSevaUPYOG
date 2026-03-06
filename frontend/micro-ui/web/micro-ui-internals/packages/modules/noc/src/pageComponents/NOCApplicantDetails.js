@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment  } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -17,7 +17,7 @@ import {
   CardSubHeader,
   Row,
   StatusTable,
-  CardLabelError
+  CardLabelError,
 } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
 
@@ -27,13 +27,12 @@ import NOCCustomUploadFile from "./NOCCustomUploadFile";
 import { PropertySearchModal } from "./PropertySearchModal";
 import { PropertySearchBathinda } from "../components/PropertySearchBathinda";
 import { PropertySearchLudhiana } from "../components/PropertySearchLudhiana";
-import { UPDATE_NOCNewApplication_FORM, UPDATE_NOC_OwnerIds,UPDATE_NOC_OwnerPhotos } from "../redux/action/NOCNewApplicationActions";
+import { UPDATE_NOCNewApplication_FORM, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos } from "../redux/action/NOCNewApplicationActions";
 import { formatDateForInput } from "../utils";
 const ownerTypeOptions = [
   { i18nKey: "NOC_OWNER_TYPE_INDIVIDUAL", code: "Individual", value: "Individual" },
   { i18nKey: "NOC_OWNER_TYPE_FIRM", code: "Firm", value: "Firm" },
 ];
-
 
 const NOCApplicantDetails = (_props) => {
   const {
@@ -61,7 +60,7 @@ const NOCApplicantDetails = (_props) => {
   const stateId = Digit.ULBService.getStateId();
   const dispatch = useDispatch();
 
-  const nocCpt = useSelector(state => state.noc?.NOCNewApplicationFormReducer?.formData?.cpt);
+  const nocCpt = useSelector((state) => state.noc?.NOCNewApplicationFormReducer?.formData?.cpt);
 
   // const ownerIds = useSelector(function (state) {
   //   return state.noc.NOCNewApplicationFormReducer.ownerIds;
@@ -193,7 +192,7 @@ const NOCApplicantDetails = (_props) => {
     return menu.find((g) => g.code === code) || null;
   };
 
-  const cptObj  = nocCpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0]
+  const cptObj = nocCpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
   // default owner object
   const defaultOwner = () => ({
     mobileNumber: "",
@@ -211,8 +210,8 @@ const NOCApplicantDetails = (_props) => {
     ownerType: null,
     propertyVasikaNo: "",
     propertyVasikaDate: "",
-    firmName:"",
-    localityAreaType: null
+    firmName: "",
+    localityAreaType: null,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -220,30 +219,19 @@ const NOCApplicantDetails = (_props) => {
     name: "owners",
   });
 
-  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
+  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) || "";
 
-
- useEffect(() => {
+  useEffect(() => {
     console.log("currentStepData1", currentStepData);
     const formattedData = currentStepData?.applicationDetails;
 
+    if (!formattedData) return;
 
-
-  if (!formattedData) return;
-
-
-
-
-
-
-
-  let owners =
-    Array.isArray(formattedData.owners) && formattedData.owners.length
+    let owners =
+      Array.isArray(formattedData.owners) && formattedData.owners.length
         ? formattedData.owners.map((o) => ({
             mobileNumber: o.mobileNumber || "",
             ownerOrFirmName: o.ownerOrFirmName || o.name || "",
-
-
 
             emailId: o.emailId || "",
             fatherOrHusbandName: o.fatherOrHusbandName || "",
@@ -259,21 +247,16 @@ const NOCApplicantDetails = (_props) => {
             dateOfBirth: o.dateOfBirth || o.dob || "",
             address: o.address || o.permanentAddress || "",
             ownerType: o.ownerType ? ownerTypeOptions.find((opt) => opt?.code === o?.ownerType?.code) : null,
-            firmName: o.firmName || ""
+            firmName: o.firmName || "",
           }))
+        : [defaultOwner()];
 
-      : [defaultOwner()];
-
-   
-
-  reset({
-    ...formattedData,
+    reset({
+      ...formattedData,
       isPropertyAvailable: formattedData?.isPropertyAvailable || isPropertyAvailable,
-    owners,
-  });
+      owners,
+    });
   }, [currentStepData, setValue, append, reset, tenantId]);
-
-
 
   // Clear property-related fields when propertyId is deleted
   // useEffect(() => {
@@ -290,108 +273,104 @@ const NOCApplicantDetails = (_props) => {
   // }, [watch(`owners[0].propertyId`), setValue]);
 
   useEffect(() => {
-    
-  if (typeof isPropertyAvailable === "boolean") {
-     console.log("useffect 13");
-    const plan = [
-      { code: "YES", i18nKey: "YES", value: true },
-      { code: "NO", i18nKey: "NO", value: false }
-    ].find((item) =>
-      // {
-      //   if(typeof isPropertyAvailable === "boolean"){
-      //     return item?.value === isPropertyAvailable
-      //   }else{
-      //     return item?.value === isPropertyAvailable?.value
-      //   }
-      // } 
-      item.value === isPropertyAvailable
-    );
+    if (typeof isPropertyAvailable === "boolean") {
+      console.log("useffect 13");
+      const plan = [
+        { code: "YES", i18nKey: "YES", value: true },
+        { code: "NO", i18nKey: "NO", value: false },
+      ].find(
+        (item) =>
+          // {
+          //   if(typeof isPropertyAvailable === "boolean"){
+          //     return item?.value === isPropertyAvailable
+          //   }else{
+          //     return item?.value === isPropertyAvailable?.value
+          //   }
+          // }
+          item.value === isPropertyAvailable
+      );
 
-    if (plan) {
-      setIsPropertyAvailable(plan);
-      // console.log('plan and ispropertyavailable', plan, isPropertyAvailable)
-      // setValue("isPropertyAvailable", plan, { shouldValidate: true, shouldDirty: true });
+      if (plan) {
+        setIsPropertyAvailable(plan);
+        // console.log('plan and ispropertyavailable', plan, isPropertyAvailable)
+        // setValue("isPropertyAvailable", plan, { shouldValidate: true, shouldDirty: true });
+      }
+
+      // if (plan?.value === false) {
+
+      //   dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+      //   dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+      //   reset({
+      //     owners: [defaultOwner()],
+      //     isPropertyAvailable: plan,
+      //   });
+      // }
     }
+    // else if(isPropertyAvailable?.code){
+    //   if(isPropertyAvailable?.value === false){
+    //     dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
+    //     dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+    //     dispatch(
+    //     UPDATE_NOCNewApplication_FORM("siteDetails", {
+    //       ...currentStepData?.siteDetails,
+    //       vasikaNumber: "",
+    //       vasikaDate: null,
+    //       netTotalArea: null,
+    //     })
+    //   );
+    //     reset({
+    //       owners: [defaultOwner()],
+    //       isPropertyAvailable: isPropertyAvailable,
+    //     });
+    //   }
+    // }
+    else if (isPropertyAvailable === null) {
+      if (currentStepData?.applicationDetails?.isPropertyAvailable) {
+        setIsPropertyAvailable(currentStepData?.applicationDetails?.isPropertyAvailable);
+        setValue("isPropertyAvailable", currentStepData?.applicationDetails?.isPropertyAvailable, { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [isPropertyAvailable, currentStepData?.applicationDetails?.isPropertyAvailable]);
 
-    // if (plan?.value === false) {
-      
+  // Fetch property data from cpt and overwrite applicant details
+  useEffect(() => {
+    // if (isPropertyAvailable?.value === false ) {
+    //   // Clear Redux nocCpt and form state together
     //   dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
     //   dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
+
     //   reset({
     //     owners: [defaultOwner()],
-    //     isPropertyAvailable: plan,
+    //     isPropertyAvailable: { code: "NO", i18nKey: "NO", value: false },
     //   });
     // }
-  }
-  // else if(isPropertyAvailable?.code){
-  //   if(isPropertyAvailable?.value === false){
-  //     dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
-  //     dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
-  //     dispatch(
-  //     UPDATE_NOCNewApplication_FORM("siteDetails", {
-  //       ...currentStepData?.siteDetails,
-  //       vasikaNumber: "",
-  //       vasikaDate: null,
-  //       netTotalArea: null,
-  //     })
-  //   );
-  //     reset({
-  //       owners: [defaultOwner()],
-  //       isPropertyAvailable: isPropertyAvailable,
-  //     });
-  //   }
-  // }
-  else if (isPropertyAvailable === null) {
-    if (currentStepData?.applicationDetails?.isPropertyAvailable) {
-      setIsPropertyAvailable(currentStepData?.applicationDetails?.isPropertyAvailable);
-      setValue("isPropertyAvailable", currentStepData?.applicationDetails?.isPropertyAvailable, { shouldValidate: true, shouldDirty: true });
+
+    if (isPropertyAvailable?.value === true && nocCpt?.details?.owners?.[0]) {
+      console.log("useffect 14");
+      console.log("nocCpt", nocCpt);
+
+      // Get current owner data
+
+      // Update the owner object with property data
+      setValue("owners[0].ownerOrFirmName", nocCpt.details.owners[0]?.name || "", { shouldValidate: true, shouldDirty: true });
+      setValue("owners[0].mobileNumber", nocCpt.details.owners[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
+      // setValue('owners[0].address', nocCpt.details?.address?.doorNo || nocCpt.details?.address?.street || "", { shouldValidate: true, shouldDirty: true });
+      setValue("owners[0].fatherOrHusbandName", nocCpt.details.owners[0]?.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
+      setValue("owners[0].propertyId", nocCpt.details?.propertyId || "", { shouldValidate: true, shouldDirty: true });
+      // console.log(getValues(), "values ludhiana")
     }
-  }
-}, [isPropertyAvailable, currentStepData?.applicationDetails?.isPropertyAvailable]);
-
-   // Fetch property data from cpt and overwrite applicant details
- useEffect(() => {
-
-  // if (isPropertyAvailable?.value === false ) {
-  //   // Clear Redux nocCpt and form state together
-  //   dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
-  //   dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", null));
-
-  //   reset({
-  //     owners: [defaultOwner()],
-  //     isPropertyAvailable: { code: "NO", i18nKey: "NO", value: false },
-  //   });
-  // }
-
-  if (isPropertyAvailable?.value === true && nocCpt?.details?.owners?.[0]) {
-    console.log("useffect 14");
-    console.log('nocCpt', nocCpt);
-
-    // Get current owner data
-
-    // Update the owner object with property data
-    setValue('owners[0].ownerOrFirmName', nocCpt.details.owners[0]?.name || "", { shouldValidate: true, shouldDirty: true });
-    setValue('owners[0].mobileNumber', nocCpt.details.owners[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
-    // setValue('owners[0].address', nocCpt.details?.address?.doorNo || nocCpt.details?.address?.street || "", { shouldValidate: true, shouldDirty: true });
-    setValue('owners[0].fatherOrHusbandName', nocCpt.details.owners[0]?.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
-    setValue('owners[0].propertyId', nocCpt.details?.propertyId || "", { shouldValidate: true, shouldDirty: true });
-  // console.log(getValues(), "values ludhiana")
-  }
-}, [nocCpt, isPropertyAvailable?.value]);
+  }, [nocCpt, isPropertyAvailable?.value]);
 
   //For fetching user details
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => {
     setShowToast(null);
   };
-  
 
   const getOwnerDetails = async (idx) => {
-    
     setLoader(true);
 
     try {
-      console.log('get owner details firing???')
       const currentMobile = mobileAtIndex(idx);
 
       if (!/^[6-9]\d{9}$/.test(currentMobile)) {
@@ -403,7 +382,7 @@ const NOCApplicantDetails = (_props) => {
       }
       const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
 
-      const users = userResponse?.user ?? [];
+      const users = userResponse?.user || [];
       if (!users.length) {
         setTimeout(() => {
         setShowToast(null);
@@ -415,10 +394,10 @@ const NOCApplicantDetails = (_props) => {
       const u = users[0];
 
       // Write EVERYTHING into RHF state
-      setValue(`owners[${idx}].ownerOrFirmName`, u.name ?? "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${idx}].emailId`, u.emailId ?? "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName ?? "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${idx}].address`, u.permanentAddress ?? "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].ownerOrFirmName`, u.name || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].emailId`, u.emailId || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].address`, u.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
 
       // Normalize DOB to YYYY-MM-DD for <input type="date">
       const dobStr = typeof u.dob === "string" ? u.dob : "";
@@ -430,89 +409,97 @@ const NOCApplicantDetails = (_props) => {
       setValue(`owners[${idx}].gender`, genderOption, { shouldValidate: true, shouldDirty: true });
     } catch (err) {
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
-    }finally{
+    } finally {
       setLoader(false);
     }
   };
 
   const handlePropertySelect = (property) => {
-  console.log('property', property);
+    console.log("property", property);
 
-  // 🚨 Guard: do nothing if property is not available
-  if (isPropertyAvailable?.value === false) {
-    return;
-  }
-
-  if (currentIndex !== null && property?.propertyId) {
-    // const ownerNames = property?.owners?.map((o) => o?.name).filter(Boolean).join(", ") || "";
-
-    // Update RHF form state
-    setValue(`owners[${currentIndex}].propertyId`, property.propertyId, { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${currentIndex}].PropertyOwnerName`, property?.owners?.[0]?.name || "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", { shouldValidate: true, shouldDirty: true });
-    // setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${currentIndex}].propertyVasikaNo`, property?.additionalDetails?.vasikaNo || null, { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || null, { shouldValidate: true, shouldDirty: true });
-
-    // Override applicant details with property owner details if present
-    if (currentIndex === 0) {
-      if (property?.owners?.[0]?.name) {
-        setValue(`owners[${currentIndex}].ownerOrFirmName`, property.owners[0].name, { shouldValidate: true, shouldDirty: true });
-      }
-      if (property?.owners?.[0]?.mobileNumber) {
-        setValue(`owners[${currentIndex}].mobileNumber`, property.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
-      }
-      // if (property?.owners?.[0]?.permanentAddress) {
-      //   setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
-      // }
+    // 🚨 Guard: do nothing if property is not available
+    if (isPropertyAvailable?.value === false) {
+      return;
     }
 
-    // Get current form values to preserve user-filled data
-    const currentOwners = watch('owners');
+    if (currentIndex !== null && property?.propertyId) {
+      // const ownerNames = property?.owners?.map((o) => o?.name).filter(Boolean).join(", ") || "";
 
-    // Update Redux applicationDetails
-    dispatch(
-      UPDATE_NOCNewApplication_FORM("applicationDetails", {
-        ...currentStepData?.applicationDetails,
-        isPropertyAvailable: isPropertyAvailable,  // Ensure flag persists
-        owners: currentOwners?.map((o, i) =>
-          i === currentIndex
-            ? {
-                ...o,
-                propertyId: property?.propertyId,
-                PropertyOwnerName: property?.owners?.[0]?.name,
-                PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
-                PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
-                PropertyOwnerPlotArea: property?.landArea,
-                propertyVasikaNo: property?.additionalDetails?.vasikaNo,
-                propertyVasikaDate: property?.additionalDetails?.vasikaDate,
-                localityAreaType: property?.address?.locality,
-                ...(currentIndex === 0 && {
-                  ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
-                  mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
-                  address: o.address,
-                }),
-              }
-            : o
-        ),
-      })
-    );
+      // Update RHF form state
+      setValue(`owners[${currentIndex}].propertyId`, property.propertyId, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerName`, property?.owners?.[0]?.name || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerMobileNumber`, property?.owners?.[0]?.mobileNumber || "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      // setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].propertyVasikaNo`, property?.additionalDetails?.vasikaNo || null, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue(`owners[${currentIndex}].propertyVasikaDate`, property?.additionalDetails?.vasikaDate || null, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
 
-    // Update Redux siteDetails
-    dispatch(
-      UPDATE_NOCNewApplication_FORM("siteDetails", {
-        ...currentStepData?.siteDetails,
-        vasikaNumber: property?.additionalDetails?.vasikaNo,
-        vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
-        netTotalArea: property?.landArea,
-        proposedSiteAddress : property?.owners?.[0]?.permanentAddress,
-        localityAreaType: property?.address?.locality
-      })
-    );
-  }
-};
+      // Override applicant details with property owner details if present
+      if (currentIndex === 0) {
+        if (property?.owners?.[0]?.name) {
+          setValue(`owners[${currentIndex}].ownerOrFirmName`, property.owners[0].name, { shouldValidate: true, shouldDirty: true });
+        }
+        if (property?.owners?.[0]?.mobileNumber) {
+          setValue(`owners[${currentIndex}].mobileNumber`, property.owners[0].mobileNumber, { shouldValidate: true, shouldDirty: true });
+        }
+        // if (property?.owners?.[0]?.permanentAddress) {
+        //   setValue(`owners[${currentIndex}].address`, property.owners[0].permanentAddress, { shouldValidate: true, shouldDirty: true });
+        // }
+      }
 
+      // Get current form values to preserve user-filled data
+      const currentOwners = watch("owners");
+
+      // Update Redux applicationDetails
+      dispatch(
+        UPDATE_NOCNewApplication_FORM("applicationDetails", {
+          ...currentStepData?.applicationDetails,
+          isPropertyAvailable: isPropertyAvailable, // Ensure flag persists
+          owners: currentOwners?.map((o, i) =>
+            i === currentIndex
+              ? {
+                  ...o,
+                  propertyId: property?.propertyId,
+                  PropertyOwnerName: property?.owners?.[0]?.name,
+                  PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
+                  PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
+                  PropertyOwnerPlotArea: property?.landArea,
+                  propertyVasikaNo: property?.additionalDetails?.vasikaNo,
+                  propertyVasikaDate: property?.additionalDetails?.vasikaDate,
+                  localityAreaType: property?.address?.locality,
+                  ...(currentIndex === 0 && {
+                    ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
+                    mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
+                    address: o.address,
+                  }),
+                }
+              : o
+          ),
+        })
+      );
+
+      // Update Redux siteDetails
+      dispatch(
+        UPDATE_NOCNewApplication_FORM("siteDetails", {
+          ...currentStepData?.siteDetails,
+          vasikaNumber: property?.additionalDetails?.vasikaNo,
+          vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
+          netTotalArea: property?.landArea,
+          proposedSiteAddress: property?.owners?.[0]?.permanentAddress,
+          localityAreaType: property?.address?.locality,
+        })
+      );
+    }
+  };
 
   const isEdit = window.location.pathname.includes("edit");
 
@@ -533,7 +520,6 @@ const NOCApplicantDetails = (_props) => {
     remove(index);
   };
 
- 
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>

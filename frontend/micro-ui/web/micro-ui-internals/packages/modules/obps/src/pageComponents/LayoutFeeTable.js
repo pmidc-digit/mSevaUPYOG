@@ -16,7 +16,7 @@ export const LayoutFeeTable = ({
   t,
   handleRemarkChange,
   onAdjustedAmountBlur,
-  feeHistory
+  feeHistory,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -25,7 +25,7 @@ export const LayoutFeeTable = ({
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -47,9 +47,7 @@ export const LayoutFeeTable = ({
         if (row.taxHeadCode === "LAYOUT_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>
-                ₹ {row.grandTotal.toLocaleString("en-IN")}
-              </strong>
+              <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
               <div
                 style={{
                   fontSize: "0.85em",
@@ -68,9 +66,7 @@ export const LayoutFeeTable = ({
             t={t}
             type="number"
             isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0
-              ? ""
-              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+            value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
             onChange={(e) => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith("0")) {
@@ -106,9 +102,7 @@ export const LayoutFeeTable = ({
         return (
           <TextArea
             value={feeData[row.index]?.remark || ""}
-            onChange={(e) =>
-              handleRemarkChange(row.index, e.target.value, row.amount)
-            }
+            onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
             disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
@@ -153,11 +147,7 @@ export const LayoutFeeTable = ({
                         t={t}
                         type="number"
                         isMandatory={false}
-                        value={
-                          feeData[row.index]?.adjustedAmount === 0
-                            ? ""
-                            : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-                        }
+                        value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
                         onChange={(e) => {
                           let val = e.target.value;
                           if (val.length > 1 && val.startsWith("0")) {
@@ -193,9 +183,7 @@ export const LayoutFeeTable = ({
                   <div className="custom-fee-card-total-value">
                     <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                   </div>
-                  <div className="custom-fee-card-total-words">
-                    {amountToWords(row.grandTotal)}
-                  </div>
+                  <div className="custom-fee-card-total-words">{amountToWords(row.grandTotal)}</div>
                 </div>
               )}
             </div>
@@ -242,7 +230,9 @@ export const LayoutFeeTable = ({
     );
   };
 
-  return isMobile ? renderMobileCardView() : (
+  return isMobile ? (
+    renderMobileCardView()
+  ) : (
     <CustomFeeTable
       data={feeDataWithTotal}
       columns={columns}

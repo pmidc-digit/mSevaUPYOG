@@ -92,18 +92,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   // };
 
   const validateOwnerDetails = (data) => {
-    console.log("data==???", data);
     const { owners } = data;
-    // console.log("owners==???", owners);
-    // if (!ownershipCategory?.code || !owners?.length) return false;
-    // console.log("owners?.length==???", owners?.length);
     return owners?.every(
       (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
     );
   };
 
   const goNext = async (data) => {
-
     const { OwnerDetails } = formData || {};
 
     if (!validateOwnerDetails(OwnerDetails)) {
@@ -147,14 +142,14 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         setError(t("CORE_COMMON_PINCODE_INVALID"));
         return;
       }
-      
+
       // Check if the selected city is valid
       if (!TraidDetails?.address?.city) {
         setShowToast({ key: "error" });
         setError(t("TL_CITY_REQUIRED"));
         return;
       }
-      
+
       // Optional: Check if pincode exists in tenant master data (soft validation)
       const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails.address.pincode));
       if (!foundValue) {
@@ -223,10 +218,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (owner.gender?.code) {
           // Handle nested gender objects - extract the final code string
           let genderCode = owner.gender.code;
-          while (genderCode && typeof genderCode === 'object' && genderCode.code) {
+          while (genderCode && typeof genderCode === "object" && genderCode.code) {
             genderCode = genderCode.code;
           }
-          obj.gender = typeof genderCode === 'string' ? genderCode : owner.gender.code;
+          obj.gender = typeof genderCode === "string" ? genderCode : owner.gender.code;
         }
         if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
         if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
@@ -235,10 +230,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (owner.relationship) {
           // Handle nested relationship objects - extract the final code string
           let relationshipCode = owner.relationship;
-          while (relationshipCode && typeof relationshipCode === 'object' && relationshipCode.code) {
+          while (relationshipCode && typeof relationshipCode === "object" && relationshipCode.code) {
             relationshipCode = relationshipCode.code;
           }
-          obj.relationship = typeof relationshipCode === 'string' ? relationshipCode : owner.relationship?.code;
+          obj.relationship = typeof relationshipCode === "string" ? relationshipCode : owner.relationship?.code;
         }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
@@ -344,7 +339,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (showToast) {
       const timer = setTimeout(() => {
         closeToast();
-      }, 3000); 
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showToast]);
@@ -359,7 +354,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-        
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       {getLoader && <Loader page={true} />}

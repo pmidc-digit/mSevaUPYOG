@@ -1849,6 +1849,13 @@ public class Far extends FeatureProcess {
 //			}
 //		}
 
+		BigDecimal minPlotArea = getMinPlotAreaByOccupancy(occupancyType.getSubtype().getCode());
+		if (plotArea.compareTo(minPlotArea) >= 0) {
+		} else {
+			errors.put("Min Plot Area Error:", "Minimun plot area for " + occupancyType.getSubtype().getName() + " is " 
+					+ minPlotArea + " sqm. Please correct the file and try again");
+	        pl.addErrors(errors);
+		}
 		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {				
 		    if (!shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_AREA)) {
 		        errors.put("Plot Area Error:", "Plot area must be greater than 0.");
@@ -2572,6 +2579,40 @@ public class Far extends FeatureProcess {
 	    return effectiveFar.setScale(2, RoundingMode.HALF_UP);
 	}
 
+
+	public BigDecimal getMinPlotAreaByOccupancy(String occupancyCode) {
+
+	    if (occupancyCode == null || occupancyCode.trim().isEmpty()) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    switch (occupancyCode.trim()) {
+	        // 300 sqm category
+	        case "G-G":   // Industrial
+	        case "G-F":   // Factory
+	        case "G-S":   // Storage
+	        case "G-HI":  // Hazard Industries
+	        case "G-RSI": // Retail Service Industry
+	        case "G-ITP": // IT - Plotted
+	        case "G-ITF": // IT - Flatted
+	        case "G-TI":  // Textile Industry
+	        case "G-KI":  // Knitwear Industry
+	        case "G-SI":  // Sports Industry
+	            return new BigDecimal("300");
+
+	        // 2000 sqm category
+	        case "G-GIP": // General Industry - Plotted
+	        case "G-GIF": // General Industry - Flatted
+	            return new BigDecimal("2000");
+
+	        // 10000 sqm category
+	        case "G-WT":  // Wholesale / Warehouse / IFC
+	            return new BigDecimal("10000");
+
+	        default:
+	            return BigDecimal.ZERO; // or throw exception if needed
+	    }
+	}
 
 	
 }

@@ -132,6 +132,10 @@ public class LandUse extends FeatureProcess {
                     }
                 }
 
+                if(floorNos.length()>0) {
+                	isAccepted= true;
+                }
+                
                 Map<String, String> details = new HashMap<>();
                 details.put(RULE_NO, RULE_28);
                 details.put(DESCRIPTION, "Land use Zone");

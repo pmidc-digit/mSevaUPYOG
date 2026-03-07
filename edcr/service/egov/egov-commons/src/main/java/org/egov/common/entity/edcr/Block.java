@@ -50,6 +50,7 @@ package org.egov.common.entity.edcr;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import org.egov.common.entity.edcr.TerraceToilet;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -94,6 +95,16 @@ public class Block extends Measurement {
     private Parapet parapetV2;
     private Chimney chimneyV2;
     private List<Portico> porticos = new ArrayList<>();
+    
+    private List<TerraceToilet> terraceToilet = new ArrayList<>();
+
+    public List<TerraceToilet> getTerraceToilet() {
+		return terraceToilet;
+	}
+
+	public void setTerraceToilet(List<TerraceToilet> terraceToilet) {
+		this.terraceToilet = terraceToilet;
+	}
 
     @Override
     public String toString() {

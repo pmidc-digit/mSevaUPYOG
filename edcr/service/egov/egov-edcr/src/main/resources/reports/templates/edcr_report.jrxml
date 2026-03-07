@@ -1,81 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
-              name="edcr_report" pageWidth="595" pageHeight="842" columnWidth="555"
-              leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20"
-              uuid="ccdee1e7-8a6e-4168-a80a-d10d6f4f913c">
-
-    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
-    <property name="ireport.zoom" value="1.0"/>
-    <property name="ireport.x" value="0"/>
-    <property name="ireport.y" value="519"/>
-
-    <import value="org.joda.time.LocalDate"/>
-    <import value="org.egov.infra.reporting.util.*"/>
-    <import value="org.egov.infstr.utils.*"/>
-    <import value="org.egov.infra.reporting.util.ReportUtil"/>
-    <import value="net.sf.jasperreports.engine.data.*"/>
-
-    <style name="report status style" forecolor="#FFFFFF" fontName="Arial" isBold="true">
-        <conditionalStyle>
-            <conditionExpression><![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Fulfilled")]]></conditionExpression>
-            <style forecolor="#009900"/>
-        </conditionalStyle>
-        <conditionalStyle>
-            <conditionExpression><![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Not Fulfilled")]]></conditionExpression>
-            <style forecolor="#FF0000"/>
-        </conditionalStyle>
-        <conditionalStyle>
-            <conditionExpression><![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Mixed")]]></conditionExpression>
-            <style forecolor="#FF9900"/>
-        </conditionalStyle>
-    </style>
-
-    <!-- Parameters -->
-    <parameter name="resultOutput" class="java.lang.String"/>
-    <parameter name="errorOutput" class="java.lang.String"/>
-    <parameter name="reportStatus" class="java.lang.String"/>
-    <parameter name="architect" class="java.lang.String"/>
-    <parameter name="occupancy" class="java.lang.String"/>
-    <parameter name="buildUpArea" class="java.math.BigDecimal"/>
-    <parameter name="floorArea" class="java.math.BigDecimal"/>
-    <parameter name="carpetArea" class="java.math.BigDecimal"/>
-    <parameter name="plotArea" class="java.math.BigDecimal"/>
-    <parameter name="far" class="java.math.BigDecimal"/>
-    <parameter name="coverage" class="java.math.BigDecimal"/>
-    <parameter name="applicationNumber" class="java.lang.String"/>
-    <parameter name="errorString" class="java.lang.String"/>
-    <parameter name="nocString" class="java.lang.String"/>
-    <parameter name="nocs" class="java.util.Map"/>
-    <parameter name="applicationDate" class="java.lang.String"/>
-    <parameter name="qrCode" class="java.io.File"/>
-    <parameter name="errors" class="java.util.Map"/>
-    <parameter name="cityLogo" class="java.lang.String"/>
-    <parameter name="currentYear" class="java.lang.Integer"/>
-    <parameter name="egovLogo" class="java.lang.String"/>
-    <parameter name="buildingDetailList" class="java.util.List"/>
-    <parameter name="blocks" class="java.util.List"/>
-    <parameter name="applicantName" class="java.lang.String"/>
-    <parameter name="licensee" class="java.lang.String"/>
-    <parameter name="ulbName" class="java.lang.String"/>
-    <parameter name="reportGeneratedDate" class="java.lang.String"/>
-    <parameter name="dcrNo" class="java.lang.String"/>
-    <parameter name="applicationType" class="java.lang.String"/>
-    <parameter name="surrenderRoadArea" class="java.math.BigDecimal"/>
-    <parameter name="bpaApplicationDate" class="java.lang.String"/>
-    <parameter name="planPermissionNumber" class="java.lang.String"/>
-    <parameter name="serviceType" class="java.lang.String"/>
-    <parameter name="ulbType" class="java.lang.String"/>
-
-    <field name="planInformation" class="org.egov.common.entity.edcr.PlanInformation"/>
-    <field name="plot" class="org.egov.common.entity.edcr.Plot"/>
-    <field name="electricLine" class="org.egov.common.entity.edcr.ElectricLine"/>
-
-    <variable name="SUB_REPORT_ROW_CNT" class="java.lang.Integer"/>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="edcr_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ccdee1e7-8a6e-4168-a80a-d10d6f4f913c">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="519"/>
+	<import value="org.joda.time.LocalDate"/>
+	<import value="org.egov.infra.reporting.util.*"/>
+	<import value="org.egov.infstr.utils.*"/>
+	<import value="org.egov.infra.reporting.util.ReportUtil"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<!-- <style name="report status style" forecolor="#FFFFFF">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{reportStatus} != null && $P{reportStatus}.equalsIgnoreCase("Accepted")]]></conditionExpression>
+			<style forecolor="#009900"/>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$P{reportStatus} != null && !$P{reportStatus}.equalsIgnoreCase("Accepted")]]></conditionExpression>
+			<style forecolor="#FF0000"/>
+		</conditionalStyle>
+	</style>-->
+	<style name="report status style" forecolor="#FFFFFF" fontName="Arial" isBold="true">
+    <conditionalStyle>
+        <!-- Condition: reportStatus is "Fulfilled" (case-insensitive) -->
+        <conditionExpression>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Fulfilled")]]>
+        </conditionExpression>
+        <style forecolor="#009900"/>
+    </conditionalStyle>
+    <conditionalStyle>
+        <!-- Condition: reportStatus is "Not Fulfilled" (case-insensitive) -->
+        <conditionExpression>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Not Fulfilled")]]>
+        </conditionExpression>
+        <style forecolor="#FF0000"/>
+    </conditionalStyle>
+    <!-- Optional: for Mixed or Partially Fulfilled (if you use it) -->
+    <conditionalStyle>
+        <conditionExpression>
+            <![CDATA[$P{reportStatus} != null && $P{reportStatus}.toString().trim().equalsIgnoreCase("Mixed")]]>
+        </conditionExpression>
+        <style forecolor="#FF9900"/> <!-- Orange for Mixed -->
+    </conditionalStyle>
+</style>
+	<parameter name="resultOutput" class="java.lang.String"/>
+	<parameter name="errorOutput" class="java.lang.String"/>
+	<parameter name="reportStatus" class="java.lang.String"/>
+	<parameter name="architect" class="java.lang.String"/>
+	<parameter name="occupancy" class="java.lang.String"/>
+	<parameter name="buildUpArea" class="java.math.BigDecimal"/>
+	<parameter name="floorArea" class="java.math.BigDecimal"/>
+	<parameter name="carpetArea" class="java.math.BigDecimal"/>
+	<parameter name="plotArea" class="java.math.BigDecimal"/>
+	<parameter name="far" class="java.math.BigDecimal"/>
+	<parameter name="coverage" class="java.math.BigDecimal"/>
+	<parameter name="applicationNumber" class="java.lang.String"/>
+	<parameter name="errorString" class="java.lang.String"/>
+	<parameter name="nocString" class="java.lang.String"/>
+	<parameter name="nocs" class="java.util.Map"/>
+	<parameter name="applicationDate" class="java.lang.String"/>
+	<parameter name="qrCode" class="java.io.File"/>
+	<parameter name="errors" class="java.util.Map"/>
+	<parameter name="cityLogo" class="java.lang.String"/>
+	<parameter name="currentYear" class="java.lang.Integer"/>
+	<parameter name="egovLogo" class="java.lang.String"/>
+	<parameter name="buildingDetailList" class="java.util.List"/>
+	<parameter name="blocks" class="java.util.List"/>
+	<parameter name="applicantName" class="java.lang.String"/>
+	<parameter name="licensee" class="java.lang.String"/>
+	<parameter name="ulbName" class="java.lang.String"/>
+	<parameter name="reportGeneratedDate" class="java.lang.String"/>
+	<parameter name="dcrNo" class="java.lang.String"/>
+	<parameter name="applicationType" class="java.lang.String"/>
+	<parameter name="surrenderRoadArea" class="java.math.BigDecimal"/>
+	<parameter name="bpaApplicationDate" class="java.lang.String"/>
+	<parameter name="planPermissionNumber" class="java.lang.String"/>
+	<parameter name="serviceType" class="java.lang.String"/>
+	<parameter name="ulbType" class="java.lang.String"/>
+	<field name="planInformation" class="org.egov.common.entity.edcr.PlanInformation"/>
+	<field name="plot" class="org.egov.common.entity.edcr.Plot"/>
+	<field name="electricLine" class="org.egov.common.entity.edcr.ElectricLine"/>
+	<variable name="SUB_REPORT_ROW_CNT" class="java.lang.Integer"/>
 
     <title>
-        <band height="800" splitType="Stretch">
+        <band height="900" splitType="Stretch">
             
             <frame>
                 <reportElement x="0" y="0" width="555" height="115" uuid="f778375a-96b7-42de-8819-00bbfd34ae68"/>
@@ -232,10 +240,10 @@
                 <reportElement x="12" y="313" width="536" height="25" positionType="Float" stretchType="RelativeToTallestObject" uuid="7a8b9c0d-e1f2-43a4-b5c6-d7e8f9a0b1c2"/>
                 <box><leftPen lineWidth="0.5"/><bottomPen lineWidth="0.5"/><rightPen lineWidth="0.5"/></box>
                 <textField isStretchWithOverflow="true"><reportElement x="0" y="0" width="20" height="25" stretchType="RelativeToTallestObject" uuid="e1f2a3b4-c5d6-4789-b9a0-d1e2f3a4b5c6"/><box><rightPen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["5"]]></textFieldExpression></textField>
-                <staticText><reportElement x="20" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="b4c5d6e7-f8a9-40b1-c2d3-e4f5a6b7c8d9"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Top"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[PLOT AREA (Declared) m²]]></text></staticText>
+                <staticText><reportElement x="20" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="b4c5d6e7-f8a9-40b1-c2d3-e4f5a6b7c8d9"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[PLOT AREA (Declared) m²]]></text></staticText>
                 <textField isStretchWithOverflow="true" pattern="#.##" isBlankWhenNull="true"><reportElement x="134" y="0" width="142" height="25" stretchType="RelativeToTallestObject" uuid="d2e3f4a5-b6c7-48d9-9e0f-a1b2c3d4e5f6"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA[$F{planInformation}.getPlotArea()]]></textFieldExpression></textField>
                 <textField isStretchWithOverflow="true"><reportElement x="276" y="0" width="20" height="25" stretchType="RelativeToTallestObject" uuid="c3d4e5f6-a7b8-49c0-d1e2-e3f4a5b6c7d8"/><box><rightPen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["6"]]></textFieldExpression></textField>
-                <staticText><reportElement x="296" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="b5c6d7e8-f9a0-41b2-c3d4-e5f6a7b8c9d0"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Top"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[PLOT AREA (Measured) m²]]></text></staticText>
+                <staticText><reportElement x="296" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="b5c6d7e8-f9a0-41b2-c3d4-e5f6a7b8c9d0"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[PLOT AREA (Measured) m²]]></text></staticText>
                 <textField isStretchWithOverflow="true" pattern="#.##" isBlankWhenNull="true"><reportElement x="410" y="0" width="126" height="25" stretchType="RelativeToTallestObject" uuid="a2b3c4d5-e6f7-48a9-b0c1-d2e3f4a5b6c7"/><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA[$F{plot}.getPlotBndryArea()]]></textFieldExpression></textField>
             </frame>
             
@@ -244,7 +252,7 @@
                 <box><leftPen lineWidth="0.5"/><bottomPen lineWidth="0.5"/><rightPen lineWidth="0.5"/></box>
                 <textField isStretchWithOverflow="true"><reportElement x="0" y="0" width="20" height="25" stretchType="RelativeToTallestObject" uuid="a1b2c3d4-e5f6-4789-8c9d-0e1f2a3b4c5a"/><box><rightPen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["7"]]></textFieldExpression></textField>
                 <staticText><reportElement x="20" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="b2c3d4e5-f6a7-48b9-c0d1-e2f3a4b5c6d7"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Top"><font size="8"/><paragraph leftIndent="3" spacingBefore="2"/></textElement><text><![CDATA[AVERAGE WIDTH & DEPTH OF PLOT (m)]]></text></staticText>
-                <textField isStretchWithOverflow="true" isBlankWhenNull="true"><reportElement x="134" y="0" width="142" height="25" stretchType="RelativeToTallestObject" uuid="c3d4e5f6-a7b8-49c0-d1e2-e3f4a5b6c7d8"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA["W: " + $F{planInformation}.getWidthOfPlot() + " & D: " + $F{planInformation}.getDepthOfPlot()]]></textFieldExpression></textField>
+                <textField isStretchWithOverflow="true" isBlankWhenNull="true"><reportElement x="134" y="0" width="142" height="25" stretchType="RelativeToTallestObject" uuid="c3d4e5f6-a7b8-49c0-d1e2-e3f4a5b6c7d8"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA["Width: " + $F{planInformation}.getWidthOfPlot() + " & Depth: " + $F{planInformation}.getDepthOfPlot()]]></textFieldExpression></textField>
                 <textField isStretchWithOverflow="true"><reportElement x="276" y="0" width="20" height="25" stretchType="RelativeToTallestObject" uuid="d4e5f6a7-b8c9-40d1-e2f3-a4b5c6d7e8f9"/><box><rightPen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["8"]]></textFieldExpression></textField>
                 <staticText><reportElement x="296" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="e5f6a7b8-c9d0-41e2-f3a4-b5c6d7e8f9a0"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[KHATUNI NO.]]></text></staticText>
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true"><reportElement x="410" y="0" width="126" height="25" stretchType="RelativeToTallestObject" uuid="f6a7b8c9-d0e1-42e3-a4b5-c6d7e8f9a0b1"/><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA[$F{planInformation}.getKhatuniNo()]]></textFieldExpression></textField>
@@ -261,36 +269,43 @@
                 <textField isStretchWithOverflow="true" isBlankWhenNull="true"><reportElement x="410" y="0" width="126" height="25" stretchType="RelativeToTallestObject" uuid="7a8b9c0d-1e2f-4a3b-4c5d-6e7f8a9b0c1d"/><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA[$F{planInformation}.getDemolitionArea()]]></textFieldExpression></textField>
             </frame>
 
-            <frame>
-                <reportElement x="12" y="388" width="536" height="25" positionType="Float" stretchType="RelativeToTallestObject" uuid="8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d"/>
-                <box><leftPen lineWidth="0.5"/><bottomPen lineWidth="0.5"/><rightPen lineWidth="0.5"/></box>
-                <textField isStretchWithOverflow="true"><reportElement x="0" y="0" width="20" height="25" stretchType="RelativeToTallestObject" uuid="9b0c1d2e-3f4a-5b6c-7d8e-9f0a1b2c3d4e"/><box><rightPen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["11"]]></textFieldExpression></textField>
-                <staticText><reportElement x="20" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="0c1d2e3f-4a5b-6c7d-8e9f-0a1b2c3d4e5f"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[ULB TYPE]]></text></staticText>
-                <textField isStretchWithOverflow="true" isBlankWhenNull="true"><reportElement x="134" y="0" width="142" height="25" stretchType="RelativeToTallestObject" uuid="1d2e3f4a-5b6c-7d8e-9f0a-1b2c3d4e5f6a"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA[$F{planInformation}.getUlbType()]]></textFieldExpression></textField>
-                <textField isStretchWithOverflow="true"><reportElement x="276" y="0" width="20" height="25" stretchType="RelativeToTallestObject" uuid="a2b3c4d5-e6f7-48a9-b0c1-d2e3f4a5b6c7"/><box><rightPen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["12"]]></textFieldExpression></textField>
-                <staticText><reportElement x="296" y="0" width="114" height="25" stretchType="RelativeToTallestObject" uuid="b3c4d5e6-f7a8-49b0-c1d2-e3f4a5b6c7d8"/><box><rightPen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="3"/></textElement><text><![CDATA[NUMBER OF FLOORS]]></text></staticText>
-                <textField isStretchWithOverflow="true" isBlankWhenNull="true"><reportElement x="410" y="0" width="126" height="25" stretchType="RelativeToTallestObject" uuid="c4d5e6f7-a8b9-40b1-c2d3-e4f5a6b7c8d9"/><textElement verticalAlignment="Middle"><font size="8"/><paragraph leftIndent="5"/></textElement><textFieldExpression><![CDATA[$F{planInformation}.getNumberOfFloors()]]></textFieldExpression></textField>
-            </frame>
-            
-            <staticText>
-		        <reportElement x="12" y="420" width="193" height="19" forecolor="#FF0000" positionType="Float" isRemoveLineWhenBlank="true" uuid="d5e6f7a8-b9c0-4d1e-a2b3-c4d5e6f7a8b9">
-		            <printWhenExpression><![CDATA[$P{errors} != null && !$P{errors}.isEmpty()]]></printWhenExpression>
-		        </reportElement>
-		        <textElement textAlignment="Left" verticalAlignment="Middle">
-		            <font size="12" isBold="true"/>
-		        </textElement>
-		        <text><![CDATA[Errors]]></text>
-    		</staticText>
+<!-- Errors heading - only shows if there are errors -->
+<staticText>
+    <reportElement 
+        x="12" 
+        y="400" 
+        width="537"
+        height="25" 
+        forecolor="#FF0000"
+        positionType="Float"
+        isRemoveLineWhenBlank="true"
+        uuid="1bc539b3-3399-4906-9c6d-2f6ce7399eb8">
+        <printWhenExpression><![CDATA[$P{errorString} != null && $P{errorString}.trim().length() > 0]]></printWhenExpression>
+    </reportElement>
+    <textElement textAlignment="Left" verticalAlignment="Middle">
+        <font size="12" isBold="true"/>
+    </textElement>
+    <text><![CDATA[Errors]]></text>
+</staticText>
 
-		    <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-		        <reportElement x="12" y="439" width="536" height="30" forecolor="#FF0000" positionType="Float" isRemoveLineWhenBlank="true" uuid="e6f7a8b9-c0d1-4e2f-b3c4-d5e6f7a8b9c0">
-		            <printWhenExpression><![CDATA[$P{errors} != null && !$P{errors}.isEmpty()]]></printWhenExpression>
-		        </reportElement>
-		        <textElement verticalAlignment="Top">
-		            <font size="9" isBold="false"/>
-		        </textElement>
-		        <textFieldExpression><![CDATA[$P{errorString}]]></textFieldExpression>
-		    </textField>
+<!-- Error content - dynamic growth, no cutoff -->
+<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+    <reportElement 
+        x="12" 
+        y="420"               
+        width="537" 
+        height="300"           
+        forecolor="#FF0000"
+        isRemoveLineWhenBlank="true"
+        uuid="3993cc76-bd9f-4699-897a-2330010ece90">
+        <printWhenExpression><![CDATA[$P{errorString} != null && $P{errorString}.trim().length() > 0]]></printWhenExpression>
+    </reportElement>
+    <textElement textAlignment="Left" verticalAlignment="Top">
+        <font size="10"/>
+        <paragraph lineSpacing="1_1_2"/>   
+    </textElement>
+    <textFieldExpression><![CDATA[$P{errorString}]]></textFieldExpression>
+</textField>
             
         </band>
     </title>

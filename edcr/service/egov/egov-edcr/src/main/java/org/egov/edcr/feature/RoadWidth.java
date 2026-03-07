@@ -169,7 +169,9 @@ public class RoadWidth extends FeatureProcess {
                         //}
                         BigDecimal roadWidthRequired = getRoadWidthFromMdms(pl,roadWidth);
                         if (roadWidthRequired != null) {
-                            if (roadWidth.compareTo(roadWidthRequired) >= 0) {
+                            if (roadWidth.compareTo(roadWidthRequired) >= 0 
+                            		&& roadWidth != null
+                            		&& roadWidth.compareTo(BigDecimal.ZERO) > 0) {
                                 details.put(PERMITTED, String.valueOf(roadWidthRequired) + "m");
                                 details.put(PROVIDED, roadWidth.toString() + "m");
                                 details.put(STATUS, Result.Accepted.getResultVal());
@@ -251,15 +253,33 @@ public class RoadWidth extends FeatureProcess {
 
         if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
 			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_ROAD_WIDTH, BigDecimal.class);
-			scOpt.ifPresent(sc -> LOG.info("Min Road width Value: " + sc));
-			requiredRoadWidth = scOpt.get();
+			//scOpt.ifPresent(sc -> LOG.info("Min Road width Value: " + sc));
+			//requiredRoadWidth = scOpt.get();
+			 if (scOpt.isPresent()) {
+			        requiredRoadWidth = scOpt.get();
+			        LOG.info("Min Road width Value: " + requiredRoadWidth);
+			    } else {
+			        HashMap<String, String> errors = new HashMap<>();
+			        errors.put("MDMS Error", "Minimum Road Width is not configured in MDMS");
+			        pl.addErrors(errors);
+			    }
 		}
         
-        if (requiredRoadWidth != null && roadWidth.compareTo(requiredRoadWidth) < 0) {
+//        if (requiredRoadWidth != null && roadWidth.compareTo(requiredRoadWidth) < 0) {
+//            HashMap<String, String> errors = new HashMap<>();
+//            errors.put("Road width Error:", "Minimum Required Road width is " + requiredRoadWidth + " m");
+//            pl.addErrors(errors);
+//        }
+        if (requiredRoadWidth != null && requiredRoadWidth.compareTo(BigDecimal.ZERO) > 0
+                && roadWidth.compareTo(requiredRoadWidth) < 0) {
+
             HashMap<String, String> errors = new HashMap<>();
-            errors.put("Road width Error:", "Minimum Required Road width is " + requiredRoadWidth + " m");
+            errors.put("Road width Error:", 
+                "Provided road width is less than minimum required road width of " 
+                + requiredRoadWidth + " m");
             pl.addErrors(errors);
         }
+
         
         return requiredRoadWidth;
         

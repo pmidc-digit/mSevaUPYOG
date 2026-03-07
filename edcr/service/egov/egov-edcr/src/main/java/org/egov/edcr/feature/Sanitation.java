@@ -974,7 +974,7 @@ public class Sanitation extends FeatureProcess {
         details.put(REQUIRED, expected);
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
-        detail.getDetail().add(details);
+        //detail.getDetail().add(details);
 
     }
 

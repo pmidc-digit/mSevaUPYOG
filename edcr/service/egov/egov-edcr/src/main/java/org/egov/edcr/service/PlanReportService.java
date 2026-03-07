@@ -780,7 +780,7 @@ public class PlanReportService {
                     );
 
             // 🔴 Page break ONLY here
-            //overallSummarySub.setStartInNewPage(true);
+            overallSummarySub.setStartInNewPage(true);
 
             drb.addConcatenatedReport(overallSummarySub);
             valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);

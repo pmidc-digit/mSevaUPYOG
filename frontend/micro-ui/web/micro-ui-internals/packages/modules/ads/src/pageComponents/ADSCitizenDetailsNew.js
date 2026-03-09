@@ -140,7 +140,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             ...slot,
             isTimerRequired: true,
           }))
-        ) ?? [];
+        ) || [];
 
       const payload = { advertisementSlotSearchCriteria: enrichedSlots };
 

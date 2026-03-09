@@ -55,7 +55,7 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
+  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners || [];
 
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`,
@@ -78,9 +78,7 @@ const getApplicantDetails = (appData, t) => {
       },
       {
         title: t("BPA_APPLICANT_DOB_LABEL"),
-        value: owner?.dateOfBirth
-          ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
-          : "NA",
+        value: owner?.dateOfBirth ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB") : "NA",
       },
       {
         title: t("BPA_APPLICANT_GENDER_LABEL"),
@@ -99,8 +97,6 @@ const getApplicantDetails = (appData, t) => {
 
   return ownerDetailsArray;
 };
-
-
 
 const getLocationInfo = (appData, t) => {
   let values = [
@@ -206,8 +202,8 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_SITE_VASIKA_DATE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate
-          ? new Date(appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate).toLocaleDateString("en-GB")
-          : "NA"
+        ? new Date(appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate).toLocaleDateString("en-GB")
+        : "NA",
       //value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
     },
     {
@@ -264,10 +260,8 @@ const getSpecificationDetails = (appData, t) => {
   };
 };
 
-
-
 const getInspectionReportDetails = (appData, t) => {
-  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending ?? [];
+  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending || [];
   if (fiReport.length === 0) return null;
 
   return {
@@ -280,7 +274,7 @@ const getInspectionReportDetails = (appData, t) => {
 };
 
 const getChecklistDetails = (searchChecklistData, t) => {
-  const checklist = searchChecklistData?.CheckList ?? [];
+  const checklist = searchChecklistData?.CheckList || [];
   if (checklist.length === 0) return null;
 
   return {
@@ -326,7 +320,7 @@ const getDocuments = async (appData, t) => {
         ? filteredDocs.map((document, index) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
             return {
-              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,              
+              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,
               value: " ",
               link: documentLink || "",
             };
@@ -342,19 +336,12 @@ const getDocuments = async (appData, t) => {
 
 const getSitePhotographs = async (appData, t) => {
   const sitePhotoDocs = appData?.documents?.filter(
-    (doc) =>
-      doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
-      doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   );
 
   const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid);
 
-  const res =
-    fileStoreIds?.length > 0 &&
-    (await Digit.UploadServices.Filefetch(
-      fileStoreIds,
-      Digit.ULBService.getStateId()
-    ));
+  const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
 
   const coords = appData?.cluDetails?.additionalDetails?.coordinates || {};
 
@@ -377,11 +364,9 @@ const getSitePhotographs = async (appData, t) => {
 
           return {
             // Title includes photo label + coordinates
-            title:
-              (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) +
-              ` (Lat: ${lat}, Long: ${long})`,
+            title: (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) + ` (Lat: ${lat}, Long: ${long})`,
             value: " ",
-            link: documentLink || ""
+            link: documentLink || "",
           };
         })
       : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
@@ -389,19 +374,19 @@ const getSitePhotographs = async (appData, t) => {
   return {
     title: t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW"),
     isAttachments: true,
-    values
+    values,
   };
 };
 
 export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, searchChecklistData) => {
-
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
 
-  let detailsArr = [], imageURL = "";
+  let detailsArr = [],
+    imageURL = "";
 
-  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
+  const ownerFileStoreId = appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
 
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 
@@ -437,7 +422,6 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
     ],
     imageURL,
     ulbType,
-    ulbName
+    ulbName,
   };
 };
-

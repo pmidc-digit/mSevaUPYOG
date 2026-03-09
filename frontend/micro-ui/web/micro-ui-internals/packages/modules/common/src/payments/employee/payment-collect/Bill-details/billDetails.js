@@ -115,7 +115,7 @@ export const BillDetailsFormConfig = (props, t) => ({
       ],
     },
   ],
-  "WSReconnection": [
+  WSReconnection: [
     {
       head: t("COMMON_PAY_SCREEN_HEADER"),
       body: [
@@ -131,7 +131,7 @@ export const BillDetailsFormConfig = (props, t) => ({
       ],
     },
   ],
-  "SWReconnection": [
+  SWReconnection: [
     {
       head: t("COMMON_PAY_SCREEN_HEADER"),
       body: [
@@ -209,7 +209,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
   const getTotalFSM = () => (application?.totalAmount ? application?.totalAmount : 0);
   const getAdvanceAmount = () => (applicationData?.advanceAmount ? applicationData?.advanceAmount : 0);
   //const dueAmountTobePaid = () => ( bill?.totalAmount ? bill?.totalAmount - applicationData?.advanceAmount:0);
-  const dueAmountTobePaid = () => ( application?.totalAmount ? application?.totalAmount - applicationData?.advanceAmount:0);
+  const dueAmountTobePaid = () => (application?.totalAmount ? application?.totalAmount - applicationData?.advanceAmount : 0);
   const getAmountPerTrip = () => (application?.additionalDetails?.tripAmount ? application?.additionalDetails?.tripAmount : 0);
 
   const arrears =
@@ -366,8 +366,8 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
       </table>
     );
   };
-const isTL = businessService === "TL";
-console.log("billDetails==????",billDetails)
+  const isTL = businessService === "TL";
+  console.log("billDetails==||||", billDetails);
   return (
     <React.Fragment>
       <StatusTable>
@@ -409,7 +409,8 @@ console.log("billDetails==????",billDetails)
               />
             ))}
 
-          {(applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" || applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN") ? (
+          {applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" ||
+          applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" ? (
             <Row
               label={t("FSM_DUE_AMOUNT_TO_BE_PAID")}
               textStyle={{ fontWeight: "bold", textAlign: "left" }}
@@ -419,7 +420,11 @@ console.log("billDetails==????",billDetails)
         </StatusTable>
       ) : (
         <StatusTable style={{ paddingTop: "46px" }}>
-          <Row label={t("ES_PAYMENT_TAXHEADS")} textStyle={{ fontWeight: "bold", ...(isTL ? { textAlign: "right", maxWidth: "none", width: "40%" } : {}) }} text={t("ES_PAYMENT_AMOUNT")} />
+          <Row
+            label={t("ES_PAYMENT_TAXHEADS")}
+            textStyle={{ fontWeight: "bold", ...(isTL ? { textAlign: "right", maxWidth: "none", width: "40%" } : {}) }}
+            text={t("ES_PAYMENT_AMOUNT")}
+          />
           <hr style={isTL ? { width: "100%" } : { width: "40%" }} className="underline" />
           {billDetails?.billAccountDetails
             ?.sort((a, b) => a.order - b.order)
@@ -445,7 +450,11 @@ console.log("billDetails==????",billDetails)
           <hr style={isTL ? { width: "100%" } : { width: "40%" }} className="underline" />
           <Row
             label={t("CS_PAYMENT_TOTAL_AMOUNT")}
-            textStyle={isTL ? { fontWeight: "bold", textAlign: "right", maxWidth: "none", width: "40%" } : { fontWeight: "bold", textAlign: "right", maxWidth: "100px" }}
+            textStyle={
+              isTL
+                ? { fontWeight: "bold", textAlign: "right", maxWidth: "none", width: "40%" }
+                : { fontWeight: "bold", textAlign: "right", maxWidth: "100px" }
+            }
             text={"₹ " + Number(getTotal()).toFixed(2)}
           />
 
@@ -553,7 +562,7 @@ console.log("billDetails==????",billDetails)
                 className="text-indent-xl"
                 onChange={(e) => onChangeAmount(e.target.value)}
                 value={amount}
-                disable={businessService === "WS" || "SW"?false:getTotal() === 0}
+                disable={businessService === "WS" || "SW" ? false : getTotal() === 0}
               />
             ) : (
               <TextInput style={{ width: "30%" }} className="text-indent-xl" value={getTotal()} disable={true} />

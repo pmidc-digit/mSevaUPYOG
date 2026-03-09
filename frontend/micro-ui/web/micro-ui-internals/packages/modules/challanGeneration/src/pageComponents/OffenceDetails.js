@@ -31,7 +31,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = (data) => {
     goNext(data);
-    // console.log("data==??", data);
+    // console.log("data==||", data);
     // const userInfo = Digit.UserService.getUser()?.info || {};
     // const now = Date.now();
 
@@ -102,7 +102,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                 
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
@@ -127,7 +126,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                 
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
@@ -152,7 +150,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                 
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
@@ -166,7 +163,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
           </LabelFieldPair>
 
           {/* Challan Amount */}
-          <LabelFieldPair className="challan-amount-field" >
+          <LabelFieldPair className="challan-amount-field">
             <CardLabel>
               {`${t("CHALLAN_AMOUNT")}`} <span className="requiredField">*</span>
             </CardLabel>
@@ -178,7 +175,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // }}
               render={(props) => (
                 <TextInput
-                 
                   value={props.value}
                   error={errors?.name?.message}
                   onChange={(e) => {

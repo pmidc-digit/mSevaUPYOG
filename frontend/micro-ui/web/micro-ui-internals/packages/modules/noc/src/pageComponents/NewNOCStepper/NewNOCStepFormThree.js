@@ -19,61 +19,56 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   const coordinates = useSelector(function (state) {
-        return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+    return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
 
   console.log("coordinates from redux", coordinates);
 
   function goNext(finaldata) {
-
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
       setError(`${t("NOC_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
-      setTimeout(()=>{
+      setTimeout(() => {
         setShowToast(false);
         setError("");
-      },3000);
+      }, 3000);
       return;
     }
-    
 
-     if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
+    if (!coordinates?.Latitude1?.trim() || !coordinates?.Latitude2?.trim() || !coordinates?.Longitude1?.trim() || !coordinates?.Longitude2?.trim()) {
       setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
       setShowToast(true);
-      setTimeout(()=>{
+      setTimeout(() => {
         setShowToast(false);
         setError("");
-      },3000);
+      }, 3000);
       return;
     }
-  
+
     onGoNext();
-   
   }
 
-  const completeData=useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
+  const completeData = useSelector((state) => state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
 
   function validation(documents) {
     if (!isLoading) {
-      const isVacant= completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+      const isVacant = completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
       //console.log("isVacant Here==>", isVacant);
 
-      let nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+      let nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
 
       const documentsData = documents?.documents?.documents || [];
 
       const isFirm = completeData?.applicationDetails?.owners?.some((owner) => {
-      const code = owner?.ownerType?.code ?? owner?.ownerType;
-      return String(code).toLowerCase() === "firm";
-    });
+        const code = owner?.ownerType?.code || owner?.ownerType;
+        return String(code).toLowerCase() === "firm";
+      });
 
-    if (isFirm) {
-      nocDocumentsType = nocDocumentsType.map((doc) =>
-        doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc
-      );
-    }
-      
+      if (isFirm) {
+        nocDocumentsType = nocDocumentsType.map((doc) => (doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc));
+      }
+
       // Step 1: Extract required document codes from nocDocumentsType
       const requiredDocs = nocDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
 

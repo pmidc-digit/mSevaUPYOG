@@ -178,7 +178,7 @@ const LocationSearchCard = ({
       {/* BUTTON: use type="button" so it never submits parent form */}
       <div style={{ padding: "12px" }}>
         {(() => {
-          const rawLabel = nextText ?? (t ? t("ADS_PIN_LOCATION_LABEL") : null);
+          const rawLabel = nextText || (t ? t("ADS_PIN_LOCATION_LABEL") : null);
           const labelText = typeof rawLabel === "string" && rawLabel.trim() ? rawLabel : t ? t("ADS_PIN_LOCATION_LABEL") || "Pick" : "Pick";
 
           return (

@@ -22,8 +22,8 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
     // Ensure fields exist with common names
     const normalized = {
       formattedAddress: place || geoLocationObj?.formattedAddress || geoLocationObj?.place_name || "",
-      latitude: geoLocationObj?.latitude ?? geoLocationObj?.lat ?? geoLocationObj?.y ?? null,
-      longitude: geoLocationObj?.longitude ?? geoLocationObj?.lng ?? geoLocationObj?.x ?? null,
+      latitude: geoLocationObj?.latitude || geoLocationObj?.lat || geoLocationObj?.y || null,
+      longitude: geoLocationObj?.longitude || geoLocationObj?.lng || geoLocationObj?.x || null,
       placeId: geoLocationObj?.placeId || geoLocationObj?.id || null,
       raw: geoLocationObj || {},
       pincode: pincode || null,
@@ -40,15 +40,8 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
 
   return (
     <>
-      <div style={{width:"100%",marginTop:"8px"}}>
-        <TextInput
-          value={placeName}
-          onChange={() => {}}
-          onBlur={onBlur}
-          disabled={true}
-          placeholder={t("ADS_LOCATION")}
-         
-        />
+      <div style={{ width: "100%", marginTop: "8px" }}>
+        <TextInput value={placeName} onChange={() => {}} onBlur={onBlur} disabled={true} placeholder={t("ADS_LOCATION")} />
         {/* <div>
           <button
             type="button"

@@ -6,15 +6,15 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   const { t } = useTranslation();
   const [localRemarks, setLocalRemarks] = useState({});
 
- const sortedDocuments = [...(documents || [])]?.sort((a, b) => {
-   if (!a?.order) return 1; // push falsy (null/undefined/0) to the end
-   if (!b?.order) return -1;
-   return a.order - b.order;
- });
+  const sortedDocuments = [...(documents || [])]?.sort((a, b) => {
+    if (!a?.order) return 1; // push falsy (null/undefined/0) to the end
+    if (!b?.order) return -1;
+    return a.order - b.order;
+  });
 
   // fetch urls and checklist data as before...
   const { data: urlsList } = Digit.Hooks.noc.useNOCDocumentSearch(
-    { value: { workflowDocs: (documents || []).map(d => ({ documentUid: d.documentUid })) } },
+    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
     { enabled: documents?.length > 0 }
   );
   const { data: searchChecklistData } = Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo }, tenantId);
@@ -22,7 +22,9 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   useEffect(() => {
     if (searchChecklistData?.checkList?.length > 0 && Object.keys(localRemarks).length === 0) {
       const initial = {};
-      searchChecklistData.checkList.forEach(c => { initial[c.documentUid || c.documentuid]  = c.remarks || ""; });
+      searchChecklistData.checkList.forEach((c) => {
+        initial[c.documentUid || c.documentuid] = c.remarks || "";
+      });
       setLocalRemarks(initial);
       onRemarksChange(initial);
     }
@@ -35,7 +37,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   };
 
   return (
-    <div className="checklist-document-table-wrapper" style ={{fontWeight: "bold"}}>
+    <div className="checklist-document-table-wrapper" style={{ fontWeight: "bold" }}>
       <table className="customTable table-border-style checklist-document-table">
         <thead>
           <tr>
@@ -50,21 +52,19 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
             const url = urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
-                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
+                <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>
                 <td className="checklist-table-cell checklist-table-cell-doc-name">{t(doc?.documentType?.replaceAll(".", "_")) || t("CS_NA")}</td>
                 <td className="checklist-table-cell checklist-table-cell-file">
-                  {url ? (
-                    <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} />
-                  ) : t("CS_NA")}
+                  {url ? <LinkButton label={t("View")} onClick={() => window.open(url, "_blank")} /> : t("CS_NA")}
                 </td>
                 <td className="checklist-table-cell checklist-table-cell-remark">
                   <TextArea
                     t={t}
-                    value={localRemarks[doc?.documentUid] ?? ""}
+                    value={localRemarks[doc?.documentUid] || ""}
                     onChange={(e) => {
                       if (!readOnly) {
                         const value = e.target.value;
-                        setLocalRemarks(prev => ({ ...prev, [doc?.documentUid]: value }));
+                        setLocalRemarks((prev) => ({ ...prev, [doc?.documentUid]: value }));
                         onRemarksChange({ ...localRemarks, [doc?.documentUid]: value });
                       }
                     }}

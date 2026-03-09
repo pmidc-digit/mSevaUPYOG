@@ -46,6 +46,8 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import { format } from "date-fns";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -120,11 +122,16 @@ const NOCEmployeeApplicationOverview = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [checklistRemarks, setChecklistRemarks] = useState({});
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
-  const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
-      documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
-  } : {})
-    const [timeObj, setTimeObj] = useState(null);
-    
+  const [siteImages, setSiteImages] = useState(
+    applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+      ? {
+          documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
+        }
+      : {}
+  );
+  const [timeObj, setTimeObj] = useState(null);
+  const [appDate, setAppDate] = useState(null);
+
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
   const [fieldInspectionPending, setFieldInspectionPending] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.fieldinspection_pending || [])
@@ -637,6 +644,10 @@ const [displayMenu, setDisplayMenu] = useState(false);
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const endTime = Date.now();
+
+      if(submittedOn!== null){
+        setAppDate(Number(submittedOn))
+      }
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
         const time = formatDuration(totalTime);
@@ -1177,6 +1188,15 @@ const validateSiteImages = (action) => {
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
             </div>
+          </Card>
+        </React.Fragment>
+      )}
+      {appDate !== null && (
+        <React.Fragment>
+          <Card>
+          <StatusTable>
+            <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
+          </StatusTable>
           </Card>
         </React.Fragment>
       )}

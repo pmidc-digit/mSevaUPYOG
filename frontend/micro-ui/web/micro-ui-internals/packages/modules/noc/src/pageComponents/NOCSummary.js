@@ -8,6 +8,7 @@ import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 import NocSitePhotographs from "../components/NocSitePhotographs";
 import { convertToDDMMYYYY } from "../utils";
+import { format } from "date-fns";
 
 function NOCSummary({ currentStepData: formData, t }) {
   const { pathname: url } = useLocation();
@@ -61,11 +62,16 @@ function NOCSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs);
 
   const sitePhotos = formData?.documents?.documents?.documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-  const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
-const primaryOwner = formData?.applicationDetails?.owners?.[0];
-const propertyId =formData?.applicationDetails?.owners?.[0]?.propertyId;
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  );
+  const remainingDocs = formData?.documents?.documents?.documents?.filter(
+    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+  );
+  const primaryOwner = formData?.applicationDetails?.owners?.[0];
+  const propertyId = formData?.applicationDetails?.owners?.[0]?.propertyId;
+  const applicationNo = formData?.apiData?.Noc?.[0]?.applicationNo;
+  const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn || Date.now();
+console.log('applicationNo, submittedOn', applicationNo, submittedOn)
 
 console.log('primaryOwner and propertyId here in summary', primaryOwner, propertyId)
 
@@ -83,7 +89,25 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
         </Card>
       </StatusTable>
 
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
+       {applicationNo.length > 0 && (
+        <React.Fragment>
+          <Card>
+            <StatusTable>
+              <Row label={t("APPLICATIONNO")} text={applicationNo || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+      {submittedOn!== null && (
+        <React.Fragment>
+          <Card>
+            <StatusTable>
+              <Row label={t("Application Date")} text={format(Number(submittedOn), "dd/MM/yyyy") || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+      {(formData?.applicationDetails?.owners || [])?.map((owner, index) => {
         return (
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>

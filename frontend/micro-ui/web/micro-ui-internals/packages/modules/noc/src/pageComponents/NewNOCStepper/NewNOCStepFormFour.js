@@ -335,12 +335,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //console.log("selectedAction here", action);
   }
   if (nocCalculatorLoading) return <Loader />;
-  const applicantDetails =  currentStepData?.applicationDetails?.owners
-  const ownersList= applicantDetails?.map((item)=> item.ownerOrFirmName) 
-  const firmName = applicantDetails?.[0]?.firmName
-  const combinedOwnersName = [...(firmName?.trim() ? [firmName.trim()] : []), ...(ownersList || [])]
-    .filter((v, i, arr) => v && arr.indexOf(v) === i)
-    .join(", ");
+  const applicantDetails = currentStepData?.applicationDetails?.owners;
+  const ownersList = applicantDetails?.map((item) => item.ownerOrFirmName);
+  const firmName = applicantDetails?.[0]?.firmName;
+
+  const isFirm = currentStepData?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+
   return (
     <React.Fragment>
       {nocCalculatorLoading && <Loader />}

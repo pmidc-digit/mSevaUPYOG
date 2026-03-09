@@ -119,7 +119,9 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				log.error("IO Exception while mapping files to artifact: " + e.getMessage());
 			}
-			storageValidator.validate(artifact);
+			if (!"ticket".equals(tenantId)) {
+				storageValidator.validate(artifact);
+			}
 			
 			if (fileStoreConfig.getImageFormats().contains(FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename())))
 				setThumbnailImages(artifact);

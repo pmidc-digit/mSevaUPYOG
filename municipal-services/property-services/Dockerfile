@@ -28,7 +28,7 @@ COPY --from=build /app/target/*.jar /app/start.sh /opt/egov/
 COPY --from=build /app/src/main/resources/mcbathinda.cer mcbathinda.cer
 
 #RUN keytool -import -alias smsgwsmsgovin -file mcbathinda.cer -keystore /etc/ssl/certs/truststore.jks -storepass changeit -noprompt
-RUN keytool -importcert -alias smsgwsmsgovin -trustcacerts -keystore cacerts -file mcbathinda.cer
+RUN keytool -importcert -alias mcbathinda -trustcacerts -keystore cacerts -file mcbathinda.cer
 
 RUN chmod +x /opt/egov/start.sh
 

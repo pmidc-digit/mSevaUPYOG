@@ -143,7 +143,14 @@ const CLUApplicationDetails = () => {
 
       const siteImagesFromData = cluObject?.cluDetails?.additionalDetails?.siteImages;
 
-      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
+
+      const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
+      const endTime = Date.now();
+      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
+      setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);
 

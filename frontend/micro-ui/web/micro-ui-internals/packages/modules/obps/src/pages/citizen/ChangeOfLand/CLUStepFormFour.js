@@ -70,7 +70,6 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     try {
       const finalPayload = mapToCLUPayload(data, selectedAction);
-      "finalPayload here==>", finalPayload;
 
       const response = await Digit.OBPSService.CLUUpdate({ tenantId, details: finalPayload });
 
@@ -261,7 +260,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     goNext(action);
   }
 
-  const ownersList = currentStepData?.apiData?.Clu?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.map(
+  const ownersList = currentStepData?.applicationDetails?.owners?.map(
     (item) => item.ownerOrFirmName
   );
   const combinedOwnersName = ownersList?.join(", ");

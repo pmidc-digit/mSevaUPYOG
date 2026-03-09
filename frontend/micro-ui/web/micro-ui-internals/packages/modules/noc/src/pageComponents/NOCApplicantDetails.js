@@ -394,14 +394,20 @@ const NOCApplicantDetails = (_props) => {
       console.log('get owner details firing???')
       const currentMobile = mobileAtIndex(idx);
 
-    if (!/^[6-9]\d{9}$/.test(currentMobile)) {
-      setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
-      return;
-    }
+      if (!/^[6-9]\d{9}$/.test(currentMobile)) {
+        setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+        setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
+        return;
+      }
       const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
 
       const users = userResponse?.user ?? [];
       if (!users.length) {
+        setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
         setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
         return;
       }

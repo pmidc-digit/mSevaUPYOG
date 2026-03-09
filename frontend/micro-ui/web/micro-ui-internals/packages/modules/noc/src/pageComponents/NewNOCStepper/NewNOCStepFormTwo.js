@@ -172,7 +172,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
     }
   } catch (error) {
-    setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    setShowToast({ key: "true", error: true, message: error });
   }
 };
 
@@ -262,7 +262,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         }
        }catch(error){
           console.log("errors here in goNext - catch block", error);
-          setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
+          setShowToast({ key: "true", error:true, message: error});
       }
 
         // onGoNext();

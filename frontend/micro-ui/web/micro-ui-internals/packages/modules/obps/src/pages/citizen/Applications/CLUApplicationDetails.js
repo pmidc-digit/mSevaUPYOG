@@ -104,9 +104,10 @@ const CLUApplicationDetails = () => {
       setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
 
       const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
-      const lastModified = cluObject?.auditDetails?.lastModifiedTime;
-      const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
-      const time = totalTime ? formatDuration(totalTime) : null;
+      const endTime = Date.now();
+      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+      const totalTime = submittedOn != null ? endTime - submittedOn : null;
+      const time = formatDuration(totalTime);
       setTimeObj(time);
     }
   }, [applicationDetails?.Clu]);

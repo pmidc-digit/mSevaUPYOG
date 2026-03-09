@@ -2,7 +2,7 @@ import { Card, Header, Loader, Table, SubmitBar } from "@mseva/digit-ui-react-co
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
-
+import { format } from "date-fns";
 const CLUMyApplications = ({ view }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -72,6 +72,23 @@ const CLUMyApplications = ({ view }) => {
         Header: t("BPA_APPLICATION_STATUS"),
         accessor: (row) => row?.Applications?.applicationStatus,
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
+      },
+      {
+        Header: t("Application Date"),
+        accessor: (row) => row?.Applications?.cluDetails?.additionalDetails?.SubmittedOn,
+        Cell: ({ row }) => {
+          const submittedOn = row?.original?.Applications?.cluDetails?.additionalDetails?.SubmittedOn;
+          if (!submittedOn) {
+            return GetCell("-");
+          }
+
+          const date = new Date(Number(submittedOn));
+          if (isNaN(date?.getTime())) {
+            return GetCell("-");
+          }
+
+          return GetCell(format(date, "dd/MM/yyyy"));
+        },
       },
       {
         Header: t("Action"),

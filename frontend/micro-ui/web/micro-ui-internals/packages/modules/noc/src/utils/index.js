@@ -28,7 +28,7 @@ export const EmployeeData = (tenantId, consumerCode) => {
     role: "EMPLOYEE",
   });
 
-  const officerInstance = wfData?.data?.processInstances?.find((pi) => pi?.action === "APPROVE");
+  const officerInstance = wfData?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });

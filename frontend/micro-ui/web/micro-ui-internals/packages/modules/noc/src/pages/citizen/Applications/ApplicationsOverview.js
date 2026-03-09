@@ -37,7 +37,7 @@ import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { convertToDDMMYYYY,formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
-
+import { format } from "date-fns";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -102,7 +102,8 @@ const CitizenApplicationOverview = () => {
 
   const { isLoading, data , refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  const [timeObj , setTimeObj] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
+  const [appDate, setAppDate] = useState(null);
 
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
   const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
@@ -169,6 +170,9 @@ const CitizenApplicationOverview = () => {
       setDisplayData(finalDisplayData);
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
+      if(submittedOn!== null){
+        setAppDate(Number(submittedOn))
+      }
       const endTime = Date.now();
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
@@ -312,6 +316,7 @@ const CitizenApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
+  console.log('EmpData', EmpData)
   dowloadOptions.push({
       label: t("Application Form"),
       onClick: handleDownloadPdf,
@@ -345,18 +350,17 @@ const CitizenApplicationOverview = () => {
       });
     }
   }
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED" ) {
-
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED") {
+     dowloadOptions.push({
         label: t("DOWNLOAD_NOC_REJECTION_LETTER"),
         onClick: () =>
-          getRecieptSearch({
-            tenantId: reciept_data?.Payments[0]?.tenantId,
+          getRejectionLetterReceipt({
+            tenantId: tenantId,
             payments: reciept_data?.Payments[0],
             EmpData,
           }),
       });
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
@@ -641,6 +645,15 @@ const finalComment = useMemo(() => {
           <Card>
             <StatusTable>
               <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+      {appDate!== null && (
+        <React.Fragment>
+          <Card>
+            <StatusTable>
+              <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
             </StatusTable>
           </Card>
         </React.Fragment>

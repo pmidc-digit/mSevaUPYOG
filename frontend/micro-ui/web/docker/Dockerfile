@@ -1,4 +1,4 @@
-FROM egovio/alpine-node-builder-14:yarn AS build
+FROM node:20-alpine AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.8

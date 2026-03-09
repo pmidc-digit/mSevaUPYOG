@@ -374,6 +374,9 @@ const NOCApplicantDetails = (_props) => {
       const currentMobile = mobileAtIndex(idx);
 
       if (!/^[6-9]\d{9}$/.test(currentMobile)) {
+        setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
         setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
         return;
       }
@@ -381,6 +384,9 @@ const NOCApplicantDetails = (_props) => {
 
       const users = userResponse?.user || [];
       if (!users.length) {
+        setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
         setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
         return;
       }

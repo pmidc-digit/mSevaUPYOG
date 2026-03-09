@@ -46,6 +46,8 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import { format } from "date-fns";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -128,6 +130,7 @@ const NOCEmployeeApplicationOverview = () => {
       : {}
   );
   const [timeObj, setTimeObj] = useState(null);
+  const [appDate, setAppDate] = useState(null);
 
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
@@ -636,6 +639,10 @@ const NOCEmployeeApplicationOverview = () => {
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const endTime = Date.now();
+
+      if(submittedOn!== null){
+        setAppDate(Number(submittedOn))
+      }
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
@@ -1167,6 +1174,15 @@ const NOCEmployeeApplicationOverview = () => {
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
             </div>
+          </Card>
+        </React.Fragment>
+      )}
+      {appDate !== null && (
+        <React.Fragment>
+          <Card>
+          <StatusTable>
+            <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
+          </StatusTable>
           </Card>
         </React.Fragment>
       )}

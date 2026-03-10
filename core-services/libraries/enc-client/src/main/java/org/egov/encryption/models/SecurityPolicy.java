@@ -11,12 +11,12 @@ import java.util.List;
 @NoArgsConstructor
 public class SecurityPolicy {
 
-    private String model = null;
+    private String model ;
 
-    private UniqueIdentifier uniqueIdentifier = null;
+    private UniqueIdentifier uniqueIdentifier ;
 
-    private List<Attribute> attributes = null;
+    private List<Attribute> attributes ;
 
-    private List<RoleBasedDecryptionPolicy> roleBasedDecryptionPolicy = null;
+    private List<RoleBasedDecryptionPolicy> roleBasedDecryptionPolicy;
 
 }

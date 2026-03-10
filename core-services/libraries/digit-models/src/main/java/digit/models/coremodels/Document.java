@@ -10,18 +10,18 @@ import lombok.*;
 @Builder
 public class Document {
     @JsonProperty("id")
-    private String id = null;
+    private String id ;
 
     @JsonProperty("documentType")
-    private String documentType = null;
+    private String documentType ;
 
     @JsonProperty("fileStore")
-    private String fileStore = null;
+    private String fileStore ;
 
     @JsonProperty("documentUid")
-    private String documentUid = null;
+    private String documentUid ;
 
     @JsonProperty("additionalDetails")
-    private Object additionalDetails = null;
+    private Object additionalDetails ;
 
 }

@@ -770,6 +770,11 @@ const stateId = Digit.ULBService.getStateId();
 
     const filtData = data?.Licenses?.[0];
 
+
+   if(action === "SEND_FOR_INSPECTION_REPORT" && applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"){
+    filtData.assignee = [user?.info?.uuid];
+   }
+
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData?.assignee,

@@ -178,7 +178,6 @@ function LayoutSummary({ currentStepData: formData, t }) {
   const pageStyle = {
     padding: "1rem",
     backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#333",
   };
 
@@ -226,6 +225,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
     flex: "0 0 55%",
     wordBreak: "break-word",
     color: "#555",
+    height: "40px"
   };
 
   const renderLabel = (label, value) => {

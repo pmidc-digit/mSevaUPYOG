@@ -59,6 +59,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.DARamp;
 import org.egov.common.entity.edcr.Floor;
@@ -77,6 +79,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RampService extends FeatureProcess {
+	
+	private static final Logger LOG = LogManager.getLogger(RearYardService.class);
 
     private static final String SUBRULE_50_C_4_B = " 50-c-4-b";
     private static final String SUBRULE_40 = "40";
@@ -96,6 +100,10 @@ public class RampService extends FeatureProcess {
     private static final String FLOOR = "Floor";
     // private static final String SUBRULE_40_A_3_WIDTH_DESCRIPTION = "Minimum Width of Ramp %s";
     private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope width of DA Ramp";
+    
+    private static final String TO_BE_DEFINED = "To be Defined";
+    
+    private static final BigDecimal MIN_SLOPE_WIDTH= BigDecimal.valueOf(1.5);
 
     @Override
     public Plan validate(Plan pl) {
@@ -258,11 +266,13 @@ public class RampService extends FeatureProcess {
                             && !A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
                         if (!block.getDARamps().isEmpty()) {
                             boolean isSlopeDefined = false;
+                            BigDecimal slopeWidth = BigDecimal.ZERO;
                             for (DARamp daRamp : block.getDARamps()) {
                                 if (daRamp != null && daRamp.getSlope() != null
                                         && daRamp.getSlope().compareTo(BigDecimal.valueOf(0)) > 0) {
                                     isSlopeDefined = true;
                                 }
+                                slopeWidth = daRamp.getWidth().setScale(2, RoundingMode.HALF_UP);
                             }
 //                            if (isSlopeDefined) {
 //                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
@@ -272,16 +282,37 @@ public class RampService extends FeatureProcess {
 //                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
 //                                        scrutinyDetail1);
 //                            }
-                            BigDecimal expectedSlope1 = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
-                                    RoundingMode.HALF_UP);
-                            if (isSlopeDefined) {
-                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
-                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
-                            } else {
-                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
-                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
-                                        scrutinyDetail2);
-                            }
+//                            BigDecimal expectedSlope1 = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
+//                                    RoundingMode.HALF_UP);
+//                            if (isSlopeDefined) {
+////                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
+////                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
+//                            	setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, TO_BE_DEFINED,
+//                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
+//                            } else {
+////                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
+////                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+////                                        scrutinyDetail2);
+//
+//                            	 setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, TO_BE_DEFINED,
+//                                         DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+//                                         scrutinyDetail2);
+//                            }
+                            
+                           
+                                // Validate minimum slope width
+                                if (slopeWidth.compareTo(MIN_SLOPE_WIDTH) >= 0) {
+                                    LOG.info("DA Ramp slope width is valid: " + slopeWidth);
+                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, MIN_SLOPE_WIDTH.toPlainString(),
+                                          slopeWidth.toPlainString(), Result.Accepted.getResultVal(), scrutinyDetail2);
+                                } else {
+                                    LOG.error("DA Ramp slope width is less than minimum required (1.5 m): " + slopeWidth);
+                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, MIN_SLOPE_WIDTH.toPlainString(),
+                                          slopeWidth.toPlainString(), Result.Not_Accepted.getResultVal(),
+                                          scrutinyDetail2);
+                                }
+                           
+                            
                             valid = false;
                             if (isSlopeDefined) {
                                 Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();

@@ -280,7 +280,13 @@ public class RearYardService extends GeneralRule {
 							Map<String, String> details = new HashMap<>();
 							details.put(RULE_NO, rearYardResult.subRule);
 							details.put(LEVEL, rearYardResult.level != null ? rearYardResult.level.toString() : "");
-							details.put(OCCUPANCY, rearYardResult.occupancy);
+							
+							String occupancy = rearYardResult.occupancy;
+							if (occupancy != null && occupancy.contains(",")) {
+							    occupancy = occupancy.split(",")[0].trim();
+							}
+							details.put(OCCUPANCY, occupancy);
+							//details.put(OCCUPANCY, rearYardResult.occupancy);
 							String permissableValueWithPercentage;
 							String providedValue;
 							

@@ -289,14 +289,47 @@ public class SetBackService extends FeatureProcess {
                 ? pl.getPlot().getArea()
                 : BigDecimal.ZERO;
 
-        // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+//        // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+//        Map<String, List<ScrutinyDetail>> blockWiseDetails = new HashMap<>();
+//
+//        for (ScrutinyDetail sd : scrutinyDetailList) {
+//            String key = sd.getKey();
+//            if (key == null) continue;
+//
+//            // Extract block prefix: "Block_1", "Block_2", etc.
+//            String blockPrefix = "Unknown_Block";
+//            if (key.startsWith("Block_")) {
+//                String[] parts = key.split("_", 3);
+//                if (parts.length >= 2) {
+//                    blockPrefix = parts[0] + "_" + parts[1];
+//                }
+//            }
+//
+//            blockWiseDetails.computeIfAbsent(blockPrefix, k -> new ArrayList<>()).add(sd);
+//        }
+     // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+     // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
         Map<String, List<ScrutinyDetail>> blockWiseDetails = new HashMap<>();
+
+        // Track duplicate Side Setback keys
+        Map<String, Integer> sideSetbackCounter = new HashMap<>();
 
         for (ScrutinyDetail sd : scrutinyDetailList) {
             String key = sd.getKey();
             if (key == null) continue;
 
-            // Extract block prefix: "Block_1", "Block_2", etc.
+            // Apply numbering ONLY for Side Setback
+            if (key.contains("Side Setback") && !key.matches(".*Side Setback\\d+$")) {
+
+                int count = sideSetbackCounter.getOrDefault(key, 0) + 1;
+                sideSetbackCounter.put(key, count);
+
+                sd.setKey(key + count);
+            }
+
+            key = sd.getKey();
+
+            // Extract block prefix: "Block_1", "Block_2"
             String blockPrefix = "Unknown_Block";
             if (key.startsWith("Block_")) {
                 String[] parts = key.split("_", 3);
@@ -307,6 +340,8 @@ public class SetBackService extends FeatureProcess {
 
             blockWiseDetails.computeIfAbsent(blockPrefix, k -> new ArrayList<>()).add(sd);
         }
+
+
 
         // Process each block separately
         for (Map.Entry<String, List<ScrutinyDetail>> entry : blockWiseDetails.entrySet()) {

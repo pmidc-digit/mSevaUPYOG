@@ -56,6 +56,7 @@ import static org.egov.edcr.constants.DxfFileConstants.H;
 import static org.egov.edcr.constants.DxfFileConstants.I;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -132,16 +133,17 @@ public class TravelDistanceToExit extends FeatureProcess {
                 BigDecimal requiredValue = occupancyValues.get(code);
                 if (requiredValue != null) {
                     for (BigDecimal maximumTravelDistance : pl.getTravelDistancesToExit()) {
+                    	maximumTravelDistance = maximumTravelDistance.setScale(2, RoundingMode.HALF_UP);
                         boolean valid = false;
                         if (maximumTravelDistance.compareTo(requiredValue) <= 0) {
                             valid = true;
                         }
                         if (valid) {
-                            setReportOutputDetails(pl, subRule, requiredValue + DcrConstants.IN_METER, maximumTravelDistance +
-                                    DcrConstants.IN_METER, Result.Accepted.getResultVal());
+                            setReportOutputDetails(pl, subRule, requiredValue + DcrConstants.IN_M, maximumTravelDistance +
+                                    DcrConstants.IN_M, Result.Accepted.getResultVal());
                         } else {
                             setReportOutputDetails(pl,
-                                    subRule, requiredValue + DcrConstants.IN_METER, maximumTravelDistance + DcrConstants.IN_METER,
+                                    subRule, requiredValue + DcrConstants.IN_M, maximumTravelDistance + DcrConstants.IN_M,
                                     Result.Not_Accepted.getResultVal());
                         }
                     }

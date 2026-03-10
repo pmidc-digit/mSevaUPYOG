@@ -310,7 +310,14 @@ private class FrontYardResult {
 								details.put(RULE_NO, frontYardResult.subRule);
 								details.put(LEVEL,
 										frontYardResult.level != null ? frontYardResult.level.toString() : "");
-								details.put(OCCUPANCY, frontYardResult.occupancy);
+								
+								String occupancy = frontYardResult.occupancy;
+								if (occupancy != null && occupancy.contains(",")) {
+								    occupancy = occupancy.split(",")[0].trim();
+								}
+								details.put(OCCUPANCY, occupancy);
+
+								//details.put(OCCUPANCY, frontYardResult.occupancy);
 								details.put(FIELDVERIFIED, MINIMUMLABEL);
 								
 								String permissableValueWithPercentage;
@@ -1420,7 +1427,9 @@ private class FrontYardResult {
 		}
 		
 		
-		return minVal.setScale(2, RoundingMode.HALF_UP);
+		//return minVal.setScale(2, RoundingMode.HALF_UP);
+		return minVal.stripTrailingZeros();
+
 }
 
 

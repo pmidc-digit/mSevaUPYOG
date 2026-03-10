@@ -63,25 +63,115 @@ public class CollectionNotificationConsumer {
 	}
 
 	private void sendNotification(PaymentRequest paymentRequest) {
-		Payment payment = paymentRequest.getPayment();
-		for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
-			String mobNo = payment.getMobileNumber();
-			String paymentStatus = (payment.getPaymentStatus().toString() == null ? "NEW"
-					: payment.getPaymentStatus().toString());
-			Bill bill = paymentDetail.getBill();
-			String message = buildSmsBody(bill, paymentDetail, paymentRequest.getRequestInfo(), paymentStatus);
-			if (!StringUtils.isEmpty(message)) {
-				HashMap<String, Object> request = new HashMap<>();
-				request.put("mobileNumber", mobNo);
-				request.put("message", message);
-				producer.producer(applicationProperties.getSmsTopic(), request);
-			} else {
-				log.error("Message not configured! No notification will be sent.");
-			}
-		}
+	    Payment payment = paymentRequest.getPayment();
+	    
+	    for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
+	        String mobNo = payment.getMobileNumber();
+	        Bill bill = paymentDetail.getBill();
+	        String emailId = (bill != null) ? bill.getPayerEmail() : null;
+	        
+	        String paymentStatus = (payment.getPaymentStatus() == null) ? "NEW" : payment.getPaymentStatus().toString();
+	        String message = buildSmsBody(bill, paymentDetail, paymentRequest.getRequestInfo(), paymentStatus);
+	        
+	        if (!StringUtils.isEmpty(message)) {
+	            // --- SMS Notification ---
+	            HashMap<String, Object> smsRequest = new HashMap<>();
+	            smsRequest.put("mobileNumber", mobNo);
+	            smsRequest.put("message", message);
+	            producer.producer(applicationProperties.getSmsTopic(), smsRequest);
 
+	            // --- HTML Email Notification ---
+	            if (!StringUtils.isEmpty(emailId) && emailId.contains("@")) {
+	                HashMap<String, Object> emailRequest = new HashMap<>();
+	                
+	                // Call the new formatting method
+	                String htmlContent = buildHtmlEmailContent(message, payment, paymentDetail);
+
+	                emailRequest.put("emailTo", emailId);
+	                emailRequest.put("body", htmlContent);
+	                emailRequest.put("subject", "Payment Successful Notification - mSeva");
+	                emailRequest.put("isHTML", true);
+
+	                producer.producer(applicationProperties.getEmailTopic(), emailRequest);
+	            }
+	        } else {
+	            log.error("Message not configured! No notification will be sent.");
+	        }
+	    }
+	}
+	
+	private String buildHtmlEmailContent(String message, Payment payment, PaymentDetail paymentDetail) {
+	    Bill bill = paymentDetail.getBill();
+	    
+	    // 1. Data Extraction
+	    String payerName = (bill != null && !StringUtils.isEmpty(bill.getPayerName())) ? bill.getPayerName() : "Citizen";
+	    String consumerCode = (bill != null) ? bill.getConsumerCode() : "N/A";
+	    String receiptNo = paymentDetail.getReceiptNumber();
+	    String serviceType = mapServiceCode(paymentDetail.getBusinessService());
+	    
+	    // Formatting Amounts (Total and Bill Amount)
+	    String totalPaid = String.format("%.2f", payment.getTotalAmountPaid());
+	    String billAmount = (bill != null) ? String.format("%.2f", bill.getTotalAmount()) : totalPaid;
+
+	    // 2. Time Conversion: UTC to IST (Local Indian Time)
+	    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
+	    sdf.setTimeZone(java.util.TimeZone.getTimeZone("IST")); 
+	    String localDateStr = sdf.format(new java.util.Date(payment.getTransactionDate()));
+
+	    // 3. Constructing the Message
+	    String detailedMessage = "Dear <b><i>" + payerName + "</i></b>,<br><br>"
+	        + "Your payment for <b>" + serviceType + "</b> has been processed successfully. "
+	        + "A detailed summary of your transaction is provided below for your records.";
+
+	    return "<html>"
+	        + "<body style='font-family: Segoe UI, Tahoma, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333;'>"
+	        + "  <div style='max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e0e0e0;'>"
+	        + "    "
+	        + "    "
+	        + "    <div style='background-color: #2c3e50; padding: 20px; text-align: center; color: #ffffff;'>"
+	        + "      <h1 style='margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px;'>Payment Confirmation</h1>"
+	        + "      <p style='margin: 5px 0 0; font-size: 12px; opacity: 0.8;'>mSeva Punjab Municipal Infrastructure Development Company</p>"
+	        + "    </div>"
+	        + "    "
+	        + "    <div style='padding: 35px;'>"
+	        + "      <p style='font-size: 16px; line-height: 1.6;'>" + detailedMessage + "</p>"
+	        + "      "
+	        + "      <h3 style='font-size: 14px; text-transform: uppercase; color: #7f8c8d; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 30px;'>Transaction Details</h3>"
+	        + "      <table style='width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;'>"
+	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Consumer Code/Application No</td><td style='padding: 10px 0; text-align: right;'><b>" + consumerCode + "</b></td></tr>"
+	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Official Receipt No.</td><td style='padding: 10px 0; text-align: right;'><b>" + receiptNo + "</b></td></tr>"
+	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Payment Method</td><td style='padding: 10px 0; text-align: right;'><b>" + payment.getPaymentMode() + "</b></td></tr>"
+	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Transaction Date & Time (IST)</td><td style='padding: 10px 0; text-align: right;'><b>" + localDateStr + "</b></td></tr>"
+	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Total Bill Amount</td><td style='padding: 10px 0; text-align: right;'>INR " + billAmount + "</td></tr>"
+	        + "        <tr style='font-size: 18px; color: #27ae60;'><td style='padding: 20px 0; border-top: 2px solid #f4f7f6;'>Amount Paid</td><td style='padding: 20px 0; text-align: right; border-top: 2px solid #f4f7f6;'><b>INR " + totalPaid + "</b></td></tr>"
+	        + "      </table>"
+	        + "      "
+	        + "      "
+	        + "      <div style='margin-top: 30px; padding: 20px; background-color: #f0f7ff; border-radius: 6px; border-left: 5px solid #3498db; text-align: center;'>"
+	        + "        <p style='margin: 0 0 15px; font-size: 14px; color: #2c3e50;'><b>Your receipt is ready for download</b></p>"
+	        + "        <a href='https://mseva.lgpunjab.gov.in/citizen' style='display: inline-block; background-color: #3498db; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Download Official Receipt</a>"
+	        + "      </div>"
+	        + "      "
+	        + "      <p style='margin-top: 30px; font-size: 14px; color: #555;'>Regards,<br><b style='color: #2c3e50;'>Team mSeva (PMIDC)</b></p>"
+	        + "    </div>"
+	        + "    "
+	        + "    <div style='background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee;'>"
+	        + "      This is a system-generated receipt for mSeva Punjab Services. No physical signature is required."
+	        + "    </div>"
+	        + "  </div>"
+	        + "</body></html>";
 	}
 
+	private String mapServiceCode(String code) {
+	    if (code == null) return "General Service";
+	    switch (code.toUpperCase()) {
+	        case "PT": return "Property Tax";
+	        case "WS": return "Water Supply";
+	        case "SW": return "Sewerage";
+	        case "TL": return "Trade License";
+	        default: return code;
+	    }
+	}
 	private String buildSmsBody(Bill bill, PaymentDetail paymentDetail, RequestInfo requestInfo, String paymentStatus) {
 		log.info("Inside BodySms");;
 		String message = null;
@@ -215,4 +305,7 @@ public class CollectionNotificationConsumer {
 		} else
 			return res;
 	}
+	
+	
+	
 }

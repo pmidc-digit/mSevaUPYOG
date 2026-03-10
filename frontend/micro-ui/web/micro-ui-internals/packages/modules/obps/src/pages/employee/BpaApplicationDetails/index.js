@@ -1074,7 +1074,7 @@ const BpaApplicationDetail = () => {
         ];
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
-    console.log("SelectedActionData", data);
+    console.log("SelectedActionData", data, user);
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
     //   alert(t("Please fill in the comments before submitting  "))
     // }
@@ -1170,9 +1170,10 @@ const BpaApplicationDetail = () => {
             BPA: {
               ...payload?.BPA,
               workflow: {
+              ...payload?.BPA?.workflow,
               action: payload?.BPA?.workflow?.action,
               // assignes: payload?.BPA?.workflow?.assignes,
-              assignee: []
+              assignee: [user?.info?.uuid]
             }
             }
           }

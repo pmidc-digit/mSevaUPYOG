@@ -1165,6 +1165,7 @@ public class Parking extends FeatureProcess {
             case "G-GIF":
             case "G-ITF":
             case "G-WT":
+            case "G-ITP":
                 return 2;
 
             default:

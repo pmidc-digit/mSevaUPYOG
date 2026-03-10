@@ -21,13 +21,13 @@ export const NOCFeeTable = ({
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  console.log('feeHistory', feeHistory)
+  console.log("feeHistory", feeHistory);
 
   const columns = [
     {
@@ -45,9 +45,7 @@ export const NOCFeeTable = ({
         if (row.taxHeadCode === "NOC_TOTAL") {
           return (
             <div>
-              <strong style={{ fontSize: "14px" }}>
-                ₹ {row.grandTotal.toLocaleString("en-IN")}
-              </strong>
+              <strong style={{ fontSize: "14px" }}>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
               <div
                 style={{
                   fontSize: "0.85em",
@@ -56,7 +54,7 @@ export const NOCFeeTable = ({
                   lineHeight: "1.3",
                 }}
               >
-               {amountToWords(row.grandTotal)} only
+                {amountToWords(row.grandTotal)} only
               </div>
             </div>
           );
@@ -66,9 +64,7 @@ export const NOCFeeTable = ({
             t={t}
             type="number"
             isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0
-              ? ""
-              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+            value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
             onChange={(e) => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith("0")) {
@@ -95,18 +91,14 @@ export const NOCFeeTable = ({
 
         if (disable) {
           return (
-            <div>
-              {feeData[row.index]?.remark || <TextArea placeholder="Enter remarks" disabled={true} className="custom-fee-table-textarea" />}
-            </div>
+            <div>{feeData[row.index]?.remark || <TextArea placeholder="Enter remarks" disabled={true} className="custom-fee-table-textarea" />}</div>
           );
         }
 
         return (
           <TextArea
             value={feeData[row.index]?.remark || ""}
-            onChange={(e) =>
-              handleRemarkChange(row.index, e.target.value, row.amount)
-            }
+            onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
             disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
@@ -127,15 +119,12 @@ export const NOCFeeTable = ({
 
     const feeTypes = Object.keys(feeHistory);
     // Find the maximum number of history entries across all fee types
-    const maxHistoryLength = Math.max(...feeTypes.map(ft => feeHistory[ft]?.length || 0));
+    const maxHistoryLength = Math.max(...feeTypes.map((ft) => feeHistory[ft]?.length || 0));
     //style removed from toggle button to bring it closer to feehistory label as per feedback
     return (
       <div className="custom-fix-fee-history-wrapper">
         {/* Toggle Header */}
-        <div 
-          className="custom-fix-fee-history-toggle"
-          onClick={() => setShowHistory(!showHistory)}
-        >
+        <div className="custom-fix-fee-history-toggle" onClick={() => setShowHistory(!showHistory)}>
           <span>{t("BPA_FEE_HISTORY_LABEL")}</span>
           <span className="custom-fix-fee-history-toggle-icon">{showHistory ? "▲" : "▼"}</span>
         </div>
@@ -178,9 +167,24 @@ export const NOCFeeTable = ({
                     </tr>
                     {/* Updated By Row */}
                     <tr>
-                      <td className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator" : "custom-fix-fee-history-table-cell-separator-last"}>{t("BPA_UPDATED_BY_LABEL")}</td>
+                      <td
+                        className={
+                          entryIndex < maxHistoryLength - 1
+                            ? "custom-fix-fee-history-table-cell-separator"
+                            : "custom-fix-fee-history-table-cell-separator-last"
+                        }
+                      >
+                        {t("BPA_UPDATED_BY_LABEL")}
+                      </td>
                       {feeTypes.map((feeType) => (
-                        <td key={`${feeType}-updatedby-${entryIndex}`} className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator-value" : "custom-fix-fee-history-table-cell-separator-value-last"}>
+                        <td
+                          key={`${feeType}-updatedby-${entryIndex}`}
+                          className={
+                            entryIndex < maxHistoryLength - 1
+                              ? "custom-fix-fee-history-table-cell-separator-value"
+                              : "custom-fix-fee-history-table-cell-separator-value-last"
+                          }
+                        >
                           {feeHistory[feeType]?.[entryIndex]?.who || t("UNKNOWN")}
                         </td>
                       ))}
@@ -214,11 +218,7 @@ export const NOCFeeTable = ({
                         t={t}
                         type="text"
                         isMandatory={false}
-                        value={
-                          feeData[row.index]?.adjustedAmount === 0
-                            ? ""
-                            : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
-                        }
+                        value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
                         onChange={(e) => {
                           let val = e.target.value;
                           if (/^\d*\.?\d*$/.test(val)) {
@@ -263,9 +263,7 @@ export const NOCFeeTable = ({
                   <div className="custom-fee-card-total-value">
                     <strong>₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
                   </div>
-                  <div className="custom-fee-card-total-words">
-                    Rupees {amountToWords(row.grandTotal).replace(' Rupees', '')} only
-                  </div>
+                  <div className="custom-fee-card-total-words">Rupees {amountToWords(row.grandTotal).replace(" Rupees", "")} only</div>
                 </div>
               )}
             </div>
@@ -274,10 +272,7 @@ export const NOCFeeTable = ({
 
         {feeHistory && Object.keys(feeHistory).length > 0 && (
           <div className="custom-fee-mobile-history">
-            <div 
-              className="custom-fee-history-toggle-mobile"
-              onClick={() => setShowHistory(!showHistory)}
-            >
+            <div className="custom-fee-history-toggle-mobile" onClick={() => setShowHistory(!showHistory)}>
               <span className="custom-fee-history-title">{t("BPA_FEE_HISTORY_LABEL")}</span>
               <span className="custom-fee-history-icon">{showHistory ? "▲" : "▼"}</span>
             </div>
@@ -312,7 +307,9 @@ export const NOCFeeTable = ({
     );
   };
 
-  return isMobile ? renderMobileCardView() : (
+  return isMobile ? (
+    renderMobileCardView()
+  ) : (
     <div>
       <CustomFeeTable
         data={feeDataWithTotal}
@@ -326,4 +323,5 @@ export const NOCFeeTable = ({
       />
       {renderCustomHistory()}
     </div>
-  );}
+  );
+};

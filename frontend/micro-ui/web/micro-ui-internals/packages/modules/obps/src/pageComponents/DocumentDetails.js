@@ -29,7 +29,7 @@ import {
   CitizenInfoLabel,
   LabelFieldPair,
   ActionBar,
-  SubmitBar
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -39,9 +39,20 @@ import EXIF from "exif-js";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
 
-const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, currentStepData, onGoBack }) => {
+const DocumentDetails = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  setError: setFormError,
+  clearErrors: clearFormErrors,
+  formState,
+  currentStepData,
+  onGoBack,
+}) => {
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(currentStepData?.createdResponse?.documents ?? []);
+  const [documents, setDocuments] = useState(currentStepData?.createdResponse?.documents || []);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -49,14 +60,14 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   const [showToast, setShowToast] = useState(null);
 
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
-  const isMobile = Digit.Utils.browser.isMobile()
+  const isMobile = Digit.Utils.browser.isMobile();
   const [apiLoading, setApiLoading] = useState(false);
-  const tenantId = localStorage.getItem("CITIZEN.CITY")
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
-  console.log("currentStepData",currentStepData)
-  const searchObj = currentStepData?.createdResponse
+  console.log("currentStepData", currentStepData);
+  const searchObj = currentStepData?.createdResponse;
   const { data: bpaTaxDocuments, isLoading } = Digit.Hooks.obps.useBPATaxDocuments(
     stateId,
     {
@@ -65,15 +76,22 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       data: {
         serviceType: searchObj?.additionalDetails?.serviceType,
         applicationType: searchObj?.additionalDetails?.applicationType,
-      }
+      },
     },
     beforeUploadDocuments || []
   );
 
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["DocTypeMapping"]);
-  console.log("bpaTaxDocuments", 
-    bpaDocs?.BPA?.DocTypeMapping.filter(data => (data.WFState == searchObj?.status && data.RiskType == searchObj?.riskType && data.ServiceType == searchObj?.additionalDetails?.serviceType && data.applicationType == searchObj?.additionalDetails?.applicationType))
-  )
+  console.log(
+    "bpaTaxDocuments",
+    bpaDocs?.BPA?.DocTypeMapping.filter(
+      (data) =>
+        data.WFState == searchObj?.status &&
+        data.RiskType == searchObj?.riskType &&
+        data.ServiceType == searchObj?.additionalDetails?.serviceType &&
+        data.applicationType == searchObj?.additionalDetails?.applicationType
+    )
+  );
 
   console.log(formData, "FDFDFDF");
   console.log(bpaTaxDocuments, "bpabpa");
@@ -81,7 +99,6 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   // useEffect(() => {
   //   console.log("documentInScrutiny", formData, documents);
   // }, [documents]);
-
 
   // const handleSubmit = () => {
   //   let document = formData.documents.documents;
@@ -110,70 +127,79 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
   const handleSubmit = async () => {
     // console.log("documentInScrutiny", formData, documents);
-    const mandatoryList = bpaTaxDocuments?.filter((document) => ((document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE") && document?.required))
+    const mandatoryList = bpaTaxDocuments?.filter(
+      (document) =>
+        document.code !== "ARCHITECT.UNDERTAKING" &&
+        document.code !== "CITIZEN.UNDERTAKING" &&
+        document.code !== "SITEPHOTOGRAPH_ONE" &&
+        document?.required
+    );
     const updatedDocuments = documents?.map((item) => {
       const id = currentStepData?.createdResponse?.documents?.find((doc) => doc?.documentType === item?.documentType)?.id || null;
       return {
         ...item,
-        id
-      }
-    })
+        id,
+      };
+    });
 
     const missingDocuments = mandatoryList?.filter(
       (mandatoryDoc) =>
         !updatedDocuments?.some(
-          (doc) =>
-            doc?.documentType === mandatoryDoc?.code // must exist with id
+          (doc) => doc?.documentType === mandatoryDoc?.code // must exist with id
         )
     );
     // console.log("documentInScrutiny", mandatoryList, missingDocuments, updatedDocuments);
 
-
-    if(missingDocuments?.length > 0){
+    if (missingDocuments?.length > 0) {
       setShowToast({
         key: "error",
-        label: `${t("Missing Fields")}: ${t(missingDocuments?.[0]?.code)}`
-      })
+        label: `${t("Missing Fields")}: ${t(missingDocuments?.[0]?.code)}`,
+      });
       return;
     }
-    
-      const userInfo = Digit.UserService.getUser()
-      const accountId = userInfo?.info?.uuid
-      const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
 
-          try{
-        setApiLoading(true);
-        const result = await Digit.OBPSService.update({ BPA: {
-          ...currentStepData?.createdResponse,
-          documents: [...updatedDocuments],
-          workflow: {
-            action: workflowAction,
-            assignes: [accountId]
-          }
-        } }, tenantId)
-        if(result?.ResponseInfo?.status === "successful"){
-          setApiLoading(false);
-          onSelect("");
-        }else{
-          alert(t("BPA_CREATE_APPLICATION_FAILED"));
-          setApiLoading(false);
-        }
-        console.log("APIResponse", result);
-      }catch(e){
-        console.log("error", e);
+    const userInfo = Digit.UserService.getUser();
+    const accountId = userInfo?.info?.uuid;
+    const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
+
+    try {
+      setApiLoading(true);
+      const result = await Digit.OBPSService.update(
+        {
+          BPA: {
+            ...currentStepData?.createdResponse,
+            documents: [...updatedDocuments],
+            workflow: {
+              action: workflowAction,
+              assignes: [accountId],
+            },
+          },
+        },
+        tenantId
+      );
+      if (result?.ResponseInfo?.status === "successful") {
+        setApiLoading(false);
+        onSelect("");
+      } else {
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
+      console.log("APIResponse", result);
+    } catch (e) {
+      console.log("error", e);
+      alert(t("BPA_CREATE_APPLICATION_FAILED"));
+      setApiLoading(false);
+    }
   };
 
   const onSkip = () => onSelect();
-  function onAdd() { }
+  function onAdd() {}
   useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });
-  }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // use "auto" for instant scroll
+    });
+  }, []);
   useEffect(() => {
     const allRequiredDocumentsCode = bpaTaxDocuments.filter((e) => e.required).map((e) => e.code);
 
@@ -193,13 +219,13 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
     }
   }, [documents, checkRequiredFields]);
 
-  if(apiLoading) return (<Loader />)
+  if (apiLoading) return <Loader />;
 
   return (
     <div>
       {(window.location.href.includes("/bpa/building_plan_scrutiny/new_construction") ||
         window.location.href.includes("/ocbpa/building_oc_plan_scrutiny/new_construction")) &&
-        formData?.applicationNo ? (
+      formData?.applicationNo ? (
         <CitizenInfoLabel
           info={t("CS_FILE_APPLICATION_INFO_LABEL")}
           text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.applicationNo} ${t("BPA_DOCS_INFORMATION")}`}
@@ -212,7 +238,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       {!isLoading ? (
         <FormStep
           t={t}
-          config={{...config, texts:{header: "BPA_DOCUMENT_DETAILS_LABEL"},}}
+          config={{ ...config, texts: { header: "BPA_DOCUMENT_DETAILS_LABEL" } }}
           onSelect={handleSubmit}
           onSkip={onSkip}
           // isDisabled={window.location.href.includes("editApplication")||window.location.href.includes("sendbacktocitizen")?false:enableSubmit}
@@ -221,12 +247,13 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
         >
           {/* {bpaTaxDocuments?.map((document, index) => { */}
           {bpaTaxDocuments
-            ?.filter((document) => document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE")
+            ?.filter(
+              (document) =>
+                document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE"
+            )
             .map((document, index) => {
               return (
-                <div
-                
-                >
+                <div>
                   <SelectDocument
                     key={index}
                     document={document}
@@ -251,28 +278,22 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       )}
 
       <ActionBar>
-        <SubmitBar
-          label="Back"
-        
-          onSubmit={onGoBack}
-        />
-        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading}/>}
+        <SubmitBar label="Back" onSubmit={onGoBack} />
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading} />}
       </ActionBar>
       {showToast && (
-              <Toast
-                error={showToast.key}
-                label={t(showToast.label)}
-                onClose={() => {
-                  setShowToast(null);
-                }}
-                isDleteBtn={"true"}
-              />
+        <Toast
+          error={showToast.key}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          isDleteBtn={"true"}
+        />
       )}
     </div>
   );
 };
-
-
 
 function SelectDocument({
   t,
@@ -391,29 +412,27 @@ function SelectDocument({
   }, [file]);
 
   function routeTo(filestoreId) {
-        getUrlForDocumentView(filestoreId)
-      }
+    getUrlForDocumentView(filestoreId);
+  }
 
-      const getUrlForDocumentView = async (filestoreId) => {
-        if (filestoreId?.length === 0) return;
-        try {
-          const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
-          if (result?.data) {
-            const fileUrl = result.data[filestoreId];
-            if (fileUrl) {
-              window.open(fileUrl, "_blank");
-            } else {
-              setError(t("CS_FILE_FETCH_ERROR"));
-            }
-          }else {
-            setError(t("CS_FILE_FETCH_ERROR"));
-          }
-        } catch (e) {
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], stateId);
+      if (result?.data) {
+        const fileUrl = result.data[filestoreId];
+        if (fileUrl) {
+          window.open(fileUrl, "_blank");
+        } else {
           setError(t("CS_FILE_FETCH_ERROR"));
-        } 
+        }
+      } else {
+        setError(t("CS_FILE_FETCH_ERROR"));
       }
-
-
+    } catch (e) {
+      setError(t("CS_FILE_FETCH_ERROR"));
+    }
+  };
 
   return (
     <div>
@@ -433,7 +452,7 @@ function SelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept="image/*,.pdf"
-          // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
+            // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
           {/* {uploadedFile ? <div>
@@ -442,7 +461,6 @@ function SelectDocument({
         </div>
       </LabelFieldPair>
       {loader && <LoaderNew page={true} />}
-
     </div>
   );
 }

@@ -50,7 +50,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         ?.map((item) => ({
           ...item,
           i18nKey: `TL_${item.code}`,
-          value: item.code
+          value: item.code,
         }));
     } else if (ownershipTypeMain?.code === "INSTITUTIONALGOVERNMENT") {
       modifiedFilteredData = currentFilteredData
@@ -58,14 +58,14 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         ?.map((item) => ({
           ...item,
           i18nKey: `TL_${item.code}`,
-          value: item.code
+          value: item.code,
         }));
     } else {
       modifiedFilteredData = currentFilteredData?.map((item) => {
         return {
           ...item,
           i18nKey: `TL_${item.code}`,
-          value: item.code
+          value: item.code,
         };
       });
     }
@@ -79,15 +79,14 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   const editScreen = url.includes("/modify-application/");
 
   function selectedValue(value) {
-    console.log("value===???", value);
     sessionStorage.setItem("SubownershipCategory", value?.code);
     setOwnershipCategory(value);
-    
+
     // Clear error when user selects a value
     if (value?.code && clearErrors) {
       clearErrors(config.key);
     }
-    
+
     // For employee, trigger goNext after state update
     if (userType === "employee" && value?.code) {
       setTimeout(() => {
@@ -163,60 +162,60 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     }
   }
 
-// ✅ NEW: Reset sub-ownership when main ownership changes
-useEffect(() => {
-  if (ownershipTypeMain && ownershipCategory?.code) {
-    const mainCode = ownershipCategory.code.split(".")[0];
-    
-    if (mainCode !== ownershipTypeMain.code) {
-      // Set resetting flag to prevent error display
-      setIsResetting(true);
-      
-      // Reset sub-ownership dropdown value
-      setOwnershipCategory({
-        code: "",
-        i18nKey: "",
-        label: undefined,
-        value: "",
-      });
-      
-      // Clear form field value with React Hook Form (prevents validation)
-      if (setValue) {
-        setValue(config.key, null, { 
-          shouldValidate: false, 
-          shouldDirty: false, 
-          shouldTouch: false 
+  // ✅ NEW: Reset sub-ownership when main ownership changes
+  useEffect(() => {
+    if (ownershipTypeMain && ownershipCategory?.code) {
+      const mainCode = ownershipCategory.code.split(".")[0];
+
+      if (mainCode !== ownershipTypeMain.code) {
+        // Set resetting flag to prevent error display
+        setIsResetting(true);
+
+        // Reset sub-ownership dropdown value
+        setOwnershipCategory({
+          code: "",
+          i18nKey: "",
+          label: undefined,
+          value: "",
         });
-      }
-      
-      // Clear errors
-      if (clearErrors) {
-        clearErrors(config.key);
-        clearErrors("OwnerDetails");
-        clearErrors("owners");
-      }
-      
-      // Clear session storage
-      sessionStorage.removeItem("SubownershipCategory");
-      sessionStorage.removeItem("ownershipCategory");
-      
-      // Clear owner data
-      if (formData?.owners?.owners) {
-        delete formData.owners;
-        onSelect("formData", formData);
-      }
-      
-      // Reset flag after state updates
-      setTimeout(() => {
-        setIsResetting(false);
-        // Clear errors again after reset completes
+
+        // Clear form field value with React Hook Form (prevents validation)
+        if (setValue) {
+          setValue(config.key, null, {
+            shouldValidate: false,
+            shouldDirty: false,
+            shouldTouch: false,
+          });
+        }
+
+        // Clear errors
         if (clearErrors) {
           clearErrors(config.key);
+          clearErrors("OwnerDetails");
+          clearErrors("owners");
         }
-      }, 200);
+
+        // Clear session storage
+        sessionStorage.removeItem("SubownershipCategory");
+        sessionStorage.removeItem("ownershipCategory");
+
+        // Clear owner data
+        if (formData?.owners?.owners) {
+          delete formData.owners;
+          onSelect("formData", formData);
+        }
+
+        // Reset flag after state updates
+        setTimeout(() => {
+          setIsResetting(false);
+          // Clear errors again after reset completes
+          if (clearErrors) {
+            clearErrors(config.key);
+          }
+        }, 200);
+      }
     }
-  }
-}, [ownershipTypeMain]);
+  }, [ownershipTypeMain]);
   useEffect(() => {
     if (
       formData?.ownershipCategory?.isSameAsPropertyOwner == true ||
@@ -315,9 +314,7 @@ useEffect(() => {
           />
         </LabelFieldPair>
         {!isResetting && formState.touched?.[config.key] && formState.errors[config.key]?.message ? (
-          <CardLabelError>
-            {formState.errors[config.key]?.message}
-          </CardLabelError>
+          <CardLabelError>{formState.errors[config.key]?.message}</CardLabelError>
         ) : null}
       </React.Fragment>
     );

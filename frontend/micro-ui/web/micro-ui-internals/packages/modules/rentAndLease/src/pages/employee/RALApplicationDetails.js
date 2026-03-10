@@ -9,7 +9,7 @@ import {
   ActionBar,
   Menu,
   SubmitBar,
-  MultiLink
+  MultiLink,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -102,38 +102,37 @@ const RALApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "RL_CEMP")?.code;
   const getAcknowledgement = async () => {
-      setLoader(true);
-      try {
-        const applications = applicationData;
-        const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
-        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-        setTimeout(() => {
-          Digit.Utils.pdf.generate(acknowldgementDataAPI);
-          setLoader(false);
-        }, 0);
-      } catch (error) {
+    setLoader(true);
+    try {
+      const applications = applicationData;
+      const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
+      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
-      }
-    };
+      }, 0);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
   async function getRecieptSearch({ tenantId, payments, ...params }) {
     setLoader(true);
     try {
       let response = null;
-     
-      
-        response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          {
-            Payments: [
-              {
-                ...(payments || {}),
-                AllotmentDetails: [applicationData],
-              },
-            ],
-          },
-          "rentandlease-receipt"
-        );
-      
+
+      response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        {
+          Payments: [
+            {
+              ...(payments || {}),
+              AllotmentDetails: [applicationData],
+            },
+          ],
+        },
+        "rentandlease-receipt"
+      );
+
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: response.filestoreIds[0],
       });
@@ -146,19 +145,17 @@ const RALApplicationDetails = () => {
   }
   const dowloadOptions = [];
 
-  
-   
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-  if(applicationData?.status === "APPROVED" || applicationData?.status === "CLOSED"){
-    dowloadOptions.push({
-    label: t("CHB_DOWNLOAD_ACK_FORM"),
-    onClick: () => getAcknowledgement(),
-  });
-  }
+    if (applicationData?.status === "APPROVED" || applicationData?.status === "CLOSED") {
+      dowloadOptions.push({
+        label: t("CHB_DOWNLOAD_ACK_FORM"),
+        onClick: () => getAcknowledgement(),
+      });
+    }
   }
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -223,7 +220,7 @@ const RALApplicationDetails = () => {
 
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
-    const filterNexState = (action?.actions ?? action?.state?.actions)?.filter((item) => item.action === action?.action);
+    const filterNexState = (action?.actions || action?.state?.actions)?.filter((item) => item.action === action?.action);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState?.[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions || []);

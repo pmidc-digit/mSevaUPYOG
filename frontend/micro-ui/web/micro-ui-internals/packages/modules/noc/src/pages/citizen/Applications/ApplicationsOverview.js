@@ -18,7 +18,7 @@ import {
   ConnectingCheckPoints,
   CheckPoint,
   MultiLink,
-  CheckBox
+  CheckBox,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,7 +34,7 @@ import { EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { convertToDDMMYYYY,formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 
@@ -100,15 +100,19 @@ const CitizenApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data , refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  const [timeObj , setTimeObj] = useState(null);
+  const [timeObj, setTimeObj] = useState(null);
 
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
-  const [siteImages, setSiteImages] = useState(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages ? {
-       documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
-   } : {})
-  
+  const [siteImages, setSiteImages] = useState(
+    applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
+      ? {
+          documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
+        }
+      : {}
+  );
+
   // console.log('applicationD', applicationDetails)
   // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
@@ -126,23 +130,26 @@ const CitizenApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   const geoLocations = useMemo(() => {
-      if (siteImages?.documents && siteImages?.documents.length > 0) {
-        return siteImages?.documents?.map((img) => {
-          return {
-            latitude: img?.latitude || "",
-            longitude: img?.longitude || "",
-          }
-        })
-      }
-    }, [siteImages]);
+    if (siteImages?.documents && siteImages?.documents.length > 0) {
+      return siteImages?.documents?.map((img) => {
+        return {
+          latitude: img?.latitude || "",
+          longitude: img?.longitude || "",
+        };
+      });
+    }
+  }, [siteImages]);
 
-
-     const documentData = useMemo(() => siteImages?.documents?.map((value, index) => ({
+  const documentData = useMemo(
+    () =>
+      siteImages?.documents?.map((value, index) => ({
         title: value?.documentType,
         fileStoreId: value?.filestoreId,
         latitude: value?.latitude,
         longitude: value?.longitude,
-      })), [siteImages])
+      })),
+    [siteImages]
+  );
 
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
@@ -172,17 +179,16 @@ const CitizenApplicationOverview = () => {
       const endTime = Date.now();
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
-      const time = formatDuration(totalTime)
-      
+      const time = formatDuration(totalTime);
+
       setTimeObj(time);
-      const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages
+      const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages;
 
-      setSiteImages(siteImagesFromData? { documents: siteImagesFromData } : {});
-
+      setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
     }
   }, [applicationDetails?.Noc]);
 
-  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
+  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService || null;
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -224,9 +230,13 @@ const CitizenApplicationOverview = () => {
         throw new Error("Noc Application data is missing");
       }
       const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
-       const fee = payments?.totalAmountPaid;
+      const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] },
+        pdfkey
+      );
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       const receiptUrl = fileStore[response.filestoreIds[0]];
       await downloadPdfFromURL(receiptUrl);
@@ -238,67 +248,60 @@ const CitizenApplicationOverview = () => {
   }
 
   async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    let application = applicationDetails?.Noc?.[0]
+      let application = applicationDetails?.Noc?.[0];
 
-    let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    // console.log("fileStoreId before create", fileStoreId);
+      let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
+      // console.log("fileStoreId before create", fileStoreId);
 
-    if (!fileStoreId) {
-      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+      if (!fileStoreId) {
+        const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
 
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] },
-        pdfkey
-      );
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
 
-      const updatedApplication = {
-        ...application,
-        workflow: {
-          action: "ESIGN",
-        },
-        nocDetails: {
-          ...application?.nocDetails,
-          additionalDetails: {
-            ...application?.nocDetails?.additionalDetails,
-            sanctionLetterFilestoreId: response?.filestoreIds[0],
+        const updatedApplication = {
+          ...application,
+          workflow: {
+            action: "ESIGN",
           },
-        },
-      };
+          nocDetails: {
+            ...application?.nocDetails,
+            additionalDetails: {
+              ...application?.nocDetails?.additionalDetails,
+              sanctionLetterFilestoreId: response?.filestoreIds[0],
+            },
+          },
+        };
 
-      await mutation.mutateAsync({
-        Noc: updatedApplication,
-      });
+        await mutation.mutateAsync({
+          Noc: updatedApplication,
+        });
 
+        fileStoreId = response?.filestoreIds[0];
+        refetch();
+      }
 
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
-
-    // Print receipt
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    const receiptUrl = fileStore[fileStoreId];
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore[fileStoreId];
       await downloadPdfFromURL(receiptUrl);
-
-  } catch (error) {
-    // console.error("Sanction Letter download error:", error);
-  } finally {
-    setLoading(false);
+    } catch (error) {
+      // console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    
   }
 }
-
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
   dowloadOptions.push({
-      label: t("Application Form"),
-      onClick: handleDownloadPdf,
-    });
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" ) {
-
+    label: t("Application Form"),
+    onClick: handleDownloadPdf,
+  });
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED") {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
@@ -307,8 +310,7 @@ const CitizenApplicationOverview = () => {
       });
     }
   }
-  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED" ) {
-
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
     if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
@@ -353,7 +355,6 @@ const CitizenApplicationOverview = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
-  
 
   const menuRef = useRef();
 
@@ -402,30 +403,29 @@ const CitizenApplicationOverview = () => {
 
   // console.log("actions here", actions);
 
-//   useEffect(() => {
-//   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
-//     const commentsobj = workflowDetails?.data?.timeline
-//       ?.filter((item) => item?.performedAction === "APPROVE")
-//       ?.flatMap((item) => item?.wfComment || []);
-    
-//     const approvercomments = commentsobj?.[0];
+  //   useEffect(() => {
+  //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+  //     const commentsobj = workflowDetails?.data?.timeline
+  //       ?.filter((item) => item?.performedAction === "APPROVE")
+  //       ?.flatMap((item) => item?.wfComment || []);
 
-//     // Extract only the part after [#?..**]
-//     let conditionText = "";
-//     if (approvercomments?.includes("[#?..**]")) {
-//       conditionText = approvercomments.split("[#?..**]")[1] || "";
-//     }
+  //     const approvercomments = commentsobj?.[0];
 
-//     const finalComment = conditionText
-//       ? `The above approval is subjected to the following conditions:\n${conditionText}`
-//       : "";
+  //     // Extract only the part after [#?..**]
+  //     let conditionText = "";
+  //     if (approvercomments?.includes("[#?..**]")) {
+  //       conditionText = approvercomments.split("[#?..**]")[1] || "";
+  //     }
 
-//     setApproverComment(finalComment);
-//   }
-// }, [workflowDetails]);
+  //     const finalComment = conditionText
+  //       ? `The above approval is subjected to the following conditions:\n${conditionText}`
+  //       : "";
 
+  //     setApproverComment(finalComment);
+  //   }
+  // }, [workflowDetails]);
 
-const finalComment = useMemo(() => {
+  const finalComment = useMemo(() => {
     if (!workflowDetails || workflowDetails.isLoading || !workflowDetails.data) {
       return "";
     }
@@ -448,7 +448,6 @@ const finalComment = useMemo(() => {
         }
       : "";
   }, [workflowDetails]);
-
 
   function onActionSelect(action) {
     // console.log("selected action", action);
@@ -538,7 +537,6 @@ const finalComment = useMemo(() => {
   };
   const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
 
-
   if (isLoading) {
     return <Loader />;
   }
@@ -569,8 +567,6 @@ const finalComment = useMemo(() => {
   const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
   // console.log("combinerOwnersName", combinedOwnersName);
 
-
-  
   return (
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>

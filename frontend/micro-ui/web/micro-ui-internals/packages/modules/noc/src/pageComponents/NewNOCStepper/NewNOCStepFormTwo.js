@@ -1,6 +1,6 @@
-import React,{useEffect} from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast, ActionBar, SubmitBar} from "@mseva/digit-ui-react-components";
+import { Toast, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicationActions";
 import { useState } from "react";
 import NOCSiteDetails from "../NOCSiteDetails";
@@ -17,7 +17,6 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const [error, setError] = useState("");
   const userInfo = Digit.UserService.getUser()?.info || {};
 
-
   const {
     control,
     handleSubmit,
@@ -25,14 +24,14 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     trigger,
     formState: { errors },
     watch,
-    getValues
-  } = useForm({ 
-     defaultValues: {
-       floorArea: [{ value: "" }] ,
-       vasikaNumber: "",
-       vasikaDate: ""
-      }
-});
+    getValues,
+  } = useForm({
+    defaultValues: {
+      floorArea: [{ value: "" }],
+      vasikaNumber: "",
+      vasikaDate: "",
+    },
+  });
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
@@ -40,13 +39,12 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.formData;
   });
 
-  console.log('currentStepData at step 2', currentStepData)
+  console.log("currentStepData at step 2", currentStepData);
 
   const ownerIds = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.ownerIds;
   });
 
-  
   const handleBack = () => {
     const data = getValues();
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
@@ -57,59 +55,54 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerPhotos;
   });
 
-  const commonProps = { Controller, control, setValue,trigger, errors, errorStyle, useFieldArray, watch};
+  const commonProps = { Controller, control, setValue, trigger, errors, errorStyle, useFieldArray, watch };
 
   let tenantId;
 
-  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
-
-  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
-  
-  
-
+  if (window.location.href.includes("citizen")) tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  else {
+    tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }
 
   // console.log("tenantId here==>", tenantId);
   const toNum2 = (val) => {
-  if (val === null || val === undefined) return NaN;
-  // Strip commas / spaces; keep only digits and decimal point
-  const cleaned = String(val).trim().replace(/,/g, '');
-  const num = Number(cleaned);
-  if (Number.isNaN(num)) return NaN;
-  // Round to 5 decimals to normalize "300", "300.0", "300.00", "300.000", "300.0000", "300.00000"
-  return Number(num.toFixed(5));
+    if (val === null || val === undefined) return NaN;
+    // Strip commas / spaces; keep only digits and decimal point
+    const cleaned = String(val).trim().replace(/,/g, "");
+    const num = Number(cleaned);
+    if (Number.isNaN(num)) return NaN;
+    // Round to 5 decimals to normalize "300", "300.0", "300.00", "300.000", "300.0000", "300.00000"
+    return Number(num.toFixed(5));
   };
-   
 
- const isEqualArea = (a, b) => {
-  const n1 = toNum2(a);
-  const n2 = toNum2(b);
-  if (Number.isNaN(n1) || Number.isNaN(n2)) return false;
-  const epsilon = 1e-9; // extremely small tolerance
-  return Math.abs(n1 - n2) <= epsilon;
- }; 
-  
- function checkValidation(data){
+  const isEqualArea = (a, b) => {
+    const n1 = toNum2(a);
+    const n2 = toNum2(b);
+    if (Number.isNaN(n1) || Number.isNaN(n2)) return false;
+    const epsilon = 1e-9; // extremely small tolerance
+    return Math.abs(n1 - n2) <= epsilon;
+  };
+
+  function checkValidation(data) {
     //Validation for Jamabandi Area Must Be Equal To Total plot Area in sq mt (A)
 
-    console.log(data,"data in onsubmit sitedetails")
-    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea); 
+    console.log(data, "data in onsubmit sitedetails");
+    const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea);
     // Pick whichever is valid: propertyPlotAreaNum or landArea
-   
 
-   
+    const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" || false;
 
-    const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
-
-    const netPlotAreaAfterWidening= parseFloat(data?.netPlotAreaAfterWidening);;
-    const floorAreas = data?.floorArea?.map(f => parseFloat(f?.value) || 0) || [];
+    const netPlotAreaAfterWidening = parseFloat(data?.netPlotAreaAfterWidening);
+    const floorAreas = data?.floorArea?.map((f) => parseFloat(f?.value) || 0) || [];
     const basementArea = parseFloat(data?.basementArea) || 0;
 
-    if(!isEqual){
-        setTimeout(()=>{setShowToast(null);},3000);
-        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
-        return false;
-    }
-    else if (
+    if (!isEqual) {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+      setShowToast({ key: "true", error: true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL" });
+      return false;
+    } else if (
       isBuiltUp &&
       floorAreas.some((area, i) => {
         if (area > netPlotAreaAfterWidening) {
@@ -136,79 +129,75 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     } else {
       return true;
     }
- };
+  }
 
   const onSubmit = async (data) => {
-    console.log('data in onsubmit', data)
-  trigger();
-  if (!checkValidation(data)) return;
+    console.log("data in onsubmit", data);
+    trigger();
+    if (!checkValidation(data)) return;
 
-  try {
-    const searchResponse = await Digit.NOCService.NOCsearch({
-      tenantId,
-      filters: {
-        vasikaNumber: data?.vasikaNumber,
-        vasikaDate: convertToDDMMYYYY(data?.vasikaDate),
+    try {
+      const searchResponse = await Digit.NOCService.NOCsearch({
+        tenantId,
+        filters: {
+          vasikaNumber: data?.vasikaNumber,
+          vasikaDate: convertToDDMMYYYY(data?.vasikaDate),
+        },
+      });
+
+      const applications = searchResponse?.Noc || [];
+      const currentAppNo = currentStepData?.apiData?.Noc?.[0]?.applicationNo;
+      const activeApp = applications.find((app) => app?.applicationNo && app?.status !== "REJECTED" && app?.applicationNo !== currentAppNo);
+
+      if (activeApp) {
+        setShowToast({ key: "true", error: true, message: "Active application already exists..." });
+        return;
+      }
+
+      // Save data in redux
+      dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+
+      // ✅ Only one create call
+      if (currentStepData?.apiData?.Noc?.[0]?.applicationNo) {
+        onGoNext();
+      } else {
+        callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
+      }
+    } catch (error) {
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }
+  };
+
+  const callCreateAPI = async (formData) => {
+    console.log("formData", formData);
+
+    // Prepare nocFormData
+    const nocFormData = {
+      applicationDetails: {
+        ...formData?.applicationDetails,
+        // applicantGender : formData?.applicationDetails?.applicantGender?.code || "",
       },
-    });
+      siteDetails: {
+        ...formData?.siteDetails,
+        ulbName: formData?.siteDetails?.ulbName || "",
+        roadType: formData?.siteDetails?.roadType?.name || "",
+        buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
+        isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
+        district: formData?.siteDetails?.district || "",
+        zone: formData?.siteDetails?.zone?.code || "",
+        vasikaDate: formData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) : "",
+        specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
+        specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
+        specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
+        specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
+      },
+      ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
+      ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
+    };
 
-    const applications = searchResponse?.Noc ?? [];
-    const currentAppNo = currentStepData?.apiData?.Noc?.[0]?.applicationNo;
-    const activeApp = applications.find((app) => app?.applicationNo && app?.status !== "REJECTED" && app?.applicationNo !== currentAppNo);
+    // console.log("nocFormData ==>", nocFormData)
 
-
-    if (activeApp) {
-      setShowToast({ key: "true", error: true, message: "Active application already exists..." });
-      return;
-    }
-
-    // Save data in redux
-    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
-
-    // ✅ Only one create call
-    if (currentStepData?.apiData?.Noc?.[0]?.applicationNo) {
-      onGoNext();
-    } else {
-      callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
-    }
-  } catch (error) {
-    setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
-  }
-};
-
-
-
-  const callCreateAPI= async (formData)=>{
-    
-    console.log('formData', formData)
-        
-        // Prepare nocFormData
-      const nocFormData = {
-        applicationDetails: {
-          ...formData?.applicationDetails,
-          // applicantGender : formData?.applicationDetails?.applicantGender?.code || "",
-        },
-        siteDetails: {
-          ...formData?.siteDetails,
-          ulbName: formData?.siteDetails?.ulbName || "",
-          roadType: formData?.siteDetails?.roadType?.name || "",
-          buildingStatus: formData?.siteDetails?.buildingStatus?.name || "",
-          isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
-          district: formData?.siteDetails?.district || "",
-          zone: formData?.siteDetails?.zone?.code || "",
-          vasikaDate: formData?.siteDetails?.vasikaDate ? convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) : "",
-          specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
-          specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
-          specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
-          specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
-        },
-        ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
-        ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
-      };
-
-       // console.log("nocFormData ==>", nocFormData)
-
-    const ownerData = (nocFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+    const ownerData = (nocFormData?.applicationDetails?.owners || [])?.map((item, index) => {
       return {
         mobileNumber: item?.mobileNumber || "",
         name: item?.ownerOrFirmName || "",
@@ -218,62 +207,55 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         permanentAddress: item?.address || "",
         gender: item?.gender?.code || "",
         dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
-        additionalDetails:{
-         ownerPhoto :{...ownerPhotos?.ownerPhotoList?.[index]},
-         ownerId: {...ownerIds?.ownerIdList?.[index]}
-        }
+        additionalDetails: {
+          ownerPhoto: { ...ownerPhotos?.ownerPhotoList?.[index] },
+          ownerId: { ...ownerIds?.ownerIdList?.[index] },
+        },
+      };
+    });
+
+    // Final payload
+    const payload = {
+      Noc: {
+        vasikaDate: convertToDDMMYYYY(formData?.siteDetails?.vasikaDate),
+        vasikaNumber: formData?.siteDetails?.vasikaNumber,
+        applicationType: "NEW",
+        documents: [],
+        nocType: "NOC",
+        status: "ACTIVE",
+        tenantId,
+        owners: ownerData,
+        workflow: { action: "INITIATE" },
+        nocDetails: {
+          additionalDetails: nocFormData,
+          tenantId,
+        },
+      },
+    };
+
+    console.log("final Payload here==>", payload);
+
+    try {
+      const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
+
+      if (response?.ResponseInfo?.status === "successful") {
+        console.log("success :create api executed successfully !!!");
+        dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
+        onGoNext();
+      } else {
+        console.error("error  : create api not executed properly !!!");
+        setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
-     });
+    } catch (error) {
+      console.log("errors here in goNext - catch block", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    }
 
-    
-        // Final payload
-        const payload = {
-          Noc: {
-              vasikaDate: convertToDDMMYYYY (formData?.siteDetails?.vasikaDate),
-              vasikaNumber : formData?.siteDetails?.vasikaNumber,
-              applicationType: "NEW",
-              documents: [],
-              nocType: "NOC",
-              status: "ACTIVE",
-              tenantId,
-              owners:ownerData,
-              workflow: {action: "INITIATE"},
-              nocDetails:{
-                additionalDetails: nocFormData,
-                tenantId
-              }
-            },
-        }
-
-        console.log("final Payload here==>", payload);
-
-        try{
-        
-        const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
-    
-        if (response?.ResponseInfo?.status === "successful") {
-          console.log("success :create api executed successfully !!!");
-          dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
-          onGoNext();
-        } else {
-
-          console.error("error  : create api not executed properly !!!");
-          setShowToast({ key: "true", error:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL"});
-        }
-       }catch(error){
-          console.log("errors here in goNext - catch block", error);
-          setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
-      }
-
-        // onGoNext();
-  }
-
-
-
-
+    // onGoNext();
+  };
 
   function goNext(data) {
-    console.log(data, "data is gonext step 2")
+    console.log(data, "data is gonext step 2");
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     onGoNext();
   }
@@ -300,7 +282,9 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
+      {showToast && (
+        <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />
+      )}
     </React.Fragment>
   );
 };

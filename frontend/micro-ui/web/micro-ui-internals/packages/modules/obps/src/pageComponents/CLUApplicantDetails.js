@@ -15,7 +15,7 @@ import {
   SearchIcon,
   Toast,
   CardSectionSubText,
-  CardSubHeader
+  CardSubHeader,
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 import CustomUploadFile from "../components/CustomUploadFile";
@@ -30,7 +30,25 @@ const ownerTypeOptions = [
 ];
 
 const CLUApplicantDetails = (_props) => {
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, reset, useFieldArray, watch, getValues, config, ownerIdList, setOwnerIdList, ownerPhotoList, setOwnerPhotoList } = _props;
+  const {
+    t,
+    goNext,
+    currentStepData,
+    Controller,
+    control,
+    setValue,
+    errors,
+    errorStyle,
+    reset,
+    useFieldArray,
+    watch,
+    getValues,
+    config,
+    ownerIdList,
+    setOwnerIdList,
+    ownerPhotoList,
+    setOwnerPhotoList,
+  } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -39,7 +57,7 @@ const CLUApplicantDetails = (_props) => {
   const ownerIds =
     useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.ownerIds;
-    }) ?? {};
+    }) || {};
 
   const ownerPhotos =
     useSelector(function (state) {
@@ -49,68 +67,12 @@ const CLUApplicantDetails = (_props) => {
   const [loader, setLoader] = useState(false);
 
   const selectOwnerIdFile = (index) => async (e) => {
-    const file = e.target.files[0]
-    if (file && file.size > 5 * 1024 * 1024) {
-      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
-      setTimeout(()=>{
-        setShowToast(null);
-      },3000);
-      return;
-    }
-    try {
-      setLoader(true)
-      const response = await Digit.UploadServices.Filestorage("CLU", file, stateId)
-      setLoader(false)
-      if (response?.data?.files?.length > 0) {
-        const fileId = response.data.files[0].fileStoreId;
-        setOwnerIdList((prev)=>{
-           const next = [...prev];
-           const newItem = { 
-            filestoreId: fileId,
-            fileName: file.name,
-            documentType: index === 0 ? "Primary Owner ID": `Owner${index+1} ID`,
-            documentUid: fileId
-          };
-
-           if(index <= next?.length){
-             next[index] = newItem;
-           }else{
-             next.push(newItem)
-           }
-
-           return next;
-         });
-        setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
-      } else {
-        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
-      }
-    } catch (err) {
-      setLoader(false)
-      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") })
-    }finally{
-      setTimeout(()=>{
-        setShowToast(null);
-      },3000);
-    }
-  }
-
-  const deleteOwnerPhoto = (index) => {
-    const filteredPhotoList= ownerPhotoList?.filter((item, idx)=> idx !== index);
-    setOwnerPhotoList(filteredPhotoList);
-  };
-
-  const deleteOwnerId = (index) => {
-    const filteredIdList= ownerIdList?.filter((item, idx)=> idx !== index);
-    setOwnerIdList(filteredIdList);
-  };
-
-  const selectOwnerPhotoFile = (index) => async (e) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
-      setTimeout(()=>{
+      setTimeout(() => {
         setShowToast(null);
-      },3000);
+      }, 3000);
       return;
     }
     try {
@@ -119,22 +81,23 @@ const CLUApplicantDetails = (_props) => {
       setLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
-         setOwnerPhotoList((prev)=>{
-           const next = [...prev];
-           const newItem = { 
+        setOwnerIdList((prev) => {
+          const next = [...prev];
+          const newItem = {
             filestoreId: fileId,
             fileName: file.name,
-            documentType: index === 0 ? "Primary Owner Photo": `Owner${index+1} Photo`,
-            documentUid: fileId
+            documentType: index === 0 ? "Primary Owner ID" : `Owner${index + 1} ID`,
+            documentUid: fileId,
           };
-           if(index <= next?.length){
-             next[index] = newItem;
-           }else{
-             next.push(newItem)
-           }
 
-           return next;
-         });
+          if (index <= next?.length) {
+            next[index] = newItem;
+          } else {
+            next.push(newItem);
+          }
+
+          return next;
+        });
         setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
       } else {
         setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
@@ -142,10 +105,65 @@ const CLUApplicantDetails = (_props) => {
     } catch (err) {
       setLoader(false);
       setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
-    }finally{
-      setTimeout(()=>{
+    } finally {
+      setTimeout(() => {
         setShowToast(null);
-      },3000);
+      }, 3000);
+    }
+  };
+
+  const deleteOwnerPhoto = (index) => {
+    const filteredPhotoList = ownerPhotoList?.filter((item, idx) => idx !== index);
+    setOwnerPhotoList(filteredPhotoList);
+  };
+
+  const deleteOwnerId = (index) => {
+    const filteredIdList = ownerIdList?.filter((item, idx) => idx !== index);
+    setOwnerIdList(filteredIdList);
+  };
+
+  const selectOwnerPhotoFile = (index) => async (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setShowToast({ key: "true", error: true, message: t("FILE_SIZE_EXCEEDS_5MB") });
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
+      return;
+    }
+    try {
+      setLoader(true);
+      const response = await Digit.UploadServices.Filestorage("CLU", file, stateId);
+      setLoader(false);
+      if (response?.data?.files?.length > 0) {
+        const fileId = response.data.files[0].fileStoreId;
+        setOwnerPhotoList((prev) => {
+          const next = [...prev];
+          const newItem = {
+            filestoreId: fileId,
+            fileName: file.name,
+            documentType: index === 0 ? "Primary Owner Photo" : `Owner${index + 1} Photo`,
+            documentUid: fileId,
+          };
+          if (index <= next?.length) {
+            next[index] = newItem;
+          } else {
+            next.push(newItem);
+          }
+
+          return next;
+        });
+        setShowToast({ key: "true", success: true, message: t("FILE_UPLOAD_SUCCESS") });
+      } else {
+        setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+      }
+    } catch (err) {
+      setLoader(false);
+      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
@@ -182,7 +200,7 @@ const CLUApplicantDetails = (_props) => {
     name: "owners",
   });
 
-  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
+  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) || "";
 
   useEffect(() => {
     const formattedData = currentStepData?.applicationDetails;
@@ -217,59 +235,51 @@ const CLUApplicantDetails = (_props) => {
     setShowToast(null);
   };
 
-const getOwnerDetails = async (idx) => {
-  const currentMobile = mobileAtIndex(idx);
+  const getOwnerDetails = async (idx) => {
+    const currentMobile = mobileAtIndex(idx);
 
-  if (!/^[6-9]\d{9}$/.test(currentMobile)) {
-    setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
-    return;
-  }
-
-  try {
-    const userResponse = await Digit.UserService.userSearch(
-      stateId,
-      { userName: currentMobile },
-      {}
-    );
-
-    const users = userResponse?.user ?? [];
-    if (!users.length) {
-      setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
+    if (!/^[6-9]\d{9}$/.test(currentMobile)) {
+      setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
       return;
     }
 
-    const u = users[0];
+    try {
+      const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
 
-    // Write EVERYTHING into RHF state
-    setValue(`owners[${idx}].ownerOrFirmName`, u.name ?? "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${idx}].emailId`, u.emailId ?? "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName ?? "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${idx}].address`, u.permanentAddress ?? "", { shouldValidate: true, shouldDirty: true });
+      const users = userResponse?.user || [];
+      if (!users.length) {
+        setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
+        return;
+      }
 
-    // Normalize DOB to YYYY-MM-DD for <input type="date">
-    const dobStr = typeof u.dob === "string" ? u.dob : "";
-    const yyyyMmDd = dobStr ? dobStr.slice(0, 10) : ""; // handles "YYYY-MM-DDTHH:mm:ss"
-    setValue(`owners[${idx}].dateOfBirth`, yyyyMmDd, { shouldValidate: true, shouldDirty: true });
+      const u = users[0];
 
-    // Gender must be the option object the RadioButtons expects
-    const genderOption = findGenderOption(u.gender);
-    setValue(`owners[${idx}].gender`, genderOption, { shouldValidate: true, shouldDirty: true });
+      // Write EVERYTHING into RHF state
+      setValue(`owners[${idx}].ownerOrFirmName`, u.name || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].emailId`, u.emailId || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].address`, u.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
 
-  } catch (err) {
-    setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
-  }
-};
+      // Normalize DOB to YYYY-MM-DD for <input type="date">
+      const dobStr = typeof u.dob === "string" ? u.dob : "";
+      const yyyyMmDd = dobStr ? dobStr.slice(0, 10) : ""; // handles "YYYY-MM-DDTHH:mm:ss"
+      setValue(`owners[${idx}].dateOfBirth`, yyyyMmDd, { shouldValidate: true, shouldDirty: true });
 
-
+      // Gender must be the option object the RadioButtons expects
+      const genderOption = findGenderOption(u.gender);
+      setValue(`owners[${idx}].gender`, genderOption, { shouldValidate: true, shouldDirty: true });
+    } catch (err) {
+      setShowToast({ key: "true", error: true, message: t("FILE_UPLOAD_FAILED") });
+    }
+  };
 
   const isEdit = window.location.pathname.includes("edit");
 
-  const removeOwner=(index)=>{
-    
+  const removeOwner = (index) => {
     deleteOwnerId(index);
     deleteOwnerPhoto(index);
- 
-    const filteredOwners = currentStepData?.applicationDetails?.owners?.filter((item, idx)=> idx !== index);
+
+    const filteredOwners = currentStepData?.applicationDetails?.owners?.filter((item, idx) => idx !== index);
 
     // if(filteredOwners?.length > 0){
 
@@ -279,10 +289,8 @@ const getOwnerDetails = async (idx) => {
     //  owners:filteredOwners
     // }));
     // }
-     remove(index);
-    
-  }
-
+    remove(index);
+  };
 
   return (
     <React.Fragment>
@@ -297,14 +305,9 @@ const getOwnerDetails = async (idx) => {
 
         {fields.map((field, index) => (
           <div key={field.id} style={{ border: "1px solid #ddd", padding: "16px", marginBottom: "12px" }}>
-            <CardSubHeader >
-             {index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}
-            </CardSubHeader>
+            <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `${t("Owner")} ${index + 1}`}</CardSubHeader>
 
-            <div
-              style={{ display: "flex", justifyContent: "flex-end", gap: 8 , cursor: "pointer"}}
-               onClick={()=>removeOwner(index)}
-            >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, cursor: "pointer" }} onClick={() => removeOwner(index)}>
               {!isEdit && fields.length > 1 && `❌`}
             </div>
 
@@ -340,40 +343,43 @@ const getOwnerDetails = async (idx) => {
             )}
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
-              <div style={{ display: "flex", position: "relative", alignItems: "center", width: "100%" }}>
-                <Controller
-                  control={control}
-                  name={`owners[${index}].mobileNumber`}
-                  rules={{
-                    required: t("REQUIRED_FIELD"),
-                    pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: t("INVALID_MOBILE_NUMBER"),
-                    },
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                      }}
-                      t={t}
-                      disabled={isEdit}
-                      style={{ width: "100%", paddingRight: "40px" }}
-                    />
-                  )}
-                />
-                <div className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
-                  {" "}
-                  <SearchIcon />{" "}
+                <div style={{ display: "flex", position: "relative", alignItems: "center", width: "100%" }}>
+                  <Controller
+                    control={control}
+                    name={`owners[${index}].mobileNumber`}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: t("INVALID_MOBILE_NUMBER"),
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          props.onBlur(e);
+                        }}
+                        t={t}
+                        disabled={isEdit}
+                        style={{ width: "100%", paddingRight: "40px" }}
+                      />
+                    )}
+                  />
+                  <div className="search-icon" onClick={isEdit ? null : () => getOwnerDetails(index)}>
+                    {" "}
+                    <SearchIcon />{" "}
+                  </div>
                 </div>
-              </div>
-              <p style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message}</p>
+                <p style={errorStyle}>{errors?.owners?.[index]?.mobileNumber?.message}</p>
               </div>
             </LabelFieldPair>
 
@@ -408,15 +414,16 @@ const getOwnerDetails = async (idx) => {
                       />
                     )}
                   />
-                  {errors?.owners?.[index]?.firmName && (
-                    <p style={errorStyle}>{errors?.owners?.[index]?.firmName?.message}</p>
-                  )}
+                  {errors?.owners?.[index]?.firmName && <p style={errorStyle}>{errors?.owners?.[index]?.firmName?.message}</p>}
                 </div>
               </LabelFieldPair>
             )}
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("CLU_APPLICANT_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("CLU_APPLICANT_NAME_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -447,7 +454,10 @@ const getOwnerDetails = async (idx) => {
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_EMAIL_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_APPLICANT_EMAIL_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -484,14 +494,14 @@ const getOwnerDetails = async (idx) => {
                   control={control}
                   name={`owners[${index}].fatherOrHusbandName`}
                   rules={{
-                   pattern: {
-                     value: /^[A-Za-z\s]+$/,
-                     message: t("ONLY_ENGLISH_LETTERS_ALLOWED"),
-                   },
-                   maxLength: {
-                    value: 100,
-                    message: t("MAX_100_CHARACTERS_ALLOWED"),
-                  },
+                    pattern: {
+                      value: /^[A-Za-z\s]+$/,
+                      message: t("ONLY_ENGLISH_LETTERS_ALLOWED"),
+                    },
+                    maxLength: {
+                      value: 100,
+                      message: t("MAX_100_CHARACTERS_ALLOWED"),
+                    },
                   }}
                   render={(props) => (
                     <TextInput
@@ -507,12 +517,15 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                 <p style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message}</p>
+                <p style={errorStyle}>{errors?.owners?.[index]?.fatherOrHusbandName?.message}</p>
               </div>
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -541,12 +554,15 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-                 <p style={errorStyle}>{errors?.owners?.[index]?.address?.message}</p>
+                <p style={errorStyle}>{errors?.owners?.[index]?.address?.message}</p>
               </div>
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_APPLICANT_DOB_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -580,12 +596,15 @@ const getOwnerDetails = async (idx) => {
                     />
                   )}
                 />
-               <p style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message}</p>
+                <p style={errorStyle}>{errors?.owners?.[index]?.dateOfBirth?.message}</p>
               </div>
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_APPLICANT_GENDER_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -611,22 +630,25 @@ const getOwnerDetails = async (idx) => {
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "20px" }}>
-              <CardLabel className="card-label-smaller">{`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
                   name={`owners[${index}].ownershipInPct`}
                   rules={{
-                  required: t("REQUIRED_FIELD"),
-                  validate: (value) => {
-                    if (!value) return true;
-                    const regex = /^\d+(\.\d{1,2})?$/;
-                    const isValidFormat = regex.test(value);
-                    const isWithinRange = parseFloat(value) >0 && parseFloat(value) <= 100;
-                    if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
-                    if (!isWithinRange) return t("VALUE_SHOULD_BE_GREATER_THAN_ZERO_AND_LESS_THAN_OR_EQUAL_TO_100");
-                    return true;
-                   },
+                    required: t("REQUIRED_FIELD"),
+                    validate: (value) => {
+                      if (!value) return true;
+                      const regex = /^\d+(\.\d{1,2})?$/;
+                      const isValidFormat = regex.test(value);
+                      const isWithinRange = parseFloat(value) > 0 && parseFloat(value) <= 100;
+                      if (!isValidFormat) return t("ONLY_NUMBERS_UPTO_TWO_DECIMALS_ALLOWED");
+                      if (!isWithinRange) return t("VALUE_SHOULD_BE_GREATER_THAN_ZERO_AND_LESS_THAN_OR_EQUAL_TO_100");
+                      return true;
+                    },
                   }}
                   render={(props) => (
                     <TextInput
@@ -647,7 +669,10 @@ const getOwnerDetails = async (idx) => {
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-              <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {t("BPA_APPLICANT_PASSPORT_PHOTO")}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 <CustomUploadFile
                   id={`passport-photo-${index}`}
@@ -665,7 +690,10 @@ const getOwnerDetails = async (idx) => {
             </LabelFieldPair>
 
             <LabelFieldPair style={{ marginBottom: "15px", marginTop: "20px" }}>
-              <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}<span className="requiredField">*</span></CardLabel>
+              <CardLabel className="card-label-smaller">
+                {t("BPA_APPLICANT_ID_PROOF")}
+                <span className="requiredField">*</span>
+              </CardLabel>
               <div className="field" style={{ width: "100%" }}>
                 <CustomUploadFile
                   id={`id-proof-${index}`}
@@ -686,7 +714,7 @@ const getOwnerDetails = async (idx) => {
       </div>
 
       <div>
-        <button type="button" onClick={() => append(defaultOwner()) } style={{cursor: "pointer"}}>
+        <button type="button" onClick={() => append(defaultOwner())} style={{ cursor: "pointer" }}>
           {!isEdit && `➕ Add Owner`}
         </button>
       </div>

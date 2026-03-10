@@ -1,6 +1,6 @@
 import React from "react";
-import {pdfDownloadLink, pdfDocumentName} from "./index"
-import {Loader} from "@mseva/digit-ui-react-components";
+import { pdfDownloadLink, pdfDocumentName } from "./index";
+import { Loader } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
@@ -30,7 +30,7 @@ const getRegistrationDetails = (appData, t) => {
     },
     {
       title: t("REGISTRATION_FILED_DATE"),
-      value: Digit.DateUtils.ConvertTimestampToDate(appData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA"
+      value: Digit.DateUtils.ConvertTimestampToDate(appData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA",
     },
   ];
 
@@ -75,18 +75,23 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  const owners = appData?.nocDetails?.additionalDetails?.applicationDetails?.owners ?? [];
-
+  const owners =
+    (appData &&
+      appData.nocDetails &&
+      appData.nocDetails.additionalDetails &&
+      appData.nocDetails.additionalDetails.applicationDetails &&
+      appData.nocDetails.additionalDetails.applicationDetails.owners) ||
+    [];
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? "Primary Owner" : `Owner ${index + 1} Details`,
     values: [
       owner?.ownerType?.code && {
         title: t("NOC_OWNER_TYPE_LABEL"),
-        value: owner?.ownerType?.code
+        value: owner?.ownerType?.code,
       },
       owner?.firmName && {
         title: t("NOC_FIRM_NAME"),
-        value: owner?.firmName
+        value: owner?.firmName,
       },
       {
         title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
@@ -121,8 +126,8 @@ const getApplicantDetails = (appData, t) => {
       },
       owner?.propertyId && {
         title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
-        value: owner.propertyId
-      }
+        value: owner.propertyId,
+      },
     ].filter(Boolean),
   }));
 
@@ -141,8 +146,8 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_ULB_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
     },
     {
       title: t("NOC_ULB_TYPE_LABEL"),
@@ -158,8 +163,8 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_ROAD_TYPE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadType?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.roadType || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.roadType?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.roadType || "N/A",
     },
     {
       title: t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"),
@@ -179,13 +184,12 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_DISTRICT_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.district?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.district || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.district?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.district || "N/A",
     },
     {
       title: t("NOC_ZONE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.zone?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.zone || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.zone?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.zone || "N/A",
     },
     {
       title: t("NOC_SITE_WARD_NO_LABEL"),
@@ -213,16 +217,20 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_BUILDING_STATUS_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name ||
+        appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus ||
+        "N/A",
     },
   ];
 
   if (appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable) {
     values.push({
       title: t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code ||
+        appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable ||
+        "N/A",
     });
   }
 
@@ -263,23 +271,31 @@ const getSpecificationDetails = (appData, t) => {
     },
     {
       title: t("NOC_BUILDING_CATEGORY_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory  || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name ||
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory ||
+        "N/A",
     },
     {
       title: t("NOC_NOC_TYPE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType ||  "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name ||
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType ||
+        "N/A",
     },
     {
       title: t("NOC_RESTRICTED_AREA_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea?.code ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea?.code ||
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea ||
+        "N/A",
     },
     {
       title: t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
-      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan || "N/A",
+      value:
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
+        appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan ||
+        "N/A",
     },
   ];
 
@@ -292,26 +308,24 @@ const getSpecificationDetails = (appData, t) => {
 const getInspectionDetails = (appData, t) => {
   const inspectionData = appData?.nocDetails?.additionalDetails?.fieldinspection_pending?.[0] || {};
   // Collect all remark fields dynamically
-  const remarksKeys = Object.keys(inspectionData).filter(key => key.startsWith("Remarks_"));
+  const remarksKeys = Object.keys(inspectionData).filter((key) => key.startsWith("Remarks_"));
 
   // Map remarks to questions
   const remarksValues = remarksKeys.map((key, index) => {
     const question = inspectionData?.questionList?.[index]?.question || key; // fallback to key if no question
     return {
-      title: `${index + 1} ${t(question)}`,                 // Label from questionList (translated)
-      value: inspectionData[key] || "N/A" // Value is the remark text
+      title: `${index + 1} ${t(question)}`, // Label from questionList (translated)
+      value: inspectionData[key] || "N/A", // Value is the remark text
     };
   });
 
   return {
     title: t("BPA_FI_REPORT"),
-    values: remarksValues.length > 0 ? remarksValues : [{ title: t("No Remarks"), value: "NA" }]
+    values: remarksValues.length > 0 ? remarksValues : [{ title: t("No Remarks"), value: "NA" }],
   };
 };
 
-
-
-async function getExifDataFromUrl (fileUrl) {
+async function getExifDataFromUrl(fileUrl) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = function () {
@@ -322,31 +336,24 @@ async function getExifDataFromUrl (fileUrl) {
     img.onerror = (err) => reject(err);
     img.src = fileUrl;
   });
-};
+}
 
 const getDocuments = async (appData, t) => {
-  const filteredDocs = appData?.documents?.filter(
-    (doc) =>
-      doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" &&
-      doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
-  ) || [];
+  const filteredDocs =
+    appData?.documents?.filter((doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO") || [];
 
   const sortedDocs = filteredDocs?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
   const filesArray = sortedDocs?.map((value) => value?.uuid);
 
-  const res =
-    filesArray.length > 0 &&
-    (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
+  const res = filesArray.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
     values:
       sortedDocs.length > 0
         ? sortedDocs?.map((document, index) => ({
-            title: `${index + 1}. ${
-              t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")
-            }`,
+            title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,
             value: " ",
             link: pdfDownloadLink(res?.data, document?.uuid) || "",
           }))
@@ -359,22 +366,14 @@ const getDocuments = async (appData, t) => {
   };
 };
 
-
 const getSitePhotographs = async (appData, t, stateCode) => {
   const sitePhotoDocs = appData?.documents?.filter(
-    (doc) =>
-      doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
-      doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   );
 
   const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid);
 
-  const res =
-    fileStoreIds?.length > 0 &&
-    (await Digit.UploadServices.Filefetch(
-      fileStoreIds,
-      Digit.ULBService.getStateId()
-    ));
+  const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
 
   const coords = appData?.nocDetails?.additionalDetails?.coordinates || {};
 
@@ -390,7 +389,7 @@ const getSitePhotographs = async (appData, t, stateCode) => {
         const exifData = await getExifDataFromUrl(exiflink);
         console.log("exifData in sitephotos", exifData);
         if ([3, 6, 8].includes(exifData?.Orientation)) {
-           exifData.Orientation = 1;  
+          exifData.Orientation = 1;
         }
         // Decide which lat/long to use based on type
         let lat = "N/A";
@@ -405,13 +404,11 @@ const getSitePhotographs = async (appData, t, stateCode) => {
         }
 
         return {
-          title:
-            (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) +
-            ` (Lat: ${lat}, Long: ${long})`,
+          title: (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) + ` (Lat: ${lat}, Long: ${long})`,
           value: " ",
           link: documentLink || "",
           exiflink: exiflink || "",
-          orientation: exifData?.Orientation || 1
+          orientation: exifData?.Orientation || 1,
         };
       })
     );
@@ -420,7 +417,7 @@ const getSitePhotographs = async (appData, t, stateCode) => {
   return {
     title: t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW"),
     isAttachments: true,
-    values
+    values,
   };
 };
 
@@ -428,60 +425,48 @@ const getChecklistDetails = (appData, checklistData, t) => {
   const checkList = checklistData?.checkList || [];
   const documents = appData?.documents || [];
   const sortedDocs = documents?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
-  
-  const orderMap = {};
-    sortedDocs?.forEach((doc, idx) => {
-      orderMap[doc.uuid] = doc.order ?? idx + 1; // fallback to index
-    });
-  
-  const sortedChecklist = [...checkList].sort(
-      (a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0)
-    );
 
+  const orderMap = {};
+
+  sortedDocs?.forEach((doc, idx) => {
+    orderMap[doc.uuid] = doc.order || idx + 1;
+  });
+
+  const sortedChecklist = [...checkList].sort((a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0));
 
   let values = [];
 
   if (sortedChecklist?.length > 0) {
     values = sortedChecklist?.map((item, index) => {
-      const matchedDoc = sortedDocs?.find(
-        (doc) => doc?.uuid === item?.documentuid
-      );
-      const docName = matchedDoc
-        ? t(matchedDoc?.documentType?.replace(/\./g, "_")) || matchedDoc?.documentType
-        : item?.documentuid; 
+      const matchedDoc = sortedDocs?.find((doc) => doc?.uuid === item?.documentuid);
+      const docName = matchedDoc ? t(matchedDoc?.documentType?.replace(/\./g, "_")) || matchedDoc?.documentType : item?.documentuid;
 
       return {
         title: `${index + 1}. ${docName}`,
-        value: item?.remarks || "N/A"
+        value: item?.remarks || "N/A",
       };
     });
   } else {
     values = [
       {
         title: t("NOC_NO_CHECKLIST_ITEMS"),
-        value: "NA"
-      }
+        value: "NA",
+      },
     ];
   }
 
   return {
     title: t("Document Checklist"),
-    values
+    values,
   };
 };
-
 
 const getJESiteImages = async (appData, t, stateCode) => {
   const siteImages = appData?.nocDetails?.additionalDetails?.siteImages || [];
 
   const fileStoreIds = siteImages?.map((img) => img?.filestoreId);
 
-  const res =
-    fileStoreIds?.length > 0 &&
-    (await Digit.UploadServices.Filefetch(
-      fileStoreIds,
-      Digit.ULBService.getStateId()
-    ));
+  const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
 
   let values = [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
 
@@ -503,13 +488,11 @@ const getJESiteImages = async (appData, t, stateCode) => {
         const timestamp = img?.timestamp || "N/A";
 
         return {
-          title:
-            (t(img?.documentType?.replace(/\./g, "_")) || t("CS_NA")) +
-            ` (Lat: ${lat}, Long: ${long}, Time: ${timestamp})`,
+          title: (t(img?.documentType?.replace(/\./g, "_")) || t("CS_NA")) + ` (Lat: ${lat}, Long: ${long}, Time: ${timestamp})`,
           value: " ",
           link: documentLink || "",
           exiflink: exiflink || "",
-          orientation: exifData?.Orientation || 1
+          orientation: exifData?.Orientation || 1,
         };
       })
     );
@@ -518,41 +501,35 @@ const getJESiteImages = async (appData, t, stateCode) => {
   return {
     title: t("SITE_INPECTION_IMAGES"),
     isAttachments: true,
-    values
+    values,
   };
 };
 
 const getLatestCalculationDetails = (appData, t) => {
   // Find the latest calculation
-  const latestCalc = appData?.nocDetails?.additionalDetails?.calculations?.find(
-    (calc) => calc.isLatest
-  );
+  const latestCalc = appData?.nocDetails?.additionalDetails?.calculations?.find((calc) => calc.isLatest);
   if (!latestCalc) {
     return {
       title: t("NOC_FEE_DETAILS_LABEL"),
-      values: [{ title: t("NOC_NO_CALCULATIONS"), value: "NA" }]
+      values: [{ title: t("NOC_NO_CALCULATIONS"), value: "NA" }],
     };
   }
 
   // Map taxHeadEstimates to display taxHeadCode, remarks, and updatedBy
   const values = latestCalc.taxHeadEstimates.map((estimate, index) => ({
-    title: `${t(estimate?.taxHeadCode)}`, 
-    value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A",                           // Value: remarks
+    title: `${t(estimate?.taxHeadCode)}`,
+    value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A", // Value: remarks
   }));
 
   return {
     title: t("NOC_FEE_DETAILS_LABEL"),
-    values
+    values,
   };
 };
-
-
-
 
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, isView = false, checklistData = null) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
- 
 
   let detailsArr = [],
     imageURL = "";
@@ -592,9 +569,7 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
 
       // Inspection report only if employee and inspection data exists
       isEmployee && appData?.nocDetails?.additionalDetails?.fieldinspection_pending?.[0] ? getInspectionDetails(appData, t) : null,
-      isEmployee && checklistData?.checkList?.length > 0 
-        ? null 
-        : await getDocuments(appData, t),
+      isEmployee && checklistData?.checkList?.length > 0 ? null : await getDocuments(appData, t),
 
       await getSitePhotographs(appData, t, stateCode),
       // JE site images only if employee and jeSiteImages exist

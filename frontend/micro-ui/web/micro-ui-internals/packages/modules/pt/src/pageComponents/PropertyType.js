@@ -15,9 +15,7 @@ import Timeline from "../components/TLTimeline";
 import { Controller, useForm } from "react-hook-form";
 
 const PropertyType = ({ t, config, onSelect, userType, formData, setError, clearErrors, formState, onBlur }) => {
-
-// console.log("formData???????????????????????",formData);
-
+  // console.log("formData||||||||||||||||||||||?",formData);
 
   const [BuildingType, setBuildingType] = useState(formData?.PropertyType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -27,11 +25,9 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
   proptype = Menu?.PropertyTax?.PropertyType;
   let i;
   let menu = [];
- 
-
 
   function getPropertyTypeMenu(proptype) {
-    if (window.location.href.includes("employee") || window.location.href.includes("citizen")) {      
+    if (window.location.href.includes("employee") || window.location.href.includes("citizen")) {
       return proptype
         ?.filter((e) => e.code === "VACANT" || e.code.split(".").length > 1)
         ?.map((item) => ({ i18nKey: "COMMON_PROPTYPE_" + stringReplaceAll(item?.code, ".", "_"), code: item?.code }))
@@ -90,7 +86,7 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
     }
   }, [localFormState]);
   useEffect(() => {
-    if (presentInModifyApplication && (window.location.href.includes("employee")||window.location.href.includes("citizen")) && Menu) {
+    if (presentInModifyApplication && (window.location.href.includes("employee") || window.location.href.includes("citizen")) && Menu) {
       const original = formData?.PropertyType?.code;
       const defaultVal = getPropertyTypeMenu(proptype)?.filter((e) => e.code === original)[0];
       setBuildingType(defaultVal);
@@ -127,13 +123,15 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
   }
 
   // console.log("getPropertyTypeMenu(proptype)",getPropertyTypeMenu(proptype));
-  console.log("localFormState",localFormState?.errors)
+  console.log("localFormState", localFormState?.errors);
   if (window.location.href.includes("employee")) {
     return inputs?.map((input, index) => {
       return (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}
+            </CardLabel>
             {/* <Dropdown
               className="form-field"
               selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
@@ -181,13 +179,14 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
     });
   }
 
-
   if (window.location.href.includes("citizen")) {
     return inputs?.map((input, index) => {
       return (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}
+            </CardLabel>
             {/* <Dropdown
               className="form-field"
               selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}

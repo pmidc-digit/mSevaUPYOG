@@ -41,7 +41,7 @@ public interface TicketDao {
 
 	public List<Map<String, Object>> getPriority();
 
-	public int insertTicketWithImg(Ticket ticket,User usr);
+	public int insertTicketWithImg(Ticket ticket,User usr, String imageUrl);
 	
 	public int insertTicketWithoutImg(Ticket ticket,User usr);
 

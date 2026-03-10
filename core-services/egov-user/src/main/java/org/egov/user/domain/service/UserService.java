@@ -81,7 +81,6 @@ public class UserService {
     @Value("${max.invalid.login.attempts}")
     private Long maxInvalidLoginAttempts;
 
-
     @Value("${egov.user.pwd.pattern}")
     private String pwdRegex;
 
@@ -98,13 +97,13 @@ public class UserService {
     private NotificationUtil notificationUtil;
 
     public UserService(UserRepository userRepository, OtpRepository otpRepository, FileStoreRepository fileRepository,
-                       PasswordEncoder passwordEncoder, EncryptionDecryptionUtil encryptionDecryptionUtil, TokenStore tokenStore,
-                       @Value("${default.password.expiry.in.days}") int defaultPasswordExpiryInDays,
-                       @Value("${citizen.login.password.otp.enabled}") boolean isCitizenLoginOtpBased,
-                       @Value("${employee.login.password.otp.enabled}") boolean isEmployeeLoginOtpBased,
-                       @Value("${egov.user.pwd.pattern}") String pwdRegex,
-                       @Value("${egov.user.pwd.pattern.max.length}") Integer pwdMaxLength,
-                       @Value("${egov.user.pwd.pattern.min.length}") Integer pwdMinLength) {
+            PasswordEncoder passwordEncoder, EncryptionDecryptionUtil encryptionDecryptionUtil, TokenStore tokenStore,
+            @Value("${default.password.expiry.in.days}") int defaultPasswordExpiryInDays,
+            @Value("${citizen.login.password.otp.enabled}") boolean isCitizenLoginOtpBased,
+            @Value("${employee.login.password.otp.enabled}") boolean isEmployeeLoginOtpBased,
+            @Value("${egov.user.pwd.pattern}") String pwdRegex,
+            @Value("${egov.user.pwd.pattern.max.length}") Integer pwdMaxLength,
+            @Value("${egov.user.pwd.pattern.min.length}") Integer pwdMinLength) {
         this.userRepository = userRepository;
         this.otpRepository = otpRepository;
         this.passwordEncoder = passwordEncoder;
@@ -129,11 +128,16 @@ public class UserService {
      */
     public User getUniqueUser(String userName, String tenantId, UserType userType) {
 
-        UserSearchCriteria userSearchCriteria = UserSearchCriteria.builder()
-                .userName(userName)
-                .tenantId(getStateLevelTenantForCitizen(tenantId, userType))
-                .type(userType)
-                .build();
+        UserSearchCriteria userSearchCriteria = null;
+
+        boolean isMobileNumber = userName.matches("[1-9]\\d{9}");
+        if (isMobileNumber && !userType.equals(UserType.CITIZEN)) {
+            userSearchCriteria = UserSearchCriteria.builder().mobileNumber(userName)
+                    .tenantId(getStateLevelTenantForCitizen(tenantId, userType)).type(userType).build();
+        } else {
+            userSearchCriteria = UserSearchCriteria.builder().userName(userName)
+                    .tenantId(getStateLevelTenantForCitizen(tenantId, userType)).type(userType).build();
+        }
 
         if (isEmpty(userName) || isEmpty(tenantId) || isNull(userType)) {
             log.error("Invalid lookup, mandatory fields are absent");
@@ -142,7 +146,8 @@ public class UserService {
 
         /* encrypt here */
 
-        userSearchCriteria = encryptionDecryptionUtil.encryptObject(userSearchCriteria, "UserSearchCriteria", UserSearchCriteria.class);
+        userSearchCriteria = encryptionDecryptionUtil.encryptObject(userSearchCriteria, "UserSearchCriteria",
+                UserSearchCriteria.class);
         List<User> users = userRepository.findAll(userSearchCriteria);
 
         if (users.isEmpty())
@@ -171,7 +176,6 @@ public class UserService {
         return users.get(0);
     }
 
-
     /**
      * get the users based on on userSearch criteria
      *
@@ -180,33 +184,36 @@ public class UserService {
      */
 
     public List<org.egov.user.domain.model.User> searchUsers(UserSearchCriteria searchCriteria,
-                                                             boolean isInterServiceCall, RequestInfo requestInfo) {
+            boolean isInterServiceCall, RequestInfo requestInfo) {
 
         searchCriteria.validate(isInterServiceCall);
 
-        searchCriteria.setTenantId(getStateLevelTenantForCitizen(searchCriteria.getTenantId(), searchCriteria.getType()));
-        /* encrypt here / encrypted searchcriteria will be used for search*/
-        
-        String altmobnumber=null;
-        
-		/*
-		 * if(searchCriteria.getMobileNumber()!=null) { altmobnumber =
-		 * searchCriteria.getMobileNumber(); }
-		 */
-      //  org.egov.user.domain.model.User user= encryptionDecryptionUtil.encryptObject(searchCriteria, "User", User.class);
-        searchCriteria = encryptionDecryptionUtil.encryptObject(searchCriteria, "UserSearchCriteria", UserSearchCriteria.class);
-        
-        if(altmobnumber!=null) {
-        	searchCriteria.setAlternatemobilenumber(altmobnumber);
+        searchCriteria
+                .setTenantId(getStateLevelTenantForCitizen(searchCriteria.getTenantId(), searchCriteria.getType()));
+        /* encrypt here / encrypted searchcriteria will be used for search */
+
+        String altmobnumber = null;
+
+        /*
+         * if(searchCriteria.getMobileNumber()!=null) { altmobnumber =
+         * searchCriteria.getMobileNumber(); }
+         */
+        // org.egov.user.domain.model.User user=
+        // encryptionDecryptionUtil.encryptObject(searchCriteria, "User", User.class);
+        searchCriteria = encryptionDecryptionUtil.encryptObject(searchCriteria, "UserSearchCriteria",
+                UserSearchCriteria.class);
+
+        if (altmobnumber != null) {
+            searchCriteria.setAlternatemobilenumber(altmobnumber);
         }
-        
+
         List<org.egov.user.domain.model.User> list = userRepository.findAll(searchCriteria);
 
-        /* decrypt here / final reponse decrypted*/
+        /* decrypt here / final reponse decrypted */
 
         list = encryptionDecryptionUtil.decryptObject(list, "UserListSelf", User.class, requestInfo);
 
-//        setFileStoreUrlsByFileStoreIds(list);
+        // setFileStoreUrlsByFileStoreIds(list);
         return list;
     }
 
@@ -219,10 +226,10 @@ public class UserService {
     public User createUser(User user, RequestInfo requestInfo) {
         user.setUuid(UUID.randomUUID().toString());
         user.validateNewUser(createUserValidateName);
-        if(!CLIENT_ID.equals(user.getClientId())) {
-        	conditionallyValidateOtp(user);
+        if (!CLIENT_ID.equals(user.getClientId())) {
+            conditionallyValidateOtp(user);
         }
-    
+
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "UserSelf", User.class);
         validateUserUniqueness(user);
@@ -237,7 +244,7 @@ public class UserService {
         User persistedNewUser = persistNewUser(user);
         return encryptionDecryptionUtil.decryptObject(persistedNewUser, null, User.class, requestInfo);
 
-        /* decrypt here  because encrypted data coming from DB*/
+        /* decrypt here because encrypted data coming from DB */
 
     }
 
@@ -265,7 +272,6 @@ public class UserService {
         validateAndEnrichCitizen(user);
         return createUser(user, requestInfo);
     }
-
 
     private void validateAndEnrichCitizen(User user) {
         log.info("Validating User........");
@@ -308,10 +314,9 @@ public class UserService {
             map.add("tenantId", user.getTenantId());
             map.add("isInternal", "true");
             map.add("userType", UserType.CITIZEN.name());
-            if(CLIENT_ID.equals(user.getClientId())) {
-            	map.add("thirdPartyName", CLIENT_ID);
+            if (CLIENT_ID.equals(user.getClientId())) {
+                map.add("thirdPartyName", CLIENT_ID);
             }
-            
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map,
                     headers);
@@ -319,7 +324,8 @@ public class UserService {
 
         } catch (Exception e) {
             log.error("Error occurred while logging-in via register flow", e);
-            throw new CustomException("LOGIN_ERROR", "Error occurred while logging in via register flow: " + e.getMessage());
+            throw new CustomException("LOGIN_ERROR",
+                    "Error occurred while logging in via register flow: " + e.getMessage());
         }
     }
 
@@ -342,22 +348,22 @@ public class UserService {
      * @return
      */
     public Boolean validateOtp(User user) {
-    	Otp otp = null;
-    	if(user.getType().equals(UserType.CITIZEN) && isCitizenLoginOtpBased) 
-                      
-         otp = Otp.builder().otp(user.getOtpReference()).identity(user.getUserName()).tenantId(user.getTenantId())
-                .userType(user.getType()).build();
-         else
-        	 otp = Otp.builder().otp(user.getOtpReference()).identity(user.getMobileNumber()).tenantId(user.getTenantId())
-             .userType(user.getType()).build();
-    	
+        Otp otp = null;
+        if (user.getType().equals(UserType.CITIZEN) && isCitizenLoginOtpBased)
+
+            otp = Otp.builder().otp(user.getOtpReference()).identity(user.getUserName()).tenantId(user.getTenantId())
+                    .userType(user.getType()).build();
+        else
+            otp = Otp.builder().otp(user.getOtpReference()).identity(user.getMobileNumber())
+                    .tenantId(user.getTenantId())
+                    .userType(user.getType()).build();
+
         RequestInfo requestInfo = RequestInfo.builder().action("validate").ts(System.currentTimeMillis()).build();
         OtpValidateRequest otpValidationRequest = OtpValidateRequest.builder().requestInfo(requestInfo).otp(otp)
                 .build();
         return otpRepository.validateOtp(otpValidationRequest);
 
     }
-
 
     /**
      * api will update user details without otp
@@ -375,14 +381,16 @@ public class UserService {
         user.setPassword(encryptPwd(user.getPassword()));
         /* encrypt */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
-        userRepository.update(user, existingUser,requestInfo.getUserInfo().getId(), requestInfo.getUserInfo().getUuid() );
+        userRepository.update(user, existingUser, requestInfo.getUserInfo().getId(),
+                requestInfo.getUserInfo().getUuid());
 
         // If user is being unlocked via update, reset failed login attempts
         if (user.getAccountLocked() != null && !user.getAccountLocked() && existingUser.getAccountLocked())
             resetFailedLoginAttempts(user);
 
         User encryptedUpdatedUserfromDB = getUserByUuid(user.getUuid());
-        User decryptedupdatedUserfromDB = encryptionDecryptionUtil.decryptObject(encryptedUpdatedUserfromDB, "User", User.class, requestInfo);
+        User decryptedupdatedUserfromDB = encryptionDecryptionUtil.decryptObject(encryptedUpdatedUserfromDB, "User",
+                User.class, requestInfo);
         return decryptedupdatedUserfromDB;
     }
 
@@ -391,20 +399,52 @@ public class UserService {
                 user.getUserName());
 
         for (OAuth2AccessToken token : tokens) {
-            if (token.getAdditionalInformation() != null && token.getAdditionalInformation().containsKey("UserRequest")) {
-                if (token.getAdditionalInformation().get("UserRequest") instanceof org.egov.user.web.contract.auth.User) {
-                    org.egov.user.web.contract.auth.User userInfo =
-                            (org.egov.user.web.contract.auth.User) token.getAdditionalInformation().get(
+            if (token.getAdditionalInformation() != null
+                    && token.getAdditionalInformation().containsKey("UserRequest")) {
+                if (token.getAdditionalInformation()
+                        .get("UserRequest") instanceof org.egov.user.web.contract.auth.User) {
+                    org.egov.user.web.contract.auth.User userInfo = (org.egov.user.web.contract.auth.User) token
+                            .getAdditionalInformation().get(
                                     "UserRequest");
-                    if (user.getUserName().equalsIgnoreCase(userInfo.getUserName()) && user.getTenantId().equalsIgnoreCase(userInfo.getTenantId())
+                    if (user.getUserName().equalsIgnoreCase(userInfo.getUserName())
+                            && user.getTenantId().equalsIgnoreCase(userInfo.getTenantId())
                             && user.getType().equals(UserType.fromValue(userInfo.getType())))
                         tokenStore.removeAccessToken(token);
                     userRepository.updateUserLogoutSession(user.getUuid(), true);
-                    	
+
                 }
             }
         }
 
+    }
+
+    public void removeTokensByUsers(User user) {
+
+        if (user == null || user.getUserName() == null) {
+            return;
+        }
+
+        Collection<OAuth2AccessToken> tokens = tokenStore.findTokensByClientIdAndUserName(
+                USER_CLIENT_ID,
+                user.getUserName());
+
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+
+        for (OAuth2AccessToken token : tokens) {
+
+            // Remove refresh token first
+            if (token.getRefreshToken() != null) {
+                tokenStore.removeRefreshToken(token.getRefreshToken());
+            }
+
+            // Remove access token
+            tokenStore.removeAccessToken(token);
+        }
+
+        // Update logout session once (not inside loop)
+        userRepository.updateUserLogoutSession(user.getUuid(), true);
     }
 
     /**
@@ -433,17 +473,18 @@ public class UserService {
         validateProfileUpdateIsDoneByTheSameLoggedInUser(user);
         user.nullifySensitiveFields();
         validatePassword(user.getPassword());
-        userRepository.update(user, existingUser,requestInfo.getUserInfo().getId(), requestInfo.getUserInfo().getUuid() );
+        userRepository.update(user, existingUser, requestInfo.getUserInfo().getId(),
+                requestInfo.getUserInfo().getUuid());
         User updatedUser = getUserByUuid(user.getUuid());
-        
+
         updatedUser = encryptionDecryptionUtil.decryptObject(updatedUser, "User", User.class, requestInfo);
 
         setFileStoreUrlsByFileStoreIds(Collections.singletonList(updatedUser));
         String oldEmail = existingUser.getEmailId();
         String newEmail = updatedUser.getEmailId();
-        if((oldEmail != null && !oldEmail.isEmpty()) && newEmail != null && !(newEmail.equalsIgnoreCase(oldEmail))) {
+        if ((oldEmail != null && !oldEmail.isEmpty()) && newEmail != null && !(newEmail.equalsIgnoreCase(oldEmail))) {
             // Sending sms and email to old email to notify that email has been changed
-//            notificationUtil.sendEmail(requestInfo, existingUser, updatedUser);
+            // notificationUtil.sendEmail(requestInfo, existingUser, updatedUser);
         }
         return updatedUser;
     }
@@ -466,7 +507,7 @@ public class UserService {
         validateExistingPassword(user, updatePasswordRequest.getExistingPassword());
         validatePassword(updatePasswordRequest.getNewPassword());
         user.updatePassword(encryptPwd(updatePasswordRequest.getNewPassword()));
-        userRepository.update(user, user, user.getId() , user.getUuid());
+        userRepository.update(user, user, user.getId(), user.getUuid());
     }
 
     /**
@@ -474,7 +515,8 @@ public class UserService {
      *
      * @param request
      */
-    public void updatePasswordForNonLoggedInUser(NonLoggedInUserUpdatePasswordRequest request, RequestInfo requestInfo) {
+    public void updatePasswordForNonLoggedInUser(NonLoggedInUserUpdatePasswordRequest request,
+            RequestInfo requestInfo) {
         request.validate();
         // validateOtp(request.getOtpValidationRequest());
         User user = getUniqueUser(request.getUserName(), request.getTenantId(), request.getType());
@@ -487,18 +529,20 @@ public class UserService {
             throw new InvalidUpdatePasswordRequestException();
         }
         /* decrypt here */
-        /* the reason for decryption here is the otp service requires decrypted username */
+        /*
+         * the reason for decryption here is the otp service requires decrypted username
+         */
         user = encryptionDecryptionUtil.decryptObject(user, "UserListSelf", User.class, requestInfo);
         user.setOtpReference(request.getOtpReference());
         validateOtp(user);
         validatePassword(request.getNewPassword());
         user.updatePassword(encryptPwd(request.getNewPassword()));
         /* encrypt here */
-        /* encrypted value is stored in DB*/
+        /* encrypted value is stored in DB */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
-        userRepository.update(user, user,user.getId()!=null?user.getId():0 , user.getUuid()!=null?user.getUuid():"NA");
+        userRepository.update(user, user, user.getId() != null ? user.getId() : 0,
+                user.getUuid() != null ? user.getUuid() : "NA");
     }
-
 
     /**
      * Deactivate failed login attempts for provided user
@@ -521,8 +565,8 @@ public class UserService {
      */
     public boolean isAccountUnlockAble(User user) {
         if (user.getAccountLocked()) {
-            boolean unlockAble =
-                    System.currentTimeMillis() - user.getAccountLockedDate() > TimeUnit.MINUTES.toMillis(accountUnlockCoolDownPeriod);
+            boolean unlockAble = System.currentTimeMillis() - user.getAccountLockedDate() > TimeUnit.MINUTES
+                    .toMillis(accountUnlockCoolDownPeriod);
 
             log.info("Account eligible for unlock - " + unlockAble);
             log.info("Current time {}, last lock time {} , cool down period {} ", System.currentTimeMillis(),
@@ -536,7 +580,8 @@ public class UserService {
      * Perform actions where a user login fails
      * - Fetch existing failed login attempts within configured time
      * period{@link UserService#maxInvalidLoginAttemptsPeriod}
-     * - If failed login attempts exceeds configured {@link UserService#maxInvalidLoginAttempts}
+     * - If failed login attempts exceeds configured
+     * {@link UserService#maxInvalidLoginAttempts}
      * - then lock account
      * - Add failed login attempt entry to repository
      *
@@ -545,9 +590,9 @@ public class UserService {
      */
     public void handleFailedLogin(User user, String ipAddress, RequestInfo requestInfo) {
         if (!Objects.isNull(user.getUuid())) {
-            List<FailedLoginAttempt> failedLoginAttempts =
-                    userRepository.fetchFailedAttemptsByUserAndTime(user.getUuid(),
-                            System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(maxInvalidLoginAttemptsPeriod));
+            List<FailedLoginAttempt> failedLoginAttempts = userRepository.fetchFailedAttemptsByUserAndTime(
+                    user.getUuid(),
+                    System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(maxInvalidLoginAttemptsPeriod));
 
             if (failedLoginAttempts.size() + 1 >= maxInvalidLoginAttempts) {
                 User userToBeUpdated = user.toBuilder()
@@ -558,9 +603,11 @@ public class UserService {
 
                 user = updateWithoutOtpValidation(userToBeUpdated, requestInfo);
                 removeTokensByUser(user);
-                log.info("Locked account with uuid {} for {} minutes as exceeded max allowed attempts of {} within {} " +
+                log.info(
+                        "Locked account with uuid {} for {} minutes as exceeded max allowed attempts of {} within {} " +
                                 "minutes",
-                        user.getUuid(), accountUnlockCoolDownPeriod, maxInvalidLoginAttempts, maxInvalidLoginAttemptsPeriod);
+                        user.getUuid(), accountUnlockCoolDownPeriod, maxInvalidLoginAttempts,
+                        maxInvalidLoginAttemptsPeriod);
                 throw new OAuth2Exception("Account locked");
             }
 
@@ -569,6 +616,43 @@ public class UserService {
         }
     }
 
+    /**
+     * Authenticates an employee based on username and password without generating an auth token.
+     *
+     * @param userName
+     * @param password
+     * @param tenantId
+     * @param requestInfo
+     * @return
+     */
+    public User authenticateEmployee(String userName, String password, String tenantId, RequestInfo requestInfo) {
+        User user = getUniqueUser(userName, tenantId, UserType.EMPLOYEE);
+
+        if (user == null) {
+            throw new UserNotFoundException(null);
+        }
+
+        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+            if (isAccountUnlockAble(user)) {
+                resetFailedLoginAttempts(user);
+                user = user.toBuilder().accountLocked(false).build();
+            } else {
+                throw new OAuth2Exception("Account locked");
+            }
+        }
+
+        try {
+            validateExistingPassword(user, password);
+        } catch (PasswordMismatchException e) {
+            handleFailedLogin(user, null, requestInfo);
+            throw e;
+        }
+
+        resetFailedLoginAttempts(user);
+
+        // Decrypt user details before returning
+        return encryptionDecryptionUtil.decryptObject(user, "User", User.class, requestInfo);
+    }
 
     /**
      * This api will validate existing password and current password matching or
@@ -583,20 +667,8 @@ public class UserService {
         }
     }
 
-//    /**
-//     * this api will check user is exist or not, If not exist it will throw
-//     * exception.
-//     *
-//     * @param user
-//     */
-//    private void validateUserPresent(User user) {
-//        if (user == null) {
-//            throw new UserNotFoundException(null);
-//        }
-//    }
-
     /**
-     * this api will validate, updating the profile for same logged-in user or
+     * this api will update, updating the profile for same logged-in user or
      * not
      *
      * @param user
@@ -606,7 +678,6 @@ public class UserService {
             throw new UserProfileUpdateDeniedException();
         }
     }
-
 
     String encryptPwd(String pwd) {
         if (!isNull(pwd))
@@ -622,7 +693,6 @@ public class UserService {
      * @return
      */
     private User persistNewUser(User user) {
-
         return userRepository.create(user);
     }
 
@@ -630,7 +700,6 @@ public class UserService {
      * This api will fetch the fileStoreUrl By fileStoreId
      *
      * @param userList
-     * @throws Exception
      */
     private void setFileStoreUrlsByFileStoreIds(List<User> userList) {
         List<String> fileStoreIds = userList.parallelStream().filter(p -> p.getPhoto() != null).map(User::getPhoto)
@@ -653,22 +722,23 @@ public class UserService {
         }
     }
 
-
     public void validatePassword(String password) {
         Map<String, String> errorMap = new HashMap<>();
         if (!StringUtils.isEmpty(password)) {
             if (password.length() < pwdMinLength || password.length() > pwdMaxLength)
-                errorMap.put("INVALID_PWD_LENGTH", "Password must be of minimum: " + pwdMinLength + " and maximum: " + pwdMaxLength + " characters.");
+                errorMap.put("INVALID_PWD_LENGTH",
+                        "Password must be of minimum: " + pwdMinLength + " and maximum: " + pwdMaxLength
+                                + " characters.");
             Pattern p = Pattern.compile(pwdRegex);
             Matcher m = p.matcher(password);
             if (!m.find()) {
-                errorMap.put("INVALID_PWD_PATTERN", "Password MUST HAVE: Atleast one digit, one upper case, one lower case, one special character (@#$%) and MUST NOT contain any spaces");
+                errorMap.put("INVALID_PWD_PATTERN",
+                        "Password MUST HAVE: Atleast one digit, one upper case, one lower case, one special character (@#$%) and MUST NOT contain any spaces");
             }
         }
         if (!CollectionUtils.isEmpty(errorMap.keySet())) {
             throw new CustomException(errorMap);
         }
     }
-
 
 }

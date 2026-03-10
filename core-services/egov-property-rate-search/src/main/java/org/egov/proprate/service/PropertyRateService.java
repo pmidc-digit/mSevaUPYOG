@@ -92,30 +92,37 @@ public class PropertyRateService {
      * Logic for missing revenue properties (Search and User Enrichment)
      */
     public List<Map<String, Object>> searchMissingRevenueProperties(String tenantId, String localityCode, Integer limit, Boolean isMissing, String propertyid) {
+        // 1. Fetch raw data from the repository
         List<Map<String, Object>> results = repository.searchMissingRevenueProperties(tenantId, localityCode, limit, isMissing, propertyid);
 
-        if (results == null || results.isEmpty()) return Collections.emptyList();
+        if (results == null || results.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        // 1. Extract individual UUIDs for the User Service call
+        // 2. Extract all unique Owner UUIDs to make a bulk call to the User Service
         Set<String> allOwnerUuids = new HashSet<>();
         for (Map<String, Object> row : results) {
-            String ownerCsv = (String) row.get("ownerUuid");
-            if (ownerCsv != null) {
+            // Handle both potential case sensitivities from DB results
+            String ownerCsv = (String) (row.containsKey("ownerUuid") ? row.get("ownerUuid") : row.get("owneruuid"));
+            if (ownerCsv != null && !ownerCsv.isEmpty()) {
                 for (String uuid : ownerCsv.split(",")) {
                     allOwnerUuids.add(uuid.trim());
                 }
             }
         }
 
+        // 3. Fetch User details (Name, Guardian Name, etc.) based on UUIDs
+        // The searchUsers method returns Map<UUID, Map<UserAttributes, Values>>
         Map<String, Map<String, Object>> userMap = searchUsers(new ArrayList<>(allOwnerUuids), tenantId, new RequestInfo());
 
-        // 2. Enrich and Restructure into Objects
+        // 4. Enrich the Result Set and Structure into Objects
         return results.stream().map(r -> {
-            // 1. Create a fresh map to work with
-            Map<String, Object> map = new HashMap<>(r);
+            // Create a fresh map to avoid modifying the read-only repository map
+            Map<String, Object> enrichedMap = new HashMap<>(r);
             
-            String ownerCsv = (String) r.get("ownerUuid");
-            String percentCsv = (String) r.get("ownerPercentages");
+            // Extract CSV strings from the row
+            String ownerCsv = (String) (r.containsKey("ownerUuid") ? r.get("ownerUuid") : r.get("owneruuid"));
+            String percentCsv = (String) (r.containsKey("ownerPercentages") ? r.get("ownerPercentages") : r.get("ownerpercentages"));
 
             List<Map<String, Object>> ownersList = new ArrayList<>();
 
@@ -129,15 +136,27 @@ public class PropertyRateService {
                     
                     ownerDetail.put("ownerUuid", trimmedUuid);
                     
-                    if (userMap.containsKey(trimmedUuid)) {
+                    // DATA ENRICHMENT FROM USER-MAP
+                    if (userMap != null && userMap.containsKey(trimmedUuid)) {
                         Map<String, Object> user = userMap.get(trimmedUuid);
-                        ownerDetail.put("name", user.get("name"));
-                        ownerDetail.put("mobileNumber", user.get("mobileNumber"));
+                        
+                        ownerDetail.put("name", user.getOrDefault("name", "NA"));
+                        ownerDetail.put("mobileNumber", user.getOrDefault("mobileNumber", "NA"));
+                        ownerDetail.put("gender", user.getOrDefault("gender", "NA"));
+                        
+                        // Fields specifically requested from your log data
+                        ownerDetail.put("guardianName", user.getOrDefault("fatherOrHusbandName", "NA"));
+                        ownerDetail.put("relationship", user.getOrDefault("relationship", "NA"));
                     } else {
+                        // Fallback if user service doesn't return the UUID
                         ownerDetail.put("name", "NA");
                         ownerDetail.put("mobileNumber", "NA");
+                        ownerDetail.put("guardianName", "NA");
+                        ownerDetail.put("relationship", "NA");
+                        ownerDetail.put("gender", "NA");
                     }
 
+                    // Handle ownership percentage logic
                     if (i < percents.length) {
                         ownerDetail.put("percentage", percents[i].trim());
                     } else {
@@ -148,15 +167,16 @@ public class PropertyRateService {
                 }
             }
 
-            // 2. THE FIX: Remove the raw CSV strings so they don't show in the JSON
-            map.remove("owneruuid");        // Remove lowercase version
-            map.remove("ownerUuid");        // Remove camelCase version if exists
-            map.remove("ownerpercentages");  // Remove the percentages CSV string
+            // 5. CLEANUP: Remove raw CSV strings to keep the API response clean
+            enrichedMap.remove("owneruuid");        
+            enrichedMap.remove("ownerUuid");        
+            enrichedMap.remove("ownerpercentages");
+            enrichedMap.remove("ownerPercentages");
             
-            // 3. Add the structured list
-            map.put("owners", ownersList);
+            // 6. Final Structured Output
+            enrichedMap.put("owners", ownersList);
 
-            return map;
+            return enrichedMap;
         }).collect(Collectors.toList());
     }
     

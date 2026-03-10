@@ -40,6 +40,8 @@ public class WaterConnection extends Connection {
 	@JsonProperty("proposedPipeSize")
 	private Double proposedPipeSize = null;
 
+	@JsonProperty("relatedSwConnection")
+	private String relatedSwConnection;
 	
 	@Builder.Default
 	@JsonProperty("isworkflowdisabled")

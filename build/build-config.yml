@@ -553,7 +553,7 @@ config:
     build:
       - work-dir: "municipal-services/property-services"
         image-name: "property-services"
-        dockerfile: "build/maven/Dockerfile"
+        dockerfile: "municipal-services/property-services/Dockerfile"
       - work-dir: "municipal-services/property-services/src/main/resources/db"
         image-name: "property-services-db"
 
@@ -990,3 +990,27 @@ config:
       - work-dir: "business-services/dashboard-ingest-v2"
         image-name: "dashboard-ingest-v2"
         dockerfile: "build/maven/Dockerfile"
+
+  - name: "builds/upyog/core-services/egov-indexer-v2"
+    build:
+      - work-dir: "core-services/egov-indexer-v2"
+        image-name: "egov-indexer-v2"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-indexer-v2/src/main/resources/db"
+        image-name: "egov-indexer-v2-db"
+
+  - name: "builds/upyog/municipal-services/rl-services"
+    build:
+      - work-dir: "municipal-services/rl-services"
+        image-name: "rl-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/rl-services/src/main/resources/db"
+        image-name: "rl-services-db"
+
+  - name: "builds/upyog/municipal-services/rl-calculator"
+    build:
+      - work-dir: "municipal-services/rl-calculator"
+        image-name: "rl-calculator"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/rl-calculator/src/main/resources/db"
+        image-name: "rl-calculator-db"

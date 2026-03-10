@@ -60,6 +60,7 @@ public class TicketController {
 		StringBuffer imagePathAttach=new StringBuffer();
 		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMddHHmmss");
 	    Date now = new Date();
+		String imageUrl = null;
 	    String strDate = sdfDate.format(now);
 		if (session.getAttribute("userObj") == null) {
 			return "login";
@@ -87,7 +88,7 @@ public class TicketController {
 					List<MultipartFile> fileList = Arrays.asList(ticket.getFiles());
 					
 			
-					filestore.uploadToFileStore(fileList, "ticket","ticket-images");
+						imageUrl = filestore.uploadToFileStore(fileList, "ticket","ticket-images");
 					
 					
 				} catch (IOException e) {
@@ -96,7 +97,7 @@ public class TicketController {
 
 			}
 					ticket.setAttachment(imagePathAttach.toString());
-					ticketDao.insertTicketWithImg(ticket,user);
+					ticketDao.insertTicketWithImg(ticket,user, imageUrl);
 		}
 			
 		}

@@ -243,7 +243,8 @@ public class ApplicationProperties {
     @Value("${kafka.topics.notification.sms.key}")
     private String smsTopickey;
 
-
+    @Value("${kafka.topics.notification.email}")
+    private String emailTopic;
 
     //MDMS
 

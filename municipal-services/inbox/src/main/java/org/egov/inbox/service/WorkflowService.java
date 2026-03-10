@@ -32,6 +32,9 @@ import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class WorkflowService {
 
@@ -99,6 +102,11 @@ public class WorkflowService {
 	
         public List<HashMap<String, Object>> getProcessStatusCount(RequestInfo requestInfo,
                 ProcessInstanceSearchCriteria criteria) {
+            log.info("=== STATUS COUNT DEBUG ===");
+            log.info("Criteria TenantId: {}", criteria.getTenantId());
+            log.info("Criteria ModuleName: {}", criteria.getModuleName());
+            log.info("UserInfo TenantId: {}", requestInfo.getUserInfo() != null ? requestInfo.getUserInfo().getTenantId() : "null");
+            
             List<String> listOfBusinessServices = new ArrayList<>(criteria.getBusinessService());
             List<HashMap<String, Object>> finalResponse = null;
             for (String businessSrv : listOfBusinessServices) {
@@ -112,6 +120,9 @@ public class WorkflowService {
                         || (!ObjectUtils.isEmpty(criteria.getModuleName()) && 
                         		criteria.getModuleName().equalsIgnoreCase(BpaConstants.BPA) && !roles.contains(BpaConstants.CITIZEN)))
                     url = this.buildWorkflowUrl(criteria, url, Boolean.FALSE);
+                
+                log.info("Status Count URL: {}", url.toString());
+                
                 if (requestInfo.getUserInfo().getRoles().get(0).getCode().equals(FSMConstants.FSM_DSO)) {
                     url.append("&assignee=").append(requestInfo.getUserInfo().getUuid());
                 }
@@ -137,6 +148,8 @@ public class WorkflowService {
                 }
             }
             criteria.setBusinessService(listOfBusinessServices);
+            log.info("Status Count Response: {}", finalResponse);
+            log.info("=== END STATUS COUNT DEBUG ===");
             return finalResponse;
         }
 	
@@ -281,7 +294,9 @@ public class WorkflowService {
                          List<State> states = service.getStates();
                          states.forEach(state -> {
                              Set<String> stateRoles = stateToRoleMap.get(state.getUuid());
-                             if(!CollectionUtils.isEmpty(stateRoles) && !Collections.disjoint(stateRoles,entry.getValue())){
+                             // Include terminate states regardless of role-action mapping (they have no actions)
+                             if(Boolean.TRUE.equals(state.getIsTerminateState()) ||
+                                (!CollectionUtils.isEmpty(stateRoles) && !Collections.disjoint(stateRoles,entry.getValue()))){
                                  actionableStatuses.put(state.getUuid(), state.getApplicationStatus());
                              }
 

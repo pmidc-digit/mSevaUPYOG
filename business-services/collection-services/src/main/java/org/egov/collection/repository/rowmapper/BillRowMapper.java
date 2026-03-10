@@ -65,10 +65,6 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>> {
 					bill.setCollectionModesNotAllowed(
 							Arrays.asList(rs.getString("b_collectionmodesnotallowed").split(",")));
 				}
-
-				PGobject obj = (PGobject) rs.getObject("b_additionalDetails");
-				bill.setAdditionalDetails(getJsonValue(obj));
-
 				billMap.put(bill.getId(), bill);
 				billDetailMap.clear();
 			}

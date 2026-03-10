@@ -985,6 +985,11 @@ config:
       - work-dir: "core-services/egov-property-rate-search/src/main/resources/db"
         image-name: "egov-property-rate-search-db"
 
+  - name: "builds/upyog/business-services/dashboard-ingest-v2"
+    build:
+      - work-dir: "business-services/dashboard-ingest-v2"
+        image-name: "dashboard-ingest-v2"
+        dockerfile: "build/maven/Dockerfile"
 
   - name: "builds/upyog/core-services/egov-indexer-v2"
     build:

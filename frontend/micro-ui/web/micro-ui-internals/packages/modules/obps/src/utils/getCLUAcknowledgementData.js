@@ -260,32 +260,124 @@ const getSpecificationDetails = (appData, t) => {
   };
 };
 
+
 const getInspectionReportDetails = (appData, t) => {
-  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending || [];
-  if (fiReport.length === 0) return null;
+  const inspectionData = appData?.cluDetails?.additionalDetails?.fieldinspection_pending?.[0] || {};
+  // Collect all remark fields dynamically
+  const remarksKeys = Object.keys(inspectionData).filter(key => key.startsWith("Remarks_"));
+
+  // Map remarks to questions
+  const remarksValues = remarksKeys.map((key, index) => {
+    const question = inspectionData?.questionList?.[index]?.question || key; // fallback to key if no question
+    return {
+      title: `${index + 1} ${t(question)}`,                 // Label from questionList (translated)
+      value: inspectionData[key] || "N/A" // Value is the remark text
+    };
+  });
 
   return {
     title: t("BPA_FI_REPORT"),
-    values: fiReport.map((item) => ({
-      title: t(item.question),
-      value: t(item.answer) || t("CS_NA"),
-    })),
+    values: remarksValues.length > 0 ? remarksValues : [{ title: t("No Remarks"), value: "NA" }]
   };
 };
 
-const getChecklistDetails = (searchChecklistData, t) => {
-  const checklist = searchChecklistData?.CheckList || [];
-  if (checklist.length === 0) return null;
+const getChecklistDetails = (appData, checklistData, t) => {
+  const checkList = checklistData?.checkList || [];
+  const documents = appData?.documents || [];
+  const sortedDocs = documents?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  
+  const orderMap = {};
+    sortedDocs?.forEach((doc, idx) => {
+      orderMap[doc.uuid] = doc.order || idx + 1; // fallback to index
+    });
+  
+  const sortedChecklist = [...checkList].sort(
+      (a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0)
+    );
+
+
+  let values = [];
+
+  if (sortedChecklist?.length > 0) {
+    values = sortedChecklist?.map((item, index) => {
+      const matchedDoc = sortedDocs?.find(
+        (doc) => doc?.uuid === item?.documentuid
+      );
+      const docName = matchedDoc
+        ? t(matchedDoc?.documentType?.replace(/\./g, "_")) || matchedDoc?.documentType
+        : item?.documentuid; 
+
+      return {
+        title: `${index + 1}. ${docName}`,
+        value: item?.remarks || "N/A"
+      };
+    });
+  } else {
+    values = [
+      {
+        title: t("BPA_NO_CHECKLIST_ITEMS"),
+        value: "NA"
+      }
+    ];
+  }
 
   return {
-    title: t("BPA_CHECKLIST_DETAILS"),
-    values: checklist.map((item) => ({
-      title: t(item.docType),
-      value: item.remarks || t("BPA_NO_REMARKS"),
-    })),
+    title: t("Document Checklist"),
+    values
   };
 };
 
+const getJESiteImages = async (appData, t, stateCode) => {
+  const siteImages = appData?.cluDetails?.additionalDetails?.siteImages || [];
+
+  const fileStoreIds = siteImages?.map((img) => img?.filestoreId);
+
+  const res =
+    fileStoreIds?.length > 0 &&
+    (await Digit.UploadServices.Filefetch(
+      fileStoreIds,
+      Digit.ULBService.getStateId()
+    ));
+
+  let values = [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
+
+  if (siteImages?.length > 0) {
+    values = await Promise.all(
+      siteImages.map(async (img) => {
+        const documentLink = pdfDownloadLink(res?.data, img?.filestoreId);
+        // const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${img?.filestoreId}&tenantId=${stateCode}`;
+
+        // // Use your exif function here
+        // const exifData = await getExifDataFromUrl(exiflink);
+        // console.log("exifData in siteImages", exifData);
+        // if ([3, 6, 8].includes(exifData?.Orientation)) {
+        //   exifData.Orientation = 1;
+        // }
+
+        // Use lat/long directly from siteImages
+        const lat = img?.latitude || "N/A";
+        const long = img?.longitude || "N/A";
+        const timestamp = img?.timestamp || "N/A";
+
+        return {
+          title:
+            (t(img?.documentType?.replace(/\./g, "_")) || t("CS_NA")) +
+            ` (Lat: ${lat}, Long: ${long}, Time: ${timestamp})`,
+          value: " ",
+          link: documentLink || "",
+          // exiflink: exiflink || "",
+          // orientation: exifData?.Orientation || 1
+        };
+      })
+    );
+  }
+
+  return {
+    title: t("SITE_INPECTION_IMAGES"),
+    isAttachments: true,
+    values
+  };
+};
 const getFeeCalculation = (appData, t) => {
   const calculations = appData?.cluDetails?.additionalDetails?.calculations || [];
   if (calculations.length === 0) return null;
@@ -392,11 +484,12 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
 
   const fileData = result?.data?.fileStoreIds?.[0];
   imageURL = fileData?.url || "";
+  const isEmployee = window.location.href.includes("/employee");
 
   if (appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalName) detailsArr.push(getProfessionalDetails(appData, t));
 
   const inspectionReport = getInspectionReportDetails(appData, t);
-  const checklistDetails = getChecklistDetails(searchChecklistData, t);
+  const checklistDetails = getChecklistDetails(appData, searchChecklistData, t);
   const feeCalculation = getFeeCalculation(appData, t);
 
   return {
@@ -414,12 +507,14 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getLocationInfo(appData, t),
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
-      ...(inspectionReport ? [inspectionReport] : []),
-      ...(checklistDetails ? [checklistDetails] : []),
-      ...(feeCalculation ? [feeCalculation] : []),
+      ...(inspectionReport && isEmployee ? [inspectionReport] : []),
+      ...(checklistDetails && isEmployee ? [checklistDetails] : []),
+      ...(feeCalculation && isEmployee ? [feeCalculation] : []),
       await getDocuments(appData, t),
       await getSitePhotographs(appData, t),
-    ],
+      isEmployee && appData?.cluDetails?.additionalDetails?.siteImages?.length ? await getJESiteImages(appData, t, stateCode) : null,
+
+    ].filter(Boolean),
     imageURL,
     ulbType,
     ulbName,

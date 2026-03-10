@@ -518,7 +518,9 @@ const getLatestCalculationDetails = (appData, t) => {
   // Map taxHeadEstimates to display taxHeadCode, remarks, and updatedBy
   const values = latestCalc.taxHeadEstimates.map((estimate, index) => ({
     title: `${t(estimate?.taxHeadCode)}`,
-    value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A", // Value: remarks
+    // value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A", // Value: remarks
+    value: `Rs. ${estimate?.estimateAmount} only` || "N/A", // Value: remarks
+
   }));
 
   return {

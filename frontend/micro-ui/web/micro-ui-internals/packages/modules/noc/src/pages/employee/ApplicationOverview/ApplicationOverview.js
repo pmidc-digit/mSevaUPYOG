@@ -46,6 +46,8 @@ import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementD
 import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import { format } from "date-fns";
+
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
@@ -130,6 +132,7 @@ const NOCEmployeeApplicationOverview = () => {
       : {}
   );
   const [timeObj, setTimeObj] = useState(null);
+  const [appDate, setAppDate] = useState(null);
 
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [showOptions, setShowOptions] = useState(false);
@@ -638,6 +641,10 @@ const NOCEmployeeApplicationOverview = () => {
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const endTime = Date.now();
+
+      if(submittedOn!== null){
+        setAppDate(Number(submittedOn))
+      }
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
@@ -1123,10 +1130,7 @@ const NOCEmployeeApplicationOverview = () => {
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
   const isFirm = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
 
-  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...(ownersList || [])]
-    .filter((v, i, arr) => v && arr.indexOf(v) === i)
-    .join(", ");
-
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
@@ -1172,6 +1176,15 @@ const NOCEmployeeApplicationOverview = () => {
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
               </StatusTable>
             </div>
+          </Card>
+        </React.Fragment>
+      )}
+      {appDate !== null && (
+        <React.Fragment>
+          <Card>
+          <StatusTable>
+            <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
+          </StatusTable>
           </Card>
         </React.Fragment>
       )}

@@ -291,7 +291,7 @@ const CitizenApplicationOverview = () => {
       // console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
-    }
+    
   }
 }
 

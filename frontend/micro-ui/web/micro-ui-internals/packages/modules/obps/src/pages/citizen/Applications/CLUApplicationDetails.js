@@ -36,6 +36,7 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import { convertToDDMMYYYY } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
+import { EmployeeData } from "../../../utils/index";
 
 const CLUApplicationDetails = () => {
   const { id } = useParams();
@@ -48,7 +49,7 @@ const CLUApplicationDetails = () => {
   const [feeAdjustments, setFeeAdjustments] = useState([]);
   const [empDesignation,setEmpDesignation] = useState(null);
   const [timeObj, setTimeObj] = useState(null);
-
+  const [EmpData, setEmpData] = useState(null);
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
@@ -109,7 +110,12 @@ const CLUApplicationDetails = () => {
     }
   }, [applicationDetails?.Clu]);
 
-  
+  useEffect(() => {
+    EmployeeData(tenantId, id, businessServiceCode).then((res) => {
+      setEmpData(res);
+    });
+  }, []); 
+
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
 
   const { data: reciept_data1, isLoading: recieptDataLoading1 } = Digit.Hooks.useRecieptSearch(
@@ -160,7 +166,9 @@ const CLUApplicationDetails = () => {
   let approvalDate ,approvalTime= ""
   // Assuming workflowDetails.timeline exists
   if (workflowDetails?.data && !workflowDetails.isLoading) {
-    approveComments = workflowDetails?.data?.timeline?.filter((item) => item?.performedAction === "APPROVE")?.flatMap((item) => item?.wfComment || []);
+    approveComments = workflowDetails?.data?.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE" || item?.performedAction === "REJECT")
+      ?.flatMap((item) => item?.wfComment || []);
     approvalDate = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.lastModified || "";
     approvalTime = workflowDetails?.data?.timeline?.find((item) => item?.performedAction === "PAY")?.auditDetails?.timing || "";
 
@@ -181,34 +189,193 @@ const CLUApplicationDetails = () => {
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
     const acknowledgementData = await getCLUAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
 
-    Digit.Utils.pdf.generateFormatted(acknowledgementData);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
+      Digit.Utils.pdf.generateFormatted(acknowledgementData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "clu-sanctionletter", ...params }) {
+    try {
+      setLoading(true);
+
+      const application = applicationDetails?.Clu;
+      const approvecomments = approveComments?.[0];
+      const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+      const owners = application?.[0]?.owners || [];
+      let ownersString = "NA";
+      if (!firmName) {
+        if (owners?.length > 1) {
+          ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
+        } else if (owners?.length === 1) {
+          ownersString = owners[0]?.name || "owner 1";
+        }
+      } else {
+        ownersString = firmName;
+      }
+      let conditionText = "";
+      if (approvecomments?.includes("[#?..**]")) {
+        conditionText = approvecomments.split("[#?..**]")[1] || "";
+      }
+      const finalComment = conditionText ? `The above approval is subjected to the following conditions: ${conditionText}` : "";
+      if (!application) {
+        throw new Error("CLU Application data is missing");
+      }
+      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+
+      let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
+      if (!fileStoreId) {
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          {
+            Payments: [
+              {
+                ...payments,
+                Clu: application,
+                ApproverComment: finalComment,
+                usage,
+                amountinwords,
+                approvalDate: approvalDate,
+                approvalTime: approvalTime,
+                ownersString,
+              },
+            ],
+          },
+          pdfkey
+        );
+
+        const updatedApplication = {
+          ...application,
+          workflow: {
+            action: "ESIGN",
+          },
+          cluDetails: {
+            ...application?.cluDetails,
+            additionalDetails: {
+              ...application?.cluDetails?.additionalDetails,
+              sanctionLetterFilestoreId: response?.filestoreIds[0],
+            },
+          },
+        };
+
+        await mutation.mutateAsync({
+          Clu: updatedApplication,
+        });
+
+        fileStoreId = response?.filestoreIds[0];
+      }
+
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
   }
-};
+  async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "clu-rejectionletter", ...params }) {
+    try {
+      setLoading(true);
 
+      const application = applicationDetails?.Clu;
+      const currentDate = new Date().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
 
-async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanctionletter", ...params }) {
-  try {
-    setLoading(true);
+      const approvecomments = approveComments?.[0];
+      const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+      const owners = application?.[0]?.owners || [];
+      let ownersString = "NA";
+      if (!firmName) {
+        if (owners?.length > 1) {
+          ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
+        } else if (owners?.length === 1) {
+          ownersString = owners[0]?.name || "owner 1";
+        }
+      } else {
+        ownersString = firmName;
+      }
+      let conditionText = "";
+      if (approvecomments?.includes("[#?..**]")) {
+        conditionText = approvecomments.split("[#?..**]")[1] || "";
+      }else{
+        conditionText = approvecomments?.[0]
+      }
 
-    const application = applicationDetails?.Clu;
-        const approvecomments = approveComments?.[0];
-    const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
-          const owners = application?.[0]?.owners || [];
-          let ownersString = "NA";
-          if (!firmName) {
-            if (owners?.length > 1) {
-              ownersString = owners?.map((o, idx) => (o?.name ? o.name : `owner ${idx + 1}`)).join(", ");
-            } else if (owners?.length === 1) {
-              ownersString = owners[0]?.name || "owner 1";
-            }
-          } else {
-            ownersString = firmName;
-          }
-        let conditionText = "";
+      const finalComment = conditionText ? `The above approval is subjected to the following conditions: ${conditionText?.[0]}` : "";
+      if (!application) {
+        throw new Error("CLU Application data is missing");
+      }
+      const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+
+      let fileStoreId = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
+      if (!fileStoreId) {
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          {
+            Payments: [
+              {
+                ...payments,
+                Clu: application,
+                ApproverComment: finalComment,
+                usage,
+                amountinwords,
+                approvalDate: approvalDate,
+                approvalTime: approvalTime,
+                ownersString,
+                EmpData,
+                currentDate
+              },
+            ],
+          },
+          pdfkey
+        );
+
+        // const updatedApplication = {
+        //   ...application,
+        //   workflow: {
+        //     action: "ESIGN",
+        //   },
+        //   cluDetails: {
+        //     ...application?.cluDetails,
+        //     additionalDetails: {
+        //       ...application?.cluDetails?.additionalDetails,
+        //       sanctionLetterFilestoreId: response?.filestoreIds[0],
+        //     },
+        //   },
+        // };
+
+        // await mutation.mutateAsync({
+        //   Clu: updatedApplication,
+        // });
+
+        fileStoreId = response?.filestoreIds[0];
+      }
+
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } catch (error) {
+      console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+  async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
+    try {
+      setLoading(true);
+      const application = applicationDetails?.Clu;
+      const approvecomments = approveComments?.[0];
+      let conditionText = "";
       if (approvecomments?.includes("[#?..**]")) {
         conditionText = approvecomments.split("[#?..**]")[1] || "";
       }
@@ -289,20 +456,32 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
       finally { setLoading(false); }
     }
 
+  
   const dowloadOptions = [];
-
-    if (applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
-      if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
-        dowloadOptions.push({
-          label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-          onClick: () =>
-            getSanctionLetterReceipt({
-              tenantId: reciept_data2?.Payments[0]?.tenantId,
-              payments: reciept_data2?.Payments[0],
-              pdfkey: "clu-sanctionletter",
-            }),
-        });
-      }
+  if (applicationDetails?.Clu?.[0]?.applicationStatus === "REJECTED") {
+    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
+      dowloadOptions.push({
+        label: t("Rejection Letter"),
+        onClick: () =>
+          getRejectionLetterReceipt({
+            tenantId: tenantId,
+            payments: reciept_data1?.Payments[0],
+            EmpData,
+          }),
+      });
+    }
+  }
+  if (applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
+    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getSanctionLetterReceipt({
+            tenantId: reciept_data2?.Payments[0]?.tenantId,
+            payments: reciept_data2?.Payments[0],
+            pdfkey: "clu-sanctionletter",
+          }),
+      });
     }
   if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({

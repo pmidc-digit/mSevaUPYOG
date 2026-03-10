@@ -455,9 +455,9 @@ const LayoutEmployeeApplicationOverview = () => {
 
 
 
-      // if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
-      //   filtData.assignee = user?.info?.uuid;        
-      // }
+      if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
+        filtData.assignee = [user?.info?.uuid];
+      }
       
 
       if (!filtData) {

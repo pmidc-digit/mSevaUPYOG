@@ -481,6 +481,8 @@ const finalComment = useMemo(() => {
     let conditionText = "";
     if (approvercomments?.includes("[#?..**]")) {
       conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }else{
+        conditionText = approvercomments?.[0]
     }
 
     return conditionText

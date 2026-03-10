@@ -26,17 +26,17 @@ export const uuidv4 = () => {
   return require("uuid/v4")();
 };
 
-export const EmployeeData = async (tenantId, consumerCode) => {
+export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) => {
   const wfData = await Digit.WorkflowService.getDetailsById({
     tenantId,
     id: consumerCode,
-    moduleCode: "obpas_noc",
+    moduleCode: moduleCode || "obpas_noc",
     role: "EMPLOYEE",
     getTripData: false,
   });
   console.log("Workflow Data", wfData);
 
-  const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE");
+  const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = await Digit.UserService.employeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });

@@ -289,12 +289,12 @@ public class SideYardService extends GeneralRule {
                         if (buildingHeight != null && (minlength > 0 || max > 0)) {
                             for (final Occupancy occupancy : block.getBuilding().getTotalArea()) {
                                 //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Side Setback");
-                            	scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback");
-                            	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback");
+                            	scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Side Setback1");
+                            	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Side Setback2");
                                 if (setback.getLevel() < 0) {
                                     //scrutinyDetail.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
-                                    scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
-                                	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Basement Side Yard");
+                                	scrutinyDetailSideYard1.setKey("Block_" + block.getName() + "_" + "Basement Side Yard1");
+                                	scrutinyDetailSideYard2.setKey("Block_" + block.getName() + "_" + "Basement Side Yard2");
 
                                     checkSideYardBasement(pl, block.getBuilding(), buildingHeight, block.getName(),
                                             setback.getLevel(), plot, minlength, max, minMeanlength, maxMeanLength,
@@ -640,7 +640,12 @@ public class SideYardService extends GeneralRule {
             details.put(RULE_NO, sideYard1Result.subRule);
             details.put(LEVEL,
                     sideYard1Result.level != null ? sideYard1Result.level.toString() : "");
-            details.put(OCCUPANCY, sideYard1Result.occupancy);
+            String occupancy = sideYard1Result.occupancy;
+			if (occupancy != null && occupancy.contains(",")) {
+			    occupancy = occupancy.split(",")[0].trim();
+			}
+			details.put(OCCUPANCY, occupancy);
+            //details.put(OCCUPANCY, sideYard1Result.occupancy);
             
             String permissableValueWithPercentage;
 			String providedValue;
@@ -704,7 +709,15 @@ public class SideYardService extends GeneralRule {
                 detailsSideYard2.put(RULE_NO, sideYard2Result.subRule);
                 detailsSideYard2.put(LEVEL,
                         sideYard2Result.level != null ? sideYard2Result.level.toString() : "");
-                detailsSideYard2.put(OCCUPANCY, sideYard2Result.occupancy);
+                
+                String occupancy = sideYard2Result.occupancy;
+    			if (occupancy != null && occupancy.contains(",")) {
+    			    occupancy = occupancy.split(",")[0].trim();
+    			}
+    			detailsSideYard2.put(OCCUPANCY, occupancy);
+                
+                //detailsSideYard2.put(OCCUPANCY, sideYard2Result.occupancy);
+                
                 detailsSideYard2.put(SIDENUMBER, SIDE_YARD2_DESC);
                 
                 String permissableValueWithPercentage;

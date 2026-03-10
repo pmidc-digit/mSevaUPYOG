@@ -422,10 +422,10 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
+    })?.filter((action) => (action?.action !== "EDIT" && action?.action !== "CANCEL")) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+    })?.filter((action) => (action?.action !== "EDIT" && action?.action !== "CANCEL"));
 
   //console.log("actions here", actions);
 

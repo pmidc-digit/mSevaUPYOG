@@ -13,7 +13,7 @@ const LayoutDocumentTableView = ({documents}) => {
         {
           Header: t("BPA_DOCUMENT_NAME"),
           accessor: "title",
-          Cell: ({ value }) => <strong>{t(value)}</strong> || t("CS_NA"),
+          Cell: (value) => <strong>{(parseInt(value?.row?.id)+1) + ". " +t(value?.value)}</strong> || t("CS_NA"),
         },
         {
           Header: t("BPA_DOCUMENT_FILE"),
@@ -48,10 +48,11 @@ const LayoutDocumentTableView = ({documents}) => {
     }
   );
   
-  const mappedDocuments = documents?.sort((a,b) => b?.order - a?.order)?.map(doc => {
+  const mappedDocuments = documents?.sort((a,b) => a?.order - b?.order)?.map((doc, index) => {
    const { documentUid, documentType } = doc;
    const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
    return {
+    id: index,
     documentUid,
     documentType,
     url
@@ -75,8 +76,8 @@ const LayoutDocumentTableView = ({documents}) => {
           data={documentsData}
           columns={documentsColumns}
           getCellProps={() => ({ style: {} })}
-          disableSort={false}
-          autoSort={true}
+          disableSort={true}
+          autoSort={false}
           manualPagination={false}
           isPaginationRequired={false}
           pageSizeLimit = {documentsData?.length || 10}

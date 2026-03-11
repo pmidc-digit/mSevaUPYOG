@@ -11,11 +11,11 @@
   "devDependencies": {
     "microbundle-crl": "^0.13.11",
     "@mseva/digit-ui-libraries": "1.1.68-dev.1.8",
-    "@mseva/digit-ui-module-common": "1.1.88-dev.1.16",
+    "@mseva/digit-ui-module-common": "1.1.88-dev.1.17",
     "@mseva/digit-ui-module-engagement": "1.1.32-dev.1",
     "@mseva/digit-ui-module-fsm": "1.0.6",
     "@mseva/digit-ui-module-mcollect": "1.0.15",
-    "@mseva/digit-ui-module-noc": "1.0.79-dev.7",
+    "@mseva/digit-ui-module-noc": "1.0.79-dev.8",
     "@mseva/digit-ui-module-pgr": "1.0.26",
     "@mseva/digit-ui-module-receipts": "1.0.4",
     "@mseva/digit-ui-module-ws": "1.0.15",

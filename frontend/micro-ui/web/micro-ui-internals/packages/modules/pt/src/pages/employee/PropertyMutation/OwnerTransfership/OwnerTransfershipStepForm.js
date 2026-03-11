@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfigMutate } from "../../../../config/Mutate/config";
-import { SET_PtNewApplication, UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { SET_PTNewApplication_STEP, UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { OwnertransferMapData } from "../../../../utils/OwnertransferMapData";
@@ -74,12 +74,12 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
     console.log("deafult vaules in useEffect ownerTransfer: ", defaultValues);
 
     Object.entries(defaultValues).forEach(([key, value]) => {
-      dispatch(UPDATE_PtNewApplication(key, value));
+      dispatch(UPDATE_PTNewApplication_FORM(key, value));
     });
   }, []);
 
   const setStep = (updatedStepNumber) => {
-    dispatch(SET_PtNewApplication(updatedStepNumber));
+    dispatch(SET_PTNewApplication_STEP(updatedStepNumber));
   };
 
   const handleSubmit = () => {

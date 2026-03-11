@@ -1,9 +1,9 @@
-import React,{useState} from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
-import { UPDATE_PtNewApplication, RESET_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
+import { RESET_PT_NEW_APPLICATION_FORM } from "../../../redux/action/PTNewApplicationActions";
 
 const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -26,22 +26,24 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
     //   console.error("Submission failed, not moving to next step.", res);
     // }
 
-    try {const res = await onSubmit(formData); // wait for the API response
+    try {
+      const res = await onSubmit(formData); // wait for the API response
       console.log("API response: ", res);
-  
+
       // Check if the API call was successful
       if (res.isSuccess) {
         console.log("Submission successful, moving to next step.", res.response);
         const applicationNumber = res?.response?.Properties?.[0]?.acknowldgementNumber;
-        dispatch(RESET_PtNewApplication());
+        dispatch(RESET_PT_NEW_APPLICATION_FORM());
         history.replace(`/digit-ui/citizen/pt/property/response/${applicationNumber}`);
         // onGoNext();
       } else {
         console.error("Submission failed, not moving to next step.", res.response);
-      }}catch(error){
-          alert(`Error: ${error.message}`);
-          console.error("Submission failed, not moving to next step.", error);
       }
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+      console.error("Submission failed, not moving to next step.", error);
+    }
 
     // onGoNext();
   };
@@ -52,40 +54,36 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
 
   const onSubmit = async (data) => {
     console.log("FormData received:", data);
-  
+
     const tenantId = data?.LocationDetails?.address?.city?.code;
     const allDocuments = data?.DocummentDetails?.documents?.documents || [];
     const applicationData = data?.applicationData || {};
     // const workflow = {...data?.applicationData?.workflow, action: "OPEN"};
     const workflow = {
       businessService: data?.applicationData?.workflow?.businessService || "",
-      moduleName: data?.applicationData?.workflow?.moduleName || "", 
-      action: "OPEN"
+      moduleName: data?.applicationData?.workflow?.moduleName || "",
+      action: "OPEN",
     };
-  
+
     let updatedUnits = [];
     const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
-  
+
     if (usageCategoryMajorCode !== "NONRESIDENTIAL.OTHERS") {
       updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
         let usageCategory;
-  
+
         if (usageCategoryMajorCode === "RESIDENTIAL") {
           usageCategory = "RESIDENTIAL";
         } else if (usageCategoryMajorCode === "MIXED") {
-          if(unit?.usageCategoryType?.code){
-            usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
-            ? "RESIDENTIAL"
-            : unit?.subUsageType?.code;
-          }else if (unit?.usageCategory?.code){
-            usageCategory = unit?.usageCategory?.code === "RESIDENTIAL"
-            ? "RESIDENTIAL"
-            : unit?.usageCategory?.code;
+          if (unit?.usageCategoryType?.code) {
+            usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL" ? "RESIDENTIAL" : unit?.subUsageType?.code;
+          } else if (unit?.usageCategory?.code) {
+            usageCategory = unit?.usageCategory?.code === "RESIDENTIAL" ? "RESIDENTIAL" : unit?.usageCategory?.code;
           }
         } else {
           usageCategory = unit?.subUsageType?.code;
         }
-  
+
         return {
           ...unit,
           floorNo: unit?.floorNoCitizen?.code,
@@ -104,26 +102,21 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
         };
       });
     }
-  
+
     const propertyTypeCode = data?.PropertyDetails?.PropertyType?.code;
     const userEnteredFloors = Number(data?.PropertyDetails?.noOfFloors || 0);
-  
-    const unitFloors = data?.PropertyDetails?.units?.map((unit) =>
-      Number(unit?.floorNoCitizen?.code)
-    ).filter((n) => !isNaN(n));
+
+    const unitFloors = data?.PropertyDetails?.units?.map((unit) => Number(unit?.floorNoCitizen?.code)).filter((n) => !isNaN(n));
     const maxUnitFloor = unitFloors?.length ? Math.max(...unitFloors) : 0;
-  
-    const noOfFloors =
-      propertyTypeCode === "BUILTUP.SHAREDPROPERTY"
-        ? 2
-        : Math.max(userEnteredFloors, maxUnitFloor);
-  
+
+    const noOfFloors = propertyTypeCode === "BUILTUP.SHAREDPROPERTY" ? 2 : Math.max(userEnteredFloors, maxUnitFloor);
+
     const permanentAddress = `${data?.LocationDetails?.address?.doorNo}, ${data?.LocationDetails?.address?.buildingName}, ${data?.LocationDetails?.address?.street}, ${data?.LocationDetails?.address?.locality?.name}, ${data?.LocationDetails?.address?.city?.name}, ${data?.LocationDetails?.address?.pincode}`;
-  
+
     const owners = Array.isArray(data?.ownerShipDetails?.owners)
       ? data.ownerShipDetails.owners.map((owner, index) => {
           const isIndividual = data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL");
-  
+
           const baseOwner = {
             ...owner,
             name: owner?.name,
@@ -134,7 +127,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
             ownerType: owner?.ownerType?.code,
             ownerShipPercentage: owner?.ownershipPercentage || null,
           };
-  
+
           if (isIndividual) {
             baseOwner.permanentAddress = permanentAddress;
             baseOwner.relationship = owner?.relationship?.code;
@@ -148,16 +141,16 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
             baseOwner.designation = owner?.designation;
             baseOwner.altContactNumber = owner?.altContactNumber;
           }
-  
+
           baseOwner.documents = [
             allDocuments.find((d) => d.documentType?.includes("IDENTITYPROOF")),
             allDocuments.find((d) => d.documentType?.includes("ADDRESSPROOF")),
           ].filter(Boolean);
-  
+
           return baseOwner;
         })
       : [];
-  
+
     const formData = {
       tenantId: tenantId,
       address: {
@@ -170,7 +163,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
         },
         geoLocation: {
           latitude: 0,
-          longitude: 0
+          longitude: 0,
         },
       },
       usageCategory: usageCategoryMajorCode,
@@ -202,7 +195,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
       units: propertyTypeCode !== "VACANT" ? updatedUnits : [],
       documents: allDocuments,
     };
-  
+
     if (!data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL")) {
       formData.institution = {
         name: data?.ownerShipDetails?.owners?.[0]?.institutionName,
@@ -212,7 +205,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
         tenantId,
       };
     }
-  
+
     const searchData = {
       mobileNumber: formData.owners?.[0]?.mobileNumber,
       name: formData.owners?.[0]?.name,
@@ -220,12 +213,12 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
       locality: formData.address?.locality?.code,
       isRequestForDuplicatePropertyValidation: true,
     };
-  
+
     console.log("Final Payload:", formData);
     console.log("Search Data:", searchData);
-  
-    const response = await Digit.PTService.update({ Property: {...applicationData,...formData, workflow} }, tenantId);
-    return {isSuccess: response?.ResponseInfo?.status === "successful", response: response};
+
+    const response = await Digit.PTService.update({ Property: { ...applicationData, ...formData, workflow } }, tenantId);
+    return { isSuccess: response?.ResponseInfo?.status === "successful", response: response };
   };
 
   // Function to handle form value changes
@@ -234,167 +227,167 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
   //   dispatch(UPDATE_PtNewApplication(config.key, data));
   // };
 
-//   const onSubmit = async (data) => {
-//     console.log("FormData received:", data);
+  //   const onSubmit = async (data) => {
+  //     console.log("FormData received:", data);
 
-//     // Map the `units` array to include additional details
-//     const updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
-//       const additionalDetails = {
-//         structureType: unit?.constructionDetail?.structureType || null,
-//         ageOfProperty: unit?.constructionDetail?.ageOfProperty || null,
-//       };
-//       return { ...unit, additionalDetails };
-//     });
+  //     // Map the `units` array to include additional details
+  //     const updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
+  //       const additionalDetails = {
+  //         structureType: unit?.constructionDetail?.structureType || null,
+  //         ageOfProperty: unit?.constructionDetail?.ageOfProperty || null,
+  //       };
+  //       return { ...unit, additionalDetails };
+  //     });
 
-//     const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data?.ownerShipDetails?.owners : [];
-//     // Construct the payload
-//     const formData = {
-//       tenantId: data?.PersonalDetails?.address?.city?.code,
-//       // tenantId: PersonalDetails.address.city.code
-//       address: {
-//         ...data?.PersonalDetails?.address,
-//         city: data?.PersonalDetails?.address?.city?.name,
-//         locality: {
-//           code: data?.PersonalDetails?.address?.locality?.code,
-//           area: data?.PersonalDetails?.address?.locality?.area,
-//         },
-//       },
-//       usageCategory: data?.PropertyDetails?.usageCategoryMajor?.code,
-//       usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[0],
-//       usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[1] || null,
-//       landArea: Number(data?.PropertyDetails?.landArea || 0),
-//       superBuiltUpArea: Number(data?.PropertyDetails?.landArea || 0),
-//       propertyType: data?.PropertyDetails?.PropertyType?.code,
-//       noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
-//       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
-//       additionalDetails: {
-//         ageOfProperty: data?.PropertyDetails?.propertyStructureDetails?.ageOfProperty,
-//         structureType: data?.PropertyDetails?.propertyStructureDetails?.structureType,
-//         electricity: data?.PersonalDetails?.electricity,
-//         uid: data?.PersonalDetails?.uid,
-//       },
-//       surveyId: data?.PersonalDetails?.surveyId,
-//       existingPropertyId: data?.PersonalDetails?.existingPropertyId,
-//       owners: owners?.map((owner, index) => {
-//         const {
-//           name,
-//           mobileNumber,
-//           designation,
-//           altContactNumber,
-//           emailId,
-//           correspondenceAddress,
-//           isCorrespondenceAddress,
-//           ownerType,
-//           fatherOrHusbandName,
-//         } = owner;
+  //     const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data?.ownerShipDetails?.owners : [];
+  //     // Construct the payload
+  //     const formData = {
+  //       tenantId: data?.PersonalDetails?.address?.city?.code,
+  //       // tenantId: PersonalDetails.address.city.code
+  //       address: {
+  //         ...data?.PersonalDetails?.address,
+  //         city: data?.PersonalDetails?.address?.city?.name,
+  //         locality: {
+  //           code: data?.PersonalDetails?.address?.locality?.code,
+  //           area: data?.PersonalDetails?.address?.locality?.area,
+  //         },
+  //       },
+  //       usageCategory: data?.PropertyDetails?.usageCategoryMajor?.code,
+  //       usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[0],
+  //       usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[1] || null,
+  //       landArea: Number(data?.PropertyDetails?.landArea || 0),
+  //       superBuiltUpArea: Number(data?.PropertyDetails?.landArea || 0),
+  //       propertyType: data?.PropertyDetails?.PropertyType?.code,
+  //       noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
+  //       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
+  //       additionalDetails: {
+  //         ageOfProperty: data?.PropertyDetails?.propertyStructureDetails?.ageOfProperty,
+  //         structureType: data?.PropertyDetails?.propertyStructureDetails?.structureType,
+  //         electricity: data?.PersonalDetails?.electricity,
+  //         uid: data?.PersonalDetails?.uid,
+  //       },
+  //       surveyId: data?.PersonalDetails?.surveyId,
+  //       existingPropertyId: data?.PersonalDetails?.existingPropertyId,
+  //       owners: owners?.map((owner, index) => {
+  //         const {
+  //           name,
+  //           mobileNumber,
+  //           designation,
+  //           altContactNumber,
+  //           emailId,
+  //           correspondenceAddress,
+  //           isCorrespondenceAddress,
+  //           ownerType,
+  //           fatherOrHusbandName,
+  //         } = owner;
 
-//         let __owner;
-//         if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
-//           __owner = {
-//             name,
-//             mobileNumber,
-//             designation,
-//             altContactNumber,
-//             emailId,
-//             correspondenceAddress,
-//             isCorrespondenceAddress,
-//             ownerType,
-//           };
-//         } else {
-//           __owner = {
-//             name,
-//             mobileNumber,
-//             correspondenceAddress,
-//             permanentAddress: data?.PersonalDetails?.address?.locality?.name,
-//             relationship: owner?.relationship?.code,
-//             fatherOrHusbandName,
-//             gender: owner?.gender?.code,
-//             emailId,
-//             additionalDetails: { ownerSequence: index, ownerName: owner?.name },
-//           };
-//         }
+  //         let __owner;
+  //         if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
+  //           __owner = {
+  //             name,
+  //             mobileNumber,
+  //             designation,
+  //             altContactNumber,
+  //             emailId,
+  //             correspondenceAddress,
+  //             isCorrespondenceAddress,
+  //             ownerType,
+  //           };
+  //         } else {
+  //           __owner = {
+  //             name,
+  //             mobileNumber,
+  //             correspondenceAddress,
+  //             permanentAddress: data?.PersonalDetails?.address?.locality?.name,
+  //             relationship: owner?.relationship?.code,
+  //             fatherOrHusbandName,
+  //             gender: owner?.gender?.code,
+  //             emailId,
+  //             additionalDetails: { ownerSequence: index, ownerName: owner?.name },
+  //           };
+  //         }
 
-//         if (!__owner?.correspondenceAddress) __owner.correspondenceAddress = "";
+  //         if (!__owner?.correspondenceAddress) __owner.correspondenceAddress = "";
 
-//         const _owner = {
-//           ...__owner,
-//           ownerType: owner?.ownerType?.code,
-//         };
+  //         const _owner = {
+  //           ...__owner,
+  //           ownerType: owner?.ownerType?.code,
+  //         };
 
-//         if (_owner.ownerType !== "NONE") {
-//           const { documentType, documentUid } = owner?.documents || {};
-//           _owner.documents = [
-//             { documentUid, documentType: documentType?.code, fileStoreId: documentUid },
-//             data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF")),
-//           ];
-//         } else {
-//           _owner.documents = [data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF"))];
-//         }
+  //         if (_owner.ownerType !== "NONE") {
+  //           const { documentType, documentUid } = owner?.documents || {};
+  //           _owner.documents = [
+  //             { documentUid, documentType: documentType?.code, fileStoreId: documentUid },
+  //             data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF")),
+  //           ];
+  //         } else {
+  //           _owner.documents = [data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF"))];
+  //         }
 
-//         return _owner;
-//       }),
-//       additionalDetails: {
-//         vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
-//         vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
-//         allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
-//         allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
-//         businessName: data?.PropertyDetails?.businessName,
-//         yearConstruction: data?.PersonalDetails?.yearOfCreation?.code,
-//         remarks: data?.PropertyDetails?.remarks,
-//       },
-//       channel: "CFC_COUNTER", // required
-//       creationReason: "CREATE", // required
-//       source: "MUNICIPAL_RECORDS", // required
-//       units: data?.PropertyDetails?.PropertyType?.code !== "VACANT" ? updatedUnits : [],
-//       documents: data?.DocummentDetails?.documents?.documents,
-//       applicationStatus: "CREATE",
-//     };
+  //         return _owner;
+  //       }),
+  //       additionalDetails: {
+  //         vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
+  //         vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
+  //         allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
+  //         allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
+  //         businessName: data?.PropertyDetails?.businessName,
+  //         yearConstruction: data?.PersonalDetails?.yearOfCreation?.code,
+  //         remarks: data?.PropertyDetails?.remarks,
+  //       },
+  //       channel: "CFC_COUNTER", // required
+  //       creationReason: "CREATE", // required
+  //       source: "MUNICIPAL_RECORDS", // required
+  //       units: data?.PropertyDetails?.PropertyType?.code !== "VACANT" ? updatedUnits : [],
+  //       documents: data?.DocummentDetails?.documents?.documents,
+  //       applicationStatus: "CREATE",
+  //     };
 
-//     // Add institution details if ownership is not individual
-//     if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
-//       formData.institution = {
-//         name: data?.ownerShipDetails?.owners?.[0]?.institution?.name,
-//         type: data?.ownerShipDetails?.owners?.[0]?.institution?.type?.code,
-//         designation: data?.ownerShipDetails?.owners?.[0]?.designation,
-//         nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
-//         tenantId: data?.PersonalDetails?.address?.city?.code,
-//       };
-//     }
+  //     // Add institution details if ownership is not individual
+  //     if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
+  //       formData.institution = {
+  //         name: data?.ownerShipDetails?.owners?.[0]?.institution?.name,
+  //         type: data?.ownerShipDetails?.owners?.[0]?.institution?.type?.code,
+  //         designation: data?.ownerShipDetails?.owners?.[0]?.designation,
+  //         nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
+  //         tenantId: data?.PersonalDetails?.address?.city?.code,
+  //       };
+  //     }
 
-//     // Prepare search data for duplicate property validation
-//     const searchData = {
-//       mobileNumber: formData.owners?.[0]?.mobileNumber,
-//       name: formData.owners?.[0]?.name,
-//       doorNo: formData.address?.doorNo,
-//       locality: formData.address?.locality?.code,
-//       isRequestForDuplicatePropertyValidation: true,
-//     };
+  //     // Prepare search data for duplicate property validation
+  //     const searchData = {
+  //       mobileNumber: formData.owners?.[0]?.mobileNumber,
+  //       name: formData.owners?.[0]?.name,
+  //       doorNo: formData.address?.doorNo,
+  //       locality: formData.address?.locality?.code,
+  //       isRequestForDuplicatePropertyValidation: true,
+  //     };
 
-//     console.log("Final Payload:", formData);
-//     console.log("Search Data:", searchData);
+  //     console.log("Final Payload:", formData);
+  //     console.log("Search Data:", searchData);
 
-//     // Set the form data and search data
-//     // setFormData(formData);
-//     // setSearchData({ city: formData.tenantId, filters: searchData });
-// const tenantId = formData.tenantId;
-//     const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
-//     // if(response?.ResponseInfo?.status === "successful"){
-//     //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-//     //   console.log("response in step 2: ", response.Licenses[0]);
-//     // }
-//     return response?.ResponseInfo?.status === "successful";
-//   };
+  //     // Set the form data and search data
+  //     // setFormData(formData);
+  //     // setSearchData({ city: formData.tenantId, filters: searchData });
+  // const tenantId = formData.tenantId;
+  //     const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
+  //     // if(response?.ResponseInfo?.status === "successful"){
+  //     //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+  //     //   console.log("response in step 2: ", response.Licenses[0]);
+  //     // }
+  //     return response?.ResponseInfo?.status === "successful";
+  //   };
 
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={formData} 
-        config={config.currStepConfig} 
+        defaultValues={formData}
+        config={config.currStepConfig}
         onSubmit={goNext}
-        // onFormValueChange={onFormValueChange} 
+        // onFormValueChange={onFormValueChange}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
-        onBackClick={onGoBack} 
+        onBackClick={onGoBack}
       />
     </React.Fragment>
   );

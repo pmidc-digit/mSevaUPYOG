@@ -312,8 +312,8 @@ const LayoutEmployeeApplicationOverview = () => {
       doc.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
       doc.documentType === "SITE.PHOTOGRAPHONE" ||
       doc.documentType === "SITE.PHOTOGRAPHTWO"
-  );
-  const remainingDocs = displayData?.Documents?.sort((a, b) => b?.order - a?.order)?.filter(
+  ).sort((a,b) => a?.order - b?.order);
+  const remainingDocs = displayData?.Documents?.sort((a,b) => a?.order - b?.order)?.filter(
     (doc) =>
       !(
         doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
@@ -447,6 +447,10 @@ const LayoutEmployeeApplicationOverview = () => {
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
         setIsSubmitting(false);
         return;
+      }
+
+      if(filtData?.action === "SEND_FOR_INSPECTION_REPORT"){
+        filtData.assignee = [user?.info?.uuid];
       }
 
       const layoutObject = applicationDetails?.Layout?.[0];
@@ -1094,7 +1098,6 @@ const LayoutEmployeeApplicationOverview = () => {
         >
           {sitePhotos?.length > 0 &&
             [...sitePhotos]
-              .reverse()
               .map((doc) => (
                 <LayoutSitePhotographs
                   key={doc?.filestoreId || doc?.uuid}

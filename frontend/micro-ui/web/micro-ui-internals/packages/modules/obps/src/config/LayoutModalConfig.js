@@ -58,6 +58,19 @@ export const LayoutModalConfig = ({
               name: "comments",
             },
           },
+          action?.action === "APPROVE"
+            ? {
+                label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+                type: "textarea",
+                populators: {
+                  name: "conditionalComments",
+                },
+                validation: {
+                  required: false, // not mandatory
+                  title: t("WF_COMMON_COMMENTS_ERROR"),
+                },
+              }
+            : null,
           {
             label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (
@@ -71,7 +84,7 @@ export const LayoutModalConfig = ({
               />
             ),
           },
-        ],
+        ]?.filter((obj) => obj != null),
       },
     ],
   }

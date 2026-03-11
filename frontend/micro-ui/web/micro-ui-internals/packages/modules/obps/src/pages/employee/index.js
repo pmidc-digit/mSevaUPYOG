@@ -24,7 +24,7 @@ const OBPSBreadCrumbs = ({ location }) => {
       show: location.pathname.includes("obps/inbox") ? true : false,
     },
     {
-      path: "/digit-ui/employee/layout/inbox",
+      path: "/digit-ui/employee/obps/layout/inbox",
       content: t("Layout Inbox"),
       show: location.pathname.includes("layout/inbox") ? true : false,
     },

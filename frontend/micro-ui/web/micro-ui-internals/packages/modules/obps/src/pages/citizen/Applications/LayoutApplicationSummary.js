@@ -680,7 +680,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
             {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
             {renderLabel(t("BPA_VASIKA_DATE_LABEL"), convertDateToISO(detail?.vasikaDate))}
             {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
-            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
+            {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
             {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
             {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
             {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName?.name)}
@@ -693,8 +693,8 @@ const [viewTimeline, setViewTimeline] = useState(false);
             {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
             {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
             {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
-            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.areaLeftForRoadWidening)}
-            {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netPlotAreaAfterWidening)}
+            {renderLabel(t("BPA_NET_TOTAL_AREA_LABEL"), detail?.areaLeftForRoadWidening)}
+            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
             {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
             {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
             {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
@@ -776,7 +776,7 @@ const [viewTimeline, setViewTimeline] = useState(false);
             <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
             <StatusTable>
               {/* <LayoutDocumentView documents={displayData.Documents} /> */}
-              <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")?.sort((a,b) => b?.order - a?.order)} />
+              <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
             </StatusTable>
           </Card>
         )}

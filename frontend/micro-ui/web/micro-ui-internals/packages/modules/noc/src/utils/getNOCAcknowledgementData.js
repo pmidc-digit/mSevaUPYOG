@@ -367,13 +367,17 @@ const getDocuments = async (appData, t) => {
 };
 
 const getSitePhotographs = async (appData, t, stateCode) => {
-  const sitePhotoDocs = appData?.documents?.filter(
-    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-  );
+  const sitePhotoDocs = appData?.documents
+    ?.filter((doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+    ?.sort((a, b) => a.order - b.order); 
 
   const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid);
-
-  const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
+  const res =
+    fileStoreIds?.length > 0 &&
+    (await Digit.UploadServices.Filefetch(
+      fileStoreIds,
+      Digit.ULBService.getStateId()
+    ));
 
   const coords = appData?.nocDetails?.additionalDetails?.coordinates || {};
 
@@ -518,7 +522,9 @@ const getLatestCalculationDetails = (appData, t) => {
   // Map taxHeadEstimates to display taxHeadCode, remarks, and updatedBy
   const values = latestCalc.taxHeadEstimates.map((estimate, index) => ({
     title: `${t(estimate?.taxHeadCode)}`,
-    value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A", // Value: remarks
+    // value: `Rs. ${estimate?.estimateAmount} only, Remark: ${estimate?.remarks} , Last Updated By: ${latestCalc?.updatedBy}` || "N/A", // Value: remarks
+    value: `Rs. ${estimate?.estimateAmount} only` || "N/A", // Value: remarks
+
   }));
 
   return {

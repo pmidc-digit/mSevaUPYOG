@@ -37,7 +37,7 @@ import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { convertToDDMMYYYY, formatDuration, amountToWords, downloadPdfFromURL } from "../../../utils/index";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
-
+import { format } from "date-fns";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -103,6 +103,7 @@ const CitizenApplicationOverview = () => {
   const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [timeObj, setTimeObj] = useState(null);
+  const [appDate, setAppDate] = useState(null);
 
   const mutation = Digit.Hooks.noc.useNocCreateAPI(tenantId, false);
   const [siteImages, setSiteImages] = useState(
@@ -176,6 +177,9 @@ const CitizenApplicationOverview = () => {
       setDisplayData(finalDisplayData);
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
+      if(submittedOn!== null){
+        setAppDate(Number(submittedOn))
+      }
       const endTime = Date.now();
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
@@ -294,9 +298,29 @@ const CitizenApplicationOverview = () => {
     
   }
 }
+  async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-rejectionletter", ...params }) {
+    try {
+      setLoading(true);
+      let fileStoreId = null;
+      const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData?.Noc }] }, pdfkey);
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
+
+      // Print receipt
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore[fileStoreId];
+      await downloadPdfFromURL(receiptUrl);
+    } catch (error) {
+      console.error("rejection Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
+  // console.log('EmpData', EmpData)
   dowloadOptions.push({
     label: t("Application Form"),
     onClick: handleDownloadPdf,
@@ -321,6 +345,24 @@ const CitizenApplicationOverview = () => {
             EmpData,
           }),
       });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }
+  }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED") {
+     dowloadOptions.push({
+        label: t("DOWNLOAD_NOC_REJECTION_LETTER"),
+        onClick: () =>
+          getRejectionLetterReceipt({
+            tenantId: tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+          }),
+      });
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
@@ -431,7 +473,7 @@ const CitizenApplicationOverview = () => {
     }
 
     const commentsobj = workflowDetails.data.timeline
-      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.filter((item) => ["APPROVE", "REJECT"].includes(item?.performedAction))
       ?.flatMap((item) => item?.wfComment || []);
 
     const approvercomments = commentsobj?.[0];
@@ -439,6 +481,8 @@ const CitizenApplicationOverview = () => {
     let conditionText = "";
     if (approvercomments?.includes("[#?..**]")) {
       conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }else{
+        conditionText = approvercomments?.[0]
     }
 
     return conditionText
@@ -563,8 +607,11 @@ const CitizenApplicationOverview = () => {
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
-  const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
+  const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+  const isFirm = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+
   // console.log("combinerOwnersName", combinedOwnersName);
 
   return (
@@ -596,6 +643,15 @@ const CitizenApplicationOverview = () => {
           <Card>
             <StatusTable>
               <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+      {appDate!== null && (
+        <React.Fragment>
+          <Card>
+            <StatusTable>
+              <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
             </StatusTable>
           </Card>
         </React.Fragment>

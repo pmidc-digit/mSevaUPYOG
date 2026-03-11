@@ -28,6 +28,7 @@ RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.52
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.74
+RUN yarn add @mseva/digit-ui-module-firenoc@1.0.0
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

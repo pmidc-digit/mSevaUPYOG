@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.mdms.model.MasterDetail.MasterDetailBuilder;
+
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

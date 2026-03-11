@@ -357,6 +357,7 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
           {renderLabel(t("Correspondence Address"), owner?.permanentAddress)}
           {renderLabel(t("Birth Date"), formatDate(owner?.dob))}
           {renderLabel(t("Special Category"), owner?.ownerType)}
+          {renderLabel(t("TL_OWNER_PAN_LABEL"), owner?.pan || "NA")}
         </div>
       ))}
 

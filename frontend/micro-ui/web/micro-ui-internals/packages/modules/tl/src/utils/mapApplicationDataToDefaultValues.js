@@ -64,10 +64,12 @@ const formatFinancialYear = (year) => ({
         code: genderCode,
         i18nKey: `TL_GENDER_${genderCode}`
       },
+      dob: owner?.dob || null,
       key: Date.now() + idx,
       id: owner?.id,
       uuid: owner?.uuid,
       tenantId: owner?.tenantId,
+      pan: owner?.pan || "",
     };
   };
   

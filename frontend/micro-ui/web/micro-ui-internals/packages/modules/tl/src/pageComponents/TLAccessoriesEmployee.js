@@ -157,8 +157,7 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
       {accessoriesList.map((accessor, index) => (
         <AccessoriersForm key={accessor.key} index={index} accessor={accessor} {...commonProps} />
       ))}
-      {!isRenewal && (
-        <LinkLabel
+      <LinkLabel
           style={{
             display: "inline-block",
             padding: "8px 16px",
@@ -178,7 +177,6 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
         >
           {t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}
         </LinkLabel>
-      )}
     </React.Fragment>
   );
 };
@@ -292,7 +290,7 @@ const AccessoriersForm = (_props) => {
     <React.Fragment>
       <div>
         <div className="clu-doc-required-card no-width">
-          {allAccessoriesList?.length > 1 ? (
+          {allAccessoriesList?.length > 1 && !(isRenewal && accessor?.id) ? (
             
             <div
             style={{
@@ -367,7 +365,7 @@ const AccessoriersForm = (_props) => {
                   option={sortDropdownNames(accessories, "i18nKey", t) || []}
                   optionKey="i18nKey"
                   t={t}
-                  disable={isRenewal || false}
+                  disable={isRenewal && !!accessor?.id}
                   placeholder={t("TL_NEW_TRADE_DETAILS_ACC_PLACEHOLDER")}
                 />
               )}
@@ -436,7 +434,7 @@ const AccessoriersForm = (_props) => {
                       setFocusIndex({ index: accessor.key, type: "uomValue" });
                     }}
                     // disable={/*getValues("uomValue")?!(accessor?.accessoryCategory?.uom) || accessor?.id:*/!(accessor?.accessoryCategory?.uom) }
-                    disable={isRenewal ? !enableUOM : !(accessor?.accessoryCategory?.uom)}
+                    disable={(isRenewal && !!accessor?.id) || !(accessor?.accessoryCategory?.uom)}
                     onBlur={props.onBlur}
                     placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                   />
@@ -472,7 +470,7 @@ const AccessoriersForm = (_props) => {
                       setFocusIndex({ index: accessor.key, type: "count" });
                     }}
                     onBlur={props.onBlur}
-                    disable={isRenewal ? !enableUOM : false}
+                    disable={isRenewal && !!accessor?.id}
                     //disable={accessor?.id}
                     placeholder={t("TL_NEW_TRADE_ACCESSORY_COUNT_PLACEHOLDER")}
                   />

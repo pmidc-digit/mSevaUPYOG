@@ -112,27 +112,59 @@ const ApplicationDetails = () => {
 
   useEffect(() => {
     if (applicationDetails?.numOfApplications?.length > 0) {
+      const currentLicenseNumber = applicationDetails?.applicationData?.licenseNumber;
+      const appsForLicense = applicationDetails?.numOfApplications?.filter((ob) => ob.licenseNumber === currentLicenseNumber);
+
       let financialYear = cloneDeep(applicationDetails?.applicationData?.financialYear);
       const financialYearDate = financialYear?.split("-")[1];
       const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate) + 1}`;
       const latestFinancialYear = Math.max.apply(
         Math,
-        applicationDetails?.numOfApplications
-          ?.filter((ob) => ob.licenseNumber === applicationDetails?.applicationData?.licenseNumber)
-          ?.map(function (o) {
-            return parseInt(o.financialYear.split("-")[0]);
-          })
+        appsForLicense?.map(function (o) {
+          return parseInt(o.financialYear.split("-")[0]);
+        })
       );
+
+      // ➡️ Original check: is there already a non-REJECTED app for the next FY?
       const isAllowedToNextYear = applicationDetails?.numOfApplications?.filter(
         (data) => data.financialYear == finalFinancialYear && data?.status !== "REJECTED"
       );
+
+      // ➡️ NEW: Also check if there's any in-progress renewal for this license (any FY)
+      const inProgressStatuses = ["INITIATED", "PENDINGPAYMENT", "APPLIED", "FIELDINSPECTION", "PENDINGAPPROVAL"];
+      const activeRenewal = appsForLicense?.find(
+        (app) => app.applicationType === "RENEWAL" && inProgressStatuses.includes(app.status)
+      );
+
       if (isAllowedToNextYear?.length > 0) {
         setAllowedToNextYear(false);
         setoldRenewalAppNo(isAllowedToNextYear?.[0]?.applicationNumber);
+      } else if (activeRenewal) {
+        // ➡️ Block: there's already an in-progress renewal for this license
+        setAllowedToNextYear(false);
+        setoldRenewalAppNo(activeRenewal.applicationNumber);
+      } else {
+        // ➡️ Validity guard: allow renewal only within 1 month of license expiry (validTo)
+        // validTo is stored as epoch (e.g. Mar 31 23:59:59 of the last FY year)
+        // Renewal window opens ~1 month before expiry (subtract 30 days from validTo)
+        // Works for both HAZ (1yr) and Non-HAZ (1yr/2yr/3yr)
+        const appValidTo = applicationDetails?.applicationData?.validTo;
+        const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
+        const renewalWindowStart = appValidTo ? appValidTo - oneMonthMs : 0;
+        const now = Date.now();
+
+
+        if (appValidTo && now < renewalWindowStart) {
+          // Too early — license hasn't entered the 1-month renewal window yet
+          setAllowedToNextYear(false);
+          setoldRenewalAppNo(applicationDetails?.applicationData?.applicationNumber);
+        } else {
+          setAllowedToNextYear(true);
+        }
       }
+
       if (!applicationDetails?.applicationData?.financialYear.includes(`${latestFinancialYear}`))
         setlatestRenewalYearofAPP(applicationDetails?.applicationData?.financialYear);
-      if (!isAllowedToNextYear || isAllowedToNextYear?.length == 0) setAllowedToNextYear(true);
       setNumberOfApplications(applicationDetails?.numOfApplications);
     }
   }, [applicationDetails?.numOfApplications]);
@@ -164,7 +196,10 @@ const ApplicationDetails = () => {
     filteredActions = get(workflowDetails?.data?.processInstances[0], "nextActions", [])?.filter((item) => item.action != "ADHOC" && item.action != "INITIATE");
     let actions = orderBy(filteredActions, ["action"], ["desc"]);
     if ((!actions || actions?.length == 0) && workflowDetails?.data?.actionState) workflowDetails.data.actionState.nextActions = [];
-
+     // Remove ESIGN from Take Action bar — not supported in TL UI
+    if (workflowDetails?.data?.actionState?.nextActions) {
+      workflowDetails.data.actionState.nextActions = workflowDetails.data.actionState.nextActions.filter((item) => item.action !== "ESIGN");
+    }
     workflowDetails?.data?.actionState?.nextActions?.forEach((data) => {
       if (data.action == "RESUBMIT") {
         (data.redirectionUrl = {
@@ -196,7 +231,8 @@ const ApplicationDetails = () => {
 
   const getToastMessages = () => {
     if (allowedToNextYear == false && oldRenewalAppNo && applicationDetails?.applicationData?.status !== "MANUALEXPIRED") {
-      return `${t("TL_ERROR_TOAST_RENEWAL_1")} ${oldRenewalAppNo} ${t("TL_ERROR_TOAST_RENEWAL_2")}`;
+      // return `${t("TL_ERROR_TOAST_RENEWAL_1")} ${oldRenewalAppNo} ${t("TL_ERROR_TOAST_RENEWAL_2")}`;
+      return `${t("TL_ERROR_TOAST_RENEWAL_1")} ${oldRenewalAppNo}`;
     } else if (applicationDetails?.applicationData?.status === "CANCELLED") {
       return `${t("TL_ERROR_TOAST_RENEWAL_CANCEL")}`;
     } else if (/* latestRenewalYearofAPP && */ applicationDetails?.applicationData?.status === "MANUALEXPIRED") {
@@ -217,19 +253,33 @@ const ApplicationDetails = () => {
         workflowDetails.data.actionState.nextActions = [];
       }
       const flagData = workflowDetails?.data?.actionState?.nextActions?.filter((data) => data.action == "RENEWAL_SUBMIT_BUTTON");
-      if (flagData && flagData.length === 0) {
+      // ➡️ This code will not show the renewal option in Take Action bar if the application is not eligible for renewal
+      // Eligibility: allowedToNextYear must be true AND status must not be CANCELLED or MANUALEXPIRED
+      const isRenewalEligible = allowedToNextYear === true
+        && applicationDetails?.applicationData?.status !== "CANCELLED"
+        && applicationDetails?.applicationData?.status !== "MANUALEXPIRED";
+      if (flagData && flagData.length === 0 && isRenewalEligible) {
+        // Edit & Renew — opens the full 4-step renewal form
         workflowDetails?.data?.actionState?.nextActions?.push({
           action: "RENEWAL_SUBMIT_BUTTON",
-          isToast:
-            allowedToNextYear == false ||
-            applicationDetails?.applicationData?.status === "CANCELLED" ||
-            applicationDetails?.applicationData?.status === "MANUALEXPIRED" /* && latestRenewalYearofAPP */
-              ? true
-              : false,
-          toastMessage: getToastMessages(),
           redirectionUrl: {
             pathname: `/digit-ui/employee/tl/renew-application-details/${applicationNumber}`,
             state: applicationDetails,
+          },
+          tenantId: stateId,
+          role: [],
+        });
+        // Direct Renewal — opens popup with validity year selector (no form navigation)
+        workflowDetails?.data?.actionState?.nextActions?.push({
+          action: "DIRECT_RENEWAL_BUTTON",
+          redirectionUrl: {
+            state: {
+              ...applicationDetails,
+              applicationData: {
+                ...applicationDetails?.applicationData,
+                workflowCode: "DIRECTRENEWAL",
+              },
+            },
           },
           tenantId: stateId,
           role: [],
@@ -485,14 +535,19 @@ const ApplicationDetails = () => {
     const adhocPenalty = details.find(d => d.taxHeadCode === "TL_ADHOC_PENALTY")?.amount || 0;
     const adhocRebate = details.find(d => d.taxHeadCode === "TL_ADHOC_REBATE")?.amount || 0;
 
+    // For renewals, TL_TAX may be absent/zero — derive base fee from total
+    const isRenewal = applicationDetails?.applicationData?.applicationType === "RENEWAL";
+    const tlTaxFromBill = details.find(d => d.taxHeadCode === "TL_TAX")?.amount || 0;
+    const baseFee = tlTaxFromBill || (getTotalAmount() - renewalRebate - renewalPenalty - adhocPenalty - adhocRebate);
+
     // Get reasons from license data for tooltips
     const licData = adhocLicenseData || applicationDetails?.applicationData;
     const penaltyReason = licData?.tradeLicenseDetail?.adhocPenaltyReason || "";
     const rebateReason = licData?.tradeLicenseDetail?.adhocExemptionReason || "";
 
     const items = [
-      { label: "Trade License Tax", amount: tlTax },
-      { label: "Renewal Rebate", amount: renewalRebate },
+      { label: isRenewal ? "Trade License Renewal Fee" : "Trade License Tax", amount: baseFee },
+      { label: isRenewal ? "Rebate" : "Renewal Rebate", amount: renewalRebate },
       { label: "Penalty", amount: renewalPenalty },
     ];
     // Only show adhoc rows when they have non-zero values

@@ -43,6 +43,7 @@ import InspectionReportDisplay from "../../../pageComponents/InspectionReportDis
 import { amountToWords, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
+import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -132,6 +133,8 @@ const CLUEmployeeApplicationDetails = () => {
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [distances, setDistances] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState(null);
+    const [showPdfModal, setShowPdfModal] = useState(false);
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
@@ -262,9 +265,15 @@ const CLUEmployeeApplicationDetails = () => {
 
       // Use printReciept to fetch the actual file URL
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore?.[fileStoreId];
+      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
+      const urlObj = new URL(receiptUrl);
+      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
 
       // Open in new tab/popup
-      window.open(fileStore[fileStoreId], "_blank");
+      // window.open(fileStore[fileStoreId], "_blank");
+      setPdfUrl(downloadUrl);
+      setShowPdfModal(true);
     } catch (error) {
       console.error("Sanction Letter popup error:", error);
     } finally {
@@ -622,8 +631,9 @@ const CLUEmployeeApplicationDetails = () => {
         setShowToast(null);
       }, 3000);
     } else if (action?.action == "ESIGN") {
-      // Automatically trigger the eSign process for the certificate
-      printCertificateWithESign();
+      // opens the sanctionletter popup
+      // printCertificateWithESign();
+      openSanctionLetterPopup();
     } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
@@ -988,7 +998,7 @@ const CLUEmployeeApplicationDetails = () => {
     applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.name ||
     applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.code;
 
-  if (isLoading) {
+  if (isLoading || getLoader) {
     return <Loader />;
   }
 
@@ -1006,9 +1016,9 @@ const CLUEmployeeApplicationDetails = () => {
           />
         )}
         {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
-        {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
+        {/* {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
           <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
-        )}
+        )} */}
       </div>
 
       <Card>
@@ -1347,6 +1357,21 @@ const CLUEmployeeApplicationDetails = () => {
 
       {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
+      {showPdfModal && (
+        <PdfPreviewModal
+          open={showPdfModal}
+          url={pdfUrl}
+          onClose={() => {
+            setShowPdfModal(false);
+            setPdfUrl(null);
+          }}
+          title={t("NOC_SANCTION_LETTER")}
+        >
+          <ActionBar>
+            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+          </ActionBar>
+        </PdfPreviewModal>
+      )}
       {showModal ? (
         <CLUModal
           t={t}

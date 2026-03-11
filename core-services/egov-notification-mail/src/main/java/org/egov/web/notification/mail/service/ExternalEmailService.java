@@ -44,19 +44,45 @@ public class ExternalEmailService implements EmailService {
 		log.info("Body: {}", email.getBody());
 		mailSender.send(mailMessage);
 	}
-
 	private void sendHTMLEmail(Email email) {
-		MimeMessage message = mailSender.createMimeMessage();
-		MimeMessageHelper helper;
-		try {
-			helper = new MimeMessageHelper(message, true);
-			helper.setTo(email.getEmailTo().toArray(new String[0]));
-			helper.setSubject(email.getSubject());
-			helper.setText(email.getBody(), true);
-		} catch (MessagingException e) {
-			log.error(EXCEPTION_MESSAGE, e);
-			throw new RuntimeException(e);
-		}
-		mailSender.send(message);
+	    MimeMessage message = mailSender.createMimeMessage();
+	    MimeMessageHelper helper;
+	    try {
+	        helper = new MimeMessageHelper(message, true, "UTF-8");
+	        helper.setTo(email.getEmailTo().toArray(new String[0]));
+	        helper.setSubject(email.getSubject());
+	        helper.setText(email.getBody(), true);
+
+	        // --- ADD THIS BLOCK ---
+	        if (email.getAttachments() != null && !email.getAttachments().isEmpty()) {
+	            for (String url : email.getAttachments()) {
+	                try {
+	                    // UrlResource downloads the PDF from the URL provided by the Water Service
+	                    org.springframework.core.io.UrlResource rt = new org.springframework.core.io.UrlResource(url);
+	                    String fileName = rt.getFilename();
+	                    
+	                    // Fallback if the URL doesn't end with a clear filename
+	                    if (fileName == null || !fileName.contains(".")) {
+	                        fileName = "Sanction_Letter.pdf";
+	                    }
+	                    
+	                    helper.addAttachment(fileName, rt);
+	                    log.info("Successfully attached file: " + fileName);
+	                } catch (Exception e) {
+	                    log.error("Error attaching file from URL: " + url, e);
+	                    // We don't throw an exception here so the email still sends 
+	                    // even if one attachment fails.
+	                }
+	            }
+	        }
+	        // -----------------------
+
+	    } catch (MessagingException e) {
+	        log.error("MessagingException occurred while building HTML email", e);
+	        throw new RuntimeException(e);
+	    }
+	    
+	    mailSender.send(message);
+	    log.info("Email sent successfully with attachments to: " + email.getEmailTo());
 	}
 }

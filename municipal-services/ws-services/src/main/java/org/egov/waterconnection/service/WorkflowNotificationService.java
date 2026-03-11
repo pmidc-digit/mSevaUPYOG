@@ -448,7 +448,7 @@ public class WorkflowNotificationService {
                     +" because -> "+workflow.getComment());
             return Collections.emptyList();
         }
-        if (message == null) {
+        if (message == null && !workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION)) {
             log.info("No message Found For Topic : " + topic);
             return Collections.emptyList();
         }
@@ -493,24 +493,191 @@ public class WorkflowNotificationService {
             mobileNumberAndEmailId.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getEmailId());
         }
 
-        Map<String, String> mobileNumberAndMessage = getMessageForMobileNumber(mobileNumbersAndNames,
-                waterConnectionRequest, message, property);
+        if (message != null) {
+        	Map<String, String> mobileNumberAndMessage = getMessageForMobileNumber(mobileNumbersAndNames,
+                    waterConnectionRequest, message, property);
 
-        if (message.contains("{receipt download link}"))
-            mobileNumberAndMessage = setRecepitDownloadLink(mobileNumberAndMessage, waterConnectionRequest, message, property);
+            if (message.contains("{receipt download link}"))
+                mobileNumberAndMessage = setRecepitDownloadLink(mobileNumberAndMessage, waterConnectionRequest, message, property);	
+		}
+        
+    	String fileStoreId = getTargetFileStoreId(waterConnectionRequest.getWaterConnection());
+ 	   
+ 		List<String> attachments = new ArrayList<>();
+ 	    
+ 	    if (!StringUtils.isEmpty(fileStoreId)) {
+ 	        String publicUrl = fetchFileStorePublicUrl(waterConnectionRequest.getWaterConnection().getTenantId(), fileStoreId);
+ 	        if (!StringUtils.isEmpty(publicUrl)) {
+ 	            attachments.add(publicUrl); //
+ 	        }
+ 	    }
 
-        List<EmailRequest> emailRequest = new LinkedList<>();
-        for (Map.Entry<String, String> entryset : mobileNumberAndEmailId.entrySet()) {
-            String customizedMsg = mobileNumberAndMessage.get(entryset.getKey());
-            String subject = customizedMsg.substring(customizedMsg.indexOf("<h2>")+4,customizedMsg.indexOf("</h2>"));
-            String body = customizedMsg.substring(customizedMsg.indexOf("</h2>")+5);
-            Email emailobj = Email.builder().emailTo(Collections.singleton(entryset.getValue())).isHTML(true).body(body).subject(subject).build();
-            EmailRequest email = new EmailRequest(waterConnectionRequest.getRequestInfo(),emailobj);
-            emailRequest.add(email);
+ 		List<EmailRequest> emailRequestList = new LinkedList<>();
+ 	    for (Map.Entry<String, String> entry : mobileNumberAndEmailId.entrySet()) {
+ 	        if (StringUtils.isEmpty(entry.getValue())) continue;
+
+ 	        String ownerName = mobileNumbersAndNames.get(entry.getKey());
+ 	        
+ 	        // Generate the formal government message tailored for attachments
+ 	       String htmlBody = buildSanctionEmailContent(ownerName, property, waterConnectionRequest); 	        
+ 	        String subject = "OFFICIAL NOTICE: Sanction Order Issued for Application " + 
+ 	                         waterConnectionRequest.getWaterConnection().getApplicationNo();
+
+ 	        Email emailObj = Email.builder()
+ 	                .emailTo(Collections.singleton(entry.getValue()))
+ 	                .isHTML(true)
+ 	                .body(htmlBody)
+ 	                .subject(subject)
+ 	                .attachments(attachments)
+ 	                .build();
+
+ 	        emailRequestList.add(new EmailRequest(waterConnectionRequest.getRequestInfo(), emailObj));
+ 	    }
+ 	    return emailRequestList;
+ 	}
+    
+    
+    
+    private String buildSanctionEmailContent(String ownerName, Property property, WaterConnectionRequest request) {
+        WaterConnection conn = request.getWaterConnection();
+        
+        // 1. Dynamic City Name from TenantId
+        String tenantId = conn.getTenantId();
+        String cityName = "City";
+        if (tenantId != null && tenantId.contains(".")) {
+            String rawCity = tenantId.split("\\.")[1];
+            cityName = rawCity.substring(0, 1).toUpperCase() + rawCity.substring(1).toLowerCase();
         }
-        return emailRequest;
 
+        // 2. Data Preparation
+        String name = ownerName != null ? ownerName : "Citizen";
+        String waterSource = conn.getWaterSource() != null ? conn.getWaterSource().replace("_", " ") : "Municipal Supply";
+        String plotSize = (property.getLandArea() != null) ? property.getLandArea() + " Sq.Yds" : "N/A";
+        String usageCategory = (property.getUsageCategory() != null) 
+                               ? property.getUsageCategory().replace("_", " ") : "Domestic";
+        
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMMM, yyyy");
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("IST"));
+        String executionDate = (conn.getConnectionExecutionDate() != null && conn.getConnectionExecutionDate() > 0) 
+                               ? sdf.format(new java.util.Date(conn.getConnectionExecutionDate())) : "Scheduled";
+
+        return "<html>"
+            + "<body style='margin:0; padding:0; background-color: #f4f7f9; font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;'>"
+            + "  <table width='100%' border='0' cellspacing='0' cellpadding='0' style='padding: 40px 20px;'>"
+            + "    <tr>"
+            + "      <td align='center'>"
+            + "        <div style='max-width: 650px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.12); border: 1px solid #e1e8ed;'>"
+            
+            // --- UPDATED OFFICIAL HEADER ---
+            + "          <div style='background: linear-gradient(135deg, #1a237e 0%, #311b92 100%); padding: 50px 40px; text-align: center;'>"
+            + "            <div style='color: rgba(255,255,255,0.8); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 10px;'>Department of Water Supply & Sewerage | " + cityName + "</div>"
+            + "            <h1 style='margin: 0; color: #ffffff; font-size: 36px; font-weight: 300; line-height: 1.2;'>Connection <span style='font-weight: 800; color: #ffd600;'>Activated</span></h1>"
+            + "            <p style='margin: 15px 0 0; color: rgba(255,255,255,0.9); font-size: 15px; font-style: italic;'>Official Confirmation of Connection Allotment</p>"
+            + "          </div>"
+
+            // --- Body Content ---
+            + "          <div style='padding: 50px 45px;'>"
+            + "            <p style='font-size: 18px; color: #2c3e50; margin-bottom: 25px;'>Dear <b>" + name + "</b>,</p>"
+            + "      <p style='font-size: 15px; color: #475569; line-height: 1.8;'>"
+            + "        We are pleased to inform you that your water supply connection has been successfully commissioned within the <b>" + cityName + " Municipal Water Infrastructure</b>. "
+            + "        Your consumer profile (Consumer No: <b>" + conn.getConnectionNo() + "</b>) is now active for all billing and service requirements."
+            + "      </p>"
+
+            // --- Summary Grid ---
+            + "            <div style='background-color: #fbfcfd; border-radius: 16px; border: 1px solid #eceff1; padding: 30px; margin-bottom: 40px;'>"
+            + "              <table width='100%' border='0' cellspacing='0' cellpadding='0'>"
+            + "                <tr>"
+            + "                  <td style='padding-bottom: 25px;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Consumer Number</small><br><b style='font-size: 22px; color: #1a237e;'>" + (conn.getConnectionNo() != null ? conn.getConnectionNo() : "ACTIVATED") + "</b></td>"
+            + "                  <td style='padding-bottom: 25px; text-align: right;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Property ID</small><br><b style='font-size: 15px;'>" + conn.getPropertyId() + "</b></td>"
+            + "                </tr>"
+            + "                <tr>"
+            + "                  <td style='padding: 20px 0; border-top: 1px solid #eceff1;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Water Source</small><br><b>" + waterSource + "</b></td>"
+            + "                  <td style='padding: 20px 0; border-top: 1px solid #eceff1; text-align: right;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Plot Size</small><br><b>" + plotSize + "</b></td>"
+            + "                </tr>"
+            + "                <tr>"
+            + "                  <td style='padding-top: 20px; border-top: 1px solid #eceff1;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Usage Category</small><br><b>" + usageCategory + "</b></td>"
+            + "                  <td style='padding-top: 20px; border-top: 1px solid #eceff1; text-align: right;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Execution Date</small><br><b>" + executionDate + "</b></td>"
+            + "                </tr>"
+            + "              </table>"
+            + "            </div>"
+
+            // --- Attachment Alert ---
+            + "            <div style='background-color: #fff9e6; border-left: 4px solid #ffc107; padding: 25px; border-radius: 4px; margin-bottom: 40px;'>"
+            + "              <p style='margin: 0; font-size: 14px; color: #856404; line-height: 1.5;'><b>Digital Sanction Letter Attached</b><br>Please keep a printed copy of the attached PDF on-site for the Junior Engineer's verification during connection installation.</p>"
+            + "            </div>"
+
+            // --- Button ---
+            + "            <div style='text-align: center;'>"
+            + "              <a href='https://mseva.lgpunjab.gov.in/citizen' style='background-color: #1a237e; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 10px 20px rgba(26,35,126,0.2);'>Access Portal Dashboard</a>"
+            + "            </div>"
+            + "          </div>"
+
+            // --- Minimal Footer ---
+            + "          <div style='background-color: #fcfdfe; padding: 30px; text-align: center; border-top: 1px solid #f0f3f5;'>"
+            + "            <p style='margin: 0; font-size: 11px; color: #b0bec5;'>System generated notification | Municipal Corporation of " + cityName + "</p>"
+            + "          </div>"
+            + "        </div>"
+            + "      </td>"
+            + "    </tr>"
+            + "  </table>"
+            + "</body></html>";
     }
+    
+    
+    
+	private String fetchFileStorePublicUrl(String tenantId, String fileStoreId) {
+	    // 1. Get the template from properties
+	    // Template: /filestore/v1/files/url?tenantId=$tenantId&fileStoreIds=$fileStoreIds
+	    String linkTemplate = config.getFileStoreLink();
+	    
+	    // 2. Perform the replacement to clean the URI
+	    String processedLink = linkTemplate
+	            .replace("$tenantId", "pb")
+	            .replace("$fileStoreIds", fileStoreId);
+
+	    // 3. Combine Host and Path into a StringBuilder
+	    StringBuilder finalUri = new StringBuilder();
+	    finalUri.append(config.getFileStoreHost()).append(processedLink);
+	    
+	    try {
+	        log.info("Fetching FileStore URL using GET: {}", finalUri.toString());
+
+	        // 4. Call your specific GET method
+	        Object response = serviceRequestRepository.fetchResultUsingGet(finalUri);
+	        
+	        // 5. Convert and Extract
+	        Map<String, Object> responseMap = mapper.convertValue(response, Map.class);
+	        
+	        if (responseMap != null && responseMap.containsKey(fileStoreId)) {
+	            String fileUrl = (String) responseMap.get(fileStoreId); 
+	            log.info("Successfully fetched URL for fileStoreId {}: {}", fileStoreId, fileUrl);
+	            return fileUrl;
+	        }
+	    } catch (Exception e) {
+	        log.error("Failed to fetch public URL from FileStore for ID: " + fileStoreId, e);
+	    }
+	    return null;
+	}
+	
+	private String getTargetFileStoreId(WaterConnection connection) {
+	    Object additionalDetails = connection.getAdditionalDetails();
+	    
+	    if (additionalDetails == null) return null;
+
+	    try {
+	        // Safely convert the ObjectNode to a Map
+	        Map<String, Object> detailsMap = mapper.convertValue(additionalDetails, Map.class);
+	        
+	        if (detailsMap.containsKey("sanctionFileStoreId")) {
+	            return (String) detailsMap.get("sanctionFileStoreId");
+	        }
+	    } catch (Exception e) {
+	        log.error("Error parsing additionalDetails for sanctionFileStoreId", e);
+	    }
+	    
+	    return null;
+	}
+	
 
     public Map<String, String> getMessageForMobileNumber(Map<String, String> mobileNumbersAndNames,
                                                          WaterConnectionRequest waterConnectionRequest, String message, Property property) {

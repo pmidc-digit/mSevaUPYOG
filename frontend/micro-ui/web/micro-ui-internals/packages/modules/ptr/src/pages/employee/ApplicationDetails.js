@@ -742,7 +742,7 @@ const ApplicationDetails = () => {
   let dowloadOptions = [];
     let user = Digit.UserService.getUser();
 
-  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
+  const isCemp = user?.info?.roles.find((role) => role.code === "PET_REG_EMPLOYEE")?.code;
 
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),

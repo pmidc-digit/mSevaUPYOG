@@ -32,7 +32,7 @@ const PdfPreviewModal = ({ open, url, onClose, title = "Document", className, ch
   return (
     <Modal
       headerBarEnd={<CloseBtn onClick={onClose} />}
-      // className={className || "noc-popupStyles"}
+    //   className={className || "noc-popupStyles"}
       hideSubmit={true}
       popupStyles={{ backgroundColor: "#fff", position: 'relative', maxHeight: '90vh', width: '80%', overflowY: 'auto' }}
 

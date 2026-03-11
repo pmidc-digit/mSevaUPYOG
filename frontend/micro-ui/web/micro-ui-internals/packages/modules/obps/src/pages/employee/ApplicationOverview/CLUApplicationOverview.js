@@ -43,6 +43,7 @@ import InspectionReportDisplay from "../../../pageComponents/InspectionReportDis
 import { amountToWords, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
+import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -131,7 +132,9 @@ const CLUEmployeeApplicationDetails = () => {
   const [timeObj, setTimeObj] = useState(null);
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
-  const [distances, setDistances] = useState([]);  
+  const [distances, setDistances] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState(null);
+    const [showPdfModal, setShowPdfModal] = useState(false);
   const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages ? {
@@ -257,18 +260,24 @@ const stateId = Digit.ULBService.getStateId();
 
     if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
-    // Use printReciept to fetch the actual file URL
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      // Use printReciept to fetch the actual file URL
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      const receiptUrl = fileStore?.[fileStoreId];
+      if (!receiptUrl) throw new Error("Could not resolve filestore URL");
+      const urlObj = new URL(receiptUrl);
+      const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
 
-    // Open in new tab/popup
-    window.open(fileStore[fileStoreId], "_blank");
-
-  } catch (error) {
-    console.error("Sanction Letter popup error:", error);
-  } finally {
-    setLoader(false);
+      // Open in new tab/popup
+      // window.open(fileStore[fileStoreId], "_blank");
+      setPdfUrl(downloadUrl);
+      setShowPdfModal(true);
+    } catch (error) {
+      console.error("Sanction Letter popup error:", error);
+    } finally {
+      setLoader(false);
+    }
   }
-}
+
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, ...params }) {
       
@@ -607,9 +616,10 @@ const stateId = Digit.ULBService.getStateId();
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(()=>{setShowToast(null);},3000);
     } else if (action?.action == "ESIGN") {
-      // Automatically trigger the eSign process for the certificate
-      printCertificateWithESign();
-    }else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      // opens the sanctionletter popup
+      // printCertificateWithESign();
+      openSanctionLetterPopup();
+    } else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/clu/${appNo}/${tenantId}?tenantId=${tenantId}`);
@@ -968,7 +978,7 @@ const stateId = Digit.ULBService.getStateId();
 
   const currentZoneCode = applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.name || applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone?.code?.code;
 
-  if (isLoading) {
+  if (isLoading || getLoader) {
     return <Loader />;
   }
 
@@ -976,19 +986,19 @@ const stateId = Digit.ULBService.getStateId();
     <div className={"employee-main-application-details"}>
       <div className="cardHeaderWithOptions">
         <Header styles={{ fontSize: "32px" }}>{t("BPA_APP_OVERVIEW_HEADER")}</Header>
-          <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
-          {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
-          {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
+        <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
+        {dowloadOptions && dowloadOptions.length > 0 && (
+          <MultiLink
+            className="multilinkWrapper"
+            onHeadClick={() => setShowOptions(!showOptions)}
+            displayOptions={showOptions}
+            options={dowloadOptions}
+          />
+        )}
+        {(isLoading || recieptDataLoading2 || recieptDataLoading1) && <Loader />}
+        {/* {["APPROVED", "E-SIGNED"].includes(applicationDetails?.Clu?.[0]?.applicationStatus) && (
           <SubmitBar label={t("OPEN_SANCTION_LETTER")} onSubmit={() => openSanctionLetterPopup()} />
-          )}
+        )} */}
       </div>
 
       <Card>
@@ -1327,6 +1337,21 @@ const stateId = Digit.ULBService.getStateId();
         />
       )}
 
+      {showPdfModal && (
+        <PdfPreviewModal
+          open={showPdfModal}
+          url={pdfUrl}
+          onClose={() => {
+            setShowPdfModal(false);
+            setPdfUrl(null);
+          }}
+          title={t("NOC_SANCTION_LETTER")}
+        >
+          <ActionBar>
+            <SubmitBar label={t("ESIGN")} onSubmit={printCertificateWithESign} disabled={eSignLoading} />
+          </ActionBar>
+        </PdfPreviewModal>
+      )}
       {showModal ? (
         <CLUModal
           t={t}

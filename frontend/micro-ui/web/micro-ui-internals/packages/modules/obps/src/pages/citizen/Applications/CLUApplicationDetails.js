@@ -309,7 +309,7 @@ const CLUApplicationDetails = () => {
         conditionText = approvecomments?.[0]
       }
 
-      const finalComment = conditionText ? `The above approval is subjected to the following conditions: ${conditionText?.[0]}` : "";
+      const finalComment = conditionText ? ` ${conditionText?.[0]}` : "";
       if (!application) {
         throw new Error("CLU Application data is missing");
       }

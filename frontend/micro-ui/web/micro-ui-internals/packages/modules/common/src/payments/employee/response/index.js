@@ -134,8 +134,6 @@ export const SuccessfulPayment = (props) => {
     select: (data) =>
       businessService === "GC.ONE_TIME_FEE"
         ? "garbage-receipt"
-        : businessService === "rl-services"
-        ? "rentandlease-receipt"
         : data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
 
@@ -412,6 +410,28 @@ export const SuccessfulPayment = (props) => {
           tenantId,
           { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
           "ndc-receipt"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
+  const printRLReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: consumerCode } });
+      let application = applicationDetails;
+      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "rentandlease-receipt"
         );
         fileStoreId = response?.filestoreIds[0];
       }
@@ -840,7 +860,8 @@ export const SuccessfulPayment = (props) => {
               businessService !== "adv-services" &&
               businessService !== "pet-services" &&
               businessService !== "NDC" &&
-              businessService !== "Challan_Generation" && (
+              businessService !== "Challan_Generation" &&
+               businessService !== "rl-services" && (
                 <div
                   className="primary-label-btn d-grid"
                   style={{ marginLeft: "unset", marginRight: "20px" }}
@@ -997,6 +1018,23 @@ export const SuccessfulPayment = (props) => {
             {businessService == "NDC" ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
                 <div className="primary-label-btn d-grid" onClick={printing ? undefined : printNDCReceipt}>
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CHB_FEE_RECEIPT")}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+            {businessService == "rl-services" ? (
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
+                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printRLReceipt}>
                   {printing ? (
                     <Loader />
                   ) : (

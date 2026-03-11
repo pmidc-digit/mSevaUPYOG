@@ -71,9 +71,9 @@ function NOCSummary({ currentStepData: formData, t }) {
   const propertyId = formData?.applicationDetails?.owners?.[0]?.propertyId;
   const applicationNo = formData?.apiData?.Noc?.[0]?.applicationNo;
   const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn || Date.now();
-console.log('applicationNo, submittedOn', applicationNo, submittedOn)
+// console.log('applicationNo, submittedOn', applicationNo, submittedOn)
 
-console.log('primaryOwner and propertyId here in summary', primaryOwner, propertyId)
+//   console.log("primaryOwner and propertyId here in summary", primaryOwner, propertyId);
 
   return (
     <div className="employee-main-application-details">

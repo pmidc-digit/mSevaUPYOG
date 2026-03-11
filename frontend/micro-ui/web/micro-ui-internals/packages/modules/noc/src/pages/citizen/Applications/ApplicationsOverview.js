@@ -316,7 +316,7 @@ const CitizenApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  console.log('EmpData', EmpData)
+  // console.log('EmpData', EmpData)
   dowloadOptions.push({
       label: t("Application Form"),
       onClick: handleDownloadPdf,

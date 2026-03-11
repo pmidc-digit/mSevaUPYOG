@@ -262,6 +262,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
         if (owner.altContactNumber) obj.altContactNumber = owner.altContactNumber;
+        if (owner.pan) obj.pan = owner.pan;
         owners.push(obj);
       });
     }

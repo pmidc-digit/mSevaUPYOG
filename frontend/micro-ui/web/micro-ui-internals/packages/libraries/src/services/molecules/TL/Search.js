@@ -71,6 +71,8 @@ export const TLSearch = {
       values: [
         { title: "TL_LOCALIZATION_APPLICATION_NO", value: response?.applicationNumber ? `${response?.applicationNumber}` : "NA" },
         // { title: "TL_APPLICATION_CHALLAN_LABEL", value: response?.tradeLicenseDetail?.channel ? `TL_CHANNEL_${response?.tradeLicenseDetail?.channel}` : "NA" },
+        { title: "TL_APPLICATION_STATUS", value: response?.status ? `TL_${response?.status}` : "NA" },
+        { title: "TL_APPLICATION_CATEGORY", value: response?.workflowCode ? `CS_COMMON_INBOX_${response?.workflowCode?.toUpperCase()}` : "NA" },
       ],
     };
 
@@ -256,6 +258,8 @@ export const TLSearch = {
                     { title: "TL_COMMON_RELATIONSHIP_LABEL", value: owner?.relationship || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_GENDER_LABEL", value: owner?.gender || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_EMAIL_LABEL", value: owner?.emailId || "NA" },
+                    { title: "TL_NEW_OWNER_DETAILS_DOB_LABEL", value: owner?.dob ? convertEpochToDate(owner?.dob) : "NA" },
+                    { title: "TL_OWNER_PAN_LABEL", value: owner?.pan || "NA" },
                     {
                       title: "TL_NEW_OWNER_DETAILS_SPL_OWN_CAT_LABEL",
                       value: owner?.ownerType ? `COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}` : "NA",

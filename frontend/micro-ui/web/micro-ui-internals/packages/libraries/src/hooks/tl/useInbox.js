@@ -57,7 +57,7 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
     moduleSearchCriteria: {
       ...(mobileNumber ? { mobileNumber: mobileNumber } : {}),
       ...(applicationNumber ? { applicationNumber: applicationNumber } : {}),
-      ...(tradeLicenseNumber ? { licenseNumbers: tradeLicenseNumber } : {}),
+      ...(tradeLicenseNumber ? { licenseNumber: tradeLicenseNumber } : {}),
       ...(applicationType ? { applicationType: applicationType } : {}),
       ...(fromDate ? { fromDate: fromDate } : {}),
       ...(toDate ? { toDate: toDate } : {}),

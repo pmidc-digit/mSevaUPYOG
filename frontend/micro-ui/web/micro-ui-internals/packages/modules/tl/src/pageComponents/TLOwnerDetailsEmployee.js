@@ -32,6 +32,7 @@ const createOwnerDetails = () => ({
   gender: "",
   subOwnerShipCategory: "",
   correspondenceAddress: "",
+  pan: "",
   key: Date.now(),
 });
 
@@ -173,33 +174,53 @@ const OwnerForm = (_props) => {
     }
   }, []);
 
+  // ➡️ Renewal/Edit: restore owner fields including gender & dob
+  // Note: formData here is scoped to OwnerDetails step (no cpt.details), so we check URL + owner prop directly
   useEffect(() => {
-    if (window.location.href.includes("tl/renew-application-details") && formData?.cpt?.details) {
+    const isRenewOrEdit = window.location.href.includes("tl/renew-application-details") || window.location.href.includes("tl/edit-application-details");
+    if (!isRenewOrEdit || !owner) return;
     
-      if (typeOfOwner === "INSTITUTIONAL") {
-        setValue("instituionName", owner?.instituionName);
-        setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
-        setValue("name", owner?.name);
-        setValue("designation", owner?.designation);
-        setValue("mobileNumber", owner?.mobileNumber);
-        setValue("altContactNumber", owner?.altContactNumber);
-        setValue("relationship", owner?.relationship);
-        setValue("gender", owner?.gender);
-        setValue("emailId", owner?.emailId);
-        setValue("dob", owner?.dob);
-      } else {
-        setValue("name", owner?.name);
-        setValue("mobileNumber", owner?.mobileNumber);
-        setValue("fatherOrHusbandName", owner?.fatherOrHusbandName);
-        setValue("relationship", owner?.relationship);
-        setValue("gender", owner?.gender);
-        setValue("emailId", owner?.emailId);
-        setValue("ownerType", owner?.ownerType);
-        setValue("permanentAddress", owner?.permanentAddress);
-        setValue("dob", owner?.dob);
-      }
+    if (typeOfOwner === "INSTITUTIONAL") {
+      setValue("instituionName", owner?.instituionName);
+      setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
+      setValue("name", owner?.name);
+      setValue("designation", owner?.designation);
+      setValue("mobileNumber", owner?.mobileNumber);
+      setValue("altContactNumber", owner?.altContactNumber);
+      setValue("relationship", owner?.relationship);
+      setValue("emailId", owner?.emailId);
+      setValue("pan", owner?.pan);
+    } else {
+      setValue("name", owner?.name);
+      setValue("mobileNumber", owner?.mobileNumber);
+      setValue("fatherOrHusbandName", owner?.fatherOrHusbandName);
+      setValue("relationship", owner?.relationship);
+      setValue("emailId", owner?.emailId);
+      setValue("ownerType", owner?.ownerType);
+      setValue("permanentAddress", owner?.permanentAddress);
+      setValue("pan", owner?.pan);
     }
-  }, [formData?.cpt?.details?.propertyId, formData?.cptId?.Id, formData, owner]);
+
+    // ➡️ Gender: set from owner prop; find matching MDMS dropdown object if available
+    if (owner?.gender) {
+      const gCode = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
+      const gObj = genderTypeMenu?.find((g) => g.code === gCode) || owner.gender;
+      setValue("gender", gObj);
+    }
+
+    // ➡️ DOB: convert epoch to YYYY-MM-DD for date input
+    if (owner?.dob) {
+      let dobVal = owner.dob;
+      if (typeof dobVal === "number" || !isNaN(Number(dobVal))) {
+        const dt = new Date(Number(dobVal));
+        dobVal = isNaN(dt.getTime()) ? "" : dt.toISOString().split("T")[0];
+      } else if (typeof dobVal === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(dobVal)) {
+        const [dd, mm, yyyy] = dobVal.split("/");
+        dobVal = `${yyyy}-${mm}-${dd}`;
+      }
+      if (dobVal) setValue("dob", dobVal);
+    }
+  }, [owner?.key, genderTypeMenu]);
 
   useEffect(() => {
     if (!_.isEqual(formValue, part)) {
@@ -776,6 +797,42 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"pan"}
+                    defaultValue={owner?.pan || ""}
+                    rules={{
+                      validate: (val) => {
+                        if (!val || val === "") return true;
+                        return val.length >= 9 ? true : "PAN must be at least 9 characters";
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        t={t}
+                        type={"text"}
+                        isMandatory={false}
+                        name="pan"
+                        value={props.value}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "pan"}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                          if (val !== owner?.pan && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                          props.onChange(val);
+                          setFocusIndex({ index: owner.key, type: "pan" });
+                        }}
+                        onBlur={props.onBlur}
+                        placeholder={t("TL_OWNER_PAN_PLACEHOLDER") || "Enter PAN Number"}
+                        maxLength={10}
+                      />
+                    )}
+                  ></Controller>
+                </div>
+              </LabelFieldPair>
+              <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
             </React.Fragment>
           )}
           {typeOfOwner !== "INSTITUTIONAL" && (
@@ -1113,6 +1170,42 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"pan"}
+                    defaultValue={owner?.pan || ""}
+                    rules={{
+                      validate: (val) => {
+                        if (!val || val === "") return true;
+                        return val.length >= 9 ? true : "PAN must be at least 9 characters";
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        t={t}
+                        type={"text"}
+                        isMandatory={false}
+                        name="pan"
+                        value={props.value}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "pan"}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                          if (val !== owner?.pan && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                          props.onChange(val);
+                          setFocusIndex({ index: owner.key, type: "pan" });
+                        }}
+                        onBlur={props.onBlur}
+                        placeholder={t("TL_OWNER_PAN_PLACEHOLDER") || "Enter PAN Number"}
+                        maxLength={10}
+                      />
+                    )}
+                  ></Controller>
+                </div>
+              </LabelFieldPair>
+              <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
             </React.Fragment>
           )}
         </div>

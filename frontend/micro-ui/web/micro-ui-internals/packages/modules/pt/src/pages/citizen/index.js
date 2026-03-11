@@ -35,7 +35,7 @@ const App = () => {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // const CreateProperty = Digit?.ComponentRegistryService?.getComponent("PTCreateProperty");
+  const CreateProperty = Digit?.ComponentRegistryService?.getComponent("PTCreateProperty");
   const CreatePropertyForm = Digit?.ComponentRegistryService?.getComponent("NewPTStepperForm");
   const EditProperty = Digit?.ComponentRegistryService?.getComponent("PTEditProperty");
   const SearchPropertyComponent = Digit?.ComponentRegistryService?.getComponent("PTSearchPropertyComponent");
@@ -65,7 +65,7 @@ const App = () => {
               <PropertyBreadCrumbs location={location} />
             </div>
           ) : null}
-          <PrivateRoute path={`${path}/property/create-application`} component={CreatePropertyForm} />
+          <PrivateRoute path={`${path}/property/create-application`} component={CreateProperty} />
           {/* <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} /> */}
           <PrivateRoute path={`${path}/property/edit-application/:id`} component={EditProperty} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />

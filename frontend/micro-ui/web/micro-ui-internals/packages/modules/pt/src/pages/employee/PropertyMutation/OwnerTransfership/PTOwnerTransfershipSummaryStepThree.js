@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+// import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});

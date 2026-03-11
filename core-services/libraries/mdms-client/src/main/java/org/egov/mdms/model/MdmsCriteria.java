@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import org.egov.mdms.model.MasterDetail.MasterDetailBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

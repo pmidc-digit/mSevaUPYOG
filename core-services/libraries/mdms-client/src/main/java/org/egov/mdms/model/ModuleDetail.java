@@ -2,11 +2,10 @@ package org.egov.mdms.model;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import org.egov.mdms.model.MasterDetail.MasterDetailBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

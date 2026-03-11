@@ -20,6 +20,11 @@ const ActionModal = (props) => {
     return <PTRActionModal {...props} />;
   }
 
+  // ➡️ Route DIRECT_RENEWAL_BUTTON to DirectTLModal with DIRECTRENEWAL workflowCode
+  if (props?.action?.action === "DIRECT_RENEWAL_BUTTON") {
+    return <DirectTLModal {...props} applicationData={{...props.applicationData, workflowCode: "DIRECTRENEWAL"}} />;
+  }
+
   if (props?.businessService.includes("NewTL") || props?.businessService.includes("TL") || props?.businessService.includes("EDITRENEWAL")) {
     return <TLActionModal {...props} />;
   }

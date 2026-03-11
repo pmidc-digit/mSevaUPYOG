@@ -120,6 +120,7 @@ useEffect(() => {
             relationship: extractCode(formOwner?.relationship) || orig.relationship,
             ownerType: extractCode(formOwner?.ownerType) || orig.ownerType,
             dob: formOwner?.dob ? convertDateToEpoch(formOwner.dob) : orig.dob,
+            pan: formOwner?.pan !== undefined ? formOwner.pan : orig.pan,
           };
         });
       }
@@ -245,6 +246,7 @@ useEffect(() => {
           relationship: extractCode(owner?.relationship) || original.relationship || "FATHER",
           ownerType: extractCode(owner?.ownerType) || original.ownerType || "NONE",
           dob: owner?.dob ? convertDateToEpoch(owner.dob) : original.dob,
+          pan: owner?.pan !== undefined ? owner.pan : original.pan,
         };
         owners.push(obj);
       });
@@ -256,7 +258,14 @@ useEffect(() => {
     // Renewal-specific workflow values (RESUBMIT case is handled above with early return)
     const computedAction = "INITIATE";
     const computedApplicationType = "RENEWAL";
-    const computedWorkflowCode = Traid?.tradeUnits?.some((unit) => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ";
+    // Determine HAZ/NHAZ: check ishazardous from form data (enriched from MDMS), with fallback to original workflowCode
+    const hasExplicitHazardous = Traid?.tradeUnits?.some((unit) => unit?.tradeSubType?.ishazardous === true);
+    const hasExplicitNonHazardous = Traid?.tradeUnits?.length > 0 && Traid.tradeUnits.every((unit) => unit?.tradeSubType?.ishazardous === false);
+    const computedWorkflowCode = hasExplicitHazardous
+      ? "NEWTL.HAZ"
+      : hasExplicitNonHazardous
+        ? "NEWTL.NHAZ"
+        : (applicationData?.workflowCode === "NEWTL.HAZ" ? "NEWTL.HAZ" : "NEWTL.NHAZ");
 
     // Prepare main formData
     let formData = {

@@ -72,10 +72,12 @@ const ApplicationDetails = (props) => {
       if(action.action == "PAY" && window.location.href.includes("tl")){
         history.push(`/digit-ui/employee/payment/collect/${applicationDetails.applicationData.businessService}/${applicationDetails.applicationData.applicationNumber}`)
       }
-      // if(action?.isToast){
-      //   setShowToast({ key: "error", error: { message: action?.toastMessage } });
-      //   setTimeout(closeToast, 5000);
-      // }
+      if(action?.isToast){
+        console.log("➡️ isToast triggered — blocking action:", action?.action, "message:", action?.toastMessage);
+        setShowToast({ key: "error", error: { message: action?.toastMessage } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
       else if (action?.isWarningPopUp) {
         setWarningPopUp(true);
       } else if (action?.redirectionUrll) {

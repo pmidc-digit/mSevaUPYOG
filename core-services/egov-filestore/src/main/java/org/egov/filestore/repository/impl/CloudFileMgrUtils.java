@@ -79,7 +79,7 @@ public class CloudFileMgrUtils {
 			mapOfImagesAndPaths.put(fileName.replace(replaceString, fileStoreConfig.get_medium() + replaceString), mediumImg);
 			mapOfImagesAndPaths.put(fileName.replace(replaceString, fileStoreConfig.get_small() + replaceString), smallImg);
 
-			log.info("Different versions of the image created!", mapOfImagesAndPaths);
+			log.info("Different versions of the image created!");
 		} catch (Exception e) {
 			log.error("Error while creating different versions of the image: ", e);
 		} finally {

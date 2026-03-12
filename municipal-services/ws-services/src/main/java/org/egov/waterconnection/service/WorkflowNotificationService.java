@@ -711,42 +711,42 @@ public class WorkflowNotificationService {
 //                actionLink = actionLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
 //                messageToReplace = messageToReplace.replace("{Application download link}", waterServiceUtil.getShortnerURL(actionLink));
 //            }
+//
+//            if (messageToReplace.contains("{mseva URL}"))
+//                messageToReplace = messageToReplace.replace("{mseva URL}",
+//                        waterServiceUtil.getShortnerURL(config.getNotificationUrl()));
+//
+//            if (messageToReplace.contains("{mseva app link}"))
+//                messageToReplace = messageToReplace.replace("{mseva app link}",
+//                        waterServiceUtil.getShortnerURL(config.getMSevaAppLink()));
 
-            if (messageToReplace.contains("{mseva URL}"))
-                messageToReplace = messageToReplace.replace("{mseva URL}",
-                        waterServiceUtil.getShortnerURL(config.getNotificationUrl()));
-
-            if (messageToReplace.contains("{mseva app link}"))
-                messageToReplace = messageToReplace.replace("{mseva app link}",
-                        waterServiceUtil.getShortnerURL(config.getMSevaAppLink()));
-
-            if (messageToReplace.contains("{View History Link}")) {
-                String historyLink = config.getNotificationUrl() + config.getViewHistoryLink();
-                historyLink = historyLink.replace(mobileNoReplacer, mobileAndName.getKey());
-                historyLink = historyLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
-                historyLink = historyLink.replace(tenantIdReplacer, property.getTenantId());
-                messageToReplace = messageToReplace.replace("{View History Link}",
-                        waterServiceUtil.getShortnerURL(historyLink));
-            }
-            if (messageToReplace.contains("{payment link}")) {
-                String paymentLink = config.getNotificationUrl() +  config.getViewHistoryLink();
-                paymentLink = paymentLink.replace(mobileNoReplacer, mobileAndName.getKey());
-                paymentLink = paymentLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
-                paymentLink = paymentLink.replace(tenantIdReplacer, property.getTenantId());
-                messageToReplace = messageToReplace.replace("{payment link}",
-                        waterServiceUtil.getShortnerURL(paymentLink));
-            }
+//            if (messageToReplace.contains("{View History Link}")) {
+//                String historyLink = config.getNotificationUrl() + config.getViewHistoryLink();
+//                historyLink = historyLink.replace(mobileNoReplacer, mobileAndName.getKey());
+//                historyLink = historyLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
+//                historyLink = historyLink.replace(tenantIdReplacer, property.getTenantId());
+//                messageToReplace = messageToReplace.replace("{View History Link}",
+//                        waterServiceUtil.getShortnerURL(historyLink));
+//            }
+//            if (messageToReplace.contains("{payment link}")) {
+//                String paymentLink = config.getNotificationUrl() +  config.getViewHistoryLink();
+//                paymentLink = paymentLink.replace(mobileNoReplacer, mobileAndName.getKey());
+//                paymentLink = paymentLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
+//                paymentLink = paymentLink.replace(tenantIdReplacer, property.getTenantId());
+//                messageToReplace = messageToReplace.replace("{payment link}",
+//                        waterServiceUtil.getShortnerURL(paymentLink));
+//            }
 			/*if (messageToReplace.contains("{receipt download link}")){
 				messageToReplace = messageToReplace.replace("{receipt download link}",
 						waterServiceUtil.getShortnerURL(config.getNotificationUrl()));
 			}*/
-            if (messageToReplace.contains("{connection details page}")) {
-                String connectionDetaislLink = config.getNotificationUrl() + config.getConnectionDetailsLink();
-                connectionDetaislLink = connectionDetaislLink.replace(applicationNumberReplacer,
-                        waterConnectionRequest.getWaterConnection().getApplicationNo());
-                messageToReplace = messageToReplace.replace("{connection details page}",
-                        waterServiceUtil.getShortnerURL(connectionDetaislLink));
-            }
+//            if (messageToReplace.contains("{connection details page}")) {
+//                String connectionDetaislLink = config.getNotificationUrl() + config.getConnectionDetailsLink();
+//                connectionDetaislLink = connectionDetaislLink.replace(applicationNumberReplacer,
+//                        waterConnectionRequest.getWaterConnection().getApplicationNo());
+//                messageToReplace = messageToReplace.replace("{connection details page}",
+//                        waterServiceUtil.getShortnerURL(connectionDetaislLink));
+//            }
             if (messageToReplace.contains("{Date effective from}")) {
                 if (waterConnectionRequest.getWaterConnection().getDateEffectiveFrom() != null) {
                     LocalDate date = Instant

@@ -1326,7 +1326,9 @@ const WrapPaymentComponent = (props) => {
               flexWrap:"wrap", gap:"20px"
             }}
           >
-            {printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />}
+            {business_service !== "TL" && (
+              printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+            )}
             {/* {!(business_service === "TL") && !business_service?.includes("PT") && (
             <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
           )}
@@ -1337,11 +1339,11 @@ const WrapPaymentComponent = (props) => {
             </div>
           )} */}
 
-            {business_service === "TL" && (
+            {/* {business_service === "TL" && (
               <Link to={`/digit-ui/citizen`}>
                 <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
               </Link>
-            )}
+            )} */}
 
             <Link to={`/digit-ui/citizen`}>
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
@@ -2449,16 +2451,16 @@ const WrapPaymentZeroComponent = (props) => {
             <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
           </div>
         ))} */}
-      {business_service == "TL" && (
+      {/* {business_service == "TL" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
-      )}
-      {business_service == "pet-services" && (
+      )} */}
+      {/* {business_service == "pet-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
-      )}
+      )} */}
       <Link to={`/digit-ui/citizen`}>
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>

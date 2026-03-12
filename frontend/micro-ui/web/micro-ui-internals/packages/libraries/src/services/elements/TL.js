@@ -60,7 +60,7 @@ export const TLService = {
       setTimeParam: false,
       userService: true,
       method: "POST",
-      params: { tenantId },
+      params: { tenantId, ...filters },
       auth: true,
     }),
   TLOpensearch: ({ tenantId, filters }) =>

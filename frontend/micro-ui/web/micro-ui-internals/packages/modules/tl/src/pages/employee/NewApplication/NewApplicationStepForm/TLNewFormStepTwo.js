@@ -73,7 +73,16 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
       if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
-      if (!owner?.dob) missingFields.push(`Date of Birth (Owner ${index})`);
+      if (!owner?.dob) {
+        missingFields.push(`Date of Birth (Owner ${index})`);
+      } else {
+        const today = new Date();
+        const dob = new Date(owner.dob);
+        const age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())));
+        if (isUnder18) missingFields.push(`Owner ${index} must be at least 18 years old`);
+      }
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };

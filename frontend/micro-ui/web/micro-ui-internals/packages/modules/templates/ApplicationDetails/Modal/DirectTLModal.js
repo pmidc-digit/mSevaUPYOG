@@ -28,11 +28,6 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   const { data: tradeMdmsData,isLoading: tradeMdmsLoading } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", "TradeUnits", "[?(@.type=='TL')]");
 
-    console.log("tradeMdmsData",tradeMdmsData?.TradeLicense?.TradeType);
-    // console.log("tradeMdmsData",tradeMdmsData)
-
-  console.log("applicationData",applicationData);
-
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
   const [approvers, setApprovers] = useState([]);
@@ -67,19 +62,31 @@ const years = useMemo(() => {
     const financialYearDate = financialYear?.split('-')[1];
     const finalFinancialYear = `20${Number(financialYearDate)}-${Number(financialYearDate)+1}`
 
+    // Determine if hazardous based on trade type MDMS data
+    const tradeTypeCodes = new Set((applicationData?.tradeLicenseDetail?.tradeUnits || []).map(unit => unit.tradeType));
+    const matchedTradeTypes = (tradeMdmsData?.TradeLicense?.TradeType || []).filter(type => tradeTypeCodes.has(type.code));
+    const hasHazardous = matchedTradeTypes.some(unit => unit?.ishazardous);
+    const selectedYears = selectedApprover.length > 0 ? parseInt(selectedApprover) : 1;
+    
     applicationData = {
         ...applicationData,
         financialYear: finalFinancialYear,
-        action: "INITIATE",
+        applicationType: "RENEWAL",
+        workflowCode: hasHazardous ? "NEWTL.HAZ" : "DIRECTRENEWAL",
+        action: hasHazardous ? "APPLY" : "INITIATE",
+        wfDocuments: null,
         additionalDetail : {
             ...applicationData.additionalDetail,
             validityYears :selectedApprover.length>0? parseInt(selectedApprover): ""
-        }
+        },
+        tradeLicenseDetail: {
+            ...applicationData.tradeLicenseDetail,
+            additionalDetail: {
+                ...applicationData.tradeLicenseDetail?.additionalDetail,
+                validityYears: selectedYears,
+            },
+        },
     }
-
-    // console.log("Data", selectedApprover)
-    // console.log("Application Data", applicationData)
-    // console.log("submit action", action?.action)
 
     submitAction({
         Licenses: [applicationData],

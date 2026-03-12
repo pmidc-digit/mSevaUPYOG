@@ -99,15 +99,35 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     // if (!ownershipCategory?.code || !owners?.length) return false;
     
-    return owners?.every(
+    if (!owners?.every(
       (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
-    );
+    )) return false;
+
+    // Validate that all owners with DOB are at least 18 years old
+    const today = new Date();
+    for (const owner of owners) {
+      if (owner?.dob) {
+        const dob = new Date(owner.dob);
+        const age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())));
+        if (isUnder18) return "under18";
+      }
+    }
+
+    return true;
   };
 
   const goNext = async (data) => {
     const { OwnerDetails } = formData || {};
 
-    if (!validateOwnerDetails(OwnerDetails)) {
+    const validationResult = validateOwnerDetails(OwnerDetails);
+    if (validationResult === "under18") {
+      setError(t("TL_OWNER_AGE_ERROR") || "Owner must be at least 18 years old.");
+      setShowToast(true);
+      return;
+    }
+    if (!validationResult) {
       setError(t("Please fill all owner mandatory details correctly."));
       setShowToast(true);
       return;

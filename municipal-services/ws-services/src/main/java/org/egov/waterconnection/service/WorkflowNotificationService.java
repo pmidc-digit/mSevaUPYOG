@@ -706,11 +706,11 @@ public class WorkflowNotificationService {
             if(messageToReplace.contains("{Reason for Rejection}"))
                 messageToReplace = messageToReplace.replace("{Reason for Rejection}",  waterConnectionRequest.getWaterConnection().getProcessInstance().getComment());
 
-            if (messageToReplace.contains("{Application download link}")) {
-                String actionLink = config.getNotificationUrl() + config.getViewHistoryLink();
-                actionLink = actionLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
-                messageToReplace = messageToReplace.replace("{Application download link}", waterServiceUtil.getShortnerURL(actionLink));
-            }
+//            if (messageToReplace.contains("{Application download link}")) {
+//                String actionLink = config.getNotificationUrl() + config.getViewHistoryLink();
+//                actionLink = actionLink.replace(applicationNumberReplacer, waterConnectionRequest.getWaterConnection().getApplicationNo());
+//                messageToReplace = messageToReplace.replace("{Application download link}", waterServiceUtil.getShortnerURL(actionLink));
+//            }
 
             if (messageToReplace.contains("{mseva URL}"))
                 messageToReplace = messageToReplace.replace("{mseva URL}",
@@ -964,8 +964,8 @@ public class WorkflowNotificationService {
         for (Entry<String, String> mobileAndMsg : mobileNumberAndMessage.entrySet()) {
             String messageToReplace = mobileAndMsg.getValue();
             String link = config.getNotificationUrl() + config.getMyPaymentsLink();
-            link = waterServiceUtil.getShortnerURL(link);
-            messageToReplace = messageToReplace.replace("{receipt download link}", link);
+//            link = waterServiceUtil.getShortnerURL(link);
+//            messageToReplace = messageToReplace.replace("{receipt download link}", link);
             messageToReturn.put(mobileAndMsg.getKey(), messageToReplace);
 
         }

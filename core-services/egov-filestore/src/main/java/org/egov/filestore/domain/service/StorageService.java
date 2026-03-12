@@ -93,14 +93,12 @@ public class StorageService {
 
 		log.info(UPLOAD_MESSAGE, module, tag, filesToStore.size());
 		List<Artifact> artifacts = mapFilesToArtifact(filesToStore, module, tag, tenantId);
-		log.info("artifacts{}", artifacts);
 		return this.artifactRepository.save(artifacts, requestInfo);
 	}
 
 	private List<Artifact> mapFilesToArtifact(List<MultipartFile> files, String module, String tag, String tenantId) {
 
 		final String folderName = "ticket".equals(tenantId) ? getTicketFolderName(module, tenantId) : getFolderName(module, tenantId);
-		log.info("FOLDER_NAME", folderName);
 		String inputStreamAsString = null;
 		List<Artifact> artifacts = new ArrayList<>();
 		Artifact artifact = null;
@@ -109,7 +107,6 @@ public class StorageService {
 			String orignalFileName = file.getOriginalFilename();
 			String imagetype = FilenameUtils.getExtension(orignalFileName);
 			String fileName = folderName + System.currentTimeMillis() + randomString + "." +imagetype;
-			log.info("FILE_NAME", fileName);
 			String id = this.idGeneratorService.getId();
 			FileLocation fileLocation = new FileLocation(id, module, tag, tenantId, fileName, null);
 			try {
@@ -138,7 +135,6 @@ public class StorageService {
 		String completeName = artifact.getFileLocation().getFileName();
 		int index = completeName.indexOf('/');
 		String fileNameWithPath = completeName.substring(index + 1, completeName.length());
-		log.info("fileNameWithPath", fileNameWithPath);
 		try {
 
 			String imagetype = FilenameUtils.getExtension(artifact.getMultipartFile().getOriginalFilename());

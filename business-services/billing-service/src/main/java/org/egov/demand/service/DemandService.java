@@ -407,6 +407,12 @@ public class DemandService {
 					.businessService(first.getBusinessService()).build();
 
 			demandsFromSearch = demandRepository.getDemands(sc);
+
+			if (CollectionUtils.isEmpty(demandsFromSearch)) {
+			    demandToBeCreated.addAll(demands);
+			    return;
+			}
+			
 			List<Demand> demandsWithAdvance = getDemandsContainingAdvance(demandsFromSearch, mdmsData);
 
 			for (Demand old : demandsWithAdvance) {
@@ -470,6 +476,8 @@ public class DemandService {
 							det.setCollectionAmount(det.getTaxAmount());
 						}
 					}
+					// ADD THIS LINE: This recalculates the isPaymentCompleted flag based on new collection amounts
+				    util.updateDemandPaymentStatus(resD, true);
 
 					if (demandToBeUpdated.stream().noneMatch(u -> u.getId().equals(resD.getId()))) {
 						demandToBeUpdated.add(resD);
@@ -530,6 +538,10 @@ public class DemandService {
 	 * @return
 	 */
 	private List<Demand> getDemandsContainingAdvance(List<Demand> demands, DocumentContext mdmsData) {
+		
+		 if (CollectionUtils.isEmpty(demands)) {
+		        return new ArrayList<>();
+		    }
 
 		Set<Demand> demandsWithAdvance = new HashSet<>();
 

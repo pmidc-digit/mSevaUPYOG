@@ -562,16 +562,16 @@ public class PaymentUpdateService {
 				message = message.replace("{Billing Period}", billingPeriod);
 			}
 
-			if (message.contains("{receipt download link}")){
-				String link = config.getNotificationUrl() + config.getMyPaymentsLink();
-				link = link.replace("$consumerCode", paymentDetail.getBill().getConsumerCode());
-				link = link.replace("$tenantId", paymentDetail.getTenantId());
-				link = link.replace("$businessService",paymentDetail.getBusinessService());
-				link = link.replace("$receiptNumber",paymentDetail.getReceiptNumber());
-				link = link.replace("$mobile", mobAndMesg.getKey());
-				link = waterServiceUtil.getShortnerURL(link);
-				message = message.replace("{receipt download link}",link);
-			}
+//			if (message.contains("{receipt download link}")){
+//				String link = config.getNotificationUrl() + config.getMyPaymentsLink();
+//				link = link.replace("$consumerCode", paymentDetail.getBill().getConsumerCode());
+//				link = link.replace("$tenantId", paymentDetail.getTenantId());
+//				link = link.replace("$businessService",paymentDetail.getBusinessService());
+//				link = link.replace("$receiptNumber",paymentDetail.getReceiptNumber());
+//				link = link.replace("$mobile", mobAndMesg.getKey());
+//				link = waterServiceUtil.getShortnerURL(link);
+//				message = message.replace("{receipt download link}",link);
+//			}
 
 			messageToReturn.put(mobAndMesg.getKey(), message);
 		}

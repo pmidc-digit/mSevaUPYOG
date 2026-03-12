@@ -78,58 +78,60 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
       const bill = fetchBillRes?.Bill?.[0];
       const billAccountDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
 
-      // Step 2: Fetch TL calculator bill to get billingSlabIds
-      const getbillRes = await Digit.TLService.getbill({ tenantId, filters: { consumerCode, businessService: "TL" } });
-      const billingSlabIds = getbillRes?.billingSlabIds || {};
-      const tradeSlabEntries = billingSlabIds?.tradeTypeBillingSlabIds || [];
-      const accessorySlabEntries = billingSlabIds?.accesssoryBillingSlabIds || [];
-
-      // Collect all slab IDs (format: "slabId|value|someId")
-      const allSlabIds = [...tradeSlabEntries, ...accessorySlabEntries]
-        .map((entry) => entry?.split("|")?.[0])
-        .filter(Boolean);
-
-      // Step 3: Fetch billing slabs
-      let slabs = [];
-      if (allSlabIds.length > 0) {
-        const slabRes = await Digit.TLService.billingslab({ tenantId, filters: { ids: allSlabIds.join(",") } });
-        slabs = slabRes?.billingSlab || [];
-      }
-
-      // Build trade unit breakup
-      const tradeUnitBreakup = tradeSlabEntries.map((entry) => {
-        const parts = entry?.split("|") || [];
-        const slabId = parts[0];
-        const slab = slabs.find((s) => s.id === slabId);
-        const tradeTypeParts = slab?.tradeType?.split(".") || [];
-        const tradeSubType = tradeTypeParts[tradeTypeParts.length - 1] || "Unknown";
-        return {
-          name: t(formatTradeType(slab?.tradeType)) || tradeSubType,
-          rate: slab?.rate || 0,
-        };
-      });
-
-      // Build accessory breakup
-      const accessoryBreakup = accessorySlabEntries.map((entry) => {
-        const parts = entry?.split("|") || [];
-        const slabId = parts[0];
-        const slab = slabs.find((s) => s.id === slabId);
-        const catFormatted = slab?.accessoryCategory?.replace(/\./g, "_")?.replace(/-/g, "_");
-        return {
-          name: t(`TRADELICENSE_ACCESSORIESCATEGORY_${catFormatted}`) || slab?.accessoryCategory || "Accessory",
-          rate: slab?.rate || 0,
-        };
-      });
-
-      const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
-      const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
-      const validityYears = tradeLicenseDetail?.additionalDetail?.validityYears || 1;
-
       // Get tax head amounts from bill
       const tlTax = billAccountDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
       const rebate = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
       const penalty = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
       const totalAmount = bill?.totalAmount || tlTax;
+      const validityYears = tradeLicenseDetail?.additionalDetail?.validityYears || 1;
+
+      // Step 2: Try TL calculator for detailed slab breakup (may fail for citizens due to role restrictions)
+      let tradeUnitBreakup = [];
+      let accessoryBreakup = [];
+      try {
+        const getbillRes = await Digit.TLService.getbill({ tenantId, filters: { consumerCode, businessService: "TL" } });
+        const billingSlabIds = getbillRes?.billingSlabIds || {};
+        const tradeSlabEntries = billingSlabIds?.tradeTypeBillingSlabIds || [];
+        const accessorySlabEntries = billingSlabIds?.accesssoryBillingSlabIds || [];
+
+        const allSlabIds = [...tradeSlabEntries, ...accessorySlabEntries]
+          .map((entry) => entry?.split("|")?.[0])
+          .filter(Boolean);
+
+        let slabs = [];
+        if (allSlabIds.length > 0) {
+          const slabRes = await Digit.TLService.billingslab({ tenantId, filters: { ids: allSlabIds.join(",") } });
+          slabs = slabRes?.billingSlab || [];
+        }
+
+        tradeUnitBreakup = tradeSlabEntries.map((entry) => {
+          const parts = entry?.split("|") || [];
+          const slabId = parts[0];
+          const slab = slabs.find((s) => s.id === slabId);
+          const tradeTypeParts = slab?.tradeType?.split(".") || [];
+          const tradeSubType = tradeTypeParts[tradeTypeParts.length - 1] || "Unknown";
+          return {
+            name: t(formatTradeType(slab?.tradeType)) || tradeSubType,
+            rate: slab?.rate || 0,
+          };
+        });
+
+        accessoryBreakup = accessorySlabEntries.map((entry) => {
+          const parts = entry?.split("|") || [];
+          const slabId = parts[0];
+          const slab = slabs.find((s) => s.id === slabId);
+          const catFormatted = slab?.accessoryCategory?.replace(/\./g, "_")?.replace(/-/g, "_");
+          return {
+            name: t(`TRADELICENSE_ACCESSORIESCATEGORY_${catFormatted}`) || slab?.accessoryCategory || "Accessory",
+            rate: slab?.rate || 0,
+          };
+        });
+      } catch (calcError) {
+        console.warn("TL calculator API not accessible, showing bill-level breakup only:", calcError);
+      }
+
+      const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
+      const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
 
       setBreakupData({
         tradeUnitBreakup,

@@ -11,6 +11,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
@@ -34,6 +35,7 @@ const usageMonths = [
 const PropertyDetails = ({ goNext, onGoBack }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const location = useLocation();
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
   const isCitizen = window.location.href.includes("citizen");
@@ -72,6 +74,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       setPropertyTypeData(checkPropertyTypeData);
     }
   }, [PropertyTypeData]);
+
+  console.log("location2", location?.state);
 
   useEffect(() => {
     const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
@@ -115,6 +119,16 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   const selectedPropertyType = watch("propertyType")?.code;
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
+
+  useEffect(() => {
+    if (location?.state) {
+      const value = location?.state;
+      console.log("getUsageData", getUsageData);
+      const getResident = getUsageData?.find((item) => item?.name == value?.useType);
+      console.log("getResident", getResident);
+      setValue("propertyUsageType", getResident);
+    }
+  }, [location, getUsageData]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>

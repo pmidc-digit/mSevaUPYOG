@@ -85,7 +85,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
 
   const onSubmit = async (data) => {
     console.log("check final data", data);
-    // goNext(data);
+    goNext(data);
   };
 
   useEffect(() => {
@@ -216,6 +216,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   }}
                   render={(props) => <MobileNumber {...props} />}
                 />
+                {errors?.owners?.[index]?.mobileNumber && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
+                )}
               </LabelFieldPair>
 
               {/* Name */}
@@ -227,6 +230,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   rules={{ required: "Name required" }}
                   render={(props) => <TextInput {...props} />}
                 />
+                {errors?.owners?.[index]?.name && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
+                )}
               </LabelFieldPair>
 
               {/* Email */}
@@ -244,6 +250,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   }}
                   render={(props) => <TextInput {...props} />}
                 />
+                {errors?.owners?.[index]?.emailId && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].emailId.message}</p>
+                )}
               </LabelFieldPair>
 
               {/* Address */}
@@ -259,18 +268,17 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   name={`owners.${index}.checkBoxadress`}
                   render={(props) => (
                     <input
-                      id="flammable"
+                      id={`flammable-${index}`}
                       type="checkbox"
                       checked={props.value || false}
                       onChange={(e) => {
                         props.onChange(e.target.checked);
-                        alert("same krdo");
                       }}
                       style={{ width: "18px", height: "18px", cursor: "pointer" }}
                     />
                   )}
                 />
-                <label htmlFor="flammable" style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
+                <label htmlFor={`flammable-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
                   {t("Same as property address")}
                 </label>
               </div>

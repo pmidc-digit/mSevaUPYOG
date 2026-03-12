@@ -65,7 +65,7 @@ const App = () => {
               <PropertyBreadCrumbs location={location} />
             </div>
           ) : null}
-          <PrivateRoute path={`${path}/property/create-application`} component={CreateProperty} />
+          <PrivateRoute path={`${path}/property/create-application`} component={CreatePropertyForm} />
           {/* <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} /> */}
           <PrivateRoute path={`${path}/property/edit-application/:id`} component={EditProperty} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />

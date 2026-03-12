@@ -11,12 +11,14 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
 const PropertyAddressDetails = ({ goNext }) => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { t } = useTranslation();
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const [loader, setLoader] = useState(false);
@@ -31,6 +33,8 @@ const PropertyAddressDetails = ({ goNext }) => {
   const [getYearCreation, setYearCreation] = useState([]);
 
   const { data: CreationYearData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egf-master", [{ name: "FinancialYear" }]);
+
+  console.log("location1", location?.state);
 
   const {
     control,
@@ -88,6 +92,15 @@ const PropertyAddressDetails = ({ goNext }) => {
       alert("Please a valid a survey ID before proceeding to the GIS map.");
     }
   };
+
+  useEffect(() => {
+    if (location?.state) {
+      const value = location?.state;
+      setValue("surveyId", value?.surveyId);
+      setValue("houseNo", value?.flatNo);
+      setValue("buildingName", value?.buildingName);
+    }
+  }, [location]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>

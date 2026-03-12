@@ -23,6 +23,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   const currentStepData = useSelector(function (state) {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
+
+  console.log("currentStepData", currentStepData);
+
   const updatedOwnerDetails = currentStepData?.ownerDetails || {};
   const updatedPetDetails = currentStepData?.petDetails || {};
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];

@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_PTNewApplication_FORM } from "../../redux/action/PTNewApplicationActions";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyDetails from "../../components/PropertyDetails";
 import _ from "lodash";
@@ -16,6 +15,8 @@ const NewPTStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   const currentStepData = useSelector(function (state) {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
+
+  console.log("currentStepData", currentStepData);
 
   function goNext(data) {
     dispatch(UPDATE_PTNewApplication_FORM(config.key, data));

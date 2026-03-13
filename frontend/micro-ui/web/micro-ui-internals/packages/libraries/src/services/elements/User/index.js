@@ -18,6 +18,13 @@ export const UserService = {
       },
     });
   },
+  authenticateV1: (details) => {
+    return ServiceRequest({
+      serviceName: "authenticateV1",
+      url: Urls.Authenticatev1,
+      data: details, // Full payload including RequestInfo
+    });
+  },
   // employeeLogin: (details) => {
   //   const data = new URLSearchParams();
   //   Object.entries(details).forEach(([key, value]) => data.append(key, value));

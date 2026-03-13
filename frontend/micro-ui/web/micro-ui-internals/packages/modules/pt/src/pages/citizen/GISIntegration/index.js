@@ -25,10 +25,10 @@ export const GISIntegration = () => {
 
     console.log("queryParams====", queryParams);
 
-    // history.push({
-    //   pathname: "/digit-ui/citizen/pt/property/create-application",
-    //   state: state,
-    // });
+    history.push({
+      pathname: "/digit-ui/citizen/pt/property/new-application",
+      state: state,
+    });
   }, []);
 
   return (

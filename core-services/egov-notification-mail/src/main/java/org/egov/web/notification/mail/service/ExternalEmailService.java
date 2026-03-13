@@ -57,38 +57,14 @@ public class ExternalEmailService implements EmailService {
 	        if (email.getAttachments() != null && !email.getAttachments().isEmpty()) {
 	            for (String urlString : email.getAttachments()) {
 	                try {
+	                    // 1. Download bytes to memory FIRST
 	                    java.net.URL url = new java.net.URL(urlString);
-	                    java.net.URLConnection conn = url.openConnection();
-
-	                    // Only apply the SSL bypass if the URL belongs to your trusted domain
-	                    if (urlString.contains("lgpunjab.gov.in") && conn instanceof javax.net.ssl.HttpsURLConnection) {
-	                        
-	                        log.info("Applying internal SSL bypass for trusted domain: lgpunjab.gov.in");
-	                        
-	                        javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
-	                            new javax.net.ssl.X509TrustManager() {
-	                                public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
-	                                public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-	                                public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-	                            }
-	                        };
-
-	                        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
-	                        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-	                        
-	                        ((javax.net.ssl.HttpsURLConnection) conn).setSSLSocketFactory(sc.getSocketFactory());
-	                    }
-
-	                    // Set a timeout so the thread doesn't hang if the site is down
-	                    conn.setConnectTimeout(10000); // 10 seconds
-	                    conn.setReadTimeout(10000);
-
-	                    byte[] bytes = org.springframework.util.StreamUtils.copyToByteArray(conn.getInputStream());
+	                    byte[] bytes = org.springframework.util.StreamUtils.copyToByteArray(url.openStream());
 	                    
-	                    if (bytes != null && bytes.length > 0) {
-	                        String fileName = "Sanction_Letter.pdf"; 
-	                        helper.addAttachment(fileName, new org.springframework.core.io.ByteArrayResource(bytes));
-	                        log.info("Attachment buffered successfully. Size: {} bytes", bytes.length);
+	                    if (bytes.length > 0) {
+	                        // 2. Use ByteArrayResource instead of UrlResource
+	                        helper.addAttachment("Sanction_Letter.pdf", new org.springframework.core.io.ByteArrayResource(bytes));
+	                        log.info("Attachment buffered to memory. Size: {} bytes", bytes.length);
 	                    }
 	                } catch (Exception e) {
 	                    log.error("Failed to buffer attachment from URL: " + urlString, e);

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.type.*;
 import org.apache.commons.io.*;

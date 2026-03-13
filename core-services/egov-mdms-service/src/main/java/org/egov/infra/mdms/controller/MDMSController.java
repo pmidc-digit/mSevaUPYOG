@@ -3,7 +3,7 @@ package org.egov.infra.mdms.controller;
 import java.util.ArrayList;
 import java.util.Map;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.infra.mdms.service.MDMSService;

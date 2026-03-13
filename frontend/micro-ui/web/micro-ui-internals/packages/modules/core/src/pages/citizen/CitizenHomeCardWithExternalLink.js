@@ -1,8 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import CustomMenu from "../../components/CustomMenu";
 
 const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   // User authentication and role checks
+  const { t } = useTranslation();
   const user = Digit.UserService?.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const isUserLoggedIn = user?.access_token;
@@ -138,8 +141,39 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
       <div className="chcwe-arrow-container">
         <ArrowIcon />
       </div>
+      
     </React.Fragment>
   );
+  const renderCardDropDownContent = (link) => {
+    const [displayMenu, setDisplayMenu] = useState(false);    
+    const handleRedirect = (url) => {
+      if(url?.navigationURL) window.open(url?.navigationURL, "_blank");
+    };
+    
+    return (
+    <React.Fragment>
+      <div className={`chcwe-card chcwe-card-bg-2`} onClick={() => setDisplayMenu(!displayMenu)} >
+      <div className={`chcwe-icon chcwe-icon-bg-2`}>{getServiceIcon(link?.[0]?.i18nKey)}</div>
+      <div className="chcwe-content">
+        <div className="chcwe-title">{link?.[0]?.i18nKey}</div>
+      </div>
+      <div className="chcwe-arrow-container">
+        <ArrowIcon />
+      </div>
+      </div>
+      <div className="action-bar-wrap-menu">
+        {displayMenu ? (
+          <CustomMenu
+            localeKeyPrefix={``}
+            options={link}
+            optionKey={"name"}
+            t={t}
+            onSelect={handleRedirect}
+          />
+        ) : null}
+      </div>
+    </React.Fragment>
+  )};
 
   // Links that should open in new tab (_blank)
   const linksToOpenInBlank = [
@@ -150,6 +184,10 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   const shouldOpenInBlank = (linkName) => {
     return linksToOpenInBlank.includes(linkName);
   };
+
+  const remainingLinks = links?.filter((value) => shouldOpenInBlank(value?.name))
+
+  console.log("remainingLinks", remainingLinks)
 
   return (
     <div className="chcwe-root" style={styles ? styles : undefined}>
@@ -189,7 +227,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
           // Check if this link should open in new tab
           const openInBlank = shouldOpenInBlank(link?.name);
 
-          return (
+          return openInBlank ? null : (
             <a
               key={index}
               href={link.link}
@@ -201,6 +239,8 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
             </a>
           );
         })}
+        
+        <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingLinks)}</div>
       </div>
 
       {isInfo && Info && (

@@ -192,17 +192,13 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                       <h3 className="custom-action-title">{t("Action taken by")}</h3>
                       {item?.assigner && (
                         <div className="custom-officer-info">
-                          <div className="custom-officer-name">
-                            {item?.assigner?.name || t("CS_COMMON_NA")}
-                            {deptMap[item?.assigner?.userName] && (
-                              <span className="custom-officer-name">- {t(deptMap[item?.assigner?.userName])}</span>
-                            )}
-                          </div>
-                          {item?.assigner?.emailId && (
+                          <div className="custom-officer-name">{item?.assigner?.name || t("CS_COMMON_NA")}</div>
+                          {/* {item?.assigner?.emailId && (
                             <div className="custom-officer-email">
                               <span className="custom-email-label">{t("Email")}</span> {item?.assigner?.emailId}
                             </div>
-                          )}
+                          )} */}
+                          {deptMap[item?.assigner?.userName] && <div className="custom-officer-name">{t(deptMap[item?.assigner?.userName])}</div>}
                         </div>
                       )}
                     </div>

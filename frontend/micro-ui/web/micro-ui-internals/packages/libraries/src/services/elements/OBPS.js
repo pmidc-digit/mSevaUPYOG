@@ -1229,9 +1229,9 @@ const getFormattedULBName = (ulbCode = "") => {
       ];
     }
 
-    if (billDetails?.additionalDetails?.values?.length) {
-      details.push(billDetails);
-    }
+    // if (billDetails?.additionalDetails?.values?.length) {
+    //   details.push(billDetails);
+    // }
 
     let bpaFilterDetails = details?.filter((data) => data);
 
@@ -1278,5 +1278,35 @@ const getFormattedULBName = (ulbCode = "") => {
       auth: false,
       userService: false,
       data: data,
-    })
+    }),
+    BPACheckListCreate: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.bpaCheckListCreate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+    BPACheckListUpdate: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.bpaCheckListUpdate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+    BPACheckListSearch: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.obps.bpaCheckListSearch,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
 };

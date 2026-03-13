@@ -136,6 +136,24 @@ export const useLayoutCheckListSearch = (params, tenantId, config = {}) => {
     ...config,
   });
 
+const useBPACheckListSearchFn = (params, tenantId) => {
+  return async () => {
+    return await Digit.OBPSService.BPACheckListSearch({ tenantId, filters: params, });
+  };
+};
+
+export const useBPACheckListSearch = (params, tenantId, config = {}) => {
+  const client = useQueryClient();
+
+  const result = useQuery(
+    ["BPA_CHECKLIST_SEARCH", params],
+    useBPACheckListSearchFn(params, tenantId),
+    {
+      staleTime: Infinity,
+      ...config,
+    }
+  );
+
   // Add a helper to revalidate if you want
   return {
     ...result,

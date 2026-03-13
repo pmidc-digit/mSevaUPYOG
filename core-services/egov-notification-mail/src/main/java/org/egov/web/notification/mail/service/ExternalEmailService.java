@@ -81,6 +81,7 @@ public class ExternalEmailService implements EmailService {
 	        log.error("MessagingException occurred while building HTML email", e);
 	        throw new RuntimeException(e);
 	    }
+	    log.info("Sending HTML email to: {}", String.join(", ", email.getEmailTo()));
 	    
 	    mailSender.send(message);
 	    log.info("Email sent successfully with attachments to: " + email.getEmailTo());

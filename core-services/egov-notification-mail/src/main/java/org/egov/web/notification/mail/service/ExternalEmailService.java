@@ -44,46 +44,40 @@ public class ExternalEmailService implements EmailService {
 		log.info("Body: {}", email.getBody());
 		mailSender.send(mailMessage);
 	}
+	
+	
 	private void sendHTMLEmail(Email email) {
 	    MimeMessage message = mailSender.createMimeMessage();
-	    MimeMessageHelper helper;
 	    try {
-	        helper = new MimeMessageHelper(message, true, "UTF-8");
+	        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 	        helper.setTo(email.getEmailTo().toArray(new String[0]));
 	        helper.setSubject(email.getSubject());
 	        helper.setText(email.getBody(), true);
 
-	        // --- ADD THIS BLOCK ---
 	        if (email.getAttachments() != null && !email.getAttachments().isEmpty()) {
-	            for (String url : email.getAttachments()) {
+	            for (String urlString : email.getAttachments()) {
 	                try {
-	                    // UrlResource downloads the PDF from the URL provided by the Water Service
-	                    org.springframework.core.io.UrlResource rt = new org.springframework.core.io.UrlResource(url);
-	                    String fileName = rt.getFilename();
+	                    // 1. Download bytes to memory FIRST
+	                    java.net.URL url = new java.net.URL(urlString);
+	                    byte[] bytes = org.springframework.util.StreamUtils.copyToByteArray(url.openStream());
 	                    
-	                    // Fallback if the URL doesn't end with a clear filename
-	                    if (fileName == null || !fileName.contains(".")) {
-	                        fileName = "Sanction_Letter.pdf";
+	                    if (bytes.length > 0) {
+	                        // 2. Use ByteArrayResource instead of UrlResource
+	                        helper.addAttachment("Sanction_Letter.pdf", new org.springframework.core.io.ByteArrayResource(bytes));
+	                        log.info("Attachment buffered to memory. Size: {} bytes", bytes.length);
 	                    }
-	                    
-	                    helper.addAttachment(fileName, rt);
-	                    log.info("Successfully attached file: " + fileName);
 	                } catch (Exception e) {
-	                    log.error("Error attaching file from URL: " + url, e);
-	                    // We don't throw an exception here so the email still sends 
-	                    // even if one attachment fails.
+	                    log.error("Failed to buffer attachment from URL: " + urlString, e);
 	                }
 	            }
 	        }
-	        // -----------------------
 
-	    } catch (MessagingException e) {
-	        log.error("MessagingException occurred while building HTML email", e);
-	        throw new RuntimeException(e);
+	        log.info("Handing over to Mail Server for delivery...");
+	        mailSender.send(message);
+	        log.info("Email sent successfully to: " + email.getEmailTo()); // This log should now appear
+
+	    } catch (Exception e) {
+	        log.error("CRITICAL: Error during SMTP handover", e);
 	    }
-	    log.info("Sending HTML email to: {}", String.join(", ", email.getEmailTo()));
-	    
-	    mailSender.send(message);
-	    log.info("Email sent successfully with attachments to: " + email.getEmailTo());
 	}
 }

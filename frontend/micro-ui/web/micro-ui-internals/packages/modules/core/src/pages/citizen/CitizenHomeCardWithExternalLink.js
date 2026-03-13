@@ -141,7 +141,6 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
       <div className="chcwe-arrow-container">
         <ArrowIcon />
       </div>
-      
     </React.Fragment>
   );
   const renderCardDropDownContent = (link) => {

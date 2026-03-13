@@ -80,7 +80,8 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     requestData.tenantId = data.city.code;
     delete requestData.city;
     try {
-      const { UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      const { user: users, ...tokens } = await Digit.UserService.authenticateV1(requestData);
+      const info = users[0];
       const data = {
         mobileNumber: info?.mobileNumber,
         tenantId: info?.tenantId,

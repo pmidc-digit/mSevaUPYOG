@@ -99,7 +99,9 @@ public class RampService extends FeatureProcess {
     private static final String SUBRULE_50_C_4_B_SLOPE_DESCRIPTION = "Maximum Slope of DA Ramp %s";
     private static final String FLOOR = "Floor";
     // private static final String SUBRULE_40_A_3_WIDTH_DESCRIPTION = "Minimum Width of Ramp %s";
-    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope width of DA Ramp";
+//    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope width of DA Ramp";
+    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Width of DA Ramp";
+    
     
     private static final String TO_BE_DEFINED = "To be Defined";
     

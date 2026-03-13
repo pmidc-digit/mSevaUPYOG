@@ -531,13 +531,13 @@ public class HeightOfRoom extends FeatureProcess {
 
 										if (doorHeight.compareTo(MIN_DOOR_HEIGHT) >= 0
 												&& doorWidth.compareTo(MIN_NON_HABITATIONAL_DOOR_WIDTH) >= 0) {
-											setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
+											setReportOutputDetailsNonHabDoor(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
 													"Height >= " + MIN_DOOR_HEIGHT + ", Width >= "
 															+ MIN_NON_HABITATIONAL_DOOR_WIDTH,
 													"Height = " + doorHeight + ", Width = " + doorWidth,
 													Result.Accepted.getResultVal(), scrutinyDetail5);
 										} else {
-											setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
+											setReportOutputDetailsNonHabDoor(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
 													"Height >= " + MIN_DOOR_HEIGHT + ", Width >= "
 															+ MIN_NON_HABITATIONAL_DOOR_WIDTH,
 													"Height = " + doorHeight + ", Width = " + doorWidth,
@@ -778,6 +778,20 @@ public class HeightOfRoom extends FeatureProcess {
 	}
 
 	private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, String expected,
+			String actual, String status, ScrutinyDetail scrutinyDetail) {
+		Map<String, String> details = new HashMap<>();
+		details.put(RULE_NO, ruleNo);
+		details.put(DESCRIPTION, ruleDesc);
+		details.put(FLOOR, floor);
+		details.put(Room, room);
+		details.put(REQUIRED, expected);
+		details.put(PROVIDED, actual);
+		details.put(STATUS, status);
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
+	
+	private void setReportOutputDetailsNonHabDoor(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, String expected,
 			String actual, String status, ScrutinyDetail scrutinyDetail) {
 		Map<String, String> details = new HashMap<>();
 		details.put(RULE_NO, ruleNo);

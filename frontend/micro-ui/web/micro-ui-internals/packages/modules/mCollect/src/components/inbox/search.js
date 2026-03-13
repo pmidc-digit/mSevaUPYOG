@@ -78,6 +78,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                               <MobileNumber
                                 onChange={props.onChange}
                                 value={props.value}
+                                style={{width: "100%"}}
                                 componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
                               />
                             )}
@@ -99,8 +100,10 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   </span>
                 </div>
               ))}
-              {isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%"}}>
+              
+            </div>
+            {isInboxPage && (
+                <div className="search-action-wrapper" style={{width: "100%", display: "flex", alignItems: "center", justifyContent: "flex-end"}}>
                   {type === "desktop" && !mobileView && (
                     <SubmitBar
                       className="submit-bar-search"
@@ -109,7 +112,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     />
                   )}
                   {type === "desktop" && !mobileView && (
-                    <span style={{ paddingTop: "9px" }} className="clear-search">
+                    <span style={{ paddingTop: "9px", margin: "0rem 2rem" }} className="clear-search">
                       {clearAll()}
                     </span>
                   )}
@@ -124,7 +127,6 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   </div>
                 </div>
               )}
-            </div>
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

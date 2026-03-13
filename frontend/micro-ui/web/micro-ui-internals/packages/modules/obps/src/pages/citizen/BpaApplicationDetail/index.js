@@ -51,6 +51,7 @@ import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
+import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
 
 
 const BpaApplicationDetail = () => {
@@ -429,13 +430,18 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     window.open(jumpTo, "_blank");
   }
 
-  const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0)?.map((doc, index) => ({
+  const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => (obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0) && obj?.title != "SITEPHOTOGRAPH_ONE" && obj?.title != "SITEPHOTOGRAPH_TWO")?.map((doc, index) => ({
     id: index,
     index: index,
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
     fileUrl: doc?.values?.[0]?.fileURL || null,
     fileStoreId: doc?.values?.[0]?.fileStoreId || null,
   }));
+
+  const sitePhotos = getOrderDocuments(applicationDocs)?.filter(
+              (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
+            )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
+
   const documentsColumnsOwner = [    
     {
       Header: t("BPA_OWNER_DETAILS_LABEL"),
@@ -1387,7 +1393,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     }
    }
 
-    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
+    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded && !isOCApplication && isBPA ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
 
     mutation.mutate(
       { BPA: payload },
@@ -1897,9 +1903,32 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           ))
                           : null}
 
+                        
+
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
                           {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */} 
+                          <CardSubHeader className="bpa-section-header" >{t("BPA_DOCUMENT_SITE_DETAILS_LABEL")}</CardSubHeader>
+                          <StatusTable
+                            style={{
+                              display: "flex",
+                              gap: "20px",
+                              flexWrap: "wrap",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            {sitePhotos?.length > 0 &&
+                              [...sitePhotos]
+                                .map((doc, index) => (
+                                  <NocSitePhotographsBPA
+                                    key={doc?.values?.[0]?.filestoreId}
+                                    url={doc?.values?.[0]?.fileURL}
+                                    documentType={doc?.title}
+                                    coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                  />
+                                ))}
+                          </StatusTable>
+
                             {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}

@@ -60,7 +60,8 @@ const FeeEstimation = ({
     waterCharges,
     adjustedAmounts,
     setAdjustedAmounts,
-    disable = false
+    disable = false,
+    hidePayTwo = false
 }) => {
     const [showToast, setShowToast] = useState(null);
     const [isDisabled, setIsDisabled] = useState();
@@ -421,7 +422,7 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            {bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>}
+            {!hidePayTwo && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
 
             <FeeHistoryTable feeHistory={feeHistory} t={t} />
 

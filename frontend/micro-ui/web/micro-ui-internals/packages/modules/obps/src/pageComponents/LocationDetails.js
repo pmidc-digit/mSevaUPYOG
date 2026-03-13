@@ -49,7 +49,7 @@ const [uploadedFileTwo, setUploadedFileTwo] = useState(() => {
   return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_TWO")?.fileStoreId || null;
 });
 const [geoLocationFromImg, setGeoLocationFromImg] = useState(currentStepData?.createdResponse?.landInfo?.address?.geoLocation || { latitude: null, longitude: null });
-const [geoLocationFromImgTwo, setGeoLocationFromImgTwo] = useState(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo || { latitude: null, longitude: null });
+const [geoLocationFromImgTwo, setGeoLocationFromImgTwo] = useState(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo ? { latitude: parseFloat(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo?.latitude), longitude: parseFloat(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo?.longitude) } : { latitude: null, longitude: null });
 const [errors, setError] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
 
@@ -67,7 +67,7 @@ const geoLocations = useMemo(() => {
     formData.address = {};
   }
 
-  console.log("formData in location page", selectedCity ,currentStepData, allCities, geoLocationFromImg);
+  console.log("formData in location page", geoLocationFromImg, geoLocationFromImgTwo, geoLocations);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -357,7 +357,8 @@ useEffect(() => {
       fileName: "",
       fileUrl: "",
       additionalDetails: {},
-      id: siteDocument?.id || null
+      id: siteDocument?.id || null,
+      order: 18
     });
 
     documents.push({
@@ -367,7 +368,8 @@ useEffect(() => {
       fileName: "",
       fileUrl: "",
       additionalDetails: {},
-      id: siteDocumentTwo?.id || null
+      id: siteDocumentTwo?.id || null,
+      order: 19
     });
 
     console.log("LocationAPI", address, documents);

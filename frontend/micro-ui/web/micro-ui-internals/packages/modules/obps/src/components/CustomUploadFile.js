@@ -288,11 +288,11 @@ const CustomUploadFile = (props) => {
               />              
             </div>
           )}
-          {!props.uploadedFile || props.error ? null : (
+          {/* {!props.uploadedFile || props.error ? null : (
             <div className="upload-tag-container">
               <CloseBtn onClick={() => props.onDelete(props.uploadedFile)} />
             </div>
-          )}
+          )} */}
         </div>
 
         <input

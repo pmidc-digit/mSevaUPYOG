@@ -36,7 +36,7 @@ const App = () => {
   const location = useLocation();
 
   const CreateProperty = Digit?.ComponentRegistryService?.getComponent("PTCreateProperty");
-  const CreatePropertyForm = Digit?.ComponentRegistryService?.getComponent("NewPTStepperForm");
+  const CreatePropertyForm = Digit?.ComponentRegistryService?.getComponent("CreateEmployeeStepForm");
   const EditProperty = Digit?.ComponentRegistryService?.getComponent("PTEditProperty");
   const SearchPropertyComponent = Digit?.ComponentRegistryService?.getComponent("PTSearchPropertyComponent");
   const SearchResultsComponent = Digit?.ComponentRegistryService?.getComponent("PTSearchResultsComponent");
@@ -66,7 +66,7 @@ const App = () => {
             </div>
           ) : null}
           <PrivateRoute path={`${path}/property/create-application`} component={CreateProperty} />
-          {/* <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} /> */}
+          <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} />
           <PrivateRoute path={`${path}/property/edit-application/:id`} component={EditProperty} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
           <Route path={`${path}/property/search-results`} component={SearchResultsComponent} />

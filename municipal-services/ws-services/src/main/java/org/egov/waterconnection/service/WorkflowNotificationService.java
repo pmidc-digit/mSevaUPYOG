@@ -5,6 +5,9 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
+import java.math.BigDecimal; // Add this line
+import java.math.RoundingMode;
+
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -448,7 +451,7 @@ public class WorkflowNotificationService {
                     +" because -> "+workflow.getComment());
             return Collections.emptyList();
         }
-        if (message == null && !workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION)) {
+        if (message == null) {
             log.info("No message Found For Topic : " + topic);
             return Collections.emptyList();
         }
@@ -516,114 +519,114 @@ public class WorkflowNotificationService {
  	    for (Map.Entry<String, String> entry : mobileNumberAndEmailId.entrySet()) {
  	        if (StringUtils.isEmpty(entry.getValue())) continue;
 
- 	        String ownerName = mobileNumbersAndNames.get(entry.getKey());
+ 	       String ownerName = mobileNumbersAndNames.get(entry.getKey());
+ 	      String feeBreakdown = "";
+ 	     if (applicationStatus.equalsIgnoreCase(PENDING_FOR_PAYMENT_STATUS_CODE)) {
+ 	         try {
+ 	        	  CalculationCriteria criteria = CalculationCriteria.builder().applicationNo(waterConnectionRequest.getWaterConnection().getApplicationNo())
+ 	                     .waterConnection(waterConnectionRequest.getWaterConnection()).tenantId(property.getTenantId()).build();
+ 	             CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
+ 	                     .requestInfo(waterConnectionRequest.getRequestInfo()).isconnectionCalculation(false).isDisconnectionRequest(false).isReconnectionRequest(false).build();
+
+ 	             // Use your existing serviceRequestRepository logic
+ 	             Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getEstimationURL(), calRequest);
+ 	             CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
+ 	             
+ 	             if (calResponse != null && !CollectionUtils.isEmpty(calResponse.getCalculation())) {
+ 	                 feeBreakdown = buildFeeBreakdownHtml(calResponse.getCalculation().get(0));
+ 	             }
+ 	         } catch (Exception e) {
+ 	             log.error("Failed to fetch calculation for email: " + e.getMessage());
+ 	         }
+ 	     }
+ 	    if (!StringUtils.isEmpty(message)) {
+ 	    	message = elaborateEmailTemplate(message, ownerName, property, waterConnectionRequest, feeBreakdown);
+ 	   }
+
+ 	       // 4. Set Subject
+ 	       String subject = applicationStatus.equalsIgnoreCase("CONNECTION_ACTIVATED") 
+ 	                        ? "OFFICIAL NOTICE: Service Activation - " + waterConnectionRequest.getWaterConnection().getApplicationNo()
+ 	                        : "ACTION REQUIRED: Estimation Letter Generated - " + waterConnectionRequest.getWaterConnection().getApplicationNo();
+
+ 	       Email emailObj = Email.builder()
+ 	               .emailTo(Collections.singleton(entry.getValue()))
+ 	               .isHTML(true)
+ 	               .body(message)
+ 	               .subject(subject)
+ 	               .attachments(attachments)
+ 	               .build();
  	        
- 	        // Generate the formal government message tailored for attachments
- 	       String htmlBody = buildSanctionEmailContent(ownerName, property, waterConnectionRequest); 	        
- 	        String subject = "OFFICIAL NOTICE: Sanction Order Issued for Application " + 
- 	                         waterConnectionRequest.getWaterConnection().getApplicationNo();
-
- 	        Email emailObj = Email.builder()
- 	                .emailTo(Collections.singleton(entry.getValue()))
- 	                .isHTML(true)
- 	                .body(htmlBody)
- 	                .subject(subject)
- 	                .attachments(attachments)
- 	                .build();
-
  	        emailRequestList.add(new EmailRequest(waterConnectionRequest.getRequestInfo(), emailObj));
  	    }
  	    return emailRequestList;
  	}
     
-    
-    
-    private String buildSanctionEmailContent(String ownerName, Property property, WaterConnectionRequest request) {
-        WaterConnection conn = request.getWaterConnection();
+    private String buildFeeBreakdownHtml(Calculation calculation) {
+        if (calculation == null || calculation.getTaxHeadEstimates() == null) {
+            return "";
+        }
         
-        // 1. Dynamic City Name from TenantId
-        String tenantId = conn.getTenantId();
-        String cityName = "City";
-        if (tenantId != null && tenantId.contains(".")) {
-            String rawCity = tenantId.split("\\.")[1];
-            cityName = rawCity.substring(0, 1).toUpperCase() + rawCity.substring(1).toLowerCase();
+        StringBuilder rows = new StringBuilder();
+        BigDecimal totalSum = BigDecimal.ZERO;
+
+        for (TaxHeadEstimate estimate : calculation.getTaxHeadEstimates()) {
+            if (estimate != null && estimate.getEstimateAmount() != null && 
+                estimate.getEstimateAmount().compareTo(BigDecimal.ZERO) > 0) {
+                
+                totalSum = totalSum.add(estimate.getEstimateAmount());
+                String headName = estimate.getTaxHeadCode().replace("WS_", "").replace("_", " ");
+                
+                rows.append("<tr>")
+                    // Added padding: 12px 20px (Top/Bottom 12px, Left/Right 20px)
+                    .append("<td style='padding: 12px 20px; color: #546e7a; border-bottom: 1px solid #e0e6ed;'>").append(headName).append("</td>")
+                    .append("<td style='padding: 12px 20px; text-align: right; color: #263238; font-weight: bold; border-bottom: 1px solid #e0e6ed;'>₹ ").append(estimate.getEstimateAmount()).append("</td>")
+                    .append("</tr>");
+            }
         }
 
-        // 2. Data Preparation
-        String name = ownerName != null ? ownerName : "Citizen";
-        String waterSource = conn.getWaterSource() != null ? conn.getWaterSource().replace("_", " ") : "Municipal Supply";
-        String plotSize = (property.getLandArea() != null) ? property.getLandArea() + " Sq.Yds" : "N/A";
-        String usageCategory = (property.getUsageCategory() != null) 
-                               ? property.getUsageCategory().replace("_", " ") : "Domestic";
-        
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMMM, yyyy");
-        sdf.setTimeZone(java.util.TimeZone.getTimeZone("IST"));
-        String executionDate = (conn.getConnectionExecutionDate() != null && conn.getConnectionExecutionDate() > 0) 
-                               ? sdf.format(new java.util.Date(conn.getConnectionExecutionDate())) : "Scheduled";
+        // Updated Total Row with same padding to keep it aligned
+        rows.append("<tr>")
+            .append("<td style='padding: 20px; font-weight: bold; color: #1a237e; font-size: 16px;'>Total Payable Amount</td>")
+            .append("<td style='padding: 20px; text-align: right; font-weight: 800; color: #e67e22; font-size: 22px;'>₹ ")
+            .append(totalSum.setScale(2, RoundingMode.HALF_UP).toPlainString())
+            .append("</td>")
+            .append("</tr>");
 
-        return "<html>"
-            + "<body style='margin:0; padding:0; background-color: #f4f7f9; font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;'>"
-            + "  <table width='100%' border='0' cellspacing='0' cellpadding='0' style='padding: 40px 20px;'>"
-            + "    <tr>"
-            + "      <td align='center'>"
-            + "        <div style='max-width: 650px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.12); border: 1px solid #e1e8ed;'>"
-            
-            // --- UPDATED OFFICIAL HEADER ---
-            + "          <div style='background: linear-gradient(135deg, #1a237e 0%, #311b92 100%); padding: 50px 40px; text-align: center;'>"
-            + "            <div style='color: rgba(255,255,255,0.8); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 10px;'>Department of Water Supply & Sewerage | " + cityName + "</div>"
-            + "            <h1 style='margin: 0; color: #ffffff; font-size: 36px; font-weight: 300; line-height: 1.2;'>Connection <span style='font-weight: 800; color: #ffd600;'>Activated</span></h1>"
-            + "            <p style='margin: 15px 0 0; color: rgba(255,255,255,0.9); font-size: 15px; font-style: italic;'>Official Confirmation of Connection Allotment</p>"
-            + "          </div>"
-
-            // --- Body Content ---
-            + "          <div style='padding: 50px 45px;'>"
-            + "            <p style='font-size: 18px; color: #2c3e50; margin-bottom: 25px;'>Dear <b>" + name + "</b>,</p>"
-            + "      <p style='font-size: 15px; color: #475569; line-height: 1.8;'>"
-            + "        We are pleased to inform you that your water supply connection has been successfully commissioned within the <b>" + cityName + " Municipal Water Infrastructure</b>. "
-            + "        Your consumer profile (Consumer No: <b>" + conn.getConnectionNo() + "</b>) is now active for all billing and service requirements."
-            + "      </p>"
-
-            // --- Summary Grid ---
-            + "            <div style='background-color: #fbfcfd; border-radius: 16px; border: 1px solid #eceff1; padding: 30px; margin-bottom: 40px;'>"
-            + "              <table width='100%' border='0' cellspacing='0' cellpadding='0'>"
-            + "                <tr>"
-            + "                  <td style='padding-bottom: 25px;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Consumer Number</small><br><b style='font-size: 22px; color: #1a237e;'>" + (conn.getConnectionNo() != null ? conn.getConnectionNo() : "ACTIVATED") + "</b></td>"
-            + "                  <td style='padding-bottom: 25px; text-align: right;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Property ID</small><br><b style='font-size: 15px;'>" + conn.getPropertyId() + "</b></td>"
-            + "                </tr>"
-            + "                <tr>"
-            + "                  <td style='padding: 20px 0; border-top: 1px solid #eceff1;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Water Source</small><br><b>" + waterSource + "</b></td>"
-            + "                  <td style='padding: 20px 0; border-top: 1px solid #eceff1; text-align: right;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Plot Size</small><br><b>" + plotSize + "</b></td>"
-            + "                </tr>"
-            + "                <tr>"
-            + "                  <td style='padding-top: 20px; border-top: 1px solid #eceff1;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Usage Category</small><br><b>" + usageCategory + "</b></td>"
-            + "                  <td style='padding-top: 20px; border-top: 1px solid #eceff1; text-align: right;'><small style='color: #90a4ae; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Execution Date</small><br><b>" + executionDate + "</b></td>"
-            + "                </tr>"
-            + "              </table>"
-            + "            </div>"
-
-            // --- Attachment Alert ---
-            + "            <div style='background-color: #fff9e6; border-left: 4px solid #ffc107; padding: 25px; border-radius: 4px; margin-bottom: 40px;'>"
-            + "              <p style='margin: 0; font-size: 14px; color: #856404; line-height: 1.5;'><b>Digital Sanction Letter Attached</b><br>Please keep a printed copy of the attached PDF on-site for the Junior Engineer's verification during connection installation.</p>"
-            + "            </div>"
-
-            // --- Button ---
-            + "            <div style='text-align: center;'>"
-            + "              <a href='https://mseva.lgpunjab.gov.in/citizen' style='background-color: #1a237e; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 10px 20px rgba(26,35,126,0.2);'>Access Portal Dashboard</a>"
-            + "            </div>"
-            + "          </div>"
-
-            // --- Minimal Footer ---
-            + "          <div style='background-color: #fcfdfe; padding: 30px; text-align: center; border-top: 1px solid #f0f3f5;'>"
-            + "            <p style='margin: 0; font-size: 11px; color: #b0bec5;'>System generated notification | Municipal Corporation of " + cityName + "</p>"
-            + "          </div>"
-            + "        </div>"
-            + "      </td>"
-            + "    </tr>"
-            + "  </table>"
-            + "</body></html>";
+        return rows.toString();
     }
     
     
+    private String elaborateEmailTemplate(String template, String ownerName, Property property, WaterConnectionRequest request, String feeBreakdown) {
+        WaterConnection conn = request.getWaterConnection();
+        Map<String, Object> additionalDetails = mapper.convertValue(conn.getAdditionalDetails(), Map.class);
+        
+        // 1. City Name Logic
+        String tenantId = conn.getTenantId();
+        String cityName = (tenantId != null && tenantId.contains(".")) ? tenantId.split("\\.")[1] : "City";
+        cityName = cityName.substring(0, 1).toUpperCase() + cityName.substring(1);
+
+        // 2. Execution Date Logic
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMMM, yyyy");
+        String executionDate = (conn.getConnectionExecutionDate() != null && conn.getConnectionExecutionDate() > 0) 
+                               ? sdf.format(new java.util.Date(conn.getConnectionExecutionDate())) : "Confirmed";
+
+        // 3. Return statement (Minimalist)
+        return template
+            .replace("{ownerName}", ownerName != null ? ownerName : "Citizen")
+            .replace("{cityName}", cityName)
+            .replace("{applicationNo}", conn.getApplicationNo() != null ? conn.getApplicationNo() : "N/A")
+            .replace("{consumerNo}", conn.getConnectionNo() != null ? conn.getConnectionNo() : "ACTIVATED")
+            .replace("{propertyId}", conn.getPropertyId() != null ? conn.getPropertyId() : "N/A")
+            .replace("{plotSize}", (property != null && property.getLandArea() != null) ? property.getLandArea().toString() : "N/A")
+            .replace("{usageCategory}", (property != null && property.getUsageCategory() != null) ? property.getUsageCategory().replace("_", " ") : "Domestic")
+            .replace("{waterSource}", conn.getWaterSource() != null ? conn.getWaterSource() : "Groundwater")
+            .replace("{executionDate}", executionDate)
+            .replace("{feeBreakdownRows}", feeBreakdown != null ? feeBreakdown : "")
+            // If your email text still has {totalAmount} outside the table, 
+            // we can still map it to the 'othersFee' or 'totalAmount' from additionalDetails as a fallback
+            .replace("{totalAmount}", (additionalDetails != null && additionalDetails.get("totalAmount") != null) 
+                                       ? additionalDetails.get("totalAmount").toString() : "Refer Table");
+    }
     
 	private String fetchFileStorePublicUrl(String tenantId, String fileStoreId) {
 	    // 1. Get the template from properties
@@ -667,8 +670,12 @@ public class WorkflowNotificationService {
 	    try {
 	        // Safely convert the ObjectNode to a Map
 	        Map<String, Object> detailsMap = mapper.convertValue(additionalDetails, Map.class);
-	        
-	        if (detailsMap.containsKey("sanctionFileStoreId")) {
+			if (connection.getApplicationStatus() != null
+					&& connection.getApplicationStatus().equalsIgnoreCase(PENDING_FOR_PAYMENT_STATUS_CODE)) {
+				if (detailsMap.containsKey("estimationFileStoreId")) {
+					return (String) detailsMap.get("estimationFileStoreId");
+				}
+			} else if (detailsMap.containsKey("sanctionFileStoreId")) {
 	            return (String) detailsMap.get("sanctionFileStoreId");
 	        }
 	    } catch (Exception e) {

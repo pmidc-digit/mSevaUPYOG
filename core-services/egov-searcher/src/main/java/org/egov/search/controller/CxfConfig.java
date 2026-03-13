@@ -3,7 +3,7 @@
  */
 package org.egov.search.controller;
 
-import javax.xml.ws.Endpoint;
+import jakarta.xml.ws.Endpoint;
 import org.apache.cxf.metrics.MetricsFeature;
 import org.apache.cxf.metrics.MetricsProvider;
 import org.apache.cxf.Bus;

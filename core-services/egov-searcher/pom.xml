@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.13.RELEASE</version>
+		<version>4.0.2</version>
 	</parent>
 	<groupId>org.egov.services</groupId>
 	<artifactId>egov-searcher</artifactId>
@@ -29,51 +29,68 @@
 		</snapshotRepository>
 	</distributionManagement>
 	<properties>
-		<log4j2.version>2.17.1</log4j2.version>
-		<java.version>1.8</java.version>
-		<lombok.version>1.18.8</lombok.version>
+		<log4j2.version>2.21.1</log4j2.version>
+		<java.version>21</java.version>
+		<lombok.version>1.18.32</lombok.version>
 	</properties>
 	<dependencies>
 		<dependency>
-        <groupId>com.fasterxml</groupId>
-        <artifactId>jackson-xml-databind</artifactId>
-        <version>0.6.2</version>
-    </dependency>
+        	<groupId>com.fasterxml</groupId>
+        	<artifactId>jackson-xml-databind</artifactId>
+        	<version>0.6.2</version>
+    	</dependency>
     <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.8.6</version>
-    </dependency>
+	    <dependency>
+        	<groupId>com.fasterxml.jackson.core</groupId>
+        	<artifactId>jackson-databind</artifactId>
+    	</dependency>
+	    <dependency>
+    		<groupId>jakarta.annotation</groupId>
+	   		<artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
+	
+		<dependency>
+		    <groupId>jakarta.validation</groupId>
+		    <artifactId>jakarta.validation-api</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>jakarta.xml.ws</groupId>
+		    <artifactId>jakarta.xml.ws-api</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>jakarta.xml.soap</groupId>
+		    <artifactId>jakarta.xml.soap-api</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>5.2.20.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>services-common</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-			<version>3.5.9</version>
+			<version>4.0.4</version>
 		</dependency>
 		<!--
 		https://mvnrepository.com/artifact/org.apache.cxf/cxf-rt-transports-http -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>3.5.9</version>
+			<version>4.0.4</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.cxf/cxf-core -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-core</artifactId>
-			<version>3.5.9</version>
+			<version>4.0.4</version>
 		</dependency>
 
 		<!--
@@ -81,18 +98,18 @@
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
-			<version>3.5.9</version>
+			<version>4.0.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>3.5.9</version>
+			<version>4.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.egov</groupId>
 			<artifactId>enc-client</artifactId>
-			<version>2.0.3-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -136,15 +153,25 @@
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>tracer</artifactId>
-			<version>1.2.0-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+    		<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-tracing-bridge-brave</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>io.zipkin.reporter2</groupId>
+		    <artifactId>zipkin-reporter-brave</artifactId>
 		</dependency>
 	</dependencies>
 	<repositories>

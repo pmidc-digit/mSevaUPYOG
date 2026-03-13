@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.soap.*;
-import javax.jws.WebService;
+import jakarta.xml.soap.*;
+import jakarta.jws.WebService;
 import java.util.HashMap;
 
 import org.egov.search.model.SearchRequest;

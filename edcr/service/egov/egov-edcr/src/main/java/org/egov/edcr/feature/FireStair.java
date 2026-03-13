@@ -334,96 +334,183 @@ public class FireStair extends FeatureProcess {
         }
     }
 
-    private void validateLandingHeight(Plan plan, Block block, ScrutinyDetail scrutinyDetailLandingHeight, Floor floor,
-            Map<String, Object> typicalFloorValues, org.egov.common.entity.edcr.FireStair fireStair,
-            List<StairLanding> landings, HashMap<String, String> errors) {
-    	// Detect if this is a repeated typical floor
+//    private void validateLandingHeight(Plan plan, Block block, ScrutinyDetail scrutinyDetailLandingHeight, Floor floor,
+//            Map<String, Object> typicalFloorValues, org.egov.common.entity.edcr.FireStair fireStair,
+//            List<StairLanding> landings, HashMap<String, String> errors) {
+//    	// Detect if this is a repeated typical floor
+//        boolean isTypicalRepeat = false;
+//        BigDecimal totalRisers = BigDecimal.ZERO;
+//        int totalFlights = 0;
+//        BigDecimal totalLandingWidth = BigDecimal.ZERO;
+//        BigDecimal totalSteps = BigDecimal.ZERO;
+//        BigDecimal flrHt = BigDecimal.ZERO;
+//        
+//        if (typicalFloorValues != null && typicalFloorValues.containsKey("isTypicalRepititiveFloor")) {
+//            Object flagObj = typicalFloorValues.get("isTypicalRepititiveFloor");
+//            if (flagObj instanceof Boolean) {
+//                isTypicalRepeat = (Boolean) flagObj;
+//            }
+//        }
+//        
+//        for (StairLanding landing : landings) {
+//            List<BigDecimal> widths = landing.getWidths();
+//            if(!widths.isEmpty()) {
+//            	// Landing width sum
+//            	 List<Flight> flights = fireStair.getFlights();
+//                 totalFlights += flights.size();
+//
+//                for (Flight flight : flights) {
+//                    BigDecimal risers = flight.getNoOfRises();
+//                    totalRisers = totalRisers.add(risers);
+//                }
+//	            BigDecimal landingWidth = widths.stream().reduce(BigDecimal::min).get();
+//	            totalLandingWidth = totalLandingWidth.add(landingWidth);
+//	            
+//	            totalSteps = totalRisers.add(totalLandingWidth);
+//	            LOG.info("total totalSteps :" + totalSteps);	           
+//	            flrHt = fireStair.getFloorHeight();
+//                LOG.info("flrHt___" + flrHt);
+//                
+//	            if(flrHt != null) {
+//	                //BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
+//	            	BigDecimal riserHeight = BigDecimal.ZERO;
+//	            	if (flrHt != null && totalRisers != null && totalRisers.compareTo(BigDecimal.ZERO) > 0) {
+//	            	    riserHeight = flrHt.divide(totalRisers,2,RoundingMode.HALF_UP);
+//	            	    LOG.info("Calculated Riser Height (m): " + riserHeight);
+//	            	}
+//	            
+////	                if (floor != null) {	                    
+////	                    String floorNumber = "" + floor.getNumber().toString();
+////	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
+////	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
+////	                    } else {
+////	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
+////	                    }
+////	                } else {	                	
+////	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
+////	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
+////	                                Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
+////	                    } else {
+////	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
+////	                                Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
+////	                    }
+////	                }
+//	                
+//	             // Floor number handling
+//	            	String floorNumber = (floor != null && floor.getNumber() != null)
+//	            	        ? floor.getNumber().toString()
+//	            	        : " ";
+//
+//	            	// Condition: riserHeight > 0 AND <= 0.19
+//	            	boolean isRiserHeightValid = riserHeight.compareTo(BigDecimal.ZERO) > 0 
+//	            			&& riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
+//
+//	            	setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION,
+//	            			String.valueOf(MAXIMUM_HEIGHT_0_19),riserHeight.toString(), isRiserHeightValid
+//	            	                ? Result.Accepted.getResultVal()
+//	            	                : Result.Not_Accepted.getResultVal(),
+//	            	                scrutinyDetailLandingHeight);
+//                } 
+//            }else {
+//            	if(!isTypicalRepeat) {
+//            		errors.put(
+//                            "Fire Stair landing height not defined in blk " + block.getNumber() + " floor "
+//                                    + floor.getNumber() + " fire stair " + fireStair.getNumber(),
+//                            "Fire Stair landing height not defined in blk " + block.getNumber() + " floor "
+//                                    + floor.getNumber() + " fire stair " + fireStair.getNumber());
+//                    plan.addErrors(errors);
+//            	}
+//                
+//            }
+//        }
+//    }
+    
+    private void validateLandingHeight(
+            Plan plan,
+            Block block,
+            ScrutinyDetail scrutinyDetailLandingHeight,
+            Floor floor,
+            Map<String, Object> typicalFloorValues,
+            org.egov.common.entity.edcr.FireStair fireStair,
+            List<StairLanding> landings,
+            HashMap<String, String> errors) {
+
         boolean isTypicalRepeat = false;
+
         BigDecimal totalRisers = BigDecimal.ZERO;
-        int totalFlights = 0;
-        BigDecimal totalLandingWidth = BigDecimal.ZERO;
-        BigDecimal totalSteps = BigDecimal.ZERO;
-        BigDecimal flrHt = BigDecimal.ZERO;
-        
+        BigDecimal flrHt = fireStair.getFloorHeight();
+
+        // Check if floor is typical repeated floor
         if (typicalFloorValues != null && typicalFloorValues.containsKey("isTypicalRepititiveFloor")) {
             Object flagObj = typicalFloorValues.get("isTypicalRepititiveFloor");
             if (flagObj instanceof Boolean) {
                 isTypicalRepeat = (Boolean) flagObj;
             }
         }
-        
-        for (StairLanding landing : landings) {
-            List<BigDecimal> widths = landing.getWidths();
-            if(!widths.isEmpty()) {
-            	// Landing width sum
-            	 List<Flight> flights = fireStair.getFlights();
-                 totalFlights += flights.size();
 
-                for (Flight flight : flights) {
-                    BigDecimal risers = flight.getNoOfRises();
+        // If landings not defined
+        if (landings == null || landings.isEmpty()) {
+            if (!isTypicalRepeat) {
+                errors.put(
+                        "Fire Stair landing height not defined in blk " + block.getNumber()
+                                + " floor " + floor.getNumber()
+                                + " fire stair " + fireStair.getNumber(),
+                        "Fire Stair landing height not defined in blk " + block.getNumber()
+                                + " floor " + floor.getNumber()
+                                + " fire stair " + fireStair.getNumber());
+                plan.addErrors(errors);
+            }
+            return;
+        }
+
+        // Calculate total risers from flights
+        List<Flight> flights = fireStair.getFlights();
+        if (flights != null && !flights.isEmpty()) {
+            for (Flight flight : flights) {
+                BigDecimal risers = flight.getNoOfRises();
+                if (risers != null) {
                     totalRisers = totalRisers.add(risers);
                 }
-	            BigDecimal landingWidth = widths.stream().reduce(BigDecimal::min).get();
-	            totalLandingWidth = totalLandingWidth.add(landingWidth);
-	            
-	            totalSteps = totalRisers.add(totalLandingWidth);
-	            LOG.info("total totalSteps :" + totalSteps);	           
-	            flrHt = fireStair.getFloorHeight();
-                LOG.info("flrHt___" + flrHt);
-                
-	            if(flrHt != null) {
-	                //BigDecimal riserHeight = flrHt.divide(totalSteps, 2, RoundingMode.HALF_UP);
-	            	BigDecimal riserHeight = BigDecimal.ZERO;
-	            	if (flrHt != null && totalRisers != null && totalRisers.compareTo(BigDecimal.ZERO) > 0) {
-	            	    riserHeight = flrHt.divide(totalRisers,2,RoundingMode.HALF_UP);
-	            	    LOG.info("Calculated Riser Height (m): " + riserHeight);
-	            	}
-	            
-//	                if (floor != null) {	                    
-//	                    String floorNumber = "" + floor.getNumber().toString();
-//	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
-//	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
-//	                    } else {
-//	                        setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight, Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
-//	                    }
-//	                } else {	                	
-//	                    if (riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0) {
-//	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
-//	                                Result.Accepted.getResultVal(), scrutinyDetailLandingHeight);
-//	                    } else {
-//	                        setReportOutputDetailsFloorStairWise(plan, RULE, " ", MAX_RISER_HEIGHT_DESCRIPTION, "" + 0.19, "" + riserHeight,
-//	                                Result.Not_Accepted.getResultVal(), scrutinyDetailLandingHeight);
-//	                    }
-//	                }
-	                
-	             // Floor number handling
-	            	String floorNumber = (floor != null && floor.getNumber() != null)
-	            	        ? floor.getNumber().toString()
-	            	        : " ";
-
-	            	// Condition: riserHeight > 0 AND <= 0.19
-	            	boolean isRiserHeightValid = riserHeight.compareTo(BigDecimal.ZERO) > 0 
-	            			&& riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
-
-	            	setReportOutputDetailsFloorStairWise(plan, RULE, floorNumber, MAX_RISER_HEIGHT_DESCRIPTION,
-	            			String.valueOf(MAXIMUM_HEIGHT_0_19),riserHeight.toString(), isRiserHeightValid
-	            	                ? Result.Accepted.getResultVal()
-	            	                : Result.Not_Accepted.getResultVal(),
-	            	                scrutinyDetailLandingHeight);
-                } 
-            }else {
-            	if(!isTypicalRepeat) {
-            		errors.put(
-                            "Fire Stair landing height not defined in blk " + block.getNumber() + " floor "
-                                    + floor.getNumber() + " fire stair " + fireStair.getNumber(),
-                            "Fire Stair landing height not defined in blk " + block.getNumber() + " floor "
-                                    + floor.getNumber() + " fire stair " + fireStair.getNumber());
-                    plan.addErrors(errors);
-            	}
-                
             }
         }
+
+        LOG.info("Total Risers: {}", totalRisers);
+        LOG.info("Floor Height: {}", flrHt);
+
+        BigDecimal riserHeight = BigDecimal.ZERO;
+
+        // Calculate riser height
+        if (flrHt != null && totalRisers.compareTo(BigDecimal.ZERO) > 0) {
+            riserHeight = flrHt.divide(totalRisers, 2, RoundingMode.HALF_UP);
+            LOG.info("Calculated Riser Height (m): {}", riserHeight);
+        }
+
+        // Floor number handling
+        String floorNumber = (floor != null && floor.getNumber() != null)
+                ? floor.getNumber().toString()
+                : " ";
+
+        // Validate riser height
+        boolean isRiserHeightValid =
+                riserHeight.compareTo(BigDecimal.ZERO) > 0 &&
+                riserHeight.compareTo(MAXIMUM_HEIGHT_0_19) <= 0;
+
+        // Generate report row (ONLY ONCE per stair)
+        setReportOutputDetailsFloorStairWise(
+                plan,
+                RULE,
+                floorNumber,
+                MAX_RISER_HEIGHT_DESCRIPTION,
+                MAXIMUM_HEIGHT_0_19.toString(),
+                riserHeight.toString(),
+                isRiserHeightValid
+                        ? Result.Accepted.getResultVal()
+                        : Result.Not_Accepted.getResultVal(),
+                scrutinyDetailLandingHeight
+        );
     }
+
+    
     private void validateFlight(Plan plan, HashMap<String, String> errors, Block block,
             ScrutinyDetail scrutinyDetail2, ScrutinyDetail scrutinyDetail3, ScrutinyDetail scrutinyDetailRise,
             OccupancyTypeHelper mostRestrictiveOccupancyType, Floor floor, Map<String, Object> typicalFloorValues,

@@ -292,7 +292,7 @@ public class Coverage extends FeatureProcess {
 				//permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.value.percentage", context, BigDecimal.class).getValue();
 
 				permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
-				System.out.println("Coverage %: " + permissibleCoverageValue);
+				LOG.info("Coverage %: " + permissibleCoverageValue);
 
 			}
 			

@@ -174,7 +174,7 @@ public class HeightOfRoom extends FeatureProcess {
 						scrutinyDetail5.addColumnHeading(1, RULE_NO);
 						scrutinyDetail5.addColumnHeading(2, DESCRIPTION);
 						scrutinyDetail5.addColumnHeading(3, FLOOR);
-						scrutinyDetail5.addColumnHeading(4, Room);
+						//scrutinyDetail5.addColumnHeading(4, Room);
 						scrutinyDetail5.addColumnHeading(5, REQUIRED);
 						scrutinyDetail5.addColumnHeading(6, PROVIDED);
 						scrutinyDetail5.addColumnHeading(7, STATUS);
@@ -184,8 +184,8 @@ public class HeightOfRoom extends FeatureProcess {
 						scrutinyDetail3.addColumnHeading(1, RULE_NO);
 						scrutinyDetail3.addColumnHeading(2, DESCRIPTION);
 						scrutinyDetail3.addColumnHeading(3, FLOOR);
-						scrutinyDetail3.addColumnHeading(4, Room);
-						scrutinyDetail3.addColumnHeading(5, REQUIRED);
+//						scrutinyDetail3.addColumnHeading(4, Room);
+//						scrutinyDetail3.addColumnHeading(5, REQUIRED);
 						scrutinyDetail3.addColumnHeading(6, PROVIDED);
 						scrutinyDetail3.addColumnHeading(7, STATUS);
 						scrutinyDetail3.setKey("Block_" + block.getNumber() + "_" + "Window");
@@ -248,30 +248,6 @@ public class HeightOfRoom extends FeatureProcess {
 							String subRuleDesc6 = "Door Area";
 							String color = "";
 							BigDecimal minimumArea = BigDecimal.ZERO;
-
-							
-							BigDecimal minAcRoomHeight = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), 
-									"residentialAcRoom.height.min", null, BigDecimal.class).getValue();
-							System.out.println("residentialAcRoom.height.min : " + minAcRoomHeight);
-							
-							RuleResult<JsonNode> windowWidthRange = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), 
-									"window.width", null, JsonNode.class);
-
-							if (windowWidthRange.getValue() != null) {
-							    BigDecimal minW = new BigDecimal(windowWidthRange.getValue().path("min").asText());
-							    BigDecimal maxW = new BigDecimal(windowWidthRange.getValue().path("max").asText());
-							    System.out.println("minW : " + minW);
-							    System.out.println("maxW : " + maxW);
-							 
-							}
-							
-							Boolean isValidationNeeded = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"),
-								    "generalStaircase.riserValidation.mandatoryForAllFloorsExceptTop", 
-								    null, 
-								    Boolean.class
-								).getValue();
-							
-							System.out.println("isValidationNeeded : " + isValidationNeeded);
 							
 							if (A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))
 								color = DxfFileConstants.COLOR_RESIDENTIAL_ROOM;
@@ -305,16 +281,29 @@ public class HeightOfRoom extends FeatureProcess {
 										roomWidths.add(acRoom.getWidth());
 									}
 								}
+								
+								
 
 								if (!residentialAcRoomHeights.isEmpty()) {
 									BigDecimal minHeight = residentialAcRoomHeights.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
 									// Added by Bimal to check minimum height for residential rooms only
+//									if (!A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
+//										minimumHeight = MINIMUM_HEIGHT_2_75;
+//										Log.info("Minimum Residential AC Room Height required is set to++++++ : "
+//												+ MINIMUM_HEIGHT_2_75);
+//									} else
+//										minimumHeight = MINIMUM_HEIGHT_3;
+									
 									if (!A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-										minimumHeight = MINIMUM_HEIGHT_2_75;
-										Log.info("Minimum Residential AC Room Height required is set to++++++ : "
-												+ MINIMUM_HEIGHT_2_75);
-									} else
-										minimumHeight = MINIMUM_HEIGHT_3;
+										minimumHeight = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"residentialAcRoom.height.min",null,BigDecimal.class).getValue();										
+									} else {
+										minimumHeight = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"residentialAcRoom.height.max",null,BigDecimal.class).getValue();
+									}
+									
+									Log.info("Minimum Residential AC Room Height required is set to ++++++ : " + minimumHeight);
+									
 									// Comented by Bimal to check minimum height for residential rooms only
 //                                    if (!G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))
 //                                        minimumHeight = MINIMUM_HEIGHT_2_4;
@@ -370,21 +359,50 @@ public class HeightOfRoom extends FeatureProcess {
 
 							    for (Measurement room : rooms) {
 
-							        // Set the area and width thresholds based on whether the min area and width have been satisfied
-							         minimumArea = roomWithMinArea9_2Exists ? MINIMUM_AREA_7_5 : MINIMUM_AREA_9_2;
-							         minWidth = roomWithMinWidth2_4Exists ? MINIMUM_WIDTH_2_1 : MINIMUM_WIDTH_2_4;
-							         maxArea = MAXIMUM_AREA_46_45;
-
 							        roomArea = room.getArea().setScale(2, BigDecimal.ROUND_HALF_UP);
 							        roomWidth = room.getWidth().setScale(2, BigDecimal.ROUND_HALF_UP);
+							        
+							        BigDecimal regularRoomMinArea = RuleUtil.getRule(
+							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.min",null,BigDecimal.class).getValue();
+							        
+							        BigDecimal regularRoomMaxArea1 = RuleUtil.getRule(
+							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.maxArea",null,BigDecimal.class).getValue();
+							        
+							        BigDecimal regularRoomMaxArea = RuleUtil.getRule(
+							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.max",null,BigDecimal.class).getValue();
 
-							        // Update flags if the current room meets the higher thresholds
-							        if (roomArea.compareTo(MINIMUM_AREA_9_2) >= 0) {
+							        BigDecimal regularRoomMinWidth = RuleUtil.getRule(
+							        		pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.width.min",null,BigDecimal.class).getValue();
+							        
+							        BigDecimal regularRoomMaxWidth = RuleUtil.getRule(
+							        		pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.width.max",null,BigDecimal.class).getValue();
+
+							        
+							        
+//							    	// Update flags if the current room meets the higher thresholds
+//							        if (roomArea.compareTo(MINIMUM_AREA_9_2) >= 0) {
+//							            roomWithMinArea9_2Exists = true;
+//							        }
+//							        if (roomWidth.compareTo(MINIMUM_WIDTH_2_4) >= 0) {
+//							            roomWithMinWidth2_4Exists = true;
+//							        }
+							        
+							     // Update flags if the current room meets the higher thresholds
+							        if (roomArea.compareTo(regularRoomMaxArea1) >= 0) {
 							            roomWithMinArea9_2Exists = true;
 							        }
-							        if (roomWidth.compareTo(MINIMUM_WIDTH_2_4) >= 0) {
+							        if (roomWidth.compareTo(regularRoomMaxWidth) >= 0) {
 							            roomWithMinWidth2_4Exists = true;
 							        }
+
+//							        // Set the area and width thresholds based on whether the min area and width have been satisfied
+//							         minimumArea = roomWithMinArea9_2Exists ? MINIMUM_AREA_7_5 : MINIMUM_AREA_9_2;
+//							         minWidth = roomWithMinWidth2_4Exists ? MINIMUM_WIDTH_2_1 : MINIMUM_WIDTH_2_4;
+//							         maxArea = MAXIMUM_AREA_46_45;
+
+							        minimumArea = roomWithMinArea9_2Exists ? regularRoomMinArea : regularRoomMaxArea1;
+							        minWidth    = roomWithMinWidth2_4Exists ? regularRoomMinWidth : regularRoomMaxWidth;
+							        maxArea     = regularRoomMaxArea;
 
 							        // Perform the validation and generate the report
 							        if (roomArea.compareTo(minimumArea) >= 0 && roomWidth.compareTo(minWidth) >= 0) {
@@ -403,12 +421,21 @@ public class HeightOfRoom extends FeatureProcess {
 
 							    if (!residentialRoomHeights.isEmpty()) {
 							        BigDecimal minHeight = residentialRoomHeights.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
+//							        if (A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
+//							            minimumHeight = MINIMUM_HEIGHT_2_75;
+//							            Log.info("Minimum Residential Regular Room Height required is set to-------- : " + MINIMUM_HEIGHT_2_75);
+//							        } else {
+//							            minimumHeight = MINIMUM_HEIGHT_3;
+//							        }
+							        
 							        if (A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-							            minimumHeight = MINIMUM_HEIGHT_2_75;
-							            Log.info("Minimum Residential Regular Room Height required is set to-------- : " + MINIMUM_HEIGHT_2_75);
+							            minimumHeight = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.min",null,BigDecimal.class).getValue(); 							            
 							        } else {
-							            minimumHeight = MINIMUM_HEIGHT_3;
-							        }
+							            minimumHeight = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.min",null,BigDecimal.class).getValue(); ;
+							        }							        
+							        Log.info("Minimum Residential Regular Room Height required is set to-------- : " + minimumHeight);
 
 							        subRule = RULE;
 							        subRuleDesc = RULE_REGULAR_DESC;
@@ -553,24 +580,48 @@ public class HeightOfRoom extends FeatureProcess {
 										BigDecimal doorHeight = door.getNonHabitationDoorHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 										BigDecimal doorWidth = door.getNonHabitationDoorWidth();
 										// BigDecimal minDoorHeight = BigDecimal.valueOf(2.0);
-										BigDecimal minDoorWidth = BigDecimal.valueOf(0.75);
+										//BigDecimal minDoorWidth = BigDecimal.valueOf(0.75);
 										subRule = SUBRULE_41_II_B;
 										subRuleDesc = SUBRULE_41_II_B;
+										
+										BigDecimal minDoorHeight = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"door.height.min",null,BigDecimal.class).getValue();
+								        
+								        BigDecimal minNonHabitationalDoorWidth = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"nonHabitationDoor.width.min",null,BigDecimal.class).getValue();
 
-										if (doorHeight.compareTo(MIN_DOOR_HEIGHT) >= 0
-												&& doorWidth.compareTo(MIN_NON_HABITATIONAL_DOOR_WIDTH) >= 0) {
-											setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
-													"Height >= " + MIN_DOOR_HEIGHT + ", Width >= "
-															+ MIN_NON_HABITATIONAL_DOOR_WIDTH,
+//										if (doorHeight.compareTo(MIN_DOOR_HEIGHT) >= 0
+//												&& doorWidth.compareTo(MIN_NON_HABITATIONAL_DOOR_WIDTH) >= 0) {
+//											setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
+//													"Height >= " + MIN_DOOR_HEIGHT + ", Width >= "
+//															+ MIN_NON_HABITATIONAL_DOOR_WIDTH,
+//													"Height = " + doorHeight + ", Width = " + doorWidth,
+//													Result.Accepted.getResultVal(), scrutinyDetail5);
+//										} else {
+//											setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, "", "",
+//													"Height >= " + MIN_DOOR_HEIGHT + ", Width >= "
+//															+ MIN_NON_HABITATIONAL_DOOR_WIDTH,
+//													"Height = " + doorHeight + ", Width = " + doorWidth,
+//													Result.Accepted.getResultVal(), scrutinyDetail5);
+//										}
+								        
+								        
+								        
+								        if (doorHeight.compareTo(minDoorHeight) >= 0
+												&& doorWidth.compareTo(minNonHabitationalDoorWidth) >= 0) {
+								        	setReportOutputDetailsNonHabDoor(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
+													"Height >= " + minDoorHeight + ", Width >= "
+															+ minNonHabitationalDoorWidth,
 													"Height = " + doorHeight + ", Width = " + doorWidth,
 													Result.Accepted.getResultVal(), scrutinyDetail5);
 										} else {
-											setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, "", "",
-													"Height >= " + MIN_DOOR_HEIGHT + ", Width >= "
-															+ MIN_NON_HABITATIONAL_DOOR_WIDTH,
+											setReportOutputDetailsNonHabDoor(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-",
+													"Height >= " + minDoorHeight + ", Width >= "
+															+ minNonHabitationalDoorWidth,
 													"Height = " + doorHeight + ", Width = " + doorWidth,
 													Result.Accepted.getResultVal(), scrutinyDetail5);
 										}
+								        
 									}
 								}
 							}
@@ -579,12 +630,19 @@ public class HeightOfRoom extends FeatureProcess {
 								for (Window window : floor.getWindows()) {
 									BigDecimal windowHeight = window.getWindowHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 									BigDecimal windowWidth = window.getWindowWidth();
-									BigDecimal minWindowHeight = BigDecimal.valueOf(.50);
-									BigDecimal minWindowWidth = BigDecimal.valueOf(.50);
+//									BigDecimal minWindowHeight = BigDecimal.valueOf(.50);
+//									BigDecimal minWindowWidth = BigDecimal.valueOf(.50);
+									
+//									BigDecimal minWindowHeight = RuleUtil.getRule(
+//							                pl.getMdmsRulesData().get("masterMdmsData"),"window.height.min",null,BigDecimal.class).getValue();
+//							        
+//							        BigDecimal minWindowWidth = RuleUtil.getRule(
+//							                pl.getMdmsRulesData().get("masterMdmsData"),"window.width.min",null,BigDecimal.class).getValue();
+							        
 									subRule = SUBRULE_41_II_B;
 									subRuleDesc = SUBRULE_41_II_B;
 //									if (windowHeight.compareTo(MIN_WINDOW_HEIGHT) >= 0 && windowWidth.compareTo(MIN_WINDOW_WIDTH) >= 0) {
-									setReportOutputDetails(pl,"", subRuleDesc3, floor.getNumber().toString(), "-", "" + "",
+									setReportOutputDetailsWindow(pl,subRule, subRuleDesc3, floor.getNumber().toString(), "-", "" + "-",
 											"Height = " + windowHeight + ", Width = " + windowWidth,
 											Result.Accepted.getResultVal(), scrutinyDetail3);
 									// } else {
@@ -613,7 +671,12 @@ public class HeightOfRoom extends FeatureProcess {
 								}
 
 								// Calculate required ventilation area
-								BigDecimal requiredVentilationArea = roomArea.multiply(VENTILATION_PERCENTAGE)
+								BigDecimal VentilationPercentage = RuleUtil.getRule(
+						                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.ventilation.min",null,BigDecimal.class).getValue();
+										
+//								BigDecimal requiredVentilationArea = roomArea.multiply(VENTILATION_PERCENTAGE)
+//										.divide(BigDecimal.valueOf(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
+								BigDecimal requiredVentilationArea = roomArea.multiply(VentilationPercentage)
 										.divide(BigDecimal.valueOf(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
 
 								// Calculate total window and door area
@@ -743,17 +806,37 @@ public class HeightOfRoom extends FeatureProcess {
 											BigDecimal doorHeight = door.getDoorHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 											BigDecimal doorWidth = door.getDoorWidth();
 											LOG.info("room number : " + room.getNumber());
-
-											if (doorHeight.compareTo(MIN_DOOR_HEIGHT) >= 0
-													&& doorWidth.compareTo(MIN_DOOR_WIDTH) >= 0) {
+											
+											BigDecimal minDoorHeight = RuleUtil.getRule(
+									                pl.getMdmsRulesData().get("masterMdmsData"),"door.height.min",null,BigDecimal.class).getValue();
+											
+											BigDecimal minDoorWidth = RuleUtil.getRule(
+									                pl.getMdmsRulesData().get("masterMdmsData"),"door.width.min",null,BigDecimal.class).getValue();
+											
+											
+//											if (doorHeight.compareTo(MIN_DOOR_HEIGHT) >= 0
+//													&& doorWidth.compareTo(MIN_DOOR_WIDTH) >= 0) {
+//												setReportOutputDetails(pl, subRuleDoor, subRuleDesc4,
+//														"" + floor.getNumber().toString(), "" + room.getNumber(), 
+//														"Height >= " + MIN_DOOR_HEIGHT + ", Width >= " + MIN_DOOR_WIDTH,
+//														"Height = " + doorHeight + ", Width = " + doorWidth,
+//														Result.Accepted.getResultVal(), scrutinyDetail8);
+//											} else {
+//												setReportOutputDetails(pl, subRule, subRuleDesc4, "" + floor.getNumber().toString(), "" + room.getNumber(),
+//														"Height >= " + MIN_DOOR_HEIGHT + ", Width >= " + MIN_DOOR_WIDTH,
+//														"Height = " + doorHeight + ", Width = " + doorWidth,
+//														Result.Not_Accepted.getResultVal(), scrutinyDetail8);
+//											}
+											if (doorHeight.compareTo(minDoorHeight) >= 0
+													&& doorWidth.compareTo(minDoorWidth) >= 0) {
 												setReportOutputDetails(pl, subRuleDoor, subRuleDesc4,
 														"" + floor.getNumber().toString(), "" + room.getNumber(), 
-														"Height >= " + MIN_DOOR_HEIGHT + ", Width >= " + MIN_DOOR_WIDTH,
+														"Height >= " + minDoorHeight + ", Width >= " + minDoorWidth,
 														"Height = " + doorHeight + ", Width = " + doorWidth,
 														Result.Accepted.getResultVal(), scrutinyDetail8);
 											} else {
 												setReportOutputDetails(pl, subRule, subRuleDesc4, "" + floor.getNumber().toString(), "" + room.getNumber(),
-														"Height >= " + MIN_DOOR_HEIGHT + ", Width >= " + MIN_DOOR_WIDTH,
+														"Height >= " + minDoorHeight + ", Width >= " + minDoorWidth,
 														"Height = " + doorHeight + ", Width = " + doorWidth,
 														Result.Not_Accepted.getResultVal(), scrutinyDetail8);
 											}
@@ -804,6 +887,20 @@ public class HeightOfRoom extends FeatureProcess {
 			}
 		}
 	}
+	
+	private void setReportOutputDetailsNonHabDoor(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, String expected,
+			String actual, String status, ScrutinyDetail scrutinyDetail) {
+		Map<String, String> details = new HashMap<>();
+		details.put(RULE_NO, ruleNo);
+		details.put(DESCRIPTION, ruleDesc);
+		details.put(FLOOR, floor);
+		//details.put(Room, room);
+		details.put(REQUIRED, expected);
+		details.put(PROVIDED, actual);
+		details.put(STATUS, status);
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
 
 	private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, String expected,
 			String actual, String status, ScrutinyDetail scrutinyDetail) {
@@ -813,6 +910,20 @@ public class HeightOfRoom extends FeatureProcess {
 		details.put(FLOOR, floor);
 		details.put(Room, room);
 		details.put(REQUIRED, expected);
+		details.put(PROVIDED, actual);
+		details.put(STATUS, status);
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
+	
+	private void setReportOutputDetailsWindow(Plan pl, String ruleNo, String ruleDesc, String floor,  String room, String expected,
+			String actual, String status, ScrutinyDetail scrutinyDetail) {
+		Map<String, String> details = new HashMap<>();
+		details.put(RULE_NO, ruleNo);
+		details.put(DESCRIPTION, ruleDesc);
+		details.put(FLOOR, floor);
+		//details.put(Room, room);
+		//details.put(REQUIRED, expected);
 		details.put(PROVIDED, actual);
 		details.put(STATUS, status);
 		scrutinyDetail.getDetail().add(details);

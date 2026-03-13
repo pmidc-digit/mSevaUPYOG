@@ -387,7 +387,7 @@ public class Parking extends FeatureProcess {
         	noOfrequiredParking = 22;
         	//noOfrequiredParking = ruleService.getParkingEcs().intValue();
         	noOfrequiredParking = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "parking.ECS", context, Integer.class).getValue();
-			System.out.println("Parking ECS " + noOfrequiredParking);
+			LOGGER.info("Parking ECS " + noOfrequiredParking);
 
 
         	//if(mostRestrictiveOccupancy.getSubtype()!=null

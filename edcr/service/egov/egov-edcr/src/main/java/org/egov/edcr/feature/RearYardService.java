@@ -260,6 +260,7 @@ public class RearYardService extends GeneralRule {
 									 */
 								}else if (G.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {
 										min = setback.getRearYard().getArea();
+										mean = setback.getRearYard().getWidth();
 									  checkRearYardForIndustrial(setback, block.getBuilding(), pl, block,
 									  setback.getLevel(), plot, REAR_YARD_DESC, min, mean,
 									  occupancy.getTypeHelper(), rearYardResult , buildingHeight); 

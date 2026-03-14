@@ -102,9 +102,7 @@
     }
   }
   input {
-    @apply absolute opacity-0;
-    height: 40px;
-    width: 175px;
+    @apply absolute opacity-0 h-full;    
     top: 20%;
     left: 3%;
   }

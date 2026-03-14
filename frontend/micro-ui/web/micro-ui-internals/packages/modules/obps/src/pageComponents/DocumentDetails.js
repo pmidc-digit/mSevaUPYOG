@@ -127,13 +127,7 @@ const DocumentDetails = ({
 
   const handleSubmit = async () => {
     // console.log("documentInScrutiny", formData, documents);
-    const mandatoryList = bpaTaxDocuments?.filter(
-      (document) =>
-        document.code !== "ARCHITECT.UNDERTAKING" &&
-        document.code !== "CITIZEN.UNDERTAKING" &&
-        document.code !== "SITEPHOTOGRAPH_ONE" &&
-        document?.required
-    );
+    const mandatoryList = bpaTaxDocuments?.filter((document) => ((document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE" && document.code !== "SITEPHOTOGRAPH_TWO") && document?.required))
     const updatedDocuments = documents?.map((item) => {
       const id = currentStepData?.createdResponse?.documents?.find((doc) => doc?.documentType === item?.documentType)?.id || null;
       return {
@@ -247,10 +241,7 @@ const DocumentDetails = ({
         >
           {/* {bpaTaxDocuments?.map((document, index) => { */}
           {bpaTaxDocuments
-            ?.filter(
-              (document) =>
-                document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE"
-            )
+            ?.filter((document) => document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE" && document.code !== "SITEPHOTOGRAPH_TWO")
             .map((document, index) => {
               return (
                 <div>
@@ -316,6 +307,8 @@ function SelectDocument({
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
   const [loader, setLoader] = useState(false);
 
+  console.log("documenttypeorder", doc, documents, filteredDocument)
+
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
@@ -367,6 +360,7 @@ function SelectDocument({
             documentType: doc?.code,
             fileStoreId: uploadedFile,
             documentUid: uploadedFile,
+            order: doc?.order
           },
         ];
       });
@@ -439,14 +433,14 @@ function SelectDocument({
       <LabelFieldPair>
         {/* {console.log("doc", doc)} */}
         <CardLabel className="card-label-smaller">
-          {t(doc?.code)} {doc?.required && " *"}
+          {t(doc?.code)} {doc?.required && <div>{" "} <span className="requiredField">*</span></div>}
         </CardLabel>
         <div className="field">
           <CustomUploadFile
             id={"tl-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}

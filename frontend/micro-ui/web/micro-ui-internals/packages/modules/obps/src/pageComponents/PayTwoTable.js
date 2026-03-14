@@ -7,6 +7,7 @@ import {
     UploadFile,
 } from "@mseva/digit-ui-react-components";
 import CustomUploadFile from "../components/CustomUploadFile";
+import { amountToWords } from "../utils";
 
 export const PayTwoTable = ({
     sanctionFeeDataWithTotal,
@@ -88,7 +89,10 @@ export const PayTwoTable = ({
                             <td>
                                 {row?.taxHeadCode === "BPA_TOTAL" ? (
                                     row?.grandTotal !== null && row?.grandTotal !== undefined
-                                        ? `₹ ${row.grandTotal.toLocaleString()}`
+                                        ? <div>
+                                            <strong>{`₹ ${row.grandTotal.toLocaleString("en-IN")}`}</strong>
+                                            <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                                        </div>
                                         : t("CS_NA")
                                 ) : <TextInput
                                     t={t}

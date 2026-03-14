@@ -110,7 +110,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
     
     <div>
-      <CardLabel>{label}</CardLabel>
+      <CardLabel>{label} <span className="requiredField">*</span></CardLabel>
       <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => {setErrors((prev) => ({...prev, [errorKey]: null})); setValue(e.target.value)}} disable={isDisabled}/>
       {errors[errorKey] && (
         <CardLabelError >{errors[errorKey]}</CardLabelError>
@@ -446,7 +446,11 @@ useEffect(() => {
   if(currentStepData?.cpt?.details?.address){
     const { doorNo, plotNo, buildingName, street, city, district, state} = currentStepData?.cpt?.details?.address
     const address = [doorNo, plotNo, buildingName, street, city, district, state]?.filter(Boolean)?.join(" ,");
+    if(currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable === false){
+      return;
+    }
     if(address) setRegistrationDetails(address);
+    console.log("Updating Address Here", isPropertyAvailable, currentStepData);
   }
 }, [currentStepData]);
 
@@ -840,7 +844,12 @@ useEffect(() => {
         option: option
       })
     }else{
-    setIsPropertyAvailable(option)
+      if(option?.value === false){        
+        setRegistrationDetails("");
+        setWardNumber("")
+        dispatch(UPDATE_OBPS_FORM("cpt", {}))        
+      }
+      setIsPropertyAvailable(option)
     }
   }
 
@@ -892,7 +901,9 @@ useEffect(() => {
       if(result?.ResponseInfo?.status === "successful"){
         dispatch(UPDATE_OBPS_FORM("createdResponse", result?.BPA?.[0]))
         if (option?.value === false) {
-          
+          setRegistrationDetails("")
+          setWardNumber("")
+          dispatch(UPDATE_OBPS_FORM("cpt", {}))
           // setIsPropertyAvailable(option)
         }
         setApiLoading(false);        
@@ -915,14 +926,14 @@ useEffect(() => {
   function setCost (val) {
     const numberedVal = parseInt(val)
     console.log("numberedVal",numberedVal)
-    if((numberedVal &&  numberedVal <= 500000000)){
+    if((numberedVal &&  numberedVal <= 999999999)){
       setEstimatedCost(`${numberedVal}`)
       setErrors((prev) => ({...prev, estimatedCost: null}))
     }else if(val === ""){
       setEstimatedCost(val)
       setErrors((prev) => ({...prev, estimatedCost: null}))
     }
-    else if(numberedVal > 500000000){
+    else if(numberedVal > 999999999){
       setErrors((prev) => ({...prev, estimatedCost: t("Cost_Can_Not_Exceed_50_CR")}))
     }else if(numberedVal < 0){
       setErrors((prev) => ({...prev, estimatedCost: t("Cost_Can_Not_Be_Less_Than_0")}))
@@ -955,7 +966,7 @@ useEffect(() => {
           </StatusTable>
 
           <div style={{ marginTop: "1rem" }}>
-            <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_IS_PROPERTY_AVAILABLE_LABEL")} `}<span className="requiredField">*</span></CardLabel>
             <Dropdown
               placeholder={t("IS_PROPERTY_AVAILABLE")}
               selected={isPropertyAvailable}
@@ -1020,7 +1031,7 @@ useEffect(() => {
           </StatusTable>}
           </div>}
 
-          <CardLabel>{`${t("BPA_IS_CLUBBED_PLOT_LABEL")} *`}</CardLabel>
+          <CardLabel>{`${t("BPA_IS_CLUBBED_PLOT_LABEL")} `}<span className="requiredField">*</span></CardLabel>
           <Dropdown
             placeholder={t("IS_CLUBBED_PLOT")}
             selected={isClubbedPlot}
@@ -1036,7 +1047,7 @@ useEffect(() => {
           
           {occupancyTypes.includes(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code) &&
             <React.Fragment>
-              <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} *`}</CardLabel>
+              <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} `}<span className="requiredField">*</span></CardLabel>
               <Dropdown
                 placeholder={t("BPA_IS_SELF_CERTIFICATION_REQUIRED")}
                 selected={isSelfCertification}
@@ -1053,11 +1064,11 @@ useEffect(() => {
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )}
             
-          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...", (currentStepData?.cpt?.details?.address && isPropertyAvailable?.value) ? true : false)}
-          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}
-          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number", (currentStepData?.cpt?.zonalMapping?.ward && isPropertyAvailable?.value) ? true : false)}
+          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL"), registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...", (currentStepData?.cpt?.details?.address && isPropertyAvailable?.value) ? true : false)}
+          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT"), boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}
+          {renderField(t("BPA_WARD_NUMBER_LABEL"), wardnumber, setWardNumber, "wardnumber", "Ward Number", (currentStepData?.cpt?.zonalMapping?.ward && isPropertyAvailable?.value) ? true : false)}
           {/* {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number" , currentStepData?.cpt?.zonalMapping?.zone)} */}
-          <CardLabel>{`${t("BPA_ZONE_NUMBER_LABEL")} *`}</CardLabel>
+          <CardLabel>{`${t("BPA_ZONE_NUMBER_LABEL")} `}<span className="requiredField">*</span></CardLabel>
           <Dropdown
             placeholder={t("BPA_ZONE_NUMBER_LABEL")}
             selected={zonenumber}
@@ -1070,19 +1081,19 @@ useEffect(() => {
           {errors["zonenumber"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["zonenumber"]}</CardLabelError>
           )}
-          {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
-          {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
+          {renderField(t("BPA_KHASRA_NUMBER_LABEL"), khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
+          {renderField(t("BPA_ARCHITECT_ID"), architectid, setArchitectId, "architectid", "Architect ID", true)}
           {/* {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")} */}
-          {renderField(t("BPA_NUMBER_OF_BATHS")+"*", bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
-          {renderField(t("BPA_NUMBER_OF_KITCHENS")+"*", kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
-          {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION")+"*", approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}
-          {renderField(t("BPA_DISTANCE_FROM_SEWER")+"*", distancefromsewer, setDistanceFromSewer, "distancefromsewer", "Distance from sewer (in meters)")}
-          {renderField(t("BPA_SOURCE_OF_WATER")+"*", sourceofwater, setSourceOfWater, "sourceofwater", "Source of Water")}
-          {renderField(t("BPA_NUMBER_OF_WATER_CLOSETS")+"*", watercloset, setWaterCloset, "watercloset", "Water Closet")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS")+"*", materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR")+"*", materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_ESTIMATED_COST_LABEL")+"*", estimatedCost, setCost, "estimatedCost", "Please Provide Estimated Cost")}
+          {renderField(t("BPA_NUMBER_OF_BATHS"), bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
+          {renderField(t("BPA_NUMBER_OF_KITCHENS"), kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
+          {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION"), approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}
+          {renderField(t("BPA_DISTANCE_FROM_SEWER"), distancefromsewer, setDistanceFromSewer, "distancefromsewer", "Distance from sewer (in meters)")}
+          {renderField(t("BPA_SOURCE_OF_WATER"), sourceofwater, setSourceOfWater, "sourceofwater", "Source of Water")}
+          {renderField(t("BPA_NUMBER_OF_WATER_CLOSETS"), watercloset, setWaterCloset, "watercloset", "Water Closet")}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS"), materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR"), materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS"), materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_ESTIMATED_COST_LABEL"), estimatedCost, setCost, "estimatedCost", "Please Provide Estimated Cost")}
 
           
           <ActionBar>

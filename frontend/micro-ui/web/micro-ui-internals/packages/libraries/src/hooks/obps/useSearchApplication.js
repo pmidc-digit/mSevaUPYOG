@@ -136,6 +136,7 @@ export const useLayoutCheckListSearch = (params, tenantId, config = {}) => {
     ...config,
   });
 
+}
 const useBPACheckListSearchFn = (params, tenantId) => {
   return async () => {
     return await Digit.OBPSService.BPACheckListSearch({ tenantId, filters: params, });

@@ -97,7 +97,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
     }
   },[])
 
-  console.log("here???????")
+  console.log("here||||||?")
   const stateId = Digit.ULBService.getStateId();
   const [focusIndex, setFocusIndex] = useState({ index: -1 });
   const [loader, setLoader] = useState(true);

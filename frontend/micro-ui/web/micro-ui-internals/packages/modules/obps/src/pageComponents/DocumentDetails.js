@@ -41,7 +41,7 @@ import { LoaderNew } from "../components/LoaderNew";
 
 const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, currentStepData, onGoBack }) => {
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(currentStepData?.createdResponse?.documents ?? []);
+  const [documents, setDocuments] = useState(currentStepData?.createdResponse?.documents || []);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);

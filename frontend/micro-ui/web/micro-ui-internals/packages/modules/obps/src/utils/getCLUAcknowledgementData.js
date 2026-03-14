@@ -55,7 +55,7 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
+  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners || [];
 
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`,
@@ -267,7 +267,7 @@ const getSpecificationDetails = (appData, t) => {
 
 
 const getInspectionReportDetails = (appData, t) => {
-  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending ?? [];
+  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending || [];
   if (fiReport.length === 0) return null;
 
   return {
@@ -280,7 +280,7 @@ const getInspectionReportDetails = (appData, t) => {
 };
 
 const getChecklistDetails = (searchChecklistData, t) => {
-  const checklist = searchChecklistData?.CheckList ?? [];
+  const checklist = searchChecklistData?.CheckList || [];
   if (checklist.length === 0) return null;
 
   return {

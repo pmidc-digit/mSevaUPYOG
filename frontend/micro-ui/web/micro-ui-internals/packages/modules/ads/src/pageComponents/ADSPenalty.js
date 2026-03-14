@@ -28,7 +28,7 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
     if (currentStepData) {
       // Populate from existing penalty object in Redux
       Object.entries(currentStepData).forEach(([key, value]) => {
-        setValue(key, value ?? "");
+        setValue(key, value || "");
       });
     }
   }, [currentStepData, setValue]);
@@ -84,7 +84,7 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
         }}
         render={(props) => (
           <TextInput
-            value={props.value ?? ""}
+            value={props.value || ""}
             onChange={(e) => props.onChange(e.target.value)}
             disabled={penaltyValue !== "Yes"}
             t={t}
@@ -106,7 +106,7 @@ const ADSPenalty = ({ t, goNext, currentStepData, onGoBack }) => {
         }}
         render={(props) => (
           <TextInput
-            value={props.value ?? ""}
+            value={props.value || ""}
             onChange={(e) => props.onChange(e.target.value)}
             disabled={penaltyValue !== "Yes"}
             t={t}

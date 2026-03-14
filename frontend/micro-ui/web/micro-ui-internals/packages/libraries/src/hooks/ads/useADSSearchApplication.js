@@ -26,8 +26,8 @@ export const useADSSearchApplication = (params, tenantId, config = {}, t) => {
       console.log("select raw res:", res);
 
       // Try multiple possible paths (based on observed API shapes)
-      const root = res ?? {};
-      const candidate = root?.bookingApplication ?? root?.bookings ?? root?.Applications ?? root?.data ?? root?.advertisements ?? root;
+      const root = res || {};
+      const candidate = root?.bookingApplication || root?.bookings || root?.Applications || root?.data || root?.advertisements || root;
 
       // normalize to an array
       let applications = [];
@@ -77,8 +77,8 @@ export const useADSSearchApplicationEmployee = (params, tenantId, config = {}, t
     staleTime: Infinity,
     select: (res) => {
       // Keep it simple for employee hook — try to surface the bookings array directly like citizen hook
-      const root = res ?? {};
-      const candidate = root?.bookingApplication ?? root?.bookings ?? root?.Applications ?? root?.data ?? root;
+      const root = res || {};
+      const candidate = root?.bookingApplication || root?.bookings || root?.Applications || root?.data || root;
 
       let applications = [];
       if (Array.isArray(candidate)) applications = candidate;

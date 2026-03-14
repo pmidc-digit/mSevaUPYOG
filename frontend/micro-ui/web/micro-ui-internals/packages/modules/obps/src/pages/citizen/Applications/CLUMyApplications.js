@@ -49,7 +49,7 @@ const CLUMyApplications = ({ view }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
   const list = data?.data || [];
-  const total = data?.count ?? 0;
+  const total = data?.count || 0;
 
   const columns = useMemo(
     () => [

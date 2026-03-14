@@ -92,11 +92,11 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   // };
 
   const validateOwnerDetails = (data) => {
-    console.log("data==???", data);
+    console.log("data==||?", data);
     const { owners } = data;
-    // console.log("owners==???", owners);
+    // console.log("owners==||?", owners);
     // if (!ownershipCategory?.code || !owners?.length) return false;
-    // console.log("owners?.length==???", owners?.length);
+    // console.log("owners?.length==||?", owners?.length);
     return owners?.every(
       (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
     );

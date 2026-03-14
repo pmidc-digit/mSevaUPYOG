@@ -73,7 +73,7 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                     </div>
                   ) : (
                     <TextArea
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={localRemarks[doc.documentUid] || ""}
                       onChange={(e) => {
                         e.target.style.height = "auto";
                         e.target.style.height = e.target.scrollHeight + "px";
@@ -128,7 +128,7 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                         </div>
                       ) : (
                         <TextArea
-                          value={localRemarks[doc.documentUid] ?? ""}
+                          value={localRemarks[doc.documentUid] || ""}
                           onChange={(e) => {
                             e.target.style.height = "auto";
                             e.target.style.height = e.target.scrollHeight + "px";

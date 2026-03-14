@@ -91,7 +91,7 @@ const ApplicationDetails = () => {
     Digit.UploadServices.Filefetch(filesArray, argForFilefetch)
       .then((res) => {
         // robustly find where the mapping lives:
-        let data = res?.data ?? res?.files ?? res;
+        let data = res?.data || res?.files || res;
         // if the API returned an array of {fileStoreId, url}, convert to map:
         if (Array.isArray(data)) {
           const asMap = {};
@@ -122,7 +122,7 @@ const ApplicationDetails = () => {
     filters: { bookingNo: id },
   });
 
-  const normalizedAppObject = applicationDetails?.bookingApplication?.[0] ?? [];
+  const normalizedAppObject = applicationDetails?.bookingApplication?.[0] || [];
   const bookingObj = normalizedAppObject;
   const application = bookingObj || normalizedAppObject || appDetails || null;
   const new_data = transformBookingResponseToBookingData(applicationDetails);
@@ -265,7 +265,7 @@ const ApplicationDetails = () => {
   }
 
   const submitAction = async (dataPayload) => {
-    const payloadSource = applicationDetails?.Applications?.[0] ?? applicationDetails?.data?.[0] ?? applicationDetails?.[0] ?? bookingObj;
+    const payloadSource = applicationDetails?.Applications?.[0] || applicationDetails?.data?.[0] || applicationDetails?.[0] || bookingObj;
 
     if (!payloadSource) {
       setShowToast({ key: "error", message: "Application data not loaded. Try reloading the page." });
@@ -359,7 +359,7 @@ const ApplicationDetails = () => {
       const tId = tenantid || tenantId;
       const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], tId);
       // some Filefetch responses put mapping in res.data, some directly in res
-      const filefetchData = res?.data ?? res;
+      const filefetchData = res?.data || res;
       const documentLink = pdfDownloadLink(filefetchData, document?.fileStoreId);
       if (documentLink) window.open(documentLink, "_blank");
       else setShowToast({ key: "error", message: "Unable to open document" });
@@ -478,7 +478,7 @@ const ApplicationDetails = () => {
 
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
-        <ADSCartDetails cartDetails={cartData ?? []} t={t} />
+        <ADSCartDetails cartDetails={cartData || []} t={t} />
       </Card>
 
       <Card>

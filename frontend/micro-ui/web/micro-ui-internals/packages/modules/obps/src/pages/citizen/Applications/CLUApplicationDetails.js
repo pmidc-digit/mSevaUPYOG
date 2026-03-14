@@ -461,7 +461,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
 
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""));
   const remainingDocs = displayData?.Documents?.filter((doc) => !(
     doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
     doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
@@ -480,8 +480,8 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
   }, [workflowDetails]);
   
     
-  const empUserName = siteInspectionEmp?.userName ?? "";
-  const empName = siteInspectionEmp?.name ?? "";
+  const empUserName = siteInspectionEmp?.userName || "";
+  const empName = siteInspectionEmp?.name || "";
   
   const handleSetEmpDesignation = (key)=>{
       setEmpDesignation(key);
@@ -665,7 +665,7 @@ async function getSanctionLetterReceipt({ tenantId, payments, pdfkey = "noc-sanc
         <Card>
           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable>
-          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
+          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""))} />
           </StatusTable>
           {   geoLocations?.length > 0 &&
               <React.Fragment>

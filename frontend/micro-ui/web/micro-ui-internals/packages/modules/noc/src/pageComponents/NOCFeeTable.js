@@ -68,7 +68,7 @@ export const NOCFeeTable = ({
             isMandatory={false}
             value={feeData[row.index]?.adjustedAmount === 0
               ? ""
-              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+              : feeData[row.index]?.adjustedAmount || row.amount || ""}
             onChange={(e) => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith("0")) {
@@ -217,7 +217,7 @@ export const NOCFeeTable = ({
                         value={
                           feeData[row.index]?.adjustedAmount === 0
                             ? ""
-                            : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                            : feeData[row.index]?.adjustedAmount || row.amount || ""
                         }
                         onChange={(e) => {
                           let val = e.target.value;

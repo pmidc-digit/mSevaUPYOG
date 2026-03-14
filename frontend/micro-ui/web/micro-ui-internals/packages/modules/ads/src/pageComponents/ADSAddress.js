@@ -67,8 +67,8 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {}, err
 
 
   const updateParent = (updatedFields = {}) => {
-    const currentCity = updatedFields.city ?? city ?? (value?.city || "");
-    const currentLocality = updatedFields.locality ?? locality ?? (value?.locality || "");
+    const currentCity = updatedFields.city || city || (value?.city || "");
+    const currentLocality = updatedFields.locality || locality || (value?.locality || "");
 
     const addr = {
       addressId,

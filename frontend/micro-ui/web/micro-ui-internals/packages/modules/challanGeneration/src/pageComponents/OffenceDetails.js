@@ -31,7 +31,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = (data) => {
     goNext(data);
-    // console.log("data==??", data);
+    // console.log("data==||", data);
     // const userInfo = Digit.UserService.getUser()?.info || {};
     // const now = Date.now();
 

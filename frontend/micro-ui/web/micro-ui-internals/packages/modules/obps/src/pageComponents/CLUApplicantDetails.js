@@ -39,7 +39,7 @@ const CLUApplicantDetails = (_props) => {
   const ownerIds =
     useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.ownerIds;
-    }) ?? {};
+    }) || {};
 
   const ownerPhotos =
     useSelector(function (state) {
@@ -182,7 +182,7 @@ const CLUApplicantDetails = (_props) => {
     name: "owners",
   });
 
-  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
+  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) || "";
 
   useEffect(() => {
     const formattedData = currentStepData?.applicationDetails;
@@ -232,7 +232,7 @@ const getOwnerDetails = async (idx) => {
       {}
     );
 
-    const users = userResponse?.user ?? [];
+    const users = userResponse?.user || [];
     if (!users.length) {
       setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
       return;
@@ -241,10 +241,10 @@ const getOwnerDetails = async (idx) => {
     const u = users[0];
 
     // Write EVERYTHING into RHF state
-    setValue(`owners[${idx}].ownerOrFirmName`, u.name ?? "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${idx}].emailId`, u.emailId ?? "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName ?? "", { shouldValidate: true, shouldDirty: true });
-    setValue(`owners[${idx}].address`, u.permanentAddress ?? "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${idx}].ownerOrFirmName`, u.name || "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${idx}].emailId`, u.emailId || "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
+    setValue(`owners[${idx}].address`, u.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
 
     // Normalize DOB to YYYY-MM-DD for <input type="date">
     const dobStr = typeof u.dob === "string" ? u.dob : "";

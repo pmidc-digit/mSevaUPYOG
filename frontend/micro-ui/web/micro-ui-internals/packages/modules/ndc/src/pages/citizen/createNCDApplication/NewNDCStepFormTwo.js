@@ -62,8 +62,8 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
-    console.log("final data===?????", data);
-    console.log("checkFormData???====", checkFormData);
+    console.log("final data===||||?", data);
+    console.log("checkFormData||?====", checkFormData);
 
     // Build owners array
     const owners = [

@@ -11,24 +11,19 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const closeToast = () => setShowToast(null);
   const stateCode = Digit.ULBService.getStateId();
 
-
   let layoutData = null;
-  
-  if (formData?.apiData?.Layout) {
 
+  if (formData?.apiData?.Layout) {
     const isLayoutArray = Array.isArray(formData?.apiData?.Layout);
     layoutData = isLayoutArray ? formData?.apiData?.Layout?.[0] : formData?.apiData?.Layout;
   } else if (formData?.apiData?.applicationNo) {
-
     layoutData = formData?.apiData;
   } else {
-
     layoutData = formData;
   }
-  
+
   const tenantId = layoutData?.tenantId;
   const applicationNo = layoutData?.applicationNo;
-
 
   const applicationDetails = formData?.applicationDetails || layoutData?.layoutDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = formData?.siteDetails || layoutData?.layoutDetails?.additionalDetails?.siteDetails || {};
@@ -37,8 +32,8 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     const apiTax = data?.Calculation?.[0]?.taxHeadEstimates?.find((t) => t.taxHeadCode === taxHeadCode);
     const savedCalc = formData?.calculations?.find((c) => c.taxHeadCode === taxHeadCode);
     return {
-      originalEstimate: apiTax?.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-      originalRemark: apiTax?.remarks ?? savedCalc?.remarks ?? "",
+      originalEstimate: apiTax?.estimateAmount || savedCalc?.estimateAmount || 0,
+      originalRemark: apiTax?.remarks || savedCalc?.remarks || "",
     };
   };
 
@@ -53,10 +48,10 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     setFeeAdjustments((prev) =>
       (prev || []).map((item, i) => {
         if (i !== index) return item;
-        const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
+        const currentRemark = (item?.remark || originalRemark || "") + "";
         const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
         if (isReverted) {
-          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
+          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark || "" };
         }
         const adjustedDiffers = normalizedValue !== originalEstimate;
         const remarkEmpty = !currentRemark || currentRemark.trim() === "";
@@ -73,9 +68,9 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const handleRemarkChange = (index, value) => {
     const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
     const { originalEstimate } = getOriginals(taxHeadCode);
-    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount ?? 0;
+    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount || 0;
     const adjustedDiffers = currentAdjusted !== originalEstimate;
-    const remarkEmpty = (value ?? "").trim() === "";
+    const remarkEmpty = (value || "").trim() === "";
     setFeeAdjustments((prev) =>
       (prev || []).map((item, i) => (i === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item))
     );
@@ -84,27 +79,23 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const handleFileUpload = async (index, e) => {
     const file = e.target.files[0];
     try {
-      setFeeAdjustments(prev =>
-        prev.map((item, i) =>
-          i === index ? { ...item, onDocumentLoading: true } : item
-        )
-      );
+      setFeeAdjustments((prev) => prev.map((item, i) => (i === index ? { ...item, onDocumentLoading: true } : item)));
       const response = await Digit.UploadServices.Filestorage("layout-upload", file, stateCode);
       if (response?.data?.files?.length > 0) {
-        setFeeAdjustments(prev =>
+        setFeeAdjustments((prev) =>
           prev.map((item, i) =>
-            i === index
-              ? { ...item, filestoreId: response.data.files[0].fileStoreId, onDocumentLoading: false, documentError: null }
-              : item
+            i === index ? { ...item, filestoreId: response.data.files[0].fileStoreId, onDocumentLoading: false, documentError: null } : item
           )
         );
       } else {
-        setShowToast({key: "true",  error: true, message: "PT_FILE_UPLOAD_ERROR" });
+        setShowToast({ key: "true", error: true, message: "PT_FILE_UPLOAD_ERROR" });
       }
-    } catch(err) {
-      setShowToast({key: "true",  error: true, message: "PT_FILE_UPLOAD_ERROR" });
-    }finally{
-      setTimeout(()=>{setShowToast(null)},3000);
+    } catch (err) {
+      setShowToast({ key: "true", error: true, message: "PT_FILE_UPLOAD_ERROR" });
+    } finally {
+      setTimeout(() => {
+        setShowToast(null);
+      }, 3000);
     }
   };
 
@@ -123,22 +114,19 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     if (jumpTo) window.open(jumpTo);
   }
 
-
   const formatSiteDetailsForCalculator = (details) => {
     if (!details) return details;
 
     const formatted = { ...details };
 
-
-    if (formatted.zone && typeof formatted.zone === 'string') {
+    if (formatted.zone && typeof formatted.zone === "string") {
       formatted.zone = {
         code: formatted.zone,
         name: formatted.zone,
       };
     }
 
-
-    if (formatted.isCluRequired && typeof formatted.isCluRequired === 'string') {
+    if (formatted.isCluRequired && typeof formatted.isCluRequired === "string") {
       formatted.isCluRequired = {
         code: formatted.isCluRequired,
         i18nKey: formatted.isCluRequired,
@@ -146,7 +134,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     }
 
     // Format buildingStatus to object if it's a string
-    if (formatted.buildingStatus && typeof formatted.buildingStatus === 'string') {
+    if (formatted.buildingStatus && typeof formatted.buildingStatus === "string") {
       formatted.buildingStatus = {
         code: formatted.buildingStatus,
         name: formatted.buildingStatus,
@@ -154,7 +142,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     }
 
     // Format buildingCategory to object if it's a string
-    if (formatted.buildingCategory && typeof formatted.buildingCategory === 'string') {
+    if (formatted.buildingCategory && typeof formatted.buildingCategory === "string") {
       formatted.buildingCategory = {
         code: formatted.buildingCategory,
         name: formatted.buildingCategory,
@@ -162,7 +150,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     }
 
     // Format roadType to object if it's a string
-    if (formatted.roadType && typeof formatted.roadType === 'string') {
+    if (formatted.roadType && typeof formatted.roadType === "string") {
       formatted.roadType = {
         code: formatted.roadType,
         name: formatted.roadType,
@@ -170,7 +158,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     }
 
     // Format layoutAreaType to object if it's a string
-    if (formatted.layoutAreaType && typeof formatted.layoutAreaType === 'string') {
+    if (formatted.layoutAreaType && typeof formatted.layoutAreaType === "string") {
       formatted.layoutAreaType = {
         code: formatted.layoutAreaType,
         name: formatted.layoutAreaType,
@@ -178,7 +166,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     }
 
     // Format isBasementAreaAvailable to object if it's a string
-    if (formatted.isBasementAreaAvailable && typeof formatted.isBasementAreaAvailable === 'string') {
+    if (formatted.isBasementAreaAvailable && typeof formatted.isBasementAreaAvailable === "string") {
       formatted.isBasementAreaAvailable = {
         code: formatted.isBasementAreaAvailable,
         i18nKey: formatted.isBasementAreaAvailable,
@@ -186,7 +174,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     }
 
     // Format isAreaUnderMasterPlan to object if it's a string
-    if (formatted.isAreaUnderMasterPlan && typeof formatted.isAreaUnderMasterPlan === 'string') {
+    if (formatted.isAreaUnderMasterPlan && typeof formatted.isAreaUnderMasterPlan === "string") {
       formatted.isAreaUnderMasterPlan = {
         code: formatted.isAreaUnderMasterPlan,
         i18nKey: formatted.isAreaUnderMasterPlan,
@@ -197,27 +185,30 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   };
 
   const payload = useMemo(
-    () => layoutData ? ({
-      CalculationCriteria: [
-        {
-          applicationNumber: applicationNo,
-          tenantId: tenantId,
-          feeType: feeType,
-          Layout: {
-            ...layoutData,
-            layoutDetails: {
-              ...layoutData?.layoutDetails,
-              additionalDetails: {
-                ...layoutData?.layoutDetails?.additionalDetails,
-                // Use updated data from props or fallback to layoutData, with proper formatting
-                applicationDetails: applicationDetails,
-                siteDetails: formatSiteDetailsForCalculator(siteDetails),
+    () =>
+      layoutData
+        ? {
+            CalculationCriteria: [
+              {
+                applicationNumber: applicationNo,
+                tenantId: tenantId,
+                feeType: feeType,
+                Layout: {
+                  ...layoutData,
+                  layoutDetails: {
+                    ...layoutData?.layoutDetails,
+                    additionalDetails: {
+                      ...layoutData?.layoutDetails?.additionalDetails,
+                      // Use updated data from props or fallback to layoutData, with proper formatting
+                      applicationDetails: applicationDetails,
+                      siteDetails: formatSiteDetailsForCalculator(siteDetails),
+                    },
+                  },
+                },
               },
-            },
-          },
-        },
-      ],
-    }) : null,
+            ],
+          }
+        : null,
     [layoutData, applicationDetails, siteDetails, feeType, applicationNo, tenantId]
   );
 
@@ -271,12 +262,12 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
         return {
           taxHeadCode: tax.taxHeadCode,
           category: tax.category,
-          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-          remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? savedCalc?.remarks ?? "",
-          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId ?? tax.filestoreId ?? null,
+          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount || savedCalc?.estimateAmount || 0,
+          remark: isEdited ? prevItem.remark || "" : tax.remarks || savedCalc?.remarks || "",
+          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId || tax.filestoreId || null,
           onDocumentLoading: false,
           documentError: null,
-          edited: prevItem.edited ?? false,
+          edited: prevItem.edited || false,
         };
       });
     });
@@ -285,8 +276,8 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const applicationFeeDataWithTotal = useMemo(() => {
     if (!data?.Calculation?.[0]?.taxHeadEstimates) return [];
     const rows = data.Calculation[0].taxHeadEstimates.map((tax, index) => {
-      const adjustedAmount = feeAdjustments[index]?.adjustedAmount ?? tax.estimateAmount;
-      const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
+      const adjustedAmount = feeAdjustments[index]?.adjustedAmount || tax.estimateAmount;
+      const remarkValue = feeAdjustments[index]?.remark || tax.remarks || "";
 
       return {
         index,
@@ -321,10 +312,9 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   return (
     <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       {
-      // cluCalculatorLoading ? (
-      //   <Loader />
-      // ) : 
-      (
+        // cluCalculatorLoading ? (
+        //   <Loader />
+        // ) :
         <div style={{ width: "100%" }}>
           <LayoutFeeTable
             feeDataWithTotal={applicationFeeDataWithTotal}
@@ -341,7 +331,7 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
             feeHistory={feeHistory}
           />
         </div>
-      )}
+      }
       {showToast && (
         <Toast
           error={showToast?.error}

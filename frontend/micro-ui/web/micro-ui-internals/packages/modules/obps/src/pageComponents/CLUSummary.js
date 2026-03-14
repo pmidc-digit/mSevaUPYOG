@@ -8,7 +8,6 @@ import CLUFeeEstimationDetails from "./CLUFeeEstimationDetails";
 import CLUSitePhotographs from "./CLUSitePhotographs";
 
 function CLUSummary({ currentStepData: formData, t }) {
-
   const coordinates = useSelector(function (state) {
     return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
@@ -21,7 +20,6 @@ function CLUSummary({ currentStepData: formData, t }) {
     return state.obps.OBPSFormReducer.ownerIds;
   });
 
-
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const [year, month, day] = dateString.split("-");
@@ -33,14 +31,16 @@ function CLUSummary({ currentStepData: formData, t }) {
     (doc) => doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   );
   const remainingDocs = formData?.documents?.documents?.documents
-    ?.filter((doc) => !(
-      doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
-      doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" || 
-      doc?.documentType?.includes("Owner Id") || 
-      doc?.documentType?.includes("Owner Photo")
-    ))
+    ?.filter(
+      (doc) =>
+        !(
+          doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
+          doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO" ||
+          doc?.documentType?.includes("Owner Id") ||
+          doc?.documentType?.includes("Owner Photo")
+        )
+    )
     ?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
-
 
   return (
     <div className="employee-main-application-details">
@@ -52,7 +52,7 @@ function CLUSummary({ currentStepData: formData, t }) {
         />
       </StatusTable>
 
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
+      {(formData?.applicationDetails?.owners || [])?.map((owner, index) => {
         return (
           <div>
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>

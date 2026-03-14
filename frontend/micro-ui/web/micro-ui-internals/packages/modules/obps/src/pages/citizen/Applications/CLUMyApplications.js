@@ -2,7 +2,7 @@ import { Card, Header, Loader, Table, SubmitBar } from "@mseva/digit-ui-react-co
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
-
+import { format } from "date-fns";
 const CLUMyApplications = ({ view }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -13,18 +13,18 @@ const CLUMyApplications = ({ view }) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(window.Digit.Utils.browser.isMobile() ? 50 : 10);
 
-  const params = useMemo(() => ({
-    sortBy: "createdTime",
-    limit: pageSize,
-    offset: page * pageSize,
-    sortOrder: "DESC",
-    mobileNumber: userInfo?.mobileNumber || "",
-  }), [page, pageSize, userInfo]);
-
-  const { isLoading, data, isError, error } = Digit.Hooks.obps.useCLUCitizenSearchApplication(
-    params,
-    tenantId
+  const params = useMemo(
+    () => ({
+      sortBy: "createdTime",
+      limit: pageSize,
+      offset: page * pageSize,
+      sortOrder: "DESC",
+      mobileNumber: userInfo?.mobileNumber || "",
+    }),
+    [page, pageSize, userInfo]
   );
+
+  const { isLoading, data, isError, error } = Digit.Hooks.obps.useCLUCitizenSearchApplication(params, tenantId);
 
   console.log("data herein CLU==>", data);
 
@@ -49,7 +49,7 @@ const CLUMyApplications = ({ view }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
   const list = data?.data || [];
-  const total = data?.count ?? 0;
+  const total = data?.count || 0;
 
   const columns = useMemo(
     () => [
@@ -65,12 +65,30 @@ const CLUMyApplications = ({ view }) => {
       {
         Header: t("Owner Name"),
         accessor: (row) => row?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName,
-        Cell: ({ row }) => GetCell(row.original?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
+        Cell: ({ row }) =>
+          GetCell(row.original?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
       },
       {
         Header: t("BPA_APPLICATION_STATUS"),
         accessor: (row) => row?.Applications?.applicationStatus,
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
+      },
+      {
+        Header: t("Application Date"),
+        accessor: (row) => row?.Applications?.cluDetails?.additionalDetails?.SubmittedOn,
+        Cell: ({ row }) => {
+          const submittedOn = row?.original?.Applications?.cluDetails?.additionalDetails?.SubmittedOn;
+          if (!submittedOn) {
+            return GetCell("-");
+          }
+
+          const date = new Date(Number(submittedOn));
+          if (isNaN(date?.getTime())) {
+            return GetCell("-");
+          }
+
+          return GetCell(format(date, "dd/MM/yyyy"));
+        },
       },
       {
         Header: t("Action"),
@@ -93,27 +111,29 @@ const CLUMyApplications = ({ view }) => {
   return (
     <React.Fragment>
       <div className="applications-list-container">
-        <Header>{`${t("BPA_MY_APPLICATIONS_LABEL")}`}({total})</Header>
+        <Header>
+          {`${t("BPA_MY_APPLICATIONS_LABEL")}`}({total})
+        </Header>
 
-        {list.length === 0 ? (
-          <Card style={{ textAlign: "center" }}>{t("NO_APPLICATIONS_MSG")}</Card>
-        ) : null}
+        {list.length === 0 ? <Card style={{ textAlign: "center" }}>{t("NO_APPLICATIONS_MSG")}</Card> : null}
 
         {window.Digit.Utils.browser.isMobile() ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {list.map((application, index) => (
-              <Card
-                key={index}
-                style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}
-              >
+              <Card key={index} style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}>
                 <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{application?.Applications?.applicationNo}</h3>
                 <p style={{ margin: "4px 0" }}>
-                  <b>{t("Owner Name")}:</b> {application?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || t("CS_NA")}
+                  <b>{t("Owner Name")}:</b>{" "}
+                  {application?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || t("CS_NA")}
                 </p>
                 <p style={{ margin: "4px 0" }}>
-                  <b>{t("BPA_APPLICATION_STATUS")}:</b> {t(application?.Applications?.applicationStatus) || application?.Applications?.applicationStatus || t("CS_NA")}
+                  <b>{t("BPA_APPLICATION_STATUS")}:</b>{" "}
+                  {t(application?.Applications?.applicationStatus) || application?.Applications?.applicationStatus || t("CS_NA")}
                 </p>
-                <SubmitBar label={t("TL_VIEW_DETAILS")} onSubmit={() => history.push(`/digit-ui/citizen/obps/clu/application-overview/${application?.Applications?.applicationNo}`)} />
+                <SubmitBar
+                  label={t("TL_VIEW_DETAILS")}
+                  onSubmit={() => history.push(`/digit-ui/citizen/obps/clu/application-overview/${application?.Applications?.applicationNo}`)}
+                />
               </Card>
             ))}
           </div>

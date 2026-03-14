@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable,Row } from "@mseva/digit-ui-react-components";
+import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable, Row } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
@@ -8,6 +8,7 @@ import NOCImageView from "./NOCImageView";
 import NOCDocumentTableView from "./NOCDocumentTableView";
 import NocSitePhotographs from "../components/NocSitePhotographs";
 import { convertToDDMMYYYY } from "../utils";
+import { format } from "date-fns";
 
 function NOCSummary({ currentStepData: formData, t }) {
   const { pathname: url } = useLocation();
@@ -29,7 +30,6 @@ function NOCSummary({ currentStepData: formData, t }) {
   });
 
   console.log("coordinates in summary page", coordinates);
-
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -61,13 +61,18 @@ function NOCSummary({ currentStepData: formData, t }) {
   console.log("documents here in summary", docs);
 
   const sitePhotos = formData?.documents?.documents?.documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-  const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
-const primaryOwner = formData?.applicationDetails?.owners?.[0];
-const propertyId =formData?.applicationDetails?.owners?.[0]?.propertyId;
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+  );
+  const remainingDocs = formData?.documents?.documents?.documents?.filter(
+    (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
+  );
+  const primaryOwner = formData?.applicationDetails?.owners?.[0];
+  const propertyId = formData?.applicationDetails?.owners?.[0]?.propertyId;
+  const applicationNo = formData?.apiData?.Noc?.[0]?.applicationNo;
+  const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn || Date.now();
+// console.log('applicationNo, submittedOn', applicationNo, submittedOn)
 
-console.log('primaryOwner and propertyId here in summary', primaryOwner, propertyId)
+//   console.log("primaryOwner and propertyId here in summary", primaryOwner, propertyId);
 
   return (
     <div className="employee-main-application-details">
@@ -75,15 +80,33 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
 
       <StatusTable style={{ border: "none" }}>
         <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView
-          ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
-        />
+          <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
+          <NOCImageView
+            ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
+            ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
+          />
         </Card>
       </StatusTable>
 
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
+       {applicationNo.length > 0 && (
+        <React.Fragment>
+          <Card>
+            <StatusTable>
+              <Row label={t("APPLICATIONNO")} text={applicationNo || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+      {submittedOn!== null && (
+        <React.Fragment>
+          <Card>
+            <StatusTable>
+              <Row label={t("Application Date")} text={format(Number(submittedOn), "dd/MM/yyyy") || "N/A"} />
+            </StatusTable>
+          </Card>
+        </React.Fragment>
+      )}
+      {(formData?.applicationDetails?.owners || [])?.map((owner, index) => {
         return (
           <Card>
             <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>
@@ -114,7 +137,7 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-           </StatusTable>
+          </StatusTable>
         </Card>
       )}
 
@@ -144,9 +167,9 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"} />
           <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || formData?.siteDetails?.ulbName || "N/A"} />
           <Row label={t("NOC_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"} />
-           <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
+          <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
           <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"} />
-         
+
           <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
           <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
           <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"} />
@@ -222,15 +245,14 @@ console.log('primaryOwner and propertyId here in summary', primaryOwner, propert
           }}
         >
           {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
+            [...sitePhotos].map((doc) => (
+              <NocSitePhotographs
+                key={doc?.filestoreId || doc?.uuid}
+                filestoreId={doc?.filestoreId || doc?.uuid}
+                documentType={doc?.documentType}
+                coordinates={coordinates}
+              />
+            ))}
         </StatusTable>
       </Card>
 

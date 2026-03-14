@@ -184,7 +184,7 @@ const NewADSStepFormFive = ({ config, onBackClick, t }) => {
           statusToSend === "INITIATED" ? "BOOKING_CREATED" : statusToSend === "REFUND" ? "CANCELLED" : statusToSend || source?.bookingStatus,
         // ✅ Prefer whatever was passed in (source.documents),
         // otherwise fall back to payloadState
-        documents: source?.documents ?? [],
+        documents: source?.documents || [],
         workflow: {
           businessService: workflowDetails?.data?.applicationBusinessService || "ADV",
           states: matchingState || statusToSend || "",

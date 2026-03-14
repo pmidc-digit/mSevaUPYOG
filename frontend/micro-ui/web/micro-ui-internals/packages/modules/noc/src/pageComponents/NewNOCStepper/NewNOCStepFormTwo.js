@@ -98,7 +98,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
    
 
-    const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" ?? false;
+    const isBuiltUp = data?.buildingStatus?.code === "BUILTUP" || false;
 
     const netPlotAreaAfterWidening= parseFloat(data?.netPlotAreaAfterWidening);;
     const floorAreas = data?.floorArea?.map(f => parseFloat(f?.value) || 0) || [];
@@ -152,7 +152,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       },
     });
 
-    const applications = searchResponse?.Noc ?? [];
+    const applications = searchResponse?.Noc || [];
     const currentAppNo = currentStepData?.apiData?.Noc?.[0]?.applicationNo;
     const activeApp = applications.find((app) => app?.applicationNo && app?.status !== "REJECTED" && app?.applicationNo !== currentAppNo);
 
@@ -172,7 +172,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       callCreateAPI({ ...currentStepData, siteDetails: { ...data } });
     }
   } catch (error) {
-    setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
+    setShowToast({ key: "true", error: true, message: error });
   }
 };
 
@@ -208,7 +208,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
        // console.log("nocFormData ==>", nocFormData)
 
-    const ownerData = (nocFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+    const ownerData = (nocFormData?.applicationDetails?.owners || [])?.map((item,index)=>{
       return {
         mobileNumber: item?.mobileNumber || "",
         name: item?.ownerOrFirmName || "",
@@ -262,7 +262,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         }
        }catch(error){
           console.log("errors here in goNext - catch block", error);
-          setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
+          setShowToast({ key: "true", error:true, message: error});
       }
 
         // onGoNext();

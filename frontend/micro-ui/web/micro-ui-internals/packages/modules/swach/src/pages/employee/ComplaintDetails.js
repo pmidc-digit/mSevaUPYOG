@@ -93,7 +93,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   //     })
   //   : null;
 
-  // console.log("employeeData?????????????", employeeData);
+  // console.log("employeeData||||||||||||?", employeeData);
 
   const [selectedEmployee, setSelectedEmployee] = useState();
   const [comments, setComments] = useState("");
@@ -532,7 +532,7 @@ export const ComplaintDetails = (props) => {
       <Card>
         <div className="swach-comp-detils-header">
           <CardSubHeader>{t(`CS_HEADER_COMPLAINT_SUMMARY`)}</CardSubHeader>
-          <LinkButton label={t("VIEW_TIMELINE")}  onClick={handleViewTimeline}></LinkButton>
+          <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
         </div>
         <CardLabel>{t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)}</CardLabel>
         {isLoading ? (

@@ -1,5 +1,5 @@
 import { Card, Header, KeyNote, Loader, SubmitBar, Table } from "@mseva/digit-ui-react-components";
-import React,{useEffect,useState,useMemo,useRef} from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
@@ -16,32 +16,35 @@ const LayoutMyApplications = ({ view }) => {
     limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
-    mobileNumber:""
+    mobileNumber: "",
   };
 
   // Local pagination state (kept inside this file only)
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(window.Digit.Utils.browser.isMobile() ? 50 : 10);
 
-  const params = useMemo(() => ({
-    sortBy: "createdTime",
-    limit: pageSize,
-    offset: page * pageSize,
-    sortOrder: "DESC",
-    mobileNumber: userInfo?.mobileNumber || "",
-  }), [page, pageSize, userInfo]);
+  const params = useMemo(
+    () => ({
+      sortBy: "createdTime",
+      limit: pageSize,
+      offset: page * pageSize,
+      sortOrder: "DESC",
+      mobileNumber: userInfo?.mobileNumber || "",
+    }),
+    [page, pageSize, userInfo]
+  );
 
   const { isLoading, data, isError, error } = Digit.Hooks.obps.useLayoutCitizenSearchApplication(params, tenantId);
 
   console.log("data herein CLU==>", data);
 
-  const labels=["CS_CF_VIEW", "CS_CF_TRACK", "TL_VIEW_DETAILS"];
+  const labels = ["CS_CF_VIEW", "CS_CF_TRACK", "TL_VIEW_DETAILS"];
 
-  useEffect(()=>{
-    if(data){
+  useEffect(() => {
+    if (data) {
       data.revalidate();
     }
-  },[])
+  }, []);
 
   const tableWrapperRef = useRef(null);
 
@@ -90,32 +93,36 @@ const LayoutMyApplications = ({ view }) => {
   }
 
   const list = data?.data || [];
-  const total = data?.count ?? data?.totalCount ?? 0;
+  const total = data?.count || data?.totalCount || 0;
 
   return (
     <React.Fragment>
       <div className="applications-list-container">
-        <Header>{`${t("BPA_MY_APPLICATIONS_LABEL")}`}({total})</Header>
+        <Header>
+          {`${t("BPA_MY_APPLICATIONS_LABEL")}`}({total})
+        </Header>
 
-        {list.length === 0 ? (
-          <Card style={{ textAlign: "center" }}>{t("NO_APPLICATIONS_MSG")}</Card>
-        ) : null}
+        {list.length === 0 ? <Card style={{ textAlign: "center" }}>{t("NO_APPLICATIONS_MSG")}</Card> : null}
 
         {window.Digit.Utils.browser.isMobile() ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {list.map((application, index) => (
-              <Card
-                key={index}
-                style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}
-              >
+              <Card key={index} style={{ padding: "12px", borderRadius: "8px", boxShadow: "0px 2px 6px rgba(0,0,0,0.1)" }}>
                 <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>{application?.Applications?.applicationNo}</h3>
                 <p style={{ margin: "4px 0" }}>
-                  <b>{t("Owner")}:</b> {application?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || t("CS_NA")}
+                  <b>{t("Owner")}:</b>{" "}
+                  {application?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || t("CS_NA")}
                 </p>
                 <p style={{ margin: "4px 0" }}>
-                  <b>{t("Status")}:</b> {t(`BPA_STATUS_${application?.Applications?.applicationStatus || application?.Applications?.status || "-"}`) || (application?.Applications?.applicationStatus || t("CS_NA"))}
+                  <b>{t("Status")}:</b>{" "}
+                  {t(`BPA_STATUS_${application?.Applications?.applicationStatus || application?.Applications?.status || "-"}`) ||
+                    application?.Applications?.applicationStatus ||
+                    t("CS_NA")}
                 </p>
-                <SubmitBar label={t("TL_VIEW_DETAILS")} onSubmit={() => history.push(`/digit-ui/citizen/obps/layout/${application?.Applications?.applicationNo}`)} />
+                <SubmitBar
+                  label={t("TL_VIEW_DETAILS")}
+                  onSubmit={() => history.push(`/digit-ui/citizen/obps/layout/${application?.Applications?.applicationNo}`)}
+                />
               </Card>
             ))}
           </div>
@@ -145,8 +152,6 @@ const LayoutMyApplications = ({ view }) => {
             />
           </div>
         )}
-
-
       </div>
     </React.Fragment>
   );

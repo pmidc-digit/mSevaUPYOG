@@ -23,7 +23,7 @@ const ChallanStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function goNext(finalData) {
     console.log("Current Data", finalData);
-    console.log("data?????....=====", docData?.CHB?.Documents);
+    console.log("data||||?....=====", docData?.CHB?.Documents);
 
     const missingFields = validation(finalData);
 

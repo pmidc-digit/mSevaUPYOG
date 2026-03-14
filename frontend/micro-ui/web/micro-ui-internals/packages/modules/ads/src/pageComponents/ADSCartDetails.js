@@ -41,7 +41,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
                 <span>
                   {/* {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length} */}
                   {/* {item?.ad?.amount ? ` — ₹${(item.ad.amount * 0.09 * 0.09 * item.slots?.length).toFixed(2)}` : ""} */}
-                  {t(item?.ad?.name ?? item?.ad?.location)}
+                  {t(item?.ad?.name || item?.ad?.location)}
                   {/*  Apply 9% tax + 9% service (18%) on each slot amount, then multiply by number of slots */}
                   {item?.ad?.amount ? ` — ₹${(item?.ad?.amount * 1.18 * item?.slots?.length).toFixed(2)}` : ""}
                   {/* Apply 9% tax + 9% service (18%) once on base amount, then add base × slots */}

@@ -115,7 +115,7 @@ export const BillDetailsFormConfig = (props, t) => ({
       ],
     },
   ],
-  "WSReconnection": [
+  WSReconnection: [
     {
       head: t("COMMON_PAY_SCREEN_HEADER"),
       body: [
@@ -131,7 +131,7 @@ export const BillDetailsFormConfig = (props, t) => ({
       ],
     },
   ],
-  "SWReconnection": [
+  SWReconnection: [
     {
       head: t("COMMON_PAY_SCREEN_HEADER"),
       body: [
@@ -209,7 +209,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
   const getTotalFSM = () => (application?.totalAmount ? application?.totalAmount : 0);
   const getAdvanceAmount = () => (applicationData?.advanceAmount ? applicationData?.advanceAmount : 0);
   //const dueAmountTobePaid = () => ( bill?.totalAmount ? bill?.totalAmount - applicationData?.advanceAmount:0);
-  const dueAmountTobePaid = () => ( application?.totalAmount ? application?.totalAmount - applicationData?.advanceAmount:0);
+  const dueAmountTobePaid = () => (application?.totalAmount ? application?.totalAmount - applicationData?.advanceAmount : 0);
   const getAmountPerTrip = () => (application?.additionalDetails?.tripAmount ? application?.additionalDetails?.tripAmount : 0);
 
   const arrears =
@@ -366,7 +366,6 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
       </table>
     );
   };
-
   return (
     <React.Fragment>
       <StatusTable>
@@ -408,7 +407,8 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
               />
             ))}
 
-          {(applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" || applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN") ? (
+          {applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" ||
+          applicationData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" ? (
             <Row
               label={t("FSM_DUE_AMOUNT_TO_BE_PAID")}
               textStyle={{ fontWeight: "bold", textAlign: "left" }}
@@ -552,7 +552,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
                 className="text-indent-xl"
                 onChange={(e) => onChangeAmount(e.target.value)}
                 value={amount}
-                disable={businessService === "WS" || "SW"?false:getTotal() === 0}
+                disable={businessService === "WS" || "SW" ? false : getTotal() === 0}
               />
             ) : (
               <TextInput style={{ width: "30%" }} className="text-indent-xl" value={getTotal()} disable={true} />

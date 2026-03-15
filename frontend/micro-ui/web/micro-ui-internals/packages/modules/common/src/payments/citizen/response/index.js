@@ -1094,7 +1094,7 @@ const WrapPaymentComponent = (props) => {
         )}
       </StatusTable>
       {/* <div style={{ display: "flex" }}> */}
-      {business_service == "TL" ? (
+      {/* {business_service == "TL" ? (
         <div
           className="primary-label-btn d-grid"
           style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
@@ -1106,7 +1106,7 @@ const WrapPaymentComponent = (props) => {
           </svg>
           {t("TL_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {/* {business_service == "TL" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">

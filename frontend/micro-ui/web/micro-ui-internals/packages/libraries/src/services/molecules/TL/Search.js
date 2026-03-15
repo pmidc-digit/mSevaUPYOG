@@ -71,6 +71,8 @@ export const TLSearch = {
       values: [
         { title: "TL_LOCALIZATION_APPLICATION_NO", value: response?.applicationNumber ? `${response?.applicationNumber}` : "NA" },
         // { title: "TL_APPLICATION_CHALLAN_LABEL", value: response?.tradeLicenseDetail?.channel ? `TL_CHANNEL_${response?.tradeLicenseDetail?.channel}` : "NA" },
+        { title: "TL_APPLICATION_STATUS", value: response?.status ? `TL_${response?.status}` : "NA" },
+        { title: "TL_APPLICATION_CATEGORY", value: response?.workflowCode ? `CS_COMMON_INBOX_${response?.workflowCode?.toUpperCase()}` : "NA" },
       ],
     };
 
@@ -248,14 +250,16 @@ export const TLSearch = {
                 return {
                   title: Number(checkOwnerLength) > 1 ? "TL_PAYMENT_PAID_BY_PLACEHOLDER" : "",
                   values: [
-                    { title: "TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL", value: subOwnerShipCategory },
-                    { title: "TL_TYPE_OF_SUB_OWNERSHIP", value: response?.tradeLicenseDetail?.subOwnerShipCategory ? `COMMON_MASTERS_OWNERSHIPCATEGORY_${response?.tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]}` : "NA" },
+                    { title: "TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL", value: response?.tradeLicenseDetail?.subOwnerShipCategory ? `COMMON_MASTERS_OWNERSHIPCATEGORY_${response?.tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]}` : "NA" },
+                    { title: "TL_TYPE_OF_SUB_OWNERSHIP", value: subOwnerShipCategory },
                     { title: "TL_NEW_OWNER_DETAILS_NAME_LABEL", value: owner?.name || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_MOB_NO_LABEL", value: owner?.mobileNumber || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL", value: owner?.fatherOrHusbandName || "NA" },
                     { title: "TL_COMMON_RELATIONSHIP_LABEL", value: owner?.relationship || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_GENDER_LABEL", value: owner?.gender || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_EMAIL_LABEL", value: owner?.emailId || "NA" },
+                    { title: "TL_NEW_OWNER_DETAILS_DOB_LABEL", value: owner?.dob ? convertEpochToDate(owner?.dob) : "NA" },
+                    { title: "TL_OWNER_PAN_LABEL", value: owner?.pan || "NA" },
                     {
                       title: "TL_NEW_OWNER_DETAILS_SPL_OWN_CAT_LABEL",
                       value: owner?.ownerType ? `COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}` : "NA",

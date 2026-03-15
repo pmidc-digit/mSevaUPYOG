@@ -28,13 +28,13 @@ const DesktopInbox = ({
     // return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
     if (value < 0) {
       return (
-        <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
+        <span className="sla-cell-error TL-color-error TL-p-0">
           {Math.abs(value)} hours overdue
         </span>
       );
     } else {
       return (
-        <span className="sla-cell-success" style={{ padding: 0 }}>
+        <span className="sla-cell-success TL-p-0">
           {value} hours left
         </span>
       );
@@ -49,7 +49,6 @@ const DesktopInbox = ({
     return str;
   };
 
-  console.log("data in DesktopInbox of TL ", data);
 
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
   const inboxColumns = () => [
@@ -66,6 +65,24 @@ const DesktopInbox = ({
       },
     },
     {
+      Header: t("TL_COMMON_TABLE_COL_LIC_NO"),
+      Cell: ({ row }) => {
+        return GetCell(row.original["licenseNumber"] || "-");
+      },
+    },
+    {
+      Header: t("TL_COMMON_TABLE_COL_TRADE_NAME"),
+      Cell: ({ row }) => {
+        return GetCell(row.original["tradeName"] || "-");
+      },
+    },
+    {
+      Header: t("TL_COMMON_TABLE_COL_OWN_NAME"),
+      Cell: ({ row }) => {
+        return GetCell(row.original["ownerName"] || "-");
+      },
+    },
+    {
       Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
       accessor: "applicationDate",
       Cell: ({ row }) => {
@@ -74,17 +91,23 @@ const DesktopInbox = ({
       },
     },
     {
+      Header: t("TL_COMMON_TABLE_COL_FIN_YEAR"),
+      Cell: ({ row }) => {
+        return GetCell(row.original["financialYear"] || "-");
+      },
+    },
+    {
       Header: t("TL_COMMON_TABLE_COL_APP_TYPE"),
       Cell: ({ row }) => {
         return GetCell(t(row.original["businessService"] ? `CS_COMMON_INBOX_${row.original["businessService"]?.toUpperCase()}` : "NA"));
       },
     },
-    {
-      Header: t("WF_INBOX_HEADER_LOCALITY"),
-      Cell: ({ row }) => {
-        return GetCell(t(Digit.Utils.locale.getRevenueLocalityCode(row.original["locality"], row.original["tenantId"])));
-      },
-    },
+    // {
+    //   Header: t("WF_INBOX_HEADER_LOCALITY"),
+    //   Cell: ({ row }) => {
+    //     return GetCell(t(Digit.Utils.locale.getRevenueLocalityCode(row.original["locality"], row.original["tenantId"])));
+    //   },
+    // },
     {
       Header: t("WF_INBOX_HEADER_STATUS"),
       Cell: ({ row }) => {
@@ -117,7 +140,7 @@ const DesktopInbox = ({
         {t("CS_MYAPPLICATIONS_NO_APPLICATION")
           .split("\\n")
           .map((text, index) => (
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="TL-alignC">
               {text}
             </p>
           ))}
@@ -125,6 +148,7 @@ const DesktopInbox = ({
     );
   } else if (data?.table?.length > 0) {
     result = (
+      <div className="tjkjk">
       <ApplicationTable
         t={t}
         data={data?.table}
@@ -147,7 +171,7 @@ const DesktopInbox = ({
         disableSort={props.disableSort}
         sortParams={props.sortParams}
         totalRecords={props.totalRecords}
-      />
+      /></div>
     );
   }
   // else {
@@ -190,7 +214,7 @@ const DesktopInbox = ({
           </div>
         </div>
       )}
-      <div style={{ flex: 1 }}>
+      <div className="TL-flex-1">
         <SearchApplication
           defaultSearchParams={props.defaultSearchParams}
           onSearch={props.onSearch}
@@ -200,7 +224,7 @@ const DesktopInbox = ({
           searchParams={props.searchParams}
           {...{ setSearchFieldsBackToOriginalState, setSetSearchFieldsBackToOriginalState }}
         />
-        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
+        <div className={`result TL-flex-1${!props?.isSearch ? " TL-search-ml-24" : ""}`}>
           {result}
         </div>
       </div>

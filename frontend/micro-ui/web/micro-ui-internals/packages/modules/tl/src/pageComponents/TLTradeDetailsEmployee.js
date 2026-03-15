@@ -51,7 +51,6 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const [structureSubTypeOptions, setStructureSubTypeOptions] = useState([]);
   const [owners, setOwners] = useState(formData?.owners || [createTradeDetailsDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  // console.log("tradedetilsInTLTradeDetails",tradedetils);
 
   const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
 
@@ -68,7 +67,7 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const [licenseTypeList, setLicenseTypeList] = useState([]);
   // const [licenseTypeValue, setLicenseTypeValue] = useState(tradedetils?.[0]?.licenseType||{});
   const [licenseTypeValue, setLicenseTypeValue] = useState([]);
-  // console.log("licenseTypeValueCheck", licenseTypeValue)
+
 
   const { isLoading: menuLoading, data: Menu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "StructureType");
 
@@ -185,12 +184,10 @@ const OwnerForm1 = (_props) => {
   } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
-  // console.log("licenseTypeValueForCheck",licenseTypeValue)
 
   useEffect(() => {
-    console.log("licenseTypeValue: ", licenseTypeValue);
     if (billingSlabData && billingSlabData?.billingSlab && billingSlabData?.billingSlab?.length > 0) {
-      // console.log("licenseTypeValueChanged",);
+     
       const processedData =
         billingSlabData.billingSlab &&
         billingSlabData.billingSlab.reduce(
@@ -235,29 +232,15 @@ const OwnerForm1 = (_props) => {
     }
   }, [billingSlabData]);
 
-  //console.log("Financial Year Menu options ", FinaceMenu?.["egf-master"]);
-
+  let isRenewal = window.location.href.includes("renew-application-details") || window.location.href.includes("renew-trade");
+  if (window.location.href.includes("edit-application-details")) isRenewal = true;
   let financialYearOptions = [];
   FinaceMenu &&
     FinaceMenu["egf-master"] &&
     FinaceMenu["egf-master"].FinancialYear.map((data) => {
-      if (data.module == "TL") financialYearOptions.push({ code: data.name, i18nKey: `FY${data.name}`, id: data.name.split("-")[0] });
+      if (data.module == "TL" && data.visible === true)
+        financialYearOptions.push({ code: data.name, i18nKey: `FY${data.name}`, id: data.name.split("-")[0] });
     });
-
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
-  const currFyStart = month >= 4 ? year : year - 1;
-
-  //console.log("financialYearOptions", financialYearOptions);
-  //console.log("currFyStart ", currFyStart);
-
-  financialYearOptions = financialYearOptions.filter((y) => {
-    const fyYearStartStr = y.id;
-    const fyYearStart = parseInt(fyYearStartStr);
-    // return fyYearStart <= currFyStart;
-    return fyYearStart == currFyStart;
-  });
 
   if (financialYearOptions && financialYearOptions.length > 0) {
     financialYearOptions.sort(function (a, b) {
@@ -292,9 +275,6 @@ const OwnerForm1 = (_props) => {
       });
     }
   }
-
-  let isRenewal = window.location.href.includes("renew-application-details") || window.location.href.includes("renew-trade");
-  if (window.location.href.includes("edit-application-details")) isRenewal = true;
 
   useEffect(() => {
     if (isRenewal && structureTypeOptions?.length > 0 && !menuLoading) {
@@ -338,11 +318,9 @@ const OwnerForm1 = (_props) => {
       trigger();
     }
 
-    console.log("tradedetail", tradedetail);
   }, [formValue]);
 
   useEffect(() => {
-    console.log("licenseTypeValue", licenseTypeValue);
 
     if (licenseTypeValue) {
       setValue("licenseType", licenseTypeValue); // <-- This is the missing part
@@ -369,7 +347,7 @@ const OwnerForm1 = (_props) => {
   return (
     <div>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_FINANCIAL_YEAR_LABEL")}`}
           <span className="requiredField">*</span>
         </CardLabel>
@@ -400,7 +378,7 @@ const OwnerForm1 = (_props) => {
       </LabelFieldPair>
       <CardLabelError >{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")}`}
           <span className="requiredField">*</span>
         </CardLabel>
@@ -410,27 +388,32 @@ const OwnerForm1 = (_props) => {
           defaultValue={licenseTypeValue}
           control={control}
           render={(props) => (
-            <Dropdown
-              className="form-field"
-              selected={licenseTypeValue} //{licenseTypeList[1]}
-              // selected={licenseTypeNewValue}
-              disable={true}
-              option={licenseTypeList}
-              select={(e) => {
-                props.onChange(e);
-              }}
-              optionKey="i18nKey"
-              onBlur={props.onBlur}
-              t={t}
-              errorStyle={localFormState.touched.licenseType && errors?.licenseType?.message ? true : false}
-              placeholder={t("TL_NEW_TRADE_DETAILS_LIC_TYPE_PLACEHOLDER")}
-            />
+            <div className="form-field" style={{ pointerEvents: "none" }}>
+              <div className="TL-Tradetype-disabled" >
+                {licenseTypeValue?.i18nKey ? t(licenseTypeValue.i18nKey) : licenseTypeValue?.code || ""}
+              </div>
+            </div>
+            // <Dropdown
+            //   className="form-field"
+            //   selected={licenseTypeValue} //{licenseTypeList[1]}
+            //   // selected={licenseTypeNewValue}
+            //   disable={true}
+            //   option={licenseTypeList}
+            //   select={(e) => {
+            //     props.onChange(e);
+            //   }}
+            //   optionKey="i18nKey"
+            //   onBlur={props.onBlur}
+            //   t={t}
+            //   errorStyle={localFormState.touched.licenseType && errors?.licenseType?.message ? true : false}
+            //   placeholder={t("TL_NEW_TRADE_DETAILS_LIC_TYPE_PLACEHOLDER")}
+            // />
           )}
         />
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_COMMON_TABLE_COL_TRD_NAME")}`}
           <span className="requiredField">*</span>
         </CardLabel>
@@ -439,7 +422,8 @@ const OwnerForm1 = (_props) => {
             control={control}
             name={"tradeName"}
             defaultValue={tradedetail?.tradeName}
-            rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
+            // rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
+            rules={{ required: t("REQUIRED_FIELD"), ...(!isRenewal && { validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }) }}
             render={(props) => (
               <TextInput
                 value={props.value}
@@ -462,7 +446,7 @@ const OwnerForm1 = (_props) => {
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.tradeName ? errors?.tradeName?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL")}`}
           <span className="requiredField">*</span>
         </CardLabel>
@@ -472,38 +456,38 @@ const OwnerForm1 = (_props) => {
           defaultValue={tradedetail?.structureType}
           control={control}
           render={(props) => (
-            <Dropdown
-              className="form-field"
-              selected={props.value}
-              disable={isRenewal}
-              option={selectedStructureTypeOptions}
-              errorStyle={localFormState.touched.structureType && errors?.structureType?.message ? true : false}
-              select={(e) => {
-                let selectedOption = e?.code?.split(".")[0];
-                let structureSubTypeOption = [];
-                structureTypeOptions.map((data) => {
-                  if (selectedOption === data?.code?.split(".")[0]) {
-                    structureSubTypeOption.push({
-                      code: data?.code,
-                      i18nKey: t(`COMMON_MASTERS_STRUCTURETYPE_${stringReplaceAll(data?.code?.toUpperCase(), ".", "_")}`),
-                    });
-                  }
-                });
-                setValue("structureSubType", "");
-                setStructureSubTypeOptions(structureSubTypeOption);
-                props.onChange(e);
-              }}
-              optionKey="i18nKey"
-              onBlur={props.onBlur}
-              t={t}
-              placeholder={t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_PLACEHOLDER")}
-            />
+            <div className="form-field" style={isRenewal ? { pointerEvents: "none" } : {}}>
+              <Dropdown
+                selected={props.value}
+                option={selectedStructureTypeOptions}
+                errorStyle={localFormState.touched.structureType && errors?.structureType?.message ? true : false}
+                select={(e) => {
+                  let selectedOption = e?.code?.split(".")[0];
+                  let structureSubTypeOption = [];
+                  structureTypeOptions.map((data) => {
+                    if (selectedOption === data?.code?.split(".")[0]) {
+                      structureSubTypeOption.push({
+                        code: data?.code,
+                        i18nKey: t(`COMMON_MASTERS_STRUCTURETYPE_${stringReplaceAll(data?.code?.toUpperCase(), ".", "_")}`),
+                      });
+                    }
+                  });
+                  setValue("structureSubType", "");
+                  setStructureSubTypeOptions(structureSubTypeOption);
+                  props.onChange(e);
+                }}
+                optionKey="i18nKey"
+                onBlur={props.onBlur}
+                t={t}
+                placeholder={t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_PLACEHOLDER")}
+              />
+            </div>
           )}
         />
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_LABEL")}`}
           <span className="requiredField">*</span>
         </CardLabel>
@@ -513,28 +497,28 @@ const OwnerForm1 = (_props) => {
           defaultValue={tradedetail?.structureSubType}
           control={control}
           render={(props) => (
-            <Dropdown
-              className="form-field"
-              selected={getValues("structureSubType")}
-              disable={isRenewal}
-              option={structureSubTypeOptions}
-              select={(e) => {
-                if (e?.code != tradedetail?.structureSubType?.code && isRenewal)
-                  setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
-                props.onChange(e);
-              }}
-              optionKey="i18nKey"
-              onBlur={props.onBlur}
-              t={t}
-              errorStyle={localFormState.touched.structureSubType && errors?.structureSubType?.message ? true : false}
-              placeholder={t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_PLACEHOLDER")}
-            />
+            <div className="form-field" style={isRenewal ? { pointerEvents: "none" } : {}}>
+              <Dropdown
+                selected={getValues("structureSubType")}
+                option={structureSubTypeOptions}
+                select={(e) => {
+                  if (e?.code != tradedetail?.structureSubType?.code && isRenewal)
+                    setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                  props.onChange(e);
+                }}
+                optionKey="i18nKey"
+                onBlur={props.onBlur}
+                t={t}
+                errorStyle={localFormState.touched.structureSubType && errors?.structureSubType?.message ? true : false}
+                placeholder={t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_PLACEHOLDER")}
+              />
+            </div>
           )}
         />
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.structureSubType ? errors?.structureSubType?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
+        <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")}`}
           <span className="requiredField">*</span>
         </CardLabel>
@@ -545,20 +529,20 @@ const OwnerForm1 = (_props) => {
             defaultValue={tradedetail?.commencementDate}
             control={control}
             render={(props) => (
-              <DatePicker
-                date={props.value}
-                // date={CommencementDate}
-                name="CommencementDate"
-                onChange={props.onChange}
-                disabled={isRenewal}
-              />
+              <div style={isRenewal ? { pointerEvents: "none" } : {}}>
+                <DatePicker
+                  date={props.value}
+                  name="CommencementDate"
+                  onChange={props.onChange}
+                />
+              </div>
             )}
           />
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.commencementDate ? errors?.commencementDate?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
+        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
         <div className="form-field">
           <Controller
             control={control}
@@ -576,7 +560,8 @@ const OwnerForm1 = (_props) => {
                 }}
                 labelStyle={{ marginTop: "unset" }}
                 onBlur={props.onBlur}
-                disable={isRenewal}
+                disable={false}
+                readOnly={isRenewal}
                 placeholder={t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_PLACEHOLDER")}
               />
             )}
@@ -585,7 +570,7 @@ const OwnerForm1 = (_props) => {
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.gstNo ? errors?.gstNo?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
+        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
         <div className="form-field">
           <Controller
             name="operationalArea"
@@ -602,7 +587,8 @@ const OwnerForm1 = (_props) => {
                 autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "operationalArea"}
                 errorStyle={localFormState.touched.operationalArea && errors?.operationalArea?.message ? true : false}
                 onBlur={props.onBlur}
-                disable={isRenewal}
+                disable={false}
+                readOnly={isRenewal}
                 placeholder={t("TL_NEW_TRADE_DETAILS_OPR_AREA_PLACEHOLDER")}
               />
             )}
@@ -611,7 +597,7 @@ const OwnerForm1 = (_props) => {
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.operationalArea ? errors?.operationalArea?.message : ""}</CardLabelError>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
+        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
         <div className="form-field">
           <Controller
             name="noOfEmployees"
@@ -628,7 +614,8 @@ const OwnerForm1 = (_props) => {
                 autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "noOfEmployees"}
                 errorStyle={localFormState.touched.noOfEmployees && errors?.noOfEmployees?.message ? true : false}
                 onBlur={props.onBlur}
-                disable={isRenewal}
+                disable={false}
+                readOnly={isRenewal}
                 placeholder={t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_PLACEHOLDER")}
               />
             )}
@@ -638,7 +625,7 @@ const OwnerForm1 = (_props) => {
       <CardLabelError>{localFormState.touched.noOfEmployees ? errors?.noOfEmployees?.message : ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO")} `}</CardLabel>
+        <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO")} `}</CardLabel>
         <div className="form-field">
           <Controller
             name="oldReceiptNo"
@@ -655,7 +642,8 @@ const OwnerForm1 = (_props) => {
                 autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "oldReceiptNo"}
                 errorStyle={localFormState.touched.oldReceiptNo && errors?.oldReceiptNo?.message ? true : false}
                 onBlur={props.onBlur}
-                disable={isRenewal}
+                disable={false}
+                readOnly={isRenewal}
                 placeholder={t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO_PLACEHOLDER")}
               />
             )}

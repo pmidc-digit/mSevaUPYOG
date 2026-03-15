@@ -128,7 +128,7 @@ const SearchTrade = ({ config: propsConfig, onSelect }) => {
   //   }
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="TL-mt-16">
       <FormComposer
         onSubmit={onTradeSearch}
         noBoxShadow

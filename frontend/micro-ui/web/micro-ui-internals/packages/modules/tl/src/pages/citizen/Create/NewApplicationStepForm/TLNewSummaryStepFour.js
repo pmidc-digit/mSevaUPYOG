@@ -14,7 +14,6 @@ import { Loader } from "../../../../components/Loader";
 // });
 
 //   function goNext(data) {
-//     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 //     onGoNext();
 //   }
 //   function onGoBack(data) {
@@ -22,13 +21,11 @@ import { Loader } from "../../../../components/Loader";
 //   }
 
 //   const onFormValueChange = (setValue = true, data) => {
-//     console.log("onFormValueChange data in AdministrativeDetails: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+//     
 //     if (!_.isEqual(data, currentStepData)) {
 //       dispatch(UPDATE_PtNewApplication(config.key, data));
 //     }
 //   };
-
-//  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
 //   return (
 //     <React.Fragment>
@@ -98,18 +95,16 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Function to handle the "Next" button click
   // const goNext = (data) => {
-  //   // console.log("checkDFpmr=====", formData);
-  //   // console.log("data=====?", data);
+  
 
   //   if (!data?.SummaryTL?.consentValue) {
   //     setError(`Please select checkbox`);
   //     setShowToast(true);
   //   }
   //   const res = onSubmit(formData?.CreatedResponse);
-  //   console.log("API response: ", res);
+  //  
 
   //   if (res) {
-  //     // console.log("Submission successful, moving to next step.");
   //     // history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
   //     history.replace(`/digit-ui/citizen/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
   //   } else {
@@ -137,7 +132,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const onSubmit = async (data) => {
-    console.log("formData", data);
+  
     let formdata = { ...data };
     formdata.tradeLicenseDetail.applicationDocuments = formData?.Documents?.documents?.documents;
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
@@ -153,7 +148,6 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
       return error;
     }
 
-    // console.log("onSubmit data in step 4: ", formdata);
   };
 
   // Function to handle the "Back" button click
@@ -168,11 +162,8 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Function to handle form value changes
   // const onFormValueChange = (setValue = true, data) => {
-  //   // console.log("onFormValueChange data summary in step 5: ", data);
   //   dispatch(UPDATE_tlNewApplication(config.key, data));
   // };
-
-  // console.log("config in step 4", config)
 
   return (
     <React.Fragment>

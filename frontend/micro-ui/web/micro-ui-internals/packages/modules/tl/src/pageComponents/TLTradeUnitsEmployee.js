@@ -60,7 +60,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
     { tenantId, filters: {} },
     {
       select: (data) => {
-        return data?.billingSlab.filter((e) => e.tradeType && e.applicationType === applicationType && e.licenseType === "PERMANENT");
+        return data?.billingSlab.filter((e) => e.tradeType && (e.applicationType === applicationType || (isRenewal && e.applicationType === "NEW")) && e.licenseType === "PERMANENT");
       },
     }
   );
@@ -130,8 +130,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
       {units.map((unit, index) => (
         <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
       ))}
-      {!isRenewal && (
-        <LinkLabel
+      <LinkLabel
           style={{
             display: "inline-block",
             padding: "8px 16px",
@@ -151,7 +150,6 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
         >
           {t("TL_ADD_TRADE_UNITS")}
         </LinkLabel>
-      )}
     </React.Fragment>
   );
 };
@@ -313,6 +311,13 @@ const TradeUnitForm = (_props) => {
       });
       const filterTradeSubTypeList = getUniqueItemsFromArray(tradeSubTypeOptions, "code");
       setTradeSubTypeOptionsList(filterTradeSubTypeList);
+      // Enrich existing unit's tradeSubType with ishazardous from MDMS (needed for HAZ/NHAZ workflow detection during renewal)
+      if (unit?.tradeSubType?.code && unit?.tradeSubType?.ishazardous === undefined) {
+        const mdmsMatch = filterTradeSubTypeList.find(opt => opt.code === unit.tradeSubType.code);
+        if (mdmsMatch && mdmsMatch.ishazardous !== undefined) {
+          setValue("tradeSubType", { ...unit.tradeSubType, ishazardous: mdmsMatch.ishazardous });
+        }
+      }
     }
   }, [tradeTypeMdmsData, !isLoading, billingSlabTradeTypeData]);
 
@@ -348,6 +353,11 @@ const TradeUnitForm = (_props) => {
   }
 
   function checkBillingSlab(value) {
+    // Skip billing slab validation for renewal since trade data is already validated and fields are disabled
+    if (isRenewal) {
+      sessionStorage.removeItem("isBillingSlabError");
+      return true;
+    }
     if (
       value &&
       (billingSlabTradeTypeData?.filter(
@@ -371,7 +381,7 @@ const TradeUnitForm = (_props) => {
     <React.Fragment>
       <div>
         <div className="clu-doc-required-card no-width">
-          {allUnits?.length > 1 ? (
+          {allUnits?.length > 1 && !(isRenewal && unit?.id) ? (
             <div
               style={{
                 display: "flex",
@@ -414,7 +424,7 @@ const TradeUnitForm = (_props) => {
             </div>
           ) : null}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {`${t("TRADELICENSE_TRADECATEGORY_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -427,7 +437,7 @@ const TradeUnitForm = (_props) => {
                 <Dropdown
                   className="form-field"
                   selected={props.value}
-                  disable={isRenewal}
+                  disable={isRenewal && !!unit?.id}
                   option={tradeCategoryValues}
                   errorStyle={localFormState.touched.tradeCategory && errors?.tradeCategory?.message ? true : false}
                   select={(e) => {
@@ -465,7 +475,7 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {`${t("TRADELICENSE_TRADETYPE_LABEL")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -478,7 +488,7 @@ const TradeUnitForm = (_props) => {
                 <Dropdown
                   className="form-field"
                   selected={getValues("tradeType")}
-                  disable={isRenewal}
+                  disable={isRenewal && !!unit?.id}
                   option={unit?.tradeCategory ? tradeTypeOptionsList : []}
                   errorStyle={localFormState.touched.tradeType && errors?.tradeType?.message ? true : false}
                   select={(e) => {
@@ -501,7 +511,6 @@ const TradeUnitForm = (_props) => {
                       setValue("uomValue", "");
                       setTradeSubTypeOptionsList(filterTradeSubTypeList);
                     }
-                    console.log("tradeType", e);
                     props.onChange(e);
                   }}
                   optionKey="i18nKey"
@@ -514,7 +523,7 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")}`}
               <span className="requiredField">*</span>
             </CardLabel>
@@ -535,7 +544,7 @@ const TradeUnitForm = (_props) => {
                 <Dropdown
                   className="form-field"
                   selected={getValues("tradeSubType")}
-                  disable={isRenewal}
+                  disable={isRenewal && !!unit?.id}
                   // option={unit?.tradeType ? sortDropdownNames(tradeSubTypeOptionsList,"i18nKey",t) : []}
                   option={unit?.tradeType ? validTradeSubTypeOptions : []}
                   errorStyle={localFormState.touched.tradeSubType && errors?.tradeSubType?.message ? true : false}
@@ -544,7 +553,7 @@ const TradeUnitForm = (_props) => {
                     if (e?.code != props?.value?.code && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
                     setValue("uom", e?.uom ? e?.uom : "");
                     setValue("uomValue", "");
-                    console.log("tradeSubType", e);
+                    
                     props.onChange(e);
                   }}
                   optionKey="i18nKey"
@@ -562,7 +571,8 @@ const TradeUnitForm = (_props) => {
               : ""}{" "}
           </CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none"
+             style={{ color: !unit?.tradeSubType?.uom ? "#9e9e9e" : "" }}>
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}`}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>
@@ -592,7 +602,8 @@ const TradeUnitForm = (_props) => {
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none"
+             style={{ color: !unit?.tradeSubType?.uom ? "#9e9e9e" : "" }}>
               {unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}
               <span className={unit?.tradeSubType?.uom ? "requiredField" : ""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
             </CardLabel>

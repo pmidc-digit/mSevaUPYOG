@@ -40,7 +40,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
         landmark: formData?.cpt?.details?.address?.landmark,
         locality: formData?.cpt?.details?.address?.locality?.name,
         city: formData?.cpt?.details?.address?.city || t(formData?.cpt?.details?.address?.tenantId),
-        pincode: formData?.address?.pincode,
+        pincode: formData?.cpt?.details?.address?.pincode || formData?.address?.pincode,
       };
       let addressDetails = "";
       for (const key in obj) {
@@ -61,7 +61,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
         landmark: formData?.cpt?.details?.address?.landmark,
         locality: formData?.cpt?.details?.address?.locality?.name,
         city: formData?.cpt?.details?.address?.city,
-        pincode: formData?.address?.pincode,
+        pincode: formData?.cpt?.details?.address?.pincode || formData?.address?.pincode,
       };
       let addressDetails = "";
       for (const key in obj) {
@@ -110,7 +110,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
   if (userType === "employee") {
     return (
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
+        <CardLabel className="card-label-smaller hrms-text-transform-none" style={editScreen ? { color: "#B1B4B6" } : {}}>
           {t("TL_LOCALIZATION_TRADE_ADDRESS")}
         </CardLabel>
         <div className="form-field">

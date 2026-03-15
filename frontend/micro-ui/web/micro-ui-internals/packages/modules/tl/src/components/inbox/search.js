@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Label, SubmitBar, LinkLabel, ActionBar, CloseSvg, DatePicker, MobileNumber } from "@mseva/digit-ui-react-components";
+import { TextInput, Label, SubmitBar, LinkLabel, ActionBar, CloseSvg, DatePicker, MobileNumber, Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 // import MobileNumber from "@mseva/digit-ui-react-components/src/atoms/MobileNumber";
 // import _ from "lodash";
@@ -65,10 +65,44 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     });
   }, [form, formState, setError, clearErrors]);
 
+  // Clear locality validation error when locality filter is selected
+  useEffect(() => {
+    const filterLocality = searchParams?.filters?.pgrQuery?.locality;
+    if (filterLocality && formState.errors?.ownerName?.type === "locality") {
+      clearErrors(["ownerName"]);
+    }
+  }, [searchParams?.filters?.pgrQuery?.locality]);
+
   const onSubmitInput = (data) => {
-    if(data.mobileNumber.length==0||data.mobileNumber.length==10){
+    if(data.mobileNumber?.length==0||data.mobileNumber?.length==10){
     if (!data.mobileNumber) {
       delete data.mobileNumber;
+    }
+
+    // Validate: owner name search requires locality filter to be selected
+    if (data.ownerName && data.ownerName.trim()) {
+      const filterLocality = searchParams?.filters?.pgrQuery?.locality;
+      if (!filterLocality) {
+        setError("ownerName", { type: "locality", message: t("TL_OWNER_NAME_REQUIRES_LOCALITY") });
+        return;
+      }
+    }
+
+    // Handle dropdown fields — extract code value
+    searchFields.forEach((field) => {
+      if (field.type === "dropdown" && data[field.name] && typeof data[field.name] === "object") {
+        data[field.name] = data[field.name].code;
+      }
+    });
+
+    // Handle date fields — convert to epoch
+    if (data.fromDate) {
+      data.fromDate = new Date(data.fromDate).getTime();
+    }
+    if (data.toDate) {
+      const toDateObj = new Date(data.toDate);
+      toDateObj.setHours(23, 59, 59, 999);
+      data.toDate = toDateObj.getTime();
     }
 
     const mobileNumber = data?.mobileNumber
@@ -115,7 +149,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   return (
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-        <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
+        <div className={`search-container TL-search-wAuto${isInboxPage ? " TL-search-ml-24" : ""}`}>
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header">
@@ -125,14 +159,42 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{textAlign: "start"}}>
+            <div className="complaint-input-container TL-text-start">
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
                   <div key={input.name} className="input-fields">
                     <span className={"complaint-input"}>
                       <Label>{t(input.label)}</Label>
-                      {!input.type ? (
+                      {input.type === "dropdown" ? (
+                        <Controller
+                          render={(props) => (
+                            <Dropdown
+                              option={input.options}
+                              selected={props.value}
+                              select={(val) => props.onChange(val)}
+                              optionKey={input.optionKey || "i18nKey"}
+                              t={t}
+                              placeholder={input.placeholder}
+                            />
+                          )}
+                          name={input.name}
+                          control={control}
+                          defaultValue={null}
+                        />
+                      ) : input.type === "date" ? (
+                        <Controller
+                          render={(props) => (
+                            <DatePicker
+                              date={props.value}
+                              onChange={props.onChange}
+                            />
+                          )}
+                          name={input.name}
+                          control={control}
+                          defaultValue={""}
+                        />
+                      ) : !input.type ? (
                         <Controller
                           render={(props) => {
                             return <TextInput onChange={props.onChange} value={props.value} placeholder={input.placeholder}/>;
@@ -155,8 +217,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     </span>
                     {formState?.dirtyFields?.[input.name] ? (
                       <span
-                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
-                        className="inbox-search-form-error"
+                        className="inbox-search-form-error TL-search-error"
                       >
                         {formState?.errors?.[input.name]?.message}
                       </span>
@@ -172,13 +233,13 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     submit
                   />
                   {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  <div className="TL-search-clear-wrapper">
                     {clearAll()}
                   </div>
                 </div>
               )}
               {isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%"}}>
+                <div className="search-action-wrapper TL-w-full">
                   {type === "desktop" && !mobileView && (
                     <SubmitBar
                       className="submit-bar-search"
@@ -187,7 +248,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                     />
                   )}
                   {type === "desktop" && !mobileView && (
-                    <span style={{ paddingTop: "9px" }} className="clear-search">
+                    <span className="clear-search TL-pt-9">
                       {clearAll()}
                     </span>
                   )}
@@ -198,7 +259,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
         </div>
         {(type === "mobile" || mobileView) && (
           <ActionBar className="clear-search-container">
-            <button className="clear-search" style={{ flex: 1 }}>
+            <button className="clear-search TL-flex-1">
               {clearAll(mobileView)}
             </button>
             <SubmitBar disabled={!!Object.keys(formState.errors).length} label={t("ES_COMMON_SEARCH")} style={{ flex: 1 }} submit={true} />

@@ -21,21 +21,25 @@ const owners = [
   {
     name: "Institutional - Government",
     code: "INSTITUTIONALGOVERNMENT",
+    value: "INSTITUTIONALGOVERNMENT.OTHERGOVERNMENTINSTITUITION",
     active: true,
   },
   {
     name: "Institutional - Private",
     code: "INSTITUTIONALPRIVATE",
+    value: "INSTITUTIONALPRIVATE.OTHERSPRIVATEINSTITUITION",
     active: true,
   },
   {
     name: "Multiple Owners",
     code: "INDIVIDUAL.MULTIPLEOWNERS",
+    value: "INDIVIDUAL.MULTIPLEOWNERS",
     active: true,
   },
   {
     name: "Single Owner",
     code: "SINGLEOWNER",
+    value: "INDIVIDUAL.SINGLEOWNER",
     active: true,
     ownerShipCategory: "INDIVIDUAL",
   },

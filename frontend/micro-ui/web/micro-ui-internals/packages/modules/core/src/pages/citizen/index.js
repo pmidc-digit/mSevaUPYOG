@@ -104,6 +104,7 @@ const Home = ({
   const hideTopSidebar = topSidebarHiddenFor.some((e) => window.location.href.includes(e));
   const appRoutes = modules.map(({ code, tenants }, index) => {
     const Module = Digit.ComponentRegistryService.getComponent(`${code}Module`);
+    console.log("➡️",Module)
     return Module ? (
       <Route key={index} path={`${path}/${code.toLowerCase()}`}>
         <Module stateCode={stateCode} moduleCode={code} userType="citizen" tenants={getTenants(tenants, appTenants)} />
@@ -120,7 +121,7 @@ const Home = ({
         return a.orderNumber - b.orderNumber;
       });
     // }
-
+{console.log("****",mdmsDataObj)}
     return (
       <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
@@ -223,6 +224,7 @@ const Home = ({
               {/* Service Cards */}
               <div className="moduleLinkHomePageModuleLinks">
                 {mdmsDataObj && code != "OBPS" && (
+                  
                   <CitizenHomeCardSecond
                     header=""
                     links={mdmsDataObj?.links}
@@ -399,6 +401,12 @@ const Home = ({
           </Route>
           <Route path={`${path}/faqss`}>
             <FAQ />
+          </Route>
+          <Route path={`${path}/firenoc`}>
+            {(() => {
+              const FireNocMod = Digit.ComponentRegistryService.getComponent("FIRENOCModule") || Digit.ComponentRegistryService.getComponent("FireNOCModule");
+              return FireNocMod ? <FireNocMod stateCode={stateCode} moduleCode="FIRENOC" userType="citizen" tenants={appTenants} /> : null;
+            })()}
           </Route>
           <ErrorBoundary initData={initData}>
             {appRoutes}

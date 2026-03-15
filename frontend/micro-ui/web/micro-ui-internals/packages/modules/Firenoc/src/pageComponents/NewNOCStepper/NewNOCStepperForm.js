@@ -12,21 +12,21 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 //Config for steps
 const createEmployeeConfig = [
   {
-    head: "APPLICATION DETAILS",
-    stepLabel: "NOC_APPLICATION_DETAILS",
+    head: "NOC DETAILS",
+    stepLabel: "NOC_NOC_DETAILS_HEADER",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormOne",
-    key: "applicationDetails",
+    component: "NewNOCStepFormNocDetails",
+    key: "nocDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
-    head: "SITE DETAILS",
-    stepLabel: "NOC_SITE_DETAILS",
+    head: "PROPERTY DETAILS",
+    stepLabel: "NOC_PROPERTY_DETAILS",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -38,9 +38,22 @@ const createEmployeeConfig = [
     },
   },
   {
+    head: "APPLICANT DETAILS",
+    stepLabel: "NOC_APPLICANT_DETAILS",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewNOCStepFormOne",
+    key: "applicationDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+  {
     head: "DOCUMENT DETAILS",
     stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
-    stepNumber: 3,
+    stepNumber: 4,
     isStepEnabled: true,
     type: "component",
     component: "NewNOCStepFormThree",
@@ -53,7 +66,7 @@ const createEmployeeConfig = [
   {
     head: "SUMMARY DETAILS",
     stepLabel: "ES_TITILE_SUMMARY_DETAILS",
-    stepNumber: 4,
+    stepNumber: 5,
     isStepEnabled: true,
     type: "component",
     component: "NewNOCStepFormFour",
@@ -63,7 +76,6 @@ const createEmployeeConfig = [
       submitBarLabel: "CS_COMMON_SUBMIT",
     },
   },
-
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {

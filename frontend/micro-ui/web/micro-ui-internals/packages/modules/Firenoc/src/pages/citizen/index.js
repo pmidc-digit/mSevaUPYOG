@@ -15,24 +15,34 @@ const NOCBreadCrumbs = ({ location }) => {
       show: true,
     },
     {
-      path: "/digit-ui/citizen/noc-home",
+      path: "/digit-ui/citizen/firenoc-home",
       content: `NOC Home`,
-      show: location.pathname.includes("/noc/new-application") ? true : false,
+      show: location.pathname.includes("/firenoc/new-application") ? true : false,
     },
     {
-      path: "/digit-ui/citizen/noc-home",
+      path: "/digit-ui/citizen/firenoc-home",
       content: `NOC Home`,
-      show: location.pathname.includes("noc/my-application") ? true : false,
+      show: location.pathname.includes("firenoc/my-application") ? true : false,
     },
     {
-      path: "/digit-ui/citizen/noc-home",
+      path: "/digit-ui/citizen/firenoc-home",
       content: `NOC Home`,
-      show: location.pathname.includes("noc/search/application-overview/") ? true : false,
+      show: location.pathname.includes("firenoc/search/application-overview/") ? true : false,
     },
     {
-      path: "/digit-ui/citizen/noc-home",
+      path: "/digit-ui/citizen/firenoc-home",
       content: `NOC Home`,
-      show: location.pathname.includes("noc/search-application") ? true : false,
+      show: location.pathname.includes("firenoc/search-application") ? true : false,
+    },
+    {
+      path: "/digit-ui/citizen/firenoc-home",
+      content: `FireNOC Home`,
+      show: location.pathname.includes("myApplications") || location.pathname.includes("firenoc/application-overview") ? true : false,
+    },
+    {
+      path: "/digit-ui/citizen/firenoc/myApplications",
+      content: `My Applications`,
+      show: location.pathname.includes("firenoc/application-overview") ? true : false,
     },
   ];
   return <BreadCrumb crumbs={crumbs} />;
@@ -47,6 +57,8 @@ const App = () => {
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
   const NOCCitizenSearchApplication = Digit?.ComponentRegistryService?.getComponent("NOCCitizenSearchApplication");
+  const FIRENOCCitizenMyApplications = Digit?.ComponentRegistryService?.getComponent("FIRENOCCitizenMyApplications");
+  const FIRENOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCCitizenApplicationOverview");
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -66,6 +78,8 @@ const App = () => {
           <PrivateRoute path={`${path}/edit-application/:id`} component={NewNOCEditApplication} />
           <PrivateRoute path={`${path}/search/application-overview/:id`} component={NOCCitizenApplicationOverview} />
           <PrivateRoute path={`${path}/search-application`} component={NOCCitizenSearchApplication}  />
+          <PrivateRoute path={`${path}/myApplications`} component={FIRENOCCitizenMyApplications} />
+          <PrivateRoute path={`${path}/application-overview/:appNo`} component={FIRENOCCitizenApplicationOverview} />
         </AppContainer>
       </Switch>
     </span>

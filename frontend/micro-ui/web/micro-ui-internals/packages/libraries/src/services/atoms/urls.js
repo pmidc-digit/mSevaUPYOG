@@ -326,6 +326,11 @@ const Urls = {
     nocCheckListUpdate: "/noc-services/v1/checklist/_update",
     nocCheckListSearch: "/noc-services/v1/checklist/_search",
   },
+  firenoc: {
+    search: "/firenoc-services/v1/_search",
+    create: "/firenoc-services/v1/_create",
+    update: "/firenoc-services/v1/_update",
+  },
   reports: {
     reportSearch: "/report/",
   },

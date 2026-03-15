@@ -68,6 +68,12 @@ import {
 import { initOBPSComponents, OBPSReducers } from "@mseva/digit-ui-module-obps";
 import { initNOCComponents, NOCReducers } from "@mseva/digit-ui-module-noc";
 import {
+  initFIRENOCComponents,
+  FIRENOCReducers,
+  FireNOCModule,
+  FireNOCLinks,
+} from "@mseva/digit-ui-module-firenoc";
+import {
   initEngagementComponents,
   SurveyReducers,
 } from "@mseva/digit-ui-module-engagement";
@@ -128,7 +134,7 @@ const enabledModules = [
   "Bills",
   "SW",
   "BillAmendment",
-  "FireNoc",
+  "FIRENOC",
   "Birth",
   "Death",
   "Swach",
@@ -184,6 +190,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PGRAIModule,
   PGRAILinks,
   ...PGRAIComponents,
+  FIRENOCModule: FireNOCModule,
+  FIRENOCLinks: FireNOCLinks,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -198,6 +206,7 @@ initTLComponents();
 initReceiptsComponents();
 initOBPSComponents();
 initNOCComponents();
+initFIRENOCComponents();
 initEngagementComponents();
 initWSComponents();
 initCommonPTComponents();
@@ -219,6 +228,7 @@ const moduleReducers = (initData) => ({
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),
   noc: NOCReducers(initData),
+  firenoc: FIRENOCReducers(initData),
   obps: OBPSReducers(initData),
   challan: ChallanReducers(initData),
   rentAndLease: RentAndLeaseReducers(initData),

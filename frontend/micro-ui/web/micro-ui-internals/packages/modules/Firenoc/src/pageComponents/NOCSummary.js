@@ -1,259 +1,266 @@
-import React from "react";
-import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable,Row } from "@mseva/digit-ui-react-components";
-import { useLocation, useHistory } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
-import NOCDocument from "./NOCDocument";
-import NOCImageView from "./NOCImageView";
-import NOCDocumentTableView from "./NOCDocumentTableView";
-import NocSitePhotographs from "../components/NocSitePhotographs";
-import { convertToDDMMYYYY } from "../utils";
-
-function NOCSummary({ currentStepData: formData, t }) {
-  const { pathname: url } = useLocation();
-  const history = useHistory();
-  const dispatch = useDispatch();
-
-  console.log("formData in Summary Page", formData);
-
-  const coordinates = useSelector(function (state) {
-    return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
-  });
-
-  const ownerPhotos = useSelector(function (state) {
-    return state?.noc?.NOCNewApplicationFormReducer?.ownerPhotos || [];
-  });
-
-  const ownerIds = useSelector(function (state) {
-    return state?.noc?.NOCNewApplicationFormReducer?.ownerIds || [];
-  });
-
-  console.log("coordinates in summary page", coordinates);
+import React, { useEffect, useState } from "react";
+import { Card, CardSubHeader, StatusTable, Row, Loader } from "@mseva/digit-ui-react-components";
+import { useSelector } from "react-redux";
 
 
-  const getFloorLabel = (index) => {
-    if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+const NA = "N/A";
 
-    const floorNumber = index;
-    const lastDigit = floorNumber % 10;
-    const lastTwoDigits = floorNumber % 100;
+/* ─── Fee Estimate Card ─── */
+function FeeEstimateCard({ applicationNo, tenantId, t }) {
+  const [bill, setBill] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    let suffix = "th";
-    if (lastTwoDigits < 11 || lastTwoDigits > 13) {
-      if (lastDigit === 1) suffix = "st";
-      else if (lastDigit === 2) suffix = "nd";
-      else if (lastDigit === 3) suffix = "rd";
-    }
+  useEffect(() => {
+    if (!applicationNo || !tenantId) return;
+    setLoading(true);
+    // billing-service requires state-level tenantId (e.g. "pb" not "pb.amritsar")
+    const billingTenantId = tenantId.split(".")[0];
+    Digit.PaymentService.fetchBill(billingTenantId, {
+      consumerCode: applicationNo,
+      businessService: "FIRENOC",
+    })
+      .then((res) => setBill(res?.Bill?.[0] || null))
+      .catch(() => setBill(null))
+      .finally(() => setLoading(false));
+  }, [applicationNo, tenantId]);
 
-    return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
-  };
-
-  const userInfo = Digit.UserService.getUser();
-  const currentUser = userInfo?.info?.type;
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
-
-  let docs = formData?.documents?.documents?.documents;
-  console.log("documents here in summary", docs);
-
-  const sitePhotos = formData?.documents?.documents?.documents?.filter(
-            (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
-          );
-  const remainingDocs = formData?.documents?.documents?.documents?.filter((doc)=> !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"));
-const primaryOwner = formData?.applicationDetails?.owners?.[0];
-const propertyId =formData?.applicationDetails?.owners?.[0]?.propertyId;
-
-console.log('primaryOwner and propertyId here in summary', primaryOwner, propertyId)
+  const nocFees = bill?.billDetails?.[0]?.billAccountDetails?.find(
+    (a) => a.taxHeadCode === "FIRENOC_FEES"
+  )?.amount ?? 0;
+  const totalAmount = bill?.totalAmount ?? 0;
+  const isPaid = bill?.status === "PAID";
 
   return (
-    <div className="employee-main-application-details">
-      <style>{` .data-table .row {border: 2px solid lightgrey;}`}</style>
-
-      <StatusTable style={{ border: "none" }}>
-        <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-        <NOCImageView
-          ownerFileStoreId={ownerPhotos?.ownerPhotoList?.[0]?.filestoreId}
-          ownerName={formData?.applicationDetails?.owners?.[0]?.ownerOrFirmName}
-        />
-        </Card>
-      </StatusTable>
-
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
-        return (
-          <Card>
-            <CardSubHeader>{index === 0 ? t("NOC_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>
-            <StatusTable>
-              {owner?.ownerType?.code && <Row label={t("NOC_OWNER_TYPE_LABEL")} text={t(owner?.ownerType?.code)} />}
-              {owner?.firmName && <Row label={t("NOC_FIRM_NAME")} text={owner?.firmName} />}
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={owner?.mobileNumber || "N/A"} />
-              <Row
-                label={
-                  (typeof owner?.ownerType === "string" ? owner?.ownerType : owner?.ownerType?.code) === "Firm"
-                    ? t("APPLICANT_NAME_OR_AUTHORISED_PERSON")
-                    : t("APPLICANT_NAME")
-                }
-                text={owner?.ownerOrFirmName || "N/A"}
-              />
-              <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={owner?.emailId || "N/A"} />
-              <Row label={t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={owner?.fatherOrHusbandName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={formatDate(owner?.dateOfBirth) || "N/A"} />
-              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={owner?.gender?.code || "N/A"} />
-              <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={owner?.address || "N/A"} />
-            </StatusTable>
-          </Card>
-        );
-      })}
-
-      {primaryOwner && propertyId && (
-        <Card>
-          <CardSubHeader>{t("NOC_PROPERTY_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={primaryOwner?.propertyId || "N/A"} />
-           </StatusTable>
-        </Card>
-      )}
-
-      {formData?.applicationDetails?.professionalName && (
-        <React.Fragment>
-          <Card>
-            <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
-            <StatusTable>
-              <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={formData?.applicationDetails?.professionalName || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={formData?.applicationDetails?.professionalEmailId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={formData?.applicationDetails?.professionalRegId || "N/A"} />
-              <Row
-                label={t("NOC_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")}
-                text={formData?.applicationDetails?.professionalRegIdValidity || "N/A"}
-              />
-              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={formData?.applicationDetails?.professionalMobileNumber || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={formData?.applicationDetails?.professionalAddress || "N/A"} />
-            </StatusTable>
-          </Card>
-        </React.Fragment>
-      )}
-
-      <Card>
-        <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("NOC_PLOT_NO_LABEL")} text={formData?.siteDetails?.plotNo || "N/A"} />
-          <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={formData?.siteDetails?.proposedSiteAddress || "N/A"} />
-          <Row label={t("NOC_ULB_NAME_LABEL")} text={formData?.siteDetails?.ulbName?.name || formData?.siteDetails?.ulbName || "N/A"} />
-          <Row label={t("NOC_ULB_TYPE_LABEL")} text={formData?.siteDetails?.ulbType || "N/A"} />
-           <Row label={t("NOC_DISTRICT_LABEL")} text={formData?.siteDetails?.district || "N/A"} />
-          <Row label={t("NOC_ZONE_LABEL")} text={formData?.siteDetails?.zone?.name || "N/A"} />
-         
-          <Row label={t("NOC_KHASRA_NO_LABEL")} text={formData?.siteDetails?.khasraNo || "N/A"} />
-          <Row label={t("NOC_HADBAST_NO_LABEL")} text={formData?.siteDetails?.hadbastNo || "N/A"} />
-          <Row label={t("NOC_ROAD_TYPE_LABEL")} text={formData?.siteDetails?.roadType?.name || "N/A"} />
-          <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={formData?.siteDetails?.netTotalArea || "N/A"} />
-          <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={formData?.siteDetails?.areaLeftForRoadWidening || "N/A"} />
-          <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={formData?.siteDetails?.netPlotAreaAfterWidening || "N/A"} />
-          <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={formData?.siteDetails?.roadWidthAtSite || "N/A"} />
-          <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={formData?.siteDetails?.buildingStatus?.name || "N/A"} />
-
-          {formData?.siteDetails?.isBasementAreaAvailable && (
-            <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={formData?.siteDetails?.isBasementAreaAvailable?.code || "N/A"} />
-          )}
-
-          {formData?.siteDetails?.basementArea && <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={formData?.siteDetails?.basementArea || "N/A"} />}
-
-          {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" &&
-            formData?.siteDetails?.floorArea?.map((floor, index) => <Row label={getFloorLabel(index)} text={floor?.value || "N/A"} />)}
-
-          {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && (
-            <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={formData?.siteDetails?.totalFloorArea || "N/A"} />
-          )}
-
-          <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={formData?.siteDetails?.wardNo || "N/A"} />
-          <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={formData?.siteDetails?.villageName || "N/A"} />
-          <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={formData?.siteDetails?.colonyName || "N/A"} />
-          <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={formData?.siteDetails?.vasikaNumber || "N/A"} />
-          <Row label={t("NOC_VASIKA_DATE")} text={convertToDDMMYYYY(formData?.siteDetails?.vasikaDate) || "N/A"} />
-          <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={formData?.siteDetails?.khewatAndKhatuniNo || "N/A"} />
-        </StatusTable>
-      </Card>
-
-      <Card>
-        <CardSubHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={formData?.siteDetails?.specificationPlotArea || "N/A"} />
-          <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || "N/A"} />
-          <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || "N/A"} />
-          <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || "N/A"} />
-          <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
-        </StatusTable>
-      </Card>
-
-      {/* <Card>
-        <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("COMMON_LATITUDE1_LABEL")} text={coordinates?.Latitude1 || "N/A"} />
-          <Row label={t("COMMON_LONGITUDE1_LABEL")} text={coordinates?.Longitude1 || "N/A"} />
-          <Row label={t("COMMON_LATITUDE2_LABEL")} text={coordinates?.Latitude2 || "N/A"} />
-          <Row label={t("COMMON_LONGITUDE2_LABEL")} text={coordinates?.Longitude2 || "N/A"} />
-        </StatusTable>
-
-        {/* Render site photographs dynamically in same style */}
-      {/* {formData?.documents?.documents?.documents
-          ?.filter((doc) => doc.documentType?.startsWith("OWNER.SITEPHOTOGRAPH"))
-          .map((photo, idx) => (
-            <div key={photo.uuid} style={{ marginTop: "16px" }}>
-              <NOCImageView
-                ownerFileStoreId={photo.documentAttachment}
-                ownerName={photo.documentType || `Site Photo ${idx + 1}`}
-              />
-            </div>
-          ))} */}
-      {/* </Card> */}
-
-      <Card>
-        <CardSubHeader>{t("BPA_UPLOADED _SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          {sitePhotos?.length > 0 &&
-            [...sitePhotos]
-              .map((doc) => (
-                <NocSitePhotographs
-                  key={doc?.filestoreId || doc?.uuid}
-                  filestoreId={doc?.filestoreId || doc?.uuid}
-                  documentType={doc?.documentType}
-                  coordinates={coordinates}
-                />
-              ))}
-        </StatusTable>
-      </Card>
-
-      {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
-      <div style={sectionStyle}>
-        {Array.isArray(formData?.documents?.documents?.documents) && formData.documents.documents.documents.length > 0 ? (
-          <div className="documentsContainerStyle">
-          <NOCDocument value={{ workflowDocs: formData.documents.documents.documents }}></NOCDocument>
+    <Card>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <CardSubHeader style={{ marginBottom: 0 }}>{t("Fee Estimate")}</CardSubHeader>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: "12px", color: "#505A5F" }}>{t("Total Amount")}</div>
+          <div style={{ fontSize: "26px", fontWeight: "700" }}>Rs {loading ? "…" : totalAmount}</div>
+          <div style={{ color: isPaid ? "green" : "#e84646", fontWeight: "600" }}>
+            {isPaid ? t("Paid") : t("Not Paid")}
           </div>
-        ) : (
-          <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
+        </div>
+      </div>
+      <hr style={{ borderTop: "1px solid #D6D5D4", margin: "12px 0" }} />
+      <StatusTable>
+        <Row label={t("NOC Fees")} text={loading ? "…" : String(nocFees)} />
+        <Row label={t("Total Amount")} text={loading ? "…" : String(totalAmount)} />
+      </StatusTable>
+    </Card>
+  );
+}
+
+/* ─── Documents card grid ─── */
+function DocCard({ doc, t }) {
+  const label = t(doc.documentType?.replaceAll(".", "_") || "");
+  const fileId = doc.filestoreId || doc.documentAttachment || doc.uuid;
+  const fileName = fileId ? `${fileId.slice(0, 8)}…` : NA;
+  return (
+    <div
+      style={{
+        border: "1px solid #D6D5D4",
+        borderRadius: "4px",
+        padding: "12px 16px",
+        minWidth: "200px",
+        flex: "1 1 200px",
+      }}
+    >
+      <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "8px", color: "#0b0c0c" }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+        <span style={{ color: "#505A5F" }}>{fileName}</span>
+        {fileId && (
+          <a
+            href={`/filestore/v1/files/url?tenantId=pb&fileStoreIds=${fileId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#e84646", fontWeight: "600", textDecoration: "none" }}
+          >
+            VIEW
+          </a>
         )}
-      </div> */}
+      </div>
+    </div>
+  );
+}
 
+/* ─── Main Summary Component ─── */
+function NOCSummary({ currentStepData: formData, t }) {
+  const uploadedDocuments = useSelector(
+    (state) => state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || []
+  );
+
+  const nocDetails = formData?.nocDetails || {};
+  const site = formData?.siteDetails || {};
+  const appDetails = formData?.applicationDetails || {};
+  // FIRENOCService.create stores response under FireNOCs (not Noc)
+  const apiFireNOC = formData?.apiData?.FireNOCs?.[0];
+
+  const applicationNo = apiFireNOC?.fireNOCDetails?.applicationNumber || "";
+  const tenantId = apiFireNOC?.tenantId || site?.cityName?.code || "";
+
+  const owners = appDetails?.owners || [];
+  const primaryOwner = owners[0] || {};
+
+  /* doc friendly name map */
+  const docLabelMap = {
+    "OWNER.PROPERTY.OWNERSHIPPROOF": "Proof of Ownership",
+    "OWNER.IDENTITYPROOF": "Identity Proof",
+    "OWNER.IDENTITYPROOF.AADHAAR": "Identity Proof (Aadhaar)",
+    "OWNER.IDENTITYPROOF.DRIVING_LICENSE": "Identity Proof (Driving License)",
+    "OWNER.IDENTITYPROOF.PASSPORT": "Identity Proof (Passport)",
+    "OWNER.IDENTITYPROOF.PAN_CARD": "Identity Proof (PAN Card)",
+    "OWNER.IDENTITYPROOF.VOTER_ID": "Identity Proof (Voter ID)",
+    "OWNER.PROPERTY.FIREDRAWING": "Fire-Fighting Plan (Fire Drawing)",
+    "OWNER.PROPERTY.OWNERSHIPCHECKLIST": "Owner Checklist",
+    "OWNER.FIRENOC.OLDDOCUMENT": "Firenoc Old Document",
+    "OWNER.PROPERTY.TAXRECEIPT": "Property Tax Receipt",
+  };
+
+  const formatDob = (dob) => {
+    if (!dob) return NA;
+    const d = new Date(dob);
+    if (isNaN(d)) return dob;
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  const val = (v) => (v !== undefined && v !== null && v !== "" ? String(v) : NA);
+
+  return (
+    <div>
+      {/* ── Fee Estimate ── */}
+      <FeeEstimateCard applicationNo={applicationNo} tenantId={tenantId} t={t} />
+
+      {/* ── NOC Details ── */}
       <Card>
-        <CardSubHeader>{t("NOC_UPLOADED_OWNER_ID")}</CardSubHeader>
-        <StatusTable>{ownerIds?.ownerIdList?.length > 0 && <NOCDocumentTableView documents={ownerIds?.ownerIdList} />}</StatusTable>
+        <CardSubHeader>{t("NOC Details")}</CardSubHeader>
+        <StatusTable>
+          <Row label={t("NOC Type")} text={val(nocDetails?.fireNOCType?.code)} />
+          <Row label={t("Provisional fire NoC number")} text={val(apiFireNOC?.fireNOCDetails?.nocNo || applicationNo)} />
+          <Row label={t("Validity Year")} text={val(nocDetails?.validityYear?.code || nocDetails?.validityYear)} />
+        </StatusTable>
       </Card>
 
+      {/* ── Property Details ── */}
       <Card>
-        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
-        <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
+        <CardSubHeader>{t("Property Details")}</CardSubHeader>
+        <div style={{ borderBottom: "2px solid #e84646", marginBottom: "16px" }}>
+          <span style={{ color: "#e84646", fontWeight: "600", paddingBottom: "4px", display: "inline-block" }}>
+            {t("Property Details")}
+          </span>
+        </div>
+        <StatusTable>
+          <Row label={t("Property Type")} text={val(site?.noOfBuildings)} />
+          {(site?.buildings || []).map((b, i) => (
+            <React.Fragment key={i}>
+              {(site?.buildings?.length > 1) && (
+                <Row label={t(`Building ${i + 1}`)} text="" />
+              )}
+              <Row label={t("Name Of Building")} text={val(b?.name)} />
+              <Row label={t("Building Usage Type as per NBC")} text={val(b?.buildingUsageType?.name || b?.buildingUsageType?.code)} />
+              <Row label={t("Building Usage Subtype as per NBC")} text={val(b?.buildingUsageSubType?.name || b?.buildingUsageSubType?.code)} />
+              <Row label={t("Land Area(in Sq meters)")} text={val(b?.landArea)} />
+              <Row label={t("Total Covered Area(in Sq meters)")} text={val(b?.totalCoveredArea)} />
+              <Row label={t("Parking Area (in Sq meters)")} text={val(b?.parkingArea)} />
+              <Row label={t("Left surrounding")} text={val(b?.surroundingOnLeft?.name || b?.surroundingOnLeft)} />
+              <Row label={t("Right surrounding")} text={val(b?.surroundingOnRight?.name || b?.surroundingOnRight)} />
+              <Row label={t("Front surrounding")} text={val(b?.surroundingOnFront?.name || b?.surroundingOnFront)} />
+              <Row label={t("Back surrounding")} text={val(b?.surroundingOnBack?.name || b?.surroundingOnBack)} />
+              <Row label={t("Height of the Building from Ground level (in meters)")} text={val(b?.uomsMap?.HEIGHT_OF_BUILDING)} />
+              <Row label={t("No of Floors")} text={val(b?.noOfFloors?.code || b?.noOfFloors)} />
+              <Row label={t("Ground floor builtup area(in sq. meter)")} text={val(b?.totalCoveredArea)} />
+            </React.Fragment>
+          ))}
+        </StatusTable>
+
+        <div style={{ borderBottom: "2px solid #e84646", margin: "16px 0" }}>
+          <span style={{ color: "#e84646", fontWeight: "600", paddingBottom: "4px", display: "inline-block" }}>
+            {t("Property Location Details")}
+          </span>
+        </div>
+        <StatusTable>
+          <Row label={t("Property ID")} text={val(site.propertyId)} />
+          <Row label={t("Area Type")} text={val(site.areaType?.name || site.areaType?.code)} />
+          <Row label={t("District Name")} text={val(site.districtName?.name || site.districtName)} />
+          <Row label={t("Sub District Name")} text={val(site.cityName?.name || site.cityName?.code)} />
+          <Row label={t("Door/House No.")} text={val(site.doorHouseNo)} />
+          <Row label={t("Street Name")} text={val(site.streetName)} />
+          {site.areaType?.code === "URBAN"
+            ? <Row label={t("Mohalla")} text={val(site.mohalla?.name || site.mohalla?.i18nkey || site.mohalla)} />
+            : <Row label={t("Village Name")} text={val(site.villageName)} />
+          }
+          <Row label={t("Landmark Name")} text={val(site.landmarkName)} />
+          <Row label={t("Pincode")} text={val(site.pincode)} />
+          <Row label={t("Locate on Map")} text={
+            site.geoLocation?.latitude
+              ? `${site.geoLocation.latitude}, ${site.geoLocation.longitude}`
+              : NA
+          } />
+          <Row label={t("Applicable Fire Station")} text={val(
+            (() => {
+              const stationCode = site.fireStationId;
+              if (!stationCode) return null;
+              return stationCode.replace(/_/g, " ").replace(/^FS /, "").replace(/\b\w/g, c => c.toUpperCase());
+            })()
+          )} />
+        </StatusTable>
       </Card>
+
+      {/* ── Applicant Details ── */}
+      <Card>
+        <CardSubHeader>{t("Applicant Details")}</CardSubHeader>
+        <StatusTable>
+          <Row label={t("Mobile Number")} text={val(primaryOwner.mobileNumber)} />
+          <Row label={t("Name")} text={val(primaryOwner.ownerOrFirmName || primaryOwner.name)} />
+          <Row label={t("Gender")} text={val(primaryOwner.gender?.code || primaryOwner.gender)} />
+          <Row label={t("Father/Husband's Name")} text={val(primaryOwner.fatherOrHusbandName)} />
+          <Row label={t("Relationship")} text={val(primaryOwner.relationship?.code || primaryOwner.relationship)} />
+          <Row label={t("Date Of Birth")} text={formatDob(primaryOwner.dob || primaryOwner.dateOfBirth)} />
+          <Row label={t("Email")} text={val(primaryOwner.emailId)} />
+          <Row label={t("PAN No.")} text={val(primaryOwner.panNo || primaryOwner.pan)} />
+          <Row label={t("Correspondence Address")} text={val(primaryOwner.address || primaryOwner.correspondenceAddress)} />
+        </StatusTable>
+      </Card>
+
+      {/* ── Documents ── */}
+      {uploadedDocuments.length > 0 && (
+        <Card>
+          <CardSubHeader>{t("Documents")}</CardSubHeader>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "8px" }}>
+            {uploadedDocuments.map((doc, i) => {
+              const label = docLabelMap[doc.documentType] || t(doc.documentType?.replaceAll(".", "_") || "");
+              const fileId = doc.filestoreId || doc.documentAttachment || doc.uuid;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    border: "1px solid #D6D5D4",
+                    borderRadius: "4px",
+                    padding: "12px 16px",
+                    minWidth: "200px",
+                    flex: "1 1 200px",
+                  }}
+                >
+                  <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "8px" }}>{label}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+                    <span style={{ color: "#505A5F" }}>acknowledgement</span>
+                    {fileId && (
+                      <a
+                        href={`/filestore/v1/files/url?tenantId=pb&fileStoreIds=${fileId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#e84646", fontWeight: "600", textDecoration: "none" }}
+                      >
+                        VIEW
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

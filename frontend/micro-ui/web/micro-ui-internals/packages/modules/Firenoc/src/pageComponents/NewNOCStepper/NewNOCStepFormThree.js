@@ -10,7 +10,6 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const stateId = Digit.ULBService.getStateId();
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
 
   const currentStepData = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.formData && state.noc.NOCNewApplicationFormReducer.formData[config?.key]
@@ -18,73 +17,57 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  const coordinates = useSelector(function (state) {
-        return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+  // Get applicationType from Step 1 (NOC Details)
+  const applicationType = useSelector(function (state) {
+    return state?.noc?.NOCNewApplicationFormReducer?.formData?.nocDetails?.fireNOCType?.code || "NEW";
   });
 
-  console.log("coordinates from redux", coordinates);
+  // Get documents directly from Redux (dispatched by FireNOCDocuments under a dedicated key)
+  const reduxDocuments = useSelector(function (state) {
+    return state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments || {};
+  });
+
+  /* Fetch FireNoc Documents MDMS for validation */
+  const { isLoading, data: docConfig } = Digit.Hooks.useCustomMDMS(stateId, "FireNoc", [{ name: "Documents" }], {
+    select: (d) => {
+      const allDocs = d?.FireNoc?.Documents || [];
+      const match = allDocs.find((entry) => entry.applicationType === applicationType);
+      return match?.allowedDocs?.filter((doc) => doc.active) || [];
+    },
+  });
 
   function goNext(finaldata) {
-
-    const missingFields = validation(finaldata);
+    console.log("[StepFormThree] goNext called");
+    console.log("[StepFormThree] applicationType:", applicationType);
+    console.log("[StepFormThree] isLoading:", isLoading);
+    console.log("[StepFormThree] docConfig:", docConfig);
+    console.log("[StepFormThree] reduxDocuments:", reduxDocuments);
+    // Use Redux documents directly since FormComposer/Controller pipeline doesn't relay them
+    const missingFields = validation(reduxDocuments);
+    console.log("[StepFormThree] missingFields:", missingFields);
     if (missingFields.length > 0) {
-      setError(`${t("NOC_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replace(".", "_").toUpperCase())}`);
+      setError(`${t("NOC_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replaceAll(".", "_").toUpperCase())}`);
       setShowToast(true);
-      setTimeout(()=>{
+      setTimeout(() => {
         setShowToast(false);
         setError("");
-      },3000);
+      }, 3000);
       return;
     }
-    
 
-     if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
-      setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
-      setShowToast(true);
-      setTimeout(()=>{
-        setShowToast(false);
-        setError("");
-      },3000);
-      return;
-    }
-  
     onGoNext();
-   
   }
 
-  const completeData=useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
+  function validation(docData) {
+    if (isLoading || !docConfig?.length) return [];
 
-  function validation(documents) {
-    if (!isLoading) {
-      const isVacant= completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
-      //console.log("isVacant Here==>", isVacant);
+    const requiredCodes = docConfig.filter((d) => d.required).map((d) => d.code);
+    const documentsData = docData?.documents || [];
+    const uploadedTypes = documentsData.filter((d) => d.filestoreId).map((d) => d.documentType);
 
-      let nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
-
-      const documentsData = documents?.documents?.documents || [];
-
-      const isFirm = completeData?.applicationDetails?.owners?.some((owner) => {
-      const code = owner?.ownerType?.code ?? owner?.ownerType;
-      return String(code).toLowerCase() === "firm";
-    });
-
-    if (isFirm) {
-      nocDocumentsType = nocDocumentsType.map((doc) =>
-        doc.code === "OWNER.AUTHORIZATIONLETTER" ? { ...doc, required: true } : doc
-      );
-    }
-      
-      // Step 1: Extract required document codes from nocDocumentsType
-      const requiredDocs = nocDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
-
-      // Step 2: Extract uploaded documentTypes
-      const uploadedDocs = documentsData.map((doc) => doc.documentType);
-
-      // Step 3: Identify missing required document codes
-      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc));
-
-      return missingDocs;
-    }
+    return requiredCodes.filter(
+      (reqCode) => !uploadedTypes.some((uploaded) => uploaded.startsWith(reqCode))
+    );
   }
 
   function onGoBack(data) {

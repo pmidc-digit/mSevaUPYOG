@@ -61,6 +61,7 @@ module.exports = function (app) {
     "/edcr",
     "/bpa-services",
     "/noc-services",
+    "/firenoc-services",
     "/egov-user-event",
     "/egov-document-uploader",
     "/egov-pdf",

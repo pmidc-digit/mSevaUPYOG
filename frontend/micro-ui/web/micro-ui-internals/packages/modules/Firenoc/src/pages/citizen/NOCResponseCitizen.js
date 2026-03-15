@@ -34,7 +34,7 @@ const NOCResponseCitizen = (props) => {
 
 
   const onGoToNOC = () => {
-    history.push(`/digit-ui/citizen/noc-home`);
+    history.push(`/digit-ui/citizen/firenoc-home`);
   };
 
   const handlePayment = () => {

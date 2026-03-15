@@ -96,7 +96,7 @@ const enabledModules = [
   "Layout",
   "GarbageCollection",
   "CLU",
-  "FireNOCModule"
+  "FIRENOC"
 ];
 
 const initTokens = (stateCode) => {

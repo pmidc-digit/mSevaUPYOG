@@ -19,18 +19,25 @@ import NewNOCStepFormOne from "./pageComponents/NewNOCStepper/NewNOCStepFormOne"
 import NewNOCStepFormTwo from "./pageComponents/NewNOCStepper/NewNOCStepFormTwo";
 import NewNOCStepFormThree from "./pageComponents/NewNOCStepper/NewNOCStepFormThree";
 import NewNOCStepFormFour from "./pageComponents/NewNOCStepper/NewNOCStepFormFour";
+import NewNOCStepFormNocDetails from "./pageComponents/NewNOCStepper/NewNOCStepFormNocDetails";
 
 import NOCApplicantDetails from "./pageComponents/NOCApplicantDetails";
 import NOCProfessionalDetails from "./pageComponents/NOCProfessionalDetails";
 import NOCSiteDetails from "./pageComponents/NOCSiteDetails";
 import NOCSpecificationDetails from "./pageComponents/NOCSpecificationDetails";
+import FireNOCPropertyLocationDetails from "./pageComponents/FireNOCPropertyLocationDetails";
+import FireNOCPropertyDetails from "./pageComponents/FireNOCPropertyDetails";
+import FireNOCApplicantDetails from "./pageComponents/FireNOCApplicantDetails";
 import NOCDocumentsRequired from "./pageComponents/NOCDocumentsRequired";
+import FireNOCDocuments from "./pageComponents/FireNOCDocuments";
 import NOCSummary from "./pageComponents/NOCSummary";
 import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
 import EditApplication from "./pageComponents/EditApplication/EditApplication";
 
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
+import FireNOCMyApplications from "./pages/citizen/Applications/FireNOCMyApplications";
+import FireNOCApplicationOverview from "./pages/citizen/Applications/FireNOCApplicationOverview";
 import CitizenSearchApplication from "./pageComponents/SearchApplication/index"
 import InspectionReport from "./pageComponents/InsectionReport"
 
@@ -63,7 +70,7 @@ export const FireNOCLinks = ({ matchPath, userType }) => {
 
 
 export const FireNOCModule = ({ stateCode, userType, tenants }) => {
-  const moduleCode = "NOC";
+  const moduleCode = "FIRENOC";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
@@ -85,8 +92,12 @@ export const FIRENOCReducers = getRootReducer;
 
 const componentsToRegister = {
   FireNOCModule,
+  FireNocModule: FireNOCModule,
+  FIRENOCModule: FireNOCModule,
   NOCCard,
   FireNOCLinks,
+  FireNocLinks: FireNOCLinks,
+  FIRENOCLinks: FireNOCLinks,
   NOCApplicationOverview: ApplicationOverview,
   NOCInbox: Inbox,
   NOCSearchApplication,
@@ -95,18 +106,25 @@ const componentsToRegister = {
   NewNOCStepFormTwo,
   NewNOCStepFormThree,
   NewNOCStepFormFour,
+  NewNOCStepFormNocDetails,
   NOCApplicantDetails,
   NOCProfessionalDetails,
   NOCSiteDetails,
   NOCFeeTable,
   NOCSpecificationDetails,
+  FireNOCPropertyLocationDetails,
+  FireNOCPropertyDetails,
+  FireNOCApplicantDetails,
   NOCDocumentsRequired,
+  FireNOCDocuments,
   NOCSummary,
   NOCDocumentWithLatLong,
   NOCResponseCitizen,
   NOCEsignResponse,
   NOCCitizenMyApplications: MyApplications,
   NOCCitizenApplicationOverview: CitizenApplicationOverview,
+  FIRENOCCitizenMyApplications: FireNOCMyApplications,
+  FIRENOCCitizenApplicationOverview: FireNOCApplicationOverview,
   NOCEmployeeApplicationOverview,
   NewNOCEditApplication: EditApplication,
   NOCCitizenSearchApplication: CitizenSearchApplication,

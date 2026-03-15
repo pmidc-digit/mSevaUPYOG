@@ -51,6 +51,7 @@ import ReceiptsService from "./services/elements/Receipts";
 import { EDCRService } from "./services/elements/EDCR";
 import { OBPSService } from "./services/elements/OBPS";
 import { NOCService } from "./services/elements/NOC";
+import { FIRENOCService } from "./services/elements/FIRENOC";
 import { NOCSearch } from "./services/molecules/NOC/Search";
 import AccessControlService from "./services/elements/Access";
 import BillServices from "./services/elements/Bill";
@@ -131,6 +132,7 @@ const initLibraries = () => {
   setupLibraries("CHBServices", CHBServices);
   setupLibraries("ASSETService", ASSETService);
   setupLibraries("NOCService", NOCService);
+  setupLibraries("FIRENOCService", FIRENOCService);
   setupLibraries("NOCSearch", NOCSearch);
   setupLibraries("AccessControlService", AccessControlService);
   setupLibraries("BillServices", BillServices);

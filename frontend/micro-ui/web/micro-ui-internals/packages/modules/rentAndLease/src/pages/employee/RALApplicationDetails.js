@@ -148,7 +148,7 @@ const RALApplicationDetails = () => {
 
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
-    const filterNexState = (action?.actions ?? action?.state?.actions)?.filter((item) => item.action === action?.action);
+    const filterNexState = (action?.actions || action?.state?.actions)?.filter((item) => item.action === action?.action);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState?.[0]?.nextState);
     setEmployees(filterRoles?.[0]?.actions || []);

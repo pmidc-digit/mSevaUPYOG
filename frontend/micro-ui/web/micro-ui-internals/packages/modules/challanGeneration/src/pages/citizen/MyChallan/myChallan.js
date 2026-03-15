@@ -77,8 +77,8 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
 
         {getChallanData?.challans?.map((bill, index) => {
           const checkAmount = Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0);
-          const total = checkAmount ?? 0;
-          const waiver = bill?.feeWaiver ?? 0;
+          const total = checkAmount || 0;
+          const waiver = bill?.feeWaiver || 0;
           const finalAmount = total - waiver;
           return (
             <Card key={index}>

@@ -98,7 +98,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     
     console.log("searchResponse in CLUStepFormTwo==>", searchResponse);
 
-    const applications = searchResponse?.Clu ?? [];
+    const applications = searchResponse?.Clu || [];
     //console.log("applications==>", applications);
 
       const currentAppNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo;
@@ -143,7 +143,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     };
     //  console.log("cluFormData ==>", cluFormData)
 
-    const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item, index) => {
+    const ownerData = (cluFormData?.applicationDetails?.owners || [])?.map((item, index) => {
       return {
         mobileNumber: item?.mobileNumber || "",
         name: item?.ownerOrFirmName || "",

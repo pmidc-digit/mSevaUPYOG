@@ -64,7 +64,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       const documentsData = documents?.documents?.documents || [];
 
       const isFirm = completeData?.applicationDetails?.owners?.some((owner) => {
-      const code = owner?.ownerType?.code ?? owner?.ownerType;
+      const code = owner?.ownerType?.code || owner?.ownerType;
       return String(code).toLowerCase() === "firm";
     });
 

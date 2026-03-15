@@ -87,7 +87,7 @@ export const useLayoutSearchApplication = (params, tenantId, config = {}, t) => 
   const client = useQueryClient();
   const result = useQuery(["LAYOUT_SEARCH_APPLICATION", params], useLayoutSearch(params, tenantId, config), {
     staleTime: config?.cacheTime === 0 ? 0 : Infinity,
-    cacheTime: config?.cacheTime ?? undefined,
+    cacheTime: config?.cacheTime || undefined,
     ...config,
     select: (data) => {
       console.log("useLayoutSearchApplication - Raw API data:", data);

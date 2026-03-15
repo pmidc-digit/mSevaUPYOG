@@ -353,7 +353,7 @@ const ApplicationOverview = () => {
 
         return {
           ...detail,
-          isDuePending: isPending ?? detail.isDuePending ?? false,
+          isDuePending: isPending || detail.isDuePending || false,
           dueAmount:
             isPending === false
               ? 0 // ✅ Force 0 when "No"
@@ -546,7 +546,7 @@ const ApplicationOverview = () => {
           const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
 
           const isMarked = markedPending[detail.consumerCode] || detail?.isDuePending;
-          const dueAmount = amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0;
+          const dueAmount = amounts?.[detail.consumerCode] || detail?.dueAmount || 0;
           const isRed = detail.dueAmount > 0;
 
           return (
@@ -573,7 +573,7 @@ const ApplicationOverview = () => {
                       // text={detail.dueAmount?.toString() || "0"}
                       text={(markedPending[detail.consumerCode] === false
                         ? "0"
-                        : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0
+                        : amounts?.[detail.consumerCode] || detail?.dueAmount || 0
                       ).toString()}
                     />
                   </div>
@@ -588,7 +588,7 @@ const ApplicationOverview = () => {
                           key={index}
                           control={control}
                           name={`amount[${index}]`}
-                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0}
+                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] || detail?.dueAmount || 0}
                           render={(props) => (
                             <TextInput
                               type="number"

@@ -400,7 +400,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
   // Helper function to get remark entries from inspection report
   function getRemarkEntries(record) {
-    return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+    return Object.entries(record || {}).filter(([k]) => k.startsWith('Remarks'));
   }
 
   // Helper function to check if all remarks are filled
@@ -445,7 +445,7 @@ const LayoutEmployeeApplicationOverview = () => {
           setIsSubmitting(false);
           return;
         } else {
-          const record = fieldInspectionPending?.[0] ?? {};
+          const record = fieldInspectionPending?.[0] || {};
           const allRemarksFilled = areAllRemarksFilled(record);
 
           if (!allRemarksFilled) {
@@ -484,7 +484,7 @@ const LayoutEmployeeApplicationOverview = () => {
           .filter((row) => row.taxHeadCode !== "LAYOUT_TOTAL") // exclude UI-only total row
           .map((row) => ({
             taxHeadCode: row.taxHeadCode,
-            estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
+            estimateAmount: (row.adjustedAmount || 0), // baseline + delta
             category: row.category,
             remarks: row.remark || null,
             filestoreId: row.filestoreId || null,

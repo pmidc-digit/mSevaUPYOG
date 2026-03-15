@@ -37,8 +37,8 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     const apiTax = data?.Calculation?.[0]?.taxHeadEstimates?.find((t) => t.taxHeadCode === taxHeadCode);
     const savedCalc = formData?.calculations?.find((c) => c.taxHeadCode === taxHeadCode);
     return {
-      originalEstimate: apiTax?.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-      originalRemark: apiTax?.remarks ?? savedCalc?.remarks ?? "",
+      originalEstimate: apiTax?.estimateAmount || savedCalc?.estimateAmount || 0,
+      originalRemark: apiTax?.remarks || savedCalc?.remarks || "",
     };
   };
 
@@ -53,10 +53,10 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
     setFeeAdjustments((prev) =>
       (prev || []).map((item, i) => {
         if (i !== index) return item;
-        const currentRemark = (item?.remark ?? originalRemark ?? "") + "";
+        const currentRemark = (item?.remark || originalRemark || "") + "";
         const isReverted = normalizedValue === null ? originalEstimate === 0 : normalizedValue === originalEstimate;
         if (isReverted) {
-          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark ?? "" };
+          return { ...item, adjustedAmount: normalizedValue, edited: false, remark: originalRemark || "" };
         }
         const adjustedDiffers = normalizedValue !== originalEstimate;
         const remarkEmpty = !currentRemark || currentRemark.trim() === "";
@@ -73,9 +73,9 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const handleRemarkChange = (index, value) => {
     const taxHeadCode = feeAdjustments?.[index]?.taxHeadCode;
     const { originalEstimate } = getOriginals(taxHeadCode);
-    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount ?? 0;
+    const currentAdjusted = feeAdjustments?.[index]?.adjustedAmount || 0;
     const adjustedDiffers = currentAdjusted !== originalEstimate;
-    const remarkEmpty = (value ?? "").trim() === "";
+    const remarkEmpty = (value || "").trim() === "";
     setFeeAdjustments((prev) =>
       (prev || []).map((item, i) => (i === index ? { ...item, remark: value, edited: adjustedDiffers && remarkEmpty } : item))
     );
@@ -271,12 +271,12 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
         return {
           taxHeadCode: tax.taxHeadCode,
           category: tax.category,
-          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? savedCalc?.estimateAmount ?? 0,
-          remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? savedCalc?.remarks ?? "",
-          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId ?? tax.filestoreId ?? null,
+          adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount || savedCalc?.estimateAmount || 0,
+          remark: isEdited ? prevItem.remark || "" : tax.remarks || savedCalc?.remarks || "",
+          filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : savedCalc?.filestoreId || tax.filestoreId || null,
           onDocumentLoading: false,
           documentError: null,
-          edited: prevItem.edited ?? false,
+          edited: prevItem.edited || false,
         };
       });
     });
@@ -285,8 +285,8 @@ const LayoutFeeEstimationDetailsTable = ({ formData, feeType = "PAY1", feeAdjust
   const applicationFeeDataWithTotal = useMemo(() => {
     if (!data?.Calculation?.[0]?.taxHeadEstimates) return [];
     const rows = data.Calculation[0].taxHeadEstimates.map((tax, index) => {
-      const adjustedAmount = feeAdjustments[index]?.adjustedAmount ?? tax.estimateAmount;
-      const remarkValue = feeAdjustments[index]?.remark ?? tax.remarks ?? "";
+      const adjustedAmount = feeAdjustments[index]?.adjustedAmount || tax.estimateAmount;
+      const remarkValue = feeAdjustments[index]?.remark || tax.remarks || "";
 
       return {
         index,

@@ -79,7 +79,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   const editScreen = url.includes("/modify-application/");
 
   function selectedValue(value) {
-    console.log("value===???", value);
+    console.log("value===||?", value);
     sessionStorage.setItem("SubownershipCategory", value?.code);
     setOwnershipCategory(value);
     

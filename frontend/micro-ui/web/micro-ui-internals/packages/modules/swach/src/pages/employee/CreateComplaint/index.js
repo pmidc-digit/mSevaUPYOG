@@ -223,7 +223,7 @@ export const CreateComplaint = ({ parentUrl }) => {
 
   const handlePincode = (event) => {
     if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
+    const value = event?.target?.value || event;
     setPincode(value || "");
     if (!value) {
       setPincodeNotValid(false);
@@ -231,22 +231,22 @@ export const CreateComplaint = ({ parentUrl }) => {
   };
   const handleMobileNumber = (event) => {
     if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
+    const value = event?.target?.value || event;
     setMobileNumber(value || "");
   };
   const handleName = (event) => {
     if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
+    const value = event?.target?.value || event;
     setFullName(value || "");
   };
   const handleEmail = (event) => {
     if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
+    const value = event?.target?.value || event;
     setEmail(value || "");
   };
   const handleDescription = (event) => {
     if (event === undefined || event === null) return;
-    const value = event?.target?.value ?? event;
+    const value = event?.target?.value || event;
     setDescription(value || "");
   };
 

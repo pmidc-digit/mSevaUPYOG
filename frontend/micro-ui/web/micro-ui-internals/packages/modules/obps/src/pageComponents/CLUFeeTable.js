@@ -66,7 +66,7 @@ export const CLUFeeTable = ({
             isMandatory={false}
             value={feeData[row.index]?.adjustedAmount === null
               ? ""
-              : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""}
+              : feeData[row.index]?.adjustedAmount || row.amount || ""}
             onChange={(e) => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith("0")) {
@@ -233,7 +233,7 @@ export const CLUFeeTable = ({
                       value={
                         feeData[row.index]?.adjustedAmount === null
                           ? ""
-                          : feeData[row.index]?.adjustedAmount ?? row.amount ?? ""
+                          : feeData[row.index]?.adjustedAmount || row.amount || ""
                       }
                       onChange={(e) => {
                         let val = e.target.value;

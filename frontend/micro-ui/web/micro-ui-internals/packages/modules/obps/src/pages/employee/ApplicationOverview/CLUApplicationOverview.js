@@ -138,7 +138,7 @@ const CLUEmployeeApplicationDetails = () => {
       documents: applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
   } : []);
 
-  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService ?? null;
+  const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || null;
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [showOptions, setShowOptions] = useState(false);
@@ -440,12 +440,12 @@ const stateId = Digit.ULBService.getStateId();
       return {
         taxHeadCode: tax?.taxHeadCode,
         category: tax?.category,
-        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount ?? saved?.estimateAmount ?? 0,
-        remark: isEdited ? prevItem.remark ?? "" : tax.remarks ?? saved?.remarks ?? "",
-        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId ?? saved?.filestoreId ?? null,
+        adjustedAmount: isEdited ? prevItem.adjustedAmount : tax.estimateAmount || saved?.estimateAmount || 0,
+        remark: isEdited ? prevItem.remark || "" : tax.remarks || saved?.remarks || "",
+        filestoreId: prevItem?.filestoreId !== undefined ? prevItem.filestoreId : tax.filestoreId || saved?.filestoreId || null,
         onDocumentLoading: false,
         documentError: null,
-        edited: prevItem.edited ?? false,
+        edited: prevItem.edited || false,
       };
     });
 
@@ -634,7 +634,7 @@ const stateId = Digit.ULBService.getStateId();
 
   
   function getRemarkEntries(record) {
-   return Object.entries(record ?? {}).filter(([k]) => k.startsWith('Remarks'));
+   return Object.entries(record || {}).filter(([k]) => k.startsWith('Remarks'));
   }
 
  function areAllRemarksFilled(record) {
@@ -691,7 +691,7 @@ const stateId = Digit.ULBService.getStateId();
       }
       else{
 
-        const record = fieldInspectionPending?.[0] ?? {};
+        const record = fieldInspectionPending?.[0] || {};
         const allRemarksFilled = areAllRemarksFilled(record);
 
         if(!allRemarksFilled){
@@ -719,7 +719,7 @@ const stateId = Digit.ULBService.getStateId();
    
     //Validation For Updating Fee At Any Level
     if (action !== "UPDATE_ZONE" && !isFeeDisabled) {
-    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount ?? 0) > 0);
+    const hasNonZeroFee = (feeAdjustments || []).some((row) => (row.amount || 0) + (row.adjustedAmount || 0) > 0);
     const allRemarksFilled = (feeAdjustments || []).every((row) => !row.edited || (row.remark && row.remark.trim() !== ""));
 
 
@@ -745,7 +745,7 @@ const stateId = Digit.ULBService.getStateId();
         .filter((row) => row.taxHeadCode !== "CLU_TOTAL") // exclude UI-only total row
         .map((row) => ({
           taxHeadCode: row.taxHeadCode,
-          estimateAmount: (row.adjustedAmount ?? 0), // baseline + delta
+          estimateAmount: (row.adjustedAmount || 0), // baseline + delta
           category: row.category,
           remarks: row.remark || null,
           filestoreId: row.filestoreId || null,
@@ -883,7 +883,7 @@ const stateId = Digit.ULBService.getStateId();
 
 
   const coordinates = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.coordinates;
-  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""));
+  const sitePhotographs = displayData?.Documents?.filter((doc)=> (doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO"))?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""));
 
   const remainingDocs = displayData?.Documents?.filter((doc) => !(
     doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || 
@@ -956,8 +956,8 @@ const stateId = Digit.ULBService.getStateId();
   }, [workflowDetails]);
 
   
-  const empUserName = siteInspectionEmp?.userName ?? "";
-  const empName = siteInspectionEmp?.name ?? "";
+  const empUserName = siteInspectionEmp?.userName || "";
+  const empName = siteInspectionEmp?.name || "";
 
   const handleSetEmpDesignation = (key)=>{
     setEmpDesignation(key);
@@ -1129,7 +1129,7 @@ const stateId = Digit.ULBService.getStateId();
         <Card>
           <CardSubHeader>{`FIELD INSPECTION SITE PHOTOGRAPHS UPLOADED BY ${empName} - ${empDesignation}`}</CardSubHeader>
           <StatusTable>
-          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType ?? "").localeCompare(b?.documentType ?? ""))} />
+          <CLUSitePhotographs documents={siteImages?.documents?.sort((a, b) => (a?.documentType || "").localeCompare(b?.documentType || ""))} />
           </StatusTable>
           {geoLocations?.length > 0 && (
             <React.Fragment>

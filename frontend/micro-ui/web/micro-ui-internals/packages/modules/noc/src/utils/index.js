@@ -219,23 +219,23 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
       const prev = prevEstimates[th.taxHeadCode];
-      const curr = th?.estimateAmount ?? null;
+      const curr = th?.estimateAmount || null;
       if (prev !== curr) anyChanged = true;
     });
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
-      prevEstimates[th.taxHeadCode] = th?.estimateAmount ?? null;
+      prevEstimates[th.taxHeadCode] = th?.estimateAmount || null;
     });
     if (!anyChanged) return;
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
       map[th.taxHeadCode] = map[th.taxHeadCode] || [];
       map[th.taxHeadCode].push({
-        who: calc?.updatedBy ?? null,
-        estimateAmount: th?.estimateAmount ?? null,
-        remarks: th?.remarks ?? null,
-        isLatest: calc?.isLatest ?? false,
-        when: calc?.when ?? null,
+        who: calc?.updatedBy || null,
+        estimateAmount: th?.estimateAmount || null,
+        remarks: th?.remarks || null,
+        isLatest: calc?.isLatest || false,
+        when: calc?.when || null,
       });
     });
   });

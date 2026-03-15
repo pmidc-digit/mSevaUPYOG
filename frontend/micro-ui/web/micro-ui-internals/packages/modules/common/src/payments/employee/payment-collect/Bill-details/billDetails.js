@@ -366,8 +366,6 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
       </table>
     );
   };
-const isTL = businessService === "TL";
-console.log("billDetails==????",billDetails)
   return (
     <React.Fragment>
       <StatusTable>

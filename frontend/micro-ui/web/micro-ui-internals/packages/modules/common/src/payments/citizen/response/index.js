@@ -2265,7 +2265,7 @@ const WrapPaymentZeroComponent = (props) => {
           {t("TL_RECEIPT")}
         </div>
       ) : null}
-      {business_service == "TL" ? (
+      {/* {business_service == "TL" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -2273,7 +2273,7 @@ const WrapPaymentZeroComponent = (props) => {
           </svg>
           {t("TL_CERTIFICATE")}
         </div>
-      ) : null}
+      ) : null} */}
       {business_service == "sv-services" ? (
         <div
           className="primary-label-btn d-grid"

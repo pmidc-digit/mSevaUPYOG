@@ -163,6 +163,12 @@ public class NotificationUtil {
 	 */
 	public String getCustomizedMsgForEmail(String action, String applicationStatus, String localizationMessage, int reqType) {
 		StringBuilder builder = new StringBuilder();
+		if (applicationStatus.equalsIgnoreCase(SWConstants.PENDING_FOR_PAYMENT_STATUS_CODE) ) {
+			builder.append("notification.water.estimation.email");
+		}
+		else if (applicationStatus.equalsIgnoreCase(SWConstants.STATUS_APPROVED) ) {
+			builder.append("notification.water.activation.email.sanction");
+		}
 		if (reqType == SWConstants.UPDATE_APPLICATION) {
 			builder.append("SW_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
 		}

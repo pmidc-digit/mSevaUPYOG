@@ -599,7 +599,14 @@ public class WorkflowNotificationService {
     private String elaborateEmailTemplate(String template, String ownerName, Property property, WaterConnectionRequest request, String feeBreakdown) {
         WaterConnection conn = request.getWaterConnection();
         Map<String, Object> additionalDetails = mapper.convertValue(conn.getAdditionalDetails(), Map.class);
-        
+        String appNo = conn.getApplicationNo() != null ? conn.getApplicationNo() : "";
+
+        String serviceType = "Water Supply & Sewerage"; // Fallback
+        if (appNo.startsWith("WS")) {
+            serviceType = "Water Supply";
+        } else if (appNo.startsWith("SW")) {
+            serviceType = "Sewerage";
+        }
         // 1. City Name Logic
         String tenantId = conn.getTenantId();
         String cityName = (tenantId != null && tenantId.contains(".")) ? tenantId.split("\\.")[1] : "City";
@@ -614,6 +621,8 @@ public class WorkflowNotificationService {
         return template
             .replace("{ownerName}", ownerName != null ? ownerName : "Citizen")
             .replace("{cityName}", cityName)
+            .replace("{serviceType}", serviceType) // New dynamic variable
+
             .replace("{applicationNo}", conn.getApplicationNo() != null ? conn.getApplicationNo() : "N/A")
             .replace("{consumerNo}", conn.getConnectionNo() != null ? conn.getConnectionNo() : "ACTIVATED")
             .replace("{propertyId}", conn.getPropertyId() != null ? conn.getPropertyId() : "N/A")

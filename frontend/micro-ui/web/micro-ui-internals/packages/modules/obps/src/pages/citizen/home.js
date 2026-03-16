@@ -26,7 +26,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(state, "BPA", ["homePageUrlLinks"]);
   const [showToast, setShowToast] = useState(null);
   const [showModal, setShowModal] = useState(false)
-  const [totalCount, setTotalCount] = useState("-");
+  // const [totalCount, setTotalCount] = useState("-");
   const user = Digit.UserService?.getUser()
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const isUserLoggedIn = user?.access_token
@@ -36,10 +36,10 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { data: userDetails, isLoading: isUserLoading, refetch } = Digit.Hooks.useUserSearch(stateId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const { data: obpsHomePageUI, isLoading: isOBPSHomePageUILoading } = Digit.Hooks.useCustomMDMS(state, "BPA", [{ name: "OBPSHomePageUI" }]);
 
-  console.log("obpsHomePageUI", obpsHomePageUI, isOBPSHomePageUILoading)
+  // console.log("obpsHomePageUI", obpsHomePageUI, isOBPSHomePageUILoading)
   
   useEffect(() => {
-    console.log("userDetails", userDetails, isUserRegistered, user)
+    // console.log("userDetails", userDetails, isUserRegistered, user)
     if(isUserRegistered && !userDetails?.user?.[0]?.signature){
       setShowModal(true);
     }else{
@@ -64,35 +64,35 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
     : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.sortOrder };
   const inboxSearchParams = { limit: 10, offset: 0, mobileNumber: userInfo?.info?.mobileNumber };
 
-  const { isLoading: bpaLoading, data: bpaInboxData } = Digit.Hooks.obps.useArchitectInbox({
-    tenantId: stateCode,
-    moduleName: "bpa-services",
-    businessService: OBPS_BPA_BUSINESS_SERVICES,
-    filters: {
-      searchForm: {
-        ...searchParams,
-      },
-      tableForm: {
-        sortBy: sortParams?.[0]?.id,
-        limit: pageSize,
-        offset: pageOffset,
-        sortOrder: sortParams?.[0]?.sortOrder,
-      },
-      filterForm: {
-        moduleName: "bpa-services",
-        businessService: [],
-        applicationStatus: searchParams?.applicationStatus,
-        locality: [],
-        assignee: "ASSIGNED_TO_ALL",
-      },
-    },
-    config: {},
-    withEDCRData: false,
-  });
-  const { isLoading: isEDCRInboxLoading, data: { totalCount: edcrCount } = {} } = Digit.Hooks.obps.useEDCRInbox({
-    tenantId: stateCode,
-    filters: { filterForm: {}, searchForm: {}, tableForm: { limit: 10, offset: 0 } },
-  });
+  // const { isLoading: bpaLoading, data: bpaInboxData } = Digit.Hooks.obps.useArchitectInbox({
+  //   tenantId: stateCode,
+  //   moduleName: "bpa-services",
+  //   businessService: OBPS_BPA_BUSINESS_SERVICES,
+  //   filters: {
+  //     searchForm: {
+  //       ...searchParams,
+  //     },
+  //     tableForm: {
+  //       sortBy: sortParams?.[0]?.id,
+  //       limit: pageSize,
+  //       offset: pageOffset,
+  //       sortOrder: sortParams?.[0]?.sortOrder,
+  //     },
+  //     filterForm: {
+  //       moduleName: "bpa-services",
+  //       businessService: [],
+  //       applicationStatus: searchParams?.applicationStatus,
+  //       locality: [],
+  //       assignee: "ASSIGNED_TO_ALL",
+  //     },
+  //   },
+  //   config: {},
+  //   withEDCRData: false,
+  // });
+  // const { isLoading: isEDCRInboxLoading, data: { totalCount: edcrCount } = {} } = Digit.Hooks.obps.useEDCRInbox({
+  //   tenantId: stateCode,
+  //   filters: { filterForm: {}, searchForm: {}, tableForm: { limit: 10, offset: 0 } },
+  // });
 
   useEffect(()=>{
     if (location.pathname === "/digit-ui/citizen/obps/home"){
@@ -101,12 +101,12 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
     }
   },[location.pathname])
 
-  useEffect(() => {
-    if (!bpaLoading) {
-      const totalCountofBoth = bpaInboxData?.totalCount || 0;
-      setTotalCount(totalCountofBoth);
-    }
-  }, [bpaInboxData]);
+  // useEffect(() => {
+  //   if (!bpaLoading) {
+  //     const totalCountofBoth = bpaInboxData?.totalCount || 0;
+  //     setTotalCount(totalCountofBoth);
+  //   }
+  // }, [bpaInboxData]);
 
   useEffect(() => {
     if (!stakeHolderDetailsLoading) {
@@ -117,7 +117,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         });
       });
       const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
-      console.log("uniqueRoles",uniqueRoles)
+      // console.log("uniqueRoles",uniqueRoles)
       let isRoute = false;
       uniqueRoles?.map((unRole) => {
         if (userRoles?.includes(unRole) && !isRoute) {
@@ -156,7 +156,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
 
   if (showToast) return <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />;
 
-  if (stakeHolderDetailsLoading || !stakeHolderRoles || bpaLoading || isUserLoading) {
+  if (stakeHolderDetailsLoading || !stakeHolderRoles || isUserLoading) {
     return <Loader />;
   } // || bparegLoading
 

@@ -46,6 +46,7 @@ import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui
 import { CHBModule, CHBLinks, CHBComponents, CHBReducers } from "@mseva/upyog-ui-module-chb";
 import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
 import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
+import { initFIRENOCComponents, FIRENOCReducers, FireNOCLinks, FireNOCModule } from "@mseva/digit-ui-module-firenoc";
 
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
@@ -95,6 +96,7 @@ const enabledModules = [
   "Layout",
   "GarbageCollection",
   "CLU",
+  "FIRENOC"
 ];
 
 const initTokens = (stateCode) => {
@@ -167,6 +169,8 @@ const initDigitUI = () => {
     ...PGRAIComponents,
     NOCModule,
     NOCLinks,
+    FireNOCModule,
+    FireNOCLinks,
   });
   initFSMComponents();
   initPGRComponents();
@@ -187,6 +191,7 @@ const initDigitUI = () => {
   initCommonPTComponents();
   initBillsComponents();
   initNDCComponents();
+  initFIRENOCComponents();
   // initCustomisationComponents();
 
   const moduleReducers = (initData) => ({
@@ -206,6 +211,7 @@ const initDigitUI = () => {
     challan: ChallanReducers(initData),
     rentAndLease: RentAndLeaseReducers(initData),
     gc: GarbageReducers(initData),
+    firenoc: FIRENOCReducers(initData),
   });
 
   window.Digit.Customizations = {

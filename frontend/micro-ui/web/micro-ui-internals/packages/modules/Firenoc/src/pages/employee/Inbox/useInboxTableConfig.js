@@ -17,7 +17,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log('row in inbox', row)
           return (
             <div>
               <Link to={`${parentRoute}/inbox/application-overview/${row.original["applicationId"]}`}>

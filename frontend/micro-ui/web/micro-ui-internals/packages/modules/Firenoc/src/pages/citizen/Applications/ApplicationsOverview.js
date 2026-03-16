@@ -93,7 +93,6 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
-  // console.log('id', id.length)
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -109,8 +108,6 @@ const CitizenApplicationOverview = () => {
        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
    } : {})
   
-  // console.log('applicationD', applicationDetails)
-  // const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find(c => c.isLatest);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -170,7 +167,6 @@ const CitizenApplicationOverview = () => {
 
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime)
       
@@ -198,7 +194,6 @@ const CitizenApplicationOverview = () => {
     try {
       setLoading(true);
       const Property = applicationDetails?.Noc?.[0];
-      //console.log("tenants", tenants);
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
       const site = Property?.nocDetails?.additionalDetails?.siteDetails;
@@ -244,7 +239,7 @@ const CitizenApplicationOverview = () => {
     let application = applicationDetails?.Noc?.[0]
 
     let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-    // console.log("fileStoreId before create", fileStoreId);
+    
 
     if (!fileStoreId) {
       const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
@@ -327,8 +322,6 @@ const CitizenApplicationOverview = () => {
     }
   }
 
-  //console.log("acknowledgementData", acknowledgementData);
-  //Digit.Utils.pdf.generate(acknowledgementData);
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -400,7 +393,6 @@ const CitizenApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  // console.log("actions here", actions);
 
 //   useEffect(() => {
 //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
@@ -451,7 +443,6 @@ const finalComment = useMemo(() => {
 
 
   function onActionSelect(action) {
-    // console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
 
     const payload = {
@@ -487,9 +478,7 @@ const finalComment = useMemo(() => {
       vasikaDate, // add vasikaDate
       workflow: {},
     };
-    // console.log("updatedApplicant", updatedApplicant);
     const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -511,8 +500,6 @@ const finalComment = useMemo(() => {
           workflowDetails.revalidate();
           setSelectedAction(null);
         } else {
-          //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-          // console.log("We are calling citizen response page");
           history.replace({
             pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
@@ -548,7 +535,6 @@ const finalComment = useMemo(() => {
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  // console.log("displayData=>", displayData);
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
     "OWNER.SITEPHOTOGRAPHTWO": 2,
@@ -560,15 +546,13 @@ const finalComment = useMemo(() => {
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   );
-  // console.log("remainingDocs", remainingDocs);
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
   const combinedOwnersName = firmName?.trim() || ownersList?.join(", ");
-  // console.log("combinerOwnersName", combinedOwnersName);
-
+  
 
   
   return (

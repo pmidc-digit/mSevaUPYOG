@@ -82,7 +82,6 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: stepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
 
 const NewNOCStepperForm = () => {
   const history = useHistory();
@@ -94,7 +93,6 @@ const NewNOCStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_NOCNewApplication_STEP(updatedStepNumber));
@@ -104,14 +102,12 @@ const NewNOCStepperForm = () => {
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
   }, []);
 
-  // console.log("formData",formData);
 
   useEffect(() => {
       window.scrollTo(0, 0);
     }, [step]);
     
   const handleSubmit = (dataGet) => {
-    console.log("dataGet===", dataGet);
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
     // createEmployeeConfig.forEach((config) => {
@@ -122,7 +118,6 @@ const NewNOCStepperForm = () => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  // console.log("formState: ",formState);
   return (
     <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

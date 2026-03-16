@@ -24,7 +24,6 @@ const NOCSpecificationDetails = (_props) => {
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
 
- // console.log("nocType here", nocType);
 
   const options = [
     {
@@ -38,10 +37,8 @@ const NOCSpecificationDetails = (_props) => {
   ];
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      //console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });

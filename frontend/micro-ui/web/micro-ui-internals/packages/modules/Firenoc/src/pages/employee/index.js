@@ -45,7 +45,6 @@ const NOCBreadCrumbs = ({ location }) => {
 };
 
 const EmployeeApp = ({ path }) => {
-  console.log('path', path)
   const location = useLocation();
   const { t } = useTranslation();
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
@@ -63,7 +62,6 @@ const EmployeeApp = ({ path }) => {
     useEffect(() => {
       if (window.location.pathname.endsWith("/complete")) {
         history.push(`/digit-ui/employee/noc-home`);
-          console.log('useffect called complete')
   
       }
   

@@ -101,7 +101,6 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         };
     }, []);
 
-    console.log("Current location:", location);
 
 
   /* ------------------ CAPTURE IMAGE ------------------ */

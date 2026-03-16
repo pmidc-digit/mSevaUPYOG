@@ -8,7 +8,6 @@ import { useLocation } from "react-router-dom";
 const InspectionReportDisplay = ({fiReport , InspectionReportVerifier}) => {
     const { t } = useTranslation();
 
-        console.log('InspectionReportVerifier here', InspectionReportVerifier)
 
     const report = useMemo(() => {
       if (fiReport && fiReport.length > 0) {

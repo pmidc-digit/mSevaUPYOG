@@ -2,6 +2,7 @@ import { version } from "../../package.json";
 import { Router } from "express";
 import create from "./create";
 import search from "./search";
+import plainsearch from "./plainsearch";
 import update from "./update";
 
 export default ({ config }) => {
@@ -9,6 +10,7 @@ export default ({ config }) => {
 
   api.use("/firenoc-services/v1", create({ config }));
   api.use("/firenoc-services/v1", search({ config }));
+  api.use("/firenoc-services/v1", plainsearch({ config }));
   api.use("/firenoc-services/v1", update({ config }));
   // perhaps expose some API metadata at the root
   api.get("/", (req, res) => {

@@ -136,6 +136,7 @@ export const useLayoutCheckListSearch = (params, tenantId, config = {}) => {
     ...config,
   });
 
+  return { ...result, revalidate: () => client.invalidateQueries(["LAYOUT_SEARCH_APPLICATION", params]) };
 }
 const useBPACheckListSearchFn = (params, tenantId) => {
   return async () => {

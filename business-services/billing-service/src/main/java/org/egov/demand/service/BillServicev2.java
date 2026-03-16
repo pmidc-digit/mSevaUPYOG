@@ -290,7 +290,7 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		if (CollectionUtils.isEmpty(bills))
 		{
 			log.info( "If bills are empty" +bills.size());
-			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+//			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
 		}
@@ -431,6 +431,16 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		return BillResponseV2.builder().resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
 				.bill(bills).build();
 	}
+	
+	/*	PI-19980 Patiala Penalty not apply in W/S*/
+	public BillResponseV2 searchBillLatest(BillSearchCriteria billCriteria, RequestInfo requestInfo) {
+
+		List<BillV2> bills = billRepository.findBillLatest(billCriteria);
+
+		return BillResponseV2.builder().resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
+				.bill(bills).build();
+	}
+	/*	PI-19980 Patiala Penalty not apply in W/S*/
 	
 	/**
 	 * Generate bill based on the given criteria

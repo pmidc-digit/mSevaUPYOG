@@ -2,17 +2,17 @@
 FROM node:14.21.3-alpine AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.14
+RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.15
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
-RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15-DEV.1
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
 RUN yarn add @mseva/digit-ui-module-noc@1.0.79-dev.9
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32-dev.1
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.23
 RUN yarn add @mseva/digit-ui-module-core@1.0.66-dev.1.5
-RUN yarn add @mseva/digit-ui-module-common@1.1.88-dev.1.22
+RUN yarn add @mseva/digit-ui-module-common@1.1.88-dev.1.23
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-dev.2.3

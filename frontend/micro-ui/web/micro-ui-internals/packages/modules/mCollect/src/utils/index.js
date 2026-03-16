@@ -90,9 +90,10 @@ export const printPdf = (blob) => {
 
 export const downloadAndPrintChallan = async (challanNo, mode, setLoading) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  setLoading(true);
+  // setLoading(true);
   const response = await Digit.MCollectService.downloadPdf(challanNo, tenantId);
-  setLoading(false);
+  console.log("➡️➡️",response)
+  // setLoading(false);
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     mode == "print"

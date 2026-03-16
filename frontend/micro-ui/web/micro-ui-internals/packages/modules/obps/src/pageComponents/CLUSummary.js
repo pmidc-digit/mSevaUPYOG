@@ -52,7 +52,7 @@ function CLUSummary({ currentStepData: formData, t }) {
         />
       </StatusTable>
 
-      {(formData?.applicationDetails?.owners ?? [])?.map((owner, index) => {
+      {(formData?.applicationDetails?.owners || [])?.map((owner, index) => {
         return (
           <div>
             <CardSubHeader>{index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`}</CardSubHeader>

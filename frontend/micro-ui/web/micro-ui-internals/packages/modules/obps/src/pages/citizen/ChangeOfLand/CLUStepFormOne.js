@@ -81,10 +81,10 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   function checkValidation(data) {
 
-  const ownerPhotoCount = ownerPhotoList?.length ?? 0;        
-  const ownerIdCount  = ownerIdList?.length ?? 0;         
+  const ownerPhotoCount = ownerPhotoList?.length || 0;        
+  const ownerIdCount  = ownerIdList?.length || 0;         
 
-  const ownersCount = data?.owners?.length ?? 0;
+  const ownersCount = data?.owners?.length || 0;
 
   const uniqueOwnersList= new Set(data?.owners?.map((owner)=> owner?.mobileNumber) || []);
   const isDuplicateOwner= uniqueOwnersList.size !== ownersCount;

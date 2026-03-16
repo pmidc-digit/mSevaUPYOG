@@ -66,14 +66,14 @@ const LayoutDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarks
                   {isReadOnly ? (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={localRemarks[doc.documentUid] || ""}
                       disabled={true}
                       className="checklist-table-textarea"
                     />
                   ) : (
                     <TextArea
                       t={t}
-                      value={localRemarks[doc.documentUid] ?? ""}
+                      value={localRemarks[doc.documentUid] || ""}
                       onChange={(e) => {
                         console.log("onChange triggered - value:", e.target.value);
                         setLocalRemarks(prev => ({ ...prev, [doc.documentUid]: e.target.value }));

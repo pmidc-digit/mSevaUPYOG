@@ -1,8 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import CustomMenu from "../../components/CustomMenu";
 
 const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   // User authentication and role checks
+  const { t } = useTranslation();
   const user = Digit.UserService?.getUser();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const isUserLoggedIn = user?.access_token;
@@ -23,9 +26,11 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
 
   // SVG Icons for different services
   const getServiceIcon = (linkText, index) => {
-    const lowerText = linkText.toLowerCase();
+    const lowerText = linkText?.toLowerCase();
 
-    if (lowerText.includes("apply") || lowerText.includes("new")) {
+    if(!!!lowerText) return
+
+    if (lowerText?.includes("apply") || lowerText?.includes("new")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -41,7 +46,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
           <path d="M9 15H15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
-    } else if (lowerText.includes("renew") || lowerText.includes("renewal")) {
+    } else if (lowerText?.includes("renew") || lowerText?.includes("renewal")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M21.5 2V8H15.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -62,7 +67,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
           <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
         </svg>
       );
-    } else if (lowerText.includes("application") || lowerText.includes("track")) {
+    } else if (lowerText?.includes("application") || lowerText?.includes("track")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -91,7 +96,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
           />
         </svg>
       );
-    } else if (lowerText.includes("faq") || lowerText.includes("help") || lowerText.includes("question")) {
+    } else if (lowerText?.includes("faq") || lowerText?.includes("help") || lowerText?.includes("question")) {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" />
@@ -140,16 +145,66 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
       </div>
     </React.Fragment>
   );
+  const renderCardDropDownContent = (link) => {
+    const [displayMenu, setDisplayMenu] = useState(false);    
+    const handleRedirect = (url) => {
+      if(url?.navigationURL) window.open(url?.navigationURL, "_blank");
+    };
+    
+    return (
+    <React.Fragment>
+      <div className={`chcwe-card chcwe-card-bg-2`} onClick={() => setDisplayMenu(!displayMenu)} >
+      <div className={`chcwe-icon chcwe-icon-bg-2`}>{getServiceIcon(link?.[0]?.i18nKey)}</div>
+      <div className="chcwe-content">
+        <div className="chcwe-title">{t(link?.[0]?.displayName)}</div>
+      </div>
+      <div className="chcwe-arrow-container">
+        <ArrowIcon />
+      </div>
+      </div>
+      <div className="action-bar-wrap-menu">
+        {displayMenu ? (
+          <CustomMenu
+            localeKeyPrefix={``}
+            options={link}
+            optionKey={"name"}
+            t={t}
+            onSelect={handleRedirect}
+          />
+        ) : null}
+      </div>
+    </React.Fragment>
+  )};
 
   // Links that should open in new tab (_blank)
   const linksToOpenInBlank = [
-    "BPA_CITIZEN_HOME_ARCHITECT_USER_MANUAL_LABEL",
+    // "BPA_CITIZEN_HOME_ARCHITECT_USER_MANUAL_LABEL",
     "BPA_CITIZEN_HOME_ARCHITECT_FEEDBACK_LABEL",
   ];
 
   const shouldOpenInBlank = (linkName) => {
-    return linksToOpenInBlank.includes(linkName);
+    return linksToOpenInBlank?.includes(linkName);
   };
+
+  const isUserManual = (displayName) => {
+    return displayName?.includes("User Manuals")
+  }
+
+  const isSampleFile = (displayName) => {
+    return displayName?.includes("Sample Files")
+  }
+
+  const isVideo = (displayName) => {
+    return displayName?.includes("Video")
+  }
+
+  const remainingUserManualLinks = links?.filter((value) => isUserManual(value?.displayName))
+
+  const remainingSampleFilesLink = links?.filter((value) => isSampleFile(value?.displayName))
+  
+  const remainingVideoLink = links?.filter((value) => isVideo(value?.displayName))
+
+  console.log("remainingUserManualLinks", remainingUserManualLinks)
 
   return (
     <div className="chcwe-root" style={styles ? styles : undefined}>
@@ -188,8 +243,11 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
 
           // Check if this link should open in new tab
           const openInBlank = shouldOpenInBlank(link?.name);
+          const userManual = isUserManual(link?.displayName);
+          const sampleFiles = isSampleFile(link?.displayName);
+          const video = isVideo(link?.displayName);
 
-          return (
+          return (userManual || sampleFiles || video) ? null : (
             <a
               key={index}
               href={link.link}
@@ -201,6 +259,10 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
             </a>
           );
         })}
+        
+        {remainingUserManualLinks?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingUserManualLinks)}</div>}
+        {remainingSampleFilesLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesLink?.sort((a,b) => a.order - b .order))}</div>}
+        {remainingVideoLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingVideoLink)}</div>}
       </div>
 
       {isInfo && Info && (

@@ -53,7 +53,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const currentStepData= useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData)|| {};
 
 const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
-  const code = owner?.ownerType?.code ?? owner?.ownerType;
+  const code = owner?.ownerType?.code || owner?.ownerType;
 
   return String(code).toLowerCase() === "firm";
 });

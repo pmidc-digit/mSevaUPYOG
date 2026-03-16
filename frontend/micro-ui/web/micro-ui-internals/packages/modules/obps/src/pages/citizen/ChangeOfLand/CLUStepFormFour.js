@@ -125,7 +125,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       /**Change of Owner Feature Left and to be discussed*/
     }
 
-    // const ownerData = (cluFormData?.applicationDetails?.owners ?? [])?.map((item,index)=>{
+    // const ownerData = (cluFormData?.applicationDetails?.owners || [])?.map((item,index)=>{
     //   return {
     //     mobileNumber: item?.mobileNumber || "",
     //     name: item?.ownerOrFirmName || "",

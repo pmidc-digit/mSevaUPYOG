@@ -181,7 +181,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
     setValue("selectedProperty", property);
     fieldsToPrefill?.forEach((field) => {
-      setValue(field, property?.[field] ?? null, {
+      setValue(field, property?.[field] || null, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -212,7 +212,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     triggerLoader(true);
     // Build one consistent object
     const propertyDetails = Object.keys(data).reduce((acc, key) => {
-      acc[key] = data?.[key] ?? null; // ✅ optional chaining + null fallback
+      acc[key] = data?.[key] || null; // ✅ optional chaining + null fallback
       return acc;
     }, {});
 

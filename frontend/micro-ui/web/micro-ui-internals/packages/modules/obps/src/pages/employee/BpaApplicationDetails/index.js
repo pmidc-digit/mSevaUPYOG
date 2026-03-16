@@ -1079,7 +1079,7 @@ const BpaApplicationDetail = () => {
     //   alert(t("Please fill in the comments before submitting  "))
     // }
     if(data?.BPA?.status === "INSPECTION_REPORT_PENDING"){
-      const recommendation = fieldInspectionPending?.[0]?.Recommendations ?? "";
+      const recommendation = fieldInspectionPending?.[0]?.Recommendations || "";
       if(fieldInspectionPending?.length === 0){
         closeModal();
         setShowToast({error: true, label: t("Please fill in the Field Inspection Report before submitting")})

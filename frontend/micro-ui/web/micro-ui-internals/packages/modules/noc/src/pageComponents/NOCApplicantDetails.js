@@ -220,7 +220,7 @@ const NOCApplicantDetails = (_props) => {
     name: "owners",
   });
 
-  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) ?? "";
+  const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) || "";
 
 
  useEffect(() => {
@@ -391,7 +391,7 @@ const NOCApplicantDetails = (_props) => {
     setLoader(true);
 
     try {
-      console.log('get owner details firing???')
+      console.log('get owner details firing||?')
       const currentMobile = mobileAtIndex(idx);
 
     if (!/^[6-9]\d{9}$/.test(currentMobile)) {
@@ -400,7 +400,7 @@ const NOCApplicantDetails = (_props) => {
     }
       const userResponse = await Digit.UserService.userSearch(stateId, { userName: currentMobile }, {});
 
-      const users = userResponse?.user ?? [];
+      const users = userResponse?.user || [];
       if (!users.length) {
         setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
         return;
@@ -409,10 +409,10 @@ const NOCApplicantDetails = (_props) => {
       const u = users[0];
 
       // Write EVERYTHING into RHF state
-      setValue(`owners[${idx}].ownerOrFirmName`, u.name ?? "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${idx}].emailId`, u.emailId ?? "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName ?? "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${idx}].address`, u.permanentAddress ?? "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].ownerOrFirmName`, u.name || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].emailId`, u.emailId || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].address`, u.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
 
       // Normalize DOB to YYYY-MM-DD for <input type="date">
       const dobStr = typeof u.dob === "string" ? u.dob : "";

@@ -58,7 +58,7 @@ console.log('currentStepData', currentStepData)
     .join(", ");
 
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
-  // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
+  // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
   // const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
   const [TimeStamp, setOTPVerifiedTimestamp] = useState(currentStepData?.TimeStamp?.TimeStamp || "");
   const [isArchitectDeclared, setIsArchitectDeclared] = useState(currentStepData?.TimeStamp?.isArchitectDeclared || "");

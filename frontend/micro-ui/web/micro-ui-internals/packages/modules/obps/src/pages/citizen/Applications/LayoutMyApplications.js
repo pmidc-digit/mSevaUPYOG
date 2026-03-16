@@ -90,7 +90,7 @@ const LayoutMyApplications = ({ view }) => {
   }
 
   const list = data?.data || [];
-  const total = data?.count ?? data?.totalCount ?? 0;
+  const total = data?.count || data?.totalCount || 0;
 
   return (
     <React.Fragment>

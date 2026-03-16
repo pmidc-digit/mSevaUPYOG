@@ -153,9 +153,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
           ...existing.petDetails,
           petName: pick(data.petName, existing.petDetails?.petName),
           // prefer .name (UI) -> fallback to .code, then existing
-          petType: pick(data.petType?.name ?? data.petType?.code, existing.petDetails?.petType),
-          breedType: pick(data.breedType?.name ?? data.breedType?.code, existing.petDetails?.breedType),
-          petGender: pick(data.petGender?.name ?? data.petGender?.code, existing.petDetails?.petGender),
+          petType: pick(data.petType?.name || data.petType?.code, existing.petDetails?.petType),
+          breedType: pick(data.breedType?.name || data.breedType?.code, existing.petDetails?.breedType),
+          petGender: pick(data.petGender?.name || data.petGender?.code, existing.petDetails?.petGender),
           petColor: pick(data.petColor, existing.petDetails?.petColor),
           lastVaccineDate: pick(toEpochMilliseconds(data.lastVaccineDate), existing.petDetails?.lastVaccineDate),
           petAge: pick(data.petAge, existing.petDetails?.petAge),

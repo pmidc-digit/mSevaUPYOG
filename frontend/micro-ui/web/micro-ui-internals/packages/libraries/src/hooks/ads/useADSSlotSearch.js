@@ -14,7 +14,7 @@ const useADSSlotSearch = ({ tenantId, type = true, data }) => {
 
   return {
     ...mutation,
-    data: mutation.data ?? [],
+    data: mutation.data || [],
     isLoading: mutation.isLoading,
     isError: mutation.isError,
     error: mutation.error,

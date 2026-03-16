@@ -249,40 +249,40 @@ public class Util {
 	 * 
 	 * if the call happens with payment false and the demand is already tallied even then the demands won't be set to paid-completely to allow zero payment
 	 */
-//	public void updateDemandPaymentStatus(Demand demand, Boolean isUpdateFromPayment) {
-//		BigDecimal totoalTax = demand.getDemandDetails().stream()
-//			    .filter(detail -> !detail.getTaxHeadMasterCode().contains("ADVANCE")) // Exclude tax heads with "ADVANCE"
-//			    .map(DemandDetail::getTaxAmount)
-//			    .reduce(BigDecimal.ZERO, BigDecimal::add);
-//		
-//		BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
-//				.reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//		if (totoalTax.compareTo(totalCollection) == 0 && isUpdateFromPayment)
-//			demand.setIsPaymentCompleted(true);
-//		else if (totoalTax.compareTo(totalCollection) != 0)
-//			demand.setIsPaymentCompleted(false);
-//	}
-	
 	public void updateDemandPaymentStatus(Demand demand, Boolean isUpdateFromPayment) {
-	    // 1. Sum ALL tax amounts (including ADVANCE/Adjustments)
-	    BigDecimal totalTax = demand.getDemandDetails().stream()
-	            .map(DemandDetail::getTaxAmount)
-	            .reduce(BigDecimal.ZERO, BigDecimal::add);
-	    
-	    // 2. Sum ALL collection amounts
-	    BigDecimal totalCollection = demand.getDemandDetails().stream()
-	            .map(DemandDetail::getCollectionAmount)
-	            .reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totoalTax = demand.getDemandDetails().stream()
+			    .filter(detail -> !detail.getTaxHeadMasterCode().contains("ADVANCE")) // Exclude tax heads with "ADVANCE"
+			    .map(DemandDetail::getTaxAmount)
+			    .reduce(BigDecimal.ZERO, BigDecimal::add);
+		
+		BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-	    // 3. Match them. If net balance is 0, then it's completed.
-	    if (totalTax.compareTo(totalCollection) == 0) {
-	        demand.setIsPaymentCompleted(true);
-	    } else {
-	        demand.setIsPaymentCompleted(false);
-	    }
+		if (totoalTax.compareTo(totalCollection) == 0 && isUpdateFromPayment)
+			demand.setIsPaymentCompleted(true);
+		else if (totoalTax.compareTo(totalCollection) != 0)
+			demand.setIsPaymentCompleted(false);
 	}
 	
+//	public void updateDemandPaymentStatus(Demand demand, Boolean isUpdateFromPayment) {
+//	    // 1. Sum ALL tax amounts (including ADVANCE/Adjustments)
+//	    BigDecimal totalTax = demand.getDemandDetails().stream()
+//	            .map(DemandDetail::getTaxAmount)
+//	            .reduce(BigDecimal.ZERO, BigDecimal::add);
+//	    
+//	    // 2. Sum ALL collection amounts
+//	    BigDecimal totalCollection = demand.getDemandDetails().stream()
+//	            .map(DemandDetail::getCollectionAmount)
+//	            .reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//	    // 3. Match them. If net balance is 0, then it's completed.
+//	    if (totalTax.compareTo(totalCollection) == 0) {
+//	        demand.setIsPaymentCompleted(true);
+//	    } else {
+//	        demand.setIsPaymentCompleted(false);
+//	    }
+//	}
+//	
 	/**
 	 * validates state level tenant-id for citizens and employees
 	 * 

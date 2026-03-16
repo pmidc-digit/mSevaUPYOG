@@ -104,18 +104,19 @@ export const updateApiResponse = async ({ body }, next = {}) => {
 
   //if (body.FireNOCs[0].fireNOCDetails.applicationDate <= '1756252740000' || body.FireNOCs[0].dateOfApplied <= '1756252740000') {
   //if (body.FireNOCs[0].dateOfApplied <= '1756252740000') {
-  if (body.FireNOCs[0].fireNOCDetails.auditDetails.lastModifiedTime <= '1756252740000') {
-
-    body.FireNOCs[0].fireNOCDetails.additionalDetail = {
-      ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
-      validityYears: 1
-    };
-  } else {
-    body.FireNOCs[0].fireNOCDetails.additionalDetail = {
-      ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
-      validityYears: validityYears
-    };
-  }
+   if (body.FireNOCs[0].fireNOCDetails.auditDetails &&
+    body.FireNOCs[0].fireNOCDetails.auditDetails.lastModifiedTime &&
+    body.FireNOCs[0].fireNOCDetails.auditDetails.lastModifiedTime <= '1756252740000') {
+  body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+    ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+    validityYears: 1
+  };
+} else {
+  body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+    ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+    validityYears: validityYears
+  };
+}
 
   // console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
 

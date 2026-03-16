@@ -36,10 +36,10 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { data: userDetails, isLoading: isUserLoading, refetch } = Digit.Hooks.useUserSearch(stateId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const { data: obpsHomePageUI, isLoading: isOBPSHomePageUILoading } = Digit.Hooks.useCustomMDMS(state, "BPA", [{ name: "OBPSHomePageUI" }]);
 
-  console.log("obpsHomePageUI", obpsHomePageUI, isOBPSHomePageUILoading)
+  // console.log("obpsHomePageUI", obpsHomePageUI, isOBPSHomePageUILoading)
   
   useEffect(() => {
-    console.log("userDetails", userDetails, isUserRegistered, user)
+    // console.log("userDetails", userDetails, isUserRegistered, user)
     if(isUserRegistered && !userDetails?.user?.[0]?.signature){
       setShowModal(true);
     }else{
@@ -117,7 +117,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         });
       });
       const uniqueRoles = roles?.filter((item, i, ar) => ar.indexOf(item) === i);
-      console.log("uniqueRoles",uniqueRoles)
+      // console.log("uniqueRoles",uniqueRoles)
       let isRoute = false;
       uniqueRoles?.map((unRole) => {
         if (userRoles?.includes(unRole) && !isRoute) {

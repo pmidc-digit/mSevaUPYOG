@@ -46,6 +46,13 @@ export const SuccessfulPayment = (props) => {
 
   let { consumerCode, receiptNumber, businessService } = useParams();
 
+  const isMCollectService = businessService?.includes(".") &&
+    !businessService?.includes("FSM") &&
+    !businessService?.includes("WS") &&
+    !businessService?.includes("SW") &&
+    !businessService?.includes("GC") &&
+    !businessService?.includes("BPA");
+
   console.log("checkParam", checkParam);
   console.log("egPgTxnId", egPgTxnId);
   console.log("businessService", businessService);
@@ -419,6 +426,22 @@ export const SuccessfulPayment = (props) => {
       setPrinting(false);
     }
   };
+const printMCollectReceipt = async () => {
+  if (printing) return;
+  setPrinting(true);
+  try {
+    const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { consumerCodes: consumerCode });
+    let response = { filestoreIds: [payments?.Payments?.[0]?.fileStoreId] };
+    if (!payments?.Payments?.[0]?.fileStoreId) {
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments }, generatePdfKey || "consolidatedreceipt");
+    }
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response.filestoreIds[0]], "_blank");
+  } finally {
+    setPrinting(false);
+  }
+};
+
   const printRLReceipt = async () => {
     if (printing) return;
     setPrinting(true);
@@ -861,7 +884,8 @@ export const SuccessfulPayment = (props) => {
               businessService !== "pet-services" &&
               businessService !== "NDC" &&
               businessService !== "Challan_Generation" &&
-               businessService !== "rl-services" && (
+              businessService !== "rl-services" &&
+              !isMCollectService && (
                 <div
                   className="primary-label-btn d-grid"
                   style={{ marginLeft: "unset", marginRight: "20px" }}
@@ -1032,6 +1056,24 @@ export const SuccessfulPayment = (props) => {
                 </div>
               </div>
             ) : null}
+            {isMCollectService ? (
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
+                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printMCollectReceipt}>
+                  {printing ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                      </svg>
+                      {t("CS_COMMON_PRINT_RECEIPT")}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
             {businessService == "rl-services" ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
                 <div className="primary-label-btn d-grid" onClick={printing ? undefined : printRLReceipt}>

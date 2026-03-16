@@ -16,6 +16,7 @@ const MCollectAcknowledgement = () => {
 
   const printReciept = async () => {
     const challanNo = params?.challanNumber;
+    
     downloadAndPrintChallan(challanNo, "print");
   };
 

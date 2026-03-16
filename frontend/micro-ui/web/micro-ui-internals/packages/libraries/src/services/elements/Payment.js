@@ -20,7 +20,7 @@ export const PaymentService = {
       }),
   searchBill: (tenantId, filters = {}) =>
     Request({
-      url: Urls.payment.search_bill,
+      url: Urls.payment.search_billv2,
       useCache: false,
       method: "POST",
       auth: true,

@@ -12,7 +12,7 @@ const Response = (props) => {
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  console.log("nocData in Response", nocData);
+  
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -38,7 +38,6 @@ const Response = (props) => {
   // const handleDownloadPdf = async () => {
   //   try{
   //   const Property = nocData;
-  //   //console.log("tenants in NOC", tenants);
   //   const site = Property?.nocDetails?.additionalDetails?.siteDetails;
   //   const ulbType = site?.ulbType;
   //   const ulbName = site?.ulbName?.city?.name || site?.ulbName;
@@ -46,7 +45,6 @@ const Response = (props) => {
   //   const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
   //   Digit.Utils.pdf.generateFormatted(acknowledgementData);
   //   }catch(error){
-  //     console.log("Eroor Occurred !!!", error);
   //   }
   // };
 

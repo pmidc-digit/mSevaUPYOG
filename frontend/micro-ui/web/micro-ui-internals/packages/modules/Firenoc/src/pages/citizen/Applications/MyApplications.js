@@ -26,13 +26,9 @@ const MyApplications = ({ view }) => {
     tenantId
   );
 
-  console.log("data herein NOC==>", data);
   
   // Debug owner name
-  if (data?.data && data?.data?.length > 0) {
-    console.log("First record:", data.data[0]);
-    console.log("Owner name test:", data.data[0]?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName);
-  }
+  if (data?.data && data?.data?.length > 0) { }
 
   useEffect(() => {
     if (data) {

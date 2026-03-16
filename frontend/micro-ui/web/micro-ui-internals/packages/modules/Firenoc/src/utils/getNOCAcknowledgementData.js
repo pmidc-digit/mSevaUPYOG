@@ -388,7 +388,7 @@ const getSitePhotographs = async (appData, t, stateCode) => {
 
         // Use your exif function here
         const exifData = await getExifDataFromUrl(exiflink);
-        console.log("exifData in sitephotos", exifData);
+        
         if ([3, 6, 8].includes(exifData?.Orientation)) {
            exifData.Orientation = 1;  
         }

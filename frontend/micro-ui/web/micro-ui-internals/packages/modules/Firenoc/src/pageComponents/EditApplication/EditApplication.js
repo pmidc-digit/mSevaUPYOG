@@ -89,14 +89,11 @@ const EditApplication = () => {
   }else{
    tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  // console.log("tenantId here", tenantId);
 
   const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails= data?.resData;
-  console.log("applicationDetails here==>", applicationDetails);
   
   const nocObject = applicationDetails?.Noc?.[0] || {};
-  // console.log('vasikadate in edit', formatDateForInput(nocObject?.vasikaDate))
   const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
   const documents = nocObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
@@ -126,11 +123,9 @@ const EditApplication = () => {
     displayName: t(city.i18nKey),
   }));
 
-  console.log('fetchedLocalities', fetchedLocalities)
 
   let localityAreaType = fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null
-         
- console.log('localityAreaType', localityAreaType)
+        
   const { isGenderLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
   let menu = [];
@@ -148,11 +143,10 @@ const EditApplication = () => {
 //   t
 //  );
 
- //console.log("fetchedLocalities", fetchedLocalities);
 
  const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
  const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
-//  console.log("zoneOptions==>", zoneOptions);
+
 //   useEffect(() => {
 //   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
 //     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
@@ -183,7 +177,6 @@ const ready =
   !isUlbListLoading &&
   applicationDetails?.Noc?.length > 0;
   useEffect(() => {
-    console.log(' edit useffect 1')
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
     if(ready){
         const formattedDocuments = {
@@ -265,13 +258,8 @@ useEffect(() => {
   const handleSubmit = (dataGet) => {
     
   };
-// console.log('formState outside loader', formState)
-//     console.log('formData outsode loader', formData)
   
    if (isLoading || !hydrated) {
-    // console.log('formState in loader', formState)
-    // console.log('formData in loader', formData)
-    // console.log('formData?.applicationDetails in edit', formData?.applicationDetails)
     return <div><Loader/></div>; // or a spinner component
    }
 

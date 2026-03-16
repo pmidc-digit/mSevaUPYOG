@@ -23,7 +23,7 @@ import NOCCustomUploadFile from "./NOCCustomUploadFile";
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents);
-  console.log("documents in childStep three", documents);
+ 
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -33,8 +33,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  console.log("data for documents here", data)
-  console.log("formData here =====", formData);
+
 
   const coordinates = useSelector(function (state) {
       return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
@@ -46,9 +45,6 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     }
   },[coordinates]);
 
-  console.log("coordinates (from redux)", coordinates);
-
-  console.log("geocoordinates", geocoordinates);
 
   const currentStepData= useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData)|| {};
 
@@ -58,7 +54,7 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
   return String(code).toLowerCase() === "firm";
 });
   const isVacant=currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
-  //console.log("isVacant", isVacant);
+  
 
   let filteredDocuments = isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
   if (isFirm) {
@@ -66,7 +62,6 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
   }
   filteredDocuments = filteredDocuments?.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  // console.log("filteredDocuments", filteredDocuments);
 
   useEffect(() => {
     setDocuments((prev) => {
@@ -87,7 +82,6 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
-    //console.log("documentStep", documentStep);
     onSelect(config.key, documentStep);
   };
   const onSkip = () => onSelect();
@@ -100,7 +94,6 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
 
       let isRequired = false;
 
-      console.log('documents in pet', documents)
       documents?.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
@@ -181,7 +174,7 @@ const isFirm = currentStepData?.applicationDetails?.owners?.some((owner) => {
 
 function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch, previewLink }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
+
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
@@ -198,11 +191,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    //console.log("e here==>", e);
-    //console.log("e.target.files[0] here==>", e.target.files[0]);
 
     const selectedFile = e.target.files[0];
-    console.log("selectedFile here", selectedFile);
 
     if (!selectedFile) return;
 
@@ -226,7 +216,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             if (lat && lon) {
               latitude = convertToDecimal(lat).toFixed(6);
               longitude = convertToDecimal(lon).toFixed(6);
-              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
 
               // Set file and update coordinates
               setFile(selectedFile);
@@ -271,8 +260,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       setFile(selectedFile);
       if (selectedFile && selectedFile.type === "image/jpeg") {
         extractGeoLocation(selectedFile).then((location) => {
-          console.log("Latitude:", location.latitude);
-          console.log("Longitude:", location.longitude);
 
           if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
             if (location.latitude !== null && location.longitude !== null) {
@@ -346,7 +333,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (documents?.length > 0) {
-      console.log("documents here", documents);
       handleSubmit();
     }
   }, [documents]);
@@ -413,18 +399,15 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }
 
   function extractGeoLocation(file) {
-      console.log("file", file);
   
       return new Promise((resolve) => {
         try {
           // if (file && file.type === "image/jpeg" && file.size > 1000) {
           EXIF.getData(file, function () {
-           // console.log("comign here as well");
   
             const lat = EXIF.getTag(this, "GPSLatitude");
             const lon = EXIF.getTag(this, "GPSLongitude");
   
-            console.log("lat====", lat);
             if (lat && lon) {
               // Convert GPS coordinates to decimal format
               const latDecimal = convertToDecimal(lat).toFixed(6);
@@ -443,7 +426,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           });
           // }
         } catch (error) {
-          console.log("EXIF parsing failed:", error);
           resolve({ latitude: null, longitude: null });
         }
       });

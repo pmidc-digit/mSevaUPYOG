@@ -38,11 +38,9 @@ const NOCDocumentWithLatLong = ({ t, config, onSelect, userType, formData, setEr
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: nocDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
   const { isLoading, data: nocDocuments } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  // console.log("nocDocuments here", nocDocuments);
-  // console.log("formData here ===", formData);
+  
 
   const handleSubmit = () => {
-   // console.log("handleSubmit called here !!")
     let document = formData.documents;
     let documentStep;
     //let RealignedDocument = [];
@@ -58,7 +56,6 @@ const NOCDocumentWithLatLong = ({ t, config, onSelect, userType, formData, setEr
   const onSkip = () => onSelect();
   function onAdd() {}
   useEffect(() => {
-    //console.log("allRequiredDocuments here", nocDocuments?.NOC?.Documents);
     const allRequiredDocumentsCode = nocDocuments?.NOC?.Documents?.filter((e) => e.required).map((e) => e.code);
     const reqDocumentEntered = allRequiredDocumentsCode?.filter((reqCode) =>
       documents.reduce((acc, doc) => {
@@ -155,11 +152,10 @@ const SelectDocument = React.memo(function MyComponent({
   setIsNextButtonDisabled, // Add this line
   handleSubmit
 }) {
-  console.log("documents here", documents);
   const filteredDocument =
     documents?.filter((item) => item?.documentType?.includes(doc?.code))[0] ||
     beforeUploadDocuments?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-    console.log("filteredDocument here", filteredDocument);
+   
   const tenantId = Digit.ULBService.getStateId(); //Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
@@ -183,18 +179,15 @@ const SelectDocument = React.memo(function MyComponent({
   const [longitude, setLongitude] = useState(null);
   ////////////////////////////////////////////////////////////
   function extractGeoLocation(file) {
-   // console.log("file", file);
 
     return new Promise((resolve) => {
       try {
         // if (file && file.type === "image/jpeg" && file.size > 1000) {
         EXIF.getData(file, function () {
-         // console.log("comign here as well");
 
           const lat = EXIF.getTag(this, "GPSLatitude");
           const lon = EXIF.getTag(this, "GPSLongitude");
 
-          //console.log("lat====", lat);
           if (lat && lon) {
             // Convert GPS coordinates to decimal format
             const latDecimal = convertToDecimal(lat);
@@ -213,7 +206,6 @@ const SelectDocument = React.memo(function MyComponent({
         });
         // }
       } catch (error) {
-       // console.log("EXIF parsing failed:", error);
         resolve({ latitude: null, longitude: null });
       }
     });
@@ -239,7 +231,6 @@ const SelectDocument = React.memo(function MyComponent({
 
   useEffect(() => {
       if (documents?.length > 0) {
-       // console.log("documents here", documents);
         handleSubmit();
    }}, [documents]);
 
@@ -251,16 +242,10 @@ const SelectDocument = React.memo(function MyComponent({
   function getData(e) {
     let key = selectedDocument.code;
     let data, newArr;
-    //console.log("e====", e);
 
     if (e?.length > 0) {
-     // console.log("e here ====", e);
-      //console.log("e[0][1].file", e[0][1].file);
-      // Extract geo location from the first file
       extractGeoLocation(e[0][1].file)
         .then((location) => {
-          console.log("Latitude:", location.latitude);
-          console.log("Longitude:", location.longitude);
           setLatitude(location.latitude);
           setLongitude(location.longitude);
           {
@@ -341,7 +326,6 @@ const SelectDocument = React.memo(function MyComponent({
               id: documents ? documents.find((x) => x.documentType === selectedDocument?.code)?.id : undefined,
             });
           });
-         console.log("newfiles here", newfiles);
         return [...filteredDocumentsByFileStoreId, ...newfiles];
       });
       setuploadedfileArray([]);
@@ -390,7 +374,6 @@ const SelectDocument = React.memo(function MyComponent({
   const allowedFileTypes = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
 
   const uploadedFilesPreFill = useMemo(() => {
-    console.log("uploadFiles here from formData", formData);
     let selectedUplDocs = [];
     formData?.documents?.documents
       ?.filter((ob) => ob.documentType === selectedDocument.code)
@@ -400,7 +383,6 @@ const SelectDocument = React.memo(function MyComponent({
           { file: { name: e.fileName, type: e.documentType }, fileStoreId: { fileStoreId: e.fileStoreId, tenantId } },
         ])
       );
-      console.log("selectedUplDocs here", selectedUplDocs);
     return selectedUplDocs;
   }, [formData]);
 

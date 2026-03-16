@@ -37,14 +37,8 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   function goNext(finaldata) {
-    console.log("[StepFormThree] goNext called");
-    console.log("[StepFormThree] applicationType:", applicationType);
-    console.log("[StepFormThree] isLoading:", isLoading);
-    console.log("[StepFormThree] docConfig:", docConfig);
-    console.log("[StepFormThree] reduxDocuments:", reduxDocuments);
     // Use Redux documents directly since FormComposer/Controller pipeline doesn't relay them
     const missingFields = validation(reduxDocuments);
-    console.log("[StepFormThree] missingFields:", missingFields);
     if (missingFields.length > 0) {
       setError(`${t("NOC_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replaceAll(".", "_").toUpperCase())}`);
       setShowToast(true);
@@ -75,7 +69,6 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     }

@@ -116,10 +116,9 @@ const Inbox = ({ parentRoute }) => {
   );
   const user = Digit.UserService.getUser();
 
-  // console.log('user', user)
 
   const {data: employeeData , isLoading} = Digit.Hooks.useEmployeeSearch(tenantId, { codes: user?.info?.userName, isActive: true }, { enabled: !!user?.info?.userName });
-  console.log('employeeData', employeeData)
+  
 
 
 
@@ -133,7 +132,6 @@ const Inbox = ({ parentRoute }) => {
       }
   }, [employeeData]);
 
-  console.log('employeeName, employeeRole', employeeName, employeeRole)
 
 
   const { isLoading: isInboxLoading, data} = Digit.Hooks.noc.useInbox({
@@ -147,7 +145,6 @@ const Inbox = ({ parentRoute }) => {
     }
   },[])
   
- // console.log("data in noc==>", data);
 
   // let table = [];
   const [table, setTable] = useState([]);
@@ -156,7 +153,6 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
       if (data) {
-        console.log('data?.table', data?.table)
         setStatuses(data?.statuses || []);
         setTable(data?.table || []);
         setTotalCount(data?.totalCount || 0);
@@ -201,14 +197,12 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const onSearchFormSubmit = (data) => {
-    console.log("data in OnSearchFormSubmit", data);
     data.hasOwnProperty("") && delete data?.[""]; 
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateSearchForm", data });
   };
 
   const onFilterFormSubmit = (data) => {
-    console.log("data in OnFilterFormSubmit", data);
     data.hasOwnProperty("") && delete data?.[""];
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateFilterForm", data });

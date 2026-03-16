@@ -23,12 +23,9 @@ const NOCSiteDetails = (_props) => {
   } else {
     tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  //console.log("tenantId here", tenantId);
-
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, trigger, errors, errorStyle, useFieldArray, watch } = _props;
-  // console.log('currentStepData herrrrre', currentStepData)
   //logic for Net Plot Area After Widening (A-B)
   const [netPlotArea, setNetPlotArea] = useState("0.00");
   const NetTotalArea = watch("netTotalArea");
@@ -81,8 +78,6 @@ const NOCSiteDetails = (_props) => {
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
   let { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
-  // console.log('roadType', roadType)
-
 const sortedRoadType = useMemo(
   () => roadType?.slice().sort((a, b) => a.name.localeCompare(b.name)),
   [roadType]
@@ -103,8 +98,6 @@ const sortedRoadType = useMemo(
   ];
 
   const  allCities = Digit.Hooks.noc.useTenants();
-
-  // console.log('allcities', allCities)
   
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
@@ -113,7 +106,6 @@ const sortedRoadType = useMemo(
 
   const [selectedCity, setSelectedCity] = useState(currentStepData?.siteDetails?.district || null);
 
-  // console.log('selectedCity', selectedCity)
   const [localities, setLocalities] = useState(currentStepData?.siteDetails?.localityAreaType || null);
 
   // const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
@@ -125,8 +117,6 @@ const sortedRoadType = useMemo(
   //   t
   // );
 
-  // console.log('localities in step 2 edit', localities)
-
   // useEffect(() => {
   // if (fetchedLocalities?.length > 0) {
   //   setLocalities(fetchedLocalities);
@@ -137,12 +127,9 @@ const sortedRoadType = useMemo(
   useEffect(() => {
     if (tenantId && allCities?.length > 0) {
       const cityobj = allCities.find((city) => city.code === tenantId)
-      // console.log('cityobj', cityobj)
       const defaultDistrict  = cityobj?.city?.districtName || "";
       const defaultUlbName = cityobj?.city?.name || "";
-      // console.log('defaultUlbName', defaultUlbName)
       const defaultUlbType = cityobj?.city?.ulbType || "";
-      // console.log('defaultCity', defaultDistrict)
       if (defaultDistrict) {
         setSelectedCity(defaultDistrict);
         setUlbName(defaultUlbName);
@@ -161,12 +148,7 @@ const sortedRoadType = useMemo(
 
 }, [ districtType, ulbType,ulbName ]);
 
-// console.log('ulbName', ulbName)
-
-  
-
   const nocCpt = useSelector(state => state.noc?.NOCNewApplicationFormReducer?.formData?.cpt);
-  console.log('nocCpt', nocCpt)
   useEffect(() => {
     if (currentStepData){
       const landareaObj = currentStepData?.cpt?.details;
@@ -178,13 +160,9 @@ const sortedRoadType = useMemo(
       setSiteAddress(siteAdd)
 
       const landAreacpt = landareaObj?.owners?.[0]?.landArea ||landareaObj?.landArea;
-      // console.log('landAreacpt', landAreacpt)
       setLandArea(landAreacpt)
     }
   }, [currentStepData?.cpt?.details]);
-  // console.log('landArea aftersetting', landArea)
-
-  // console.log('Boolean(landArea)', Boolean(landArea))
 
   useEffect(() => {
     if (landArea) {
@@ -200,10 +178,8 @@ const sortedRoadType = useMemo(
   }, [siteAddress, setValue]);
 
   useEffect(() => {
-    //console.log("currentStepData3", currentStepData);
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      // console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
         if (key !== "floorArea") setValue(key, value);
       });
@@ -229,7 +205,6 @@ const sortedRoadType = useMemo(
     const landareaObj = currentStepData?.cpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
 
     const landArea = landareaObj?.owners?.[0]?.landArea ||landareaObj?.landArea;
-    // console.log('totland', landArea)
     if (landArea) {
       setValue("netTotalArea", landArea, { shouldValidate: true, shouldDirty: true });
     }

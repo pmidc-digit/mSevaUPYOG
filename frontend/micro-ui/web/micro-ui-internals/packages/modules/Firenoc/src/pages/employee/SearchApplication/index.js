@@ -27,7 +27,6 @@ const Search = ({ path }) => {
   const [filters, setfilters] = useState(defaultFilters);
 
   function onSubmit(__data, isFromClear = false) {
-    console.log("_data==>", __data);
     let details = cloneDeep(__data);
     let __filters = defaultFilters;
 
@@ -36,7 +35,6 @@ const Search = ({ path }) => {
     
      // If only applicationNo is present, remove mobileNumber
     if (hasApplicationNo && !hasMobileNumber) {
-      console.log("we are deleteing mobileNumber here");
      delete details.mobileNumber;
     }
 

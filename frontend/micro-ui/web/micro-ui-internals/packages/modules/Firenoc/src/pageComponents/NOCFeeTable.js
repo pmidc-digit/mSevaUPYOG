@@ -27,7 +27,6 @@ export const NOCFeeTable = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  console.log('feeHistory', feeHistory)
 
   const columns = [
     {

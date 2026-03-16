@@ -147,7 +147,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
 
       {doc.description && (
         <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
-          {t(doc.description.replaceAll(".", "_"))}
+          {/* {t(doc.description.replaceAll(".", "_"))} */}
         </p>
       )}
     </div>
@@ -183,11 +183,7 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
 
   /* Enable submit only when all required docs are uploaded */
   useEffect(() => {
-    console.log("➡️[FireNOCDocuments] applicationType:", applicationType);
-    console.log("➡️[FireNOCDocuments] docConfig:", docConfig);
-    console.log("➡️[FireNOCDocuments] documents state:", documents);
     if (!docConfig?.length) {
-      console.log("➡️[FireNOCDocuments] ⚠️ docConfig empty/not loaded — skipping dispatch");
       return;
     }
     const requiredCodes = docConfig.filter((d) => d.required).map((d) => d.code);
@@ -195,11 +191,7 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
     const allUploaded = requiredCodes.every((code) =>
       uploadedTypes.some((uploaded) => uploaded.startsWith(code))
     );
-    console.log("➡️[FireNOCDocuments] requiredCodes:", requiredCodes);
-    console.log("➡️[FireNOCDocuments] uploadedTypes:", uploadedTypes);
-    console.log("➡️[FireNOCDocuments] allUploaded:", allUploaded);
     setEnableSubmit(!allUploaded);
-    console.log("➡️[FireNOCDocuments] dispatching to Redux → documents:", documents);
     dispatch(UPDATE_NOCNewApplication_FORM("uploadedDocuments", { documents }));
   }, [documents, docConfig]);
 

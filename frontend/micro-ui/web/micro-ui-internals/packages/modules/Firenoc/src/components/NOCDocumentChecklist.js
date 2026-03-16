@@ -60,7 +60,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
                 <td className="checklist-table-cell checklist-table-cell-remark">
                   <TextArea
                     t={t}
-                    value={localRemarks[doc?.documentUid] ?? ""}
+                    value={localRemarks[doc?.documentUid] != null ? localRemarks[doc?.documentUid] : ""}
                     onChange={(e) => {
                       if (!readOnly) {
                         const value = e.target.value;

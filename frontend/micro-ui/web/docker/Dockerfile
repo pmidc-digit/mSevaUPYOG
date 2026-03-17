@@ -6,7 +6,7 @@ RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.15
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
-RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15-DEV.1
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15-DEV.2
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
 RUN yarn add @mseva/digit-ui-module-noc@1.0.79-dev.9
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32-dev.1
@@ -18,7 +18,7 @@ RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-dev.2.3
 RUN yarn add @mseva/digit-ui-module-swach@1.0.55
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39-dev.1.2
-RUN yarn add @mseva/digit-ui-module-tl@1.0.31-dev.1.5
+RUN yarn add @mseva/digit-ui-module-tl@1.0.31-dev.1.6
 RUN yarn add @mseva/digit-ui-module-firenoc@1.0.0-dev.1.2
 RUN yarn add @mseva/digit-ui-module-obps@1.1.89-dev.1.29
 RUN yarn add @mseva/digit-ui-module-sv@1.1.49-dev.1.12

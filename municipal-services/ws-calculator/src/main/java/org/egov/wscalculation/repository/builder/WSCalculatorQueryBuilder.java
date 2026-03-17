@@ -1126,4 +1126,36 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		return query.toString();
 		
 	}
+	
+	/**
+	 * 
+	 * @param criteria          would be meter reading criteria
+	 * @param preparedStatement Prepared SQL Statement
+	 * @return Query for given criteria
+	 */
+	public String getSearchQueryStringV2(MeterReadingSearchCriteria criteria, List<Object> preparedStatement) {
+		if (criteria.isEmpty()) {
+			return null;
+		}
+		StringBuilder query = new StringBuilder(Query);
+		query.append(" inner join eg_ws_connection conn on mr.connectionno = conn.connectionno and mr.tenantid = conn.tenantid ");
+		if (!StringUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" mr.tenantid= ? ");
+			preparedStatement.add(criteria.getTenantId());
+		}
+		if (!StringUtils.isEmpty(criteria.getLocality())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" conn.locality= ? ");
+			preparedStatement.add(criteria.getLocality());
+		}
+		
+		if (!CollectionUtils.isEmpty(criteria.getConnectionNos())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" mr.connectionNo IN (").append(createQuery(criteria.getConnectionNos())).append(" )");
+			addToPreparedStatement(preparedStatement, criteria.getConnectionNos());
+		}
+		addOrderBy(query);
+		return addPaginationWrapper(query, preparedStatement, criteria);
+	}
 }

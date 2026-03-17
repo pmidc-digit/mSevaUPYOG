@@ -1,54 +1,33 @@
 package org.egov.dx.service;
-import static org.egov.dx.util.PTServiceDXConstants.DIGILOCKER_DOCTYPE;
-import static org.egov.dx.util.PTServiceDXConstants.DIGILOCKER_ISSUER_ID;
-import static org.egov.dx.util.PTServiceDXConstants.DIGILOCKER_ORIGIN_NOT_SUPPORTED;
-import static org.egov.dx.util.PTServiceDXConstants.EXCEPTION_TEXT_VALIDATION;
-import static org.egov.dx.util.PTServiceDXConstants.ORIGIN;
+
+import static org.egov.dx.util.PTServiceDXConstants.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.User;
 import org.egov.dx.util.Configurations;
-import org.egov.dx.web.models.Address;
-import org.egov.dx.web.models.Certificate;
-import org.egov.dx.web.models.CertificateData;
-import org.egov.dx.web.models.CertificateForData;
-import org.egov.dx.web.models.DocDetailsResponse;
-import org.egov.dx.web.models.IssuedBy;
-import org.egov.dx.web.models.IssuedTo;
-import org.egov.dx.web.models.Organization;
-import org.egov.dx.web.models.Payment;
-import org.egov.dx.web.models.PaymentForReceipt;
-import org.egov.dx.web.models.PaymentRequest;
-import org.egov.dx.web.models.PaymentSearchCriteria;
-import org.egov.dx.web.models.Person;
-import org.egov.dx.web.models.PropertyTaxReceipt;
-import org.egov.dx.web.models.PullDocResponse;
-import org.egov.dx.web.models.PullURIResponse;
-import org.egov.dx.web.models.RequestInfoWrapper;
-import org.egov.dx.web.models.ResponseStatus;
-import org.egov.dx.web.models.SearchCriteria;
-import org.egov.dx.web.models.UserResponse;
+import org.egov.dx.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
-import java.text.SimpleDateFormat;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.AnyTypePermission;
 import com.thoughtworks.xstream.security.NoTypePermission;
@@ -61,532 +40,588 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DataExchangeService {
 
-	@Autowired
+    private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    @Autowired
     private PaymentService paymentService;
-	
-	@Autowired
+
+    @Autowired
     private UserService userService;
-	@Autowired
-	private HttpServletResponse  response;
-	
-	@Autowired
-	private Configurations configurations;
-	
-	public String searchPullURIRequest(SearchCriteria  searchCriteria) throws IOException {
-		
-		if(searchCriteria.getOrigin().equals(ORIGIN))
-		{
-			return searchForDigiLockerURIRequest(searchCriteria);
-		}
-		return DIGILOCKER_ORIGIN_NOT_SUPPORTED;
-	}
-	
-	public String searchPullDocRequest(SearchCriteria  searchCriteria) throws IOException {
-		
-		if(searchCriteria.getOrigin().equals(ORIGIN))
-		{
-			return searchForDigiLockerDocRequest(searchCriteria);
-		}
-		
-		return DIGILOCKER_ORIGIN_NOT_SUPPORTED;
-	}
-	
 
-	public String searchForDigiLockerURIRequest(SearchCriteria  searchCriteria) throws IOException
-	{
-		PaymentSearchCriteria criteria = new PaymentSearchCriteria();
-    	criteria.setTenantId("pb."+searchCriteria.getCity());
-        criteria.setConsumerCodes(Collections.singleton(searchCriteria.getPropertyId()));
-        RequestInfo request=new RequestInfo();
-        request.setApiId("Rainmaker");
-        request.setMsgId("1670564653696|en_IN");
-        RequestInfoWrapper requestInfoWrapper=new RequestInfoWrapper();
-        UserResponse userResponse =new UserResponse();
-        try {
-        	userResponse=userService.getUser();
-        	}
-        catch(Exception e)
-        {
-        	
-        }
-        request.setAuthToken(userResponse.getAuthToken());
-        request.setUserInfo(userResponse.getUser());
-        requestInfoWrapper.setRequestInfo(request);
-		List<Payment> payments = paymentService.getPayments(criteria,searchCriteria.getDocType(), requestInfoWrapper);
-		log.info("Payments found are:---" + ((!payments.isEmpty()?payments.size():"No payments found")));
-	
-		PullURIResponse model= new PullURIResponse();
-		XStream xstream = new XStream();   
-		xstream .addPermission(NoTypePermission.NONE); //forbid everything
-		xstream .addPermission(NullPermission.NULL);   // allow "null"
-		xstream .addPermission(PrimitiveTypePermission.PRIMITIVES);
-		xstream .addPermission(AnyTypePermission.ANY);
-		log.info("Name to search is " +searchCriteria.getPayerName());
-		log.info("Mobile to search is " +searchCriteria.getMobile());
-		if(!payments.isEmpty()) {
-		log.info("Name in latest payment is " +payments.get(0).getPayerName());
-		log.info("Mobile in latest payment is " +payments.get(0).getMobileNumber());
-		}
-		
-		
-		if((!payments.isEmpty() && configurations.getValidationFlag().toUpperCase().equals("TRUE") && validateRequest(searchCriteria,payments.get(0)))
-				|| (!payments.isEmpty() && configurations.getValidationFlag().toUpperCase().equals("FALSE"))){ 
-			log.info("Payment object is not null and validations passed!!!");
-			String o=null;
-			String filestore=null;
-			if(payments.get(0).getFileStoreId() != null) {
-				filestore=payments.get(0).getFileStoreId();
-				o=paymentService.getFilestore(payments.get(0).getFileStoreId()).toString();
-			}
-			else
-			{
-				List<Payment> latestPayment=new ArrayList<Payment>();
-				latestPayment.add(payments.get(0));
-				PaymentRequest paymentRequest=new PaymentRequest();
-				paymentRequest.setPayments(latestPayment);
-				paymentRequest.setRequestInfo(requestInfoWrapper.getRequestInfo());
-				filestore=paymentService.createPDF(paymentRequest);
-				o=paymentService.getFilestore(filestore).toString();
-				
-			
-			}
-			
-			
-			if(o!=null)
-			
-			 		{
-				 	String path=o.split("url=")[1];
-				 	String pdfPath=path.substring(0,path.length()-3);
-				 	URL url1 =new URL(pdfPath);
-				 	try {
+    @Autowired
+    private HttpServletResponse response;
 
-				     // Read the PDF from the URL and save to a local file
-				     InputStream is1 = url1.openStream();
-				     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    @Autowired
+    private Configurations configurations;
 
-				     int nRead;
-				     byte[] data = new byte[1024];
-
-				     while ((nRead = is1.read(data, 0, data.length)) != -1) {
-				         buffer.write(data, 0, nRead);
-				     }
-
-				     buffer.flush();
-				     byte[] targetArray = buffer.toByteArray();
-				     String encodedString = Base64.getEncoder().encodeToString(targetArray); 
-     				    
-				     ResponseStatus responseStatus=new ResponseStatus();
-				     responseStatus.setStatus("1");
-				     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-				     LocalDateTime now = LocalDateTime.now();  
-				     responseStatus.setTs(dtf.format(now));
-				     responseStatus.setTxn(searchCriteria.getTxn());
-				     model.setResponseStatus(responseStatus);
-				 
-				     DocDetailsResponse docDetailsResponse=new DocDetailsResponse();
-				     IssuedTo issuedTo=new IssuedTo();
-				     @SuppressWarnings("rawtypes")
-						Person person=new Person();
-					     person.setUid("");
-					     person.setTitle("");
-					     person.setName(searchCriteria.getPayerName());
-					     person.setDob("");
-					     person.setAge("");
-					     person.setSwd("");
-					     person.setSwdIndicator("");
-					     person.setMotherName("");
-					     person.setGender("");
-					     person.setMaritalStatus("");
-					     person.setRelationWithHof("");
-					     person.setDisabilityStatus("");
-					     person.setCategory("");
-					     person.setReligion("");
-				    	 person.setPhone(searchCriteria.getMobile());
-				    	 person.setEmail("");
-					     Address address1=new Address();
-					     address1.setType("permanent");
-				    	 address1.setLine1("");
-				    	 address1.setLine2("");
-				    	 address1.setHouse("");
-				    	 address1.setLandmark("");
-				    	 address1.setLocality("");
-				    	 address1.setVtc("");
-				    	 address1.setDistrict("");
-				    	 address1.setCountry("IN");
-				    	 address1.setState("Punjab");
-				    	 person.setPhoto("");
-				    	 person.setAddress(address1);
-				  
-				     issuedTo.setPerson(person);
-				   //  String[] parts = filestore.split("-");
-				     String a=searchCriteria.getPropertyId();
-				    // String[] parts = a.split("-");
-				     String b=searchCriteria.getCity();
-				        //String joinedString = String.join("", parts);
-				        String replacedString = a.replace("-", "QW");
-				     docDetailsResponse.setURI(DIGILOCKER_ISSUER_ID.concat("-").concat(DIGILOCKER_DOCTYPE).concat("-").
-				    		 concat(replacedString).concat("QW").concat(b));
-				     docDetailsResponse.setIssuedTo(issuedTo);
-
-			    	 Certificate certificate=new Certificate();
-
-			    	 xstream.processAnnotations(Certificate.class);
-			    	 xstream.processAnnotations(Organization.class);
-			         xstream.processAnnotations(Address.class);
-			         xstream.processAnnotations(IssuedBy.class);
-			         xstream.processAnnotations(IssuedTo.class);
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
-				     if(searchCriteria.getDocType().equals("PRTAX"))
-				     {
-				    	 
-				    	 certificate=populateCertificate(payments.get(0));
+    private final XStream xstream;
+    private final RestTemplate restTemplate;
 
-				    	 String xml1 = xstream.toXML(certificate); 
-				    	 System.out.println(xml1);
-				     }
-				     
-				     
-				     docDetailsResponse.setDataContent(Base64.getEncoder().encodeToString( xstream.toXML(certificate).getBytes()));
+    public DataExchangeService() {
+        this.xstream = initializeXStream();
+        this.restTemplate = new RestTemplate();
+    }
 
-				     docDetailsResponse.setDocContent(encodedString);
-				     //System.out.println(docDetailsResponse);
-				     model.setDocDetails(docDetailsResponse);
-				       
-
-			 }
-			 catch (NullPointerException npe) {
-			      log.error(npe.getMessage());
-			      log.info("Error Occured",npe.getMessage());
-			    }
-			  }	
-		} 
-		
-		else
-		{
-			ResponseStatus responseStatus=new ResponseStatus();
-		     responseStatus.setStatus("0");
-		     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-		     LocalDateTime now = LocalDateTime.now();  
-		     responseStatus.setTs(dtf.format(now));
-		     responseStatus.setTxn(searchCriteria.getTxn());
-		     model.setResponseStatus(responseStatus);
-		 
-		     DocDetailsResponse docDetailsResponse=new DocDetailsResponse();
-
-		     docDetailsResponse.setURI(null);
-		   //  docDetailsResponse.setIssuedTo(issuedTo);
-		     docDetailsResponse.setDataContent("");
-		     docDetailsResponse.setDocContent("");
-		   
-		    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-		     log.info(EXCEPTION_TEXT_VALIDATION);
-		     model.setDocDetails(docDetailsResponse);
-
-		}
-		
-	    xstream.processAnnotations(PullURIResponse.class);
-        xstream.toXML(model);
+    private XStream initializeXStream() {
+        XStream xs = new XStream();
+        xs.addPermission(NoTypePermission.NONE);
+        xs.addPermission(NullPermission.NULL);
+        xs.addPermission(PrimitiveTypePermission.PRIMITIVES);
+        xs.addPermission(AnyTypePermission.ANY);
+        xs.allowTypesByWildcard(new String[] { "org.egov.dx.web.models.**" });
         
-		return xstream.toXML(model);   
+        xs.processAnnotations(new Class[] {
+            PullURIResponse.class, PullDocResponse.class, Certificate.class,
+            Organization.class, Address.class, IssuedBy.class, IssuedTo.class,
+            ResponseStatus.class, DocDetailsResponse.class, Person.class,
+            WaterSewerageBill.class
+        });
+        
+        return xs;
+    }
 
-	}
+    // --- Public API Methods ---
 
+    public String handlePullURIRequest(SearchCriteria criteria) throws IOException {
+        if (!ORIGIN.equals(criteria.getOrigin())) {
+            log.error("Unsupported origin: {}", criteria.getOrigin());
+            return DIGILOCKER_ORIGIN_NOT_SUPPORTED;
+        }
+        return processRequest(criteria, true);
+    }
 
-	public String searchForDigiLockerDocRequest(SearchCriteria  searchCriteria) throws IOException
-	{
-			
-		PullDocResponse model= new PullDocResponse();
-		XStream xstream = new XStream();
-		xstream .addPermission(NoTypePermission.NONE); //forbid everything
-		xstream .addPermission(NullPermission.NULL);   // allow "null"
-		xstream .addPermission(PrimitiveTypePermission.PRIMITIVES);
-		xstream .addPermission(AnyTypePermission.ANY);
-		
-		String[] parts = searchCriteria.getURI().split("PTQW|QW");
-		    String part1 = parts[0];
-	        String part2 = parts[1];
-	        String part3 = parts[2];
-	        String part4 = parts[3];
-	        String A="PT-".concat(part2).concat("-").concat(part3);
-	        PaymentSearchCriteria criteria = new PaymentSearchCriteria();
-	    	criteria.setTenantId("pb."+part4);
-	        criteria.setConsumerCodes(Collections.singleton(A));
-	        RequestInfo request=new RequestInfo();
-	        request.setApiId("Rainmaker");
-	        request.setMsgId("1670564653696|en_IN");
-	        RequestInfoWrapper requestInfoWrapper=new RequestInfoWrapper();
-	        UserResponse userResponse =new UserResponse();
-	        try {
-	        	userResponse=userService.getUser();
-	        	}
-	        catch(Exception e)
-	        {
-	        	
-	        }
-	        request.setAuthToken(userResponse.getAuthToken());
-	        request.setUserInfo(userResponse.getUser());
-	        requestInfoWrapper.setRequestInfo(request);
-			List<Payment> payments = paymentService.getPayments(criteria,"PRTAX", requestInfoWrapper);
-			log.info("Payments found are:---" + ((!payments.isEmpty()?payments.size():"No payments found")));
-			xstream .addPermission(NoTypePermission.NONE); //forbid everything
-			xstream .addPermission(NullPermission.NULL);   // allow "null"
-			xstream .addPermission(PrimitiveTypePermission.PRIMITIVES);
-			xstream .addPermission(AnyTypePermission.ANY);
-			log.info("Name to search is " +searchCriteria.getPayerName());
-			//log.info("Mobile to search is " +searchCriteria.getMobile());
-			if(!payments.isEmpty()) {
-			log.info("Name in latest payment is " +payments.get(0).getPayerName());
-			log.info("Mobile in latest payment is " +payments.get(0).getMobileNumber());
-			}
-			
-			
-			if((!payments.isEmpty() || configurations.getValidationFlag().toUpperCase().equals("TRUE") || validateRequest(searchCriteria,payments.get(0)))
-					|| (!payments.isEmpty() && configurations.getValidationFlag().toUpperCase().equals("FALSE"))){ 
-				log.info("Payment object is not null and validations passed!!!");
-				String o=null;
-				String filestore=null;
-				if(payments.get(0).getFileStoreId() != null) {
-					filestore=payments.get(0).getFileStoreId();
-					o=paymentService.getFilestore(payments.get(0).getFileStoreId()).toString();
-				}
-				else
-				{
-					List<Payment> latestPayment=new ArrayList<Payment>();
-					latestPayment.add(payments.get(0));
-					PaymentRequest paymentRequest=new PaymentRequest();
-					paymentRequest.setPayments(latestPayment);
-					paymentRequest.setRequestInfo(requestInfoWrapper.getRequestInfo());
-					filestore=paymentService.createPDF(paymentRequest);
-					o=paymentService.getFilestore(filestore).toString();
-					
-				
-				}
-				
-				
-				if(o!=null)
-				
-				 		{
-					 	String path=o.split("url=")[1];
-					 	String pdfPath=path.substring(0,path.length()-3);
-					 	URL url1 =new URL(pdfPath);
-					 	try {
+    public String handlePullDocRequest(SearchCriteria criteria) throws IOException {
+        if (!ORIGIN.equals(criteria.getOrigin())) {
+            log.error("Unsupported origin: {}", criteria.getOrigin());
+            return DIGILOCKER_ORIGIN_NOT_SUPPORTED;
+        }
+        return processRequest(criteria, false);
+    }
 
-					     // Read the PDF from the URL and save to a local file
-					     InputStream is1 = url1.openStream();
-					     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    // --- Routing Logic ---
 
-					     int nRead;
-					     byte[] data = new byte[1024];
+    private String processRequest(SearchCriteria searchCriteria, boolean isUriRequest) throws IOException {
+        String txnId = searchCriteria.getTxn();
+        
+        try {
+            if (!isUriRequest) {
+                extractUriDetails(searchCriteria);
+            }
+            
+            RequestInfoWrapper requestWrapper = prepareRequestInfo();
+            String docType = searchCriteria.getDocType();
 
-					     while ((nRead = is1.read(data, 0, data.length)) != -1) {
-					         buffer.write(data, 0, nRead);
-					     }
+            log.info("Processing DigiLocker Request for DocType: {}", docType);
 
-					     buffer.flush();
-					     byte[] targetArray = buffer.toByteArray();
-					     String encodedString = Base64.getEncoder().encodeToString(targetArray); 
-	     				    
-					     ResponseStatus responseStatus=new ResponseStatus();
-					     responseStatus.setStatus("1");
-					     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-					     LocalDateTime now = LocalDateTime.now();  
-					     responseStatus.setTs(dtf.format(now));
-					     responseStatus.setTxn(searchCriteria.getTxn());
-					     model.setResponseStatus(responseStatus);
-					 
-					     DocDetailsResponse docDetailsResponse=new DocDetailsResponse();
-				    	 Certificate certificate=new Certificate();
+            if (DIGILOCKER_DOCTYPE.equalsIgnoreCase(docType)) { // Replaced "PRTAX"
+                return handlePropertyTax(searchCriteria, isUriRequest, requestWrapper);
+            } else if ("WS".equalsIgnoreCase(docType) || "SW".equalsIgnoreCase(docType)) {
+                return handleWaterSewerage(searchCriteria, isUriRequest, requestWrapper, docType);
+            } else {
+                log.error("Unsupported DocType: {}", docType);
+                return generateErrorResponse(txnId, isUriRequest);
+            }
 
-				    	 xstream.processAnnotations(Certificate.class);
-				    	 xstream.processAnnotations(Organization.class);
-				         xstream.processAnnotations(Address.class);
-				         xstream.processAnnotations(IssuedBy.class);
-					     certificate=populateCertificate(payments.get(0));
-    			    	 String xml1 = xstream.toXML(certificate); 
-				    	 System.out.println(xml1);
-					     
-					     
-					     
-					     docDetailsResponse.setDataContent(Base64.getEncoder().encodeToString( xstream.toXML(certificate).getBytes()));
+        } catch (Exception e) {
+            log.error("Critical error during data exchange: ", e);
+            return generateErrorResponse(txnId, isUriRequest);
+        }
+    }
 
-					     docDetailsResponse.setDocContent(encodedString);
-					     //System.out.println(docDetailsResponse);
-					     model.setDocDetails(docDetailsResponse);
-					       
+    // --- Property Tax Logic ---
 
-				 }
-				 catch (NullPointerException npe) {
-				      log.error(npe.getMessage());
-				      log.info("Error Occured",npe.getMessage());
-				    }
-				  }	
-			} 
-			
-			else
-			{
-				ResponseStatus responseStatus=new ResponseStatus();
-			     responseStatus.setStatus("0");
-			     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-			     LocalDateTime now = LocalDateTime.now();  
-			     responseStatus.setTs(dtf.format(now));
-			     responseStatus.setTxn(searchCriteria.getTxn());
-			     model.setResponseStatus(responseStatus);
-			 
-			     DocDetailsResponse docDetailsResponse=new DocDetailsResponse();
+    private String handlePropertyTax(SearchCriteria searchCriteria, boolean isUriRequest, RequestInfoWrapper wrapper) throws IOException {
+        PaymentSearchCriteria paymentCriteria = new PaymentSearchCriteria();
+        paymentCriteria.setTenantId(TENANT_PREFIX + searchCriteria.getCity()); // Replaced "pb."
+        paymentCriteria.setConsumerCodes(Collections.singleton(searchCriteria.getPropertyId()));
 
-			     docDetailsResponse.setURI(null);
-			   //  docDetailsResponse.setIssuedTo(issuedTo);
-			     docDetailsResponse.setDataContent("");
-			     docDetailsResponse.setDocContent("");
-			   
-			    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			     log.info(EXCEPTION_TEXT_VALIDATION);
-			     model.setDocDetails(docDetailsResponse);
+        List<Payment> payments = paymentService.getPayments(paymentCriteria, DIGILOCKER_DOCTYPE, wrapper);
+        
+        if (!isValidResponse(searchCriteria, payments)) {
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        }
+        
+        Payment payment = payments.get(0);
+        String fileStoreId = payment.getFileStoreId();
+        if (fileStoreId == null) {
+            PaymentRequest paymentRequest = new PaymentRequest();
+            paymentRequest.setPayments(Collections.singletonList(payment));
+            paymentRequest.setRequestInfo(wrapper.getRequestInfo()); 
+            fileStoreId = paymentService.createPDF(paymentRequest);
+        }
 
-			}
-			
-		    xstream.processAnnotations(PullDocResponse.class);
-	        xstream.toXML(model);
-	        
-			return xstream.toXML(model);   
+        Object filestoreObj = paymentService.getFilestore(fileStoreId);
+        JsonNode root = objectMapper.valueToTree(filestoreObj);
+        String pdfUrl = null;
+        
+        if (root.has("fileStoreIds") && root.get("fileStoreIds").isArray() && root.get("fileStoreIds").size() > 0) {
+            pdfUrl = root.get("fileStoreIds").get(0).path("url").asText(null);
+        } else if (root.isArray() && root.size() > 0) {
+            pdfUrl = root.get(0).path("url").asText(null);
+        }
 
-	}
+        if (pdfUrl == null || pdfUrl.isEmpty() || "null".equals(pdfUrl)) {
+            throw new IOException("URL not found in Filestore response");
+        }
 
-	
-	
-	
-	
-	
-	
-	
-	
-		Boolean validateRequest(SearchCriteria searchCriteria, Payment payment)
-		{
-			if(!searchCriteria.getPayerName().equals(payment.getPayerName()))
-					return false;
-			else if(!searchCriteria.getMobile().equals(payment.getMobileNumber()))
-					return false;
-			else
-				return true;
-			
-			
-		}
-		
-		Certificate populateCertificate(Payment payment)
-		{
-			Certificate certificate=new Certificate();
-			Date currentDate = new Date();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-			String formattedDate = dateFormat.format(currentDate);
-			certificate.setLanguage("99");	    	 
-			certificate.setname("Property Tax Receipt");
-	    	 certificate.setType("PRTAX");
-	    	 certificate.setNumber("");
-	    	 certificate.setPrevNumber("");
-	    	 certificate.setIssueDate(formattedDate);
-	    	 certificate.setExpiryDate("");
-	    	 certificate.setValidFromDate("");
-	    	 certificate.setIssuedAt(payment.getTenantId());
-	    	 certificate.setStatus("A");
-	    	 
-	  
-	    	 IssuedBy issuedBy=new IssuedBy();
-	    	 Organization organization=new Organization();
-	    	 organization.setName("Punjab Municipal Infrastructure Development Company");
-	    	 organization.setType("SG");
-	    	 organization.setTin("");
-	    	 organization.setCode("");
-	    	 organization.setuuid("");
-	    	 
-	    	 Address address=new Address();
-	    	 address.setType("");
-	    	 address.setLine1("");
-	    	 address.setLine2("");
-	    	 address.setHouse("");
-	    	 address.setLandmark("");
-	    	 address.setLocality("");
-	    	 address.setVtc("");
-	    	 address.setPin("160022");;
-	    	 address.setDistrict("Chandigarh");
-	    	 address.setCountry("IN");
-	    	 address.setState("Chandigarh");
-	    	 organization.setAddress(address);
-	    	 issuedBy.setOrganisation(organization);
-	    	 certificate.setIssuedBy(issuedBy);
-	    	 
-	    	 
-             IssuedTo issuedTo=new IssuedTo();
-		     @SuppressWarnings("rawtypes")
-			Person person=new Person();
-		     
-		     person.setUid("");
-		     person.setTitle("");
-		     person.setName(payment.getPayerName());
-		     person.setDob("");
-		     person.setAge("");
-		     person.setSwd("");
-		     person.setSwdIndicator("");
-		     person.setMotherName("");
-		     person.setGender("");
-		     person.setMaritalStatus("");
-		     person.setRelationWithHof("");
-		     person.setDisabilityStatus("");
-		     person.setCategory("");
-		     person.setReligion("");
-		     person.setPhone(payment.getMobileNumber());
-		     person.setEmail(payment.getPayerEmail());
-		     
-		     
-		     Address address1=new Address();
-		     address1.setType("permanent");
-	    	 address1.setLine1("");
-	    	 address1.setLine2("");
-	    	 address1.setHouse("");
-	    	 address1.setLandmark("");
-	    	 address1.setLocality("");
-	    	 address1.setVtc("");
-	    	 address1.setPin("");
-	    	 address1.setDistrict(payment.getTenantId());
-	    	 address1.setCountry("IN");
-	    	 address1.setState("Punjab");
-	    	 person.setPhoto("");
-	    	 person.setAddress(address1);
-	    	 issuedTo.setPerson(person);
-	    	 certificate.setIssuedTo(issuedTo);
-	    	 
-	    	 
-	    	 CertificateData certificateData=new CertificateData();
-	    	 PropertyTaxReceipt propertyTaxReceipt=new PropertyTaxReceipt();
-	    	 propertyTaxReceipt.setPaymentDate(payment.getPaymentDetails().get(0).getReceiptDate().toString());
-	    	 propertyTaxReceipt.setServicetype(payment.getPaymentDetails().get(0).getBusinessService());
-	    	 propertyTaxReceipt.setReceiptNo(payment.getPaymentDetails().get(0).getReceiptNumber());
-	    	 propertyTaxReceipt.setPropertyID(payment.getPaymentDetails().get(0).getBill().getConsumerCode());
-	    	 propertyTaxReceipt.setOwnerName(payment.getPayerName());
-	    	 propertyTaxReceipt.setOwnerContact(payment.getMobileNumber());
-	    	 propertyTaxReceipt.setPaymentstatus(payment.getPaymentStatus().toString());
-	    	 PaymentForReceipt paymentForReceipt=new PaymentForReceipt();
-	    	 paymentForReceipt.setPaymentMode(payment.getPaymentMode().toString());
-	    	 String billingPeriod=
-	    			 (payment.getPaymentDetails().get(0).getBill().getBillDetails().get(0).getFromPeriod().toString()).concat("-").
-	    			 concat(payment.getPaymentDetails().get(0).getBill().getBillDetails().get(0).getToPeriod().toString());
-	    	 paymentForReceipt.setBillingPeriod(billingPeriod);
-	    	 paymentForReceipt.setPropertyTaxAmount(payment.getTotalDue().toString());
-	    	 paymentForReceipt.setPaidAmount(payment.getTotalAmountPaid().toString());
-	    	 paymentForReceipt.setPendingAmount((payment.getTotalDue().subtract(payment.getTotalAmountPaid())).toString());
-	    	 paymentForReceipt.setExcessAmount("");
-	    	 paymentForReceipt.setTransactionID(payment.getTransactionNumber());
-	    	 paymentForReceipt.setG8ReceiptDate(payment.getPaymentDetails().get(0).getManualReceiptNumber());
-	    	 paymentForReceipt.setG8ReceiptNo(payment.getPaymentDetails().get(0).getManualReceiptDate().toString());
-	    	     	 
-	    	 propertyTaxReceipt.setPaymentForReceipt(paymentForReceipt);
-	    	 certificateData.setPropertyTaxReceipt(propertyTaxReceipt);
-	    	 certificate.setCertificateData(certificateData);
+        String base64Pdf = downloadAndEncodePdf(pdfUrl);
+        ResponseStatus status = new ResponseStatus(getFormattedNow(), searchCriteria.getTxn(), "1");
+        
+        String actualPropertyId = payment.getPaymentDetails().get(0).getBill().getConsumerCode();
+        String replacedPropertyId = actualPropertyId.replace("-", "QW");
+        
+        String customUri = String.format("%s-%s-%sQW%s", 
+                DIGILOCKER_ISSUER_ID, DIGILOCKER_DOCTYPE, replacedPropertyId, searchCriteria.getCity());
 
-	    	 return certificate;
-		}
-		
-		
-		
-		
+        DocDetailsResponse docDetails = new DocDetailsResponse();
+        docDetails.setURI(customUri);
+        docDetails.setDocContent(base64Pdf);
+        
+        Certificate cert = populateCertificate(payment);
+        docDetails.setIssuedTo(cert.getIssuedTo());
+        
+        String xmlData = xstream.toXML(cert);
+        docDetails.setDataContent(Base64.getEncoder().encodeToString(xmlData.getBytes()));
+
+        return buildFinalResponse(status, docDetails, isUriRequest);
+    }
+
+    // --- Water & Sewerage Logic ---
+
+    private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriRequest, RequestInfoWrapper wrapper, String docType) throws IOException {
+        
+        JsonNode billResponse = fetchWaterSewerageBills(searchCriteria, docType, wrapper);
+        if (billResponse == null) return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+
+        JsonNode bills = billResponse.path("Bills");
+        if (bills.isMissingNode() || !bills.isArray() || bills.size() == 0) {
+            log.error("No bills found for {} consumer {}", docType, searchCriteria.getPropertyId());
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        }
+
+        JsonNode latestBill = bills.get(0);
+        if (!isValidWsResponse(searchCriteria, latestBill)) {
+            log.error("Validation failed for {}: Name or Mobile mismatch.", docType);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        }
+
+        String fileStoreId = generateWsPdf(latestBill, wrapper.getRequestInfo(), docType);
+
+        if (fileStoreId == null || fileStoreId.isEmpty() || "null".equals(fileStoreId)) {
+            log.error("Failed to generate PDF for WS/SW Bill");
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        }
+
+        Object filestoreObj = paymentService.getFilestore(fileStoreId);
+        JsonNode root = objectMapper.valueToTree(filestoreObj);
+        String pdfUrl = null;
+        
+        if (root.has("fileStoreIds") && root.get("fileStoreIds").isArray() && root.get("fileStoreIds").size() > 0) {
+            pdfUrl = root.get("fileStoreIds").get(0).path("url").asText(null);
+        } else if (root.isArray() && root.size() > 0) {
+            pdfUrl = root.get(0).path("url").asText(null);
+        }
+
+        if (pdfUrl == null || pdfUrl.isEmpty() || "null".equals(pdfUrl)) {
+            throw new IOException("URL not found in Filestore response");
+        }
+
+        String base64Pdf = downloadAndEncodePdf(pdfUrl);
+        ResponseStatus status = new ResponseStatus(getFormattedNow(), searchCriteria.getTxn(), "1");
+        
+        String actualConsumerCode = latestBill.path("consumerCode").asText("");
+        String replacedConsumerCode = actualConsumerCode.replace("-", "QW");
+        String customUri = String.format("%s-%s-%sQW%s", 
+                DIGILOCKER_ISSUER_ID, docType, replacedConsumerCode, searchCriteria.getCity());
+
+        DocDetailsResponse docDetails = new DocDetailsResponse();
+        docDetails.setURI(customUri);
+        docDetails.setDocContent(base64Pdf);
+        
+        Certificate cert = populateWSCertificate(latestBill, docType);
+        docDetails.setIssuedTo(cert.getIssuedTo());
+        
+        String xmlData = xstream.toXML(cert);
+        docDetails.setDataContent(Base64.getEncoder().encodeToString(xmlData.getBytes()));
+
+        return buildFinalResponse(status, docDetails, isUriRequest);
+    }
+
+    private JsonNode fetchWaterSewerageBills(SearchCriteria sc, String docType, RequestInfoWrapper requestInfo) {
+    	String url = "WS".equalsIgnoreCase(docType) ? 
+                configurations.getSearchServiceHost() + configurations.getSearchWsEndpoint() :
+                configurations.getSearchServiceHost() + configurations.getSearchSwEndpoint();
+        
+        String businessService = "WS".equalsIgnoreCase(docType) ? "WS" : "SW";
+
+        Map<String, Object> searchCriteriaMap = new HashMap<>();
+        searchCriteriaMap.put("tenantId", TENANT_PREFIX + sc.getCity());
+        searchCriteriaMap.put("mobileNumber", sc.getMobile());
+        if (sc.getConsumerCode() != null && !sc.getConsumerCode().isEmpty()) {
+            searchCriteriaMap.put("consumerCode", sc.getPropertyId()); 
+        }
+        searchCriteriaMap.put("businesService", businessService);
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo.getRequestInfo());
+        request.put("searchCriteria", searchCriteriaMap);
+
+        try {
+            return restTemplate.postForObject(url, request, JsonNode.class);
+        } catch (Exception e) {
+            log.error("Error fetching WS/SW bills from Bill Genie: ", e);
+            return null;
+        }
+    }
+
+    private boolean isValidWsResponse(SearchCriteria sc, JsonNode bill) {
+        if ("FALSE".equalsIgnoreCase(configurations.getValidationFlag())) return true;
+        
+        String billName = bill.path("payerName").asText("");
+        String billMobile = bill.path("mobileNumber").asText("");
+        
+        // Use equalsIgnoreCase for the name to ignore capitalization differences
+        boolean isNameMatch = billName.equalsIgnoreCase(sc.getPayerName());
+        
+        // Mobile numbers are just digits, so normal equals is fine
+        boolean isMobileMatch = Objects.equals(sc.getMobile(), billMobile);
+        
+        return isNameMatch && isMobileMatch;
+    }
+    
+    private String generateWsPdf(JsonNode bill, RequestInfo requestInfo, String docType) {
+        // Replaced hardcoded URL with injected egovHost and pdfCreateEndpoint
+        String pdfUrl = configurations.getFilestoreHost() + configurations.getPdfServiceCreate() + "?key=" + 
+                        ("WS".equalsIgnoreCase(docType) ? "ws-bill" : "sw-bill") + 
+                        "&tenantId=" + STATE_TENANT;
+
+        ObjectNode requestBody = objectMapper.createObjectNode();
+        requestBody.set("RequestInfo", objectMapper.valueToTree(requestInfo));
+        requestBody.putArray("Bill").add(bill);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
+
+        try {
+            JsonNode responseNode = restTemplate.postForObject(pdfUrl, request, JsonNode.class);
+            if (responseNode != null && responseNode.has("filestoreIds") && responseNode.get("filestoreIds").isArray()) {
+                return responseNode.get("filestoreIds").get(0).asText();
+            }
+        } catch (Exception e) {
+            log.error("Failed to generate PDF for " + docType, e);
+        }
+        return null;
+    }
+
+    private Certificate populateWSCertificate(JsonNode bill, String docType) {
+        Certificate cert = new Certificate();
+        cert.setLanguage(LANGUAGE_CODE); // Replaced "99"
+        cert.setname("WS".equalsIgnoreCase(docType) ? "Water Bill" : "Sewerage Bill");
+        cert.setType(docType);
+        cert.setNumber("");
+        cert.setPrevNumber("");
+        
+        long epochDate = bill.path("billDate").asLong();
+        String formattedBillDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date(epochDate));
+        
+        cert.setIssueDate(formattedBillDate);
+        cert.setExpiryDate("");
+        cert.setValidFromDate("");
+        cert.setIssuedAt(bill.path("tenantId").asText());
+        cert.setStatus(CERT_STATUS_ACTIVE); // Replaced "A"
+
+        Organization org = new Organization();
+        org.setName(ISSUER_ORG_NAME); // Replaced hardcoded Punjab string
+        org.setType(ISSUER_ORG_TYPE); // Replaced "SG"
+        org.setTin("");
+        org.setCode("");
+        org.setuuid("");
+        
+        Address orgAddr = new Address();
+        orgAddr.setType("");
+        orgAddr.setLine1("");
+        orgAddr.setLine2("");
+        orgAddr.setHouse("");
+        orgAddr.setLandmark("");
+        orgAddr.setLocality("");
+        orgAddr.setVtc("");
+        orgAddr.setPin(ISSUER_PIN); // Replaced "160022"
+        orgAddr.setDistrict(ISSUER_DISTRICT); // Replaced "Chandigarh"
+        orgAddr.setState(ISSUER_STATE); // Replaced "Chandigarh"
+        orgAddr.setCountry("IN");
+        org.setAddress(orgAddr);
+
+        IssuedBy issuer = new IssuedBy();
+        issuer.setOrganisation(org);
+        cert.setIssuedBy(issuer);
+
+        Person person = new Person();
+        person.setUid("");
+        person.setTitle("");
+        person.setName(bill.path("payerName").asText()); 
+        person.setDob("");
+        person.setAge("");
+        person.setSwd("");
+        person.setSwdIndicator("");
+        person.setMotherName("");
+        person.setGender("");
+        person.setMaritalStatus("");
+        person.setRelationWithHof("");
+        person.setDisabilityStatus("");
+        person.setCategory("");
+        person.setReligion("");
+        person.setPhone(bill.path("mobileNumber").asText());
+        person.setEmail("");
+        person.setPhoto("");
+        
+        Address pAddr = new Address();
+        pAddr.setType(PERSON_ADDR_TYPE); // Replaced "permanent"
+        pAddr.setLine1("");
+        pAddr.setLine2("");
+        pAddr.setHouse("");
+        pAddr.setLandmark("");
+        pAddr.setLocality(bill.path("address").path("locality").asText(""));
+        pAddr.setVtc("");
+        pAddr.setPin("");
+        pAddr.setDistrict(bill.path("tenantId").asText());
+        pAddr.setState(PERSON_STATE); // Replaced "Punjab"
+        pAddr.setCountry("IN");
+        person.setAddress(pAddr);
+
+        IssuedTo issuedTo = new IssuedTo();
+        issuedTo.setPerson(person);
+        cert.setIssuedTo(issuedTo);
+
+        CertificateData data = new CertificateData();
+        WaterSewerageBill wsBill = new WaterSewerageBill(); 
+        
+        wsBill.setConsumerNo(bill.path("consumerCode").asText(""));
+        wsBill.setConsumerName(bill.path("payerName").asText(""));
+        wsBill.setMobileNumber(bill.path("mobileNumber").asText(""));
+        wsBill.setAddress(bill.path("payerAddress").asText(""));
+        wsBill.setBillNumber(bill.path("billNumber").asText(""));
+        wsBill.setBillAmount(bill.path("totalAmount").asText("0.0"));
+        wsBill.setBillDate(formattedBillDate);
+        wsBill.setStatus(bill.path("status").asText(""));
+        
+        data.setWaterSewerageBill(wsBill);
+        cert.setCertificateData(data);
+
+        return cert;
+    }
+
+    // --- Core Helper Methods ---
+
+    private void extractUriDetails(SearchCriteria sc) {
+        if (sc.getURI() != null && !sc.getURI().isEmpty()) {
+            String[] uriParts = sc.getURI().split("-");
+            String docType = uriParts[1];
+            sc.setDocType(docType);
+            
+            String rawIdData = uriParts[2]; 
+            String[] qwParts = rawIdData.split("QW");
+            
+            if (DIGILOCKER_DOCTYPE.equalsIgnoreCase(docType)) { // Replaced "PRTAX"
+                sc.setPropertyId("PT-" + qwParts[1] + "-" + qwParts[2]);
+                sc.setCity(qwParts[3]);
+            } else {
+                sc.setPropertyId(docType + "-" + qwParts[1]); 
+                sc.setCity(qwParts[2]);
+            }
+        }
+    }
+
+    private String buildFinalResponse(ResponseStatus status, DocDetailsResponse docDetails, boolean isUriRequest) {
+        if (isUriRequest) {
+            PullURIResponse res = new PullURIResponse();
+            res.setResponseStatus(status);
+            res.setDocDetails(docDetails);
+            return xstream.toXML(res);
+        } else {
+            PullDocResponse res = new PullDocResponse();
+            res.setResponseStatus(status);
+            res.setDocDetails(docDetails);
+            return xstream.toXML(res);
+        }
+    }
+
+    private String downloadAndEncodePdf(String urlString) throws IOException {
+        URL url = java.net.URI.create(urlString).toURL();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+        connection.setRequestProperty("Accept", "*/*");
+        connection.setConnectTimeout(10000); 
+        connection.setReadTimeout(10000);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            throw new IOException("Server returned HTTP " + responseCode);
+        }
+
+        try (InputStream is = connection.getInputStream(); 
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            byte[] data = new byte[8192];
+            int nRead;
+            while ((nRead = is.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            return Base64.getEncoder().encodeToString(buffer.toByteArray());
+        } finally {
+            connection.disconnect();
+        }
+    }
+    
+    private boolean isValidResponse(SearchCriteria sc, List<Payment> payments) {
+        if (payments.isEmpty()) return false;
+        if ("FALSE".equalsIgnoreCase(configurations.getValidationFlag())) return true;
+        
+        Payment latest = payments.get(0);
+        return Objects.equals(sc.getPayerName(), latest.getPayerName()) &&
+               Objects.equals(sc.getMobile(), latest.getMobileNumber());
+    }
+
+    private RequestInfoWrapper prepareRequestInfo() {
+        UserResponse user = userService.getUser();
+        RequestInfo info = new RequestInfo();
+        info.setApiId(API_ID); // Replaced "Rainmaker" constant string with the actual API_ID from the Constants file
+        // Using String.format and the MSG_ID_PATTERN constant instead of hardcoded strings
+        info.setMsgId(String.format(MSG_ID_PATTERN, System.currentTimeMillis()));
+        info.setAuthToken(user.getAuthToken());
+        info.setUserInfo(user.getUser());
+        
+        RequestInfoWrapper wrapper = new RequestInfoWrapper();
+        wrapper.setRequestInfo(info);
+        return wrapper;
+    }
+
+    private String generateErrorResponse(String txnId, boolean isUriRequest) {
+    	ResponseStatus status = new ResponseStatus(getFormattedNow(), txnId, "0");
+    	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        
+        if (isUriRequest) {
+            PullURIResponse res = new PullURIResponse();
+            res.setResponseStatus(status);
+            return xstream.toXML(res);
+        } else {
+            PullDocResponse res = new PullDocResponse();
+            res.setResponseStatus(status);
+            return xstream.toXML(res);
+        }
+    }
+
+    private String getFormattedNow() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN));
+    }
+
+    private Certificate populateCertificate(Payment payment) {
+        Certificate cert = new Certificate();
+        cert.setLanguage(LANGUAGE_CODE); // Replaced "99"
+        cert.setname("Property Tax Receipt");
+        cert.setType(DIGILOCKER_DOCTYPE); // Replaced "PRTAX"
+        cert.setNumber("");
+        cert.setPrevNumber("");
+        cert.setIssueDate(new SimpleDateFormat("dd-MM-yyyy").format(new Date()));
+        cert.setExpiryDate("");
+        cert.setValidFromDate("");
+        cert.setIssuedAt(payment.getTenantId());
+        cert.setStatus(CERT_STATUS_ACTIVE); // Replaced "A"
+
+        Organization org = new Organization();
+        org.setName(ISSUER_ORG_NAME); // Replaced "Punjab Municipal..."
+        org.setType(ISSUER_ORG_TYPE); // Replaced "SG"
+        org.setTin("");
+        org.setCode("");
+        org.setuuid("");
+        
+        Address orgAddr = new Address();
+        orgAddr.setType("");
+        orgAddr.setLine1("");
+        orgAddr.setLine2("");
+        orgAddr.setHouse("");
+        orgAddr.setLandmark("");
+        orgAddr.setLocality("");
+        orgAddr.setVtc("");
+        orgAddr.setPin(ISSUER_PIN); // Replaced "160022"
+        orgAddr.setDistrict(ISSUER_DISTRICT); // Replaced "Chandigarh"
+        orgAddr.setState(ISSUER_STATE); // Replaced "Chandigarh"
+        orgAddr.setCountry("IN");
+        org.setAddress(orgAddr);
+
+        IssuedBy issuer = new IssuedBy();
+        issuer.setOrganisation(org);
+        cert.setIssuedBy(issuer);
+
+        Person person = new Person();
+        person.setUid("");
+        person.setTitle("");
+        person.setName(payment.getPayerName());
+        person.setDob("");
+        person.setAge("");
+        person.setSwd("");
+        person.setSwdIndicator("");
+        person.setMotherName("");
+        person.setGender("");
+        person.setMaritalStatus("");
+        person.setRelationWithHof("");
+        person.setDisabilityStatus("");
+        person.setCategory("");
+        person.setReligion("");
+        person.setPhone(payment.getMobileNumber());
+        person.setEmail(payment.getPayerEmail() != null ? payment.getPayerEmail() : "");
+        person.setPhoto("");
+        
+        Address pAddr = new Address();
+        pAddr.setType(PERSON_ADDR_TYPE); // Replaced "permanent"
+        pAddr.setLine1("");
+        pAddr.setLine2("");
+        pAddr.setHouse("");
+        pAddr.setLandmark("");
+        pAddr.setLocality("");
+        pAddr.setVtc("");
+        pAddr.setPin("");
+        pAddr.setDistrict(payment.getTenantId());
+        pAddr.setState(PERSON_STATE); // Replaced "Punjab"
+        pAddr.setCountry("IN");
+        person.setAddress(pAddr);
+
+        IssuedTo recipient = new IssuedTo();
+        recipient.setPerson(person);
+        cert.setIssuedTo(recipient);
+
+        PropertyTaxReceipt receipt = new PropertyTaxReceipt();
+        receipt.setPaymentDate(payment.getPaymentDetails().get(0).getReceiptDate().toString());
+        receipt.setServicetype(payment.getPaymentDetails().get(0).getBusinessService());
+        receipt.setReceiptNo(payment.getPaymentDetails().get(0).getReceiptNumber());
+        receipt.setPropertyID(payment.getPaymentDetails().get(0).getBill().getConsumerCode());
+        receipt.setOwnerName(payment.getPayerName());
+        receipt.setOwnerContact(payment.getMobileNumber());
+        receipt.setPaymentstatus(payment.getPaymentStatus().toString());
+
+        PaymentForReceipt pfr = new PaymentForReceipt();
+        pfr.setPaymentMode(payment.getPaymentMode().toString());
+        String billingPeriod = (payment.getPaymentDetails().get(0).getBill().getBillDetails().get(0).getFromPeriod().toString()) + "-" +
+                               (payment.getPaymentDetails().get(0).getBill().getBillDetails().get(0).getToPeriod().toString());
+        pfr.setBillingPeriod(billingPeriod);
+        pfr.setPropertyTaxAmount(payment.getTotalDue().toString());
+        pfr.setPaidAmount(payment.getTotalAmountPaid().toString());
+        pfr.setPendingAmount((payment.getTotalDue().subtract(payment.getTotalAmountPaid())).toString());
+        pfr.setExcessAmount("");
+        pfr.setTransactionID(payment.getTransactionNumber());
+        pfr.setG8ReceiptDate(payment.getPaymentDetails().get(0).getManualReceiptNumber());
+        pfr.setG8ReceiptNo(payment.getPaymentDetails().get(0).getManualReceiptDate().toString());
+        
+        receipt.setPaymentForReceipt(pfr);
+
+        CertificateData data = new CertificateData();
+        data.setPropertyTaxReceipt(receipt);
+        cert.setCertificateData(data);
+
+        return cert;
+    }
 }

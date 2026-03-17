@@ -14,6 +14,8 @@ public class SearchCriteria {
 
     private String propertyId;
 
+    private String consumerCode; // ADD THIS!
+    
     private String city;
 
     private String txn;

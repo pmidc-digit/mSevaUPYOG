@@ -26,4 +26,9 @@ public class CertificateData {
     @XStreamAlias("PropertyTaxReceipt")
     private PropertyTaxReceipt propertyTaxReceipt;
     
+    
+    @XStreamAlias("WaterSewerageBill")
+    private WaterSewerageBill waterSewerageBill;
+    
+    
 }

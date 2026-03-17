@@ -9,9 +9,40 @@ import lombok.Getter;
 @Getter
 public class Configurations {
 
-	@Value("${egov.payer.validation.enable}")
+@Value("${egov.payer.validation.enable}")
 	private String validationFlag;
 
+	@Value("${egov.digilocker.origin}")
+	private String digilockerOrigin;
+
+	@Value("${egov.digilocker.issuer.id}")
+	private String digilockerIssuerId;
+
+	@Value("${egov.digilocker.doctype.prtax:PRTAX}")
+	private String prtaxDocType;
+
+	@Value("${egov.pt.language.code:99}")
+	private String languageCode;
+
+	@Value("${egov.pt.issuer.org.name}")
+	private String issuerOrgName;
+
+	@Value("${egov.pt.issuer.pin}")
+	private String issuerPin;
+
+	@Value("${egov.pt.person.state:Punjab}")
+	private String personState;
+
+	// Existing props...
+
+	@Value("${egov.searchservice.host}")
+	private String searchServiceHost;
+	
+	@Value("${egov.searchservice.ws.endpoint}")
+	private String searchWsEndpoint;
+	
+	@Value("${egov.searchservice.sw.endpoint}")
+	private String searchSwEndpoint;
 	
 	@Value("${egov.collectionservice.host}")
 	private String collectionServiceHost;

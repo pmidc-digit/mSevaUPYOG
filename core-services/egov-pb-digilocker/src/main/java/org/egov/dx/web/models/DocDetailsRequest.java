@@ -4,28 +4,29 @@ import javax.validation.constraints.Size;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
-
 @XStreamAlias("DocDetails")
-
 public class DocDetailsRequest {
 	
-	@XStreamAlias("DocType")
+    @XStreamAlias("DocType")
     private String docType;
 	
-	@XStreamAlias("FullName")
+    @XStreamAlias("FullName")
     private String fullName;
 	
-	@XStreamAlias("DOB")
+    @XStreamAlias("DOB")
     private String dob;
 	
-	@XStreamAlias("GENDER")
+    @XStreamAlias("GENDER")
     private String gender;
 	
-	@XStreamAlias("DigiLockerId")
+    @XStreamAlias("DigiLockerId")
     private String digiLockerId;
 	
-	@XStreamAlias("Mobile")
+    @XStreamAlias("Mobile")
     private String mobile;
+	
+    @XStreamAlias("consumerCode")
+    private String consumerCode;
 	
     @Size(max=64)
     @XStreamAlias("PropertyID")
@@ -34,68 +35,77 @@ public class DocDetailsRequest {
     @XStreamAlias("City")
     private String city;
 
-	public String getDocType() {
-		return docType;
-	}
+    public String getDocType() {
+        return docType;
+    }
 
-	public void setDocType(String docType) {
-		this.docType = docType;
-	}
+    public void setDocType(String docType) {
+        this.docType = docType;
+    }
 
-	public String getFullName() {
-		return fullName;
-	}
+    public String getFullName() {
+        return fullName;
+    }
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
-	public String getDob() {
-		return dob;
-	}
+    public String getDob() {
+        return dob;
+    }
 
-	public void setDob(String dob) {
-		this.dob = dob;
-	}
+    public void setDob(String dob) {
+        this.dob = dob;
+    }
 
-	public String getGender() {
-		return gender;
-	}
+    public String getGender() {
+        return gender;
+    }
 
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
 
-	public String getDigiLockerId() {
-		return digiLockerId;
-	}
+    public String getDigiLockerId() {
+        return digiLockerId;
+    }
 
-	public void setDigiLockerId(String digiLockerId) {
-		this.digiLockerId = digiLockerId;
-	}
+    public void setDigiLockerId(String digiLockerId) {
+        this.digiLockerId = digiLockerId;
+    }
 
-	public String getMobile() {
-		return mobile;
-	}
+    public String getMobile() {
+        return mobile;
+    }
 
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
-	}
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
 
-	public String getPropertyId() {
-		return propertyId;
-	}
+    // --- NEW GETTER AND SETTER FOR CONSUMER CODE ---
+    public String getConsumerCode() {
+        return consumerCode;
+    }
 
-	public void setPropertyId(String propertyId) {
-		this.propertyId = propertyId;
-	}
+    public void setConsumerCode(String consumerCode) {
+        this.consumerCode = consumerCode;
+    }
+    // -----------------------------------------------
 
-	public String getCity() {
-		return city;
-	}
+    public String getPropertyId() {
+        return propertyId;
+    }
 
-	public void setCity(String city) {
-		this.city = city;
-	}
-     
+    public void setPropertyId(String propertyId) {
+        this.propertyId = propertyId;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
 }

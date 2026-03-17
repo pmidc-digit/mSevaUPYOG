@@ -189,16 +189,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       };
     }
 
-    const searchData = {
-      mobileNumber: formData.owners?.[0]?.mobileNumber,
-      name: formData.owners?.[0]?.name,
-      doorNo: formData.address?.doorNo,
-      locality: formData.address?.locality?.code,
-      isRequestForDuplicatePropertyValidation: true,
-    };
-
     console.log("Final Payload:", formData);
-    console.log("Search Data:", searchData);
 
     const response = await Digit.PTService.create({ Property: formData }, tenantId);
     return { isSuccess: response?.ResponseInfo?.status === "successful", response: response };

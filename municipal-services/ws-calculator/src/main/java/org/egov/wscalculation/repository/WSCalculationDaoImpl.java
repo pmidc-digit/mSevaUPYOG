@@ -528,7 +528,7 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	@Override
 	public List<MeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria) {
 		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getSearchQueryString(criteria, preparedStatement);
+		String query = queryBuilder.getSearchQueryStringV2(criteria, preparedStatement);
 		if (query == null)
 			return Collections.emptyList();
 		log.debug("Query: " + query);

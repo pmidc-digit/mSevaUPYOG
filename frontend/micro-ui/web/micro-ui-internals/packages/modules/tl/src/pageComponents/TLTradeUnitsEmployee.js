@@ -18,6 +18,9 @@ import { getUniqueItemsFromArray, stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
 import { sortDropdownNames } from "../utils/index";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const createUnitDetails = () => ({
   tradeType: "",
   tradeSubType: "",
@@ -423,6 +426,8 @@ const TradeUnitForm = (_props) => {
               </div>
             </div>
           ) : null}
+          <div style={twoColRow}>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {`${t("TRADELICENSE_TRADECATEGORY_LABEL")}`}
@@ -474,6 +479,8 @@ const TradeUnitForm = (_props) => {
             />
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
+          </div>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {`${t("TRADELICENSE_TRADETYPE_LABEL")}`}
@@ -522,6 +529,10 @@ const TradeUnitForm = (_props) => {
             />
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
+          </div>
+          </div>
+          <div style={twoColRow}>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")}`}
@@ -570,6 +581,11 @@ const TradeUnitForm = (_props) => {
               ? errors?.tradeSubType?.message
               : ""}{" "}
           </CardLabelError>
+          </div>
+          <div style={colItem} />
+          </div>
+          <div style={twoColRow}>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none"
              style={{ color: !unit?.tradeSubType?.uom ? "#9e9e9e" : "" }}>
@@ -601,6 +617,8 @@ const TradeUnitForm = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
+          </div>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none"
              style={{ color: !unit?.tradeSubType?.uom ? "#9e9e9e" : "" }}>
@@ -645,6 +663,8 @@ const TradeUnitForm = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError> {localFormState.touched.uomValue ? errors?.uomValue?.message : ""} </CardLabelError>
+          </div>
+          </div>
         </div>
       </div>
     </React.Fragment>

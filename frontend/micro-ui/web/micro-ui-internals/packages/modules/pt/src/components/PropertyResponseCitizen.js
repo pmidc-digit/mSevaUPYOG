@@ -76,7 +76,7 @@ const PropertyResponseCitizen = (props) => {
   }, []);
 
   const onSubmit = () => {
-    if (isCitizen) history.push(`/digit-ui/citizen`);
+    if (isCitizen) history.push(`/digit-ui/citizen/pt-home`);
     else history.push(`/digit-ui/employee`);
   };
 

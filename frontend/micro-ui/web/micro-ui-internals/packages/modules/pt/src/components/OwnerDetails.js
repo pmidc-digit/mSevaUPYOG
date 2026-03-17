@@ -115,21 +115,41 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
 
   useEffect(() => {
     if (stateDataCheck) {
-      const checkOwners = owners?.find((item) => item?.code == stateDataCheck?.ownerShip?.code);
+      const checkOwners = owners.find((item) => item.code === stateDataCheck?.ownerShip?.code);
 
-      // const instOptions =
-      //   SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item.ownerShipCategory === stateDataCheck?.ownerShip?.code) || [];
-
-      // const checkInstitutionType = instOptions?.find((item) => item.code === stateDataCheck?.institutionType?.code);
-
-      // setInstType(findData);
       setValue("ownerShip", checkOwners);
-      setValue("institutionName", stateDataCheck?.institutionName);
-      // setValue("institutionType", checkInstitutionType);
     }
-  }, [stateDataCheck, SubOwnerShipCategory]);
+  }, [stateDataCheck]);
 
-  console.log("stateDataCheck", stateDataCheck);
+  const ownerShip = watch("ownerShip");
+  const isInstitution = ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE";
+
+  useEffect(() => {
+    if (!ownerShip || !stateDataCheck) return;
+
+    setValue("institutionName", stateDataCheck?.institutionName || "");
+
+    const instOptions = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item.ownerShipCategory === ownerShip?.code) || [];
+
+    const checkInstitutionType = instOptions.find(
+      (item) => item.code === stateDataCheck?.institutionType?.code || item.code === stateDataCheck?.institutionType
+    );
+
+    if (checkInstitutionType) {
+      setValue("institutionType", checkInstitutionType);
+    }
+
+    if (stateDataCheck?.owners?.length > 0) {
+      remove([...Array(fields.length).keys()]);
+
+      stateDataCheck.owners.forEach((owner) => {
+        append(owner);
+      });
+
+      // ✅ IMPORTANT
+      trigger();
+    }
+  }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -161,7 +181,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
         </div>
       </LabelFieldPair>
 
-      {(watch("ownerShip")?.code == "INSTITUTIONALGOVERNMENT" || watch("ownerShip")?.code == "INSTITUTIONALPRIVATE") && (
+      {isInstitution && (
         <React.Fragment>
           {/* Institution name */}
           <LabelFieldPair>
@@ -172,6 +192,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               <Controller
                 control={control}
                 name="institutionName"
+                defaultValue=""
                 rules={{
                   required: "Institution Name is required",
                   minLength: { value: 2, message: "Name must be at least 2 characters" },
@@ -212,7 +233,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
         </React.Fragment>
       )}
 
-      {watch("ownerShip") && (
+      {ownerShip && (
         <React.Fragment>
           {fields.map((item, index) => (
             <div
@@ -234,6 +255,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`owners.${index}.mobileNumber`}
+                  defaultValue={item?.mobileNumber || ""}
                   rules={{
                     required: "Mobile number is required",
                     pattern: {
@@ -254,6 +276,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`owners.${index}.name`}
+                  defaultValue={item?.name || ""}
                   rules={{ required: "Name required" }}
                   render={(props) => <TextInput {...props} />}
                 />
@@ -268,6 +291,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`owners.${index}.emailId`}
+                  defaultValue={item?.emailId || ""}
                   rules={{
                     required: "Email required",
                     pattern: {
@@ -285,7 +309,12 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               {/* Address */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("Address")}</CardLabel>
-                <Controller control={control} name={`owners.${index}.address`} render={(props) => <TextArea {...props} />} />
+                <Controller
+                  control={control}
+                  name={`owners.${index}.address`}
+                  defaultValue={item?.address || ""}
+                  render={(props) => <TextArea {...props} />}
+                />
               </LabelFieldPair>
 
               {/* checkBoxadress*/}

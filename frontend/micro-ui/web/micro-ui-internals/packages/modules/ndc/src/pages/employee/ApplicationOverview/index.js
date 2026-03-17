@@ -212,7 +212,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
+  const isCemp = user?.info?.roles.find((role) => role.code === "NDCCEMP")?.code;
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {

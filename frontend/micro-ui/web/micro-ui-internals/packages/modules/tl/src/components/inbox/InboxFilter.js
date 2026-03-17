@@ -118,13 +118,29 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
     }
   };
 
-  const handleAssignmentChange = (e, type) => {
+  // const handleAssignmentChange = (e, type) => {
+  //   if (e.target.checked) {
+  //     setTLFilters({ ...tlfilters, applicationStatus: [...tlfilters.applicationStatus, { statusid:type.statusid }] });
+  //   } else {
+  //     const filteredStatus = tlfilters.applicationStatus.filter((value) => {
+  //       return value.statusid !== type.statusid;
+  //     });
+  //     setTLFilters({ ...tlfilters, applicationStatus: filteredStatus });
+  //   }
+  // };
+    const handleAssignmentChange = (e, type) => {
     if (e.target.checked) {
-      setTLFilters({ ...tlfilters, applicationStatus: [...tlfilters.applicationStatus, { code: type.applicationstatus }] });
-    } else {
-      const filteredStatus = tlfilters.applicationStatus.filter((value) => {
-        return value.code !== type.applicationstatus;
+      setTLFilters({
+        ...tlfilters,
+        applicationStatus: [
+          ...tlfilters.applicationStatus,
+          { code: type.statusid, applicationstatus: type.applicationstatus, businessservice: type.businessservice }
+        ]
       });
+    } else {
+      const filteredStatus = tlfilters.applicationStatus.filter(
+        (value) => value.code !== type.statusid
+      );
       setTLFilters({ ...tlfilters, applicationStatus: filteredStatus });
     }
   };
@@ -183,7 +199,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
     );
   };
 
-  console.log("statuses is TLFilter ", statuses);
 
   return (
     <React.Fragment>
@@ -227,7 +242,8 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
                 let hasFilters = tlfilters?.applicationStatus?.length;
                 return (
                   <CheckBox
-                    key={index + "service"}
+                    // key={index + "service"}
+                    key={`${option.statusid}_${option.businessservice}`}
                     label={
                       t(`CS_COMMON_INBOX_${option.businessservice.toUpperCase()}`) +
                       " - " +
@@ -238,7 +254,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
                     //value={option.statusid}
                     checked={
                       hasFilters
-                        ? tlfilters.applicationStatus.filter((e) => e.code === option.applicationstatus).length !== 0
+                        ? tlfilters.applicationStatus.filter((e) => e.code === option.statusid).length !== 0
                           ? true
                           : false
                         : false

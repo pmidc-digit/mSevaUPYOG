@@ -67,18 +67,18 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   };
 
   return (
-    <div style={{ marginTop: "16px" }}>
+    <div className="mychallan-custom">
       <div>
         {header && (
-          <Header style={{ marginLeft: "8px" }}>
+          <Header>
             {t(header)} ({getChallanData?.challans?.length})
           </Header>
         )}
 
         {getChallanData?.challans?.map((bill, index) => {
           const checkAmount = Math.max(bill?.amount?.[0]?.amount || 0, bill?.challanAmount || 0);
-          const total = checkAmount ?? 0;
-          const waiver = bill?.feeWaiver ?? 0;
+          const total = checkAmount || 0;
+          const waiver = bill?.feeWaiver || 0;
           const finalAmount = total - waiver;
           return (
             <Card key={index}>
@@ -86,9 +86,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
               <KeyNote keyValue={t("UC_CHALLAN_NO")} note={bill?.challanNo || t("CS_NA")} />
               <KeyNote keyValue={t("STATUS")} note={t(bill.challanStatus)} />
               <KeyNote keyValue={t("UC_OWNER_NAME_LABEL")} note={t(`${bill.citizen?.name || t("CS_NA")}`)} />
-              <div className="action-button-myapplication"
-                
-              >
+              <div className="action-button-myapplication">
                 {
                   <Link to={`/digit-ui/citizen/challangeneration/application/${bill?.challanNo}/${bill?.tenantId}`}>
                     <SubmitBar
@@ -105,12 +103,10 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
           );
         })}
 
-        {getChallanData?.challans?.length === 0 && !loader && (
-          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>
-        )}
+        {getChallanData?.challans?.length === 0 && !loader && <p className="challan-load-message">{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>}
 
         {getChallanData?.challans?.length !== 0 && getChallanData?.totalCount > t1 && (
-          <div style={{ marginLeft: "16px", marginTop: "16px" }}>
+          <div className="challan-load-message">
             <span className="link" style={{ cursor: "pointer", color: "#007bff" }} onClick={handleLoadMore}>
               {t("CHB_LOAD_MORE_MSG")}
             </span>

@@ -14,7 +14,6 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
     if (!validateDocuments(currentStepData)) {
       setError(t("Please upload all mandatory documents."));
@@ -35,7 +34,6 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
 
     const uploadedTypes = uploadedDocs.map((doc) => doc?.documentType);
 
-    console.log("Uploaded document types: ", uploadedTypes);
 
     const allRequiredPresent = requiredTypes.every((type) => uploadedTypes.includes(type));
 
@@ -43,7 +41,6 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }

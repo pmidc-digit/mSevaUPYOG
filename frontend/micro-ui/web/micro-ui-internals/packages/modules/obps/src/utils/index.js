@@ -51,15 +51,13 @@ export const EmployeeData = async (tenantId, consumerCode) => {
         name: officerRaw?.user?.name,
         department: officerAssignment?.department,
         designation: officerAssignment?.designation,
-
       }
     : null;
 
   return { officer };
 };
 
-export const getNOCSanctionLetter = async (application, t,EmpData) => {
-  
+export const getNOCSanctionLetter = async (application, t, EmpData) => {
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",
@@ -69,9 +67,7 @@ export const getNOCSanctionLetter = async (application, t,EmpData) => {
   const nocDetails = application?.nocDetails?.additionalDetails || {};
   const site = nocDetails?.siteDetails || {};
 
-  const submittedOnDate = nocDetails?.SubmittedOn
-    ? new Date(Number(nocDetails?.SubmittedOn))?.toLocaleDateString("en-GB")
-    : "";
+  const submittedOnDate = nocDetails?.SubmittedOn ? new Date(Number(nocDetails?.SubmittedOn))?.toLocaleDateString("en-GB") : "";
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -99,9 +95,8 @@ export const getNOCSanctionLetter = async (application, t,EmpData) => {
       floorNo: getFloorLabel(idx),
     }));
   } else {
-    floorArea = (site?.floorArea && site?.floorArea?.length > 0)
-    ? site?.floorArea?.map(() => ({ floorNo: "", value: "" }))
-    : [{ floorNo: "", value: "" }];
+    floorArea =
+      site?.floorArea && site?.floorArea?.length > 0 ? site?.floorArea?.map(() => ({ floorNo: "", value: "" })) : [{ floorNo: "", value: "" }];
     basementArea = " ";
     totalFloorArea = " ";
   }
@@ -125,23 +120,23 @@ export const getNOCSanctionLetter = async (application, t,EmpData) => {
   return {
     Noc: [
       {
-       ...application, 
-      nocDetails: {
-        ...application.nocDetails,
-        additionalDetails: {
-          ...application.nocDetails?.additionalDetails,
-          SubmittedOn: submittedOnDate,
-          siteDetails: {
-            ...site,
-            floorArea,
-            basementArea,
-            totalFloorArea,
+        ...application,
+        nocDetails: {
+          ...application.nocDetails,
+          additionalDetails: {
+            ...application.nocDetails?.additionalDetails,
+            SubmittedOn: submittedOnDate,
+            siteDetails: {
+              ...site,
+              floorArea,
+              basementArea,
+              totalFloorArea,
+            },
           },
         },
-      },
-      currentDate,
-      sanctionTerms,
-      ...EmpData,
+        currentDate,
+        sanctionTerms,
+        ...EmpData,
       },
     ],
   };
@@ -159,8 +154,6 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
     });
   return fileURL;
 };
-
-
 
 export async function getBase64FromUrl(url) {
   try {
@@ -181,9 +174,10 @@ export async function getBase64FromUrl(url) {
   }
 }
 
-
 export async function getBase64Img(fileStoreId, state) {
-  if (!fileStoreId || fileStoreId.length === 0) { return null; }
+  if (!fileStoreId || fileStoreId.length === 0) {
+    return null;
+  }
   try {
     let signUrl = null;
 
@@ -193,7 +187,7 @@ export async function getBase64Img(fileStoreId, state) {
     }
 
     const baseUrl = window.location.origin;
-    console.log('baseUrl', baseUrl);
+    console.log("baseUrl", baseUrl);
 
     let finalUrl;
     if (signUrl?.includes("filestore")) {
@@ -203,19 +197,16 @@ export async function getBase64Img(fileStoreId, state) {
       // external URL, just use it directly
       finalUrl = signUrl;
     }
-    console.log('finalUrl', finalUrl);
+    console.log("finalUrl", finalUrl);
 
-    const base64Image = signUrl
-      ? await getBase64FromUrl(finalUrl)
-      : baseUrl;
+    const base64Image = signUrl ? await getBase64FromUrl(finalUrl) : baseUrl;
 
     return base64Image;
   } catch (error) {
     console.error("Error in getBase64Img:", error);
     return null; // return a safe fallback
   }
-};
-
+}
 
 export const convertToNocObject = (data, datafromflow) => {
   let formData = { Noc: data };
@@ -252,7 +243,6 @@ export const getBPAFormDataNewEDCR = async (data, edcrNumber, history, t) => {
   console.log(data, "PPPP");
   const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: edcrNumber });
   const APIScrutinyDetails = edcrResponse?.edcrDetail[0];
-
 
   data.data = {
     scrutinyNumber: { edcrNumber: APIScrutinyDetails?.edcrNumber },
@@ -690,7 +680,7 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
         ? data?.landInfo
         : {
             ...data?.landInfo,
-            ownershipCategory: getOwnerShipCategory(data, isOCBPA)?.code ?? getOwnerShipCategory(data, isOCBPA),
+            ownershipCategory: getOwnerShipCategory(data, isOCBPA)?.code || getOwnerShipCategory(data, isOCBPA),
             owners: getBPAOwners(data, isOCBPA),
             unit: getBPAUnit(data),
           },
@@ -1034,7 +1024,7 @@ export const getBusinessServices = (businessService, status, applicationType) =>
     billBusinessService = "BPA.NC_SAN_FEE";
   } else if (businessService === "BPA") {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
-  // } else if (businessService === "BPA_OC") {
+    // } else if (businessService === "BPA_OC") {
   } else if (applicationType === "BUILDING_OC_PLAN_SCRUTINY") {
     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
   } else {
@@ -1081,37 +1071,75 @@ export const printPdf = (blob) => {
   }
 };
 
-export const amountToWords =(num) =>{
+export const amountToWords = (num) => {
   if (num == null || num === "") return "Zero Rupees";
-  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
-                "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
-                "Seventeen","Eighteen","Nineteen"],
-        tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"],
-        units = ["","Thousand","Lakh","Crore"];
+  const ones = [
+      "",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Seven",
+      "Eight",
+      "Nine",
+      "Ten",
+      "Eleven",
+      "Twelve",
+      "Thirteen",
+      "Fourteen",
+      "Fifteen",
+      "Sixteen",
+      "Seventeen",
+      "Eighteen",
+      "Nineteen",
+    ],
+    tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
+    units = ["", "Thousand", "Lakh", "Crore"];
 
-  const chunk = n => n < 20 ? ones[n] :
-                 n < 100 ? tens[Math.floor(n/10)] + (n%10? " " + ones[n%10]:"") :
-                 ones[Math.floor(n/100)] + " Hundred" + (n%100? " " + chunk(n%100):"");
+  const chunk = (n) =>
+    n < 20
+      ? ones[n]
+      : n < 100
+      ? tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "")
+      : ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + chunk(n % 100) : "");
 
-  const toWords = n => {
+  const toWords = (n) => {
     if (!n) return "";
-    let parts = [n%1000], res = "";
-    n = Math.floor(n/1000);
-    while(n){ parts.push(n%100); n=Math.floor(n/100); }
-    for(let j=parts.length-1;j>=0;j--) if(parts[j]) res += chunk(parts[j])+" "+units[j]+" ";
+    let parts = [n % 1000],
+      res = "";
+    n = Math.floor(n / 1000);
+    while (n) {
+      parts.push(n % 100);
+      n = Math.floor(n / 100);
+    }
+    for (let j = parts.length - 1; j >= 0; j--) if (parts[j]) res += chunk(parts[j]) + " " + units[j] + " ";
     return res.trim();
   };
 
-  let [r,p] = num.toString().split(".").map(x=>+x||0);
-  return (r? toWords(r)+" Rupees":"") + (p? (r?" and ":"")+toWords(p)+" Paise":"") || "Zero Rupees";
-}
+  let [r, p] = num
+    .toString()
+    .split(".")
+    .map((x) => +x || 0);
+  return (r ? toWords(r) + " Rupees" : "") + (p ? (r ? " and " : "") + toWords(p) + " Paise" : "") || "Zero Rupees";
+};
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, licenseType, ulbType, mode = "download", pdfKey = "bpa-receipt") => {
-  console.log('license needed', licenseType)
+export const downloadAndPrintReciept = async (
+  bussinessService,
+  consumerCode,
+  tenantId,
+  payments,
+  licenseType,
+  ulbType,
+  mode = "download",
+  pdfKey = "bpa-receipt"
+) => {
+  console.log("license needed", licenseType);
   const fee = payments?.[0]?.totalAmountPaid;
 
-  const amountinwords = amountToWords(fee)
-  const updatedPayments = payments.map(p => ({ ...p, licenseType,amountinwords,ulbType }));
+  const amountinwords = amountToWords(fee);
+  const updatedPayments = payments.map((p) => ({ ...p, licenseType, amountinwords, ulbType }));
   let response = null;
   console.log("payments", payments);
   if (payments[0]?.fileStoreId) {
@@ -1200,7 +1228,7 @@ export const scrutinyDetailsData = async (edcrNumber, tenantId) => {
 };
 
 export const oldscrutinyDetailsData = async (edcrNumber, tenantId) => {
-  const scrutinyDetails = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: edcrNumber });  
+  const scrutinyDetails = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: edcrNumber });
   return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
 };
 
@@ -1287,40 +1315,45 @@ export const getDocsFromFileUrls = (fileUrls = {}) => {
     }));
 };
 
-export const businessServiceListLayout = (isCode= false) => {
-    let isSearchScreen = window.location.href.includes("/search");
-    const availableBusinessServices = [{
-        code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
-        active: true,
-        roles: ["FIRE_NOC_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
-    }, {
-        code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
-        active: true,
-        roles: ["AIRPORT_AUTHORITY_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
-    }];
+export const businessServiceListLayout = (isCode = false) => {
+  let isSearchScreen = window.location.href.includes("/search");
+  const availableBusinessServices = [
+    {
+      code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+      active: true,
+      roles: ["FIRE_NOC_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+    },
+    {
+      code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+      active: true,
+      roles: ["AIRPORT_AUTHORITY_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
+    },
+  ];
 
-    const newAvailableBusinessServices = [];
-    const loggedInUserRoles = Digit.UserService.getUser().info.roles;
-    availableBusinessServices.map(({ roles }, index) => {
-        roles.map((role) => {
-            loggedInUserRoles.map((el) => {
-                if (el.code === role) {
-                    isCode ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code) : newAvailableBusinessServices.push(availableBusinessServices?.[index])
-                }
-            })
-        })
+  const newAvailableBusinessServices = [];
+  const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+  availableBusinessServices.map(({ roles }, index) => {
+    roles.map((role) => {
+      loggedInUserRoles.map((el) => {
+        if (el.code === role) {
+          isCode
+            ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code)
+            : newAvailableBusinessServices.push(availableBusinessServices?.[index]);
+        }
+      });
     });
+  });
 
-    return newAvailableBusinessServices;
-}
- //Convert date from YYYY-MM-DD to DD/MM/YYYY
+  return newAvailableBusinessServices;
+};
+//Convert date from YYYY-MM-DD to DD/MM/YYYY
 export const formatDate = (dateString) => {
   if (!dateString) return "";
   const [year, month, day] = dateString.split("-");
   return `${day}/${month}/${year}`;
- };
+};
 
 export const formatDateForInput = (dateString) => {
   if (!dateString) return "";
@@ -1332,30 +1365,30 @@ export const formatDateForInput = (dateString) => {
 };
 
 export const convertToDDMMYYYY = (dateString) => {
-     if (!dateString) return "";
+  if (!dateString) return "";
 
-     const parts = dateString.split("-");
-     if (parts.length !== 3) return dateString; // fallback
+  const parts = dateString.split("-");
+  if (parts.length !== 3) return dateString; // fallback
 
-     const [a, b, c] = parts;
+  const [a, b, c] = parts;
 
-     // Case 1: already dd-mm-yyyy
-     if (a.length === 2 && c.length === 4) {
-       return dateString;
-     }
+  // Case 1: already dd-mm-yyyy
+  if (a.length === 2 && c.length === 4) {
+    return dateString;
+  }
 
-     // Case 2: yyyy-mm-dd → dd-mm-yyyy
-     if (a.length === 4) {
-       return `${c}-${b}-${a}`;
-     }
+  // Case 2: yyyy-mm-dd → dd-mm-yyyy
+  if (a.length === 4) {
+    return `${c}-${b}-${a}`;
+  }
 
-     // Case 3: mm-dd-yyyy → dd-mm-yyyy
-     if (c.length === 4 && a.length === 2 && b.length === 2) {
-       return `${b}-${a}-${c}`;
-     }
+  // Case 3: mm-dd-yyyy → dd-mm-yyyy
+  if (c.length === 4 && a.length === 2 && b.length === 2) {
+    return `${b}-${a}-${c}`;
+  }
 
-     // Fallback: return original
-     return dateString;
+  // Fallback: return original
+  return dateString;
 };
 
 export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, limit = null } = {}) {
@@ -1370,23 +1403,23 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
       const prev = prevEstimates[th.taxHeadCode];
-      const curr = th?.estimateAmount ?? null;
+      const curr = th?.estimateAmount || null;
       if (prev !== curr) anyChanged = true;
     });
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
-      prevEstimates[th.taxHeadCode] = th?.estimateAmount ?? null;
+      prevEstimates[th.taxHeadCode] = th?.estimateAmount || null;
     });
     if (!anyChanged) return;
     estimates.forEach((th) => {
       if (!th?.taxHeadCode) return;
       map[th.taxHeadCode] = map[th.taxHeadCode] || [];
       map[th.taxHeadCode].push({
-        who: calc?.updatedBy ?? null,
-        estimateAmount: th?.estimateAmount ?? null,
-        remarks: th?.remarks ?? null,
-        isLatest: calc?.isLatest ?? false,
-        when: calc?.when ?? null,
+        who: calc?.updatedBy || null,
+        estimateAmount: th?.estimateAmount || null,
+        remarks: th?.remarks || null,
+        isLatest: calc?.isLatest || false,
+        when: calc?.when || null,
       });
     });
   });
@@ -1397,4 +1430,15 @@ export function buildFeeHistoryByTax(calculations = [], { newestFirst = true, li
     }
   });
   return map;
+}
+
+export function formatDuration(totalTimeMs) {
+  const totalSeconds = Math.floor(totalTimeMs / 1000);
+
+  const days = Math.floor(totalSeconds / (24 * 3600));
+  const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return { days, hours, minutes, seconds };
 }

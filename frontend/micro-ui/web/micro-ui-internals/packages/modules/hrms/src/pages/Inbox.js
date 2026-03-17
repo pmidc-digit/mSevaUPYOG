@@ -6,7 +6,7 @@ import MobileInbox from "../components/inbox/MobileInbox";
 
 const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filterComponent, isInbox }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { isLoading: isLoading, Errors, data: res } = Digit.Hooks.hrms.useHRMSCount(tenantId);
+  // const { isLoading: isLoading, Errors, data: res } = Digit.Hooks.hrms.useHRMSCount(tenantId);
 
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
@@ -29,9 +29,9 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     isupdate
   );
 
-  useEffect(() => {
-    // setTotalReacords(res?.EmployeCount?.totalEmployee);
-  }, [res]);
+  // useEffect(() => {
+  //   // setTotalReacords(res?.EmployeCount?.totalEmployee);
+  // }, [res]);
 
   useEffect(() => {}, [hookLoading, rest]);
 
@@ -61,15 +61,21 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     setSortParams(args);
   }, []);
 
+  // const handlePageSizeChange = (e) => {
+  //   setPageSize(Number(e.target.value));
+  // };
   const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-  };
+  const newPageSize = Number(e.target.value);
+  setPageSize(newPageSize);
+  setPageOffset(0);  
+};
 
   const getSearchFields = () => {
     return [
       {
         label: t("HR_NAME_LABEL"),
         name: "names",
+        placeholder: t("HR_NAME_PLACEHOLDER") || "Enter Employee Name",
       },
       {
         label: t("HR_MOB_NO_LABEL"),
@@ -78,17 +84,24 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
         pattern: "[6-9][0-9]{9}",
         title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
         componentInFront: "+91",
+        placeholder: t("HR_PHONE_PLACEHOLDER") || "Enter Mobile Number",
       },
       {
         label: t("HR_EMPLOYEE_ID_LABEL"),
         name: "codes",
+        placeholder: t("HR_EMPLOYEE_ID_PLACEHOLDER") || "Enter Employee ID",
+      },
+      {
+        label: t("HR_EMPLOYEE_DESG_LABEL"),
+        name: "designations",
+        type: "dropdown",
       },
     ];
   };
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
 
   if (data?.length !== null) {
     if (isMobile) {
@@ -121,7 +134,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
       );
     } else {
       return (
-        <div style={{ overflowX: "auto" }}>
+        <div className="hrms-overflow--x-auto">
           {isInbox && <Header>{t("HR_HOME_SEARCH_RESULTS_HEADING")}</Header>}
           <DesktopInbox
             businessService={businessService}

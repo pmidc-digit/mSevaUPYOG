@@ -13,9 +13,14 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
   // delete
-  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
+  // const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-  const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
+  const [propertyId, setPropertyId] = useState(
+    new URLSearchParams(useLocation().search).get("propertyId")
+    || formData?.TraidDetails?.cpt?.details?.propertyId
+    || ""
+  );
+ const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
   // const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
   // const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
 
@@ -32,7 +37,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   );
 
   useEffect(() => {
-    console.log("formData in step 2: ", formData);
   }, []);
 
   const closeToast = () => {
@@ -44,53 +48,78 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const { ownershipCategory, owners } = data || {};
     const missingFields = [];
 
-    if (!ownershipCategory?.value) {
+    // Support both .code and .value for ownershipCategory
+    const ownershipCode = ownershipCategory?.code || ownershipCategory?.value;
+
+    if (!ownershipCode) {
       missingFields.push("Ownership Category");
       return missingFields;
     }
 
-    if (!owners || owners.length === 0) {
+    // Filter out empty/default owners that may appear from back-navigation remounts
+    const validOwners = (owners || []).filter(
+      (o) => o.name || o.mobileNumber || o.fatherOrHusbandName
+    );
+
+    if (validOwners.length === 0) {
       missingFields.push("At least one Owner");
       return missingFields;
     }
 
-    const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
-    const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
+    const isSingleOwner = ownershipCode === "INDIVIDUAL.SINGLEOWNER";
+    const isMultipleOwner = ownershipCode === "INDIVIDUAL.MULTIPLEOWNERS";
 
     const validateOwner = (owner, index = 1) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
       if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.dob) {
+        missingFields.push(`Date of Birth (Owner ${index})`);
+      } else {
+        const today = new Date();
+        const dob = new Date(owner.dob);
+        const age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())));
+        if (isUnder18) missingFields.push(`Owner ${index} must be at least 18 years old`);
+      }
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };
 
     if (isSingleOwner) {
-      if (owners.length !== 1) {
-        missingFields.push("Only one owner allowed for SINGLEOWNER");
-      } else {
-        validateOwner(owners[0], 1);
-      }
+      // For SINGLEOWNER, validate the first valid owner; ignore extra empty owners from remount
+      validateOwner(validOwners[0], 1);
     } else if (isMultipleOwner) {
-      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+      validOwners.forEach((owner, index) => validateOwner(owner, index + 1));
     } else {
       // For other ownership types like INSTITUTIONAL, apply same validations for now
-      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+      validOwners.forEach((owner, index) => validateOwner(owner, index + 1));
     }
 
     return missingFields;
   };
 
   const goNext = async (data) => {
-    console.log("Submitting full form data: ", formData);
 
     const { OwnerDetails } = formData || {};
+
 
     // if (!validateOwnerDetails(OwnerDetails)) {
     //   setError(t("Please fill all owner mandatory details correctly."));
     //   setShowToast(true);
     //   return;
     // }
+
+     if (
+      OwnerDetails?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" &&
+      (!OwnerDetails?.owners || OwnerDetails.owners.length < 2)
+    ) {
+      setError(t("TL_ERROR_MULTIPLE_OWNER") || "Please add at least 2 owners for Multiple Ownership!");
+      setShowToast(true);
+      return;
+    }
+
     const missingFields = validateOwnerDetails(OwnerDetails);
 
     if (missingFields.length > 0) {
@@ -100,10 +129,9 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     const res = await onSubmit(formData);
-    console.log("API response: ", res);
+    
 
-    if (res) {
-      console.log("Submission successful, moving to next step.");
+    if (res === true) {
       onGoNext();
     } else {
       console.error("Submission failed, not moving to next step.");
@@ -112,7 +140,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data) => {
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
-    console.log("sample_formData: ", data);
+;
 
     const { TraidDetails, OwnerDetails } = data;
 
@@ -152,11 +180,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (TraidDetails?.accessories?.length > 0) {
       TraidDetails.accessories.map((item) => {
         if (item?.accessoryCategory?.code) {
+          const hasUom = item.accessoryCategory.uom ? true : false;
           accessories.push({
             accessoryCategory: item.accessoryCategory.code || null,
             uom: item.accessoryCategory.uom || null,
             count: Number(item.count) || null,
-            uomValue: Number(item.uomValue) || null,
+            uomValue: hasUom && item.uomValue ? Number(item.uomValue) : null,
           });
         }
       });
@@ -175,13 +204,15 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     let address = {};
     if (TraidDetails?.cpt?.details?.address) {
-      address.city = TraidDetails.cpt.details.address.city || null;
+      address.city = TraidDetails.cpt.details.address.tenantId || null;
       address.locality = { code: TraidDetails.cpt.details.address.locality?.code || null };
       if (TraidDetails.cpt.details.address.doorNo || TraidDetails.address?.doorNo)
         address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address.doorNo || null;
       if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
         address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
       if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
+      if (TraidDetails.address?.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address?.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
     } else if (TraidDetails?.address) {
       address.city = TraidDetails.address.city?.code || null;
       if (TraidDetails?.address?.locality?.code) {
@@ -190,6 +221,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
       if (TraidDetails.address.street) address.street = TraidDetails.address.street;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
+      if (TraidDetails.address.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
     }
     if (TraidDetails.address?.geoLocation?.latitude) {
       address.latitude = TraidDetails.address?.geoLocation?.latitude;
@@ -200,17 +233,45 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (OwnerDetails?.owners?.length > 0) {
       OwnerDetails.owners.map((owner, index) => {
         let obj = {};
-        obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
-        obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };
+        // ➡️ Safely convert DOB — handle YYYY-MM-DD string, epoch number, or already-epoch string
+        const rawDob = owner?.dob;
+        if (rawDob) {
+          if (typeof rawDob === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDob)) {
+            obj.dob = convertDateToEpoch(rawDob);
+          } else if (typeof rawDob === "number") {
+            obj.dob = rawDob; // already epoch
+          } else {
+            obj.dob = null;
+          }
+        } else {
+          obj.dob = null;
+        }
         if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
         if (owner.gender?.code) obj.gender = owner.gender.code;
-        if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
-        if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
+        if (owner.mobileNumber) obj.mobileNumber = String(owner.mobileNumber);
+        if (owner.name) obj.name = owner.name;
         if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
         obj.permanentAddress = obj.permanentAddress || null;
-        if (owner.relationship) obj.relationship = owner.relationship?.code;
+        if (owner.correspondenceAddress) obj.correspondenceAddress = owner.correspondenceAddress;
+        if (owner.relationship) {
+          const rel = owner.relationship;
+          let relCode = "";
+          if (typeof rel === "string") {
+            relCode = rel;
+          } else if (rel && typeof rel === "object") {
+            // Handle nested objects from back navigation: {code: {code: "Father"}} or {code: "Father"}
+            let temp = rel;
+            while (temp && typeof temp === "object" && temp.code !== undefined) {
+              temp = temp.code;
+            }
+            relCode = typeof temp === "string" ? temp : (rel.i18nKey || rel.name || JSON.stringify(rel));
+          }
+          obj.relationship = relCode || null;
+        }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
+        if (owner.altContactNumber) obj.altContactNumber = owner.altContactNumber;
+        if (owner.pan) obj.pan = owner.pan;
         owners.push(obj);
       });
     }
@@ -226,8 +287,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code || "";
     let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
     let validityYears = TraidDetails?.validityYears?.code || 1;
+    let oldReceiptNo = TraidDetails?.tradedetils?.[0]?.oldReceiptNo || "";
 
-    console.log("trade type");
 
     let formData = {
       action: "INITIATE",
@@ -248,6 +309,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
+    if (oldReceiptNo) formData.oldLicenseNumber = oldReceiptNo;
     if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
     if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
     if (accessories?.length > 0) formData.tradeLicenseDetail.accessories = accessories;
@@ -260,34 +322,34 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (subOwnerShipCategory) formData.tradeLicenseDetail.subOwnerShipCategory = subOwnerShipCategory;
 
     if (OwnerDetails?.owners?.length && subOwnerShipCategory.includes("INSTITUTIONAL")) {
-      formData.tradeLicenseDetail.institution = {
-        designation: OwnerDetails.owners[0]?.designation,
-        instituionName: OwnerDetails.owners[0]?.instituionName,
-        name: OwnerDetails.owners[0]?.name,
-        contactNo: OwnerDetails.owners[0]?.altContactNumber,
-      };
+      let institutionObj = {};
+      if (OwnerDetails.owners[0]?.designation) institutionObj.designation = OwnerDetails.owners[0].designation;
+      formData.tradeLicenseDetail.institution = institutionObj;
     }
 
     if (TraidDetails?.cpt) {
-      formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
+      // formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
+      formData.propertyId = TraidDetails.cpt.details?.propertyId;
       formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
     }
 
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
-    console.log("formData in step 2: ", formData);
     setLoader(true);
     try {
       const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
       setLoader(false);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-        console.log("response in step 2: ", response.Licenses[0]);
+       
       }
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {
       setLoader(false);
-      return error;
+      const errMsg = error?.response?.data?.Errors?.[0]?.message || error?.message || t("TL_CREATE_ERROR");
+      setError(errMsg);
+      setShowToast(true);
+      return false;
     }
   };
 
@@ -296,7 +358,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
@@ -313,7 +374,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       }
     }, [showToast]);
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

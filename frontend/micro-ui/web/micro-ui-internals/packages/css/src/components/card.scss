@@ -273,6 +273,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     transform: translateY(-2px);
@@ -298,6 +302,50 @@
     font-size: 12px;
     color: white;
     line-height: 40px;
+  }
+}
+
+/* Responsive card-link for tablets and mobile */
+@media only screen and (max-width: 1024px) {
+  .card-link {
+    height: 36px;
+    width: 160px;
+    font-size: 12px;
+    padding: 0 10px;
+
+    header {
+      line-height: 36px;
+      font-size: 11px;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .card-link {
+    height: 34px;
+    width: 145px;
+    font-size: 11px;
+    padding: 0 8px;
+
+    header {
+      line-height: 34px;
+      font-size: 10px;
+    }
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .card-link {
+    height: 32px;
+    width: 120px;
+    font-size: 10px;
+    padding: 0 6px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+
+    header {
+      line-height: 32px;
+      font-size: 9px;
+    }
   }
 }
 

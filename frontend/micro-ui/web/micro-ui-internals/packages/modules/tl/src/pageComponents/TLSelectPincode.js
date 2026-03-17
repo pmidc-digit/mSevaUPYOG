@@ -1,4 +1,5 @@
 import { FormStep, TextInput, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import _ from "lodash";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
@@ -46,7 +47,6 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const [pincodeServicability, setPincodeServicability] = useState(null);
 
   useEffect(() => {
-    console.log("formValue in useEffect of TLSelectPincode ", formValue);
 
     const keys = Object.keys(formValue);
     const part = {};
@@ -58,15 +58,28 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     }
   }, [localFormData]);
 
-  // useEffect(() => {
-  //   if (formData?.address?.pincode) {
-  //     setPincode(formData.address.pincode);
-  //   }
-  // }, [formData?.address?.pincode]);
+  // Sync pincode from property search results (employee new application)
+  useEffect(() => {
+    const propertyPincode = formData?.cpt?.details?.address?.pincode;
+    if (!propertyPincode) return;
+    const currentValue = getValues("pincode");
+    if (currentValue === propertyPincode) return;
+    setValue("pincode", propertyPincode);
+    setPincode(propertyPincode);
+    setLocalFormData((prev) => ({ ...prev, pincode: propertyPincode }));
+  }, [formData?.cpt?.details?.address?.pincode]);
 
-  // useEffect(() => {
-  //   onSelect(config?.key?.pincode, pincode);
-  // },[pincode])
+  // Sync pincode from formData.address on renewal/edit/send-back
+  useEffect(() => {
+    const addressPincode = formData?.address?.pincode;
+    if (!addressPincode) return;
+    const currentValue = getValues("pincode");
+    if (currentValue === addressPincode) return;
+    if (formData?.cpt?.details?.address?.pincode) return; // property takes priority
+    setValue("pincode", addressPincode);
+    setPincode(addressPincode);
+    setLocalFormData((prev) => ({ ...prev, pincode: addressPincode }));
+  }, [formData?.address?.pincode]);
 
   function onChange(e) {
     setPincode(e.target.value);
@@ -94,7 +107,6 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     // Check if pincode exists in tenant master data
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == data?.pincode));
     if (foundValue) {
-      console.log("Pincode found in master data:", data.pincode);
       setPincodeServicability(null);
       onSelect(config.key.pincode, { pincode: data.pincode });
     } else {
@@ -108,25 +120,17 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
 
   if (userType === "employee") {
     return inputs?.map((input, index) => {
+      const isDisabledByProperty = !!formData?.cpt?.details?.address?.pincode;
+      const isFieldDisabled = isDisabledByProperty || isRenewal;
+
       return (
         <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller">{`${t(input.label)}`}</CardLabel>
+          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t(input.label)}`}</CardLabel>
           <div className="form-field">
-            {/* <TextInput 
-              key={input.name} 
-              value={formData?.cpt?.details?.address?.pincode || pincode} 
-              onChange={onChange}
-              disable={formData?.cpt?.details || isRenewal}
-              {...input.validation} 
-              autoFocus={presentInModifyApplication} 
-              // isMandatory={true}
-              // ValidationRequired={true}
-              // validation={type="number"}
-            /> */}
             <Controller
               control={control}
               name={input.name}
-              defaultValue={pincode || formData?.cpt?.details?.address?.pincode}
+              defaultValue={pincode || formData?.cpt?.details?.address?.pincode || ""}
               render={(props) => (
                 <TextInput
                   id={input.name}
@@ -135,13 +139,23 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
                   maxlength={6}
                   onChange={(e) => {
                     props.onChange(e.target.value);
-                    //onChange(e);
                     setLocalFormData((prev) => ({
                       ...prev,
                       [input.name]: e.target.value,
                     }));
                   }}
+                  disable={isFieldDisabled}
                   placeholder={t(`${input.placeholder}`)}
+                  style={
+                    isFieldDisabled
+                      ? {
+                          color: "#505A5F",
+                          opacity: 1,
+                          WebkitTextFillColor: "#505A5F",
+                          backgroundColor: "#FFFFFF",
+                        }
+                      : {}
+                  }
                 />
               )}
             />

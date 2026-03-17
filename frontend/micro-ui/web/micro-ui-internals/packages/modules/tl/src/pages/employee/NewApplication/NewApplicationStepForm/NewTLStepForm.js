@@ -87,7 +87,6 @@ const NewTLStepForm = () => {
     dispatch(RESET_tlNewApplicationForm());
   }, []);
 
-  // console.log("formData",formData);
 
   const handleSubmit = () => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
@@ -100,7 +99,6 @@ const NewTLStepForm = () => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  // console.log("formState: ",formState);
   return (
     <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

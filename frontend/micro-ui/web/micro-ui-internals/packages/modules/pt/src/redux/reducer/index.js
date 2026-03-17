@@ -3,7 +3,7 @@ import PTNewApplicationFormReducer from "./PTNewApplicationFormReducer";
 
 const getRootReducer = () =>
   combineReducers({
-    PTNewApplicationForm: PTNewApplicationFormReducer,
+    PTNewApplicationFormReducer,
   });
 
 export default getRootReducer;

@@ -97,11 +97,11 @@ const LayoutStepperForm = () => {
   const stateId = Digit.ULBService.getStateId();
   const applicationNo = useQueryParam("applicationNo");
 
-  console.log("applicationNo:", applicationNo);
+  //console.log("applicationNo:", applicationNo);
 
   const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo }, tenantId, { enabled: !!applicationNo });
 
-  console.log("API data fetched for applicationNo:", applicationNo, data);
+  //console.log("API data fetched for applicationNo:", applicationNo, data);
 
   const applicationAppliedUnderOptions = [
     { code: "PAPRA", name: "PAPRA", i18nKey: "PAPRA" },
@@ -153,6 +153,7 @@ const LayoutStepperForm = () => {
     panDocumentUploadedFiles: primaryOwner?.additionalDetails?.panDocument || "",
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
+    aplicantType: primaryOwner?.additionalDetails?.aplicantType,
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -165,20 +166,20 @@ const LayoutStepperForm = () => {
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
   };
 
-  useEffect(() => {
-      if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-        const zoneName = siteDetails?.zone?.name || siteDetails?.zone
-        const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
-        if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
-          dispatch(
-            UPDATE_LayoutNewApplication_FORM("siteDetails", {
-              ...formData.siteDetails,
-              zone: matchedZone,
-            })
-          );
-        }
-      }
-    }, [fetchedLocalities, siteDetails?.zone]);
+  // useEffect(() => {
+  //     if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+  //       const zoneName = siteDetails?.zone?.name || siteDetails?.zone
+  //       const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
+  //       if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
+  //         dispatch(
+  //           UPDATE_LayoutNewApplication_FORM("siteDetails", {
+  //             ...formData.siteDetails,
+  //             zone: matchedZone,
+  //           })
+  //         );
+  //       }
+  //     }
+  //   }, [fetchedLocalities, siteDetails?.zone]);
   
     const options = [
       { code: "YES", i18nKey: "YES" },
@@ -205,6 +206,26 @@ const LayoutStepperForm = () => {
           value: `${genderDetails.code}`,
         });
       });
+  // const convertToISODate = (dateStr) => {
+  //   const [dd, mm, yyyy] = dateStr.split("-");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // };
+
+  const convertToISODate = (dateStr) => {
+  if (!dateStr) return "";
+
+  const parts = dateStr.split("-");
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[0].length === 4) {
+    return dateStr;
+  }
+
+  // dd-mm-yyyy → yyyy-mm-dd
+  const [dd, mm, yyyy] = parts;
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 
   useEffect(() => {
       // Reset form only once when component mounts
@@ -218,7 +239,7 @@ const LayoutStepperForm = () => {
       // if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
       if (!isBuildingTypeLoading && !isBuildingCategoryLoading && !isRoadTypeLoading && !isLayoutTypeLoading && !isMdmsLoading && !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
         isDataInitialized.current = true;
-        console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
+        //console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
         
         
         const formattedDocuments = {
@@ -229,6 +250,7 @@ const LayoutStepperForm = () => {
               documentUid: doc?.documentUid || "",
               documentAttachment: doc?.documentAttachment || "",
               filestoreId: doc?.uuid || "",
+              layoutId: doc?.layoutId || null
             })),
           },
         };
@@ -282,6 +304,7 @@ const LayoutStepperForm = () => {
             ) : "",
           applicantGender: menu?.find((obj) => obj?.code === applicantDetails?.applicantGender?.code || obj?.code === applicantDetails?.applicantGender),
           panNumber: applicantDetails?.panNumber || "",
+          aplicantType: applicantDetails?.aplicantType,
           // Professional details (if applicable)
           professionalName: applicantDetails?.professionalName || "",
           professionalEmailId: applicantDetails?.professionalEmailId || "",
@@ -315,12 +338,13 @@ const LayoutStepperForm = () => {
           // ),
           isCluRequired: options?.find((obj) => obj?.code === siteDetails?.isCluRequired?.code || obj?.code === siteDetails?.isCluRequired),
           applicationAppliedUnder: applicationAppliedUnderOptions?.find((obj) => obj?.code === siteDetails?.applicationAppliedUnder?.code || obj?.code === siteDetails?.applicationAppliedUnder),
+          vasikaDate: convertToISODate(siteDetails?.vasikaDate),
           // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
           // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),
           // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),
           // specificationIsSiteUnderMasterPlan: options.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan || {})),
         };
-        console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
+        //console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
   
         dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
         dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
@@ -335,7 +359,7 @@ const LayoutStepperForm = () => {
         // Index 0 = primary owner (used by form but not displayed in UI)
         // Index 1+ = additional owners (displayed in UI)
         const ownersFromApi = layoutObject?.owners || [];
-        console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
+        //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
         
         // Helper function to format DOB
         const formatDobToDate = (dob) => {
@@ -370,6 +394,7 @@ const LayoutStepperForm = () => {
             photoUploadedFiles: owner?.additionalDetails?.ownerPhoto ,
             documentUploadedFiles: owner?.additionalDetails?.documentFile ,
             panDocumentUploadedFiles: owner?.additionalDetails?.panDocument,
+            aplicantType: owner?.additionalDetails?.aplicantType,
             // Store original owner data for reference
             uuid: owner?.uuid || "",
             id: owner?.id || "",
@@ -378,7 +403,7 @@ const LayoutStepperForm = () => {
   
         const applicantsForForm = allApplicants.length > 0 ? allApplicants : [];
   
-        console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
+        //console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
         dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicantsForForm));
   
         // dispatch(UPDATE_LayoutNewApplication_FORM("apiData", {...applicationDetails, apiData: editApi?.Layout?.[0] || editApi})); // Store full response like CLU
@@ -403,7 +428,7 @@ const LayoutStepperForm = () => {
 
 
   const handleSubmit = (dataGet) => {
-    console.log("dataGet===", dataGet);
+    //console.log("dataGet===", dataGet);
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
     // createEmployeeConfig.forEach((config) => {
@@ -415,8 +440,8 @@ const LayoutStepperForm = () => {
   };
 
 
-  console.log("  LayoutStepperForm - formData:", formData);
-console.log("  LayoutStepperForm - step:", step);
+  //console.log("  LayoutStepperForm - formData:", formData);
+//console.log("  LayoutStepperForm - step:", step);
   return (
     <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

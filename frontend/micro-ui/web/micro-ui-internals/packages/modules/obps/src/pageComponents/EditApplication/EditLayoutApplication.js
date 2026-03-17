@@ -86,7 +86,7 @@ const EditLayoutApplication = () => {
   const formData = formState?.formData;
   const step = formState?.step;
 
-  console.log("FORM DATA FOR EDIT", formState);
+  //console.log("FORM DATA FOR EDIT", formState);
 
   let tenantId;
   if (window.location.pathname.includes("employee")) {
@@ -97,7 +97,7 @@ const EditLayoutApplication = () => {
 
   const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo: id }, tenantId);
   const applicationDetails = data?.resData;
-  console.log("applicationDetails here==>", data);
+  //console.log("applicationDetails here==>", data);
   const layoutObject = data?.data?.[0]?.Applications;
   const professionalDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = layoutObject?.layoutDetails?.additionalDetails?.siteDetails || {};
@@ -119,6 +119,7 @@ const EditLayoutApplication = () => {
     panDocumentUploadedFiles: primaryOwner?.additionalDetails?.panDocument || "",
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
+    aplicantType: primaryOwner?.additionalDetails?.aplicantType,
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -131,9 +132,9 @@ const EditLayoutApplication = () => {
     primaryOwnerDocument: primaryOwner?.additionalDetails?.documentFile || professionalDetails?.primaryOwnerDocument || "",
   };
   
-  console.log(siteDetails, "SSSSS");
-  console.log("[EditLayoutApplication] Primary owner data:", primaryOwner);
-  console.log("[EditLayoutApplication] Extracted applicant details:", applicantDetails);
+  //console.log(siteDetails, "SSSSS");
+  //console.log("[EditLayoutApplication] Primary owner data:", primaryOwner);
+  //console.log("[EditLayoutApplication] Extracted applicant details:", applicantDetails);
   const setStep = (updatedStepNumber) => {
     dispatch(SET_LayoutNewApplication_STEP(updatedStepNumber));
   };
@@ -144,7 +145,7 @@ const EditLayoutApplication = () => {
   const { data: buildingCategoryData, isLoading: isBuildingCategoryLoading } = Digit?.Hooks?.obps?.useLayoutBuildingCategory(stateId);
   const { data: roadTypeData, isLoading: isRoadTypeLoading } = Digit?.Hooks?.obps?.useLayoutRoadType(stateId);
   const { data: layoutTypeData, isLoading: isLayoutTypeLoading } = Digit?.Hooks?.obps?.useLayoutType(stateId);
-  console.log(layoutTypeData, "LAYOUT TYPE");
+  //console.log(layoutTypeData, "LAYOUT TYPE");
 
   const { data: mdmsData, isLoading: isMdmsLoading } = Digit?.Hooks?.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
   const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
@@ -165,41 +166,40 @@ const EditLayoutApplication = () => {
   const hasResetForm = useRef(false);
 
   useEffect(() => {
-    console.log("[v0] Loading states:", {
-      isLoading,
-      isBuildingTypeLoading,
-      isBuildingCategoryLoading,
-      isRoadTypeLoading,
-      isLayoutTypeLoading,
-      isUlbListLoading,
-      isMdmsLoading,
-    });
-    console.log("[v0] Data availability:", {
-      hasLayoutObject: !!layoutObject?.layoutDetails,
-      buildingTypeLength: buildingTypeData?.length || 0,
-      buildingCategoryLength: buildingCategoryData?.length || 0,
-      layoutTypeLength: layoutTypeData?.length || 0,
-      roadTypeLength: roadTypeData?.length || 0,
-      areaTypeLength: areaTypeOptions.length,
-      menuLength: menu.length,
-    });
+    // console.log("[v0] Loading states:", {
+    //   isLoading,
+    //   isBuildingTypeLoading,
+    //   isBuildingCategoryLoading,
+    //   isRoadTypeLoading,
+    //   isLayoutTypeLoading,
+    //   isUlbListLoading,
+    //   isMdmsLoading,
+    // });
+    // console.log("[v0] Data availability:", {
+    //   hasLayoutObject: !!layoutObject?.layoutDetails,
+    //   buildingTypeLength: buildingTypeData?.length || 0,
+    //   buildingCategoryLength: buildingCategoryData?.length || 0,
+    //   layoutTypeLength: layoutTypeData?.length || 0,
+    //   roadTypeLength: roadTypeData?.length || 0,
+    //   areaTypeLength: areaTypeOptions.length,
+    //   menuLength: menu.length,
+    // });
   }, [isLoading, isBuildingTypeLoading, isBuildingCategoryLoading, isRoadTypeLoading, isLayoutTypeLoading, isUlbListLoading, isMdmsLoading]);
 
   // First useEffect: Handle zone updates only
-  useEffect(() => {
-    if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-      const zoneName = siteDetails?.zone?.name || siteDetails?.zone
-      const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
-      if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
-        dispatch(
-          UPDATE_LayoutNewApplication_FORM("siteDetails", {
-            ...formData.siteDetails,
-            zone: matchedZone,
-          })
-        );
-      }
-    }
-  }, [fetchedLocalities, siteDetails?.zone]);
+  // useEffect(() => {
+  //   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
+  //     const zoneName = siteDetails?.zone?.name || siteDetails?.zone
+  //     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName)
+  //     if (matchedZone && formData.siteDetails?.zone?.code !== matchedZone.code) {
+  //       dispatch(
+  //         UPDATE_LayoutNewApplication_FORM("siteDetails", {
+  //           ...formData.siteDetails,            
+  //         })
+  //       );
+  //     }
+  //   }
+  // }, [fetchedLocalities, siteDetails?.zone]);
 
    const options = [
       { code: "YES", i18nKey: "YES" },
@@ -233,6 +233,27 @@ const EditLayoutApplication = () => {
         value: `${genderDetails.code}`,
       });
     });
+
+  // const convertToISODate = (dateStr) => {
+  //   const [dd, mm, yyyy] = dateStr.split("-");
+  //   return `${yyyy}-${mm}-${dd}`;
+  // };
+
+  const convertToISODate = (dateStr) => {
+  if (!dateStr) return "";
+
+  const parts = dateStr.split("-");
+
+  // yyyy-mm-dd (already ISO)
+  if (parts[0].length === 4) {
+    return dateStr;
+  }
+
+  // dd-mm-yyyy → yyyy-mm-dd
+  const [dd, mm, yyyy] = parts;
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 
   // useEffect(() => {
   //   const hasApiData = !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && ulbList?.length > 0
@@ -382,7 +403,7 @@ const EditLayoutApplication = () => {
         // if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
         if (!isBuildingTypeLoading && !isBuildingCategoryLoading && !isRoadTypeLoading && !isLayoutTypeLoading && !isMdmsLoading && !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
           isDataInitialized.current = true;
-          console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
+          //console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
           
           
           const formattedDocuments = {
@@ -393,6 +414,7 @@ const EditLayoutApplication = () => {
                 documentUid: doc?.documentUid || "",
                 documentAttachment: doc?.documentAttachment || "",
                 filestoreId: doc?.uuid || "",
+                layoutId: doc?.layoutId || null
               })),
             },
           };
@@ -456,6 +478,7 @@ const EditLayoutApplication = () => {
             // Document file references
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
+            aplicantType: applicantDetails?.aplicantType,
           };
     
           const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);
@@ -479,12 +502,13 @@ const EditLayoutApplication = () => {
             // ),
             isCluRequired: options?.find((obj) => obj?.code === siteDetails?.isCluRequired?.code || obj?.code === siteDetails?.isCluRequired),
             applicationAppliedUnder: applicationAppliedUnderOptions?.find((obj) => obj?.code === siteDetails?.applicationAppliedUnder?.code || obj?.code === siteDetails?.applicationAppliedUnder),
+            vasikaDate: convertToISODate(siteDetails?.vasikaDate),
             // specificationBuildingCategory: buildingCategoryData.find((obj)=> obj.name === siteDetails?.specificationBuildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory || {}),
             // specificationLayoutType: layoutTypeData.find((obj)=> obj.name === siteDetails?.specificationLayoutType?.name || obj.name === siteDetails?.specificationLayoutType || {}),
             // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),
             // specificationIsSiteUnderMasterPlan: options.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan || {})),
           };
-          console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
+          //console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
     
           dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
           dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
@@ -499,7 +523,7 @@ const EditLayoutApplication = () => {
           // Index 0 = primary owner (used by form but not displayed in UI)
           // Index 1+ = additional owners (displayed in UI)
           const ownersFromApi = layoutObject?.owners || [];
-          console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
+          //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
           
           // Helper function to format DOB
           const formatDobToDate = (dob) => {
@@ -542,7 +566,7 @@ const EditLayoutApplication = () => {
     
           const applicantsForForm = allApplicants.length > 0 ? allApplicants : [];
     
-          console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
+          //console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
           dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicantsForForm));
     
           // dispatch(UPDATE_LayoutNewApplication_FORM("apiData", {...applicationDetails, apiData: editApi?.Layout?.[0] || editApi})); // Store full response like CLU

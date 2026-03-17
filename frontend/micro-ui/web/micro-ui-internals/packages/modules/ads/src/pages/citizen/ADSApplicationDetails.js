@@ -55,7 +55,6 @@ const ADSApplicationDetails = () => {
     filters: { bookingNo: acknowledgementIds },
   });
   const new_data = transformBookingResponseToBookingData(adsData);
-  console.log("new_data my here", new_data);
 
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
@@ -113,7 +112,7 @@ const ADSApplicationDetails = () => {
   );
 
   let docs = [];
-  docs = application?.documents ?? [];
+  docs = application?.documents || [];
 
   // Use workflowDetails.isLoading instead of businessLoading
   if (isLoading || auditDataLoading || workflowDetails?.isLoading) {
@@ -204,7 +203,7 @@ const ADSApplicationDetails = () => {
   }
 
   const submitAction = async (dataPayload) => {
-    const payloadSource = adsData?.bookingApplication?.[0] ?? ads_details ?? null;
+    const payloadSource = adsData?.bookingApplication?.[0] || ads_details || null;
     if (!payloadSource) {
       setShowToast({ key: "error", message: "Application data not loaded. Try reloading the page." });
       setActionError("Application data not loaded");
@@ -355,7 +354,7 @@ const ADSApplicationDetails = () => {
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
-          <ADSCartDetails cartDetails={cartData ?? []} t={t} />
+          <ADSCartDetails cartDetails={cartData || []} t={t} />
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>

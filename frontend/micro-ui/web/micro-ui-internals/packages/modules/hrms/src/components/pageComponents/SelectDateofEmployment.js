@@ -28,9 +28,9 @@ const SelectDateofEmployment = ({ t, config, onSelect, formData = {}, userType, 
         <React.Fragment key={index}>
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
+            <CardLabel className="card-label-smaller hrms-text-transform-none">
               {t(input.label)}
-              {input.isMandatory ? " * " : null}
+              {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> * </span> : null}
             </CardLabel>
             <div className="field">
               <DatePicker

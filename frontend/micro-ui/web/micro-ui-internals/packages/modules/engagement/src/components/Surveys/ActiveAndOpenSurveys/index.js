@@ -11,7 +11,6 @@ const ActiveAndOpenSurveys = (props) => {
   const history = useHistory();
   const { t } = useTranslation();
   const userInfo = Digit.UserService.getUser().info;
-  console.log("userinfo", userInfo);
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   let userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
   const tenantId = userType.toLowerCase() === "employee" ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //passing static value for testing
@@ -128,25 +127,23 @@ const ActiveAndOpenSurveys = (props) => {
       })
       .catch((error) => {
         setLoading(false);
-        console.error("Failed to fetch surveys", error);
       });
   }
 
-  console.log("userinfo", userInfo);
   const handleStartSurvey = (surveyDetails) => {
-    console.log("Survey Details: ", surveyDetails);
+    const encodedUUID = encodeURIComponent(surveyDetails.uuid);
+
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
     const paths = {
       employee: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
-      citizen: "/digit-ui/citizen/engagement/surveys/fill-survey",
+      citizen: `/digit-ui/citizen/engagement/surveys/fill-survey`,
     };
 
     const newPath = paths[userType.toLowerCase()] || "";
 
     history.push({
       pathname: newPath,
-      //  state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
-      state: { surveyDetails: surveyDetails, userInfo: userInfo, userType: userType },
+      state: { surveyDetails, userInfo, userType },
     });
   };
 

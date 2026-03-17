@@ -40,7 +40,7 @@ const MCollectAcknowledgement = () => {
               {t("UC_PRINT_CHALLAN_LABEL")}
             </div>
           ) : null}
-          <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+          <ActionBar className="challan-emp-acknowledgement" >
             <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>
@@ -64,7 +64,7 @@ const MCollectAcknowledgement = () => {
               {t("UC_PRINT_CHALLAN_LABEL")}
             </div>
           ) : null}
-          <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+          <ActionBar className="challan-emp-acknowledgement" >
             <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
               <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
             </Link>

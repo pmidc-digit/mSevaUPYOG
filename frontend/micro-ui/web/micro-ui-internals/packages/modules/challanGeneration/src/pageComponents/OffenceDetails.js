@@ -31,7 +31,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = (data) => {
     goNext(data);
-    // console.log("data==??", data);
+    // console.log("data==||", data);
     // const userInfo = Digit.UserService.getUser()?.info || {};
     // const now = Date.now();
 
@@ -93,7 +93,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
           {/* offence type */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {t("CHB_PURPOSE_DESCRIPTION")} <span style={{ color: "red" }}>*</span>
+              {t("CHB_PURPOSE_DESCRIPTION")} <span className="requiredField">*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -102,7 +102,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // rules={{ required: t("CHALLAN_TYPE_OFFENCE_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                  style={{ marginBottom: 0 }}
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
@@ -112,13 +111,13 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-            {errors.offenceType && <p style={{ color: "red" }}>{errors.offenceType.message}</p>}
+            {errors.offenceType && <p className="requiredField">{errors.offenceType.message}</p>}
           </LabelFieldPair>
 
           {/* Offence Category */}
-          <LabelFieldPair style={{ marginTop: "20px" }}>
+          <LabelFieldPair>
             <CardLabel>
-              {t("CHALLAN_OFFENCE_CATEGORY")} <span style={{ color: "red" }}>*</span>
+              {t("CHALLAN_OFFENCE_CATEGORY")} <span className="requiredField">*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -127,7 +126,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // rules={{ required: t("CHALLAN_OFFENCE_CATEGORY_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                  style={{ marginBottom: 0 }}
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
@@ -137,13 +135,13 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-            {errors.offenceCategory && <p style={{ color: "red" }}>{errors.offenceCategory.message}</p>}
+            {errors.offenceCategory && <p className="requiredField">{errors.offenceCategory.message}</p>}
           </LabelFieldPair>
 
           {/* Offence Subcategory */}
-          <LabelFieldPair style={{ marginTop: "20px" }}>
+          <LabelFieldPair>
             <CardLabel>
-              {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span style={{ color: "red" }}>*</span>
+              {t("CHALLAN_OFFENCE_SUB_CATEGORY")} <span className="requiredField">*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -152,7 +150,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // rules={{ required: t("CHALLAN_OFFENCE_SUB_CATEGORY_REQUIRED") }}
               render={(props) => (
                 <Dropdown
-                  style={{ marginBottom: 0 }}
                   className="form-field"
                   select={props.onChange}
                   selected={props.value}
@@ -162,13 +159,13 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-            {errors.offenceSubCategory && <p style={{ color: "red" }}>{errors.offenceSubCategory.message}</p>}
+            {errors.offenceSubCategory && <p className="requiredField">{errors.offenceSubCategory.message}</p>}
           </LabelFieldPair>
 
           {/* Challan Amount */}
-          <LabelFieldPair style={{ width: "50%", marginTop: "20px" }}>
+          <LabelFieldPair className="challan-amount-field">
             <CardLabel>
-              {`${t("CHALLAN_AMOUNT")}`} <span style={{ color: "red" }}>*</span>
+              {`${t("CHALLAN_AMOUNT")}`} <span className="requiredField">*</span>
             </CardLabel>
             <Controller
               control={control}
@@ -178,7 +175,6 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
               // }}
               render={(props) => (
                 <TextInput
-                  style={{ marginBottom: 0 }}
                   value={props.value}
                   error={errors?.name?.message}
                   onChange={(e) => {
@@ -191,7 +187,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-            {errors?.challanAmount && <p style={{ color: "red" }}>{errors.challanAmount.message}</p>}
+            {errors?.challanAmount && <p className="requiredField">{errors.challanAmount.message}</p>}
           </LabelFieldPair>
         </div>
         <ActionBar>

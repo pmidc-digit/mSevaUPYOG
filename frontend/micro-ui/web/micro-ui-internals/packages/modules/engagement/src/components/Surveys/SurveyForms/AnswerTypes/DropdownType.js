@@ -98,26 +98,24 @@ const DropdownOption = ({
     }
   };
   return (
-    <div className="optionradiobtnwrapper" style={{ alignItems: "flex-start" }}>
-      <span>{indexNumber + 1}.</span>
-      <input
-        type="text"
-        ref={inputRef}
-        value={optionTitle}
-        onChange={(ev) => setOptionTitle(ev.target.value)}
-        onBlur={() => setIsFocused(false)}
-        onFocus={() => setIsFocused(true)}
-        className={isFocused ? "simple_editable-input" : "simple_readonly-input"}
-        maxLength={maxLength}
-        title={titleHover}
-        disabled={isPartiallyEnabled ? !isPartiallyEnabled : formDisabled}
-      />
-      {optionsLength > 1 && (
-        <div className="pointer" onClick={() => removeOption(index)}>
-          <CloseSvg />
-        </div>
-      )}
-      <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className="optionradiobtnwrapper" style={{ alignItems: "end", justifyContent: "flex-start", position: "relative" }}>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center", alignItems: "center" }}>
+        <span>{indexNumber + 1}.</span>
+        <input
+          type="text"
+          ref={inputRef}
+          value={optionTitle}
+          onChange={(ev) => setOptionTitle(ev.target.value)}
+          onBlur={() => setIsFocused(false)}
+          onFocus={() => setIsFocused(true)}
+          className="employee-card-input"
+          maxLength={maxLength}
+          title={titleHover}
+          disabled={isPartiallyEnabled ? !isPartiallyEnabled : formDisabled}
+        />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", fontSize: "14px" }}>
         <label htmlFor="numberInput">Enter a number (0-10):</label>
         <input
           type="number"
@@ -135,6 +133,11 @@ const DropdownOption = ({
           onChange={handleChange}
         />
         {error && <span style={{ color: "red" }}>{error}</span>}
+        {optionsLength > 1 && (
+          <div style={{ position: "absolute", right: "88px", top: "32px" }} className="pointer" onClick={() => removeOption(index)}>
+            <CloseSvg />
+          </div>
+        )}
       </div>
     </div>
   );

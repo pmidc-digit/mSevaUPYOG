@@ -47,6 +47,7 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
       if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.dob) missingFields.push(`Date of Birth (Owner ${index})`);
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };
@@ -193,7 +194,15 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       action: "INITIATE",
       status: applicationData?.status || "APPROVED",
       applicationType: "RENEWAL",
-      workflowCode: Traid?.tradeUnits?.some((unit) => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
+      workflowCode: (() => {
+        const hasExplicitHazardous = Traid?.tradeUnits?.some((unit) => unit?.tradeSubType?.ishazardous === true);
+        const hasExplicitNonHazardous = Traid?.tradeUnits?.length > 0 && Traid.tradeUnits.every((unit) => unit?.tradeSubType?.ishazardous === false);
+        return hasExplicitHazardous
+          ? "NEWTL.HAZ"
+          : hasExplicitNonHazardous
+            ? "NEWTL.NHAZ"
+            : (applicationData?.workflowCode === "NEWTL.HAZ" ? "NEWTL.HAZ" : "NEWTL.NHAZ");
+      })(),
       commencementDate: convertDateToEpoch(Traid?.tradedetils?.[0]?.commencementDate),
       issuedDate: applicationData?.issuedDate,
       applicationDate: applicationData?.applicationDate,

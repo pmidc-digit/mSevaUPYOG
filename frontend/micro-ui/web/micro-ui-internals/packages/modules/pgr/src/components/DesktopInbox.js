@@ -83,13 +83,13 @@ const DesktopInbox = ({
     result = <Loader />;
   } else if (data && data?.length === 0) {
     result = ( 
-      // <Card className="pgr-desktop-card-empty-state">
-      <Card style={{ marginTop: 20 }}>
+      <Card className="pgr-desktop-card-empty-state">
+      
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
           .map((text, index) => (
             // <p key={index}>
-            <p key={index} style={{ textAlign: "center" }}>
+            <p key={index} className="pgr-desktop-card-text-align">
               {text}
             </p>
           ))}
@@ -127,12 +127,11 @@ const DesktopInbox = ({
     );
   } else {
     result = (
-      // <Card className="pgr-desktop-card-error-state">
-      <Card style={{ marginTop: 20 }}>
+      <Card className="pgr-desktop-card-error-state">
         {t(LOCALE.ERROR_LOADING_RESULTS)
           .split("\\n")
           .map((text, index) => (
-            <p key={index}>
+            <p key={index} className="pgr-desktop-card-text-align">
               {text}
             </p>
           ))}
@@ -141,8 +140,8 @@ const DesktopInbox = ({
   }
 
   return (
-    // <div className="pgr-desktop-inbox-container inbox-container">
-     <div className="inbox-container">
+    <div className="pgr-desktop-inbox-container inbox-container">
+     {/* <div className="inbox-container"> */}
       <div className="filters-container">
         <ComplaintsLink />
         <div>

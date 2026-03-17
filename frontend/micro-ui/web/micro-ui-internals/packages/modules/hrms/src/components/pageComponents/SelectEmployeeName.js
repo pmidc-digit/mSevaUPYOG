@@ -9,6 +9,7 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
       label: "HR_EMP_NAME_LABEL",
       type: "text",
       name: "employeeName",
+      placeHolder: "HR_EMP_NAME_PLACEHOLDER", 
       validation: {
         isRequired: true,
         pattern: Digit.Utils.getPattern("Name"),
@@ -30,9 +31,9 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
           <React.Fragment key={index}>
             {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">
+              <CardLabel className="card-label-smaller hrms-text-transform-none">
                 {t(input.label)}
-                {input.isMandatory ? " * " : null}
+                {input.isMandatory ? <span className="hrms-emp-mapping__required-asterisk"> *</span>: null}
               </CardLabel>
               <div className="field">
                 <TextInput
@@ -40,6 +41,7 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
                   value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
                   onChange={(e) => setValue(e.target.value, input.name)}
                   disable={false}
+                  placeholder={t(input.placeHolder)}
                   defaultValue={undefined}
                   {...input.validation}
                 />
@@ -47,7 +49,7 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
               </div>
             </LabelFieldPair>
              {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern("Name")) && (
-                  <CardLabelError style={{ width: "100%", marginTop: "-15px", fontSize: "16px", marginBottom: "12px" }}>
+                  <CardLabelError className="w-full -mt-3.5 text-base mb-3">
                     {t("CORE_COMMON_APPLICANT_NAME_INVALID")}
                   </CardLabelError>
                 )}

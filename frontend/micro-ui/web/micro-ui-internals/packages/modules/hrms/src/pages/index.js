@@ -125,7 +125,6 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const crumbs = getBreadcrumbs();
 
-  //console.log("Path in hrms: ", path);
   return (
     <Switch>
       <React.Fragment>
@@ -133,8 +132,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <div className="hrms-breadcrumb-wrapper">
             <BreadCrumb 
               crumbs={crumbs}
-              style={{ fontSize: "16px" }}
-              spanStyle={{ fontWeight: "500" }}
+              className="hrms-breadcrumb"
             />
           </div>
           <PrivateRoute

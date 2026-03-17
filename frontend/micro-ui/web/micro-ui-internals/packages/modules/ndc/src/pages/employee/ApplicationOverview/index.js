@@ -11,6 +11,8 @@ import {
   RadioButtons,
   CardLabel,
   TextInput,
+  LinkButton,
+  MultiLink,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
@@ -20,7 +22,8 @@ import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { Loader } from "../../../components/Loader";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-
+import getAcknowledgementData from "../../../getAcknowlegment";
+import { EmployeeData } from "../../../utils";
 const availableOptions = [
   { code: "yes", name: "Yes" },
   { code: "no", name: "No" },
@@ -50,7 +53,10 @@ const ApplicationOverview = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [getPropertyId, setPropertyId] = useState(null);
+  const [approver, setApprover] = useState(null);
+  const [approverStatement, setApproverStatement] = useState(null);
 
+  const [showOptions, setShowOptions] = useState(false);
   const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
       const updated = { ...prev, [consumerCode]: value === "yes" };
@@ -130,10 +136,74 @@ const ApplicationOverview = () => {
     })();
   }, [tenantId]);
 
+  const empData = EmployeeData(tenantId, approver);
+
+  console.log("approver for ndc", approver);
+
+  console.log("officerData", empData);
+
   // const WorkflowService = Digit.WorkflowService.init(tenantId, "ndc-services");
 
   // console.log("WorkflowService====", WorkflowService);
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "NDC",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
+  async function getRecieptSearch({ tenantId, payments, ...params }) {
+    setLoader(true);
+    try {
+      let response = null;
+      let application = applicationDetails?.Applications?.[0];
+      if (payments?.fileStoreId) {
+        response = { filestoreIds: [payments?.fileStoreId] };
+      } else {
+        response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          {
+            Payments: [
+              {
+                ...(payments || {}),
+                ...application,
+              },
+            ],
+          },
+          "ndc-receipt"
+        );
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+        fileStoreIds: response.filestoreIds[0],
+      });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      setLoader(false);
+    } catch (error) {
+      console.error(error);
+      setLoader(false);
+    }
+  }
+  const dowloadOptions = [];
+
+  if (
+    applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" ||
+    applicationDetails?.Applications?.[0]?.applicationStatus === "REJECTED"
+  ) {
+    dowloadOptions.push({
+      label: t("DOWNLOAD_CERTIFICATE"),
+      onClick: () => handleDownloadPdf(),
+    });
+    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PTR_FEE_RECIEPT"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      });
+    }
+  }
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -142,6 +212,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isCemp = user?.info?.roles.find((role) => role.code === "CEMP")?.code;
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -217,8 +288,36 @@ const ApplicationOverview = () => {
     }
   }, [applicationDetails]);
 
+  const handleDownloadPdf = async () => {
+    try {
+      setLoader(true);
+      const Property = applicationDetails;
+      const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
+      const propertyOwnerNames = owners.map((owner) => owner?.name).filter(Boolean);
+
+      Property.propertyOwnerNames = propertyOwnerNames;
+
+      console.log("propertyOwnerNames", propertyOwnerNames);
+      const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
+      console.log("tenantInfo", tenantInfo);
+      const ulbType = tenantInfo?.city?.ulbType;
+      let acknowledgementData;
+
+      if (empData) {
+        acknowledgementData = await getAcknowledgementData(Property, formattedAddress, tenantInfo, t, approver, ulbType, empData, approverStatement);
+      }
+      console.log("acknowledgementData", acknowledgementData);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateNDC(acknowledgementData);
+        setLoader(false);
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+      setLoader(false);
+    }
+  };
   function onActionSelect(action) {
-    console.log("action====???", action?.state?.actions);
+    console.log("action====||?", action?.state?.actions);
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
     const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
 
@@ -226,15 +325,14 @@ const ApplicationOverview = () => {
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
 
-    console.log("filterNexState====???", filterNexState[0]?.nextState);
+    console.log("filterNexState====||?", filterNexState[0]?.nextState);
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    console.log("filterRoles====???", filterRoles);
+    console.log("filterRoles====||?", filterRoles);
     console.log("action test", action?.action);
 
     const checkactionApp = action?.action == "APPROVE";
-    ("");
 
     console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
 
@@ -278,7 +376,7 @@ const ApplicationOverview = () => {
 
         return {
           ...detail,
-          isDuePending: isPending ?? detail.isDuePending ?? false,
+          isDuePending: isPending || detail.isDuePending || false,
           dueAmount:
             isPending === false
               ? 0 // ✅ Force 0 when "No"
@@ -361,6 +459,18 @@ const ApplicationOverview = () => {
   };
 
   useEffect(() => {
+    if (workflowDetails) {
+      const approveInstance = workflowDetails?.data?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
+
+      const name = approveInstance?.assigner?.name || "NA";
+      const status = applicationDetails?.Applications?.[0]?.applicationStatus;
+      setApproverStatement(status ? `${t(status)} By` : "");
+      setApprover(name);
+    }
+  }, [workflowDetails]);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
+  useEffect(() => {
     if (displayData) {
       const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
       setPropertyId(checkProperty?.[0]?.consumerCode);
@@ -394,12 +504,45 @@ const ApplicationOverview = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showToast]);
+  let address, formattedAddress;
+
+  if (!checkLoading && propertyDetailsFetch?.Properties?.length > 0) {
+    address = propertyDetailsFetch.Properties[0].address;
+    formattedAddress = [
+      address?.doorNo,
+      address?.buildingName, // colony/building
+      address?.street,
+      address?.locality?.name, // locality name
+      address?.city,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  if (isLoading || isDetailsLoading || recieptDataLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className={"employee-main-application-details"}>
       {/* <div>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       </div> */}
+      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
+        {isCemp && (
+          <div className="cardHeaderWithOptions ral-app-details-header">
+            {getLoader && <Loader />}
+            {dowloadOptions && dowloadOptions.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            )}
+          </div>
+        )}
+      </div>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
@@ -428,11 +571,11 @@ const ApplicationOverview = () => {
           const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
 
           const isMarked = markedPending[detail.consumerCode] || detail?.isDuePending;
-          const dueAmount = amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0;
+          const dueAmount = amounts?.[detail.consumerCode] || detail?.dueAmount || 0;
           const isRed = detail.dueAmount > 0;
 
           return (
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+            <div key={index} className="ndc-emp-app-overview">
               <StatusTable>
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
@@ -455,7 +598,7 @@ const ApplicationOverview = () => {
                       // text={detail.dueAmount?.toString() || "0"}
                       text={(markedPending[detail.consumerCode] === false
                         ? "0"
-                        : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0
+                        : amounts?.[detail.consumerCode] || detail?.dueAmount || 0
                       ).toString()}
                     />
                   </div>
@@ -470,7 +613,7 @@ const ApplicationOverview = () => {
                           key={index}
                           control={control}
                           name={`amount[${index}]`}
-                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0}
+                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] || detail?.dueAmount || 0}
                           render={(props) => (
                             <TextInput
                               type="number"
@@ -497,6 +640,17 @@ const ApplicationOverview = () => {
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {isPT && propertyDetailsFetch?.Properties && (
                   <>
+                    <Row
+                      label={t("CHB_DISCOUNT_REASON")}
+                      text={t(
+                        `${
+                          applicationDetails?.Applications?.[0]?.reason == "OTHERS"
+                            ? applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                                ?.reason
+                            : applicationDetails?.Applications?.[0]?.reason
+                        }`
+                      )}
+                    />
                     <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
                     <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
                     <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
@@ -509,15 +663,18 @@ const ApplicationOverview = () => {
                       label={t("Year of creation of Property")}
                       text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
                     />
+                    <Row
+                      label={t("Remarks")}
+                      text={
+                        applicationDetails?.Applications?.[0]?.NdcDetails?.find((item) => item?.businessService === "PT")?.additionalDetails
+                          ?.remarks || "N/A"
+                      }
+                    />
                   </>
                 )}
               </StatusTable>
               {canRaiseFlag && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                  }}
-                >
+                <div className="mychallan-custom">
                   <CardLabel className="card-label-smaller ndc_card_labels">
                     <b> Pending Dues</b>
                   </CardLabel>
@@ -558,7 +715,7 @@ const ApplicationOverview = () => {
       </Card>
       <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (
+      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions?.length && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu

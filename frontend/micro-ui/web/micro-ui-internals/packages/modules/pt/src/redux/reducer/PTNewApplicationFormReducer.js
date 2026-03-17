@@ -1,5 +1,5 @@
 // reducers/employeeFormReducer.js
-import { UPDATE_PtNewApplication_FORM, SET_PtNewApplication_STEP, RESET_PtNewApplication_STEP } from "../actions/types";
+import { UPDATE_PTNewApplication_FORMType, SET_PTNewApplication_STEPType, RESET_PT_NEW_APPLICATION_FORMType } from "../action/types";
 
 const initialState = {
   step: 1,
@@ -9,7 +9,7 @@ const initialState = {
 
 const PTNewApplicationFormReducer = (state = initialState, action) => {
   switch (action.type) {
-    case UPDATE_PtNewApplication_FORM:
+    case UPDATE_PTNewApplication_FORMType:
       return {
         ...state,
         formData: {
@@ -17,18 +17,13 @@ const PTNewApplicationFormReducer = (state = initialState, action) => {
           [action.payload.key]: action.payload.value,
         },
       };
-    case SET_PtNewApplication_STEP:
+    case SET_PTNewApplication_STEPType:
       return {
         ...state,
         step: action.payload,
       };
-    case RESET_PtNewApplication_STEP:
+    case RESET_PT_NEW_APPLICATION_FORMType:
       return initialState;
-    // case SET_EMPLOYEE_VALIDITY:
-    //   return {
-    //     ...state,
-    //     isValid: action.payload,
-    //   };
     default:
       return state;
   }

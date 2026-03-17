@@ -1,5 +1,5 @@
 import { BackButton, WhatsappIcon, Card, CitizenInfoLabel, PrivateRoute } from "@mseva/digit-ui-react-components";
-import React from "react";
+import React, {useEffect} from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory, Link } from "react-router-dom";
 import ErrorBoundary from "../../components/ErrorBoundaries";
@@ -276,7 +276,11 @@ const Home = ({
       </React.Fragment>
     );
   });
-
+   useEffect(() => {
+      const script = document.createElement("script");
+      script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+      script.async = true;document.body.appendChild(script);
+    }, []);
   return (
     <div className={classname}>
       {hideTopSidebar ? null : (
@@ -294,7 +298,9 @@ const Home = ({
           islinkDataLoading={islinkDataLoading}
         />
       )}
-
+       <div className='language-plugin'>
+        <div className="bhashini-plugin-container"></div>
+      </div>
       <div className={`main center-container citizen-home-container mb-25`}>
         {/* {hideSidebar ? null : (
           <div className="SideBarStatic">

@@ -91,45 +91,6 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
     // setSelectedAction(action);
   }
 
-  // ---------------- UI Styles ----------------
-  // const pageStyle = {
-   
-  //   backgroundColor: "#f9f9f9",
-  //   fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  //   color: "#333",
-  // };
-
-  // const sectionStyle = {
-  //   backgroundColor: "#ffffff",
-  //   padding: "1rem 1.5rem",
-  //   borderRadius: "8px",
-  //   marginBottom: "2rem",
-  //   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  // };
-
-  // const headingStyle = {
-  //   fontSize: "1.5rem",
-  //   borderBottom: "2px solid #ccc",
-  //   paddingBottom: "0.3rem",
-  //   color: "#2e4a66",
-  //   marginTop: "2rem",
-  //   marginBottom: "1rem",
-  // };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  };
-
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-  };
-
   const documentCardStyle = {
     flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
     minWidth: "200px", // keeps it from shrinking too small
@@ -145,10 +106,11 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
-        
-           <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
-      
-         <div>{value || "NA"}</div>
+      <CardLabel className="bpa-summary-bold-label" style={{ width: "auto" }}>
+        {label}
+      </CardLabel>
+
+      <div>{value || "NA"}</div>
     </div>
   );
 
@@ -163,7 +125,11 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
         {renderLabel(t("Mobile Number"), formData?.NDCDetails?.PropertyDetails?.mobileNumber)}
         {renderLabel(t("Email ID"), formData?.NDCDetails?.PropertyDetails?.email)}
         {renderLabel(t("Address"), formData?.NDCDetails?.PropertyDetails?.address)}
-        {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
+        {/* {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))} */}
+        {formData?.NDCDetails?.NDCReason?.i18nKey === "OTHERS"
+          ? renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.reason))
+          : renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
+        {renderLabel(t("Remarks"), formData?.NDCDetails?.PropertyDetails?.remarks)}
 
         {renderLabel(
           t("Water Connection"),
@@ -191,7 +157,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
       <h2 className="bpa-summary-heading">{t("Documents Uploaded")}</h2>
       <div className="bpa-summary-section">
         {docs?.length > 0 ? (
-          <div style={{display:"flex", flexWrap:"wrap", gap:"16px"}}>
+          <div className="ndc-doc-view-comp">
             {docs?.map((doc, index) => (
               <div key={index} style={documentCardStyle}>
                 <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />

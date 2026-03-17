@@ -45,8 +45,10 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (accessories && accessories.length > 0) {
       accessories.forEach((item, index) => {
         if (item?.accessoryCategory?.code) {
-          if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
-          if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
+          // UOM and UOM Value are only required when the accessory has a UOM defined
+          if (item?.accessoryCategory?.uom) {
+            if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
+          }
           if (!item?.count) missingFields.push(`Accessory Count (Item ${index + 1})`);
         }
       });
@@ -64,7 +66,6 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
     const missingFields = validateStepData(currentStepData);
 
@@ -82,7 +83,6 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }

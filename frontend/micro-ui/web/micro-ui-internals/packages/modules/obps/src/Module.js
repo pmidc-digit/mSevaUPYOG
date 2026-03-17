@@ -83,6 +83,7 @@ import CLUApplicationDetails from "./pages/citizen/Applications/CLUApplicationDe
 import CLUSearchApplication from "./pages/citizen/CLUSearchApplication/index";
 import CLUInbox from "./pages/employee/cluInbox/CLUInbox"
 import CLUEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/CLUApplicationOverview";
+import CLUEsignResponse from "./pages/employee/CLUEsignResponse";
 import LayoutEmployeeApplicationDetails from "./pages/employee/ApplicationOverview/LayoutApplicationOverview";
 
 import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
@@ -289,6 +290,7 @@ const componentsToRegister = {
   LayoutMyApplications,
   CLUInbox,
   CLUEmployeeApplicationDetails,
+  CLUEsignResponse,
   OCStepFormOne,
   OCStepFormTwo,
   OCStepFormThree,

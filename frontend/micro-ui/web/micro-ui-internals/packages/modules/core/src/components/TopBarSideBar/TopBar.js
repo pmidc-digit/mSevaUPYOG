@@ -133,7 +133,9 @@ const TopBar = ({
           </div>
 
           <div className="right-wrapper_navbar" style={{}}>
-            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}><ChangeLanguage dropdown={true} /></div>}
+            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}>
+              {/* <ChangeLanguage dropdown={true} /> */}
+            </div>}
             {!urlsToDisableNotificationIcon(pathname) && (
               <div className="notification-wrapper" onClick={onNotificationIconClick}>
                 {notificationCountLoaded && unreadNotificationCount ? (
@@ -176,7 +178,7 @@ const TopBar = ({
         )}
         {!mobileView && (
           <div
-            className={mobileView ? "right" : "flex-right right w-80 column-gap-15"}
+            className={mobileView ? "right" : "flex-right right w-80 column-gap-15 margin-right-50"}
             style={!loggedin ? { width: "80%" } : {}}
           >
             <div className="left">
@@ -185,7 +187,7 @@ const TopBar = ({
                   <ChangeCity dropdown={true} t={t} />
                 )}
             </div>
-            <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
+            {/* <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div> */}
            
             {userDetails?.access_token && (
               <div className="left">
@@ -210,6 +212,7 @@ const TopBar = ({
                 />
               </div>
             )}
+            <div className="left"></div>
           </div>
         )}
       </span>

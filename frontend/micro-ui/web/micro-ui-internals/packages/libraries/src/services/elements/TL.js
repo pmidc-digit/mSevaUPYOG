@@ -60,7 +60,7 @@ export const TLService = {
       setTimeParam: false,
       userService: true,
       method: "POST",
-      params: { tenantId },
+      params: { tenantId, ...filters },
       auth: true,
     }),
   TLOpensearch: ({ tenantId, filters }) =>
@@ -79,6 +79,15 @@ export const TLService = {
       method: "POST",
       auth: true,
       userService: false,
+      params: { tenantId, ...filters },
+    }),
+  getbill: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.tl.getbill,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: true,
       params: { tenantId, ...filters },
     }),
 };

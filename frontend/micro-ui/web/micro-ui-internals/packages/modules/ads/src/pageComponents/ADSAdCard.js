@@ -24,37 +24,32 @@ const AdCard = ({
       {/* Image */}
       <div className="ads-card-image">
         {ad.imageSrc || ad.photoURL ? (
-          <img
-            src={ad?.imageSrc || ad?.photoURL}
-            alt={ad?.name || `Ad ${ad?.id}`}
-            loading="lazy"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <img src={ad?.imageSrc || ad?.photoURL} alt={ad?.name || `Ad ${ad?.id}`} loading="lazy" className="ads-ad-card-image-img" />
         ) : (
           <div className="ads-card-noimage">{t("ADS_NO_IMAGE")}</div>
         )}
       </div>
 
       {/* Info Section */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#444" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
+      <div className="ads-ad-card-info">
+        <div className="ads-ad-card-info-row ads-ad-card-info-row--bold">
           <span>{t(ad.name)}</span>
-          <span style={{ color: "#222" }}>₹{ad?.amount}</span>
+          <span className="ads-ad-card-amount">₹{ad?.amount}</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="ads-ad-card-info-row">
           <span>{t(ad?.locationCode)}</span>
           <span>Pole {ad.poleNo}</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div className="ads-ad-card-info-row">
           <span>{t(ad?.adType)}</span>
-          <span style={{ color: "green", fontWeight: 600 }}>{ad?.light}</span>
+          <span className="ads-ad-card-light">{ad?.light}</span>
         </div>
       </div>
 
       {/* Date Range Row */}
-      <div style={{ display: "flex", gap: "4px", marginTop: "8px" }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, color: "#666" }}>{t("ADS_START_DATE_TIME")}</div>
+      <div className="ads-ad-card-date-row">
+        <div className="ads-ad-card-date-field">
+          <div className="ads-ad-card-date-label">{t("ADS_START_DATE_TIME")}</div>
           <Controller
             control={control}
             name={`ads.${idx}.startDate`}
@@ -69,8 +64,8 @@ const AdCard = ({
             )}
           />
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, color: "#666" }}>{t("ADS_END_DATE_TIME")}</div>
+        <div className="ads-ad-card-date-field">
+          <div className="ads-ad-card-date-label">{t("ADS_END_DATE_TIME")}</div>
           <Controller
             control={control}
             name={`ads.${idx}.endDate`}
@@ -88,7 +83,7 @@ const AdCard = ({
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+      <div className="ads-ad-card-actions">
         <button
           type="button"
           onClick={() =>
@@ -104,7 +99,7 @@ const AdCard = ({
 
         {isAdded && (
           <button type="button" onClick={openCart} className="ads-btn-success">
-            <span style={{ color: "black" }}>🛒</span>
+            <span className="ads-ad-card-cart-icon">🛒</span>
             {t("ADS_IN_CART")}
           </button>
         )}

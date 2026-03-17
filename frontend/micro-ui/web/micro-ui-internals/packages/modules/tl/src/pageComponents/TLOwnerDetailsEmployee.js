@@ -32,6 +32,7 @@ const createOwnerDetails = () => ({
   gender: "",
   subOwnerShipCategory: "",
   correspondenceAddress: "",
+  pan: "",
   key: Date.now(),
 });
 
@@ -65,6 +66,61 @@ const OwnerForm = (_props) => {
   const { errors } = localFormState;
   const stateId = Digit.ULBService.getStateId();
   const [part, setPart] = useState({});
+  const [isSearching, setIsSearching] = useState(false);
+
+  const searchUserByMobile = async () => {
+    const mobileNo = watch("mobileNumber");
+    if (!mobileNo || !/^[6-9]\d{9}$/.test(mobileNo)) {
+      alert(t("TL_ENTER_VALID_MOBILE") || "Please enter a valid 10-digit mobile number before searching.");
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const res = await Digit.UserService.userSearch(stateId, { userName: mobileNo }, {});
+      const users = res?.user;
+      if (users && users.length > 0) {
+        const u = users[0];
+        if (u.name) setValue("name", u.name);
+        if (u.emailId) setValue("emailId", u.emailId);
+        if (u.fatherOrHusbandName) setValue("fatherOrHusbandName", u.fatherOrHusbandName);
+        if (u.permanentAddress) setValue("permanentAddress", u.permanentAddress);
+        if (u.correspondenceAddress) setValue("correspondenceAddress", u.correspondenceAddress);
+        if (u.dob) {
+          // Convert epoch or date string to YYYY-MM-DD
+          let dobVal = u.dob;
+          if (typeof dobVal === "number" || !isNaN(Number(dobVal))) {
+            const dt = new Date(Number(dobVal));
+            dobVal = isNaN(dt.getTime()) ? "" : dt.toISOString().split("T")[0];
+          } else if (typeof dobVal === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(dobVal)) {
+            const [dd, mm, yyyy] = dobVal.split("/");
+            dobVal = `${yyyy}-${mm}-${dd}`;
+          }
+          if (dobVal) setValue("dob", dobVal);
+        }
+        // Set gender as dropdown object
+        if (u.gender) {
+          const gObj = genderTypeMenu.find((g) => g.code === u.gender || g.code?.toUpperCase() === u.gender?.toUpperCase());
+          if (gObj) setValue("gender", gObj);
+        }
+        // Set relationship as dropdown object
+        if (u.relationship) {
+          const relCode = typeof u.relationship === "string" ? u.relationship : u.relationship;
+          const relObj = {
+            code: relCode.charAt(0).toUpperCase() + relCode.slice(1).toLowerCase(),
+            i18nKey: relCode.toLowerCase() === "father" ? "COMMON_RELATION_FATHER" : "COMMON_RELATION_HUSBAND",
+          };
+          setValue("relationship", relObj);
+        }
+      } else {
+        alert(t("TL_USER_NOT_FOUND") || "No user found with this mobile number.");
+      }
+    } catch (err) {
+      console.error("User search error:", err);
+      alert(t("TL_USER_SEARCH_ERROR") || "Error searching user. Please try again.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
   const { ownershipCategory: { code: keyToSearchOwnershipSubtype } = {} } = formData;
   // const { data: institutionOwnershipTypeOptions } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "TradeOwnershipSubType", {
   //   keyToSearchOwnershipSubtype : keyToSearchOwnershipSubtype ? keyToSearchOwnershipSubtype.split(".")[0]:undefined,
@@ -103,33 +159,68 @@ const OwnerForm = (_props) => {
     trigger();
   }, []);
 
+  // Explicitly restore DOB on back-navigation (Controller defaultValue can lose it on remount)
   useEffect(() => {
-    if (window.location.href.includes("tl/renew-application-details") && formData?.cpt?.details) {
-      console.log("formData===", formData);
-      if (typeOfOwner === "INSTITUTIONAL") {
-        setValue("instituionName", owner?.instituionName);
-        setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
-        setValue("name", owner?.name);
-        setValue("designation", owner?.designation);
-        setValue("mobileNumber", owner?.mobileNumber);
-        setValue("altContactNumber", owner?.altContactNumber);
-        setValue("relationship", owner?.relationship);
-        setValue("gender", owner?.gender);
-        setValue("emailId", owner?.emailId);
-        setValue("dob", owner?.dob);
-      } else {
-        setValue("name", owner?.name);
-        setValue("mobileNumber", owner?.mobileNumber);
-        setValue("fatherOrHusbandName", owner?.fatherOrHusbandName);
-        setValue("relationship", owner?.relationship);
-        setValue("gender", owner?.gender);
-        setValue("emailId", owner?.emailId);
-        setValue("ownerType", owner?.ownerType);
-        setValue("permanentAddress", owner?.permanentAddress);
-        setValue("dob", owner?.dob);
+    if (owner?.dob) {
+      let dobVal = owner.dob;
+      if (typeof dobVal === "number" || !isNaN(Number(dobVal))) {
+        const dt = new Date(Number(dobVal));
+        dobVal = isNaN(dt.getTime()) ? "" : dt.toISOString().split("T")[0];
+      } else if (typeof dobVal === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(dobVal)) {
+        const [dd, mm, yyyy] = dobVal.split("/");
+        dobVal = `${yyyy}-${mm}-${dd}`;
       }
+      if (dobVal) setValue("dob", dobVal);
     }
-  }, [formData?.cpt?.details?.propertyId, formData?.cptId?.Id, formData, owner]);
+  }, []);
+
+  // ➡️ Renewal/Edit: restore owner fields including gender & dob
+  // Note: formData here is scoped to OwnerDetails step (no cpt.details), so we check URL + owner prop directly
+  useEffect(() => {
+    const isRenewOrEdit = window.location.href.includes("tl/renew-application-details") || window.location.href.includes("tl/edit-application-details");
+    if (!isRenewOrEdit || !owner) return;
+    
+    if (typeOfOwner === "INSTITUTIONAL") {
+      setValue("instituionName", owner?.instituionName);
+      setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
+      setValue("name", owner?.name);
+      setValue("designation", owner?.designation);
+      setValue("mobileNumber", owner?.mobileNumber);
+      setValue("altContactNumber", owner?.altContactNumber);
+      setValue("relationship", owner?.relationship);
+      setValue("emailId", owner?.emailId);
+      setValue("pan", owner?.pan);
+    } else {
+      setValue("name", owner?.name);
+      setValue("mobileNumber", owner?.mobileNumber);
+      setValue("fatherOrHusbandName", owner?.fatherOrHusbandName);
+      setValue("relationship", owner?.relationship);
+      setValue("emailId", owner?.emailId);
+      setValue("ownerType", owner?.ownerType);
+      setValue("permanentAddress", owner?.permanentAddress);
+      setValue("pan", owner?.pan);
+    }
+
+    // ➡️ Gender: set from owner prop; find matching MDMS dropdown object if available
+    if (owner?.gender) {
+      const gCode = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
+      const gObj = genderTypeMenu?.find((g) => g.code === gCode) || owner.gender;
+      setValue("gender", gObj);
+    }
+
+    // ➡️ DOB: convert epoch to YYYY-MM-DD for date input
+    if (owner?.dob) {
+      let dobVal = owner.dob;
+      if (typeof dobVal === "number" || !isNaN(Number(dobVal))) {
+        const dt = new Date(Number(dobVal));
+        dobVal = isNaN(dt.getTime()) ? "" : dt.toISOString().split("T")[0];
+      } else if (typeof dobVal === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(dobVal)) {
+        const [dd, mm, yyyy] = dobVal.split("/");
+        dobVal = `${yyyy}-${mm}-${dd}`;
+      }
+      if (dobVal) setValue("dob", dobVal);
+    }
+  }, [owner?.key, genderTypeMenu]);
 
   useEffect(() => {
     if (!_.isEqual(formValue, part)) {
@@ -163,16 +254,39 @@ const OwnerForm = (_props) => {
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
 
+   const [genderRestored, setGenderRestored] = useState(false);
   useEffect(function () {
-  if (owner && owner.gender) {
-    var genderObj = genderTypeMenu.find(function (g) {
-      return g.code === owner.gender;
-    });
-    if (genderObj) {
-      setValue("gender", genderObj);
+    if (genderRestored) return;
+    if (!genderTypeMenu || genderTypeMenu.length === 0) return;
+    if (owner && owner.gender) {
+      var genderCode = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
+      if (genderCode) {
+        var genderObj = genderTypeMenu.find(function (g) {
+          return g.code === genderCode;
+        });
+        if (genderObj) {
+          setValue("gender", genderObj);
+          setGenderRestored(true);
+        }
+      }
     }
-  }
-}, [owner]);
+  }, [genderTypeMenu]);
+
+  const [relationshipRestored, setRelationshipRestored] = useState(false);
+  useEffect(function () {
+    if (relationshipRestored) return;
+    if (owner && owner.relationship) {
+      var relCode = typeof owner.relationship === "string" ? owner.relationship : owner.relationship?.code;
+      if (relCode) {
+        var relObj = {
+          code: relCode,
+          i18nKey: relCode === "Father" ? "COMMON_RELATION_FATHER" : "COMMON_RELATION_HUSBAND",
+        };
+        setValue("relationship", relObj);
+        setRelationshipRestored(true);
+      }
+    }
+  }, []);
 
   return (
     <React.Fragment>
@@ -327,7 +441,7 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel>{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -362,11 +476,11 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
-                <div className="form-field">
+                <div className="form-field" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <Controller
                     control={control}
                     defaultValue={owner?.mobileNumber || ""}
@@ -391,33 +505,48 @@ const OwnerForm = (_props) => {
                       />
                     )}
                   />
+                  <button
+                    type="button"
+                    onClick={searchUserByMobile}
+                    disabled={isSearching}
+                    className={`TL-search-btn ${isSearching ? "TL-search-btn-searching" : "TL-search-btn-active"}`}
+                  >
+                    {isSearching ? t("CS_COMMON_SEARCHING") || "Searching..." : t("TL_SEARCH") || "Search"}
+                  </button>
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel>{`${t("TL_NEW_OWNER_PHONE_LABEL")}`}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_PHONE_LABEL")}`}</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
                     name={"altContactNumber"}
+                    defaultValue={owner?.altContactNumber || ""}
                     rules={{
-                      required: "Mobile number is required",
-                      pattern: {
-                        value: /^[6-9]\d{9}$/,
-                        message: "Enter a valid 10-digit mobile number",
+                      validate: {
+                        pattern: (val) => {
+                          if (!val || val === "") return true;
+                          return /^[0-9]{6,11}$/.test(val) ? true : t("TL_TELEPHONE_ERROR") || "Enter a valid telephone number (6-11 digits)";
+                        },
                       },
                     }}
                     render={(props) => (
-                      <MobileNumber
+                      <TextInput
+                        type={"tel"}
                         value={props.value}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "altContactNumber"}
+                        errorStyle={localFormState.touched.altContactNumber && errors?.altContactNumber?.message ? true : false}
                         onChange={(e) => {
-                          if (e != owner?.altContactNumber && isRenewal)
+                          const val = e.target.value.replace(/[^0-9]/g, "");
+                          if (val !== owner?.altContactNumber && isRenewal)
                             setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
-                          props.onChange(e);
+                          props.onChange(val);
+                          setFocusIndex({ index: owner.key, type: "altContactNumber" });
                         }}
                         onBlur={props.onBlur}
-                        t={t}
-                        placeholder={t("TL_NEW_OWNER_PHONE_PLACEHOLDER")}
+                        placeholder={t("TL_NEW_OWNER_PHONE_PLACEHOLDER") || "Enter Official Telephone No."}
+                        maxLength={11}
                       />
                     )}
                   />
@@ -425,7 +554,7 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.altContactNumber ? errors?.altContactNumber?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel>{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -467,7 +596,7 @@ const OwnerForm = (_props) => {
 
               {/**here */}
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
@@ -500,24 +629,23 @@ const OwnerForm = (_props) => {
               <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
                 <Controller
                   control={control}
                   name="relationship"
-                  defaultValue={
-                    owner?.relationship
-                      ? {
-                        code: owner.relationship,
-                        i18nKey:
-                          owner.relationship === "Father"
-                            ? "COMMON_RELATION_FATHER"
-                            : "COMMON_RELATION_HUSBAND",
-                      }
-                      : null
-                  }
+                  defaultValue={(() => {
+                    const rel = owner?.relationship;
+                    if (!rel) return null;
+                    if (typeof rel === "object" && rel.code && typeof rel.code === "string") return rel;
+                    const relCode = typeof rel === "string" ? rel : (rel?.code || "");
+                    return {
+                      code: relCode,
+                      i18nKey: relCode === "Father" ? "COMMON_RELATION_FATHER" : "COMMON_RELATION_HUSBAND",
+                    };
+                  })()}
                   rules={{ required: "RelationShip Required" }}
                   render={(props) => {
                     const selectedValue = props && props.value ? props.value : null;
@@ -559,16 +687,18 @@ const OwnerForm = (_props) => {
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
                 <Controller
                   control={control}
                   name={"gender"}
+
                   defaultValue={owner?.gender
                     ? genderTypeMenu.find(function (g) {
-                      return g.code === owner.gender;
+                      var code = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
+                      return g.code === code;
                     }) || null
                     : null}
                   rules={{ required: t("REQUIRED_FIELD") }}
@@ -596,14 +726,26 @@ const OwnerForm = (_props) => {
                 <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
 
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">
+                  <CardLabel className="card-label-smaller hrms-text-transform-none">
                     {`${t("CORE_COMMON_DOB")}`}
                     <span className="requiredField">*</span>
                   </CardLabel>
                   <Controller
                     control={control}
                     name={"dob"}
-                    defaultValue={owner?.dob || ""}
+                    defaultValue={(() => {
+                      const d = owner?.dob;
+                      if (!d) return "";
+                      // If already YYYY-MM-DD string, use directly
+                      if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+                      // If epoch number, convert to YYYY-MM-DD
+                      if (typeof d === "number" || !isNaN(Number(d))) {
+                        const dt = new Date(Number(d));
+                        return isNaN(dt.getTime()) ? "" : dt.toISOString().split("T")[0];
+                      }
+                      return "";
+                    })()}
+                    rules={{ required: t("REQUIRED_FIELD") }}
                     render={(props) => (
                       <TextInput
                       type="date"
@@ -619,7 +761,7 @@ const OwnerForm = (_props) => {
                         onBlur={props.onBlur}
                         // disable={isRenewal}
                         // style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
-                        placeholder={t("Enter Official Correspondence Address")}
+                        // placeholder={t("Enter Official Correspondence Address")}
                       />
                     )}
                   />
@@ -628,7 +770,7 @@ const OwnerForm = (_props) => {
               
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_OFF_ADDR_LABEL")} `}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_OFF_ADDR_LABEL")} `}</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -655,12 +797,48 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"pan"}
+                    defaultValue={owner?.pan || ""}
+                    rules={{
+                      validate: (val) => {
+                        if (!val || val === "") return true;
+                        return val.length >= 9 ? true : "PAN must be at least 9 characters";
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        t={t}
+                        type={"text"}
+                        isMandatory={false}
+                        name="pan"
+                        value={props.value}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "pan"}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                          if (val !== owner?.pan && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                          props.onChange(val);
+                          setFocusIndex({ index: owner.key, type: "pan" });
+                        }}
+                        onBlur={props.onBlur}
+                        placeholder={t("TL_OWNER_PAN_PLACEHOLDER") || "Enter PAN Number"}
+                        maxLength={10}
+                      />
+                    )}
+                  ></Controller>
+                </div>
+              </LabelFieldPair>
+              <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
             </React.Fragment>
           )}
           {typeOfOwner !== "INSTITUTIONAL" && (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_LOCALIZATION_TRADE_OWNER_NAME")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
@@ -699,7 +877,7 @@ const OwnerForm = (_props) => {
                   <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
                 </LabelFieldPair> */}
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
@@ -733,7 +911,7 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
@@ -765,24 +943,23 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
                 <Controller
                   control={control}
                   name="relationship"
-                  defaultValue={
-                    owner?.relationship
-                      ? {
-                        code: owner.relationship,
-                        i18nKey:
-                          owner.relationship === "Father"
-                            ? "COMMON_RELATION_FATHER"
-                            : "COMMON_RELATION_HUSBAND",
-                      }
-                      : null
-                  }
+                  defaultValue={(() => {
+                    const rel = owner?.relationship;
+                    if (!rel) return null;
+                    if (typeof rel === "object" && rel.code && typeof rel.code === "string") return rel;
+                    const relCode = typeof rel === "string" ? rel : (rel?.code || "");
+                    return {
+                      code: relCode,
+                      i18nKey: relCode === "Father" ? "COMMON_RELATION_FATHER" : "COMMON_RELATION_HUSBAND",
+                    };
+                  })()}
                   rules={{ required: "RelationShip Required" }}
                   render={(props) => {
                     const selectedValue = props && props.value ? props.value : null;
@@ -824,14 +1001,19 @@ const OwnerForm = (_props) => {
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
                 <Controller
                   control={control}
                   name="gender"
-                  defaultValue={owner.gender}
+                  defaultValue={owner.gender
+                    ? genderTypeMenu.find(function (g) {
+                      var code = typeof owner.gender === "string" ? owner.gender : owner.gender?.code;
+                      return g.code === code;
+                    }) || null
+                    : null}
                   rules={{ required: t("REQUIRED_FIELD") }}
                   render={function (props) {
                     var selectedValue = props && props.value ? props.value : null;
@@ -870,8 +1052,8 @@ const OwnerForm = (_props) => {
               <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
 
               {/* dob */}
-              {/* <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("CORE_COMMON_DOB")}`}
                   <span className="requiredField">*</span>
                 </CardLabel>
@@ -879,6 +1061,7 @@ const OwnerForm = (_props) => {
                   control={control}
                   name={"dob"}
                   defaultValue={Digit.DateUtils.ConvertEpochToDate(owner?.dob) || ""}
+                  rules={{ required: t("REQUIRED_FIELD") }}
                   render={(props) => (
                     <TextInput
                       type="date"
@@ -899,10 +1082,10 @@ const OwnerForm = (_props) => {
                   )}
                 />
               </LabelFieldPair>
-              <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError> */}
+              <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError> 
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -932,7 +1115,7 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
                 <Controller
                   control={control}
                   name={"ownerType"}
@@ -960,7 +1143,7 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")} `}</CardLabel>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")} `}</CardLabel>
                 <div className="form-field">
                   <Controller
                     control={control}
@@ -987,6 +1170,42 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"pan"}
+                    defaultValue={owner?.pan || ""}
+                    rules={{
+                      validate: (val) => {
+                        if (!val || val === "") return true;
+                        return val.length >= 9 ? true : "PAN must be at least 9 characters";
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        t={t}
+                        type={"text"}
+                        isMandatory={false}
+                        name="pan"
+                        value={props.value}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "pan"}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                          if (val !== owner?.pan && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                          props.onChange(val);
+                          setFocusIndex({ index: owner.key, type: "pan" });
+                        }}
+                        onBlur={props.onBlur}
+                        placeholder={t("TL_OWNER_PAN_PLACEHOLDER") || "Enter PAN Number"}
+                        maxLength={10}
+                      />
+                    )}
+                  ></Controller>
+                </div>
+              </LabelFieldPair>
+              <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
             </React.Fragment>
           )}
         </div>
@@ -1063,6 +1282,7 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
       formData?.ownershipCategory?.code != "INDIVIDUAL.MULTIPLEOWNERS"
     )
       clearErrors("mulipleOwnerError");
+    // Commented out: error should only show on Next click, not immediately on selection
     // if (formData?.ownershipCategory?.code == "INDIVIDUAL.MULTIPLEOWNERS" && owners.length == 1)
     //   setError("mulipleOwnerError", { type: "owner_missing", message: `TL_ERROR_MULTIPLE_OWNER` });
     const data = owners.map((e) => {
@@ -1075,7 +1295,6 @@ useEffect(() => {
   const previousOwnershipCode = sessionStorage.getItem("previousOwnershipCategory");
   
   if (currentOwnershipCode && previousOwnershipCode && currentOwnershipCode !== previousOwnershipCode) {
-    // console.log("🔄 Ownership category changed from", previousOwnershipCode, "to", currentOwnershipCode);
     
     // Check if there's existing data
     const hasExistingData = owners.some(owner => 
@@ -1118,6 +1337,7 @@ useEffect(() => {
   useEffect(() => {
     if (window.location.href.includes("tl/new-application")) {
       if (!formData?.owners) setOwners([createOwnerDetails()]);
+      // Commented out: error should only show on Next click, not immediately on selection
       // if (formData?.ownershipCategory?.code == "INDIVIDUAL.MULTIPLEOWNERS")
       //   setError("mulipleOwnerError", { type: "owner_missing", message: `TL_ERROR_MULTIPLE_OWNER` });
     }

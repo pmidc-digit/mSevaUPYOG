@@ -14,7 +14,6 @@ import { Loader } from "../../../../components/Loader";
 // });
 
 //   function goNext(data) {
-//     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 //     onGoNext();
 //   }
 //   function onGoBack(data) {
@@ -22,13 +21,11 @@ import { Loader } from "../../../../components/Loader";
 //   }
 
 //   const onFormValueChange = (setValue = true, data) => {
-//     console.log("onFormValueChange data in AdministrativeDetails: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
 //     if (!_.isEqual(data, currentStepData)) {
 //       dispatch(UPDATE_PtNewApplication(config.key, data));
 //     }
 //   };
 
-//  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
 //   return (
 //     <React.Fragment>
@@ -53,10 +50,12 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [getLoader, setLoader] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-   const [showToast, setShowToast] = useState(false);
   useEffect(() => {
     Digit.TLService.fetch_bill({
       tenantId: tenantId,
@@ -64,25 +63,51 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     });
   }, []);
 
-  // Function to handle the "Next" button click
-  const goNext = (data) => {
-    console.log("Full form data submitted: ", formData);
+  // Monitor checkbox state and enable/disable button
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.declarationChecked) {
+        setIsButtonDisabled(false);
+      } else {
+        setIsButtonDisabled(true);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
-    const res = onSubmit(formData?.CreatedResponse);
-    // console.log("API response: ", res);
+  // Auto-close toast after 3 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+        setError("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  // Function to handle the "Next" button click
+  const goNext = async (data) => {
+
+    // Validate checkbox
+    if (!window.declarationChecked) {
+      setError("Please accept the declaration to proceed");
+      setShowToast(true);
+      return;
+    }
+
+    const res = await onSubmit(formData?.CreatedResponse);
 
     if (res) {
-      console.log("Submission successful, moving to next step.");
-      // history.replace(`/digit-ui/employee/tl/application-details/${formData?.CreatedResponse?.applicationNumber}`);
-       history.replace(`/digit-ui/employee/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
+      history.replace(`/digit-ui/employee/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {
       console.error("Submission failed, not moving to next step.");
+      setError("Submission failed. Please try again.");
+      setShowToast(true);
     }
-    // onGoNext();
   };
 
   const onSubmit = async (data) => {
-    console.log("formData", data);
     let formdata = { ...data };
     formdata.tradeLicenseDetail.applicationDocuments = formData?.Documents?.documents?.documents;
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
@@ -96,10 +121,9 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {
       setLoader(false);
-      return error;
+      return false;
     }
 
-    // console.log("onSubmit data in step 4: ", formdata);
   };
 
   // Function to handle the "Back" button click
@@ -109,11 +133,9 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   // Function to handle form value changes
   // const onFormValueChange = (setValue = true, data) => {
-  //   // console.log("onFormValueChange data summary in step 5: ", data);
   //   dispatch(UPDATE_tlNewApplication(config.key, data));
   // };
 
-  // console.log("config in step 4", config)
 
   // useEffect(() => {
   //     if (showToast) {
@@ -127,15 +149,26 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={formData} // Pass the entire formData as default values
-        config={config.currStepConfig} // Configuration for the current step
-        onSubmit={goNext} // Handle form submission
-        // onFormValueChange={onFormValueChange} // Handle form value changes
-        label={t(`${config.texts.submitBarLabel}`)} // Submit button label
-        currentStep={config.currStepNumber} // Current step number
-        onBackClick={onGoBack} // Handle back button click
+        defaultValues={formData}
+        config={config.currStepConfig}
+        onSubmit={goNext}
+        label={t(`${config.texts.submitBarLabel}`)}
+        currentStep={config.currStepNumber}
+        onBackClick={onGoBack}
+        isDisabled={isButtonDisabled}
       />
       {getLoader && <Loader page={true} />}
+      {showToast && (
+        <Toast
+          error={true}
+          label={error}
+          isDleteBtn={true}
+          onClose={() => {
+            setShowToast(false);
+            setError("");
+          }}
+        />
+      )}
     </React.Fragment>
   );
 };

@@ -71,6 +71,8 @@ export const TLSearch = {
       values: [
         { title: "TL_LOCALIZATION_APPLICATION_NO", value: response?.applicationNumber ? `${response?.applicationNumber}` : "NA" },
         // { title: "TL_APPLICATION_CHALLAN_LABEL", value: response?.tradeLicenseDetail?.channel ? `TL_CHANNEL_${response?.tradeLicenseDetail?.channel}` : "NA" },
+        { title: "TL_APPLICATION_STATUS", value: response?.status ? `TL_${response?.status}` : "NA" },
+        { title: "TL_APPLICATION_CATEGORY", value: response?.workflowCode ? `CS_COMMON_INBOX_${response?.workflowCode?.toUpperCase()}` : "NA" },
       ],
     };
 
@@ -85,9 +87,11 @@ export const TLSearch = {
       title: "TL_COMMON_TR_DETAILS",
       asSectionHeader: true,
       values: [
+        { title: "TL_APPLICATION_TYPE", value: response?.applicationType ? `TRADELICENSE_APPLICATIONTYPE_${response?.applicationType}` : "NA" },
         { title: "TL_FINANCIAL_YEAR_LABEL", value: response?.financialYear ? `FY${response?.financialYear}` : "NA" },
         { title: "TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL", value: response?.licenseType ? `TRADELICENSE_LICENSETYPE_${response?.licenseType}` : "NA" },
         { title: "TL_COMMON_TABLE_COL_TRD_NAME", value: response?.tradeName },
+        { title: "TL_OLD_RECEIPT_NO", value: response?.tradeLicenseDetail?.additionalDetail?.oldReceiptNo || "NA" },
         {
           title: "TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL",
           value: response?.tradeLicenseDetail?.structureType
@@ -110,6 +114,7 @@ export const TLSearch = {
         },
         { title: "TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL", value: response?.tradeLicenseDetail?.operationalArea || "NA" },
         { title: "TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL", value: response?.tradeLicenseDetail?.noOfEmployees || "NA" },
+        { title: "TL_VALIDITY_YEARS", value: response?.tradeLicenseDetail?.additionalDetail?.validityYears || "NA" },
       ],
     };
 
@@ -179,11 +184,14 @@ export const TLSearch = {
     const tradeAddress = {
       title: "TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS",
       values: [
+        { title: "TL_PROPERTY_ASSESSMENT_ID", value: response?.tradeLicenseDetail?.additionalDetail?.propertyId || "NA" },
         { title: "CORE_COMMON_PINCODE", value: response?.tradeLicenseDetail?.address?.pincode || "NA" },
         { title: "MYCITY_CODE_LABEL", value: response?.tradeLicenseDetail?.address?.city || "NA" },
         { title: "TL_LOCALIZATION_LOCALITY", value: `${stringReplaceAll(cityOfApp?.toUpperCase(), ".", "_")}_REVENUE_${localityCode}` },
-        { title: "TL_NEW_TRADE_DETAILS_BLDG_NAME_LABEL", value: response?.tradeLicenseDetail?.address?.doorNo || "NA" },
+        { title: "TL_DOOR_HOUSE_NO", value: response?.tradeLicenseDetail?.address?.doorNo || "NA" },
+        { title: "TL_NEW_TRADE_DETAILS_BLDG_NAME_LABEL", value: response?.tradeLicenseDetail?.address?.buildingName || "NA" },
         { title: "TL_LOCALIZATION_STREET_NAME", value: response?.tradeLicenseDetail?.address?.street || "NA" },
+        { title: "TL_ELECTRICITY_CONNECTION_NO", value: response?.tradeLicenseDetail?.address?.electricityNo || "NA" },
       ],
     };
 
@@ -242,13 +250,16 @@ export const TLSearch = {
                 return {
                   title: Number(checkOwnerLength) > 1 ? "TL_PAYMENT_PAID_BY_PLACEHOLDER" : "",
                   values: [
-                    { title: "TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL", value: subOwnerShipCategory },
+                    { title: "TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL", value: response?.tradeLicenseDetail?.subOwnerShipCategory ? `COMMON_MASTERS_OWNERSHIPCATEGORY_${response?.tradeLicenseDetail?.subOwnerShipCategory?.split(".")[0]}` : "NA" },
+                    { title: "TL_TYPE_OF_SUB_OWNERSHIP", value: subOwnerShipCategory },
                     { title: "TL_NEW_OWNER_DETAILS_NAME_LABEL", value: owner?.name || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_MOB_NO_LABEL", value: owner?.mobileNumber || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL", value: owner?.fatherOrHusbandName || "NA" },
                     { title: "TL_COMMON_RELATIONSHIP_LABEL", value: owner?.relationship || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_GENDER_LABEL", value: owner?.gender || "NA" },
                     { title: "TL_NEW_OWNER_DETAILS_EMAIL_LABEL", value: owner?.emailId || "NA" },
+                    { title: "TL_NEW_OWNER_DETAILS_DOB_LABEL", value: owner?.dob ? convertEpochToDate(owner?.dob) : "NA" },
+                    { title: "TL_OWNER_PAN_LABEL", value: owner?.pan || "NA" },
                     {
                       title: "TL_NEW_OWNER_DETAILS_SPL_OWN_CAT_LABEL",
                       value: owner?.ownerType ? `COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}` : "NA",

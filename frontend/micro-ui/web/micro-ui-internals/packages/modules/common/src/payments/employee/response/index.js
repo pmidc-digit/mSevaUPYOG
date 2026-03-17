@@ -1,11 +1,11 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { Banner, Card, CardText, SubmitBar, ActionBar, DownloadPrefixIcon, Loader, Menu } from "@mseva/digit-ui-react-components";
-import { useHistory, useParams, Link, LinkLabel } from "react-router-dom";
+import { useHistory, useParams, Link, LinkLabel, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { format } from "date-fns";
 import { transformBookingResponseToBookingData } from "../../index";
-import { ChallanData ,getLocationName,formatDate } from "../../index";
+import { ChallanData, getLocationName, formatDate } from "../../index";
 
 export const convertEpochToDate = (dateEpoch) => {
   // Returning NA in else case because new Date(null) returns Current date from calender
@@ -21,8 +21,10 @@ export const convertEpochToDate = (dateEpoch) => {
     return "NA";
   }
 };
+
 export const SuccessfulPayment = (props) => {
   const history = useHistory();
+  const location = useLocation();
   const { addParams, clearParams } = props;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -34,11 +36,21 @@ export const SuccessfulPayment = (props) => {
   const [printing, setPrinting] = useState(false);
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
   props.setLink(combineResponseFSM);
+  const checkParam = useParams();
+  const queryParams = new URLSearchParams(location.search);
+
+  const egPgTxnId = queryParams.get("eg_pg_txnid");
+  const razorpayPaymentId = queryParams.get("razorpayPaymentId");
+  const razorpayOrderId = queryParams.get("razorpayOrderId");
+  const razorpaySignature = queryParams.get("razorpaySignature");
+
   let { consumerCode, receiptNumber, businessService } = useParams();
 
-  console.log("consummennene", consumerCode);
+  console.log("checkParam", checkParam);
+  console.log("egPgTxnId", egPgTxnId);
+  console.log("businessService", businessService);
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  receiptNumber = receiptNumber.replace(/%2F/g, "/");
+  receiptNumber = receiptNumber?.replace(/%2F/g, "/");
   const { data = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -56,6 +68,13 @@ export const SuccessfulPayment = (props) => {
     const selectedTenantData = cities.data.find((item) => item.city.districtTenantCode === loginCity);
     ulbType = selectedTenantData?.city?.ulbGrade;
   }
+
+  const { isLoading, data: dataCheck, isError } = Digit.Hooks.usePaymentUpdate({ egId: egPgTxnId }, businessService, {
+    enabled: !!egPgTxnId,
+    retry: false,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
 
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
@@ -114,10 +133,10 @@ export const SuccessfulPayment = (props) => {
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
       businessService === "GC.ONE_TIME_FEE"
-      ? "garbage-receipt"
-      : businessService === "rl-services"
-      ? "rentandlease-receipt"
-      :data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
+        ? "garbage-receipt"
+        : businessService === "rl-services"
+        ? "rentandlease-receipt"
+        : data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
 
   const printCertificate = async () => {
@@ -194,7 +213,6 @@ export const SuccessfulPayment = (props) => {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -217,8 +235,11 @@ export const SuccessfulPayment = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
-      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
-      console.log('location', location)
+      const location = await getLocationName(
+        applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
+        applicationDetails?.challans?.[0]?.additionalDetail?.longitude
+      );
+      console.log("location", location);
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -230,7 +251,7 @@ export const SuccessfulPayment = (props) => {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { challan: { ...application, ...(payments?.Payments?.[0] || {}),location } },
+          { challan: { ...application, ...(payments?.Payments?.[0] || {}), location } },
           "challan-notice"
         );
         fileStoreId = response?.filestoreIds[0];
@@ -247,16 +268,16 @@ export const SuccessfulPayment = (props) => {
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
       let application = {
-              hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
-                return {
-                  ...app,
-                  bookingSlotDetails: [...(app.bookingSlotDetails || [])]
-                    .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
-                    .map((slot) => ({
-                      ...slot,
-                      bookingDate: formatDate(slot.bookingDate),
-                      bookingEndDate: formatDate(slot.bookingEndDate),
-            })),
+        hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
           };
         }),
       };
@@ -291,16 +312,16 @@ export const SuccessfulPayment = (props) => {
     try {
       const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
       let application = {
-              hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
-                return {
-                  ...app,
-                  bookingSlotDetails: [...(app.bookingSlotDetails || [])]
-                    .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
-                    .map((slot) => ({
-                      ...slot,
-                      bookingDate: formatDate(slot.bookingDate),
-                      bookingEndDate: formatDate(slot.bookingEndDate),
-            })),
+        hallsBookingApplication: (applicationDetails?.hallsBookingApplication || []).map((app) => {
+          return {
+            ...app,
+            bookingSlotDetails: [...(app.bookingSlotDetails || [])]
+              .sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+              .map((slot) => ({
+                ...slot,
+                bookingDate: formatDate(slot.bookingDate),
+                bookingEndDate: formatDate(slot.bookingEndDate),
+              })),
           };
         }),
       };
@@ -308,7 +329,11 @@ export const SuccessfulPayment = (props) => {
       if (!fileStoreId) {
         const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
         let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }]  }, "chbservice-receipt");
+        response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "chbservice-receipt"
+        );
         const updatedApplication = {
           ...applicationDetails?.hallsBookingApplication[0],
           paymentReceiptFilestoreId: response?.filestoreIds[0],
@@ -558,7 +583,10 @@ export const SuccessfulPayment = (props) => {
     }
     fileStoreTenant = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
 
-    const fileStore = fileStoreTenant && fileStoreTenant[response.filestoreIds[0]] ? fileStoreTenant : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0], });    
+    const fileStore =
+      fileStoreTenant && fileStoreTenant[response.filestoreIds[0]]
+        ? fileStoreTenant
+        : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
@@ -791,12 +819,19 @@ export const SuccessfulPayment = (props) => {
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
   };
-  if (businessService?.includes("BPA") && isBpaSearchLoading) return <Loader />;
+  if (isLoading) return <Loader />;
+
+  const checkRecieptNumber = dataCheck?.payments?.Payments?.[0]?.paymentDetails[0]?.receiptNumber;
 
   return (
     <React.Fragment>
       <Card>
-        <Banner message={getMessage()} info={t("PAYMENT_LOCALIZATION_RECIEPT_NO")} applicationNumber={receiptNumber} successful={true} />
+        <Banner
+          message={getMessage()}
+          info={t("PAYMENT_LOCALIZATION_RECIEPT_NO")}
+          applicationNumber={receiptNumber || checkRecieptNumber}
+          successful={true}
+        />
         <CardText>{getCardText()}</CardText>
         {generatePdfKey ? (
           <div style={{ display: "flex", justifyContent: "space-evenly" }}>
@@ -824,7 +859,7 @@ export const SuccessfulPayment = (props) => {
                 </div>
               )}
 
-            {businessService == "TL" ? (
+            {/* {businessService == "TL" ? (
               <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printCertificate}>
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                   <path d="M0 0h24v24H0z" fill="none" />
@@ -832,7 +867,7 @@ export const SuccessfulPayment = (props) => {
                 </svg>
                 {t("CS_COMMON_PRINT_CERTIFICATE")}
               </div>
-            ) : null}
+            ) : null} */}
 
             {/* {businessService !== "chb-services" &&
               businessService !== "adv-services" &&

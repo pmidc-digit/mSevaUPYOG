@@ -5,7 +5,6 @@ import { SET_ADSNewApplication_STEP } from "../redux/action/ADSNewApplicationAct
 import ADSDocument from "./ADSDocument";
 import ADSCartDetails from "./ADSCartDetails";
 
-
 function ADSSummary({ t }) {
   const dispatch = useDispatch();
   const TT = (key) => (t ? t(key) : key);
@@ -38,11 +37,10 @@ function ADSSummary({ t }) {
 
   return (
     <div className="bpa-summary-page">
-     
       <h2 className="bpa-summary-heading">{TT("ADS_APPLICANT_DETAILS")}</h2>
-      <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+      <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
         {TT("TL_SUMMARY_EDIT")}
-      </span>
+      </div>
       <div className="bpa-summary-section">
         {renderRow(TT("NOC_APPLICANT_NAME_LABEL"), applicant?.applicantName)}
         {renderRow(TT("CORE_Mobile_Number"), applicant?.applicantMobileNo)}
@@ -52,21 +50,18 @@ function ADSSummary({ t }) {
       </div>
 
       <h2 className="bpa-summary-heading">{TT("ADS_DETAILS")}</h2>
-      <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
+      <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
         {TT("TL_SUMMARY_EDIT")}
-      </span>
+      </div>
       <div className="bpa-summary-section">
         <ADSCartDetails cartDetails={cartDetails} t={t} />
       </div>
 
       <div className="document-section-wrapper">
-        <div className="document-section-header">
-         
-          {TT("ADS_DOCUMENTS_DETAILS")}
-        </div>
-        <span className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
+        <div className="document-section-header">{TT("ADS_DOCUMENTS_DETAILS")}</div>
+        <div className="ads-summary-edit" onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
           {TT("TL_SUMMARY_EDIT")}
-        </span>
+        </div>
 
         {docs?.length > 0 ? (
           <div className="document-container">

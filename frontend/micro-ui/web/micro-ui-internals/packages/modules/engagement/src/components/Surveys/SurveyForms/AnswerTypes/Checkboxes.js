@@ -1,6 +1,5 @@
 import { CheckBox, CloseSvg } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
-import { useDebounce } from "../../../../hooks/useDebounce";
 
 const Checkboxes = ({
   t,
@@ -99,27 +98,26 @@ const CheckBoxOption = ({
     }
   };
   return (
-    <div className="optioncheckboxwrapper" style={{ alignItems: "flex-start" }}>
-      <CheckBox disable={isInputDisabled} />
-      <input
-        ref={inputRef}
-        type="text"
-        value={optionTitle}
-        onChange={(ev) => setOptionTitle(ev.target.value)}
-        onBlur={() => setIsFocused(false)}
-        onFocus={() => setIsFocused(true)}
-        className={isFocused ? "simple_editable-input" : "simple_readonly-input"}
-        maxLength={maxLength}
-        title={titleHover}
-        style={{ ...labelstyle }}
-        disabled={isPartiallyEnabled ? !isPartiallyEnabled : formDisabled}
-      />
-      {optionsLength > 1 && (
-        <div className="pointer" onClick={() => removeOption(index)}>
-          <CloseSvg />
-        </div>
-      )}
-      <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className="optionradiobtnwrapper" style={{ alignItems: "end", justifyContent: "flex-start", position: "relative" }}>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center", alignItems: "center" }}>
+        <CheckBox disable={isInputDisabled} />
+        <input
+          ref={inputRef}
+          type="text"
+          value={optionTitle}
+          onChange={(ev) => setOptionTitle(ev.target.value)}
+          onBlur={() => setIsFocused(false)}
+          onFocus={() => setIsFocused(true)}
+          className="employee-card-input"
+          // className={isFocused ? "simple_editable-input" : "simple_readonly-input"}
+          maxLength={maxLength}
+          title={titleHover}
+          style={{ ...labelstyle }}
+          disabled={isPartiallyEnabled ? !isPartiallyEnabled : formDisabled}
+        />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", fontSize: "14px" }}>
         <label htmlFor="numberInput">Enter a number (0-10):</label>
         <input
           type="number"
@@ -138,6 +136,11 @@ const CheckBoxOption = ({
         />
         {error && <span style={{ color: "red" }}>{error}</span>}
       </div>
+      {optionsLength > 1 && (
+        <div style={{ position: "absolute", right: "65px", top: "32px" }} className="pointer" onClick={() => removeOption(index)}>
+          <CloseSvg />
+        </div>
+      )}
     </div>
   );
 };

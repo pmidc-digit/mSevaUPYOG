@@ -27,6 +27,7 @@ const Urls = {
   Swach_ViewAttendence: `/swach-services/v2/attendance/_search`,
   OTP_Send: "/user-otp/v1/_send",
   Authenticate: "/user/oauth/token",
+  Authenticatev1 : "/user/employee/_login",
   RegisterUser: "/user/citizen/_create",
   ChangePassword: "/user/password/nologin/_update",
   ChangePassword1: "/user/password/_update",
@@ -145,7 +146,7 @@ const Urls = {
     search: "/rl-services/allotment/v1/_search",
     getReports: "/rl-services/property/_report",
     fetch_bill: "/billing-service/bill/v2/_fetchbill?",
-    search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
+    search_bill: "/egov-searcher/bill-genie/rentandleasebills/_get",
     search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
     download_pdf: "/egov-pdf/download/UC/mcollect-challan",
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
@@ -174,6 +175,7 @@ const Urls = {
     download_pdf: "/egov-pdf/download/TL/",
     update: "/tl-services/v1/_update",
     billingslab: "/tl-calculator/billingslab/_search",
+    getbill: "/tl-calculator/v1/_getbill",
   },
   receipts: {
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
@@ -207,6 +209,9 @@ const Urls = {
     cluCheckListCreate: "/clu-services/v1/checklist/_create",
     cluCheckListUpdate: "/clu-services/v1/checklist/_update",
     cluCheckListSearch: "/clu-services/v1/checklist/_search",
+    layoutCheckListCreate: "/layout-services/v1/checklist/_create",
+    layoutCheckListUpdate: "/layout-services/v1/checklist/_update",
+    layoutCheckListSearch: "/layout-services/v1/checklist/_search",
     layoutCalculator: "/layout-calculator/v1/_calculate",
     layoutCollectionSearch: "/collection-services/payments/layout/_search",
     bpaCheckListCreate : "/bpa-services/v1/checklist/_create",
@@ -315,10 +320,9 @@ const Urls = {
     nocCreate: "/noc-services/v1/noc/_create",
     update: "/noc-services/v1/noc/_update",
     nocCalculator: "/noc-calculator/v1/_calculate",
-    nocCheckListCreate : "/noc-services/v1/checklist/_create",
-    nocCheckListUpdate : "/noc-services/v1/checklist/_update",
-    nocCheckListSearch : "/noc-services/v1/checklist/_search"
-
+    nocCheckListCreate: "/noc-services/v1/checklist/_create",
+    nocCheckListUpdate: "/noc-services/v1/checklist/_update",
+    nocCheckListSearch: "/noc-services/v1/checklist/_search",
   },
   reports: {
     reportSearch: "/report/",
@@ -386,6 +390,8 @@ const Urls = {
     update: "/gc-services/gc/_update",
     location: "/egov-location/location/v11/boundarys/_search",
     validateConnection: "/gc-services/gc/_validateConnection",
+    scheduler: "/gc-calculator/garbagecharges/scheduler/_create",
+    billGenieSearch: "/egov-searcher/bill-genie/garbagecollectionbills/_get",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

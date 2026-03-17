@@ -6,13 +6,43 @@ import { useTranslation } from "react-i18next";
 // import { CreateComplaint } from "./CreateComplaint";
 // import Inbox from "./Inbox";
 import { Employee } from "../../constants/Routes";
+import { Link } from "react-router-dom/cjs/react-router-dom.min";
 // import Response from "./Response";
+
+const PGRBreadCrumbs = ({ location, t }) => {
+  const crumbs = [
+    {
+      path: "/digit-ui/employee",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/employee/pgr/inbox",
+      content: t("CS_COMMON_INBOX"),
+      show: location.includes("/pgr/inbox") && !location.includes("complaint") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/pgr/complaint/create",
+      content: t("CS_PGR_CREATE_APPLICATION"),
+      show: location.includes("/pgr/complaint/create") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/pgr/complaint/details",
+      content: t("CS_PGR_APPLICATION_SUMMARY"),
+      show: location.includes("/pgr/complaint/details") ? true : false,
+    },
+  ];
+
+  return <BreadCrumb crumbs={crumbs} />;
+};
 
 const Complaint = () => {
   const [displayMenu, setDisplayMenu] = useState(false);
   const [popup, setPopup] = useState(false);
   const match = useRouteMatch();
   const { t } = useTranslation();
+  const location = useLocation().pathname;
+  const mobileView = innerWidth <= 640;
 
   const breadcrumConfig = {
     home: {
@@ -45,8 +75,6 @@ const Complaint = () => {
     setPopup(true);
   }
 
-  let location = useLocation().pathname;
-
   const CreateComplaint = Digit?.ComponentRegistryService?.getComponent('PGRCreateComplaintEmp');
   const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent('PGRComplaintDetails');
   const Inbox = Digit?.ComponentRegistryService?.getComponent('PGRInbox');
@@ -55,31 +83,7 @@ const Complaint = () => {
   return (
     <React.Fragment>
       <div className="ground-container">
-        {!location.includes(Employee.Response) && <BackButton>{t("CS_COMMON_BACK")}</BackButton>} 
-        {!location.includes(Employee.Response) && (
-          <Switch>
-            <Route
-              path={match.url + Employee.CreateComplaint}
-              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.createComplaint]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.ComplaintDetails + ":id"}
-              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.inbox, breadcrumConfig.complaintDetails]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.Inbox}
-              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.inbox]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.Response}
-              component={<BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.response]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.EditApplication + ":id"}
-              component={<BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.editApplication]}></BreadCrumb>}
-            />
-          </Switch>
-        )}
+        <PGRBreadCrumbs location={location} t={t} />
         <Switch>
           <Route path={match.url + Employee.CreateComplaint} component={() => <CreateComplaint parentUrl={match.url} />} />
           <Route path={match.url + Employee.ComplaintDetails + ":fullIdAndUlb*"} component={()=><ComplaintDetails/>} />

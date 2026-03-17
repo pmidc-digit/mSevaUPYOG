@@ -8,18 +8,19 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
   const timeline = workflowDetails?.data?.timeline || workflowDetails?.timeline || [];
   const processInstances = workflowDetails?.data?.processInstances || workflowDetails?.processInstances || [];
   
-  // Get business ID from process instances
   const businessId = processInstances?.[0]?.businessId || "N/A";
   const businessService = processInstances?.[0]?.businessService || "N/A";
   const moduleName = processInstances?.[0]?.moduleName || "N/A";
 
   const pdfDownloadLink = (documents, fileStoreId) => {
-  const downloadLink = documents?.[fileStoreId] || "";
-  const formats = downloadLink?.split(",")?.filter(Boolean) || [];
-  return formats?.find((link) => !link?.includes("large") && !link?.includes("medium") && !link?.includes("small")) || formats?.[0] || "";
+    const downloadLink = documents?.[fileStoreId] || "";
+    const formats = downloadLink?.split(",")?.filter(Boolean) || [];
+    return formats?.find((link) => !link?.includes("large") && !link?.includes("medium") && !link?.includes("small")) || formats?.[0] || "";
   };
 
-  // Transform timeline entries into detailed rows (maintaining original order - latest first)
+  // regex pattern for trimming
+  const pattern = /\[#\?.*?\*\*\]/;
+
   const timelineRows = timeline.map((item, index) => {
     const createdDate = item?.auditDetails?.created || "N/A";
     const timing = item?.auditDetails?.timing || "N/A";
@@ -28,7 +29,11 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
     const mobileNumber = item?.assigner?.mobileNumber || "N/A";
     const action = item?.performedAction || "N/A";
     const status = item?.status || item?.state || "N/A";
-    const comment = item?.wfComment?.[0] || "-";
+
+    // sanitize wfComment before using
+    const rawComment = item?.wfComment?.[0] || "-";
+    const comment = typeof rawComment === "string" ? rawComment.split(pattern)[0] : rawComment;
+
     const documents = item?.wfDocuments || [];
     const sla = item?.sla || "N/A";
     const assignedTo = Array.isArray(item?.assignes) ? item.assignes.map(a => a?.name).filter(Boolean).join(", ") : "";
@@ -40,7 +45,7 @@ const getTimelineAcknowledgementData = (workflowDetails, tenantInfo, pdfFiles = 
       assignerName,
       assignerType,
       mobileNumber,
-      designation: assignerType, // For government document style
+      designation: assignerType,
       date: createdDate,
       time: timing,
       dateTime: `${createdDate} ${timing !== "N/A" ? timing : ""}`.trim(),

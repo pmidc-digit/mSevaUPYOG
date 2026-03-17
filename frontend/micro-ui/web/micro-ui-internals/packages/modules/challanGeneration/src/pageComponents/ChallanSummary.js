@@ -75,58 +75,6 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
     // setSelectedAction(action);
   }
 
-  // ---------------- UI Styles ----------------
-  const pageStyle = {
-    padding: "2rem",
-    backgroundColor: "#f9f9f9",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: "#333",
-  };
-
-  const sectionStyle = {
-    backgroundColor: "#ffffff",
-    padding: "1rem 1.5rem",
-    borderRadius: "8px",
-    marginBottom: "2rem",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  };
-
-  const headingStyle = {
-    fontSize: "1.5rem",
-    borderBottom: "2px solid #ccc",
-    paddingBottom: "0.3rem",
-    color: "#2e4a66",
-    marginTop: "2rem",
-    marginBottom: "1rem",
-  };
-
-  const labelFieldPairStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    borderBottom: "1px dashed #e0e0e0",
-    padding: "0.5rem 0",
-    color: "#333",
-  };
-
-  const documentsContainerStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "1rem",
-  };
-
-  const documentCardStyle = {
-    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
-    minWidth: "200px", // keeps it from shrinking too small
-    maxWidth: "250px", // prevents oversized stretching on big screens
-    backgroundColor: "#fdfdfd",
-    padding: "0.75rem",
-    border: "1px solid #e0e0e0",
-    borderRadius: "6px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-  };
-
-  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
-
   const renderLabel = (label, value) => (
     <div className="bpa-summary-label-field-pair">
       <CardLabel className="bpa-summary-bold-label" style={{width: "auto"}}>{label}</CardLabel>
@@ -193,19 +141,13 @@ function ChallanSummary({ formData, goNext, onGoBack }) {
         t={t}
         data={slotlistRows}
         columns={columns}
-        getCellProps={(cellInfo) => ({
-          style: {
-            minWidth: "150px",
-            padding: "10px",
-            fontSize: "16px",
-            paddingLeft: "20px",
-          },
-        })}
+       
+        className="challan-application-table"
         isPaginationRequired={false}
         totalRecords={slotlistRows.length}
       />
 
-      <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+      <CardSubHeader className="challan-custom-header" >{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
       <StatusTable>
         <Card>
           {docs?.map((doc, index) => (

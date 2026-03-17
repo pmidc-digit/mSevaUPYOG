@@ -39,7 +39,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const [selectedRow, setSelectedRow] = useState(null);
 
   console.log("apiDataCheck", apiDataCheck);
-  console.log("formData==?/??", formData);
+  console.log("formData==?/||", formData);
   console.log("checkApiDataCheck====", checkApiDataCheck?.Applications?.[0]);
 
   const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
@@ -777,6 +777,35 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           )}
         </div>
       )}
+
+      {/* remarks */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("Remarks")}`}</CardLabel>
+        <div className="form-field">
+          <Controller
+            control={control}
+            name={"remarks"}
+            defaultValue={propertyDetails?.remarks || ""}
+            rules={{
+              required: t("REQUIRED_FIELD"),
+            }}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.remarks || ""}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, remarks: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      {/* tl number */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
         <div className="form-field">

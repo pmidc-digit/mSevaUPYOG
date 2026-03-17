@@ -224,7 +224,7 @@ useEffect(() => {
 
       
       <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid() || nameError} t={t}>
-         <CardLabelError style={errorStyle}>{nameError}</CardLabelError>
+         <CardLabelError>{nameError}</CardLabelError>
         <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
       <TextInput
         t={t}

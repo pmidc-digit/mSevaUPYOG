@@ -41,13 +41,19 @@ const InspectionReportDisplay = ({fiReport}) => {
 
           return getIndex(a) - getIndex(b);
         })
-        .map((item, idx) => ({
-          question: t(item?.question),
-          remarks: report?.["Remarks_" + idx] || "-"
-        }));
+        .map((item, idx) => {
+          const questionText = t(item?.question) || t("CS_NA");
+          const cleanedQuestion = questionText.replace(/^[\d\s.:]+/, '').trim();
+          return {
+            srNo: idx + 1,
+            question: cleanedQuestion,
+            remarks: report?.["Remarks_" + idx] || "-"
+          };
+        });
 
       // ➕ Add Recommendations row
       rows.push({
+        srNo: rows.length + 1,
         question: t("BPA_RECOMMENDATIONS"),
         remarks: report?.Recommendations || "-"
       });
@@ -103,6 +109,11 @@ const InspectionReportDisplay = ({fiReport}) => {
                             t={t}
                             data={tableData}
                             columns={[
+                                {
+                                    Header: t("SR_NO"),
+                                    accessor: "srNo",
+                                    width: "100px"
+                                },
                                 {
                                     Header: t("BPA_CHECK_LIST_DETAILS"),
                                     accessor: "question"

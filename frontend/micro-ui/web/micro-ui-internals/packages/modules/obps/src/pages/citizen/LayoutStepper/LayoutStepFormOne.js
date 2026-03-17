@@ -19,7 +19,6 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.obps.LayoutNewApplicationFormReducer.formData;
   });
 
-  console.log("currentStepData in LayoutStepFormOne", currentStepData);
   const userInfo = Digit.UserService.getUser();
   //console.log("userInfo type here", userInfo?.info?.type);
 
@@ -65,7 +64,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const validateApplicants = (applicants) => {
     let hasError = false;
-    console.log("errorFound: Step 1 validation started for applicants", applicants);
+    //console.log("errorFound: Step 1 validation started for applicants", applicants);
 
     applicants.forEach((applicant, index) => {
       // Clear old errors for this applicant
@@ -78,14 +77,14 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: mobile number error for applicant index", index);
+        //console.log("errorFound: mobile number error for applicant index", index);
       } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
         setError(`applicants.${index}.mobileNumber`, {
           type: "manual",
           message: t("INVALID_MOBILE_NUMBER"),
         });
         hasError = true;
-        console.log("errorFound: mobile number else error for applicant index", index);
+        //console.log("errorFound: mobile number else error for applicant index", index);
       }
 
       /* ---------------- Name ---------------- */
@@ -95,7 +94,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: name error for applicant index", index);
+        //console.log("errorFound: name error for applicant index", index);
       }
 
       /* ---------------- Email ---------------- */
@@ -105,7 +104,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: email id error for applicant index", index);
+        //console.log("errorFound: email id error for applicant index", index);
       } 
       // else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicant.emailId)) {
       //   setError(`applicants.${index}.emailId`, {
@@ -122,7 +121,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: address error for applicant index", index);
+        //console.log("errorFound: address error for applicant index", index);
       }
 
       /* ---------------- DOB (18+ validation) ---------------- */
@@ -132,7 +131,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: dob error for applicant index",index)
+        //console.log("errorFound: dob error for applicant index",index)
       } else {
         const dob = new Date(applicant.dob);
         const today = new Date();
@@ -147,7 +146,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
             message: t("DOB_MUST_BE_18_YEARS_OLD"),
           });
           hasError = true;
-          console.log("errorFound: dob else error for applicant index",index)
+          //console.log("errorFound: dob else error for applicant index",index)
         }
       }
 
@@ -158,7 +157,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: gender error for applicant index",index)
+        //console.log("errorFound: gender error for applicant index",index)
       }
 
       /* ---------------- Passport Photo ---------------- */
@@ -168,7 +167,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("BPA_PASSPORT_PHOTO_REQUIRED"),
         });
         hasError = true;
-        console.log("errorFound: photo error for applicant index",index)
+        //console.log("errorFound: photo error for applicant index",index)
       }
 
       /* ---------------- ID Proof ---------------- */
@@ -178,7 +177,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("BPA_ID_PROOF_REQUIRED"),
         });
         hasError = true;
-        console.log("errorFound: id proof error for applicant index",index)
+        //console.log("errorFound: id proof error for applicant index",index)
       }
 
       /* ---------------- PAN Document ---------------- */
@@ -188,7 +187,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("PAN_DOCUMENT_REQUIRED"),
         });
         hasError = true;
-        console.log("errorFound: panDocument error for applicant index",index)
+        //console.log("errorFound: panDocument error for applicant index",index)
       }
 
       /* ---------------- PAN Number ---------------- */
@@ -198,18 +197,18 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        console.log("errorFound: panNumber error for applicant index",index)
+        //console.log("errorFound: panNumber error for applicant index",index)
       } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(applicant.panNumber)) {
         setError(`applicants.${index}.panNumber`, {
           type: "manual",
           message: t("INVALID_PAN_FORMAT"),
         });
         hasError = true;
-        console.log("errorFound: panNumber else error for applicant index",index)
+        //console.log("errorFound: panNumber else error for applicant index",index)
       }
     });
 
-    console.log("errorFound: Step final validation ends for applicants", applicants);
+    //console.log("errorFound: Step final validation ends for applicants", applicants);
 
     return !hasError;
   };

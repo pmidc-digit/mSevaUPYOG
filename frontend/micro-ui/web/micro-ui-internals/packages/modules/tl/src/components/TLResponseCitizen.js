@@ -37,11 +37,10 @@ const TLResponseCitizen = (props) => {
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("search ", responseData);
+     
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -72,12 +71,10 @@ const TLResponseCitizen = (props) => {
   //       applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
   //       applicationDetails?.challans?.[0]?.additionalDetail?.longitude
   //     );
-  //     console.log("location", location);
   //     const challan = {
   //       ...applicationDetails,
   //       ...challanEmpData,
   //     };
-  //     console.log("applicationDetails", applicationDetails);
   //     let application = challan;
   //     let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
   //     if (!fileStoreId) {

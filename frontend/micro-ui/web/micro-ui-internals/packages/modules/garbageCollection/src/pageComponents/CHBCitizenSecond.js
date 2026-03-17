@@ -291,7 +291,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                 </div>
-                <button className="submit-bar" type="button" onClick={searchProperty}>
+                <button className="submit-bar gcButton" type="button" onClick={searchProperty}>
                   {`${t("PT_SEARCH")}`}
                 </button>
               </div>

@@ -159,10 +159,10 @@ const CLUModal = ({
     const conditionalText = data?.conditionalComments?.trim();
     let finalComments = commentsText;
     if (action?.action === "APPROVE" && conditionalText) {
-      finalComments = `${commentsText} , ${conditionalText}`;
+      finalComments = `${commentsText} [#?..**] ${conditionalText}`;
     }
 
-    if (action?.action !== "APPROVE"  && action?.action !== "REJECT" && !selectedApprover?.uuid) {
+    if (action?.action !== "APPROVE"  && action?.action !== "REJECT" && action?.action !== "SEND_FOR_INSPECTION_REPORT" && !selectedApprover?.uuid) {
       setTimeout(()=>{
         closeToast();
       },2000);

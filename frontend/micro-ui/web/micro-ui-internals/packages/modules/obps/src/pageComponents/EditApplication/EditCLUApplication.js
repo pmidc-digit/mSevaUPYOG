@@ -108,14 +108,14 @@ const CLUEditApplication = () => {
   // new changes here
   const stateId = Digit.ULBService.getStateId();
 
-  const { data: mdmsData, isLoading:isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "LayoutType" }]);
-  const areaTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.areaType || [];
+  const { data: areaTypeData} = Digit.Hooks.useCustomMDMS(stateId, "CLU", [{ name: "AreaType" }]);
+  const areaTypeOptions = areaTypeData?.CLU?.AreaType || [];
 
-  const { data: areaTypeData } = Digit.Hooks.useCustomMDMS(stateId, "CLU", [{ name: "AppliedCategory" }]);
-  const appliedCluCategoryOptions = areaTypeData?.CLU?.AppliedCategory || [];
+  const { data: appliedCategoryData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "CLU", [{ name: "AppliedCategory" }]);
+  const appliedCluCategoryOptions = appliedCategoryData?.CLU?.AppliedCategory || [];
  
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
-  const nonSchemeTypeOptions = mdmsData?.BPA?.LayoutType?.[0]?.nonSchemeType || [];
+
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
   const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
@@ -139,33 +139,10 @@ const CLUEditApplication = () => {
 
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
-//   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-//   selectedDistrict?.code,
-//   "revenue",
-//   { enabled: !!selectedDistrict },
-//   t
-//  );
-
- //console.log("fetchedLocalities", fetchedLocalities);
 
   const { data: zoneList, isLoading: isZoneListLoading } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{name:"zoneMaster",filter: `$.[?(@.tanentId == '${tenantId}')]`}]);
   const zoneOptions = zoneList?.tenant?.zoneMaster?.[0]?.zones || [];
 
-//   useEffect(() => {
-//   if (fetchedLocalities?.length > 0 && siteDetails?.zone) {
-//     const zoneName = siteDetails?.zone?.name || siteDetails?.zone;
-//     const matchedZone = fetchedLocalities?.find((loc) => loc.name === zoneName);
-
-//     if (matchedZone) {
-//       dispatch(
-//         UPDATE_OBPS_FORM("siteDetails", {
-//           ...formData.siteDetails,
-//           zone: matchedZone,
-//         })
-//       );
-//     }
-//   }
-// }, [fetchedLocalities, siteDetails?.zone]);
 
   useEffect(() => {
   if (zoneOptions?.length > 0 && siteDetails?.zone) {
@@ -213,9 +190,6 @@ const CLUEditApplication = () => {
          // applicantGender : menu?.find((obj)=> (obj.code === applicantDetails?.applicantGender?.code || obj.code === applicantDetails?.applicantGender))
         }
 
-       // const districtObj = cities?.find((obj) => (obj.name === siteDetails?.district?.name || obj.name === siteDetails?.district));
-        //setSelectedDistrict(districtObj);
-
         const updatedSiteDetails=
         {
           ...siteDetails,
@@ -224,7 +198,6 @@ const CLUEditApplication = () => {
           ulbName: ulbListOptions?.find((obj)=> obj.name === siteDetails?.ulbName?.name  || obj.name === siteDetails?.ulbName),
           roadType: roadType?.find((obj) => (obj.name === siteDetails?.roadType?.name || obj.name === siteDetails?.roadType)),
           buildingStatus: buildingType?.find((obj) => (obj.name === siteDetails?.buildingStatus?.name || obj.name === siteDetails?.buildingStatus)),
-         // district: districtObj,
 
           buildingCategory: buildingCategory?.find((obj) => (obj.name === siteDetails?.buildingCategory?.name || obj.name === siteDetails?.specificationBuildingCategory)),
         }

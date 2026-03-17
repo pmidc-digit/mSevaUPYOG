@@ -77,8 +77,8 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
     {
       Header: t("UC_COMMON_TOTAL_AMT"),
       Cell: ({ row }) => {
-        const total = row.original?.totalAmount ?? 0;
-        const waiver = row.original?.feeWaiver ?? 0;
+        const total = row.original?.totalAmount || 0;
+        const waiver = row.original?.feeWaiver || 0;
         const finalAmount = total - waiver;
 
         return GetCell(finalAmount);
@@ -159,15 +159,11 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, statutes, ...prop
         t={t}
         data={data}
         columns={inboxColumns(data)}
+        className="challan-desktop-applicationtable"
         getCellProps={(cellInfo) => {
           return {
             style: {
               minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-              wordBreak: "break-word",
-              overflowWrap: "break-word",
-              width: "250px",
             },
           };
         }}

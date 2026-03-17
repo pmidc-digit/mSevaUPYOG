@@ -48,7 +48,7 @@ const PTRWFApplicationTimeline = (props) => {
 
   const isLoading = false;
 
-  console.log("data ==== ??Asdasdsadbkahjsdb", workflowDetails);
+  console.log("data ==== ||Asdasdsadbkahjsdb", workflowDetails);
 
   const isCitizen = window.location.href.includes("citizen");
 

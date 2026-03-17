@@ -21,8 +21,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const history = useHistory();
   const [getLoader, setLoader] = useState(false);
   // delete
-  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
+  // const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
+  const [propertyId, setPropertyId] = useState(
+    new URLSearchParams(useLocation().search).get("propertyId")
+    || formData?.TraidDetails?.cpt?.details?.propertyId
+    || ""
+  );
   const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
   // const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
   // const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
@@ -34,7 +39,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState(null);
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading } = Digit.Hooks.tl.useMDMS.getFormConfig(stateId, {});
-  console.log("Property Id: ", propertyId);
+ 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
     { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId ? true : false }
@@ -49,19 +54,16 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   //   const { ownershipCategory, owners } = ownerDetails || {};
 
   //   if (!ownershipCategory?.value) {
-  //     console.log("Ownership Category missing.");
   //     return false;
   //   }
 
   //   if (!owners?.length) {
-  //     console.log("Owners array is empty.");
   //     return false;
   //   }
 
   //   const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
 
   //   if (isSingleOwner && owners.length !== 1) {
-  //     console.log("Single owner expected, but multiple owners present.");
   //     return false;
   //   }
 
@@ -92,31 +94,49 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   // };
 
   const validateOwnerDetails = (data) => {
-    console.log("data==???", data);
+
     const { owners } = data;
-    // console.log("owners==???", owners);
+
     // if (!ownershipCategory?.code || !owners?.length) return false;
-    // console.log("owners?.length==???", owners?.length);
-    return owners?.every(
+    
+    if (!owners?.every(
       (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
-    );
+    )) return false;
+
+    // Validate that all owners with DOB are at least 18 years old
+    const today = new Date();
+    for (const owner of owners) {
+      if (owner?.dob) {
+        const dob = new Date(owner.dob);
+        const age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())));
+        if (isUnder18) return "under18";
+      }
+    }
+
+    return true;
   };
 
   const goNext = async (data) => {
-
     const { OwnerDetails } = formData || {};
 
-    if (!validateOwnerDetails(OwnerDetails)) {
+    const validationResult = validateOwnerDetails(OwnerDetails);
+    if (validationResult === "under18") {
+      setError(t("TL_OWNER_AGE_ERROR") || "Owner must be at least 18 years old.");
+      setShowToast(true);
+      return;
+    }
+    if (!validationResult) {
       setError(t("Please fill all owner mandatory details correctly."));
       setShowToast(true);
       return;
     }
 
     const res = await onSubmit(formData);
-    console.log("API response: ", res);
+  
 
     if (res) {
-      console.log("Submission successful, moving to next step.");
       onGoNext();
     } else {
       console.error("Submission failed, not moving to next step.");
@@ -125,14 +145,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data) => {
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
-    console.log("sample_formData: ", data);
+   
 
     const { TraidDetails, OwnerDetails } = data;
 
     if (TraidDetails?.cpt?.id) {
       if (!TraidDetails?.cpt?.details || !propertyDetails) {
-        console.log("Trade Details: ", TraidDetails);
-        console.log("Property Details: ", propertyDetails);
+   
         setShowToast({ key: "error" });
         setError(t("ERR_INVALID_PROPERTY_ID"));
         return;
@@ -147,14 +166,14 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         setError(t("CORE_COMMON_PINCODE_INVALID"));
         return;
       }
-      
+
       // Check if the selected city is valid
       if (!TraidDetails?.address?.city) {
         setShowToast({ key: "error" });
         setError(t("TL_CITY_REQUIRED"));
         return;
       }
-      
+
       // Optional: Check if pincode exists in tenant master data (soft validation)
       const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails.address.pincode));
       if (!foundValue) {
@@ -223,10 +242,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (owner.gender?.code) {
           // Handle nested gender objects - extract the final code string
           let genderCode = owner.gender.code;
-          while (genderCode && typeof genderCode === 'object' && genderCode.code) {
+          while (genderCode && typeof genderCode === "object" && genderCode.code) {
             genderCode = genderCode.code;
           }
-          obj.gender = typeof genderCode === 'string' ? genderCode : owner.gender.code;
+          obj.gender = typeof genderCode === "string" ? genderCode : owner.gender.code;
         }
         if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
         if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
@@ -235,10 +254,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         if (owner.relationship) {
           // Handle nested relationship objects - extract the final code string
           let relationshipCode = owner.relationship;
-          while (relationshipCode && typeof relationshipCode === 'object' && relationshipCode.code) {
+          while (relationshipCode && typeof relationshipCode === "object" && relationshipCode.code) {
             relationshipCode = relationshipCode.code;
           }
-          obj.relationship = typeof relationshipCode === 'string' ? relationshipCode : owner.relationship?.code;
+          obj.relationship = typeof relationshipCode === "string" ? relationshipCode : owner.relationship?.code;
         }
         if (owner.emailId) obj.emailId = owner.emailId;
         if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
@@ -259,7 +278,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let validityYears = TraidDetails?.validityYears?.code || 1;
     let oldReceiptNo = Number(TraidDetails?.tradedetils?.[0]?.oldReceiptNo) || "";
 
-    // console.log("trade type");
 
     let formData = {
       action: "INITIATE",
@@ -308,19 +326,17 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     const subOwner = sessionStorage.getItem("SubownershipCategory");
 
-    // console.log("subOwner", subOwner);
 
     formData.tradeLicenseDetail.subOwnerShipCategory = subOwner;
 
     formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
 
-    // console.log("formData in step 2: ", formData);
     setLoader(true);
     try {
       const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-        console.log("response in step 2: ", response.Licenses[0]);
+       
       }
       setLoader(false);
       return response?.ResponseInfo?.status === "successful";
@@ -344,7 +360,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (showToast) {
       const timer = setTimeout(() => {
         closeToast();
-      }, 3000); 
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showToast]);
@@ -359,7 +375,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-        
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       {getLoader && <Loader page={true} />}

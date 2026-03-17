@@ -50,7 +50,7 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
   return (
     <Card>
       {application.bookingStatus === "PENDING_FOR_PAYMENT" && application?.auditDetails?.createdTime && (
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div className="ads-reservation-wrapper">
           <ReservationTimer
             t={t}
             createTime={application?.auditDetails?.createdTime} // supply when reservation created

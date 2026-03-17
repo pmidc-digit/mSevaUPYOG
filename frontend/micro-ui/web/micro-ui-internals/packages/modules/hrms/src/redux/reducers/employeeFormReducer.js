@@ -1,5 +1,5 @@
 // reducers/employeeFormReducer.js
-import { UPDATE_EMPLOYEE_FORM, SET_EMPLOYEE_STEP, SET_EMPLOYEE_VALIDITY } from "../actions/types";
+import { UPDATE_EMPLOYEE_FORM, SET_EMPLOYEE_STEP, SET_EMPLOYEE_VALIDITY, RESET_EMPLOYEE_FORM } from "../actions/types";
 
 const initialState = {
   step: 1,
@@ -27,6 +27,8 @@ const employeeFormReducer = (state = initialState, action) => {
         ...state,
         isValid: action.payload,
       };
+    case RESET_EMPLOYEE_FORM:
+      return initialState;
     default:
       return state;
   }

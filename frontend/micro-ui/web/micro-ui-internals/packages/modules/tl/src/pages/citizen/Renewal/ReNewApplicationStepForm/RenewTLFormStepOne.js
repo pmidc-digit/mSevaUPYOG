@@ -49,8 +49,10 @@ export const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (accessories && accessories.length > 0) {
       accessories.forEach((item, index) => {
         if (item?.accessoryCategory?.code) {
-          if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
-          if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
+          // UOM and UOM Value are only required when the accessory has a UOM defined
+          if (item?.accessoryCategory?.uom) {
+            if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
+          }
           if (!item?.count) missingFields.push(`Accessory Count (Item ${index + 1})`);
         }
       });
@@ -93,7 +95,6 @@ export const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
       }, [showToast]);
 
 
-  console.log("RenewTLFormStepOne localStepData: ", reduxStepData, localStepData);
   const onGoBack = () => {
     onBackClick(config.key, localStepData);
   };

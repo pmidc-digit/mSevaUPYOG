@@ -498,6 +498,23 @@ function ApplicationDetailsContent({
       return;
     }
 
+    // Handle TL payment history separately using applicationNumber
+    if (moduleCode === "TL") {
+      const appNo = applicationData?.applicationNumber;
+      if (!appNo) return;
+      Digit.PaymentService.recieptSearch(tenantId, "TL", { consumerCodes: appNo })
+        .then((response) => {
+          console.log("TL Payment History response:", response);
+          if (response?.Payments?.length > 0) {
+            setPayments(response.Payments);
+          }
+        })
+        .catch((error) => {
+          console.error("TL Payment search error:", error);
+        });
+      return;
+    }
+
     // Only proceed for PT and BPREG modules
     if (!propertyId) {
       return;
@@ -521,7 +538,7 @@ function ApplicationDetailsContent({
     } catch (error) {
       console.error("❌ Payment search error for PT/BPREG:", error);
     }
-  }, [moduleCode, propertyId, tenantId]);
+  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber]);
   return (
     <Card style={{ position: "relative" }}>
       {/* For UM-4418 changes */}

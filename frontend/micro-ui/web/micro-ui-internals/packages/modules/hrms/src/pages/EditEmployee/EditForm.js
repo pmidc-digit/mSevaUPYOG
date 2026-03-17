@@ -55,7 +55,7 @@ const EditForm = ({ tenantId, data }) => {
   const defaultValues = {
     tenantId: tenantId,
     employeeStatus: "EMPLOYED",
-    employeeType: data?.code,
+    employeeType: data?.employeeType,
     SelectEmployeePhoneNumber: { mobileNumber: data?.user?.mobileNumber },
     SelectEmployeeId: { code: data?.code },
     SelectEmployeeName: { employeeName: data?.user?.name },
@@ -63,29 +63,49 @@ const EditForm = ({ tenantId, data }) => {
     SelectEmployeeCorrespondenceAddress: { correspondenceAddress: data?.user?.correspondenceAddress },
     SelectDateofEmployment: { dateOfAppointment: convertEpochToDate(data?.dateOfAppointment) },
     SelectEmployeeType: { code: data?.employeeType, active: true },
+    SelectEmploymentStatus: {
+      i18nKey: data?.employeeStatus ? `HR_${data.employeeStatus}_LABEL` : undefined,
+      code: data?.employeeStatus || "EMPLOYED",
+      value: data?.employeeStatus || "EMPLOYED"
+    },
     SelectEmployeeGender: {
       gender: {
         code: data?.user?.gender,
         name: `COMMON_GENDER_${data?.user?.gender}`,
       },
     },
-    SelectEmployeeGuardianName : {employeeGuardianName : data?.user?.fatherOrHusbandName},
+    SelectEmployeeGuardianName: { employeeGuardianName: data?.user?.fatherOrHusbandName },
+    SelectEmployeeGuardianRelationship: {
+      code: data?.user?.relationship || "Father",
+      active: true
+    },
     SelectDateofBirthEmployment: { dob: convertEpochToDate(data?.user?.dob) },
     Jurisdictions: data?.jurisdictions.map((ele, index) => {
+      const rolesForBoundary = data?.user?.roles?.filter(
+        (role) => role.tenantId === ele.boundary
+      ) || [];
+      
       return Object.assign({}, ele, {
-        key: index,
+        key: index + 1,
         hierarchy: {
           code: ele.hierarchy,
           name: ele.hierarchy,
         },
-        boundaryType: { label: ele.boundaryType, i18text:`EGOV_LOCATION_BOUNDARYTYPE_${ele.boundaryType.toUpperCase()}` },
-        boundary: { code: ele.boundary },
-        roles: data?.user?.roles.filter((item) => item.tenantId == ele.boundary),
+        boundaryType: ele.boundaryType,
+        boundary: ele.boundary,
+        tenantId: ele.boundary,
+        service: null,
+        roles: rolesForBoundary.map(role => ({
+          code: role.code,
+          name: role.name,
+          labelKey: role.labelKey || `ACCESSCONTROL_ROLES_ROLES_${role.code}`,
+          description: role.description || ""
+        })),
       });
     }),
     Assignments: data?.assignments.map((ele, index) => {
       return Object.assign({}, ele, {
-        key: index,
+        key: index + 1,
         fromDate: convertEpochToDate(ele.fromDate),
         toDate: convertEpochToDate(ele.toDate),
         isCurrentAssignment: ele.isCurrentAssignment,
@@ -198,6 +218,8 @@ const EditForm = ({ tenantId, data }) => {
     requestdata.user.mobileNumber = input?.SelectEmployeePhoneNumber?.mobileNumber;
     requestdata["user"]["name"] = input?.SelectEmployeeName?.employeeName;
     requestdata.user.correspondenceAddress = input?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress;
+    requestdata.user.fatherOrHusbandName = input?.SelectEmployeeGuardianName?.employeeGuardianName;
+    requestdata.user.relationship = input?.SelectEmployeeGuardianRelationship?.code;
     requestdata.user.roles = roles.filter(role=>role&&role.name);
     let Employees = [requestdata];
 
@@ -211,19 +233,23 @@ const EditForm = ({ tenantId, data }) => {
     return <Loader />;
   }
 
-  const config =mdmsData?.config?mdmsData.config: newConfig;
+  const config = mdmsData?.config ? mdmsData.config : newConfig;
+  const editConfig = config
+    .filter(step => step.head !== "")
+    .map((config) => {
+      return {
+        ...config,
+        body: config.body.filter((a) => !a.hideInEmployee),
+      };
+    });
+  
   return (
     <div className="employeeCard">
       <FormComposer
         heading={t("HR_COMMON_EDIT_EMPLOYEE_HEADER")}
         isDisabled={!canSubmit}
         label={t("HR_COMMON_BUTTON_SUBMIT")}
-        config={config.map((config) => {
-          return {
-            ...config,
-            body: config.body.filter((a) => !a.hideInEmployee),
-          };
-        })}
+        config={editConfig}
         className="card"
         onSubmit={onSubmit}
         defaultValues={defaultValues}

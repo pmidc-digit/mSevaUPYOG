@@ -91,7 +91,7 @@ const ApplicationDetails = () => {
     Digit.UploadServices.Filefetch(filesArray, argForFilefetch)
       .then((res) => {
         // robustly find where the mapping lives:
-        let data = res?.data ?? res?.files ?? res;
+        let data = res?.data || res?.files || res;
         // if the API returned an array of {fileStoreId, url}, convert to map:
         if (Array.isArray(data)) {
           const asMap = {};
@@ -122,7 +122,7 @@ const ApplicationDetails = () => {
     filters: { bookingNo: id },
   });
 
-  const normalizedAppObject = applicationDetails?.bookingApplication?.[0] ?? [];
+  const normalizedAppObject = applicationDetails?.bookingApplication?.[0] || [];
   const bookingObj = normalizedAppObject;
   const application = bookingObj || normalizedAppObject || appDetails || null;
   const new_data = transformBookingResponseToBookingData(applicationDetails);
@@ -265,7 +265,7 @@ const ApplicationDetails = () => {
   }
 
   const submitAction = async (dataPayload) => {
-    const payloadSource = applicationDetails?.Applications?.[0] ?? applicationDetails?.data?.[0] ?? applicationDetails?.[0] ?? bookingObj;
+    const payloadSource = applicationDetails?.Applications?.[0] || applicationDetails?.data?.[0] || applicationDetails?.[0] || bookingObj;
 
     if (!payloadSource) {
       setShowToast({ key: "error", message: "Application data not loaded. Try reloading the page." });
@@ -359,7 +359,7 @@ const ApplicationDetails = () => {
       const tId = tenantid || tenantId;
       const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], tId);
       // some Filefetch responses put mapping in res.data, some directly in res
-      const filefetchData = res?.data ?? res;
+      const filefetchData = res?.data || res;
       const documentLink = pdfDownloadLink(filefetchData, document?.fileStoreId);
       if (documentLink) window.open(documentLink, "_blank");
       else setShowToast({ key: "error", message: "Unable to open document" });
@@ -387,21 +387,22 @@ const ApplicationDetails = () => {
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
-
-  downloadOptions.push({
-    label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
-    onClick: () => downloadAcknowledgement(application),
-  });
-  if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
+  if (bookingObj?.bookingStatus === "BOOKED" || bookingObj?.bookingStatus === "CANCELLED") {
     downloadOptions.push({
-      label: t("CHB_FEE_RECEIPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
+      onClick: () => downloadAcknowledgement(application),
     });
-    if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading)
+    if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
       downloadOptions.push({
-        label: t("CHB_PERMISSION_LETTER"),
-        onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
       });
+      if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading)
+        downloadOptions.push({
+          label: t("CHB_PERMISSION_LETTER"),
+          onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+        });
+    }
   }
 
   const cartData = transformAdsData(bookingObj?.cartDetails);
@@ -418,7 +419,7 @@ const ApplicationDetails = () => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Header styles={{ fontSize: "32px" }}>{t("ADS_APP_OVER_VIEW_HEADER")}</Header>
 
-          {/* <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {downloadOptions && downloadOptions?.length > 0 && (
               <div style={{ position: "relative", zIndex: 10 }}>
                 <MultiLink
@@ -431,7 +432,7 @@ const ApplicationDetails = () => {
                 />
               </div>
             )}
-          </div> */}
+          </div>
         </div>
       </div>
 
@@ -478,7 +479,7 @@ const ApplicationDetails = () => {
 
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_ADS_DETAILS_OVERVIEW")}</CardSubHeader>
-        <ADSCartDetails cartDetails={cartData ?? []} t={t} />
+        <ADSCartDetails cartDetails={cartData || []} t={t} />
       </Card>
 
       <Card>

@@ -116,14 +116,12 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
     }
   }, [formData?.cpt?.details]);
 
-  console.log("formData in TLSelectStreet ", formData);
-  //console.log("localFormData in TLSelectStreet ", localFormData);
 
   if (userType === "employee") {
     return inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller">
+          <CardLabel className="card-label-smaller hrms-text-transform-none">
             {t(input.label)}
             {config.isMandatory ? " * " : null}
           </CardLabel>
@@ -134,7 +132,7 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
               name={input.name}
               rules={{ validate: convertValidationToRules(input) }}
               render={(_props) => (
-                <div style={{ display: "flex", alignItems: "baseline", marginRight: "unset" }}>
+                <div className="TL-flex-baseline-mr-unset">
                   <TextInput
                     id={input.name}
                     key={input.name}
@@ -158,8 +156,18 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
                     autoFocus={focusIndex?.index == index}
                     {...input?.validation}
                     placeholder={t(`${input.placeholder}`)}
+                    style={
+                      formData?.cpt?.details?.address?.[input.name]
+                        ? {
+                            color: "#505A5F",
+                            opacity: 1,
+                            WebkitTextFillColor: "#505A5F",
+                            backgroundColor: "#FFFFFF",
+                          }
+                        : {}
+                    }
                   />
-                  <div style={{ marginRight: "-50px", marginLeft: "10px" }}>
+                  <div className="TL-unmask-wrapper">
                     <WrapUnMaskComponent
                       unmaskField={(e) => {
                         _props.onChange(e);

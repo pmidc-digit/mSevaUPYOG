@@ -33,6 +33,7 @@ import SelectULB from "./components/pageComponents/SelectULB";
 import EmployeeDetails from "./components/employeeCreationFormSteps/EmployeeDetails";
 import AdministrativeDetails from "./components/employeeCreationFormSteps/AdministrativeDetails";
 import Summary from "./components/employeeCreationFormSteps/Summary";
+import SummaryStep from "./components/employeeCreationFormSteps/SummaryStep";
 //
 import getRootReducer from "./redux/reducers";
 
@@ -42,7 +43,7 @@ export const HRMSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "HR";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-  console.log("Tenants: ", tenants);
+  
   Digit.SessionStorage.set("HRMS_TENANTS", tenants);
   const { path, url } = useRouteMatch();
   if (!Digit.Utils.hrmsAccess()) {
@@ -84,6 +85,7 @@ const componentsToRegister = {
   EmployeeDetails,
   AdministrativeDetails,
   Summary,
+  SummaryStep,
   EmpMaping: EmpMaping,
   HRMSEMPMAPDetails: HRMSEMPMAPDetails
 };

@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import OBPSSearchApplication from "../../components/SearchApplication";
 import Search from "../employee/Search";
 import { useTranslation } from "react-i18next";
-import { Switch, useLocation, Route } from "react-router-dom";
-import { PrivateRoute, BackButton, AppContainer, BreadCrumb } from "@mseva/digit-ui-react-components";
+import { Switch, useLocation, Route, Link } from "react-router-dom";
+import { PrivateRoute, BackButton, AppContainer } from "@mseva/digit-ui-react-components";
 // import NewBuildingPermit from "./NewBuildingPermit";
 // import CreateEDCR from "./EDCR";
 // import CreateOCEDCR from "./OCEDCR";
@@ -32,44 +32,41 @@ import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
-  const crumbs = [
-    {
-      path: "/digit-ui/citizen",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: "/digit-ui/citizen/obps/home",
-      content: "OBPS Home",
-      show: location.pathname.includes("obps/bpa") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/obps/home",
-      content: "OBPS Home",
-      show: location.pathname.includes("obps/my-applications") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/obps/home",
-      content: "OBPS Home", 
-      show: location.pathname.includes("obps/stakeholder") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/obps/home",
-      content: "OBPS Home", 
-      show: location.pathname.includes("obps/edcrscrutiny") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/obps/home",
-      content: "OBPS Home", 
-      show: location.pathname.includes("obps/layout") ? true : false,
-    },
-    {
-      path: "/digit-ui/citizen/obps/home",
-      content: "OBPS Home", 
-      show: location.pathname.includes("obps/clu") ? true : false,
-    },
-  ];
-  return <BreadCrumb crumbs={crumbs} />;
+
+  const getBreadcrumbs = () => {
+    const breadcrumbs = [];
+    const hasSecondBreadcrumb = location.pathname.includes("obps/bpa") ||
+        location.pathname.includes("obps/ocbpa") ||
+        location.pathname.includes("obps/my-applications") ||
+        location.pathname.includes("obps/stakeholder") ||
+        location.pathname.includes("obps/edcrscrutiny") ||
+        location.pathname.includes("obps/layout") ||
+        location.pathname.includes("obps/clu") ||
+        location.pathname.includes("obps/search");
+    
+    breadcrumbs.push(
+      <span key="home">
+        <Link to="/digit-ui/citizen" style={{ textDecoration: "none", marginRight: "5px" }}>
+          {t("ES_COMMON_HOME")}
+        </Link>
+        {hasSecondBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>}
+      </span>
+    );
+
+    if (hasSecondBreadcrumb) {
+      breadcrumbs.push(
+        <span key="obps">
+          <Link to="/digit-ui/citizen/obps/home" style={{ textDecoration: "none" }}>
+            OBPS Home
+          </Link>
+        </span>
+      );
+    }
+
+    return breadcrumbs;
+  };
+
+  return <div style={{ marginBottom: "16px", display: "flex", alignItems: "center" }}>{getBreadcrumbs()}</div>;
 };
 
 const App = ({ path }) => {

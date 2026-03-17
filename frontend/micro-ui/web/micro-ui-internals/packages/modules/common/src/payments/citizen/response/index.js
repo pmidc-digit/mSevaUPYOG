@@ -266,15 +266,11 @@ const WrapPaymentComponent = (props) => {
 
     if (sourceData) {
       fileNo = `PB/${districtCode}/${ulbCode}/${+sourceData?.approvalNo?.slice(-6) + 500000}`;
-      console.log("newCode", fileNo);
       usage = sourceData?.additionalDetails?.usage || sourceData?.additionalDetails?.siteDetails?.buildingCategory?.name;
-      console.log("usage", usage);
     }
 
-    console.log("licenseType:", licenseType);
     const state = Digit.ULBService.getStateId();
     const fee = paymentData?.totalAmountPaid;
-    console.log("fee here here", fee);
     const amountinwords = amountToWords(fee);
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (!paymentData?.fileStoreId) {
@@ -368,7 +364,7 @@ const WrapPaymentComponent = (props) => {
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
-          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, generatePdfKey);
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData,amountinwords }] }, generatePdfKey);
         }
       }
     }
@@ -380,8 +376,33 @@ const WrapPaymentComponent = (props) => {
         : await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
 
     if (fileStore && fileStore[response.filestoreIds[0]]) {
-      window.open(fileStore[response.filestoreIds[0]], "_blank");
+      const receiptUrl = fileStore[response.filestoreIds[0]];
+
+      if (business_service === "obpas_noc") {
+        // Parse the original receiptUrl
+        const urlObj = new URL(receiptUrl);
+
+        // Build a new URL using window.origin but keep pathname and search
+        const downloadUrl = `${window.origin}${urlObj.pathname}${urlObj.search}`;
+
+        try {
+          // Fetch the file as a Blob
+          const res = await fetch(downloadUrl);
+          const blob = await res.blob();
+
+          // Use your helper to force download
+          downloadPdf(blob, `receipt_${receiptNumber || "obpas_noc"}.pdf`);
+        } catch (err) {
+          window.open(downloadUrl, "_blank");
+        }
+
+        // Fallback: open in new tab
+      } else {
+        window.open(receiptUrl, "_blank");
+      }
     }
+
+
     setPrinting(false);
   };
 
@@ -710,6 +731,29 @@ const WrapPaymentComponent = (props) => {
           tenantId,
           { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
           "adv-bill"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  };
+
+  const printRLReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    try {
+      const applicationDetails = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: consumerCode } });
+      let application = applicationDetails;
+      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
+      if (!fileStoreId) {
+        const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
+          "rentandlease-receipt"
         );
         fileStoreId = response?.filestoreIds[0];
       }
@@ -1224,6 +1268,29 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null}
 
+      {business_service == "rl-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
+          <div style={IconWrapperStyle} onClick={printing ? undefined : printRLReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
+          </div>
+          {business_service == "rl-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+
       {business_service == "sv-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
@@ -1316,7 +1383,8 @@ const WrapPaymentComponent = (props) => {
           business_service === "adv-services" ||
           business_service === "chb-services" ||
           business_service === "NDC" ||
-          business_service === "Challan_Generation"
+          business_service === "Challan_Generation"||
+          business_service === "rl-services"
         ) && (
           <div
             style={{
@@ -1326,7 +1394,9 @@ const WrapPaymentComponent = (props) => {
               flexWrap:"wrap", gap:"20px"
             }}
           >
-            {printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />}
+            {business_service !== "TL" && (
+              printing ? <Loader /> : <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+            )}
             {/* {!(business_service === "TL") && !business_service?.includes("PT") && (
             <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />
           )}
@@ -1337,11 +1407,11 @@ const WrapPaymentComponent = (props) => {
             </div>
           )} */}
 
-            {business_service === "TL" && (
+            {/* {business_service === "TL" && (
               <Link to={`/digit-ui/citizen`}>
                 <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
               </Link>
-            )}
+            )} */}
 
             <Link to={`/digit-ui/citizen`}>
               <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
@@ -2195,7 +2265,7 @@ const WrapPaymentZeroComponent = (props) => {
           {t("TL_RECEIPT")}
         </div>
       ) : null}
-      {business_service == "TL" ? (
+      {/* {business_service == "TL" ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop: "15px" }} onClick={printCertificate}>
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
             <path d="M0 0h24v24H0V0z" fill="none" />
@@ -2203,7 +2273,7 @@ const WrapPaymentZeroComponent = (props) => {
           </svg>
           {t("TL_CERTIFICATE")}
         </div>
-      ) : null}
+      ) : null} */}
       {business_service == "sv-services" ? (
         <div
           className="primary-label-btn d-grid"
@@ -2449,16 +2519,16 @@ const WrapPaymentZeroComponent = (props) => {
             <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
           </div>
         ))} */}
-      {business_service == "TL" && (
+      {/* {business_service == "TL" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
-      )}
-      {business_service == "pet-services" && (
+      )} */}
+      {/* {business_service == "pet-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
-      )}
+      )} */}
       <Link to={`/digit-ui/citizen`}>
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>

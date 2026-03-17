@@ -55,7 +55,7 @@ const getProfessionalDetails = (appData, t) => {
 };
 
 const getApplicantDetails = (appData, t) => {
-  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners ?? [];
+  const owners = appData?.cluDetails?.additionalDetails?.applicationDetails?.owners || [];
 
   const ownerDetailsArray = owners.map((owner, index) => ({
     title: index === 0 ? t("BPA_PRIMARY_OWNER") : `Owner ${index + 1}`,
@@ -78,9 +78,7 @@ const getApplicantDetails = (appData, t) => {
       },
       {
         title: t("BPA_APPLICANT_DOB_LABEL"),
-        value: owner?.dateOfBirth
-          ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB")
-          : "NA",
+        value: owner?.dateOfBirth ? new Date(owner.dateOfBirth).toLocaleDateString("en-GB") : "NA",
       },
       {
         title: t("BPA_APPLICANT_GENDER_LABEL"),
@@ -90,13 +88,15 @@ const getApplicantDetails = (appData, t) => {
         title: t("BPA_APPLICANT_ADDRESS_LABEL"),
         value: owner?.address || "NA",
       },
+      {
+        title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
+        value: owner?.ownershipInPct || "NA",
+      },
     ],
   }));
 
   return ownerDetailsArray;
 };
-
-
 
 const getLocationInfo = (appData, t) => {
   let values = [
@@ -104,48 +104,19 @@ const getLocationInfo = (appData, t) => {
       title: t("BPA_AREA_TYPE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.name || "N/A",
     },
-    {
-      title: t("BPA_NOTICE_ISSUED_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeIssued?.code || "N/A",
-    },
-    {
-      title: t("BPA_TRANSFERRED_SCHEME_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityTransferredSchemeType?.name || "N/A",
-    },
   ];
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
-    values.push({
-      title: t("BPA_SCHEME_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localitySchemeName || "N/A",
-    });
-  }
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "APPROVED_COLONY") {
-    values.push({
-      title: t("BPA_APPROVED_COLONY_NAME_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityApprovedColonyName || "N/A",
-    });
-  }
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "NON_SCHEME") {
-    values.push({
-      title: t("BPA_NON_SCHEME_TYPE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNonSchemeType?.name || "N/A",
-    });
-  }
-
-  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeIssued?.code == "YES") {
-    values.push({
-      title: t("BPA_NOTICE_NUMBER_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityNoticeNumber || "N/A",
-    });
-  }
 
   if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
     values.push({
       title: t("BPA_SCHEME_COLONY_TYPE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.localityColonyType?.name || "N/A",
+    });
+  }
+
+  if (appData?.cluDetails?.additionalDetails?.siteDetails?.localityAreaType?.code == "SCHEME_AREA") {
+    values.push({
+      title: t("BPA_SCHEME_NAME_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.localitySchemeName || "N/A",
     });
   }
 
@@ -160,10 +131,6 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_PLOT_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotNo || "N/A",
-    },
-    {
-      title: t("BPA_PLOT_AREA_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.plotArea || "N/A",
     },
     {
       title: t("BPA_KHEWAT_KHATUNI_NO_LABEL"),
@@ -185,6 +152,15 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("BPA_ULB_TYPE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.ulbType || "N/A",
+    },
+    {
+      title: t("BPA_DISTRICT_LABEL"),
+      value:
+        appData?.cluDetails?.additionalDetails?.siteDetails?.district?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.district || "N/A",
+    },
+    {
+      title: t("BPA_ZONE_LABEL"),
+      value: appData?.cluDetails?.additionalDetails?.siteDetails?.zone?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.zone || "N/A",
     },
     {
       title: t("BPA_KHASRA_NO_LABEL"),
@@ -220,33 +196,24 @@ const getSiteDetails = (appData, t) => {
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.wardNo || "N/A",
     },
     {
-      title: t("BPA_DISTRICT_LABEL"),
-      value:
-        appData?.cluDetails?.additionalDetails?.siteDetails?.district?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.district || "N/A",
-    },
-    {
-      title: t("BPA_ZONE_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.zone?.name || appData?.cluDetails?.additionalDetails?.siteDetails?.zone || "N/A",
-    },
-    {
       title: t("BPA_SITE_VASIKA_NO_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
     },
     {
       title: t("BPA_SITE_VASIKA_DATE_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate
-          ? new Date(appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate).toLocaleDateString("en-GB")
-          : "NA"
+        ? new Date(appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate).toLocaleDateString("en-GB")
+        : "NA",
       //value: appData?.cluDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
     },
     {
       title: t("NOC_SITE_VILLAGE_NAME_LABEL"),
       value: appData?.cluDetails?.additionalDetails?.siteDetails?.villageName || "N/A",
     },
-    {
-      title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
-      value: appData?.cluDetails?.additionalDetails?.siteDetails?.ownershipInPct || "N/A",
-    },
+    // {
+    //   title: t("BPA_OWNERSHIP_IN_PCT_LABEL"),
+    //   value: appData?.cluDetails?.additionalDetails?.siteDetails?.ownershipInPct || "N/A",
+    // },
 
     {
       title: t("BPA_CATEGORY_APPLIED_FOR_CLU_LABEL"),
@@ -293,7 +260,83 @@ const getSpecificationDetails = (appData, t) => {
   };
 };
 
+const getInspectionReportDetails = (appData, t) => {
+  const fiReport = appData?.cluDetails?.additionalDetails?.fieldinspection_pending || [];
+  if (fiReport.length === 0) return null;
 
+  return {
+    title: t("BPA_FI_REPORT"),
+    values: fiReport.map((item) => ({
+      title: t(item.question),
+      value: t(item.answer) || t("CS_NA"),
+    })),
+  };
+};
+
+const getChecklistDetails = (appData, checklistData, t) => {
+  const checkList = checklistData?.checkList || [];
+  const documents = appData?.documents || [];
+  const sortedDocs = documents?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  
+  const orderMap = {};
+    sortedDocs?.forEach((doc, idx) => {
+      orderMap[doc.uuid] = doc.order || idx + 1; // fallback to index
+    });
+  
+  const sortedChecklist = [...checkList].sort(
+      (a, b) => (orderMap[a.documentuid] || 0) - (orderMap[b.documentuid] || 0)
+    );
+
+
+  let values = [];
+
+  if (sortedChecklist?.length > 0) {
+    values = sortedChecklist?.map((item, index) => {
+      const matchedDoc = sortedDocs?.find(
+        (doc) => doc?.uuid === item?.documentuid
+      );
+      const docName = matchedDoc
+        ? t(matchedDoc?.documentType?.replace(/\./g, "_")) || matchedDoc?.documentType
+        : item?.documentuid; 
+
+      return {
+        title: `${index + 1}. ${docName}`,
+        value: item?.remarks || "N/A"
+      };
+    });
+  } else {
+    values = [
+      {
+        title: t("BPA_NO_CHECKLIST_ITEMS"),
+        value: "NA"
+      }
+    ];
+  }
+
+  return {
+    title: t("BPA_CHECKLIST_DETAILS"),
+    values: checklist.map((item) => ({
+      title: t(item.docType),
+      value: item.remarks || t("BPA_NO_REMARKS"),
+    })),
+  };
+};
+
+const getFeeCalculation = (appData, t) => {
+  const calculations = appData?.cluDetails?.additionalDetails?.calculations || [];
+  if (calculations.length === 0) return null;
+
+  const latestCalc = calculations.find((c) => c.isLatest);
+  if (!latestCalc) return null;
+
+  return {
+    title: t("BPA_FEE_DETAILS_LABEL"),
+    values: (latestCalc.taxHeadEstimates || []).map((tax) => ({
+      title: t(tax.taxHeadCode),
+      value: `Rs. ${tax.estimateAmount}`,
+    })),
+  };
+};
 
 const getDocuments = async (appData, t) => {
   const filteredDocs = appData?.documents?.filter(
@@ -313,7 +356,7 @@ const getDocuments = async (appData, t) => {
         ? filteredDocs.map((document, index) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
             return {
-              title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA"),
+              title: `${index + 1}. ${t(document?.documentType.replace(/\./g, "_")) || t("CS_NA")}`,
               value: " ",
               link: documentLink || "",
             };
@@ -329,19 +372,12 @@ const getDocuments = async (appData, t) => {
 
 const getSitePhotographs = async (appData, t) => {
   const sitePhotoDocs = appData?.documents?.filter(
-    (doc) =>
-      doc.documentType === "OWNER.SITEPHOTOGRAPHONE" ||
-      doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
+    (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   );
 
   const fileStoreIds = sitePhotoDocs?.map((doc) => doc?.uuid);
 
-  const res =
-    fileStoreIds?.length > 0 &&
-    (await Digit.UploadServices.Filefetch(
-      fileStoreIds,
-      Digit.ULBService.getStateId()
-    ));
+  const res = fileStoreIds?.length > 0 && (await Digit.UploadServices.Filefetch(fileStoreIds, Digit.ULBService.getStateId()));
 
   const coords = appData?.cluDetails?.additionalDetails?.coordinates || {};
 
@@ -364,11 +400,9 @@ const getSitePhotographs = async (appData, t) => {
 
           return {
             // Title includes photo label + coordinates
-            title:
-              (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) +
-              ` (Lat: ${lat}, Long: ${long})`,
+            title: (t(doc.documentType.replace(/\./g, "_")) || t("CS_NA")) + ` (Lat: ${lat}, Long: ${long})`,
             value: " ",
-            link: documentLink || ""
+            link: documentLink || "",
           };
         })
       : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }];
@@ -376,19 +410,19 @@ const getSitePhotographs = async (appData, t) => {
   return {
     title: t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW"),
     isAttachments: true,
-    values
+    values,
   };
 };
 
-
-export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t) => {
+export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, searchChecklistData) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
 
-  let detailsArr = [], imageURL = "";
+  let detailsArr = [],
+    imageURL = "";
 
-  const ownerFileStoreId= appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
+  const ownerFileStoreId = appData?.cluDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
 
   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
 
@@ -396,6 +430,10 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
   imageURL = fileData?.url || "";
 
   if (appData?.cluDetails?.additionalDetails?.applicationDetails?.professionalName) detailsArr.push(getProfessionalDetails(appData, t));
+
+  const inspectionReport = getInspectionReportDetails(appData, t);
+  const checklistDetails = getChecklistDetails(searchChecklistData, t);
+  const feeCalculation = getFeeCalculation(appData, t);
 
   return {
     t: t,
@@ -412,11 +450,14 @@ export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, 
       getLocationInfo(appData, t),
       getSiteDetails(appData, t),
       getSpecificationDetails(appData, t),
+      ...(inspectionReport ? [inspectionReport] : []),
+      ...(checklistDetails ? [checklistDetails] : []),
+      ...(feeCalculation ? [feeCalculation] : []),
       await getDocuments(appData, t),
       await getSitePhotographs(appData, t),
     ],
     imageURL,
     ulbType,
-    ulbName
+    ulbName,
   };
 };

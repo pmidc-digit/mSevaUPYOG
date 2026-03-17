@@ -5,6 +5,8 @@ import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFieldsComponents";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileDataCard";
+import DateExtend from "../../../../components/DateExtend";
+import { Loader } from "../../../../components/Loader";
 // import { useHistory } from "react-router-dom";
 
 //Keep below values from localisation:
@@ -14,10 +16,14 @@ const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   // const history = useHistory()
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [getData, setData] = useState([]);
+  const [loader, setLoader] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const userInfo = Digit.UserService.getUser().info;
-  const userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
+
+  const userUlbs = ulbs?.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
 
   const statuses = [
     { code: "ALL", name: `${t("ES_COMMON_ALL")}`, bool: null },
@@ -25,10 +31,10 @@ const Inbox = ({ parentRoute }) => {
     { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
+  const defaultTenant = userUlbs?.find((ulb) => ulb.code === tenantId) || userUlbs?.[0];
+
   const searchFormDefaultValues = {
-    // tenantIds: tenantId,
-    tenantIds: userUlbs[0],
-    // postedBy: "",
+    tenantIds: defaultTenant,
     title: "",
   };
 
@@ -59,11 +65,31 @@ const Inbox = ({ parentRoute }) => {
   }
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEY.INBOX");
 
+  // const onSearchFormReset = (setSearchFormValue) => {
+  //   // setSearchFormValue("postedBy", "");
+  //   setSearchFormValue("title", "");
+  //   setSearchFormValue("tenantIds", tenantId);
+  //   dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+  // };
+
   const onSearchFormReset = (setSearchFormValue) => {
-    // setSearchFormValue("postedBy", "");
+    const resetTenant = formState.searchForm.tenantIds;
+
     setSearchFormValue("title", "");
-    setSearchFormValue("tenantIds", tenantId);
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+    setSearchFormValue("tenantIds", resetTenant);
+
+    dispatch({
+      action: "mutateSearchForm",
+      data: {
+        ...searchFormDefaultValues,
+        tenantIds: resetTenant,
+      },
+    });
+
+    dispatch({
+      action: "mutateTableForm",
+      data: { ...tableOrderFormDefaultValues },
+    });
   };
 
   const onFilterFormReset = (setFilterFormValue) => {
@@ -103,6 +129,7 @@ const Inbox = ({ parentRoute }) => {
 
   let { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
   const [sortedSurveys, setSortedSurveys] = useState([]);
+
   useEffect(() => {
     if (Surveys.length > 0) {
       const sorted = [...Surveys].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
@@ -110,9 +137,8 @@ const Inbox = ({ parentRoute }) => {
       setSortedSurveys(sorted);
     }
   }, [Surveys]);
+
   const PropsForInboxLinks = {
-    logoIcon: <DocumentIcon />,
-    headerText: "CS_COMMON_SURVEYS",
     links: [
       {
         // text: t("CS_COMMON_NEW_SURVEY"),
@@ -215,6 +241,8 @@ const Inbox = ({ parentRoute }) => {
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       setShowToast,
       onSortingByData,
+      setShowTermsPopup,
+      setData,
     },
   });
 
@@ -226,12 +254,14 @@ const Inbox = ({ parentRoute }) => {
   const onNoToToast = () => {
     setShowToast(null);
   };
+
   //Row will be deleted if yes is clicked
   const onYesToToast = () => {
     handleUpdateSurvey();
   };
 
   const handleUpdateSurvey = () => {
+    setLoader(true);
     const row = showToast.rowData;
     const payload = {
       uuid: row?.uuid,
@@ -240,14 +270,11 @@ const Inbox = ({ parentRoute }) => {
 
     Digit.Surveys.updateSurvey(payload)
       .then((response) => {
-        // if (response?.Surveys?.length > 0) {
-        //   setShowToast({ label: "Survey status updated successfully", isDleteBtn: "true" });
-        // } else {
-        //   setShowToast({ label: response?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
-        // }
+        setLoader(false);
         setShowToast({ label: response?.message, isDleteBtn: "true" });
       })
       .catch((error) => {
+        setLoader(false);
         setShowToast({ label: error?.response?.data?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
       });
   };
@@ -284,6 +311,21 @@ const Inbox = ({ parentRoute }) => {
           style={{ padding: "16px" }}
         />
       )}
+      <h1 onClick={() => setShowTermsPopup(true)}>Show modal</h1>
+      {showTermsPopup && (
+        <DateExtend
+          showTermsPopupOwner={showTermsPopup}
+          setShowTermsPopupOwner={setShowTermsPopup}
+          getData={getData}
+          // getModalData={getModalData}
+          // getUser={getUser}
+          // getShowOtp={getShowOtp}
+          // otpVerifiedTimestamp={null} // Pass timestamp as a prop
+          // bpaData={data?.applicationData} // Pass the complete BPA application data
+          tenantId={tenantId} // Pass tenant ID for API calls
+        />
+      )}
+      {(isInboxLoading || loader) && <Loader page={true} />}
     </Fragment>
   );
 };

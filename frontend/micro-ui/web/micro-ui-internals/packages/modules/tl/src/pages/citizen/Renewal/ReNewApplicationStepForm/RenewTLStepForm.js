@@ -95,9 +95,6 @@ export const RenewTLStepForm = (props) => {
 
   const applicationData = data?.Licenses?.[0];
 
-  console.log("RenewTLStepForm props: ", formState);
-
-  console.log("applicationData===", applicationData);
 
   // const propertyId =
   //   new URLSearchParams(window.location.search).get("id") ||
@@ -117,7 +114,7 @@ export const RenewTLStepForm = (props) => {
 
   let defaultValues;
   if (applicationData) defaultValues = mapApplicationDataToDefaultValues(applicationData, t, propertyId, propertyDetails);
-  console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
+
 
   useEffect(() => {
     if (defaultValues) {
@@ -129,7 +126,6 @@ export const RenewTLStepForm = (props) => {
   }, [applicationData, propertyId, propertyDetails]); // Important to depend on defaultValues
 
   useEffect(() => {
-    console.log("RenewTLStepForm formData: ", formData);
   }, [formData]);
 
   const setStep = (updatedStepNumber) => {

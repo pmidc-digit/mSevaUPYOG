@@ -17,6 +17,8 @@ const NewPTStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
 
+  console.log("currentStepData", currentStepData);
+
   function goNext(data) {
     dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     onGoNext();

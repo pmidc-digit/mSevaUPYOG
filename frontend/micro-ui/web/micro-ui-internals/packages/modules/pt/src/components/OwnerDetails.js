@@ -21,21 +21,25 @@ const owners = [
   {
     name: "Institutional - Government",
     code: "INSTITUTIONALGOVERNMENT",
+    value: "INSTITUTIONALGOVERNMENT.OTHERGOVERNMENTINSTITUITION",
     active: true,
   },
   {
     name: "Institutional - Private",
     code: "INSTITUTIONALPRIVATE",
+    value: "INSTITUTIONALPRIVATE.OTHERSPRIVATEINSTITUITION",
     active: true,
   },
   {
     name: "Multiple Owners",
     code: "INDIVIDUAL.MULTIPLEOWNERS",
+    value: "INDIVIDUAL.MULTIPLEOWNERS",
     active: true,
   },
   {
     name: "Single Owner",
     code: "SINGLEOWNER",
+    value: "INDIVIDUAL.SINGLEOWNER",
     active: true,
     ownerShipCategory: "INDIVIDUAL",
   },
@@ -47,12 +51,14 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
+  const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.ownerDetails);
+
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  const [getInstType, setInstType] = useState([]);
+  // const [getInstType, setInstType] = useState([]);
 
   const { data: SubOwnerShipCategory = [], SubOwnerShipCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "SubOwnerShipCategory" },
@@ -85,7 +91,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
 
   const onSubmit = async (data) => {
     console.log("check final data", data);
-    // goNext(data);
+    goNext(data);
   };
 
   useEffect(() => {
@@ -104,6 +110,47 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
     }
   }, [ownerTypeCode]);
 
+  const instTypeOptions =
+    SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == watch("ownerShip")?.code) || [];
+
+  useEffect(() => {
+    if (stateDataCheck) {
+      const checkOwners = owners.find((item) => item.code === stateDataCheck?.ownerShip?.code);
+
+      setValue("ownerShip", checkOwners);
+    }
+  }, [stateDataCheck]);
+
+  const ownerShip = watch("ownerShip");
+  const isInstitution = ownerShip?.code === "INSTITUTIONALGOVERNMENT" || ownerShip?.code === "INSTITUTIONALPRIVATE";
+
+  useEffect(() => {
+    if (!ownerShip || !stateDataCheck) return;
+
+    setValue("institutionName", stateDataCheck?.institutionName || "");
+
+    const instOptions = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item.ownerShipCategory === ownerShip?.code) || [];
+
+    const checkInstitutionType = instOptions.find(
+      (item) => item.code === stateDataCheck?.institutionType?.code || item.code === stateDataCheck?.institutionType
+    );
+
+    if (checkInstitutionType) {
+      setValue("institutionType", checkInstitutionType);
+    }
+
+    if (stateDataCheck?.owners?.length > 0) {
+      remove([...Array(fields.length).keys()]);
+
+      stateDataCheck.owners.forEach((owner) => {
+        append(owner);
+      });
+
+      // ✅ IMPORTANT
+      trigger();
+    }
+  }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
+
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
       {/* city */}
@@ -120,8 +167,8 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               <Dropdown
                 select={(e) => {
                   props.onChange(e);
-                  const findData = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == e?.code);
-                  setInstType(findData);
+                  // const findData = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == e?.code);
+                  // setInstType(findData);
                 }}
                 selected={props.value}
                 option={owners}
@@ -134,7 +181,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
         </div>
       </LabelFieldPair>
 
-      {(watch("ownerShip")?.code == "INSTITUTIONALGOVERNMENT" || watch("ownerShip")?.code == "INSTITUTIONALPRIVATE") && (
+      {isInstitution && (
         <React.Fragment>
           {/* Institution name */}
           <LabelFieldPair>
@@ -145,6 +192,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               <Controller
                 control={control}
                 name="institutionName"
+                defaultValue=""
                 rules={{
                   required: "Institution Name is required",
                   minLength: { value: 2, message: "Name must be at least 2 characters" },
@@ -177,7 +225,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 control={control}
                 name="institutionType"
                 rules={{ required: t("Institution Type is Required") }}
-                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getInstType} optionKey="name" t={t} />}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={instTypeOptions} optionKey="name" t={t} />}
               />
               {errors.institutionType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.institutionType?.message}</p>}
             </div>
@@ -185,7 +233,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
         </React.Fragment>
       )}
 
-      {watch("ownerShip") && (
+      {ownerShip && (
         <React.Fragment>
           {fields.map((item, index) => (
             <div
@@ -207,6 +255,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`owners.${index}.mobileNumber`}
+                  defaultValue={item?.mobileNumber || ""}
                   rules={{
                     required: "Mobile number is required",
                     pattern: {
@@ -216,6 +265,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   }}
                   render={(props) => <MobileNumber {...props} />}
                 />
+                {errors?.owners?.[index]?.mobileNumber && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
+                )}
               </LabelFieldPair>
 
               {/* Name */}
@@ -224,9 +276,13 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`owners.${index}.name`}
+                  defaultValue={item?.name || ""}
                   rules={{ required: "Name required" }}
                   render={(props) => <TextInput {...props} />}
                 />
+                {errors?.owners?.[index]?.name && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
+                )}
               </LabelFieldPair>
 
               {/* Email */}
@@ -235,6 +291,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`owners.${index}.emailId`}
+                  defaultValue={item?.emailId || ""}
                   rules={{
                     required: "Email required",
                     pattern: {
@@ -244,12 +301,20 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   }}
                   render={(props) => <TextInput {...props} />}
                 />
+                {errors?.owners?.[index]?.emailId && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].emailId.message}</p>
+                )}
               </LabelFieldPair>
 
               {/* Address */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("Address")}</CardLabel>
-                <Controller control={control} name={`owners.${index}.address`} render={(props) => <TextArea {...props} />} />
+                <Controller
+                  control={control}
+                  name={`owners.${index}.address`}
+                  defaultValue={item?.address || ""}
+                  render={(props) => <TextArea {...props} />}
+                />
               </LabelFieldPair>
 
               {/* checkBoxadress*/}
@@ -259,18 +324,17 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   name={`owners.${index}.checkBoxadress`}
                   render={(props) => (
                     <input
-                      id="flammable"
+                      id={`flammable-${index}`}
                       type="checkbox"
                       checked={props.value || false}
                       onChange={(e) => {
                         props.onChange(e.target.checked);
-                        alert("same krdo");
                       }}
                       style={{ width: "18px", height: "18px", cursor: "pointer" }}
                     />
                   )}
                 />
-                <label htmlFor="flammable" style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
+                <label htmlFor={`flammable-${index}`} style={{ cursor: "pointer", color: "#00bcd1", margin: 0 }}>
                   {t("Same as property address")}
                 </label>
               </div>

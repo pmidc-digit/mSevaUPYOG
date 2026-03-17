@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 // import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../config/Create/citizenStepperConfig";
@@ -19,7 +19,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewPTStepFormOne",
-    key: "documents",
+    key: "propertyAddress",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -45,7 +45,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewPTStepFormTwo",
-    key: "petDetails",
+    key: "propertyDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -58,7 +58,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewPTStepFormThree",
-    key: "petDetails",
+    key: "ownerDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -104,6 +104,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 
 const NewPTStepperForm = () => {
   const history = useHistory();
+  const location = useLocation();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -111,6 +112,9 @@ const NewPTStepperForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  console.log("history", history);
+  console.log("location", location?.state);
 
   // const id = window.location.pathname.split("/").pop();
 

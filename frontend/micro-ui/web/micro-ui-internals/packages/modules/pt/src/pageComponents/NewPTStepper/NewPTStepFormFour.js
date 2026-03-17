@@ -1,16 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_PTNewApplication_FORM } from "../../redux/action/PTNewApplicationActions";
-import { useState } from "react";
 import _ from "lodash";
-import PropertySelectDocs from "../../components/PropertySelectDocs";
 
 const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  const stateId = Digit.ULBService.getStateId();
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -24,16 +21,22 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //   return state.pt.PTNewApplicationFormReducer.formData;
   // });
 
+  // const currentStepData = useSelector(function (state) {
+  //   return state.pt.PTNewApplicationFormReducer.formData;
+  // });
+
   const currentStepData = useSelector(function (state) {
     return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config?.key]
       ? state.pt.PTNewApplicationFormReducer.formData[config?.key]
       : {};
   });
 
+  console.log("currentStepData", currentStepData);
+
   const goNext = async (finalData) => {
     const missingFields = validation(finalData);
     if (missingFields.length > 0) {
-      setError(`${t("GC_" + missingFields[0].replace(".", "_").toUpperCase())}`);
+      setError(`${t("PT_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
@@ -42,23 +45,20 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function validation(formData) {
-    if (!isLoading) {
-      const chbDocumentsType = docData?.["PropertyTax"]?.Documents || [];
-      const uploadedDocs = formData?.documents?.documents || [];
-      // Extract required docs
-      const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
-      // Extract uploaded document codes
-      const uploadedDocCodes = uploadedDocs?.map((doc) => doc.documentType);
+    const chbDocumentsType = docData?.["PropertyTax"]?.Documents || [];
+    const uploadedDocs = formData?.documents?.documents || [];
+    // Extract required docs
+    const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
+    // Extract uploaded document codes
+    const uploadedDocCodes = uploadedDocs?.map((doc) => doc.documentType || []);
 
-      // // Missing required docs
-      // const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.includes(reqDoc));
+    // // Missing required docs
+    // const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.includes(reqDoc));
 
-      // For dropdowns: match if uploadedDoc starts with requiredDoc (prefix check)
-      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocCodes.some((uploaded) => uploaded.startsWith(reqDoc)));
+    // For dropdowns: match if uploadedDoc starts with requiredDoc (prefix check)
+    const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.some((uploaded) => uploaded && uploaded.startsWith(reqDoc)));
 
-      return missingDocs;
-    }
-    return [];
+    return missingDocs;
   }
 
   function onGoBack(data) {
@@ -66,6 +66,8 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
+    console.log("onFormValueChange", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }
@@ -86,7 +88,7 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDeleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

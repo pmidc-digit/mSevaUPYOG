@@ -36,7 +36,7 @@ const App = () => {
   const location = useLocation();
 
   const CreateProperty = Digit?.ComponentRegistryService?.getComponent("PTCreateProperty");
-  const CreatePropertyForm = Digit?.ComponentRegistryService?.getComponent("CreateEmployeeStepForm");
+  const CreatePropertyForm = Digit?.ComponentRegistryService?.getComponent("NewPTStepperForm");
   const EditProperty = Digit?.ComponentRegistryService?.getComponent("PTEditProperty");
   const SearchPropertyComponent = Digit?.ComponentRegistryService?.getComponent("PTSearchPropertyComponent");
   const SearchResultsComponent = Digit?.ComponentRegistryService?.getComponent("PTSearchResultsComponent");
@@ -56,6 +56,8 @@ const App = () => {
   const GISIntegration = Digit?.ComponentRegistryService?.getComponent("GISIntegration");
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
+  const PropertyResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyResponseCitizen");
+
   return (
     <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
@@ -65,8 +67,8 @@ const App = () => {
               <PropertyBreadCrumbs location={location} />
             </div>
           ) : null}
-          <PrivateRoute path={`${path}/property/create-application`} component={CreateProperty} />
-          <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} />
+          <PrivateRoute path={`${path}/property/create-application`} component={CreatePropertyForm} />
+          {/* <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} /> */}
           <PrivateRoute path={`${path}/property/edit-application/:id`} component={EditProperty} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
           <Route path={`${path}/property/search-results`} component={SearchResultsComponent} />
@@ -89,9 +91,10 @@ const App = () => {
             path={`${path}/property/application-preview/:id`}
             component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />}
           />
-          <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} />
+          {/* <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} /> */}
           <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
           <PrivateRoute path={`${path}/property/gis-values`} component={GISIntegration} />
+          <PrivateRoute path={`${path}/property/response/:id`} component={PropertyResponseCitizen} />
           {/* <PrivateRoute path={`${path}/property/create-application`} component={CreateEmployeeStepForm} /> */}
         </AppContainer>
       </Switch>

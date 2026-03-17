@@ -1,7 +1,8 @@
 import React, { Fragment } from "react";
-import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { Card, CardLabel, LabelFieldPair, CardSubHeader, StatusTable, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import CHBDocument from "../components/ChallanDocument";
 
 const PTSummary = ({ formData, t }) => {
   console.log("form data in summary component", formData);
@@ -9,12 +10,14 @@ const PTSummary = ({ formData, t }) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const mutateScreen = url.includes("/property-mutate/");
-  const onEdit = (step) => {
-    console.log("on edit step", step);
-    if (step === "PersonalDetails") {
-      history.push({ pathname: "/digit-ui/citizen/pt/property/edit-step-form", state: { edit: true, currentStepNumber: 1 } });
-    }
-  };
+
+  const SummaryData = useSelector(function (state) {
+    return state.pt.PTNewApplicationFormReducer.formData;
+  });
+
+  console.log("SummaryData", SummaryData);
+
+  let docs = formData?.documents?.documents?.documents || SummaryData?.documents?.documents?.documents;
 
   const styles = {
     wrapper: {
@@ -41,9 +44,14 @@ const PTSummary = ({ formData, t }) => {
     labelFieldPair: {
       display: "flex",
       justifyContent: "space-between",
+      alignItems: "center",
       borderBottom: "1px dashed #e0e0e0",
       padding: "0.5rem 0",
       color: "#333",
+    },
+    value: {
+      width: "100%",
+      textAlign: "right",
     },
     ownerIndex: {
       fontWeight: "600",
@@ -52,136 +60,101 @@ const PTSummary = ({ formData, t }) => {
   };
 
   return (
-    <>
-      {mutateScreen ? (
-        <div className="application-summary" />
-      ) : (
-        <div className="application-summary" style={styles.wrapper}>
-          <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2>
-
-          {/* Property Address Section */}
-          <Card className="summary-section" style={styles.section}>
+    <div className="application-summary" style={styles.wrapper}>
+      {/* onwers Section */}
+      {SummaryData?.ownerDetails?.owners?.map((item, index) => {
+        return (
+          <Card className="summary-section" style={styles.section} key={`summary${index}`}>
+            <CardSectionHeader>
+              {t("Owner")} {index + 1}
+            </CardSectionHeader>
             <div className="section-content">
               <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("City")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.city?.name || "NA"}</div>
+                <CardLabel>{t("Name")}</CardLabel>
+                <div style={styles.value}>{item?.name || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Door/House No.")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.doorNo || "NA"}</div>
+                <CardLabel>{t("Mobile Number")}</CardLabel>
+                <div style={styles.value}>{item?.mobileNumber || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Building Name")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.buildingName || "NA"}</div>
+                <CardLabel>{t("Email Id")}</CardLabel>
+                <div style={styles.value}>{item?.emailId || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Street Name")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.street || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Mohalla")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.locality?.code || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Pincode")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.pincode || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Existing Property ID")}</CardLabel>
-                <div>{formData?.PersonalDetails?.existingPropertyId || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Survey Id/UID")}</CardLabel>
-                <div>{formData?.PersonalDetails?.surveyId || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair style={styles.labelFieldPair}>
-                <CardLabel>{t("Year of creation of Property")}</CardLabel>
-                <div>{formData?.PersonalDetails?.yearOfCreation?.yearOfCreation?.value || "NA"}</div>
+                <CardLabel>{t("Address")}</CardLabel>
+                <div style={styles.value}>{item?.address || "NA"}</div>
               </LabelFieldPair>
             </div>
           </Card>
+        );
+      })}
 
-          {/* Property Details Section */}
-          <div className="summary-section" style={styles.section}>
-            <div className="section-content">
-              {[
-                ["Property Usage Type", formData?.PropertyDetails?.usageCategoryMajor?.i18nKey],
-                ["Type of Building", formData?.PropertyDetails?.PropertyType?.i18nKey],
-                ["Plot Size(sq yards)", `${formData?.PropertyDetails?.landarea || "NA"} sq yards`],
-                ["No of Floor", formData?.PropertyDetails?.noOfFloors],
-                ["Business Name", formData?.PropertyDetails?.businessName?.businessName],
-                ["Remarks", formData?.PropertyDetails?.remarks],
-              ].map(([label, value]) => (
-                <LabelFieldPair key={label} style={styles.labelFieldPair}>
-                  <CardLabel>{t(label)}</CardLabel>
-                  <div>{value || "NA"}</div>
-                </LabelFieldPair>
-              ))}
-              {!window.location.href.includes("/citizen") && (
-                <>
-                  <LabelFieldPair style={styles.labelFieldPair}>
-                    <CardLabel>{t("Vasika No")}</CardLabel>
-                    <div>{formData?.PropertyDetails?.vasikaDetails?.vasikaNo || "NA"}</div>
-                  </LabelFieldPair>
-                  <LabelFieldPair style={styles.labelFieldPair}>
-                    <CardLabel>{t("Vasika Date")}</CardLabel>
-                    <div>{formData?.PropertyDetails?.vasikaDetails?.vasikaDate || "NA"}</div>
-                  </LabelFieldPair>
-                  <LabelFieldPair style={styles.labelFieldPair}>
-                    <CardLabel>{t("Allotment No")}</CardLabel>
-                    <div>{formData?.PropertyDetails?.allottmentDetails?.allotmentNo || "NA"}</div>
-                  </LabelFieldPair>
-                  <LabelFieldPair style={styles.labelFieldPair}>
-                    <CardLabel>{t("Allotment Date")}</CardLabel>
-                    <div>{formData?.PropertyDetails?.allottmentDetails?.allotmentDate || "NA"}</div>
-                  </LabelFieldPair>
-                </>
-              )}
-            </div>
-          </div>
+      {/* Property Details Section */}
+      <div className="summary-section" style={styles.section}>
+        <div className="section-content">
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Property Usage Type")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.propertyUsageType?.name || "NA"}</div>
+          </LabelFieldPair>
 
-          {/* Owner Details Section */}
-          <div className="summary-section" style={styles.section}>
-            <div className="section-content">
-              {formData?.ownerShipDetails?.owners?.map((owner, index) => (
-                <div key={index}>
-                  {[
-                    ["Name", owner.name],
-                    ["GUARDIAN NAME", owner.fatherOrHusbandName],
-                    ["Gender", owner.gender?.value],
-                    ["Ownership Type", formData?.ownerShipDetails?.ownershipCategory?.label],
-                    ["MOBILE NO", owner.mobileNumber],
-                    ["EMAIL ID", owner.emailId],
-                    ["Ownership Percentage", owner.ownershipPercentage],
-                    ["Category", owner.ownerType?.code],
-                    ["Correspondence Address", owner.correspondenceAddress],
-                    ["Document Type", owner.documents?.documentType?.i18nKey],
-                    ["Ownership Document ID", owner.documents?.documentUid],
-                  ].map(([label, value]) => (
-                    <LabelFieldPair key={label} style={styles.labelFieldPair}>
-                      <CardLabel>{t(label)}</CardLabel>
-                      <div>{value || "NA"}</div>
-                    </LabelFieldPair>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Property Type")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.propertyType?.name || "NA"}</div>
+          </LabelFieldPair>
 
-          {/* Documents Section */}
-          <div className="summary-section" style={styles.section}>
-            <div className="section-content">
-              {formData?.DocummentDetails?.documents?.documents?.map((doc, index) => (
-                <LabelFieldPair key={index} style={styles.labelFieldPair}>
-                  <CardLabel>{t("Document")}</CardLabel>
-                  <div>{doc.documentType || "NA"}</div>
-                </LabelFieldPair>
-              ))}
-            </div>
-          </div>
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Business Name")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.businessName || "NA"}</div>
+          </LabelFieldPair>
+
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Remarks")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.remarks || "NA"}</div>
+          </LabelFieldPair>
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Area")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyDetails?.unitDetails?.[0]?.area || "NA"}</div>
+          </LabelFieldPair>
         </div>
-      )}
-    </>
+      </div>
+
+      {/* Property Address Section */}
+      <div className="summary-section" style={styles.section}>
+        <div className="section-content">
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Building Name")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.buildingName || "NA"}</div>
+          </LabelFieldPair>
+
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Locality")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.locality?.name || "NA"}</div>
+          </LabelFieldPair>
+
+          <LabelFieldPair style={styles.labelFieldPair}>
+            <CardLabel>{t("Year Of Creation")}</CardLabel>
+            <div style={styles.value}>{SummaryData?.propertyAddress?.yearOfCreation?.name || "NA"}</div>
+          </LabelFieldPair>
+        </div>
+      </div>
+
+      <CardSubHeader className="bpa-summary-heading">{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+      <StatusTable>
+        <div className="bpa-summary-section chb-documents-container">
+          {docs?.length > 0 ? (
+            docs?.map((doc, index) => (
+              <div key={index}>
+                <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+              </div>
+            ))
+          ) : (
+            <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+          )}
+        </div>
+      </StatusTable>
+    </div>
   );
 };
 

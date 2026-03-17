@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ticket.configuration.FileStore;
 import com.ticket.configuration.S3Bucket;
 import com.ticket.daoImpl.CommentDaoImpl;
 import com.ticket.model.Comment;
@@ -40,6 +42,10 @@ public class CommentController {
 
 	@Autowired
 	CommentDaoImpl commentDao;
+	
+	@Autowired
+	FileStore filestore;
+	
 
 	@ResponseBody
 	@RequestMapping(value = { "/get-comments" }, method = RequestMethod.GET)
@@ -78,7 +84,9 @@ public class CommentController {
 						imgPath = strDate+"_"+commentFile.getOriginalFilename();
 						Path path = Paths.get(imgPath);
 						Files.write(path, bytes);
-						new S3Bucket().uploadFileS3Bucket(imgPath,path.toString(),"comment");
+						//new S3Bucket().uploadFileS3Bucket(imgPath,path.toString(),"comment");
+						List<MultipartFile> fileList = Arrays.asList(commentFile);
+						filestore.uploadToFileStore(fileList, "ticket","comment-images");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

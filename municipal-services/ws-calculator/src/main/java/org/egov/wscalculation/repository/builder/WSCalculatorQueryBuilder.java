@@ -1138,7 +1138,13 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 			return null;
 		}
 		StringBuilder query = new StringBuilder(Query);
-		query.append(" inner join eg_ws_connection conn on mr.connectionno = conn.connectionno and mr.tenantid = conn.tenantid ");
+		query.append(" INNER JOIN eg_ws_connection conn \r\n"
+				+ "  ON mr.connectionno = conn.connectionno \r\n"
+				+ " AND mr.tenantid = conn.tenantid  \r\n"
+				+ "INNER JOIN eg_pt_property epp \r\n"
+				+ "  ON conn.property_id = epp.propertyid\r\n"
+				+ "INNER JOIN eg_pt_address epa \r\n"
+				+ "  ON epa.propertyid = epp.id   ");
 		if (!StringUtils.isEmpty(criteria.getTenantId())) {
 			addClauseIfRequired(preparedStatement, query);
 			query.append(" mr.tenantid= ? ");
@@ -1146,7 +1152,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		}
 		if (!StringUtils.isEmpty(criteria.getLocality())) {
 			addClauseIfRequired(preparedStatement, query);
-			query.append(" conn.locality= ? ");
+			query.append(" epa.locality= ? ");
 			preparedStatement.add(criteria.getLocality());
 		}
 		

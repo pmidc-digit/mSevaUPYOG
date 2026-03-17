@@ -17,7 +17,7 @@ const createEmployeeConfig = [
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormNocDetails",
+    component: "FIRENOCStepFormNocDetails",
     key: "nocDetails",
     withoutLabel: true,
     texts: {
@@ -30,7 +30,7 @@ const createEmployeeConfig = [
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormTwo",
+    component: "FIRENOCStepFormTwo",
     key: "siteDetails",
     withoutLabel: true,
     texts: {
@@ -43,7 +43,7 @@ const createEmployeeConfig = [
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormOne",
+    component: "FIRENOCStepFormOne",
     key: "applicationDetails",
     withoutLabel: true,
     texts: {
@@ -56,7 +56,7 @@ const createEmployeeConfig = [
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormThree",
+    component: "FIRENOCStepFormThree",
     key: "documents",
     withoutLabel: true,
     texts: {
@@ -69,7 +69,7 @@ const createEmployeeConfig = [
     stepNumber: 5,
     isStepEnabled: true,
     type: "component",
-    component: "NewNOCStepFormFour",
+    component: "FIRENOCStepFormFour",
     key: "summary",
     withoutLabel: true,
     texts: {
@@ -100,6 +100,9 @@ const NewNOCStepperForm = () => {
 
   useEffect(() => {
     dispatch(RESET_NOC_NEW_APPLICATION_FORM());
+    return () => {
+      dispatch(RESET_NOC_NEW_APPLICATION_FORM());
+    };
   }, []);
 
 

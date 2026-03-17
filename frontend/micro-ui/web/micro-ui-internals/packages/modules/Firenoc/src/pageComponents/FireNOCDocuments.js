@@ -205,7 +205,7 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
   return (
     <div>
       <FormStep t={t} config={config} onSelect={handleSubmit} isDisabled={enableSubmit}>
-        <CardSectionHeader>{t("ES_TITILE_DOCUMENT_DETAILS")}</CardSectionHeader>
+        {/* <CardSectionHeader>{t("ES_TITILE_DOCUMENT_DETAILS")}</CardSectionHeader> */}
         {docConfig?.map((doc) => (
           <div key={doc.code} className="bpa-doc-required-card">
             <FireNOCSelectDocument

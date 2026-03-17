@@ -47,13 +47,13 @@ const NOCBreadCrumbs = ({ location }) => {
 const EmployeeApp = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
-  const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
-  const Inbox = Digit?.ComponentRegistryService?.getComponent("NOCInbox");
-  const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
-  const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCEmployeeApplicationOverview");
-  const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
+  const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCApplicationOverview");
+  const Inbox = Digit?.ComponentRegistryService?.getComponent("FIRENOCInbox");
+  const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCStepperForm");
+  const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCEmployeeApplicationOverview");
+  const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCEditApplication");
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
-  const NOCEsignResponse = Digit?.ComponentRegistryService?.getComponent("NOCEsignResponse");
+  const NOCEsignResponse = Digit?.ComponentRegistryService?.getComponent("FIRENOCEsignResponse");
 
     const history = useHistory();
 

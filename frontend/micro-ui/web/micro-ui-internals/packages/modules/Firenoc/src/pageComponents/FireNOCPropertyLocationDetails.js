@@ -216,13 +216,15 @@ const FireNOCPropertyLocationDetails = (_props) => {
       {/* Row 3: Street Name + Landmark Name */}
       <div style={twoColRow}>
         <LabelFieldPair style={colItem}>
-          <CardLabel className="card-label-smaller">{t("Street Name")}</CardLabel>
+          <CardLabel className="card-label-smaller">{t("Street Name")}<span className="requiredField">*</span></CardLabel>
           <div className="field">
             <Controller control={control} name="streetName"
+              rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
                 <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("Enter Street Name")} />
               )}
             />
+            {errors?.streetName && <p style={{ color: "red", marginTop: "4px" }}>{errors.streetName.message}</p>}
           </div>
         </LabelFieldPair>
         <LabelFieldPair style={colItem}>

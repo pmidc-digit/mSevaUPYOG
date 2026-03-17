@@ -56,6 +56,8 @@ const App = () => {
   const GISIntegration = Digit?.ComponentRegistryService?.getComponent("GISIntegration");
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
+  const PropertyResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyResponseCitizen");
+
   return (
     <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
@@ -89,9 +91,10 @@ const App = () => {
             path={`${path}/property/application-preview/:id`}
             component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />}
           />
-          <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} />
+          {/* <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} /> */}
           <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
           <PrivateRoute path={`${path}/property/gis-values`} component={GISIntegration} />
+          <PrivateRoute path={`${path}/property/response/:id`} component={PropertyResponseCitizen} />
           {/* <PrivateRoute path={`${path}/property/create-application`} component={CreateEmployeeStepForm} /> */}
         </AppContainer>
       </Switch>

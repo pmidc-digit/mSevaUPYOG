@@ -25,7 +25,7 @@ const PropertyAddressDetails = ({ goNext }) => {
   const tenants = Digit.Hooks.pt.useTenants();
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
-  const apiDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer);
+  const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyAddress);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -94,13 +94,25 @@ const PropertyAddressDetails = ({ goNext }) => {
   };
 
   useEffect(() => {
-    if (location?.state) {
+    console.log("stateDataCheck", stateDataCheck);
+    if (location?.state || stateDataCheck) {
       const value = location?.state;
-      setValue("surveyId", value?.surveyId);
-      setValue("houseNo", value?.flatNo);
-      setValue("buildingName", value?.buildingName);
+      const checkSurveyId = value?.surveyId || stateDataCheck?.surveyId;
+      const checkHouseNo = value?.flatNo || stateDataCheck?.houseNo;
+      const checkBuildingName = value?.buildingName || stateDataCheck?.buildingName;
+      const checkLocality = getLocality?.find((item) => item?.code == stateDataCheck?.locality?.code);
+      console.log("checkLocality", checkLocality);
+      console.log("getLocality", getLocality);
+      const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
+      setValue("surveyId", checkSurveyId);
+      setValue("houseNo", checkHouseNo);
+      setValue("buildingName", checkBuildingName);
+      setValue("streetName", stateDataCheck?.streetName);
+      setValue("pincode", stateDataCheck?.pincode);
+      setValue("locality", checkLocality);
+      setValue("yearOfCreation", checkYearOfCreation);
     }
-  }, [location]);
+  }, [location, stateDataCheck, getLocality, getYearCreation]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>

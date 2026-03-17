@@ -168,8 +168,14 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
     try {
       const response = await Digit.PTService.create({ Property: formData }, tenantId);
-
+      console.log("response====", response);
+      const id = response?.Properties[0]?.propertyId;
       setLoader(false);
+      if (isCitizen) {
+        history.push("/digit-ui/citizen/pt/property/response/" + id);
+      } else {
+        history.push("/digit-ui/employee/garbagecollection/response/" + id);
+      }
       // if (response?.ResponseInfo?.status === "successful") {
       //   return { isSuccess: true, response };
       // } else {
@@ -177,7 +183,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       // }
     } catch (error) {
       setLoader(false);
-      console.log("error");
+      alert("error while creating the property");
     }
   };
 

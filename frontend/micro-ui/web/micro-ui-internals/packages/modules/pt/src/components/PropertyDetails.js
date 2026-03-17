@@ -40,13 +40,15 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const tenants = Digit.Hooks.pt.useTenants();
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
-  const apiDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer?.formData);
+  const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyDetails);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const [getPropertyTypeData, setPropertyTypeData] = useState([]);
   const [getUsageData, setUsageData] = useState([]);
   const [getSubUsageData, setSubUsageData] = useState([]);
+
+  console.log("stateDataCheck", stateDataCheck);
 
   const { data: UsageCategoryData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "UsageCategoryMinor" }]);
 
@@ -107,11 +109,6 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     name: "unitDetails",
   });
 
-  const occupancyOptions = [
-    { name: "Self Occupied", code: "SELFOCCUPIED" },
-    { name: "Rented", code: "RENTED" },
-  ];
-
   const onSubmit = async (data) => {
     goNext(data);
     // return;
@@ -121,14 +118,37 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
 
   useEffect(() => {
-    if (location?.state) {
+    if (location?.state || stateDataCheck) {
       const value = location?.state;
-      console.log("getUsageData", getUsageData);
-      const getResident = getUsageData?.find((item) => item?.name == value?.useType);
-      console.log("getResident", getResident);
+
+      const getResident = getUsageData?.find((item) => item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
+
+      const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
+      const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter(
+        (item) => item?.usageCategoryMinor == stateDataCheck?.propertyUsageType?.code
+      );
+      setSubUsageData(checkData);
       setValue("propertyUsageType", getResident);
+      setValue("propertyType", getPropertyType);
+      setValue("businessName", stateDataCheck?.businessName);
+      setValue("remarks", stateDataCheck?.remarks);
+      setValue("flammable", stateDataCheck?.flammable);
+      setValue("heightOfProperty", stateDataCheck?.heightOfProperty);
+
+      if (stateDataCheck?.unitDetails?.length > 0) {
+        remove([...Array(fields.length).keys()]);
+
+        stateDataCheck.unitDetails.forEach((unit) => {
+          append(unit);
+        });
+
+        // ✅ IMPORTANT
+        trigger();
+      }
     }
-  }, [location, getUsageData]);
+  }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData]);
+
+  const floorOptions = FloorData?.PropertyTax?.Floor || [];
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -265,8 +285,9 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   <Controller
                     control={control}
                     name={`unitDetails.${index}.unitUsageType`}
+                    defaultValue={item?.unitUsageType || watch("propertyUsageType")?.name || ""}
                     rules={{ required: t("Unit Usage Type is required") }}
-                    defaultValue={watch("propertyUsageType")?.name}
+                    // defaultValue={watch("propertyUsageType")?.name}
                     render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} disabled={true} />}
                   />
                   {errors?.unitDetails?.[index]?.unitUsageType && (
@@ -287,6 +308,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     <Controller
                       control={control}
                       name={`unitDetails.${index}.subUsageType`}
+                      defaultValue={getSubUsageData?.find((s) => s.code === item?.subUsageType?.code || s.code === item?.subUsageType) || null}
                       rules={{ required: t("Sub Usage Type is required") }}
                       render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getSubUsageData} optionKey="name" t={t} />}
                     />
@@ -305,6 +327,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   <Controller
                     control={control}
                     name={`unitDetails.${index}.occupancy`}
+                    defaultValue={
+                      OccupancyTypeData?.PropertyTax?.OccupancyType?.find((o) => o.code === item?.occupancy?.code || o.code === item?.occupancy) ||
+                      null
+                    }
                     rules={{ required: t("Occupancy is required") }}
                     render={(props) => (
                       <Dropdown
@@ -330,6 +356,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 <Controller
                   control={control}
                   name={`unitDetails.${index}.area`}
+                  defaultValue={item?.area || ""}
                   rules={{ required: t("Area is required") }}
                   render={(props) => (
                     <TextInput
@@ -368,6 +395,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                     control={control}
                     name={`unitDetails.${index}.floor`}
                     rules={{ required: t("Floor is required") }}
+                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+                    // defaultValue={item?.floor || ""}
                     render={(props) => (
                       <Dropdown select={props.onChange} selected={props.value} option={FloorData?.PropertyTax?.Floor} optionKey="name" t={t} />
                     )}
@@ -387,6 +416,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   <Controller
                     control={control}
                     name={`unitDetails.${index}.totalRent`}
+                    defaultValue={item?.totalRent || ""}
                     rules={{ required: t("Total Rent is required") }}
                     render={(props) => (
                       <TextInput
@@ -423,6 +453,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   <Controller
                     control={control}
                     name={`unitDetails.${index}.rentMonths`}
+                    defaultValue={months?.find((m) => m.code === item?.rentMonths?.code || m.code === item?.rentMonths) || null}
                     rules={{ required: t("This field is required") }}
                     render={(props) => <Dropdown select={props.onChange} selected={props.value} option={months} optionKey="name" t={t} />}
                   />
@@ -441,6 +472,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   <Controller
                     control={control}
                     name={`unitDetails.${index}.pendingUsageMonths`}
+                    defaultValue={usageMonths?.find((u) => u.code === item?.pendingUsageMonths?.code || u.code === item?.pendingUsageMonths) || null}
                     rules={{ required: t("This field is required") }}
                     render={(props) => <Dropdown select={props.onChange} selected={props.value} option={usageMonths} optionKey="name" t={t} />}
                   />

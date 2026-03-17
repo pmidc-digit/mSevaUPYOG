@@ -51,12 +51,14 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
+  const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.ownerDetails);
+
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  const [getInstType, setInstType] = useState([]);
+  // const [getInstType, setInstType] = useState([]);
 
   const { data: SubOwnerShipCategory = [], SubOwnerShipCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "SubOwnerShipCategory" },
@@ -108,6 +110,27 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
     }
   }, [ownerTypeCode]);
 
+  const instTypeOptions =
+    SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == watch("ownerShip")?.code) || [];
+
+  useEffect(() => {
+    if (stateDataCheck) {
+      const checkOwners = owners?.find((item) => item?.code == stateDataCheck?.ownerShip?.code);
+
+      // const instOptions =
+      //   SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item.ownerShipCategory === stateDataCheck?.ownerShip?.code) || [];
+
+      // const checkInstitutionType = instOptions?.find((item) => item.code === stateDataCheck?.institutionType?.code);
+
+      // setInstType(findData);
+      setValue("ownerShip", checkOwners);
+      setValue("institutionName", stateDataCheck?.institutionName);
+      // setValue("institutionType", checkInstitutionType);
+    }
+  }, [stateDataCheck, SubOwnerShipCategory]);
+
+  console.log("stateDataCheck", stateDataCheck);
+
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
       {/* city */}
@@ -124,8 +147,8 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               <Dropdown
                 select={(e) => {
                   props.onChange(e);
-                  const findData = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == e?.code);
-                  setInstType(findData);
+                  // const findData = SubOwnerShipCategory?.PropertyTax?.SubOwnerShipCategory?.filter((item) => item?.ownerShipCategory == e?.code);
+                  // setInstType(findData);
                 }}
                 selected={props.value}
                 option={owners}
@@ -181,7 +204,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 control={control}
                 name="institutionType"
                 rules={{ required: t("Institution Type is Required") }}
-                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getInstType} optionKey="name" t={t} />}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={instTypeOptions} optionKey="name" t={t} />}
               />
               {errors.institutionType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.institutionType?.message}</p>}
             </div>

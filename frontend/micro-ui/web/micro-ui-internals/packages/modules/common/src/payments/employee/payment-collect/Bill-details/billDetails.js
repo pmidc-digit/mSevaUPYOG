@@ -366,6 +366,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
       </table>
     );
   };
+  const isTL = businessService === "TL";
   return (
     <React.Fragment>
       <StatusTable>

@@ -11,7 +11,7 @@
   "devDependencies": {
     "microbundle-crl": "^0.13.11",
     "@mseva/digit-ui-libraries": "1.1.68-UAT.8",
-    "@mseva/digit-ui-module-common": "1.1.88-UAT.8",
+    "@mseva/digit-ui-module-common": "1.1.88-UAT.9",
     "@mseva/digit-ui-module-engagement": "1.1.32-UAT.2",
     "@mseva/digit-ui-module-fsm": "1.0.6",
     "@mseva/digit-ui-module-mcollect": "1.0.15",

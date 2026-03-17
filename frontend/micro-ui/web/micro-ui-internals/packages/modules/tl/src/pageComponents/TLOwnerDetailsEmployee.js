@@ -36,6 +36,9 @@ const createOwnerDetails = () => ({
   key: Date.now(),
 });
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const OwnerForm = (_props) => {
   const {
     owner,
@@ -403,6 +406,8 @@ const OwnerForm = (_props) => {
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.subOwnerShipCategory ? errors?.subOwnerShipCategory?.message : ""}</CardLabelError> */}
               <CardSectionHeader>{t("TL_NEW_OWNER_DETAILS_HEADER_OWNER_INFO")}</CardSectionHeader>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel>
                   {`${t("TL_NEW_OWNER_AUTH_PER_LABEL")}`}
@@ -440,6 +445,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -475,6 +482,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
@@ -516,6 +527,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_PHONE_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -553,6 +566,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.altContactNumber ? errors?.altContactNumber?.message : ""}</CardLabelError>
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -593,7 +610,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
-
+              </div>
+              <div style={colItem}>
               {/**here */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
@@ -627,7 +645,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
-
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
@@ -685,7 +706,8 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
-
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
@@ -724,7 +746,10 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               
                 <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
-
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller hrms-text-transform-none">
                     {`${t("CORE_COMMON_DOB")}`}
@@ -767,8 +792,8 @@ const OwnerForm = (_props) => {
                   />
                 </LabelFieldPair>
                 <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError>
-              
-
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_OFF_ADDR_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -797,6 +822,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -833,10 +862,15 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem} />
+              </div>
             </React.Fragment>
           )}
           {typeOfOwner !== "INSTITUTIONAL" && (
             <React.Fragment>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_LOCALIZATION_TRADE_OWNER_NAME")}`}
@@ -876,6 +910,8 @@ const OwnerForm = (_props) => {
               {/* <LabelFieldPair>
                   <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
                 </LabelFieldPair> */}
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
@@ -910,6 +946,11 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+              </div>
+              </div>
+
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`}
@@ -942,6 +983,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
@@ -999,7 +1042,11 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+              </div>
+              </div>
 
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
@@ -1050,7 +1097,8 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
-
+              </div>
+              <div style={colItem}>
               {/* dob */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
@@ -1083,7 +1131,11 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError> 
+              </div>
+              </div>
 
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -1114,6 +1166,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
                 <Controller
@@ -1142,6 +1196,11 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
+              </div>
+              </div>
+
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -1170,6 +1229,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -1206,6 +1267,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
+              </div>
+              </div>
             </React.Fragment>
           )}
         </div>

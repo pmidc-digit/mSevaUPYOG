@@ -42,6 +42,9 @@ const createTradeDetailsDetails = () => ({
   key: Date.now(),
 });
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -346,6 +349,8 @@ const OwnerForm1 = (_props) => {
   };
   return (
     <div>
+      <div style={twoColRow}>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_FINANCIAL_YEAR_LABEL")}`}
@@ -377,6 +382,8 @@ const OwnerForm1 = (_props) => {
         />
       </LabelFieldPair>
       <CardLabelError >{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
+      </div>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")}`}
@@ -411,7 +418,11 @@ const OwnerForm1 = (_props) => {
           )}
         />
       </LabelFieldPair>
+      </div>
+      </div>
 
+      <div style={twoColRow}>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_COMMON_TABLE_COL_TRD_NAME")}`}
@@ -445,6 +456,8 @@ const OwnerForm1 = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.tradeName ? errors?.tradeName?.message : ""}</CardLabelError>
+      </div>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL")}`}
@@ -486,6 +499,11 @@ const OwnerForm1 = (_props) => {
         />
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
+      </div>
+      </div>
+
+      <div style={twoColRow}>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_LABEL")}`}
@@ -517,6 +535,8 @@ const OwnerForm1 = (_props) => {
         />
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.structureSubType ? errors?.structureSubType?.message : ""}</CardLabelError>
+      </div>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">
           {`${t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")}`}
@@ -541,6 +561,11 @@ const OwnerForm1 = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.commencementDate ? errors?.commencementDate?.message : ""}</CardLabelError>
+      </div>
+      </div>
+
+      <div style={twoColRow}>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
         <div className="form-field">
@@ -569,6 +594,8 @@ const OwnerForm1 = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.gstNo ? errors?.gstNo?.message : ""}</CardLabelError>
+      </div>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
         <div className="form-field">
@@ -596,6 +623,11 @@ const OwnerForm1 = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.operationalArea ? errors?.operationalArea?.message : ""}</CardLabelError>
+      </div>
+      </div>
+
+      <div style={twoColRow}>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
         <div className="form-field">
@@ -623,7 +655,8 @@ const OwnerForm1 = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.noOfEmployees ? errors?.noOfEmployees?.message : ""}</CardLabelError>
-
+      </div>
+      <div style={colItem}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO")} `}</CardLabel>
         <div className="form-field">
@@ -651,6 +684,8 @@ const OwnerForm1 = (_props) => {
         </div>
       </LabelFieldPair>
       <CardLabelError>{localFormState.touched.oldReceiptNo ? errors?.oldReceiptNo?.message : ""}</CardLabelError>
+      </div>
+      </div>
     </div>
   );
 };

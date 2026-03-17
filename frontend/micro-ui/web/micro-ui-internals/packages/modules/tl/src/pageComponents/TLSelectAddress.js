@@ -4,6 +4,9 @@ import { useForm, Controller } from "react-hook-form";
 import _ from "lodash";
 import Timeline from "../components/TLTimeline";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const allCities = Digit.Hooks.tl.useTenants();
   
@@ -175,6 +178,8 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
   if (userType === "employee") {
     return (
       <div>
+        <div style={twoColRow}>
+        <div style={colItem}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("MYCITY_CODE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
@@ -198,6 +203,8 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
+        </div>
+        <div style={colItem}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_MOHALLA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
@@ -231,6 +238,8 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.locality ? errors?.locality?.message : ""}</CardLabelError>
+        </div>
+        </div>
       </div>
     );
   }

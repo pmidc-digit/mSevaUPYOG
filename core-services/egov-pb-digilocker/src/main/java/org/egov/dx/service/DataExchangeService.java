@@ -19,15 +19,11 @@ import org.egov.dx.util.Configurations;
 import org.egov.dx.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.AnyTypePermission;
 import com.thoughtworks.xstream.security.NoTypePermission;
@@ -57,6 +53,8 @@ public class DataExchangeService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Value("${egov.collectionservice.host}")
+    private String egovHost;
 
     private final XStream xstream;
     private final RestTemplate restTemplate;
@@ -117,7 +115,7 @@ public class DataExchangeService {
 
             log.info("Processing DigiLocker Request for DocType: {}", docType);
 
-            if (DIGILOCKER_DOCTYPE.equalsIgnoreCase(docType)) { // Replaced "PRTAX"
+            if (DIGILOCKER_DOCTYPE.equalsIgnoreCase(docType)) {
                 return handlePropertyTax(searchCriteria, isUriRequest, requestWrapper);
             } else if ("WS".equalsIgnoreCase(docType) || "SW".equalsIgnoreCase(docType)) {
                 return handleWaterSewerage(searchCriteria, isUriRequest, requestWrapper, docType);
@@ -136,7 +134,7 @@ public class DataExchangeService {
 
     private String handlePropertyTax(SearchCriteria searchCriteria, boolean isUriRequest, RequestInfoWrapper wrapper) throws IOException {
         PaymentSearchCriteria paymentCriteria = new PaymentSearchCriteria();
-        paymentCriteria.setTenantId(TENANT_PREFIX + searchCriteria.getCity()); // Replaced "pb."
+        paymentCriteria.setTenantId(TENANT_PREFIX + searchCriteria.getCity());
         paymentCriteria.setConsumerCodes(Collections.singleton(searchCriteria.getPropertyId()));
 
         List<Payment> payments = paymentService.getPayments(paymentCriteria, DIGILOCKER_DOCTYPE, wrapper);
@@ -192,34 +190,60 @@ public class DataExchangeService {
 
     // --- Water & Sewerage Logic ---
 
-    private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriRequest, RequestInfoWrapper wrapper, String docType) throws IOException {
+private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriRequest, RequestInfoWrapper wrapper, String docType) throws IOException {
         
-        JsonNode billResponse = fetchWaterSewerageBills(searchCriteria, docType, wrapper);
-        if (billResponse == null) return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        // 1. Fetch Connection List
+        JsonNode connectionResponse = fetchWaterSewerageConnection(searchCriteria, docType, wrapper);
+        if (connectionResponse == null) return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
 
-        JsonNode bills = billResponse.path("Bills");
-        if (bills.isMissingNode() || !bills.isArray() || bills.size() == 0) {
-            log.error("No bills found for {} consumer {}", docType, searchCriteria.getPropertyId());
+        String arrayNodeName = "WS".equalsIgnoreCase(docType) ? "WaterConnection" : "SewerageConnections";
+        JsonNode connections = connectionResponse.path(arrayNodeName);
+        
+        // 2. Find ANY active connection
+        JsonNode activeConn = null;
+        for (JsonNode node : connections) {
+            if ("Active".equalsIgnoreCase(node.path("status").asText())) {
+                activeConn = node;
+                break; 
+            }
+        }
+
+        // 3. Error if no Active connection exists
+        if (activeConn == null) {
+            log.error("No active connection found for consumer {}", searchCriteria.getPropertyId());
             return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
         }
 
-        JsonNode latestBill = bills.get(0);
-        if (!isValidWsResponse(searchCriteria, latestBill)) {
-            log.error("Validation failed for {}: Name or Mobile mismatch.", docType);
+        // 4. Chain to Property Search for Owner Details
+        JsonNode propertyResponse = fetchPropertyDetails(activeConn.path("tenantId").asText(), activeConn.path("propertyId").asText(), wrapper);
+        if (propertyResponse == null || propertyResponse.path("Properties").size() == 0) {
+            log.error("Failed to fetch linked property details.");
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        }
+        
+        JsonNode firstProperty = propertyResponse.path("Properties").get(0);
+        String oName = firstProperty.path("owners").get(0).path("name").asText("");
+        String oMobile = firstProperty.path("owners").get(0).path("mobileNumber").asText("");
+
+        // 5. Validate Case-Insensitive Name and Mobile
+        if (!isValidWsResponse(searchCriteria, oName, oMobile)) {
+            log.error("Owner validation failed against Property Master.");
             return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
         }
 
-        String fileStoreId = generateWsPdf(latestBill, wrapper.getRequestInfo(), docType);
-
-        if (fileStoreId == null || fileStoreId.isEmpty() || "null".equals(fileStoreId)) {
-            log.error("Failed to generate PDF for WS/SW Bill");
+        // 6. Get existing PDF from sanctionFileStoreId
+        String fileStoreId = activeConn.path("additionalDetails").path("sanctionFileStoreId").asText("");
+        if (fileStoreId.isEmpty() || "null".equals(fileStoreId)) {
+            log.error("sanctionFileStoreId is missing in additionalDetails");
             return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
         }
 
+        // 7. Fetch the actual URL from the Filestore
         Object filestoreObj = paymentService.getFilestore(fileStoreId);
         JsonNode root = objectMapper.valueToTree(filestoreObj);
         String pdfUrl = null;
         
+        // Fixed: Use null-safe extraction for filestore URL
         if (root.has("fileStoreIds") && root.get("fileStoreIds").isArray() && root.get("fileStoreIds").size() > 0) {
             pdfUrl = root.get("fileStoreIds").get(0).path("url").asText(null);
         } else if (root.isArray() && root.size() > 0) {
@@ -230,10 +254,12 @@ public class DataExchangeService {
             throw new IOException("URL not found in Filestore response");
         }
 
+        // 8. Final Response Assembly
         String base64Pdf = downloadAndEncodePdf(pdfUrl);
         ResponseStatus status = new ResponseStatus(getFormattedNow(), searchCriteria.getTxn(), "1");
         
-        String actualConsumerCode = latestBill.path("consumerCode").asText("");
+        // Fixed: Use activeConn and connectionNo
+        String actualConsumerCode = activeConn.path("connectionNo").asText("");
         String replacedConsumerCode = actualConsumerCode.replace("-", "QW");
         String customUri = String.format("%s-%s-%sQW%s", 
                 DIGILOCKER_ISSUER_ID, docType, replacedConsumerCode, searchCriteria.getCity());
@@ -242,102 +268,89 @@ public class DataExchangeService {
         docDetails.setURI(customUri);
         docDetails.setDocContent(base64Pdf);
         
-        Certificate cert = populateWSCertificate(latestBill, docType);
+        // Fixed: Use oName and oMobile
+        Certificate cert = populateWSCertificate(activeConn, docType, oName, oMobile);
         docDetails.setIssuedTo(cert.getIssuedTo());
         
-        String xmlData = xstream.toXML(cert);
-        docDetails.setDataContent(Base64.getEncoder().encodeToString(xmlData.getBytes()));
+        docDetails.setDataContent(Base64.getEncoder().encodeToString(xstream.toXML(cert).getBytes()));
 
         return buildFinalResponse(status, docDetails, isUriRequest);
     }
 
-    private JsonNode fetchWaterSewerageBills(SearchCriteria sc, String docType, RequestInfoWrapper requestInfo) {
-    	String url = "WS".equalsIgnoreCase(docType) ? 
-                configurations.getSearchServiceHost() + configurations.getSearchWsEndpoint() :
-                configurations.getSearchServiceHost() + configurations.getSearchSwEndpoint();
+    private JsonNode fetchWaterSewerageConnection(SearchCriteria sc, String docType, RequestInfoWrapper requestInfo) {
+        String endpoint = "WS".equalsIgnoreCase(docType) ? configurations.getSearchWSConnEndpoint() : configurations.getSearchSwConnEndpoint();
         
-        String businessService = "WS".equalsIgnoreCase(docType) ? "WS" : "SW";
-
-        Map<String, Object> searchCriteriaMap = new HashMap<>();
-        searchCriteriaMap.put("tenantId", TENANT_PREFIX + sc.getCity());
-        searchCriteriaMap.put("mobileNumber", sc.getMobile());
-        if (sc.getConsumerCode() != null && !sc.getConsumerCode().isEmpty()) {
-            searchCriteriaMap.put("consumerCode", sc.getPropertyId()); 
+        StringBuilder urlBuilder = new StringBuilder(egovHost);
+        urlBuilder.append(endpoint)
+                  .append("?searchType=CONNECTION")
+                  .append("&tenantId=").append(TENANT_PREFIX).append(sc.getCity());
+                  
+        if (sc.getMobile() != null && !sc.getMobile().isEmpty()) {
+            urlBuilder.append("&mobileNumber=").append(sc.getMobile());
         }
-        searchCriteriaMap.put("businesService", businessService);
+        
+        if (sc.getPropertyId() != null && !sc.getPropertyId().isEmpty()) {
+            urlBuilder.append("&connectionNumber=").append(sc.getPropertyId());
+        }
 
-        Map<String, Object> request = new HashMap<>();
-        request.put("RequestInfo", requestInfo.getRequestInfo());
-        request.put("searchCriteria", searchCriteriaMap);
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("RequestInfo", requestInfo.getRequestInfo());
 
         try {
-            return restTemplate.postForObject(url, request, JsonNode.class);
+            return restTemplate.postForObject(urlBuilder.toString(), requestBody, JsonNode.class);
         } catch (Exception e) {
-            log.error("Error fetching WS/SW bills from Bill Genie: ", e);
+            log.error("Error fetching WS/SW connection details: ", e);
             return null;
         }
     }
 
-    private boolean isValidWsResponse(SearchCriteria sc, JsonNode bill) {
+    private JsonNode fetchPropertyDetails(String tenantId, String propertyId, RequestInfoWrapper requestInfo) {
+        String url = configurations.getSerachPropertyHost() + configurations.getSearchPropertyEndpoint() + tenantId + "&propertyIds=" + propertyId;
+        
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("RequestInfo", requestInfo.getRequestInfo());
+
+        try {
+            return restTemplate.postForObject(url, requestBody, JsonNode.class);
+        } catch (Exception e) {
+            log.error("Error fetching Property details for linked WS/SW connection: ", e);
+            return null;
+        }
+    }
+
+    private boolean isValidWsResponse(SearchCriteria sc, String ownerName, String ownerMobile) {
         if ("FALSE".equalsIgnoreCase(configurations.getValidationFlag())) return true;
         
-        String billName = bill.path("payerName").asText("");
-        String billMobile = bill.path("mobileNumber").asText("");
+        boolean isNameMatch = ownerName.equalsIgnoreCase(sc.getPayerName());
         
-        // Use equalsIgnoreCase for the name to ignore capitalization differences
-        boolean isNameMatch = billName.equalsIgnoreCase(sc.getPayerName());
-        
-        // Mobile numbers are just digits, so normal equals is fine
-        boolean isMobileMatch = Objects.equals(sc.getMobile(), billMobile);
+        boolean isMobileMatch = true; 
+        if (ownerMobile != null && !ownerMobile.isEmpty()) {
+            isMobileMatch = Objects.equals(sc.getMobile(), ownerMobile);
+        }
         
         return isNameMatch && isMobileMatch;
     }
-    
-    private String generateWsPdf(JsonNode bill, RequestInfo requestInfo, String docType) {
-        // Replaced hardcoded URL with injected egovHost and pdfCreateEndpoint
-        String pdfUrl = configurations.getFilestoreHost() + configurations.getPdfServiceCreate() + "?key=" + 
-                        ("WS".equalsIgnoreCase(docType) ? "ws-bill" : "sw-bill") + 
-                        "&tenantId=" + STATE_TENANT;
 
-        ObjectNode requestBody = objectMapper.createObjectNode();
-        requestBody.set("RequestInfo", objectMapper.valueToTree(requestInfo));
-        requestBody.putArray("Bill").add(bill);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
-
-        try {
-            JsonNode responseNode = restTemplate.postForObject(pdfUrl, request, JsonNode.class);
-            if (responseNode != null && responseNode.has("filestoreIds") && responseNode.get("filestoreIds").isArray()) {
-                return responseNode.get("filestoreIds").get(0).asText();
-            }
-        } catch (Exception e) {
-            log.error("Failed to generate PDF for " + docType, e);
-        }
-        return null;
-    }
-
-    private Certificate populateWSCertificate(JsonNode bill, String docType) {
+    private Certificate populateWSCertificate(JsonNode connection, String docType, String ownerName, String ownerMobile) {
         Certificate cert = new Certificate();
-        cert.setLanguage(LANGUAGE_CODE); // Replaced "99"
-        cert.setname("WS".equalsIgnoreCase(docType) ? "Water Bill" : "Sewerage Bill");
+        cert.setLanguage(LANGUAGE_CODE); 
+        cert.setname("WS".equalsIgnoreCase(docType) ? "Water Connection" : "Sewerage Connection");
         cert.setType(docType);
-        cert.setNumber("");
-        cert.setPrevNumber("");
+        cert.setNumber(connection.path("connectionNo").asText("")); 
+        cert.setPrevNumber(connection.path("oldConnectionNo").asText(""));
         
-        long epochDate = bill.path("billDate").asLong();
-        String formattedBillDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date(epochDate));
+        long epochDate = connection.path("connectionExecutionDate").asLong(System.currentTimeMillis());
+        String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date(epochDate));
         
-        cert.setIssueDate(formattedBillDate);
+        cert.setIssueDate(formattedDate);
         cert.setExpiryDate("");
         cert.setValidFromDate("");
-        cert.setIssuedAt(bill.path("tenantId").asText());
-        cert.setStatus(CERT_STATUS_ACTIVE); // Replaced "A"
+        cert.setIssuedAt(connection.path("tenantId").asText());
+        cert.setStatus(CERT_STATUS_ACTIVE); 
 
         Organization org = new Organization();
-        org.setName(ISSUER_ORG_NAME); // Replaced hardcoded Punjab string
-        org.setType(ISSUER_ORG_TYPE); // Replaced "SG"
+        org.setName(ISSUER_ORG_NAME); 
+        org.setType(ISSUER_ORG_TYPE); 
         org.setTin("");
         org.setCode("");
         org.setuuid("");
@@ -350,9 +363,9 @@ public class DataExchangeService {
         orgAddr.setLandmark("");
         orgAddr.setLocality("");
         orgAddr.setVtc("");
-        orgAddr.setPin(ISSUER_PIN); // Replaced "160022"
-        orgAddr.setDistrict(ISSUER_DISTRICT); // Replaced "Chandigarh"
-        orgAddr.setState(ISSUER_STATE); // Replaced "Chandigarh"
+        orgAddr.setPin(ISSUER_PIN); 
+        orgAddr.setDistrict(ISSUER_DISTRICT); 
+        orgAddr.setState(ISSUER_STATE); 
         orgAddr.setCountry("IN");
         org.setAddress(orgAddr);
 
@@ -363,7 +376,7 @@ public class DataExchangeService {
         Person person = new Person();
         person.setUid("");
         person.setTitle("");
-        person.setName(bill.path("payerName").asText()); 
+        person.setName(ownerName); 
         person.setDob("");
         person.setAge("");
         person.setSwd("");
@@ -375,21 +388,21 @@ public class DataExchangeService {
         person.setDisabilityStatus("");
         person.setCategory("");
         person.setReligion("");
-        person.setPhone(bill.path("mobileNumber").asText());
+        person.setPhone(ownerMobile);
         person.setEmail("");
         person.setPhoto("");
         
         Address pAddr = new Address();
-        pAddr.setType(PERSON_ADDR_TYPE); // Replaced "permanent"
+        pAddr.setType(PERSON_ADDR_TYPE); 
         pAddr.setLine1("");
         pAddr.setLine2("");
         pAddr.setHouse("");
         pAddr.setLandmark("");
-        pAddr.setLocality(bill.path("address").path("locality").asText(""));
+        pAddr.setLocality(connection.path("additionalDetails").path("locality").asText(""));
         pAddr.setVtc("");
         pAddr.setPin("");
-        pAddr.setDistrict(bill.path("tenantId").asText());
-        pAddr.setState(PERSON_STATE); // Replaced "Punjab"
+        pAddr.setDistrict(connection.path("tenantId").asText());
+        pAddr.setState(PERSON_STATE); 
         pAddr.setCountry("IN");
         person.setAddress(pAddr);
 
@@ -400,14 +413,14 @@ public class DataExchangeService {
         CertificateData data = new CertificateData();
         WaterSewerageBill wsBill = new WaterSewerageBill(); 
         
-        wsBill.setConsumerNo(bill.path("consumerCode").asText(""));
-        wsBill.setConsumerName(bill.path("payerName").asText(""));
-        wsBill.setMobileNumber(bill.path("mobileNumber").asText(""));
-        wsBill.setAddress(bill.path("payerAddress").asText(""));
-        wsBill.setBillNumber(bill.path("billNumber").asText(""));
-        wsBill.setBillAmount(bill.path("totalAmount").asText("0.0"));
-        wsBill.setBillDate(formattedBillDate);
-        wsBill.setStatus(bill.path("status").asText(""));
+        wsBill.setConsumerNo(connection.path("connectionNo").asText(""));
+        wsBill.setConsumerName(ownerName);
+        wsBill.setMobileNumber(ownerMobile); 
+        wsBill.setAddress(connection.path("additionalDetails").path("locality").asText(""));
+        wsBill.setBillNumber(connection.path("applicationNo").asText("")); 
+        wsBill.setBillAmount("0.0"); 
+        wsBill.setBillDate(formattedDate);
+        wsBill.setStatus(connection.path("status").asText(""));
         
         data.setWaterSewerageBill(wsBill);
         cert.setCertificateData(data);
@@ -426,7 +439,7 @@ public class DataExchangeService {
             String rawIdData = uriParts[2]; 
             String[] qwParts = rawIdData.split("QW");
             
-            if (DIGILOCKER_DOCTYPE.equalsIgnoreCase(docType)) { // Replaced "PRTAX"
+            if (DIGILOCKER_DOCTYPE.equalsIgnoreCase(docType)) {
                 sc.setPropertyId("PT-" + qwParts[1] + "-" + qwParts[2]);
                 sc.setCity(qwParts[3]);
             } else {
@@ -489,8 +502,7 @@ public class DataExchangeService {
     private RequestInfoWrapper prepareRequestInfo() {
         UserResponse user = userService.getUser();
         RequestInfo info = new RequestInfo();
-        info.setApiId(API_ID); // Replaced "Rainmaker" constant string with the actual API_ID from the Constants file
-        // Using String.format and the MSG_ID_PATTERN constant instead of hardcoded strings
+        info.setApiId(API_ID);
         info.setMsgId(String.format(MSG_ID_PATTERN, System.currentTimeMillis()));
         info.setAuthToken(user.getAuthToken());
         info.setUserInfo(user.getUser());
@@ -501,8 +513,8 @@ public class DataExchangeService {
     }
 
     private String generateErrorResponse(String txnId, boolean isUriRequest) {
-    	ResponseStatus status = new ResponseStatus(getFormattedNow(), txnId, "0");
-    	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        ResponseStatus status = new ResponseStatus(getFormattedNow(), txnId, "0");
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         
         if (isUriRequest) {
             PullURIResponse res = new PullURIResponse();
@@ -521,20 +533,20 @@ public class DataExchangeService {
 
     private Certificate populateCertificate(Payment payment) {
         Certificate cert = new Certificate();
-        cert.setLanguage(LANGUAGE_CODE); // Replaced "99"
+        cert.setLanguage(LANGUAGE_CODE);
         cert.setname("Property Tax Receipt");
-        cert.setType(DIGILOCKER_DOCTYPE); // Replaced "PRTAX"
+        cert.setType(DIGILOCKER_DOCTYPE);
         cert.setNumber("");
         cert.setPrevNumber("");
         cert.setIssueDate(new SimpleDateFormat("dd-MM-yyyy").format(new Date()));
         cert.setExpiryDate("");
         cert.setValidFromDate("");
         cert.setIssuedAt(payment.getTenantId());
-        cert.setStatus(CERT_STATUS_ACTIVE); // Replaced "A"
+        cert.setStatus(CERT_STATUS_ACTIVE);
 
         Organization org = new Organization();
-        org.setName(ISSUER_ORG_NAME); // Replaced "Punjab Municipal..."
-        org.setType(ISSUER_ORG_TYPE); // Replaced "SG"
+        org.setName(ISSUER_ORG_NAME);
+        org.setType(ISSUER_ORG_TYPE);
         org.setTin("");
         org.setCode("");
         org.setuuid("");
@@ -547,9 +559,9 @@ public class DataExchangeService {
         orgAddr.setLandmark("");
         orgAddr.setLocality("");
         orgAddr.setVtc("");
-        orgAddr.setPin(ISSUER_PIN); // Replaced "160022"
-        orgAddr.setDistrict(ISSUER_DISTRICT); // Replaced "Chandigarh"
-        orgAddr.setState(ISSUER_STATE); // Replaced "Chandigarh"
+        orgAddr.setPin(ISSUER_PIN);
+        orgAddr.setDistrict(ISSUER_DISTRICT);
+        orgAddr.setState(ISSUER_STATE);
         orgAddr.setCountry("IN");
         org.setAddress(orgAddr);
 
@@ -577,7 +589,7 @@ public class DataExchangeService {
         person.setPhoto("");
         
         Address pAddr = new Address();
-        pAddr.setType(PERSON_ADDR_TYPE); // Replaced "permanent"
+        pAddr.setType(PERSON_ADDR_TYPE);
         pAddr.setLine1("");
         pAddr.setLine2("");
         pAddr.setHouse("");
@@ -586,7 +598,7 @@ public class DataExchangeService {
         pAddr.setVtc("");
         pAddr.setPin("");
         pAddr.setDistrict(payment.getTenantId());
-        pAddr.setState(PERSON_STATE); // Replaced "Punjab"
+        pAddr.setState(PERSON_STATE);
         pAddr.setCountry("IN");
         person.setAddress(pAddr);
 

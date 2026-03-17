@@ -44,6 +44,19 @@ public class Configurations {
 	@Value("${egov.searchservice.sw.endpoint}")
 	private String searchSwEndpoint;
 	
+	
+	@Value("${egov.ws.search.endpoint}")
+	private String searchWSConnEndpoint;
+	
+	@Value("${egov.sw.search.endpoint}")
+	private String searchSwConnEndpoint;
+	
+	@Value("${egov.property.search.host}")
+	private String serachPropertyHost;
+	
+	@Value("${egov.property.search.endpoint}")
+	private String searchPropertyEndpoint;
+	
 	@Value("${egov.collectionservice.host}")
 	private String collectionServiceHost;
 	

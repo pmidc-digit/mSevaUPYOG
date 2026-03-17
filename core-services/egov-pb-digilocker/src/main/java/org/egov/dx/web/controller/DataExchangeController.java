@@ -83,7 +83,7 @@ public class DataExchangeController {
     @Autowired
     private XMLRequestParser xmlRequestParser;
 	
-	@RequestMapping(path = {"/_searchReceipt"}, method = RequestMethod.POST ,consumes = {MediaType.APPLICATION_XML_VALUE},produces = {"application/xml","text/xml"})
+	@RequestMapping(path = {"/_search"}, method = RequestMethod.POST ,consumes = {MediaType.APPLICATION_XML_VALUE},produces = {"application/xml","text/xml"})
     @ResponseBody()
     public String search(@RequestBody String requestBody, HttpServletRequest httpServletRequest) throws IOException {
         log.info("Received DigiLocker request from origin: {}", URI.create(httpServletRequest.getRequestURL().toString()).getHost());

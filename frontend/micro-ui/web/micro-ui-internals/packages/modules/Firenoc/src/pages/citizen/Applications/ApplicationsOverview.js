@@ -178,7 +178,7 @@ const CitizenApplicationOverview = () => {
     }
   }, [applicationDetails?.Noc]);
 
-  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService ?? null;
+  const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService !== undefined && applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService !== null ? applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService : null;
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {

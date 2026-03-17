@@ -19,7 +19,7 @@ RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-dev.2.3
 RUN yarn add @mseva/digit-ui-module-swach@1.0.55
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39-dev.1.0
 RUN yarn add @mseva/digit-ui-module-tl@1.0.31-dev.1.5
-RUN yarn add @mseva/digit-ui-module-firenoc@1.0.0-dev.1.1
+RUN yarn add @mseva/digit-ui-module-firenoc@1.0.0-dev.1.2
 RUN yarn add @mseva/digit-ui-module-obps@1.1.89-dev.1.29
 RUN yarn add @mseva/digit-ui-module-sv@1.1.49-dev.1.12
 RUN yarn add @mseva/upyog-ui-module-ads@1.1.86-dev.2.4

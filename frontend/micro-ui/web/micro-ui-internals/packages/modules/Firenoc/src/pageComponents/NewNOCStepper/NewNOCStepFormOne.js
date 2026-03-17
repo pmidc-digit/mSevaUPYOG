@@ -55,7 +55,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   /* ─── Validation ─── */
   function checkValidation(data) {
-    const owners = data?.owners ?? [];
+    const owners = data?.owners != null ? data.owners : [];
     const uniqueMobiles = new Set(owners.map((o) => o.mobileNumber));
     if (uniqueMobiles.size !== owners.length) {
       setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
@@ -95,7 +95,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     const majorType = ownerShipType.split(".")[0];
 
     /* ── buildings ── */
-    const buildings = (site.buildings ?? []).map((b) => {
+    const buildings = (site.buildings != null ? site.buildings : []).map((b) => {
       const floors = Number(b.noOfFloors?.code || b.noOfFloors || 0);
       const basements = Number(b.noOfBasements?.code || b.noOfBasements || 0);
       const height = Number(b.heightOfBuilding || 0);
@@ -121,7 +121,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     });
 
     /* ── owners ── */
-    const owners = (appDetails.owners ?? []).map((item) => {
+    const owners = (appDetails.owners != null ? appDetails.owners : []).map((item) => {
       if (isIndividual) {
         return {
           mobileNumber: item.mobileNumber || "",

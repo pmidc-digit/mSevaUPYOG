@@ -51,7 +51,7 @@ const MyApplications = ({ view }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
   const list = data?.data || [];
-  const total = data?.count ?? 0;
+  const total = data?.count != null ? data.count : 0;
   const getPrimaryOwner = (row) => row?.Applications?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
   const getDisplayApplicantName = (row) => {
     const owner = getPrimaryOwner(row);

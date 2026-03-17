@@ -24,10 +24,11 @@ function FeeEstimateCard({ applicationNo, tenantId, t }) {
       .finally(() => setLoading(false));
   }, [applicationNo, tenantId]);
 
-  const nocFees = bill?.billDetails?.[0]?.billAccountDetails?.find(
+  const _nocFeesVal = bill?.billDetails?.[0]?.billAccountDetails?.find(
     (a) => a.taxHeadCode === "FIRENOC_FEES"
-  )?.amount ?? 0;
-  const totalAmount = bill?.totalAmount ?? 0;
+  )?.amount;
+  const nocFees = _nocFeesVal != null ? _nocFeesVal : 0;
+  const totalAmount = bill?.totalAmount != null ? bill.totalAmount : 0;
   const isPaid = bill?.status === "PAID";
 
   return (

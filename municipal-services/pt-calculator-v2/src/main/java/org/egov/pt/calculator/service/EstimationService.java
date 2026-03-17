@@ -1982,7 +1982,10 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;
-					} else if (usageMajor.equalsIgnoreCase("COMMERCIAL")  && slab.getUsageCategoryMajor().equalsIgnoreCase("COMMERCIAL")) {
+					}else if (!"RESIDENTIAL".equalsIgnoreCase(usageMajor) &&
+					           !"INDUSTRIAL".equalsIgnoreCase(usageMajor) &&
+					           "COMMERCIAL".equalsIgnoreCase(slab.getUsageCategoryMajor())) {
+					
 						collectorRate = slab.getUnitRate();
 						collectorRateFound = true;
 						break;

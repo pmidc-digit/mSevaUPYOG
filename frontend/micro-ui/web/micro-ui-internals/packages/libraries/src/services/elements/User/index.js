@@ -18,6 +18,39 @@ export const UserService = {
       },
     });
   },
+  authenticateV1: (details) => {
+    return ServiceRequest({
+      serviceName: "authenticateV1",
+      url: Urls.Authenticatev1,
+      data: details, // Full payload including RequestInfo
+    });
+  },
+  // employeeLogin: (details) => {
+  //   const data = new URLSearchParams();
+  //   Object.entries(details).forEach(([key, value]) => data.append(key, value));
+  //   // data.append("scope", "read");
+  //   // data.append("grant_type", "password");
+  //   return ServiceRequest({
+  //     serviceName: "authenticate",
+  //     url: Urls.EmployeeLogin,
+  //     data,
+  //     // headers: {
+  //     //   authorization: `Basic ${window?.globalConfigs?.getConfig("JWT_TOKEN") || "ZWdvdi11c2VyLWNsaWVudDo="}`,
+  //     //   "Content-Type": "application/x-www-form-urlencoded",
+  //     // },
+  //   });
+  // },
+  employeeLogin: ({ tenantId, filters, details }) => {
+    return Request({
+      url: Urls.EmployeeLogin,
+      data: details,
+      useCache: true,
+      method: "POST",
+      params: { tenantId, ...filters },
+      auth: true,
+      userService: true,
+    });
+  },
   logoutUser: () => {
     let user = UserService.getUser();
     if (!user || !user.info || !user.access_token) return false;

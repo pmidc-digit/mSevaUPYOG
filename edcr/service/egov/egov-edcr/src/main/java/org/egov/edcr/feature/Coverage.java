@@ -278,9 +278,11 @@ public class Coverage extends FeatureProcess {
 				|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode()))
 		) {
 
-			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
-				permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
-			}else {			
+//			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
+//				//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
+//				permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+//
+//			}else {			
 				//permissibleCoverageValue = ruleService.getSiteCoverage();
 //				JsonNode coverageSlab =
 //						engine.getObject("siteCoverage", context);
@@ -294,7 +296,7 @@ public class Coverage extends FeatureProcess {
 				permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
 				LOG.info("Coverage %: " + permissibleCoverageValue);
 
-			}
+			//}
 			
 				
 		

@@ -107,7 +107,7 @@ public class RearYardService extends GeneralRule {
 
 	private static final String MINIMUMLABEL = "Minimum distance";
 	// Added by Bimal 18-March-2924 for method processRearYardResidential
-	private static final BigDecimal MIN_PLOT_AREA = BigDecimal.valueOf(30);
+	//private static final BigDecimal MIN_PLOT_AREA = BigDecimal.valueOf(30);
 	private static final BigDecimal MIN_VAL_100_SQM = BigDecimal.valueOf(1.54);
 	private static final BigDecimal MIN_VAL_150_SQM = BigDecimal.valueOf(1.8);
 	private static final BigDecimal MIN_VAL_200_SQM = BigDecimal.valueOf(2.16);
@@ -262,6 +262,7 @@ public class RearYardService extends GeneralRule {
 									 */
 								}else if (G.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {
 										min = setback.getRearYard().getArea();
+										mean = setback.getRearYard().getWidth();
 									  checkRearYardForIndustrial(setback, block.getBuilding(), pl, block,
 									  setback.getLevel(), plot, REAR_YARD_DESC, min, mean,
 									  occupancy.getTypeHelper(), rearYardResult , buildingHeight); 
@@ -282,7 +283,12 @@ public class RearYardService extends GeneralRule {
 							Map<String, String> details = new HashMap<>();
 							details.put(RULE_NO, rearYardResult.subRule);
 							details.put(LEVEL, rearYardResult.level != null ? rearYardResult.level.toString() : "");
-							details.put(OCCUPANCY, rearYardResult.occupancy);
+							//details.put(OCCUPANCY, rearYardResult.occupancy);
+							String occupancy = rearYardResult.occupancy;
+							if (occupancy != null && occupancy.contains(",")) {
+							    occupancy = occupancy.split(",")[0].trim();
+							}
+							details.put(OCCUPANCY, occupancy);
 							String permissableValueWithPercentage;
 							String providedValue;
 							
@@ -403,52 +409,38 @@ public class RearYardService extends GeneralRule {
 	        HashMap<String, String> errors, Plan pl, BigDecimal plotArea, BigDecimal buildingHeight) {
 		
 		LOG.info("Processing RearYardResult:");
-
-	    BigDecimal minVal = BigDecimal.ZERO; 
-	    RuleContext context = RuleContext.builder()
-	    	    .numericInput(plotArea) // The plot area	    	   
-	    	    .build();
-	    
+	    BigDecimal minVal = BigDecimal.ZERO;
 	    if(mostRestrictiveOccupancy!=null && (mostRestrictiveOccupancy.getSubtype()!=null
 	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
 	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
-	        
-	        if (fullListOpt.isPresent()) {
+	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);if (fullListOpt.isPresent()) {
 	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             
-	             // Extraction 1B: Apply the tiered setback logic
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
-
-	             requiredSetback.ifPresent(
+	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);requiredSetback.ifPresent(
 	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	        }
 	    }else {
-	    	// getting permissible value from mdms
-//	    		Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
-//	    		minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
-	    		        
-	    		if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-	    			errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
-	    			pl.addErrors(errors);			        
-	    		}
-	    				
-//	    		if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-//	    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
-//	    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
-//	    			minVal = scOpt.get();
-//	    		}
-	    		if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {					
-					//Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
-			        //scOpt.ifPresent(sc -> LOG.info("Front Setback Value from mdms : " + sc));
-			        //minVal = scOpt.get();
-			        //minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class).getValue();
-			        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.rear", context, BigDecimal.class).getValue();
-			        LOG.info("Rear Setback Value from mdms : " + minVal);
-				}
+	    		if(A_AIF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+		        	Map<String, Object> variables = new HashMap<>();
+		        	variables.put("buildingHeight", buildingHeight);	    		
+		    		RuleContext context = RuleContext.builder()
+		    	    	    .formulaVariables(variables)    	   
+		    	    	    .build();	    		
+		    		if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
+				        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.rear", context, BigDecimal.class).getValue();
+				        LOG.info("Rear Setback Value from mdms : " + minVal);
+					}
+		        }else {
+		        	RuleContext context = RuleContext.builder()
+		    	    	    .numericInput(plotArea)	    	   
+		    	    	    .build();	    		
+		    		if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
+				        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.rear", context, BigDecimal.class).getValue();
+				        LOG.info("Rear Setback Value from mdms : " + minVal);
+					}
+		        }
 	    }        
 
 	    // Validate minimum and mean value
@@ -480,12 +472,12 @@ public class RearYardService extends GeneralRule {
 		LOG.info("Processing RearYardResult:");
 
 		BigDecimal minVal = BigDecimal.ZERO;
-
+		BigDecimal minPlotArea = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "plotArea.min", null, BigDecimal.class).getValue();
 		// Set minVal based on plot area
-		if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+		if (plotArea.compareTo(minPlotArea) <= 0) {
 			if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_PLOT_AREA)) {				
 				// Plot area is less than zero
-				errors.put("Plot Area Error:", "Plot area cannot be less than " + MIN_PLOT_AREA);
+				errors.put("Plot Area Error:", "Plot area cannot be less than " + minPlotArea);
 				pl.addErrors(errors);
             }			
 		} else if (plotArea.compareTo(PLOT_AREA_100_SQM) <= 0) {

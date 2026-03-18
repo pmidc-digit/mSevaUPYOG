@@ -337,13 +337,13 @@ public class Sanitation extends FeatureProcess {
 
     @Override
     public Plan process(Plan pl) {
-        verifyDimesions(pl);
-        checkCount(pl);
+        //verifyDimesions(pl);
+        //checkCount(pl);
         return pl;
     }
 
     private Plan verifyDimesions(Plan pl) {
-        validate(pl);
+        //validate(pl);
 
         /*
          * for (Block b : pl.getBlocks()) { If block is small plot and floors above ground less than or equal to three and

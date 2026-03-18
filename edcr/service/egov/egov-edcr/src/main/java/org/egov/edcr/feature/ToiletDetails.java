@@ -62,6 +62,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.Toilet;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -128,10 +129,20 @@ public class ToiletDetails extends FeatureProcess {
 //                                        pl.addErrors(errors);
 //                                    }                                    
                                     
+                                    BigDecimal toiletAreaMdms = RuleUtil.getRule(
+                                            pl.getMdmsRulesData().get("masterMdmsData"),"toilet.area.min",null,BigDecimal.class).getValue();
+                                    BigDecimal toiletWidthMdms = RuleUtil.getRule(
+                                            pl.getMdmsRulesData().get("masterMdmsData"),"toilet.width.min",null,BigDecimal.class).getValue();
+                                    BigDecimal toiletVentilationMdms = RuleUtil.getRule(
+                                            pl.getMdmsRulesData().get("masterMdmsData"),"toilet.ventilation.min",null,BigDecimal.class).getValue();
                                     
-                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
-                                        details.put(PROVIDED, "Total Area = " + area
-                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+//                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
+//                                        details.put(PROVIDED, "Total Area = " + area
+//                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+                                    details.put(REQUIRED, "Total Area >= " + toiletAreaMdms +", Width >= " + toiletWidthMdms + ", Ventilation >= " + toiletVentilationMdms);
+                                    details.put(PROVIDED, "Total Area = " + area
+                                            + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+                                    
                                         details.put(STATUS, Result.Accepted.getResultVal());
                                         
                                     scrutinyDetail.getDetail().add(details);

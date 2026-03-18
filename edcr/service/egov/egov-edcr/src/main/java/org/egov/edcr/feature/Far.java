@@ -2455,31 +2455,33 @@ public class Far extends FeatureProcess {
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-	    	MdmsRuleEngine engine =
-			        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
+//	    	MdmsRuleEngine engine =
+//			        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
 			
 	    	// For SLAB/FORMULA rules
 	    	RuleContext context = RuleContext.builder()
 	    	    .numericInput(plotArea) // The plot area	    	   
 	    	    .build();
-	    	RuleResult<JsonNode> farSlab = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR", context, JsonNode.class);
+	    	//RuleResult<JsonNode> farSlab = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR", context, JsonNode.class);
 			////JsonNode farSlab = engine.getObject("FAR", context);
 	    	// --- 1. Fetch & Initialize FAR values ---
 	    	Double regularPermissibleFar = 0.0;
-	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
-	    		BigDecimal farValue = calculateFarProgressively(plotArea, pl);
-	    		regularPermissibleFar = farValue.setScale(2, RoundingMode.HALF_UP).doubleValue();	    		
-	    	}else {
+//	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
+//	    		//BigDecimal farValue = calculateFarProgressively(plotArea, pl);
+//	    		regularPermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.normal", context, Double.class).getValue();	    		
+//	    	}else {
 		        //regularPermissibleFar = ruleService.getNormalFAR().doubleValue();
 		        
 //		        regularPermissibleFar =
 //		                farSlab.path("normal").doubleValue();
-	    		regularPermissibleFar = farSlab.getValue().path("normal").asDouble();
+	    		//regularPermissibleFar = farSlab.getValue().path("normal").asDouble();
+	    		regularPermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.normal", context, Double.class).getValue();
 
-	    	}
+	    	//}
 	    	
 //	    	Double purchasablePermissibleFar = ruleService.getPurchasableFAR().doubleValue();
-	    	Double purchasablePermissibleFar = farSlab.getValue().path("purchasable").asDouble();
+	    	//Double purchasablePermissibleFar = farSlab.getValue().path("purchasable").asDouble();
+	    	Double purchasablePermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.purchasable", context, Double.class).getValue();
 	        Double providedFar = Optional.ofNullable(pl.getFarDetails())
 	                .map(FarDetails::getProvidedFar)
 	                .orElse(0.0);

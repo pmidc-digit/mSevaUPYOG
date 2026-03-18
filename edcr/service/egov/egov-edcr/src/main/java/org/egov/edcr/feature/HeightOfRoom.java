@@ -88,34 +88,34 @@ public class HeightOfRoom extends FeatureProcess {
 	private static final String RULE = "4.4.4";
 	private static final String RULE1 = "4.4.4 (ix)";
 	private static final String SUBRULE_41_II_B = "41-ii-b";
-	private static final BigDecimal minDoorWidth = BigDecimal.valueOf(1);
+	//private static final BigDecimal minDoorWidth = BigDecimal.valueOf(1);
 
 	private static final String RULE_AC_DESC = "Minimum height of ac room";
 	private static final String RULE_REGULAR_DESC = "Minimum height of regular room";
 	private static final String SUBRULE_41_II_B_AREA_DESC = "Total area of rooms";
 	private static final String SUBRULE_41_II_B_TOTAL_WIDTH = "Minimum Width of room";
 
-	public static final BigDecimal MINIMUM_HEIGHT_3_6 = BigDecimal.valueOf(3.6);
-	public static final BigDecimal MINIMUM_HEIGHT_3 = BigDecimal.valueOf(3);
-	public static final BigDecimal MINIMUM_HEIGHT_2_75 = BigDecimal.valueOf(2.75);
-	public static final BigDecimal MINIMUM_HEIGHT_2_4 = BigDecimal.valueOf(2.4);
-	public static final BigDecimal MINIMUM_AREA_9_5 = BigDecimal.valueOf(9.5);
-	public static final BigDecimal MINIMUM_AREA_9_2 = BigDecimal.valueOf(9.2);
-	public static final BigDecimal MINIMUM_WIDTH_2_4 = BigDecimal.valueOf(2.4);
-	public static final BigDecimal MINIMUM_WIDTH_2_7 = BigDecimal.valueOf(2.7);
-	public static final BigDecimal MINIMUM_WIDTH_2_1 = BigDecimal.valueOf(2.1);
-	public static final BigDecimal MINIMUM_AREA_7_5 = BigDecimal.valueOf(7.5);
-	public static final BigDecimal MAXIMUM_AREA_46_45 = BigDecimal.valueOf(46.45);
-	private static final BigDecimal VENTILATION_PERCENTAGE = BigDecimal.valueOf(20); // 20% ventilation requirement
+	//public static final BigDecimal MINIMUM_HEIGHT_3_6 = BigDecimal.valueOf(3.6);
+	//public static final BigDecimal MINIMUM_HEIGHT_3 = BigDecimal.valueOf(3);
+	//public static final BigDecimal MINIMUM_HEIGHT_2_75 = BigDecimal.valueOf(2.75);
+	//public static final BigDecimal MINIMUM_HEIGHT_2_4 = BigDecimal.valueOf(2.4);
+	//public static final BigDecimal MINIMUM_AREA_9_5 = BigDecimal.valueOf(9.5);
+	//public static final BigDecimal MINIMUM_AREA_9_2 = BigDecimal.valueOf(9.2);
+	//public static final BigDecimal MINIMUM_WIDTH_2_4 = BigDecimal.valueOf(2.4);
+	//public static final BigDecimal MINIMUM_WIDTH_2_7 = BigDecimal.valueOf(2.7);
+	//public static final BigDecimal MINIMUM_WIDTH_2_1 = BigDecimal.valueOf(2.1);
+	//public static final BigDecimal MINIMUM_AREA_7_5 = BigDecimal.valueOf(7.5);
+	//public static final BigDecimal MAXIMUM_AREA_46_45 = BigDecimal.valueOf(46.45);
+	//private static final BigDecimal VENTILATION_PERCENTAGE = BigDecimal.valueOf(20); // 20% ventilation requirement
 	private static final String FLOOR = "Floor";
 	private static final String ROOM_HEIGHT_NOTDEFINED = "Room height is not defined in layer ";
 	private static final String LAYER_ROOM_HEIGHT = "BLK_%s_FLR_%s_%s";
 
-	private static final BigDecimal MIN_WINDOW_HEIGHT = BigDecimal.valueOf(0.50);
-	private static final BigDecimal MIN_DOOR_HEIGHT = BigDecimal.valueOf(2.0);
-	private static final BigDecimal MIN_WINDOW_WIDTH = BigDecimal.valueOf(0.50);
-	private static final BigDecimal MIN_DOOR_WIDTH = BigDecimal.valueOf(1.0);
-	private static final BigDecimal MIN_NON_HABITATIONAL_DOOR_WIDTH = BigDecimal.valueOf(0.76);
+//	private static final BigDecimal MIN_WINDOW_HEIGHT = BigDecimal.valueOf(0.50);
+//	private static final BigDecimal MIN_DOOR_HEIGHT = BigDecimal.valueOf(2.0);
+//	private static final BigDecimal MIN_WINDOW_WIDTH = BigDecimal.valueOf(0.50);
+//	private static final BigDecimal MIN_DOOR_WIDTH = BigDecimal.valueOf(1.0);
+//	private static final BigDecimal MIN_NON_HABITATIONAL_DOOR_WIDTH = BigDecimal.valueOf(0.76);
 
 	private static final Logger LOG = LogManager.getLogger(HeightOfRoom.class);
 
@@ -366,7 +366,7 @@ public class HeightOfRoom extends FeatureProcess {
 							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.min",null,BigDecimal.class).getValue();
 							        
 							        BigDecimal regularRoomMaxArea1 = RuleUtil.getRule(
-							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.maxArea",null,BigDecimal.class).getValue();
+							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.max2",null,BigDecimal.class).getValue();
 							        
 							        BigDecimal regularRoomMaxArea = RuleUtil.getRule(
 							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.max",null,BigDecimal.class).getValue();
@@ -433,7 +433,7 @@ public class HeightOfRoom extends FeatureProcess {
 								                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.min",null,BigDecimal.class).getValue(); 							            
 							        } else {
 							            minimumHeight = RuleUtil.getRule(
-								                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.min",null,BigDecimal.class).getValue(); ;
+								                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.min",null,BigDecimal.class).getValue();
 							        }							        
 							        Log.info("Minimum Residential Regular Room Height required is set to-------- : " + minimumHeight);
 
@@ -476,18 +476,17 @@ public class HeightOfRoom extends FeatureProcess {
 //
 //                                subRuleDesc = SUBRULE_41_II_B_TOTAL_WIDTH;
 //                                buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
-								if (roomAreas.size() == 1) {
-									minimumHeight = MINIMUM_AREA_9_5;
-									minWidth = MINIMUM_WIDTH_2_4;
-									maxArea = MAXIMUM_AREA_46_45;
-
-								}
-
-								else if (roomAreas.size() > 1) {
-
-									minimumHeight = MINIMUM_AREA_9_5;
-									minWidth = MINIMUM_WIDTH_2_4;
-									maxArea = MAXIMUM_AREA_46_45;
+								
+//								if (roomAreas.size() == 1) {
+//									minimumHeight = MINIMUM_AREA_9_5;
+//									minWidth = MINIMUM_WIDTH_2_4;
+//									maxArea = MAXIMUM_AREA_46_45;
+//								}
+//
+//								else if (roomAreas.size() > 1) {
+//									minimumHeight = MINIMUM_AREA_9_5;
+//									minWidth = MINIMUM_WIDTH_2_4;
+//									maxArea = MAXIMUM_AREA_46_45;
 
 //									if (roomAreas.get(0).compareTo(maxArea) <= 0
 //											&& roomAreas.get(0).compareTo(minimumHeight) >= 0
@@ -495,37 +494,60 @@ public class HeightOfRoom extends FeatureProcess {
 //										setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), "" ,
 //												"Area >= " + minimumHeight + ", Width >=" + minWidth,
 //												"Area = " + roomAreas.get(0) + ", Width = " + roomWidths.get(0)
-//														+ DcrConstants.IN_METER,
+//														+ DcrConstants.IN_M,
 //												Result.Accepted.getResultVal(), scrutinyDetail);
 //									} else {
 //										setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), "",
 //												"Area >= " + minimumHeight + ", Width >=" + minWidth,
 //												"Area = " + roomAreas.get(0) + ", Width = " + roomWidths.get(0)
-//														+ DcrConstants.IN_METER,
+//														+ DcrConstants.IN_M,
 //												Result.Not_Accepted.getResultVal(), scrutinyDetail);
 //									}
 										
+								BigDecimal minHeightMdms = RuleUtil.getRule(
+						                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.max",null,BigDecimal.class).getValue();
+								BigDecimal minWidthMdms = RuleUtil.getRule(
+						                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.width.max",null,BigDecimal.class).getValue();
+								BigDecimal minAreaMdms = RuleUtil.getRule(
+						                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.area.max",null,BigDecimal.class).getValue();
+								
+									if (roomAreas.size() == 1) {
+										minimumHeight = minHeightMdms;
+										minWidth = minWidthMdms;
+										maxArea = minAreaMdms;
+									}
+	
+									else if (roomAreas.size() > 1) {
+										minimumHeight = minHeightMdms;
+										minWidth = minWidthMdms;
+										maxArea = minAreaMdms;
+
 									if (roomAreas.get(0).compareTo(maxArea) <= 0
 									        && roomAreas.get(0).compareTo(minimumHeight) >= 0
 									        && roomWidths.get(0).compareTo(minWidth) >= 0) {
 									    setReportOutputDetails(pl, subRule, subRuleDesc, "" + floor.getNumber().toString(), "",
 									            "Area >= " + minimumHeight + ", Width >=" + minWidth,
 									            "Area = " + roomAreas.get(0) + ", Width = " + roomWidths.get(0)
-									                    + DcrConstants.IN_METER,
+									                    + DcrConstants.IN_M,
 									            Result.Accepted.getResultVal(), scrutinyDetail);
 									} else {
 									    setReportOutputDetails(pl, subRule, subRuleDesc, "" + floor.getNumber().toString(), "",
 									            "Area >= " + minimumHeight + ", Width >=" + minWidth,
 									            "Area = " + roomAreas.get(0) + ", Width = " + roomWidths.get(0)
-									                    + DcrConstants.IN_METER,
+									                    + DcrConstants.IN_M,
 									            Result.Not_Accepted.getResultVal(), scrutinyDetail);
 									}
 								}
 								for (int i = 1; i < roomAreas.size(); i++) {
+//									minimumHeight = MINIMUM_AREA_7_5; // minimumArea
+//									minWidth = MINIMUM_WIDTH_2_1;
+//									maxArea = MAXIMUM_AREA_46_45;
 
-									minimumHeight = MINIMUM_AREA_7_5; // minimumArea
-									minWidth = MINIMUM_WIDTH_2_1;
-									maxArea = MAXIMUM_AREA_46_45;
+									minimumHeight = RuleUtil.getRule(
+							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.height.max2",null,BigDecimal.class).getValue(); // minimumArea
+									minWidth = RuleUtil.getRule(
+							                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.width.min",null,BigDecimal.class).getValue();;
+									maxArea = minAreaMdms;
 
 									if (roomAreas.get(i).compareTo(maxArea) <= 0
 											&& roomAreas.get(i).compareTo(minimumHeight) >= 0
@@ -533,13 +555,13 @@ public class HeightOfRoom extends FeatureProcess {
 										setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), "",
 												"Area >= " + minimumHeight + ", Width >=" + minWidth,
 												"Area = " + roomAreas.get(i) + ", Width = " + roomWidths.get(i)
-														+ DcrConstants.IN_METER,
+														+ DcrConstants.IN_M,
 												Result.Accepted.getResultVal(), scrutinyDetail1);
 									} else {
 										setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), "",
 												"Area >= " + minimumHeight + ", Width >=" + minWidth,
 												"Area = " + roomAreas.get(i) + ", Width = " + roomWidths.get(i)
-														+ DcrConstants.IN_METER,
+														+ DcrConstants.IN_M,
 												Result.Not_Accepted.getResultVal(), scrutinyDetail1);
 									}
 
@@ -550,22 +572,24 @@ public class HeightOfRoom extends FeatureProcess {
 							if (floor.getDoors() != null && floor.getDoors().size() > 0) {
 								for (Door door : floor.getDoors()) {
 									if (door != null) {
-										BigDecimal doorHeight = door.getDoorHeight();
-										BigDecimal doorWidth = door.getDoorWidth();									
+										//BigDecimal doorHeight = door.getDoorHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
+										BigDecimal doorWidth = door.getDoorWidth().setScale(2, BigDecimal.ROUND_HALF_UP);									
 											
 										// BigDecimal minDoorHeight = BigDecimal.valueOf(2.0);
 										//BigDecimal minDoorWidth = BigDecimal.valueOf(1);
 										subRule = SUBRULE_41_II_B;
 										subRuleDesc = SUBRULE_41_II_B;
+										BigDecimal minDoorWidth = RuleUtil.getRule(
+								                pl.getMdmsRulesData().get("masterMdmsData"),"door.width.min",null,BigDecimal.class).getValue();
 										if (doorWidth.compareTo(minDoorWidth) >= 0) {
 											setReportOutputDetails2(pl, subRuleDoor, subRuleDesc,
 													floor.getNumber().toString(), 
-													" Width = " + minDoorWidth + DcrConstants.IN_METER, doorWidth.toString(),
+													" Width = " + minDoorWidth + DcrConstants.IN_M, doorWidth.toString(),
 													Result.Accepted.getResultVal(), scrutinyDetail2);
 										} else {
 											setReportOutputDetails2(pl, subRuleDoor, subRuleDesc, 
 													floor.getNumber().toString(),  
-													" Width = " + minDoorWidth + DcrConstants.IN_METER, doorWidth.toString(),
+													" Width = " + minDoorWidth + DcrConstants.IN_M, doorWidth.toString(),
 													Result.Not_Accepted.getResultVal(), scrutinyDetail2);
 										}
 									}
@@ -761,9 +785,10 @@ public class HeightOfRoom extends FeatureProcess {
 										roomArea = roomArea.add(measurement.getArea());
 									}
 								}
-
+								BigDecimal VentilationPercentage = RuleUtil.getRule(
+						                pl.getMdmsRulesData().get("masterMdmsData"),"regularRoom.ventilation.min",null,BigDecimal.class).getValue();
 								// Calculate required ventilation area
-								BigDecimal requiredVentilationArea = roomArea.multiply(VENTILATION_PERCENTAGE)
+								BigDecimal requiredVentilationArea = roomArea.multiply(VentilationPercentage)
 										.divide(BigDecimal.valueOf(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
 
 								// Calculate total door area
@@ -877,12 +902,12 @@ public class HeightOfRoom extends FeatureProcess {
 					? (String) typicalFloorValues.get("typicalFloors")
 					: "" + floor.getNumber();
 			if (valid) {
-				setReportOutputDetails(pl, subRule, subRuleDesc, value, "",  expected + DcrConstants.IN_METER,
-						actual + DcrConstants.IN_METER, Result.Accepted.getResultVal(), scrutinyDetail);
+				setReportOutputDetails(pl, subRule, subRuleDesc, value, "",  expected + DcrConstants.IN_M,
+						actual + DcrConstants.IN_M, Result.Accepted.getResultVal(), scrutinyDetail);
 				LOG.info("Room Height Validation True: (Expected/Actual) " + expected + "/" + actual);
 			} else {
-				setReportOutputDetails(pl, subRule, subRuleDesc, value, "" , expected + DcrConstants.IN_METER,
-						actual + DcrConstants.IN_METER, Result.Not_Accepted.getResultVal(), scrutinyDetail);
+				setReportOutputDetails(pl, subRule, subRuleDesc, value, "" , expected + DcrConstants.IN_M,
+						actual + DcrConstants.IN_M, Result.Not_Accepted.getResultVal(), scrutinyDetail);
 				LOG.info("Room Height Validation False: (Expected/Actual) " + expected + "/" + actual);
 			}
 		}

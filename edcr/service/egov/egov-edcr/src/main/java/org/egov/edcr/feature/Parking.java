@@ -384,10 +384,28 @@ public class Parking extends FeatureProcess {
         
         if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
 //        	noOfrequiredParking = parkingSlab.path("ECS").intValue();
-        	noOfrequiredParking = 22;
+        	//noOfrequiredParking = 22;
         	//noOfrequiredParking = ruleService.getParkingEcs().intValue();
-        	noOfrequiredParking = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "parking.ECS", context, Integer.class).getValue();
+        	//noOfrequiredParking = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "parking.ECS", context, Integer.class).getValue();
+			//LOGGER.info("Parking ECS " + noOfrequiredParking);
+			
+			// 2. Fetch the ECS per DU from MDMS (replaces the old if/else block)
+			noOfrequiredParking = RuleUtil.getRule(
+			    pl.getMdmsRulesData().get("masterMdmsData"),"parking.ECS",context,Integer.class).getValue();
 			LOGGER.info("Parking ECS " + noOfrequiredParking);
+			
+			// Fallback to 0 if rule fails, otherwise use MDMS value
+//			double ecsPerDu = (ecsPerDuMdms != null) ? ecsPerDuMdms.doubleValue() : 0.0;
+//
+//			// 3. Calculate total ECS for DUs
+//			double totalDuEcs = ecsPerDu * totalDwellingUnits;
+//
+//			// 4. Add Additional 10% Guest Parking
+//			double guestEcs = totalDuEcs * 0.10;
+//
+//			// 5. Total required ECS (Rounded up as per your old logic)
+//			int finalRequiredEcs = (int) Math.ceil(totalDuEcs + guestEcs);
+//			noOfrequiredParking = finalRequiredEcs;
 
 
         	//if(mostRestrictiveOccupancy.getSubtype()!=null
@@ -1189,6 +1207,7 @@ public class Parking extends FeatureProcess {
             case "G-GIF":
             case "G-ITF":
             case "G-WT":
+            case "G-ITP":
                 return 2;
 
             default:

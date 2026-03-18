@@ -61,6 +61,7 @@ import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.Util;
 import org.springframework.stereotype.Service;
@@ -107,7 +108,31 @@ public class Balcony extends FeatureProcess {
                             BigDecimal minWidth = widths.isEmpty() ? BigDecimal.ZERO : widths.stream().reduce(BigDecimal::min).get();
                             minWidth = minWidth.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
                                     DcrConstants.ROUNDMODE_MEASUREMENTS);
-                            if (minWidth.compareTo(ONE_POINTNINEONE.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+                            BigDecimal balconyWidthMdms = RuleUtil.getRule(
+                                    plan.getMdmsRulesData().get("masterMdmsData"),"balcony.width.min",null,BigDecimal.class).getValue();
+                            
+//                            if (minWidth.compareTo(ONE_POINTNINEONE.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                                    DcrConstants.ROUNDMODE_MEASUREMENTS)) >= 0) {
+//                                isAccepted = true;
+//                            }
+//
+//                            String value = typicalFloorValues.get("typicalFloors") != null
+//                                    ? (String) typicalFloorValues.get("typicalFloors")
+//                                    : "" + floor.getNumber();
+//
+//                            if (isAccepted) {
+//                                setReportOutputDetailsFloorBalconyWise(plan, RULE45_IV, value,
+//                                        String.format(WIDTH_BALCONY_DESCRIPTION, balcony.getNumber()),
+//                                        ONE_POINTNINEONE.toString(),
+//                                        String.valueOf(minWidth), Result.Accepted.getResultVal(), scrutinyDetailLanding);
+//                            } else {
+//                                setReportOutputDetailsFloorBalconyWise(plan, RULE45_IV, value,
+//                                        String.format(WIDTH_BALCONY_DESCRIPTION, balcony.getNumber()),
+//                                        ONE_POINTNINEONE.toString(),
+//                                        String.valueOf(minWidth), Result.Not_Accepted.getResultVal(), scrutinyDetailLanding);
+//                            }
+                            
+                            if (minWidth.compareTo(balconyWidthMdms.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
                                     DcrConstants.ROUNDMODE_MEASUREMENTS)) >= 0) {
                                 isAccepted = true;
                             }
@@ -119,12 +144,12 @@ public class Balcony extends FeatureProcess {
                             if (isAccepted) {
                                 setReportOutputDetailsFloorBalconyWise(plan, RULE45_IV, value,
                                         String.format(WIDTH_BALCONY_DESCRIPTION, balcony.getNumber()),
-                                        ONE_POINTNINEONE.toString(),
+                                        balconyWidthMdms.toString(),
                                         String.valueOf(minWidth), Result.Accepted.getResultVal(), scrutinyDetailLanding);
                             } else {
                                 setReportOutputDetailsFloorBalconyWise(plan, RULE45_IV, value,
                                         String.format(WIDTH_BALCONY_DESCRIPTION, balcony.getNumber()),
-                                        ONE_POINTNINEONE.toString(),
+                                        balconyWidthMdms.toString(),
                                         String.valueOf(minWidth), Result.Not_Accepted.getResultVal(), scrutinyDetailLanding);
                             }
                         }

@@ -67,6 +67,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.RoomHeight;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.service.ProcessHelper;
 import org.egov.edcr.utility.DcrConstants;
@@ -179,8 +180,10 @@ public class Kitchen extends FeatureProcess {
 
                                 if (!kitchenHeights.isEmpty()) {
                                     BigDecimal minHeight = kitchenHeights.stream().reduce(BigDecimal::min).get().setScale(2, RoundingMode.HALF_UP);
-
-                                    minimumHeight = MINIMUM_HEIGHT_2_75;
+                                    BigDecimal minHeightMdms = RuleUtil.getRule(
+                                            pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.height.min",null,BigDecimal.class).getValue();
+//                                    minimumHeight = MINIMUM_HEIGHT_2_75;
+                                    minimumHeight = minHeightMdms;
                                     subRule = SUBRULE_41_III;
                                     subRuleDesc = SUBRULE_41_III_DESC;
 
@@ -203,7 +206,10 @@ public class Kitchen extends FeatureProcess {
 
                             if (!kitchenAreas.isEmpty()) {
                                 totalArea = kitchenAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, BigDecimal.ROUND_HALF_UP);
-                                minimumHeight = MINIMUM_AREA_5;
+                                //minimumHeight = MINIMUM_AREA_5;
+                                BigDecimal minAreaMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.area.min",null,BigDecimal.class).getValue();
+                                minimumHeight = minAreaMdms;
                                 subRuleDesc = String.format(SUBRULE_41_III_AREA_DESC, KITCHEN);
 
                                 boolean valid = false;
@@ -223,7 +229,10 @@ public class Kitchen extends FeatureProcess {
                                 Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor,
                                         isTypicalRepititiveFloor);
                                 BigDecimal minRoomWidth = kitchenWidths.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
-                                minWidth = MINIMUM_WIDTH_1_8;
+                                //minWidth = MINIMUM_WIDTH_1_8;
+                                BigDecimal minWidthMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.width.min",null,BigDecimal.class).getValue();
+                                minWidth = minWidthMdms;
                                 subRuleDesc = String.format(SUBRULE_41_III_TOTAL_WIDTH, KITCHEN);
                                 buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
                             }else {
@@ -233,7 +242,10 @@ public class Kitchen extends FeatureProcess {
 
                             if (!kitchenStoreAreas.isEmpty()) {
                                 totalArea = kitchenStoreAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                                minimumHeight = MINIMUM_AREA_4_5;
+                                //minimumHeight = MINIMUM_AREA_4_5;                                
+                                BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.storeArea.min",null,BigDecimal.class).getValue();
+                                minimumHeight = kitchenStoreAreasMdms;
                                 subRuleDesc = String.format(SUBRULE_41_III_AREA_DESC, KITCHEN_STORE);
 
                                 boolean valid = false;
@@ -253,7 +265,10 @@ public class Kitchen extends FeatureProcess {
                                 Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor,
                                         isTypicalRepititiveFloor);
                                 BigDecimal minRoomWidth = kitchenStoreWidths.stream().reduce(BigDecimal::min).get();
-                                minWidth = MINIMUM_WIDTH_1_8;
+                                //minWidth = MINIMUM_WIDTH_1_8;
+                                BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.storewidth.min",null,BigDecimal.class).getValue();
+                                minWidth = kitchenStoreAreasMdms;
                                 subRuleDesc = String.format(SUBRULE_41_III_TOTAL_WIDTH, KITCHEN_STORE);
                                 buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
                             }else {
@@ -263,7 +278,10 @@ public class Kitchen extends FeatureProcess {
 
                             if (!kitchenDiningAreas.isEmpty()) {
                                 totalArea = kitchenDiningAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-                                minimumHeight = MINIMUM_AREA_7_5;
+                                //minimumHeight = MINIMUM_AREA_7_5;
+                                BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.diningArea.min",null,BigDecimal.class).getValue();
+                                minimumHeight = kitchenStoreAreasMdms;
                                 subRuleDesc = String.format(SUBRULE_41_III_AREA_DESC, KITCHEN_DINING);
 
                                 boolean valid = false;
@@ -283,7 +301,10 @@ public class Kitchen extends FeatureProcess {
                                 Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor,
                                         isTypicalRepititiveFloor);
                                 BigDecimal minRoomWidth = kitchenDiningWidths.stream().reduce(BigDecimal::min).get();
-                                minWidth = MINIMUM_WIDTH_2_1;
+                                //minWidth = MINIMUM_WIDTH_2_1;
+                                BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
+                                        pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.diningwidth.min",null,BigDecimal.class).getValue();
+                                minWidth = kitchenStoreAreasMdms;
                                 subRuleDesc = String.format(SUBRULE_41_III_TOTAL_WIDTH, KITCHEN_DINING);
                                 buildResult(pl, floor, minWidth, subRule, subRuleDesc, minRoomWidth, valid, typicalFloorValues);
                             }else {
@@ -312,12 +333,12 @@ public class Kitchen extends FeatureProcess {
                     : "" + floor.getNumber();
             if (valid) {
                 setReportOutputDetails(pl, subRule, subRuleDesc, value,
-                        expected + DcrConstants.IN_METER,
-                        actual + DcrConstants.IN_METER, Result.Accepted.getResultVal());
+                        expected + DcrConstants.IN_M,
+                        actual + DcrConstants.IN_M, Result.Accepted.getResultVal());
             } else {
                 setReportOutputDetails(pl, subRule, subRuleDesc, value,
-                        expected + DcrConstants.IN_METER,
-                        actual + DcrConstants.IN_METER, Result.Not_Accepted.getResultVal());
+                        expected + DcrConstants.IN_M,
+                        actual + DcrConstants.IN_M, Result.Not_Accepted.getResultVal());
             }
         }
     }

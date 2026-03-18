@@ -63,6 +63,7 @@ import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -107,16 +108,34 @@ public class OverHangs extends FeatureProcess {
 
                         minWidth = widths.stream().reduce(BigDecimal::min).get();
 
-                        if (minWidth.compareTo(new BigDecimal("0.75")) > 0) {
+                        BigDecimal overHangsWidthMdms = RuleUtil.getRule(
+                              pl.getMdmsRulesData().get("masterMdmsData"),"overHang.width.min",null,BigDecimal.class).getValue();
+                        		
+//                        if (minWidth.compareTo(new BigDecimal("0.75")) > 0) {
+//                            details.put(FLOOR, floor.getNumber().toString());
+//                            details.put(PERMISSIBLE, ">0.75");
+//                            details.put(PROVIDED, minWidth.toString());
+//                            details.put(STATUS, Result.Accepted.getResultVal());
+//                            scrutinyDetail.getDetail().add(details);
+//                            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                        } else {
+//                            details.put(FLOOR, floor.getNumber().toString());
+//                            details.put(PERMISSIBLE, ">0.75");
+//                            details.put(PROVIDED, minWidth.toString());
+//                            details.put(STATUS, Result.Not_Accepted.getResultVal());
+//                            scrutinyDetail.getDetail().add(details);
+//                            pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                        }
+                        if (minWidth.compareTo(overHangsWidthMdms) > 0) {
                             details.put(FLOOR, floor.getNumber().toString());
-                            details.put(PERMISSIBLE, ">0.75");
+                            details.put(PERMISSIBLE, "> " + overHangsWidthMdms);
                             details.put(PROVIDED, minWidth.toString());
                             details.put(STATUS, Result.Accepted.getResultVal());
                             scrutinyDetail.getDetail().add(details);
                             pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                         } else {
                             details.put(FLOOR, floor.getNumber().toString());
-                            details.put(PERMISSIBLE, ">0.75");
+                            details.put(PERMISSIBLE, "> " + overHangsWidthMdms);
                             details.put(PROVIDED, minWidth.toString());
                             details.put(STATUS, Result.Not_Accepted.getResultVal());
                             scrutinyDetail.getDetail().add(details);

@@ -61,6 +61,7 @@ import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -111,39 +112,83 @@ public class InteriorOpenSpaceService extends FeatureProcess {
 			BigDecimal minInteriorCourtYardWidth = f.getInteriorOpenSpace().getInnerCourtYard().getMeasurements()
 					.stream().map(Measurement::getWidth).reduce(BigDecimal::min).get();
 
+//			if (minInteriorCourtYardArea.compareTo(BigDecimal.ZERO) > 0) {
+//				Map<String, String> details = new HashMap<>();
+//				details.put(RULE_NO, RULE_43);
+//				details.put(DESCRIPTION, INTERNALCOURTYARD_DESCRIPTION);
+//				BigDecimal minCourtYardAreaMdms = RuleUtil.getRule(
+//                        pl.getMdmsRulesData().get("masterMdmsData"),"interiorCourtYard.area.min",null,BigDecimal.class).getValue();
+//				if (minInteriorCourtYardArea.compareTo(BigDecimal.valueOf(9)) >= 0) {
+//					details.put(REQUIRED, "Minimum area 9.0 Sq. M  ");
+//					details.put(PROVIDED, "Area " + minInteriorCourtYardArea + " at floor " + f.getNumber());
+//					details.put(STATUS, Result.Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//
+//				} else {
+//					details.put(REQUIRED, "Minimum area 9.0 Sq. M  ");
+//					details.put(PROVIDED, "Area " + minInteriorCourtYardArea + " at floor " + f.getNumber());
+//					details.put(STATUS, Result.Not_Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				}
+//			}
+//			if (minInteriorCourtYardWidth.compareTo(BigDecimal.ZERO) > 0) {
+//				Map<String, String> details = new HashMap<>();
+//				details.put(RULE_NO, RULE_43A);
+//				details.put(DESCRIPTION, INTERNALCOURTYARD_DESCRIPTION);
+//				if (minInteriorCourtYardWidth.compareTo(BigDecimal.valueOf(3)) >= 0) {
+//					details.put(REQUIRED, "Minimum width 3.0 M ");
+//					details.put(PROVIDED, "Area  " + minInteriorCourtYardWidth + " at floor " + f.getNumber());
+//					details.put(STATUS, Result.Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//
+//				} else {
+//					details.put(REQUIRED, "Minimum width 3.0 M ");
+//					details.put(PROVIDED, "Area  " + minInteriorCourtYardWidth + " at floor " + f.getNumber());
+//					details.put(STATUS, Result.Not_Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				}
+//			}
+			
 			if (minInteriorCourtYardArea.compareTo(BigDecimal.ZERO) > 0) {
 				Map<String, String> details = new HashMap<>();
 				details.put(RULE_NO, RULE_43);
 				details.put(DESCRIPTION, INTERNALCOURTYARD_DESCRIPTION);
-
-				if (minInteriorCourtYardArea.compareTo(BigDecimal.valueOf(9)) >= 0) {
-					details.put(REQUIRED, "Minimum area 9.0 Sq. M  ");
+				BigDecimal minCourtYardAreaMdms = RuleUtil.getRule(
+                        pl.getMdmsRulesData().get("masterMdmsData"),"interiorCourtYard.area.min",null,BigDecimal.class).getValue();
+				if (minInteriorCourtYardArea.compareTo(minCourtYardAreaMdms) >= 0) {
+					details.put(REQUIRED, "Minimum area  "+ minCourtYardAreaMdms +"m");
 					details.put(PROVIDED, "Area " + minInteriorCourtYardArea + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 				} else {
-					details.put(REQUIRED, "Minimum area 9.0 Sq. M  ");
+					details.put(REQUIRED, "Minimum area  "+ minCourtYardAreaMdms +"m");
 					details.put(PROVIDED, "Area " + minInteriorCourtYardArea + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Not_Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 				}
 			}
+			BigDecimal minCourtYardWidthMdms = RuleUtil.getRule(
+                    pl.getMdmsRulesData().get("masterMdmsData"),"interiorCourtYard.width.min",null,BigDecimal.class).getValue();
 			if (minInteriorCourtYardWidth.compareTo(BigDecimal.ZERO) > 0) {
 				Map<String, String> details = new HashMap<>();
 				details.put(RULE_NO, RULE_43A);
 				details.put(DESCRIPTION, INTERNALCOURTYARD_DESCRIPTION);
-				if (minInteriorCourtYardWidth.compareTo(BigDecimal.valueOf(3)) >= 0) {
-					details.put(REQUIRED, "Minimum width 3.0 M ");
+				if (minInteriorCourtYardWidth.compareTo(minCourtYardWidthMdms) >= 0) {
+					details.put(REQUIRED, "Minimum width "+minCourtYardWidthMdms +"m");
 					details.put(PROVIDED, "Area  " + minInteriorCourtYardWidth + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 				} else {
-					details.put(REQUIRED, "Minimum width 3.0 M ");
+					details.put(REQUIRED, "Minimum width "+minCourtYardWidthMdms +"m");
 					details.put(PROVIDED, "Area  " + minInteriorCourtYardWidth + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Not_Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
@@ -167,35 +212,38 @@ public class InteriorOpenSpaceService extends FeatureProcess {
 				Map<String, String> details = new HashMap<>();
 				details.put(RULE_NO, RULE_43);
 				details.put(DESCRIPTION, VENTILATIONSHAFT_DESCRIPTION);
-
-				if (minVentilationShaftArea.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
-					details.put(REQUIRED, "Minimum area 1.2 Sq. M  ");
+				BigDecimal minCourtShaftAreaMdms = RuleUtil.getRule(
+	                    pl.getMdmsRulesData().get("masterMdmsData"),"interiorCourtYard.ventilationShaftArea.min",null,BigDecimal.class).getValue();
+				if (minVentilationShaftArea.compareTo(minCourtShaftAreaMdms) >= 0) {
+					details.put(REQUIRED, "Minimum area "+minCourtShaftAreaMdms +"m");
 					details.put(PROVIDED, "Area " + minVentilationShaftArea + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 				} else {
-					details.put(REQUIRED, "Minimum area 1.2 Sq. M  ");
+					details.put(REQUIRED, "Minimum area "+minCourtShaftAreaMdms +"m");
 					details.put(PROVIDED, "Area " + minVentilationShaftArea + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Not_Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 				}
 			}
+			BigDecimal minCourtShaftWidthMdms = RuleUtil.getRule(
+                    pl.getMdmsRulesData().get("masterMdmsData"),"interiorCourtYard.ventilationShaftWidth.min",null,BigDecimal.class).getValue();
 			if (minVentilationShaftWidth.compareTo(BigDecimal.ZERO) > 0) {
 				Map<String, String> details = new HashMap<>();
 				details.put(RULE_NO, RULE_43A);
 				details.put(DESCRIPTION, VENTILATIONSHAFT_DESCRIPTION);
-				if (minVentilationShaftWidth.compareTo(BigDecimal.valueOf(0.9)) >= 0) {
-					details.put(REQUIRED, "Minimum width 0.9 M ");
+				if (minVentilationShaftWidth.compareTo(minCourtShaftWidthMdms) >= 0) {
+					details.put(REQUIRED, "Minimum width "+ minCourtShaftWidthMdms +"m");
 					details.put(PROVIDED, "Area  " + minVentilationShaftWidth + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 				} else {
-					details.put(REQUIRED, "Minimum width 0.9 M ");
+					details.put(REQUIRED, "Minimum width "+ minCourtShaftWidthMdms +"m");
 					details.put(PROVIDED, "Area  " + minVentilationShaftWidth + " at floor " + f.getNumber());
 					details.put(STATUS, Result.Not_Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);

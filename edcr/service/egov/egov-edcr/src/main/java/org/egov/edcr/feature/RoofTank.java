@@ -59,6 +59,7 @@ import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -95,16 +96,35 @@ public class RoofTank extends FeatureProcess {
 			if (b.getRoofTanks() != null && !b.getRoofTanks().isEmpty()) {
 				minHeight = b.getRoofTanks().stream().reduce(BigDecimal::min).get();
 
-				if (minHeight.compareTo(new BigDecimal(1)) <= 0) {
+				BigDecimal roofTankMinHeightMdms = RuleUtil.getRule(
+                        pl.getMdmsRulesData().get("masterMdmsData"),"roofTank.height.min",null,BigDecimal.class).getValue();
+				
+//				if (minHeight.compareTo(new BigDecimal(1)) <= 0) {
+//					details.put(DESCRIPTION, ROOFTANK_DESCRIPTION);
+//					details.put(VERIFIED, "Verified whether roof tank height is <= 1 meters");
+//					details.put(ACTION, "Not included roof tank height(" + minHeight + ") to building height");
+//					details.put(STATUS, Result.Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				} else {
+//					details.put(DESCRIPTION, ROOFTANK_DESCRIPTION);
+//					details.put(VERIFIED, "Verified whether roof tank height is <= 1 meters");
+//					details.put(ACTION, "Included roof tank height(" + minHeight + ") to building height");
+//					details.put(STATUS, Result.Verify.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				}
+				
+				if (minHeight.compareTo(roofTankMinHeightMdms) <= 0) {
 					details.put(DESCRIPTION, ROOFTANK_DESCRIPTION);
-					details.put(VERIFIED, "Verified whether roof tank height is <= 1 meters");
+					details.put(VERIFIED, "Verified whether roof tank height is <= "+roofTankMinHeightMdms+"m");
 					details.put(ACTION, "Not included roof tank height(" + minHeight + ") to building height");
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 				} else {
 					details.put(DESCRIPTION, ROOFTANK_DESCRIPTION);
-					details.put(VERIFIED, "Verified whether roof tank height is <= 1 meters");
+					details.put(VERIFIED, "Verified whether roof tank height is <= "+roofTankMinHeightMdms+"m");
 					details.put(ACTION, "Included roof tank height(" + minHeight + ") to building height");
 					details.put(STATUS, Result.Verify.getResultVal());
 					scrutinyDetail.getDetail().add(details);

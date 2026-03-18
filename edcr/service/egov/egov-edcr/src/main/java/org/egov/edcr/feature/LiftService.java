@@ -61,6 +61,7 @@ import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.springframework.stereotype.Service;
 
@@ -171,6 +172,12 @@ public class LiftService extends FeatureProcess {
                                     		.getSubtype().getCode()))) {
                             	DISPLAY_LIFT_DIMENSION = true;
                             }
+                            
+//                            BigDecimal liftHeightMdms = RuleUtil.getRule(
+//                                    plan.getMdmsRulesData().get("masterMdmsData"),"lift.height.min",null,BigDecimal.class).getValue();
+//                            BigDecimal liftWidthMdms = RuleUtil.getRule(
+//                                    plan.getMdmsRulesData().get("masterMdmsData"),"lift.width.min",null,BigDecimal.class).getValue();
+                            
 
                             if (liftHeight.compareTo(BigDecimal.ZERO) > 0
                                     && liftWidth.compareTo(BigDecimal.ZERO) > 0) {

@@ -62,6 +62,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.RoomHeight;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -123,13 +124,21 @@ public class BathRoom extends FeatureProcess {
 							}
 						}
 
+						BigDecimal bathRoomArea = RuleUtil.getRule(
+                                pl.getMdmsRulesData().get("masterMdmsData"),"bathRoom.area.min",null,BigDecimal.class).getValue();
+                        BigDecimal bathWidth = RuleUtil.getRule(
+                                pl.getMdmsRulesData().get("masterMdmsData"),"bathRoom.width.mn",null,BigDecimal.class).getValue();
+                        
 						if(
 					//	(minHeight.compareTo(new BigDecimal(2.4)) >= 0
 							//	&& 
-								totalArea.compareTo(new BigDecimal(1.8)) >= 0
-								&& minWidth.compareTo(new BigDecimal(1.2)) >= 0) {
+//								totalArea.compareTo(new BigDecimal(1.8)) >= 0
+//								&& minWidth.compareTo(new BigDecimal(1.2)) >= 0
+								totalArea.compareTo(bathRoomArea) >= 0
+								&& minWidth.compareTo(bathWidth) >= 0
+								) {
 
-							details.put(REQUIRED," Total Area >= 1.8, Width >= 1.2");
+							details.put(REQUIRED," Total Area >= " + bathRoomArea +", Width >= " + bathWidth);
 							details.put(PROVIDED, " Total Area >= " + totalArea
 									+ ", Width >= " + minWidth);
 							details.put(STATUS, Result.Accepted.getResultVal());
@@ -137,7 +146,7 @@ public class BathRoom extends FeatureProcess {
 							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
 						} else {
-							details.put(REQUIRED, ", Total Area >= 1.8, Width >= 1.2");
+							details.put(REQUIRED," Total Area >= " + bathRoomArea +", Width >= " + bathWidth);
 							details.put(PROVIDED,   ", Total Area >= " + totalArea
 									+ ", Width >= " + minWidth);
 							details.put(STATUS, Result.Not_Accepted.getResultVal());

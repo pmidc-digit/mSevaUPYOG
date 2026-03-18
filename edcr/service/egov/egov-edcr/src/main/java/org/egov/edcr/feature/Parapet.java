@@ -48,6 +48,7 @@
 package org.egov.edcr.feature;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -59,6 +60,7 @@ import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -93,18 +95,35 @@ public class Parapet extends FeatureProcess {
 
 		for (Block b : pl.getBlocks()) {
 			if (b.getParapets() != null && !b.getParapets().isEmpty()) {
-				minHeight = b.getParapets().stream().reduce(BigDecimal::min).get();
+				minHeight = b.getParapets().stream().reduce(BigDecimal::min).get().setScale(2, RoundingMode.HALF_UP);
+				
+				BigDecimal minHeightMdms = RuleUtil.getRule(
+		                pl.getMdmsRulesData().get("masterMdmsData"),"parapet.width.min",null,BigDecimal.class).getValue();
+				BigDecimal maxHeightMdms = RuleUtil.getRule(
+		                pl.getMdmsRulesData().get("masterMdmsData"),"parapet.width.max",null,BigDecimal.class).getValue();
 
-				if (minHeight.compareTo(new BigDecimal(1.2)) >= 0 && minHeight.compareTo(new BigDecimal(1.5)) <= 0) {
-
-					details.put(REQUIRED, "Height >= 1.2 and height <= 1.5");
+//				if (minHeight.compareTo(new BigDecimal(1.2)) >= 0 && minHeight.compareTo(new BigDecimal(1.5)) <= 0) {
+//					details.put(REQUIRED, "Height >= 1.2 and height <= 1.5");
+//					details.put(PROVIDED, "Height >= " + minHeight + " and height <= " + minHeight);
+//					details.put(STATUS, Result.Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				} else {
+//					details.put(REQUIRED, "Height >= 1.2 and height <= 1.5");
+//					details.put(PROVIDED, "Height >= " + minHeight + " and height <= " + minHeight);
+//					details.put(STATUS, Result.Not_Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				}
+				
+				if (minHeight.compareTo(minHeightMdms) >= 0 && minHeight.compareTo(maxHeightMdms) <= 0) {
+					details.put(REQUIRED, "Height >= " + minHeightMdms +" and height <= " + maxHeightMdms);
 					details.put(PROVIDED, "Height >= " + minHeight + " and height <= " + minHeight);
 					details.put(STATUS, Result.Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);
 					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-
 				} else {
-					details.put(REQUIRED, "Height >= 1.2 and height <= 1.5");
+					details.put(REQUIRED, "Height >= " + minHeightMdms +" and height <= " + maxHeightMdms);
 					details.put(PROVIDED, "Height >= " + minHeight + " and height <= " + minHeight);
 					details.put(STATUS, Result.Not_Accepted.getResultVal());
 					scrutinyDetail.getDetail().add(details);

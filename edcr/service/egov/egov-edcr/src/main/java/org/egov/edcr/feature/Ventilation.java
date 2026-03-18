@@ -65,6 +65,7 @@ import org.egov.common.entity.edcr.Occupancy;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 import org.egov.common.entity.edcr.*;
 
@@ -125,6 +126,9 @@ public class Ventilation extends FeatureProcess {
 	                                .map(Occupancy::getCarpetArea)
 	                                .reduce(BigDecimal.ZERO, BigDecimal::add)
 	                                .setScale(2, RoundingMode.HALF_UP);
+	                        
+	                        BigDecimal commonVenPer = RuleUtil.getRule(
+	        		                pl.getMdmsRulesData().get("masterMdmsData"),"ventilation.commonVentilation",null,BigDecimal.class).getValue();
 
 	                        if (totalVentilationArea.compareTo(BigDecimal.ZERO) > 0) {
 	                            Map<String, String> details = new HashMap<>();
@@ -132,8 +136,16 @@ public class Ventilation extends FeatureProcess {
 	                            details.put(DESCRIPTION, LIGHT_VENTILATION_DESCRIPTION);
 	                            details.put(REQUIRED, REQUIRED_LIGHT_VENTILATION_AREA);
 
+//	                            if (totalVentilationArea.compareTo(
+//	                                    totalCarpetArea.divide(BigDecimal.valueOf(8), 2, BigDecimal.ROUND_HALF_UP)) >= 0) {
+//	                                details.put(PROVIDED, "Ventilation area " + totalVentilationArea + " at floor " + f.getNumber());
+//	                                details.put(STATUS, Result.Accepted.getResultVal());
+//	                            } else {
+//	                                details.put(PROVIDED, "Ventilation area " + totalVentilationArea + " at floor " + f.getNumber());
+//	                                details.put(STATUS, Result.Not_Accepted.getResultVal());
+//	                            }
 	                            if (totalVentilationArea.compareTo(
-	                                    totalCarpetArea.divide(BigDecimal.valueOf(8), 2, BigDecimal.ROUND_HALF_UP)) >= 0) {
+	                                    totalCarpetArea.divide(commonVenPer.divide(BigDecimal.valueOf(100)), 2, BigDecimal.ROUND_HALF_UP)) >= 0) {
 	                                details.put(PROVIDED, "Ventilation area " + totalVentilationArea + " at floor " + f.getNumber());
 	                                details.put(STATUS, Result.Accepted.getResultVal());
 	                            } else {
@@ -159,14 +171,26 @@ public class Ventilation extends FeatureProcess {
 	                                .map(Measurement::getArea)
 	                                .reduce(BigDecimal.ZERO, BigDecimal::add)
 	                                .setScale(2, RoundingMode.HALF_UP);
+	                        
+	                        BigDecimal minBathVen = RuleUtil.getRule(
+	        		                pl.getMdmsRulesData().get("masterMdmsData"),"ventilation.bath.min",null,BigDecimal.class).getValue();
 
 	                        if (totalBathVentilationArea.compareTo(BigDecimal.ZERO) > 0) {
 	                            Map<String, String> details1 = new HashMap<>();
 	                            details1.put(RULE_NO, RULE_43);
 	                            details1.put(DESCRIPTION, "Bath Ventilation");
-	                            details1.put(REQUIRED, "0.3");
+//	                            details1.put(REQUIRED, "0.3");
+//
+//	                            if (totalBathVentilationArea.compareTo(new BigDecimal("0.3")) >= 0) {
+//	                                details1.put(PROVIDED, "Bath Ventilation area " + totalBathVentilationArea + " at floor " + f.getNumber());
+//	                                details1.put(STATUS, Result.Accepted.getResultVal());
+//	                            } else {
+//	                                details1.put(PROVIDED, "Bath Ventilation area " + totalBathVentilationArea + " at floor " + f.getNumber());
+//	                                details1.put(STATUS, Result.Not_Accepted.getResultVal());
+//	                            }
+	                            details1.put(REQUIRED, minBathVen.toPlainString());
 
-	                            if (totalBathVentilationArea.compareTo(new BigDecimal("0.3")) >= 0) {
+	                            if (totalBathVentilationArea.compareTo(minBathVen) >= 0) {
 	                                details1.put(PROVIDED, "Bath Ventilation area " + totalBathVentilationArea + " at floor " + f.getNumber());
 	                                details1.put(STATUS, Result.Accepted.getResultVal());
 	                            } else {
@@ -196,6 +220,9 @@ public class Ventilation extends FeatureProcess {
 	                                    && !room.getLightAndVentilation().getMeasurements().isEmpty()) {
 
 	                                String roomNo = room.getNumber();
+	                                
+	                                BigDecimal regularRoomVenPer = RuleUtil.getRule(
+	    	        		                pl.getMdmsRulesData().get("masterMdmsData"),"ventilation.regularRoom",null,BigDecimal.class).getValue();
 
 	                                // Calculate total ventilation area for this room
 	                                BigDecimal totalRegularRoomVentilationArea = room.getLightAndVentilation()
@@ -224,15 +251,34 @@ public class Ventilation extends FeatureProcess {
 	                                }
 
 	                                // 10% of floor area required
+//	                                BigDecimal requiredVentilationArea = totalFloorArea
+//	                                        .multiply(BigDecimal.valueOf(0.10))
+//	                                        .setScale(2, RoundingMode.HALF_UP);
+	                                
 	                                BigDecimal requiredVentilationArea = totalFloorArea
-	                                        .multiply(BigDecimal.valueOf(0.10))
+	                                        .multiply(regularRoomVenPer.divide(BigDecimal.valueOf(100)))
 	                                        .setScale(2, RoundingMode.HALF_UP);
 
 	                                // Prepare details map
 	                                Map<String, String> details = new HashMap<>();
 	                                details.put(RULE_NO, RULE_LIGHT_VENTILATION);
 	                                details.put(DESCRIPTION, REGULAR_ROOM_LIGHT_VENTILATION_DESCRIPTION);
-	                                details.put(REQUIRED, "≥ 10% of Floor Area (" + requiredVentilationArea + ")");
+//	                                details.put(REQUIRED, "≥ 10% of Floor Area (" + requiredVentilationArea + ")");
+//
+//	                                // Validation check
+//	                                if (totalRegularRoomVentilationArea.compareTo(requiredVentilationArea) >= 0) {
+//	                                    details.put(PROVIDED, "Ventilation area " + totalRegularRoomVentilationArea
+//	                                            + " at floor " + f.getNumber()
+//	                                            + " room " + roomNo);
+//	                                    details.put(STATUS, Result.Accepted.getResultVal());
+//	                                } else {
+//	                                    details.put(PROVIDED, "Ventilation area " + totalRegularRoomVentilationArea
+//	                                            + " at floor " + f.getNumber()
+//	                                            + " room " + roomNo);
+//	                                    details.put(STATUS, Result.Not_Accepted.getResultVal());
+//	                                }
+	                                
+	                                details.put(REQUIRED, "≥ "+ regularRoomVenPer + "% of Floor Area (" + requiredVentilationArea + ")");
 
 	                                // Validation check
 	                                if (totalRegularRoomVentilationArea.compareTo(requiredVentilationArea) >= 0) {

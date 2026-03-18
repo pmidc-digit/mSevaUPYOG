@@ -13,6 +13,7 @@ import org.egov.common.entity.edcr.Measurement;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.springframework.stereotype.Service;
 @Service
 public class GateService  extends FeatureProcess {
@@ -69,6 +70,10 @@ public class GateService  extends FeatureProcess {
 	        //plan.addErrors(errors);
 	    }
 
+//	    BigDecimal getHeightMinMdms = RuleUtil.getRule(
+//                plan.getMdmsRulesData().get("masterMdmsData"),"gate.width.min",null,BigDecimal.class).getValue();
+//	    BigDecimal gateHeightMaxMdms = RuleUtil.getRule(
+//                plan.getMdmsRulesData().get("masterMdmsData"),"gate.width.max",null,BigDecimal.class).getValue();
 	    // --- Validation ---
 	    if (!gateDefined) {
 	        //LOG.warn("Gate details missing. Marking as Not Accepted.");

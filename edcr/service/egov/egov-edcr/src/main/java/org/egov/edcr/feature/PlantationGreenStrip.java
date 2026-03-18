@@ -63,6 +63,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.stereotype.Service;
@@ -214,12 +215,18 @@ public class PlantationGreenStrip extends FeatureProcess {
 
 	    BigDecimal plotArea = pl.getPlot().getArea();
 	    if (occType.equalsIgnoreCase(DxfFileConstants.A)) {	        
-	        requiredPlantation = BigDecimal.valueOf(0.05); // 5%
+	        //requiredPlantation = BigDecimal.valueOf(0.05); // 5%
+	        requiredPlantation = RuleUtil.getRule(
+                    pl.getMdmsRulesData().get("masterMdmsData"),"plantationArea",null,BigDecimal.class).getValue().divide(BigDecimal.valueOf(100));
 	    } else if (occType.equalsIgnoreCase(DxfFileConstants.G)) {
 	        if (plotArea != null && plotArea.compareTo(BigDecimal.valueOf(1000)) > 0) {	           
-	            requiredPlantation = BigDecimal.valueOf(0.10);  // 10%
+	            //requiredPlantation = BigDecimal.valueOf(0.10);  // 10%
+	            requiredPlantation = RuleUtil.getRule(
+	                    pl.getMdmsRulesData().get("masterMdmsData"),"plantationArea",null,BigDecimal.class).getValue().divide(BigDecimal.valueOf(100));
 	        } else {	           
-	            requiredPlantation = BigDecimal.valueOf(0.05);  // 5%
+	            //requiredPlantation = BigDecimal.valueOf(0.05);  // 5%
+	            requiredPlantation = RuleUtil.getRule(
+	                    pl.getMdmsRulesData().get("masterMdmsData"),"plantationArea",null,BigDecimal.class).getValue().divide(BigDecimal.valueOf(100));
 	        }
 	    }
 

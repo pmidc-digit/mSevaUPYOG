@@ -674,7 +674,13 @@ public class PlanReportService {
                 }
             });
 
-            Set<String> distinctOccupancies = new HashSet<>(occupancies);
+//            Set<String> distinctOccupancies = new HashSet<>(occupancies);
+            Set<String> distinctOccupancies = new HashSet<>();
+
+            if (occupancies != null && !occupancies.isEmpty()) {
+                distinctOccupancies.add(occupancies.get(0));
+            }
+
             plan.getPlanInformation()
                     .setOccupancy(distinctOccupancies.stream().map(String::new).collect(Collectors.joining(",")));
         }
@@ -780,7 +786,7 @@ public class PlanReportService {
                     );
 
             // 🔴 Page break ONLY here
-            //overallSummarySub.setStartInNewPage(true);
+            overallSummarySub.setStartInNewPage(true);
 
             drb.addConcatenatedReport(overallSummarySub);
             valuesMap.put(COMBINED_BLOCKS_SUMMARY_DETAILS, combinedSummary);
@@ -1185,7 +1191,7 @@ public class PlanReportService {
                 // Determine Occupancy Type
              // Determine Occupancy Type (from any available detail)
                 String occupancyType = "";
-                Boolean isSetbackCombine = false;
+		Boolean isSetbackCombine = false;
                 if (front != null && !front.getDetail().isEmpty() && front.getDetail().get(0).get("Occupancy") != null) {
                     occupancyType = front.getDetail().get(0).get("Occupancy");
                 } else if (rear != null && !rear.getDetail().isEmpty() && rear.getDetail().get(0).get("Occupancy") != null) {

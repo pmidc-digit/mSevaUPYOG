@@ -66,6 +66,7 @@ import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.service.ProcessHelper;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -128,8 +129,10 @@ public class TravelDistanceToExit extends FeatureProcess {
 
                 String code = mostRestrictiveFarHelper.getType().getCode();
 
-                Map<String, BigDecimal> occupancyValues = getOccupancyValues();
-                BigDecimal requiredValue = occupancyValues.get(code);
+                //Map<String, BigDecimal> occupancyValues = getOccupancyValues();
+                //BigDecimal requiredValue = occupancyValues.get(code);                
+                BigDecimal requiredValue = RuleUtil.getRule(
+                        pl.getMdmsRulesData().get("masterMdmsData"),"travelDistanceToExit.length.min",null,BigDecimal.class).getValue();
                 if (requiredValue != null) {
                     for (BigDecimal maximumTravelDistance : pl.getTravelDistancesToExit()) {
                         boolean valid = false;
@@ -137,11 +140,11 @@ public class TravelDistanceToExit extends FeatureProcess {
                             valid = true;
                         }
                         if (valid) {
-                            setReportOutputDetails(pl, subRule, requiredValue + DcrConstants.IN_METER, maximumTravelDistance +
-                                    DcrConstants.IN_METER, Result.Accepted.getResultVal());
+                            setReportOutputDetails(pl, subRule, requiredValue + DcrConstants.IN_M, maximumTravelDistance +
+                                    DcrConstants.IN_M, Result.Accepted.getResultVal());
                         } else {
                             setReportOutputDetails(pl,
-                                    subRule, requiredValue + DcrConstants.IN_METER, maximumTravelDistance + DcrConstants.IN_METER,
+                                    subRule, requiredValue + DcrConstants.IN_M, maximumTravelDistance + DcrConstants.IN_M,
                                     Result.Not_Accepted.getResultVal());
                         }
                     }

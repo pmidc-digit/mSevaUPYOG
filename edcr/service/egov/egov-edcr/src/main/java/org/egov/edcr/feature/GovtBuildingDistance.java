@@ -60,6 +60,7 @@ import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -109,34 +110,68 @@ public class GovtBuildingDistance extends FeatureProcess {
 						maxHeightOfBuilding = b.getBuilding().getBuildingHeight();
 					}
 				}
+				
+				 BigDecimal govtBuildingMinDist = RuleUtil.getRule(
+		                pl.getMdmsRulesData().get("masterMdmsData"),"govtBuilding.distance.min",null,BigDecimal.class).getValue();
+				 
+				 BigDecimal govtBuildingMinHeight = RuleUtil.getRule(
+			                pl.getMdmsRulesData().get("masterMdmsData"),"govtBuilding.height.min",null,BigDecimal.class).getValue();
 
-				if (minDistanceFromGovtBuilding.compareTo(BigDecimal.valueOf(200)) > 0) {
-					details.put(DISTANCE, ">200");
-					details.put(PERMITTED, "ALL");
-					details.put(PROVIDED, minDistanceFromGovtBuilding.toString());
-					details.put(STATUS, Result.Accepted.getResultVal());
-					scrutinyDetail.getDetail().add(details);
-					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-				} else {
-					if (maxHeightOfBuilding.compareTo(BigDecimal.valueOf(10)) <= 0) {
-
-						details.put(DISTANCE, "<=200");
-						details.put(PERMITTED, "Building Height: 10mt");
-						details.put(PROVIDED, "Building Height: " + maxHeightOfBuilding + "mt");
+//				if (minDistanceFromGovtBuilding.compareTo(BigDecimal.valueOf(200)) > 0) {
+//					details.put(DISTANCE, ">200");
+//					details.put(PERMITTED, "ALL");
+//					details.put(PROVIDED, minDistanceFromGovtBuilding.toString());
+//					details.put(STATUS, Result.Accepted.getResultVal());
+//					scrutinyDetail.getDetail().add(details);
+//					pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//				} else {
+//					if (maxHeightOfBuilding.compareTo(BigDecimal.valueOf(10)) <= 0) {
+//
+//						details.put(DISTANCE, "<=200");
+//						details.put(PERMITTED, "Building Height: 10mt");
+//						details.put(PROVIDED, "Building Height: " + maxHeightOfBuilding + "mt");
+//						details.put(STATUS, Result.Accepted.getResultVal());
+//						scrutinyDetail.getDetail().add(details);
+//						pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//
+//					} else {
+//
+//						details.put(DISTANCE, "<=200");
+//						details.put(PERMITTED, "Building Height: 10mt");
+//						details.put(PROVIDED, "Building Height: " + maxHeightOfBuilding + "mt");
+//						details.put(STATUS, Result.Not_Accepted.getResultVal());
+//						scrutinyDetail.getDetail().add(details);
+//						pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//					}
+//				}
+				 
+				 if (minDistanceFromGovtBuilding.compareTo(govtBuildingMinDist) > 0) {
+						details.put(DISTANCE, ">"+govtBuildingMinDist);
+						details.put(PERMITTED, "ALL");
+						details.put(PROVIDED, minDistanceFromGovtBuilding.toString());
 						details.put(STATUS, Result.Accepted.getResultVal());
 						scrutinyDetail.getDetail().add(details);
 						pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-
 					} else {
+						if (maxHeightOfBuilding.compareTo(govtBuildingMinHeight) <= 0) {
 
-						details.put(DISTANCE, "<=200");
-						details.put(PERMITTED, "Building Height: 10mt");
-						details.put(PROVIDED, "Building Height: " + maxHeightOfBuilding + "mt");
-						details.put(STATUS, Result.Not_Accepted.getResultVal());
-						scrutinyDetail.getDetail().add(details);
-						pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+							details.put(DISTANCE, ">" + govtBuildingMinDist);
+							details.put(PERMITTED, "Building Height: "+ govtBuildingMinHeight + "mt");
+							details.put(PROVIDED, "Building Height: " + maxHeightOfBuilding + "mt");
+							details.put(STATUS, Result.Accepted.getResultVal());
+							scrutinyDetail.getDetail().add(details);
+							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+
+						} else {
+
+							details.put(DISTANCE, ">"+govtBuildingMinDist);
+							details.put(PERMITTED, "Building Height: "+ govtBuildingMinHeight + "mt");
+							details.put(PROVIDED, "Building Height: " + maxHeightOfBuilding + "mt");
+							details.put(STATUS, Result.Not_Accepted.getResultVal());
+							scrutinyDetail.getDetail().add(details);
+							pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+						}
 					}
-				}
 			} else {
 				errors.put("Distance_From_Govt_Building", "No distance is provided from government building");
 				pl.addErrors(errors);

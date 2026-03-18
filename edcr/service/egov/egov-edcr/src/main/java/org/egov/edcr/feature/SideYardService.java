@@ -133,7 +133,7 @@ public class SideYardService extends GeneralRule {
     public static final BigDecimal ROAD_WIDTH_TWELVE_POINTTWO = BigDecimal.valueOf(12.2);
     
     // Added by Bimal 18-March-2924 for method processSideYardResidential
-    private static final BigDecimal MIN_PLOT_AREA = BigDecimal.valueOf(30);
+    //private static final BigDecimal MIN_PLOT_AREA = BigDecimal.valueOf(30);
     private static final BigDecimal PLOT_AREA_100_SQM = BigDecimal.valueOf(100);
 	private static final BigDecimal PLOT_AREA_150_SQM = BigDecimal.valueOf(150);
 	private static final BigDecimal PLOT_AREA_200_SQM = BigDecimal.valueOf(200);
@@ -433,90 +433,39 @@ public class SideYardService extends GeneralRule {
     		BigDecimal minDistanceSideYard1, BigDecimal minDistanceSideYard2) {
     	LOG.info("Processing SideYardResidential:");
     	
-    	// Set minVal based on plot area and buildingHeight
     	BigDecimal minVal = BigDecimal.ZERO;
     	HashMap<String, String> errors = new HashMap<>();
     	
     	Map<String, Object> variables = new HashMap<>();
-    	variables.put("buildingHeight", buildingHeight); // Replace 15.5 with your actual plan value
+    	variables.put("buildingHeight", buildingHeight);
 
-    	// 2. Build the context
     	RuleContext context = RuleContext.builder()
-    	        .formulaVariables(variables)    // Pass the map here
+    	        .formulaVariables(variables)
     	        .build();
     	
     	if(mostRestrictiveOccupancy!=null && (mostRestrictiveOccupancy.getSubtype()!=null
 	    		&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
 	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
 	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.SIDE_SETBACK_PATH, List.class);
-	        
+	        		MdmsFilter.SIDE_SETBACK_PATH, List.class);	        
 	        if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             
-	             // Extraction 1B: Apply the tiered setback logic
+	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();	             
 	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
-
 	             requiredSetback.ifPresent(
 	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
 	        }	    	
-	    }else {
-//	    	// getting permissible value from mdms
-//			Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
-//			minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
-	        
-			if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-				errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+	    }else {	
+			BigDecimal minPlotArea = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "plotArea.min", null, BigDecimal.class).getValue();
+			if (plotArea == null || plotArea.compareTo(minPlotArea) <= 0) {
+				errors.put("Plot Area Error:", "Plot area must be greater than : " + minPlotArea);
 		        pl.addErrors(errors);			        
-		    }
-			
-			if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
-
-//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-//			            pl.getMdmsMasterData().get("masterMdmsData"),
-//			            MdmsFilter.SIDE_SETBACK_PATH,
-//			            BigDecimal.class
-//			    );
-//
-//			    if (scOpt.isPresent()) {
-//			        BigDecimal mdmsValue = scOpt.get();
-//			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
-//
-////			        BigDecimal oneFifthHeight = buildingHeight.divide(
-////			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
-////			        );
-////
-////			        minVal = oneFifthHeight.max(mdmsValue);
-//			        minVal = mdmsValue;
-//			    }else {
-//			    	LOG.error("No value found from mdms for the side setback");
-//			    }
-//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-//			            pl.getMdmsMasterData().get("masterMdmsData"),
-//			            MdmsFilter.SIDE_SETBACK_PATH,
-//			            BigDecimal.class
-//			    );
-//
-//			    if (scOpt.isPresent()) {
-//			        BigDecimal mdmsValue = scOpt.get();
-//			        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
-//
-//			        BigDecimal oneFifthHeight = buildingHeight.divide(
-//			                BigDecimal.valueOf(FIVE_MTR), 2, RoundingMode.HALF_UP
-//			        );
-//
-//			        minVal = oneFifthHeight.max(mdmsValue);
-//			        minVal = mdmsValue;
-//			    }else {
-//			    	LOG.error("No value found from mdms for the side setback");
-//			    }
-			    
+		    }			
+			if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {			    
 			    minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.side1", context, BigDecimal.class).getValue();
 			    minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.side2", context, BigDecimal.class).getValue();
-		        LOG.info("Side  Setback Value from mdms : " + minVal);
-			    
+		        LOG.info("Side  Setback Value from mdms : " + minVal);			    
 			}
 
 	    }
@@ -674,7 +623,12 @@ public class SideYardService extends GeneralRule {
             details.put(RULE_NO, sideYard1Result.subRule);
             details.put(LEVEL,
                     sideYard1Result.level != null ? sideYard1Result.level.toString() : "");
-            details.put(OCCUPANCY, sideYard1Result.occupancy);
+            //details.put(OCCUPANCY, sideYard1Result.occupancy);
+            String occupancy = sideYard1Result.occupancy;
+			if (occupancy != null && occupancy.contains(",")) {
+			    occupancy = occupancy.split(",")[0].trim();
+			}
+			details.put(OCCUPANCY, occupancy);
             
             String permissableValueWithPercentage;
 			String providedValue;
@@ -738,7 +692,12 @@ public class SideYardService extends GeneralRule {
                 detailsSideYard2.put(RULE_NO, sideYard2Result.subRule);
                 detailsSideYard2.put(LEVEL,
                         sideYard2Result.level != null ? sideYard2Result.level.toString() : "");
-                detailsSideYard2.put(OCCUPANCY, sideYard2Result.occupancy);
+                //detailsSideYard2.put(OCCUPANCY, sideYard2Result.occupancy);
+                String occupancy = sideYard2Result.occupancy;
+    			if (occupancy != null && occupancy.contains(",")) {
+    			    occupancy = occupancy.split(",")[0].trim();
+    			}
+    			detailsSideYard2.put(OCCUPANCY, occupancy);
                 detailsSideYard2.put(SIDENUMBER, SIDE_YARD2_DESC);
                 
                 String permissableValueWithPercentage;

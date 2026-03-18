@@ -58,6 +58,7 @@ import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.utility.Util;
 import org.springframework.stereotype.Service;
 
@@ -96,14 +97,24 @@ public class HeadRoom extends FeatureProcess {
                         BigDecimal minHeadRoomDimension = headRoomDimensions.stream().reduce(BigDecimal::min).get();
 
                         BigDecimal minWidth = Util.roundOffTwoDecimal(minHeadRoomDimension);
-
-                        if (minWidth.compareTo(TWO_POINTTWO) >= 0) {
+                        BigDecimal 	minWidthMdms = RuleUtil.getRule(
+        		                plan.getMdmsRulesData().get("masterMdmsData"),"headRoom.width.min",null,BigDecimal.class).getValue();
+//                        if (minWidth.compareTo(TWO_POINTTWO) >= 0) {
+//                            setReportOutputDetails(plan, RULE42_5_ii, RULE_42_5_ii_DESCRIPTION,
+//                                    String.valueOf(TWO_POINTTWO), String.valueOf(minWidth), Result.Accepted.getResultVal(),
+//                                    scrutinyDetail);
+//                        } else {
+//                            setReportOutputDetails(plan, RULE42_5_ii, RULE_42_5_ii_DESCRIPTION,
+//                                    String.valueOf(TWO_POINTTWO), String.valueOf(minWidth), Result.Not_Accepted.getResultVal(),
+//                                    scrutinyDetail);
+//                        }
+                        if (minWidth.compareTo(minWidthMdms) >= 0) {
                             setReportOutputDetails(plan, RULE42_5_ii, RULE_42_5_ii_DESCRIPTION,
-                                    String.valueOf(TWO_POINTTWO), String.valueOf(minWidth), Result.Accepted.getResultVal(),
+                                    String.valueOf(minWidthMdms), String.valueOf(minWidth), Result.Accepted.getResultVal(),
                                     scrutinyDetail);
                         } else {
                             setReportOutputDetails(plan, RULE42_5_ii, RULE_42_5_ii_DESCRIPTION,
-                                    String.valueOf(TWO_POINTTWO), String.valueOf(minWidth), Result.Not_Accepted.getResultVal(),
+                                    String.valueOf(minWidthMdms), String.valueOf(minWidth), Result.Not_Accepted.getResultVal(),
                                     scrutinyDetail);
                         }
                     }

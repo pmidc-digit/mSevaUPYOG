@@ -59,17 +59,22 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const applicant = Digit.UserService.getUser()?.info || {};
     const applicantId = applicant?.uuid;
 
-    const owners = (data?.cpt?.details?.owners || []).map(({ status, ...rest }) => {
-      if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
-        return {
-          ...rest,
-          emailId: data?.PropertyDetails?.email, // ✅ inject email
-          isPrimaryOwner: true,
-        };
+    console.log("data?.cpt?.details?.owners", data?.cpt?.details?.owners);
+
+    const owners = (data?.cpt?.details?.owners || []).map((owner) => {
+      const newOwner = JSON.parse(JSON.stringify(owner)); // deep clone
+
+      delete newOwner.status; // ✅ guaranteed removal
+
+      if (newOwner?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
+        newOwner.emailId = data?.PropertyDetails?.email;
+        newOwner.isPrimaryOwner = true;
       }
 
-      return rest; // ✅ keep others unchanged
+      return newOwner;
     });
+
+    console.log("owners??==", owners);
 
     console.log("checkData==", data);
 

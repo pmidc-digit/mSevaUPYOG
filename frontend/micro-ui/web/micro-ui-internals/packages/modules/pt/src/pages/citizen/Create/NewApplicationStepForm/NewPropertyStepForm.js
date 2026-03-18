@@ -5,7 +5,11 @@ import { useHistory, useLocation } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfig } from "../../../../config/Create/stepFormConfigCitizen";
-import { SET_PtNewApplication, RESET_PtNewApplication, UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import {
+  SET_PTNewApplication_STEP,
+  RESET_PT_NEW_APPLICATION_FORM,
+  UPDATE_PTNewApplication_FORM,
+} from "../../../../redux/action/PTNewApplicationActions";
 
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
@@ -85,23 +89,26 @@ let updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 
 const CreateEmployeeStepForm = () => {
   const history = useHistory();
-  const {state} = useLocation();
+  const { state } = useLocation();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const location = useLocation();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.pt.PTNewApplicationForm);
+  const checkState = useSelector((state) => state.pt);
+  const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
   const formData = formState.formData;
   const step = location?.state?.edit === true ? location?.state?.currentStepNumber : formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  console.log("checkState", checkState);
 
   useEffect(() => {
     if (location?.state?.edit === true) {
       // updatedCreateEmployeeconfig= createEmployeeConfig.filter((item)=>item.stepNumber===location.state.currentStepNumber)
     }
-    dispatch(RESET_PtNewApplication());
+    dispatch(RESET_PT_NEW_APPLICATION_FORM());
     // const GISValues = mapGISToProperty();
-    dispatch(UPDATE_PtNewApplication("GISValues", {...state}));
+    dispatch(UPDATE_PTNewApplication_FORM("GISValues", { ...state }));
   }, []);
 
   useEffect(() => {
@@ -109,7 +116,7 @@ const CreateEmployeeStepForm = () => {
   }, [formData]);
 
   const setStep = (updatedStepNumber) => {
-    dispatch(SET_PtNewApplication(updatedStepNumber));
+    dispatch(SET_PTNewApplication_STEP(updatedStepNumber));
   };
 
   const handleSubmit = () => {

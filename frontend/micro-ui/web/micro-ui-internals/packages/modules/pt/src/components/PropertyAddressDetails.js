@@ -11,19 +11,21 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
 const PropertyAddressDetails = ({ goNext }) => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { t } = useTranslation();
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const [loader, setLoader] = useState(false);
   const tenants = Digit.Hooks.pt.useTenants();
   const isCitizen = window.location.href.includes("citizen");
   const getCity = localStorage.getItem("CITIZEN.CITY");
-  const apiDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer);
+  const stateDataCheck = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData?.propertyAddress);
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -31,6 +33,8 @@ const PropertyAddressDetails = ({ goNext }) => {
   const [getYearCreation, setYearCreation] = useState([]);
 
   const { data: CreationYearData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egf-master", [{ name: "FinancialYear" }]);
+
+  console.log("location1", location?.state);
 
   const {
     control,
@@ -88,6 +92,27 @@ const PropertyAddressDetails = ({ goNext }) => {
       alert("Please a valid a survey ID before proceeding to the GIS map.");
     }
   };
+
+  useEffect(() => {
+    console.log("stateDataCheck", stateDataCheck);
+    if (location?.state || stateDataCheck) {
+      const value = location?.state;
+      const checkSurveyId = value?.surveyId || stateDataCheck?.surveyId;
+      const checkHouseNo = value?.flatNo || stateDataCheck?.houseNo;
+      const checkBuildingName = value?.buildingName || stateDataCheck?.buildingName;
+      const checkLocality = getLocality?.find((item) => item?.code == stateDataCheck?.locality?.code);
+      console.log("checkLocality", checkLocality);
+      console.log("getLocality", getLocality);
+      const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
+      setValue("surveyId", checkSurveyId);
+      setValue("houseNo", checkHouseNo);
+      setValue("buildingName", checkBuildingName);
+      setValue("streetName", stateDataCheck?.streetName);
+      setValue("pincode", stateDataCheck?.pincode);
+      setValue("locality", checkLocality);
+      setValue("yearOfCreation", checkYearOfCreation);
+    }
+  }, [location, stateDataCheck, getLocality, getYearCreation]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>

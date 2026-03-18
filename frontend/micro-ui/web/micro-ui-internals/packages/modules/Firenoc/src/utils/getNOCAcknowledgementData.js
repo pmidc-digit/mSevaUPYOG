@@ -558,10 +558,11 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
     imageURL = "";
   const ownerFileStoreId = appData?.nocDetails?.additionalDetails?.ownerPhotos?.[0]?.filestoreId || "";
 
-  const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
-
-  const fileData = result?.data?.fileStoreIds?.[0];
-  imageURL = fileData?.url || "";
+  if (ownerFileStoreId) {
+    const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
+    const fileData = result?.data?.fileStoreIds?.[0];
+    imageURL = fileData?.url || "";
+  }
   const isEmployee = window.location.href.includes("/employee");
 
   if (appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalName) detailsArr.push(getProfessionalDetails(appData, t));

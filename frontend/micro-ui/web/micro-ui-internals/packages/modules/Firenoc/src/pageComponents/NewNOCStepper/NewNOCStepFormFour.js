@@ -70,12 +70,12 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         const applicationNo = response.FireNOCs[0]?.fireNOCDetails?.applicationNumber;
         if (window.location.href.includes("citizen")) {
           history.replace({
-            pathname: `/digit-ui/citizen/noc/response/${applicationNo}`,
+            pathname: `/digit-ui/citizen/firenoc/response/${applicationNo}`,
             state: { data: response },
           });
         } else {
           history.replace({
-            pathname: `/digit-ui/employee/noc/response/${applicationNo}`,
+            pathname: `/digit-ui/employee/firenoc/response/${applicationNo}`,
             state: { data: response },
           });
         }

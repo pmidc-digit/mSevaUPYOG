@@ -24,7 +24,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-
+import org.egov.swservice.web.models.Event; 
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
 import static org.egov.swservice.util.SWConstants.*;
@@ -169,17 +169,17 @@ public class NotificationUtil {
 		else if (applicationStatus.equalsIgnoreCase(SWConstants.STATUS_APPROVED) ) {
 			builder.append("notification.water.activation.email.sanction");
 		}
-		if (reqType == SWConstants.UPDATE_APPLICATION) {
+		else if (reqType == SWConstants.UPDATE_APPLICATION) {
 			builder.append("SW_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
 		}
-		if (reqType == SWConstants.MODIFY_CONNECTION) {
+		else if (reqType == SWConstants.MODIFY_CONNECTION) {
 			builder.append("SW_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
 		}
-		if (reqType == DISCONNECT_CONNECTION)
+		else if (reqType == DISCONNECT_CONNECTION)
 		{
 			builder.append("SW_DISCONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
 		}
-		if (reqType == RECONNECTION)
+		else	if (reqType == RECONNECTION)
 		{
 			builder.append("SW_RECONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
 		}
@@ -219,9 +219,21 @@ public class NotificationUtil {
 	 * @param request - Event Request Object
 	 */
 	public void sendEventNotification(EventRequest request) {
-		log.info("Pushing Event: " + request.toString());
-		String key = request.getEvents().get(0).getEventDetails().getEventId().toString();
-		producer.push(config.getSaveUserEventsTopic(), key , request);
+	    log.info("Pushing Event: " + request.toString());
+	    
+	    // Default the key to a random UUID if details are missing to avoid NPE
+	    String key = UUID.randomUUID().toString(); 
+	    
+	    if (request.getEvents() != null && !request.getEvents().isEmpty()) {
+	        Event firstEvent = request.getEvents().get(0);
+	        if (firstEvent.getEventDetails() != null && firstEvent.getEventDetails().getEventId() != null) {
+	            key = firstEvent.getEventDetails().getEventId().toString();
+	        } else if (firstEvent.getId() != null) {
+	            key = firstEvent.getId();
+	        }
+	    }
+	    
+	    producer.push(config.getSaveUserEventsTopic(), key, request);
 	}
 	
 	/**

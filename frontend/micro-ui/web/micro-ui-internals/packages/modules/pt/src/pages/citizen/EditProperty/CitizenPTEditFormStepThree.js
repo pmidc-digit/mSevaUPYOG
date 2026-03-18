@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
-import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../../redux/action/PTNewApplicationActions";
 
 const CitizenPTEditFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
@@ -13,35 +13,32 @@ const CitizenPTEditFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
       alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
       return;
     }
-    
+
     onGoNext();
   }
 
   const validateEmployeeStepThreeFields = (data) => {
     const missingFields = [];
-  
+
     const ownershipCategory = data?.ownershipCategory?.code;
     const owners = data?.owners || [];
-  
-    
+
     if (!ownershipCategory) {
       missingFields.push("Ownership Category is required");
-      return missingFields; 
+      return missingFields;
     }
-  
-    
+
     if (ownershipCategory === "INDIVIDUAL.SINGLEOWNER" && owners.length !== 1) {
       missingFields.push("Only one owner is allowed for Single Owner");
     }
-  
+
     if (ownershipCategory === "INDIVIDUAL.MULTIPLEOWNERS" && owners.length <= 1) {
       missingFields.push("Multiple owners are required for Multiple Owner category");
     }
-  
-    
+
     owners.forEach((owner, index) => {
       const prefix = `Owner ${index + 1}`;
-  
+
       if (["INDIVIDUAL.SINGLEOWNER", "INDIVIDUAL.MULTIPLEOWNERS"].includes(ownershipCategory)) {
         if (!owner?.name) missingFields.push(`${prefix} - Name`);
         if (!owner?.gender?.code) missingFields.push(`${prefix} - Gender`);
@@ -56,13 +53,13 @@ const CitizenPTEditFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
         if (!owner?.fatherOrHusbandName) missingFields.push(`${prefix} - Father/Husband Name`);
         if (!owner?.relationship?.code) missingFields.push(`${prefix} - Relationship`);
         if (!owner?.ownerType?.code) missingFields.push(`${prefix} - Owner Type`);
-  
+
         if (owner?.ownerType?.code !== "NONE") {
           if (!owner?.documents?.documentType) missingFields.push(`${prefix} - Document Type`);
           if (!owner?.documents?.documentUid) missingFields.push(`${prefix} - Document UID`);
         }
       }
-  
+
       if (["INSTITUTIONALPRIVATE", "INSTITUTIONALGOVERNMENT"].includes(ownershipCategory)) {
         if (!owner?.institutionName) missingFields.push(`${prefix} - Institution Name`);
         if (!owner?.institutionType?.name) missingFields.push(`${prefix} - Institution Type`);
@@ -87,9 +84,9 @@ const CitizenPTEditFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
         if (!owner?.correspondenceAddress) missingFields.push(`${prefix} - Correspondence Address`);
       }
     });
-  
+
     return missingFields;
-  };  
+  };
 
   function onGoBack(data) {
     onBackClick(config.key, data);
@@ -98,10 +95,10 @@ const CitizenPTEditFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const onFormValueChange = (setValue = true, data) => {
     console.log("onFormValueChange data in personal deatils step 3", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     // if (!_.isEqual(data, currentStepData)) {
-    //   dispatch(UPDATE_PtNewApplication(config.key, data));
+    //   dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     // }
     if (!_.isEqual(data, localStepData)) {
-      dispatch(UPDATE_PtNewApplication(config.key, data));
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
       setLocalStepData(data);
     }
   };

@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTNewFormStepZeroCitizen = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
@@ -20,24 +20,24 @@ const PTNewFormStepZeroCitizen = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in document detilas in step 0  ",formData,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("onFormValueChange data in document detilas in step 0  ", formData, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_PtNewApplication(config.key, data));
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }
   };
 
   const formData = useSelector(function (state) {
-    return state.pt.PTNewApplicationForm.formData 
+    return state.pt.PTNewApplicationFormReducer.formData;
   });
 
   const currentStepData = useSelector(function (state) {
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
-        ? state.pt.PTNewApplicationForm.formData[config.key] 
-        : {};
-});
+    return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config.key]
+      ? state.pt.PTNewApplicationFormReducer.formData[config.key]
+      : {};
+  });
   const dispatch = useDispatch();
 
- // console.log("currentStepData in  Administrative details: ", currentStepData);
+  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>
@@ -56,4 +56,4 @@ const PTNewFormStepZeroCitizen = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export {PTNewFormStepZeroCitizen};
+export { PTNewFormStepZeroCitizen };

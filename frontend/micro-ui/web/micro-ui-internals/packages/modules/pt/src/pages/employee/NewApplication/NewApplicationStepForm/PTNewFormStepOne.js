@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
@@ -20,15 +20,15 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   const validateEmployeeStepOneFields = (data) => {
     const missingFields = [];
-  
+
     if (!data?.address?.city?.code) {
       missingFields.push("City");
     }
-  
+
     if (!data?.address?.locality?.code) {
       missingFields.push("Locality");
     }
-  
+
     if (!data?.yearOfCreation?.code) {
       // Note: On employee side it's directly data.yearOfCreation.code (no nested yearOfCreation inside it)
       missingFields.push("Year of Creation");
@@ -37,37 +37,36 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (pincode) {
       const isValidLength = /^\d{6}$/.test(pincode);
       const isNumeric = !isNaN(Number(pincode));
-  
+
       if (!isValidLength || !isNumeric) {
         missingFields.push("Pincode must be a 6-digit number");
       }
     }
-  
+
     return missingFields;
   };
-  
 
   function onGoBack(data) {
     onBackClick(config.key, data);
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Property details step one: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("onFormValueChange data in Property details step one: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_PtNewApplication(config.key, data));
-      console.log("Dispatching UPDATE_PtNewApplication with key:", config.key, "and data:", data);
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
+      console.log("Dispatching UPDATE_PTNewApplication_FORM with key:", config.key, "and data:", data);
     }
   };
 
   const currentStepData = useSelector(function (state) {
     console.log("state in step one ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
-        ? state.pt.PTNewApplicationForm.formData[config.key] 
-        : {};
-});
+    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
+      ? state.pt.PTNewApplicationForm.formData[config.key]
+      : {};
+  });
   const dispatch = useDispatch();
 
-console.log("dataaa in EMp")
+  console.log("dataaa in EMp");
   return (
     <React.Fragment>
       <FormComposer

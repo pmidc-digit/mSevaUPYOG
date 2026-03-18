@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
@@ -17,9 +17,9 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const onFormValueChange = (setValue = true, data) => {
     console.log("onFormValueChange data in Property details step one: ", data, "\n Bool: ", !_.isEqual(data, localStepData));
     if (!_.isEqual(data, localStepData)) {
-      dispatch(UPDATE_PtNewApplication(config.key, data));
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
       setLocalStepData(data);
-      console.log("Dispatching UPDATE_PtNewApplication with key:", config.key, "and data:", data);
+      console.log("Dispatching UPDATE_PTNewApplication_FORM with key:", config.key, "and data:", data);
     }
   };
 
@@ -31,9 +31,9 @@ const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   //   // Only dispatch if the data is valid and changed
   //   if (isDataValid && !_.isEqual(data, localStepData)) {
-  //     dispatch(UPDATE_PtNewApplication(config.key, data));
+  //     dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
   //     setLocalStepData(data);
-  //     console.log("Dispatching UPDATE_PtNewApplication with key: +", config.key, "and data:", data);
+  //     console.log("Dispatching UPDATE_PTNewApplication_FORM with key: +", config.key, "and data:", data);
   //   } else {
   //     console.log("Skipping dispatch as data is either unchanged or invalid.+");
   //   }

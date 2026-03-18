@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const isFirstRender = useRef(true);
@@ -23,8 +23,8 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
     if (!_.isEqual(data, localStepData)) {
       console.log("the formValuechange is called in step two", data);
-      dispatch(UPDATE_PtNewApplication(config.key, data));
-      console.log("Dispatching UPDATE_PtNewApplication with key:", config.key, "and data:", data);
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
+      console.log("Dispatching UPDATE_PTNewApplication_FORM with key:", config.key, "and data:", data);
     }
   };
 

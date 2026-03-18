@@ -5,7 +5,11 @@ import { useHistory, useLocation } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { config } from "../../../../config/Create/employeeStepFormConfig";
-import { SET_PtNewApplication, RESET_PtNewApplication, UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import {
+  SET_PTNewApplication_STEP,
+  RESET_PT_NEW_APPLICATION_FORM,
+  UPDATE_PTNewApplication_FORM,
+} from "../../../../redux/action/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -13,7 +17,7 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 const createEmployeeConfig = [
   {
     head: "Personal Details",
-    stepLabel: "Property Address",//"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    stepLabel: "Property Address", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -76,7 +80,6 @@ const createEmployeeConfig = [
       submitBarLabel: "Submit",
     },
   },
-  
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
@@ -84,7 +87,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 });
 
 const CreateEmployeeStepForm = () => {
-  const history=useHistory();
+  const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -92,17 +95,17 @@ const CreateEmployeeStepForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const {state} = useLocation();
+  const { state } = useLocation();
   // console.log("Form data", formData)
   // console.log("formState: ",formState);
 
   useEffect(() => {
-    dispatch(RESET_PtNewApplication());
-    dispatch(UPDATE_PtNewApplication("GISValues", {...state}));
+    dispatch(RESET_PT_NEW_APPLICATION_FORM());
+    dispatch(UPDATE_PTNewApplication_FORM("GISValues", { ...state }));
   }, []);
 
   const setStep = (updatedStepNumber) => {
-    dispatch(SET_PtNewApplication(updatedStepNumber));
+    dispatch(SET_PTNewApplication_STEP(updatedStepNumber));
   };
 
   const handleSubmit = () => {
@@ -118,7 +121,9 @@ const CreateEmployeeStepForm = () => {
 
   return (
     <div className="card">
-      <CardHeader styles={{fontSize:"28px" ,fontWeight:"400", color: "#1C1D1F"}} divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+      </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

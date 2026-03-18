@@ -36,6 +36,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static org.egov.swservice.util.SWConstants.*;
 
@@ -239,9 +240,9 @@ public class WorkflowNotificationService {
 				sewerageConnectionRequest, message, property);
 		if (message.contains("{receipt download link}"))
 			mobileNumberAndMesssage = setRecepitDownloadLink(mobileNumberAndMesssage, sewerageConnectionRequest, message, property);
-		Set<String> mobileNumbers = new HashSet<>(mobileNumberAndMesssage.keySet());
-	    mapOfPhoneNoAndUUIDs = fetchUserUUIDs(mobileNumbers, sewerageConnectionRequest.getRequestInfo(),
-				property.getTenantId());
+		Set<String> mobileNumbers = mobileNumberAndMesssage.keySet().stream().collect(Collectors.toSet());
+//	    mapOfPhoneNoAndUUIDs = fetchUserUUIDs(mobileNumbers, sewerageConnectionRequest.getRequestInfo(),
+//				property.getTenantId());
 
 		if (CollectionUtils.isEmpty(mapOfPhoneNoAndUUIDs.keySet())) {
 			log.info("UUID search failed!");

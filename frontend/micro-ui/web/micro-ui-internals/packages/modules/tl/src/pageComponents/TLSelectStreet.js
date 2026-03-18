@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, LabelFieldPair, CardLabel, WrapUnMaskComponent } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, LabelFieldPair, CardLabel, WrapUnMaskComponent, CardLabelError } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import _ from "lodash";
 import Timeline from "../components/TLTimelineInFSM";
+
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
 
 const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors }) => {
   const onSkip = () => onSelect();
@@ -118,87 +121,93 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
 
 
   if (userType === "employee") {
-    return inputs?.map((input, index) => {
-      return (
-        <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller hrms-text-transform-none">
-            {t(input.label)}
-            {config.isMandatory ? " * " : null}
-          </CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              defaultValue={formData?.address?.[input.name] || formData?.cpt?.details?.address?.[input.name]}
-              name={input.name}
-              rules={{ validate: convertValidationToRules(input) }}
-              render={(_props) => (
-                <div className="TL-flex-baseline-mr-unset">
-                  <TextInput
-                    id={input.name}
-                    key={input.name}
-                    value={_props.value}
-                    // onChange={(e) => {
-                    //   setFocusIndex({ index });
-                    //   _props.onChange(e.target.value);
-                    // }}
-                    onChange={(e) => {
-                      _props.onChange(e.target.value); // Update react-hook-form controlled value
-                      setFocusIndex({ index }); // UI focus
-                      setLocalFormData((prev) => ({
-                        ...prev,
-                        [input.name]: e.target.value,
-                      }));
-                      // _props.onChange(e.target.value);
-                    }}
-                    onBlur={_props.onBlur}
-                    // disable={isRenewal}
-                    disable={formData?.cpt?.details?.address?.[input.name] ? true : false}
-                    autoFocus={focusIndex?.index == index}
-                    {...input?.validation}
-                    placeholder={t(`${input.placeholder}`)}
-                    style={
-                      formData?.cpt?.details?.address?.[input.name]
-                        ? {
-                            color: "#505A5F",
-                            opacity: 1,
-                            WebkitTextFillColor: "#505A5F",
-                            backgroundColor: "#FFFFFF",
+    // Group inputs into pairs for two-column layout
+    const rows = [];
+    for (let i = 0; i < inputs.length; i += 2) {
+      rows.push(inputs.slice(i, i + 2));
+    }
+    return rows.map((pair, rowIndex) => (
+      <div style={twoColRow} key={rowIndex}>
+        {pair.map((input, index) => {
+          const actualIndex = rowIndex * 2 + index;
+          return (
+            <div style={colItem} key={actualIndex}>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller hrms-text-transform-none">
+                  {t(input.label)}
+                  {config.isMandatory ? " * " : null}
+                </CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    defaultValue={formData?.address?.[input.name] || formData?.cpt?.details?.address?.[input.name]}
+                    name={input.name}
+                    rules={{ validate: convertValidationToRules(input) }}
+                    render={(_props) => (
+                      <div className="TL-flex-baseline-mr-unset">
+                        <TextInput
+                          id={input.name}
+                          key={input.name}
+                          value={_props.value}
+                          onChange={(e) => {
+                            _props.onChange(e.target.value);
+                            setFocusIndex({ index: actualIndex });
+                            setLocalFormData((prev) => ({
+                              ...prev,
+                              [input.name]: e.target.value,
+                            }));
+                          }}
+                          onBlur={_props.onBlur}
+                          disable={formData?.cpt?.details?.address?.[input.name] ? true : false}
+                          autoFocus={focusIndex?.index == actualIndex}
+                          {...input?.validation}
+                          placeholder={t(`${input.placeholder}`)}
+                          style={
+                            formData?.cpt?.details?.address?.[input.name]
+                              ? {
+                                  color: "#505A5F",
+                                  opacity: 1,
+                                  WebkitTextFillColor: "#505A5F",
+                                  backgroundColor: "#FFFFFF",
+                                }
+                              : {}
                           }
-                        : {}
-                    }
+                        />
+                        <div className="TL-unmask-wrapper">
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              _props.onChange(e);
+                            }}
+                            iseyevisible={
+                              (_props.value ? _props.value?.includes("*") : formData?.cpt?.details?.address?.[input.name]?.includes("*")) ? true : false
+                            }
+                            privacy={{
+                              uuid: formData?.cpt?.details?.owners?.[0]?.uuid,
+                              fieldName: [input.name],
+                              model: "Property",
+                              loadData: {
+                                serviceName: "/property-services/property/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  propertyIds: formData?.cpt?.details?.propertyId,
+                                },
+                                jsonPath: `Properties[0].address.${input.name}`,
+                                isArray: false,
+                              },
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      </div>
+                    )}
                   />
-                  <div className="TL-unmask-wrapper">
-                    <WrapUnMaskComponent
-                      unmaskField={(e) => {
-                        _props.onChange(e);
-                      }}
-                      iseyevisible={
-                        (_props.value ? _props.value?.includes("*") : formData?.cpt?.details?.address?.[input.name]?.includes("*")) ? true : false
-                      }
-                      privacy={{
-                        uuid: formData?.cpt?.details?.owners?.[0]?.uuid,
-                        fieldName: [input.name],
-                        model: "Property",
-                        loadData: {
-                          serviceName: "/property-services/property/_search",
-                          requestBody: {},
-                          requestParam: {
-                            tenantId: formData?.cpt?.details?.tenantId,
-                            propertyIds: formData?.cpt?.details?.propertyId,
-                          },
-                          jsonPath: `Properties[0].address.${input.name}`,
-                          isArray: false,
-                        },
-                      }}
-                    ></WrapUnMaskComponent>
-                  </div>
                 </div>
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-      );
-    });
+              </LabelFieldPair>
+            </div>
+          );
+        })}
+      </div>
+    ));
   }
   return (
     <React.Fragment>

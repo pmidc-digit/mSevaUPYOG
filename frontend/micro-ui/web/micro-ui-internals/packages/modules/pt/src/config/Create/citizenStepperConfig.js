@@ -4,10 +4,10 @@ export const citizenConfig = [
     stepNumber: 1,
     body: [
       {
-        route: "documents",
+        route: "documentstese",
         component: "PTRCitizenPetTest",
         withoutLabel: true,
-        key: "documents",
+        key: "documentstese",
         type: "component",
         nextStep: null,
       },

@@ -59,7 +59,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const applicant = Digit.UserService.getUser()?.info || {};
     const applicantId = applicant?.uuid;
 
-    const owners = (data?.cpt?.details?.owners || []).map(({ status, ...rest }) => {
+    console.log("data?.cpt?.details?.owners", data?.cpt?.details?.owners);
+
+    const owners = (data?.cpt?.details?.owners || [])?.map(({ status, ...rest }) => {
       if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
         return {
           ...rest,
@@ -70,6 +72,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
       return rest; // ✅ keep others unchanged
     });
+
+    console.log("owners??==", owners);
 
     console.log("checkData==", data);
 

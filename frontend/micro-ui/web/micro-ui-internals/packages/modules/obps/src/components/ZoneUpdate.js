@@ -72,7 +72,7 @@ const zoneOptions = useMemo(
       return
     }
     if (selectedZone && onSelect) {
-      onSelect(selectedZone);
+      onSelect(selectedZone, comments);
     }
   };
 

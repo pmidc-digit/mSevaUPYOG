@@ -60,6 +60,7 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { LoaderNew } from "../../../components/LoaderNew";
+import ZoneModal from "../../../components/ZoneModal";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -115,6 +116,7 @@ const BpaApplicationDetail = () => {
   const [imageUrl, setImageUrl] = useState(null);
   let { id: applicationNumber } = useParams();
   const [isEnableLoader, setIsEnableLoader] = useState(false);
+  const [showZoneModal, setShowZoneModal] = useState(false);
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
@@ -193,6 +195,8 @@ const BpaApplicationDetail = () => {
   } else if (data?.applicationData?.businessService === "BPA_OC") {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
   }
+
+  const currentZoneCode = data?.applicationData?.additionalDetails?.zonenumber;
 
   useEffect(() => {
     if (!isLoading && data?.applicationData?.additionalDetails) {
@@ -986,12 +990,13 @@ const BpaApplicationDetail = () => {
     if (action) {
       if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
+      } else if (action?.action == "UPDATE_ZONE") {
+        return setShowZoneModal(true);
       } else if (action?.redirectionUrll) {
         window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
-      } else if (!action?.redirectionUrl && action?.action != "EDIT PAY 2") {
-        console.log("SelectedAction 2", action, !action?.redirectionUrl && action?.action != "EDIT PAY 2");
+      } else if (!action?.redirectionUrl && action?.action != "EDIT PAY 2") {        
         setShowModal(true);
-      } else {
+      }else {
         history.push({
           pathname: action.redirectionUrl?.pathname,
           state: { ...action.redirectionUrl?.state },
@@ -1110,7 +1115,6 @@ const BpaApplicationDetail = () => {
       }
     }
 
-    console.log("fieldInspectionPending", fieldInspectionPending);
 
     if (data?.BPA?.comment?.length == 0) {
       closeModal();
@@ -1261,7 +1265,25 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
-  console.log("applicationDetailsData", actions, workflowDetails);
+  const handleZoneSubmit = (selectedZone, comment) => {
+    const payload = {
+      BPA:{ 
+          ...data?.applicationData,
+          additionalDetails: {
+            ...data?.applicationData?.additionalDetails,
+            zonenumber: selectedZone?.code
+          },
+          workflow: {
+            action: "UPDATE_ZONE",
+            comment: comment,
+            comments: comment
+          }
+        },
+        comment: comment,
+    };
+    submitAction(payload);
+  };
+
 
   if (isLoading || bpaDocsLoading || isEnableLoader) return <Loader />;
 
@@ -2026,6 +2048,8 @@ const BpaApplicationDetail = () => {
             )}
           </Modal>
         )}
+
+        {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
 
         {/* {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !isLoading &&
         <FormComposer

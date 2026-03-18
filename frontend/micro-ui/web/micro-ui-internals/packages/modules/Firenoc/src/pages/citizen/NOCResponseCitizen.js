@@ -10,7 +10,7 @@ const NOCResponseCitizen = (props) => {
   const {pathname, state } = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const nocData = state?.data?.Noc?.[0];
+  const nocData = state?.data?.FireNOCs?.[0];
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [loading, setLoading] = useState(false);
   
@@ -45,13 +45,15 @@ const NOCResponseCitizen = (props) => {
     try{
       setLoading(true);
     const Property = nocData;
-    const site = Property?.nocDetails?.additionalDetails?.siteDetails;
-    const ulbType = site?.ulbType;
-    const ulbName = site?.ulbName?.city?.name || site?.ulbName;
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
-    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t, isView);
+    if (!Property) {
+      setLoading(false);
+      return;
+    }
+    const tenantInfo = tenants?.find((tenant) => tenant.code === Property.tenantId);
+    const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, null, null, t, isView);
     Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     }catch(error){
+      console.error("PDF generation error:", error);
     }finally{
       setLoading(false);
     }
@@ -67,12 +69,12 @@ const NOCResponseCitizen = (props) => {
     <div>
       <Card>
         <Banner
-          //message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          //message={t("NOC_APPLICATION_SUCCESS_HEADER")}
-          message={t(`NOC_APPLICATION_${nocData?.workflow?.action}_SUCCESS_HEADER`)}
+          // message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+          message={t("NOC_APPLICATION_SUCCESS_HEADER")}
+          // message={t(`NOC_APPLICATION_${nocData?.workflow?.action}_SUCCESS_HEADER`)}
           applicationNumber={nocCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
-          successful={nocData?.applicationStatus == "REJECTED" ? false : true}
+          info={nocData?.fireNOCDetails?.status == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.fireNOCDetails?.fireNOCType, ".", "_")}_APPLICATION_NUMBER`)}
+          successful={nocData?.fireNOCDetails?.status == "REJECTED" ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
@@ -86,8 +88,8 @@ const NOCResponseCitizen = (props) => {
         ) : null} */}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
-          <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
-          {nocData?.applicationStatus === "INITIATED" ? (
+          <SubmitBar label={t("CORE_COMMON_GO_TO_FIRENOC")} onSubmit={onGoToNOC} />
+          {nocData?.fireNOCDetails?.status === "INITIATED" ? (
             <SubmitBar label={t("View Application")} onSubmit={() => handleDownloadPdf(true)} />
           ) : (
             <SubmitBar label={t("Download Application")} onSubmit={() => handleDownloadPdf(false)} />

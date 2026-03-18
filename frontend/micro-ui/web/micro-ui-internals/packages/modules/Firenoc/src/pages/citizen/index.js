@@ -51,12 +51,12 @@ const NOCBreadCrumbs = ({ location }) => {
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
   const { t } = useTranslation();
-  const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
-  const NOCResponseCitizen = Digit.ComponentRegistryService.getComponent("NOCResponseCitizen");
+  const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCStepperForm");
+  const NOCResponseCitizen = Digit.ComponentRegistryService.getComponent("FIRENOCResponseCitizen");
   const NOCCitizenMyApplications = Digit.ComponentRegistryService.getComponent("NOCCitizenMyApplications");
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
-  const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
-  const NOCCitizenSearchApplication = Digit?.ComponentRegistryService?.getComponent("NOCCitizenSearchApplication");
+  const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCEditApplication");
+  const NOCCitizenSearchApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCCitizenSearchApplication");
   const FIRENOCCitizenMyApplications = Digit?.ComponentRegistryService?.getComponent("FIRENOCCitizenMyApplications");
   const FIRENOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCCitizenApplicationOverview");
   const isResponse = window.location.href.includes("/response");

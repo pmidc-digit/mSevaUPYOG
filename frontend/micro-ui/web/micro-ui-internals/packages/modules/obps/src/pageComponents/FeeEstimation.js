@@ -32,6 +32,7 @@ import { Link, useHistory } from "react-router-dom";
 import { PayTwoTable } from "./PayTwoTable";
 import { FeeHistoryTable } from "./FeeHistoryTable";
 import { buildFeeHistoryByTax } from "../utils";
+import { PayTwoTableRegular } from "./PayTwoTableRegular";
 
 const thStyle = {
     border: "1px solid #ddd",
@@ -280,6 +281,22 @@ const FeeEstimation = ({
             )
         );
     };
+
+    const handleAdjustedAmountChangeRegular = (index, value, ammount) => {
+        console.log("ammount", ammount, "value", value);
+        if((Number(value)) < 0){
+            setShowToast({ key: "error", message: "Amount_less_Than_Zero" });
+            return;
+        }
+        setSanctionFeeData((prev) =>
+            prev.map((item) =>
+                item.index === index
+                    ? { ...item, adjustedAmount: Number(value) ? Number(value) : 0 } // update the adjustedAmount for the correct row
+                    : item
+            )
+        );
+    };
+
     const handleRemarkChange = (index, value, ammount) => {
         console.log("ammount", ammount, "value", value);        
         setAdjustedAmounts((prev) =>
@@ -346,6 +363,24 @@ const FeeEstimation = ({
             Header: t("BPA_AMOUNT"),
             accessor: "amount",
             Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
+        },
+    ];
+    
+    const sanctionFeeColumns = [
+        {
+            Header: t("BPA_TAXHEAD_CODE"),
+            accessor: "title",
+            Cell: ({ value }) => value || t("CS_NA"),
+        },
+        {
+            Header: t("BPA_AMOUNT"),
+            accessor: "adjustedAmount",
+            Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
+        },
+        {
+            Header: t("BPA_REMARKS"),
+            accessor: "remark",
+            Cell: ({ value }) => value || t("CS_NA"),
         },
     ];
 
@@ -422,7 +457,26 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            {!hidePayTwo && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            {!hidePayTwo && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            
+            {!hidePayTwo && isCitizen && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
+                {t("BPA_SANCTION_FEE")}
+            </CardSubHeader>
+                <Table
+                    className="customTable table-border-style"
+                    t={t}
+                    data={sanctionFeeDataWithTotal}
+                    columns={sanctionFeeColumns}
+                    getCellProps={() => ({ style: {} })}
+                    disableSort={true}
+                    // autoSort={true}
+                    pageSizeLimit={30}
+                    manualPagination={false}
+                    isPaginationRequired={false}
+                />
+            </div>)}
+
+            {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
 
             <FeeHistoryTable feeHistory={feeHistory} t={t} />
 

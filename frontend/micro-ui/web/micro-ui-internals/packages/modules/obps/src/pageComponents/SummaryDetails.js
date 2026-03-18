@@ -32,6 +32,7 @@ import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcen
 import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import FeeEstimation from "./FeeEstimation"
 import NocSitePhotographsBPA from "../components/NocSitePhotographsNew";
+import CitizenAndArchitectPhoto from "./CitizenAndArchitectPhoto";
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const { t } = useTranslation();
@@ -873,6 +874,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </div>
                 </div>
 
+                <CitizenAndArchitectPhoto data={currentStepData?.createdResponse} />
+
                 <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
                     {currentStepData?.createdResponse?.landInfo?.owners &&
@@ -1476,7 +1479,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             setError={setError}
                             adjustedAmounts={adjustedAmounts}
                             setAdjustedAmounts={setAdjustedAmounts}
-                            hidePayTwo={true}
+                            hidePayTwo={currentStepData?.createdResponse?.businessService != "BPA_LOW"}
                         />}
                     </div>
                     {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />}

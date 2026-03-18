@@ -254,7 +254,7 @@ const initAutocomplete = (position) => {
 };
 
 const CustomLocationSearch = (props) => {
-  useEffect(() => {
+  useEffect(async () => {
     async function mapScriptCall() {
       const getLatLng = (position) => {
         initAutocomplete(position);
@@ -266,7 +266,7 @@ const CustomLocationSearch = (props) => {
 
       loadGoogleMaps(initMaps);
     }
-    mapScriptCall();
+    await mapScriptCall();
   }, [props?.position]);
 
   return (

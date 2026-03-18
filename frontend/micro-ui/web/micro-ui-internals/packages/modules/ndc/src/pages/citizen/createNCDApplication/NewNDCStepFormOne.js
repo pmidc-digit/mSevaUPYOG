@@ -62,9 +62,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     console.log("data?.cpt?.details?.owners", data?.cpt?.details?.owners);
 
     const owners = (data?.cpt?.details?.owners || []).map((owner) => {
-      const newOwner = JSON.parse(JSON.stringify(owner)); // deep clone
+      const newOwner = JSON.parse(JSON.stringify(owner));
 
-      delete newOwner.status; // ✅ guaranteed removal
+      delete newOwner.status;
 
       if (newOwner?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
         newOwner.emailId = data?.PropertyDetails?.email;

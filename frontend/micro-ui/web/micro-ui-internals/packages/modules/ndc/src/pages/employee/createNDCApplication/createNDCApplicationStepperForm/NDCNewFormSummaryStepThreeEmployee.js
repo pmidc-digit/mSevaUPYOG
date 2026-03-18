@@ -37,8 +37,12 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     const applicant = Digit.UserService.getUser()?.info || {};
     console.log("checkFormData", formData);
 
-    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
-
+    // const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
+    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map((item) => {
+      const obj = JSON.parse(JSON.stringify(item));
+      delete obj.status;
+      return obj;
+    });
     // const owners = [
     //   {
     //     name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),

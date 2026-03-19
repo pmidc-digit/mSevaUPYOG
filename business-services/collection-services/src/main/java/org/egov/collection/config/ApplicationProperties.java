@@ -77,6 +77,9 @@ public class ApplicationProperties {
     @Value("${egov.services.hostname}")
     private String egovServiceHost;
 
+    @Value("${egov.filestore.hostname}")
+    private String fileStoreHost;
+    
     @Value("${egov.pdf.service.create}")
     private String egovPdfCreate;
 

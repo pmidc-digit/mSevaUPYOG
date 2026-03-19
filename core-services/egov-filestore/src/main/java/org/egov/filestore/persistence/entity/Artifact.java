@@ -47,9 +47,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.egov.filestore.domain.model.FileLocation;
-import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import static org.egov.filestore.persistence.entity.Artifact.SEQ_FILESTOREMAP;
 
@@ -69,11 +68,11 @@ public class Artifact extends AbstractPersistable<Long> {
     @GeneratedValue(generator = SEQ_FILESTOREMAP, strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @NotBlank
+    @jakarta.validation.constraints.NotBlank
     @Column(length = 36, unique = true, nullable = false)
     private String fileStoreId;
 
-    @NotBlank
+    @jakarta.validation.constraints.NotBlank
     private String fileName;
     private String contentType;
    // private String jurisdictionId;

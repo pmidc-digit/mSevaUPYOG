@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 import org.egov.filestore.domain.model.FileInfo;
 import org.egov.filestore.domain.model.Resource;
 import org.egov.filestore.domain.service.StorageService;
@@ -15,7 +17,7 @@ import org.egov.filestore.web.contract.ResponseFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -28,16 +30,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ContextConfiguration(classes = {StorageController.class})
 @ExtendWith(SpringExtension.class)
 class StorageControllerTest {
-    @MockBean
+    @MockitoBean
     private ResponseFactory responseFactory;
 
     @Autowired
     private StorageController storageController;
 
-    @MockBean
+    @MockitoBean
     private StorageService storageService;
 
-    @MockBean
+    @MockitoBean
     private StorageUtil storageUtil;
 
     @Test
@@ -100,7 +102,7 @@ class StorageControllerTest {
                 .build()
                 .perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json;charset=UTF-8"))
+                .andExpect(MockMvcResultMatchers.content().contentType(APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.content().string("{\"files\":[]}"));
     }
 

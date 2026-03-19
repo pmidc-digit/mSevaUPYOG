@@ -1,6 +1,6 @@
 package org.egov.filestore.web.controller;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public class StorageController {
 		return new ResponseEntity<>(resource, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/tag", produces = APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(value = "/tag", produces = APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public GetFilesByTagResponse getUrlListByTag(@RequestParam(value = "tenantId") String tenantId,
 			@RequestParam("tag") String tag) {
@@ -92,7 +92,7 @@ public class StorageController {
 		return responseFactory.getFilesByTagResponse(fileInfoList);
 	}
 
-	@PostMapping(produces = APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(produces = APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	@ResponseBody
 	public StorageResponse storeFiles(@RequestParam("file") List<MultipartFile> files,

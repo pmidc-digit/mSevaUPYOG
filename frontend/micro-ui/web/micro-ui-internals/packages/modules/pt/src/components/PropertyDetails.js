@@ -27,6 +27,40 @@ const months = [
   { code: "8", name: "8" },
   { code: "9", name: "9" },
 ];
+
+const floorsMan = [
+  { code: "1", name: "1" },
+  { code: "2", name: "2" },
+  { code: "3", name: "3" },
+  { code: "4", name: "4" },
+  { code: "5", name: "5" },
+  { code: "6", name: "6" },
+  { code: "7", name: "7" },
+  { code: "8", name: "8" },
+  { code: "9", name: "9" },
+  { code: "10", name: "10" },
+  { code: "11", name: "11" },
+  { code: "12", name: "12" },
+  { code: "13", name: "13" },
+  { code: "14", name: "14" },
+  { code: "15", name: "15" },
+  { code: "16", name: "16" },
+  { code: "17", name: "17" },
+  { code: "18", name: "18" },
+  { code: "19", name: "19" },
+  { code: "20", name: "20" },
+  { code: "21", name: "21" },
+  { code: "22", name: "22" },
+  { code: "23", name: "23" },
+  { code: "24", name: "24" },
+  { code: "25", name: "25" },
+  { code: "26", name: "26" },
+  { code: "27", name: "27" },
+  { code: "28", name: "28" },
+  { code: "29", name: "29" },
+  { code: "30", name: "30" },
+];
+
 const usageMonths = [
   { code: "UNOCCUPIED", name: "Un-Occupied" },
   { code: "SELFOCCUPIED", name: "Self Occupied" },
@@ -47,6 +81,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const [getPropertyTypeData, setPropertyTypeData] = useState([]);
   const [getUsageData, setUsageData] = useState([]);
   const [getSubUsageData, setSubUsageData] = useState([]);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   console.log("stateDataCheck", stateDataCheck);
 
@@ -134,6 +169,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   useEffect(() => {
     if (location?.state || stateDataCheck) {
+      setIsRestoring(true); // ✅ mark restore
+
       const value = location?.state;
 
       const getResident = getUsageData?.find((item) => item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
@@ -164,6 +201,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
         // ✅ IMPORTANT
         trigger();
+        setTimeout(() => setIsRestoring(false), 0);
       }
     }
   }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData]);
@@ -172,12 +210,35 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   useEffect(() => {
     if (stateDataCheck || floorOptions) {
-      const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
+      const checkFloors = floorsMan?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
       setValue("plotSize", stateDataCheck?.plotSize);
       setValue("noOfFloors", checkFloors);
     }
   }, [stateDataCheck, floorOptions, propertyType]);
+
+  const selectedFloors = watch("noOfFloors")?.code;
+
+  useEffect(() => {
+    if (!selectedFloors || isRestoring) return;
+
+    const floorCount = Number(selectedFloors);
+
+    // Clear existing fields
+    remove([...Array(fields.length).keys()]);
+
+    const groundFloor = floorOptions?.find((f) => f.code == "0");
+
+    const newUnits = Array.from({ length: floorCount }, (_, index) => ({
+      unitUsageType: watch("propertyUsageType")?.name || "",
+      occupancy: null,
+      floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
+    }));
+
+    append(newUnits);
+
+    trigger(); // revalidate
+  }, [selectedFloors]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -339,16 +400,18 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
               name={`noOfFloors`}
               rules={{ required: t("Floor is required") }}
               // defaultValue={item?.floor || ""}
-              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={tesFloorOptions} optionKey="name" t={t} />}
+              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={floorsMan} optionKey="name" t={t} />}
             />
             {errors.noOfFloors && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.noOfFloors?.message}</p>}
           </div>
         </LabelFieldPair>
       )}
 
-      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" && <CardSectionHeader style={{ marginTop: "50px" }}>{t("Unit Details")}</CardSectionHeader>}
+      {(selectedPropertyType == "BUILTUP.SHAREDPROPERTY" || watch("noOfFloors")) && (
+        <CardSectionHeader style={{ marginTop: "50px" }}>{t("Unit Details")}</CardSectionHeader>
+      )}
 
-      {selectedPropertyType == "BUILTUP.SHAREDPROPERTY" &&
+      {(selectedPropertyType == "BUILTUP.SHAREDPROPERTY" || watch("noOfFloors")) &&
         selectedpropertyUsageType &&
         fields?.map((item, index) => (
           <div

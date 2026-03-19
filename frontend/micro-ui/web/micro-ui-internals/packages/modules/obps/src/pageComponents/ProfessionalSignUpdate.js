@@ -85,7 +85,7 @@ export const ProfessionalSignUpdate = ({ closeModal, userDetails, refetch }) => 
         const dob = userDetails?.user?.[0]?.dob
         const requestData = {
             ...userDetails?.user?.[0],
-            dob: dob !== undefined ? dob.split("-").reverse().join("/") : "",
+            dob: !!dob ? dob?.split("-")?.reverse()?.join("/") : "",
             signature: uploadedFile
         }
         try {

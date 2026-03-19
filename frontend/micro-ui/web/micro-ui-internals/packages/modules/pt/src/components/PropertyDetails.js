@@ -27,6 +27,40 @@ const months = [
   { code: "8", name: "8" },
   { code: "9", name: "9" },
 ];
+
+const floorsMan = [
+  { code: "1", name: "1" },
+  { code: "2", name: "2" },
+  { code: "3", name: "3" },
+  { code: "4", name: "4" },
+  { code: "5", name: "5" },
+  { code: "6", name: "6" },
+  { code: "7", name: "7" },
+  { code: "8", name: "8" },
+  { code: "9", name: "9" },
+  { code: "10", name: "10" },
+  { code: "11", name: "11" },
+  { code: "12", name: "12" },
+  { code: "13", name: "13" },
+  { code: "14", name: "14" },
+  { code: "15", name: "15" },
+  { code: "16", name: "16" },
+  { code: "17", name: "17" },
+  { code: "18", name: "18" },
+  { code: "19", name: "19" },
+  { code: "20", name: "20" },
+  { code: "21", name: "21" },
+  { code: "22", name: "22" },
+  { code: "23", name: "23" },
+  { code: "24", name: "24" },
+  { code: "25", name: "25" },
+  { code: "26", name: "26" },
+  { code: "27", name: "27" },
+  { code: "28", name: "28" },
+  { code: "29", name: "29" },
+  { code: "30", name: "30" },
+];
+
 const usageMonths = [
   { code: "UNOCCUPIED", name: "Un-Occupied" },
   { code: "SELFOCCUPIED", name: "Self Occupied" },
@@ -47,6 +81,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const [getPropertyTypeData, setPropertyTypeData] = useState([]);
   const [getUsageData, setUsageData] = useState([]);
   const [getSubUsageData, setSubUsageData] = useState([]);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   console.log("stateDataCheck", stateDataCheck);
 
@@ -116,9 +151,26 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   const selectedPropertyType = watch("propertyType")?.code;
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
+  const floorOptions = FloorData?.PropertyTax?.Floor || [];
+
+  const tesFloorOptions = floorOptions?.sort((a, b) => {
+    const aCode = Number(a.code);
+    const bCode = Number(b.code);
+
+    // If one is negative and the other is not
+    if (aCode < 0 && bCode >= 0) return 1;
+    if (aCode >= 0 && bCode < 0) return -1;
+
+    // If both are positive or both are negative → sort normally
+    return aCode - bCode;
+  });
+
+  console.log("tesFloorOptions", tesFloorOptions);
 
   useEffect(() => {
     if (location?.state || stateDataCheck) {
+      setIsRestoring(true); // ✅ mark restore
+
       const value = location?.state;
 
       const getResident = getUsageData?.find((item) => item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
@@ -127,6 +179,9 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter(
         (item) => item?.usageCategoryMinor == stateDataCheck?.propertyUsageType?.code
       );
+      const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
+      // defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+
       setSubUsageData(checkData);
       setValue("propertyUsageType", getResident);
       setValue("propertyType", getPropertyType);
@@ -134,6 +189,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
       setValue("remarks", stateDataCheck?.remarks);
       setValue("flammable", stateDataCheck?.flammable);
       setValue("heightOfProperty", stateDataCheck?.heightOfProperty);
+      setValue("plotSize", stateDataCheck?.plotSize);
+      setValue("noOfFloors", checkFloors);
 
       if (stateDataCheck?.unitDetails?.length > 0) {
         remove([...Array(fields.length).keys()]);
@@ -144,11 +201,44 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
         // ✅ IMPORTANT
         trigger();
+        setTimeout(() => setIsRestoring(false), 0);
       }
     }
   }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData]);
 
-  const floorOptions = FloorData?.PropertyTax?.Floor || [];
+  const propertyType = watch("propertyType");
+
+  useEffect(() => {
+    if (stateDataCheck || floorOptions) {
+      const checkFloors = floorsMan?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
+
+      setValue("plotSize", stateDataCheck?.plotSize);
+      setValue("noOfFloors", checkFloors);
+    }
+  }, [stateDataCheck, floorOptions, propertyType]);
+
+  const selectedFloors = watch("noOfFloors")?.code;
+
+  useEffect(() => {
+    if (!selectedFloors || isRestoring) return;
+
+    const floorCount = Number(selectedFloors);
+
+    // Clear existing fields
+    remove([...Array(fields.length).keys()]);
+
+    const groundFloor = floorOptions?.find((f) => f.code == "0");
+
+    const newUnits = Array.from({ length: floorCount }, (_, index) => ({
+      unitUsageType: watch("propertyUsageType")?.name || "",
+      occupancy: null,
+      floor: index === 0 ? groundFloor : null, // ✅ First is Ground Floor
+    }));
+
+    append(newUnits);
+
+    trigger(); // revalidate
+  }, [selectedFloors]);
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
@@ -263,11 +353,67 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
         </label>
       </div>
 
-      {selectedPropertyType && selectedpropertyUsageType && <CardSectionHeader style={{ marginTop: "50px" }}>{t("Unit Details")}</CardSectionHeader>}
+      {/* plot size */}
+      {(selectedPropertyType == "BUILTUP.INDEPENDENTPROPERTY" || selectedPropertyType == "VACANT") && (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("Plot Size (sq yards)")}*</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name={`plotSize`}
+              // defaultValue={item?.area || ""}
+              rules={{ required: t("Plot Size is required") }}
+              render={(props) => (
+                <TextInput
+                  type={"number"}
+                  value={props.value}
+                  onWheel={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                />
+              )}
+            />
+            {errors.plotSize && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotSize?.message}</p>}
+          </div>
+        </LabelFieldPair>
+      )}
 
-      {selectedPropertyType &&
+      {/* floors */}
+      {selectedPropertyType == "BUILTUP.INDEPENDENTPROPERTY" && (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name={`noOfFloors`}
+              rules={{ required: t("Floor is required") }}
+              // defaultValue={item?.floor || ""}
+              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={floorsMan} optionKey="name" t={t} />}
+            />
+            {errors.noOfFloors && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.noOfFloors?.message}</p>}
+          </div>
+        </LabelFieldPair>
+      )}
+
+      {(selectedPropertyType == "BUILTUP.SHAREDPROPERTY" || watch("noOfFloors")) && (
+        <CardSectionHeader style={{ marginTop: "50px" }}>{t("Unit Details")}</CardSectionHeader>
+      )}
+
+      {(selectedPropertyType == "BUILTUP.SHAREDPROPERTY" || watch("noOfFloors")) &&
         selectedpropertyUsageType &&
-        fields.map((item, index) => (
+        fields?.map((item, index) => (
           <div
             key={item.id}
             style={{
@@ -278,78 +424,72 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             }}
           >
             {/* Unit Usage Type */}
-            {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && (
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
-                <div className="form-field">
-                  <Controller
-                    control={control}
-                    name={`unitDetails.${index}.unitUsageType`}
-                    defaultValue={item?.unitUsageType || watch("propertyUsageType")?.name || ""}
-                    rules={{ required: t("Unit Usage Type is required") }}
-                    // defaultValue={watch("propertyUsageType")?.name}
-                    render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} disabled={true} />}
-                  />
-                  {errors?.unitDetails?.[index]?.unitUsageType && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
-                  )}
-                </div>
-              </LabelFieldPair>
-            )}
+            {/* {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && ( */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={`unitDetails.${index}.unitUsageType`}
+                  defaultValue={item?.unitUsageType || watch("propertyUsageType")?.name || ""}
+                  rules={{ required: t("Unit Usage Type is required") }}
+                  // defaultValue={watch("propertyUsageType")?.name}
+                  render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} disabled={true} />}
+                />
+                {errors?.unitDetails?.[index]?.unitUsageType && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].unitUsageType.message}</p>
+                )}
+              </div>
+            </LabelFieldPair>
+            {/* // )} */}
 
             {/* sub usage type */}
-            {selectedPropertyType != "VACANT" &&
+            {/* {selectedPropertyType != "VACANT" &&
               selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" &&
               selectedpropertyUsageType != "RESIDENTIAL" &&
-              selectedpropertyUsageType != "MIXED" && (
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
-                  <div className="form-field">
-                    <Controller
-                      control={control}
-                      name={`unitDetails.${index}.subUsageType`}
-                      defaultValue={getSubUsageData?.find((s) => s.code === item?.subUsageType?.code || s.code === item?.subUsageType) || null}
-                      rules={{ required: t("Sub Usage Type is required") }}
-                      render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getSubUsageData} optionKey="name" t={t} />}
-                    />
-                    {errors?.unitDetails?.[index]?.subUsageType && (
-                      <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>
-                    )}
-                  </div>
-                </LabelFieldPair>
-              )}
+              selectedpropertyUsageType != "MIXED" && ( */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={`unitDetails.${index}.subUsageType`}
+                  defaultValue={getSubUsageData?.find((s) => s.code === item?.subUsageType?.code || s.code === item?.subUsageType) || null}
+                  rules={{ required: t("Sub Usage Type is required") }}
+                  render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getSubUsageData} optionKey="name" t={t} />}
+                />
+                {errors?.unitDetails?.[index]?.subUsageType && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].subUsageType.message}</p>
+                )}
+              </div>
+            </LabelFieldPair>
+            {/* // )} */}
 
             {/* Occupancy */}
-            {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && (
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("Occupancy")}*</CardLabel>
-                <div className="form-field">
-                  <Controller
-                    control={control}
-                    name={`unitDetails.${index}.occupancy`}
-                    defaultValue={
-                      OccupancyTypeData?.PropertyTax?.OccupancyType?.find((o) => o.code === item?.occupancy?.code || o.code === item?.occupancy) ||
-                      null
-                    }
-                    rules={{ required: t("Occupancy is required") }}
-                    render={(props) => (
-                      <Dropdown
-                        select={props.onChange}
-                        selected={props.value}
-                        option={FloorData?.PropertyTax?.OccupancyType}
-                        optionKey="name"
-                        t={t}
-                      />
-                    )}
-                  />
-                  {errors?.unitDetails?.[index]?.occupancy && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].occupancy.message}</p>
+            {/* {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && ( */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("Occupancy")}*</CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={`unitDetails.${index}.occupancy`}
+                  defaultValue={
+                    OccupancyTypeData?.PropertyTax?.OccupancyType?.find((o) => o.code === item?.occupancy?.code || o.code === item?.occupancy) || null
+                  }
+                  rules={{ required: t("Occupancy is required") }}
+                  render={(props) => (
+                    <Dropdown select={props.onChange} selected={props.value} option={FloorData?.PropertyTax?.OccupancyType} optionKey="name" t={t} />
                   )}
-                </div>
-              </LabelFieldPair>
-            )}
+                />
+                {errors?.unitDetails?.[index]?.occupancy && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].occupancy.message}</p>
+                )}
+              </div>
+            </LabelFieldPair>
+            {/* )} */}
 
             {/* Built up area */}
+            {/* {selectedPropertyType != "VACANT" && ( */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
               <div className="form-field">
@@ -385,31 +525,30 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
+            {/* )} */}
 
             {/* Select Floor */}
-            {selectedPropertyType != "VACANT" && (
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
-                <div className="form-field">
-                  <Controller
-                    control={control}
-                    name={`unitDetails.${index}.floor`}
-                    rules={{ required: t("Floor is required") }}
-                    defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
-                    // defaultValue={item?.floor || ""}
-                    render={(props) => (
-                      <Dropdown select={props.onChange} selected={props.value} option={FloorData?.PropertyTax?.Floor} optionKey="name" t={t} />
-                    )}
-                  />
-                  {errors?.unitDetails?.[index]?.floor && (
-                    <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>
-                  )}
-                </div>
-              </LabelFieldPair>
-            )}
+            {/* {selectedPropertyType != "VACANT" && ( */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={`unitDetails.${index}.floor`}
+                  rules={{ required: t("Floor is required") }}
+                  defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+                  // defaultValue={item?.floor || ""}
+                  render={(props) => <Dropdown select={props.onChange} selected={props.value} option={tesFloorOptions} optionKey="name" t={t} />}
+                />
+                {errors?.unitDetails?.[index]?.floor && (
+                  <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitDetails[index].floor.message}</p>
+                )}
+              </div>
+            </LabelFieldPair>
+            {/* )} */}
 
             {/* Total rent collected */}
-            {watch(`unitDetails.${index}.occupancy`)?.code == "PG" && (
+            {(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("Total Rent Collected")}*</CardLabel>
                 <div className="form-field">
@@ -446,7 +585,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             )}
 
             {/* Months on Rent * */}
-            {watch(`unitDetails.${index}.occupancy`)?.code == "PG" && (
+            {(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("Months on Rent")}*</CardLabel>
                 <div className="form-field">
@@ -465,7 +604,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             )}
 
             {/* Usage for Pending Months  */}
-            {watch(`unitDetails.${index}.occupancy`)?.code == "PG" && (
+            {(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("Usage for Pending Months")}*</CardLabel>
                 <div className="form-field">

@@ -161,7 +161,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       channel: "CFC_COUNTER",
       creationReason: "CREATE",
       source: "MUNICIPAL_RECORDS",
-      // documents: allDocuments,
+      documents: documents?.documents?.documents,
       applicationStatus: "CREATE",
     };
 

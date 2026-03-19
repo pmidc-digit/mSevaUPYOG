@@ -45,16 +45,17 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
-    const owners = (data?.cpt?.details?.owners || []).map(({ status, ...rest }) => {
-      if (rest?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
-        return {
-          ...rest,
-          emailId: data?.PropertyDetails?.email, // ✅ inject email
-          isPrimaryOwner: true,
-        };
+    const owners = (data?.cpt?.details?.owners || [])?.map((owner) => {
+      const newOwner = JSON.parse(JSON.stringify(owner));
+
+      delete newOwner.status;
+
+      if (newOwner?.name?.trim()?.toLowerCase() === data?.PropertyDetails?.firstName?.trim()?.toLowerCase()) {
+        newOwner.emailId = data?.PropertyDetails?.email;
+        newOwner.isPrimaryOwner = true;
       }
 
-      return rest; // ✅ keep others unchanged
+      return newOwner;
     });
 
     // Build owners array

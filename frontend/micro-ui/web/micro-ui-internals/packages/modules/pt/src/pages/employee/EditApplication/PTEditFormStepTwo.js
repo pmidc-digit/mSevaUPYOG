@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
-import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PTNewApplication_FORM } from "../../../redux/action/PTNewApplicationActions";
 
 const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
@@ -16,43 +16,36 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const validateEmployeeStepTwoFields = (data) => {
     const missingFields = [];
-  
+
     const propertyType = data?.PropertyType?.code;
     const usageCategory = data?.usageCategoryMajor?.code;
     const units = data?.units || [];
-  
-    
+
     if (!propertyType) missingFields.push("Property Type");
     if (!usageCategory) missingFields.push("Usage Category");
     if (!data?.businessName) missingFields.push("Business Name");
-  
-    
+
     const validateUnitCommonFields = (unit, index) => {
       const prefix = `Unit ${index + 1}`;
       const occupancyCode = unit?.occupancyType?.code;
       const rentedMonths = unit?.RentedMonths?.code;
-  
+
       if (!unit?.floorNoCitizen?.code) missingFields.push(`${prefix} - Floor No`);
-  
-      
-      if (
-        usageCategory !== "RESIDENTIAL" &&
-        usageCategory !== "MIXED" &&
-        usageCategory !== "NONRESIDENTIAL.OTHERS"
-      ) {
+
+      if (usageCategory !== "RESIDENTIAL" && usageCategory !== "MIXED" && usageCategory !== "NONRESIDENTIAL.OTHERS") {
         if (!unit?.subUsageType) missingFields.push(`${prefix} - Sub Usage Type`);
       }
-  
+
       // For NONRESIDENTIAL.OTHERS, only floorNo is needed (already checked above)
       if (usageCategory === "NONRESIDENTIAL.OTHERS") return;
-  
+
       if (!unit?.occupancyType?.code) missingFields.push(`${prefix} - Occupancy Type`);
       if (!unit?.builtUpArea) {
         missingFields.push(`${prefix} - Built-up Area`);
       } else if (isNaN(Number(unit?.builtUpArea))) {
         missingFields.push(`${prefix} - Built-up Area must be a valid number`);
       }
-  
+
       if (occupancyCode === "RENTED" || occupancyCode === "PG") {
         if (!unit?.arv) {
           missingFields.push(`${prefix} - Annual Rent Value`);
@@ -60,13 +53,13 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
           missingFields.push(`${prefix} - Annual Rent Value must be a valid number`);
         }
         if (!rentedMonths) missingFields.push(`${prefix} - Rented Months`);
-  
+
         if (rentedMonths !== "12" && !unit?.NonRentedMonthsUsage?.code) {
           missingFields.push(`${prefix} - Non-Rented Months Usage`);
         }
       }
     };
-  
+
     // 🧠 Conditional Logic per Property Type
     switch (propertyType) {
       case "BUILTUP.INDEPENDENTPROPERTY":
@@ -83,20 +76,20 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         }
         units.forEach(validateUnitCommonFields);
         break;
-  
+
       case "BUILTUP.SHAREDPROPERTY":
         if (units.length < 1) missingFields.push("At least one Unit is required");
         units.forEach(validateUnitCommonFields);
         break;
-  
+
       case "VACANT":
         if (!data?.landarea) missingFields.push("Land Area");
         break;
-  
+
       default:
         break;
     }
-  
+
     return missingFields;
   };
 
@@ -108,7 +101,7 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     console.log("data====");
 
     if (!_.isEqual(data, localStepData)) {
-      dispatch(UPDATE_PtNewApplication(config.key, data));
+      dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
       setLocalStepData(data);
     }
   };

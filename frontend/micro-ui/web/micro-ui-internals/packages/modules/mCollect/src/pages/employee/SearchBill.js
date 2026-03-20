@@ -228,7 +228,7 @@ const SearchBill = () => {
         Header: t("UC_ACTION_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
-          return <SubmitBar onSubmit={() => routeToPaymentScreen(row)} label={t("UC_PAY_LABEL")} />;
+          return row?.status === 'ACTIVE'? <SubmitBar onSubmit={() => routeToPaymentScreen(row)} label={t("UC_PAY_LABEL")} /> : "";
         },
       },
     ],
@@ -237,10 +237,10 @@ const SearchBill = () => {
 
   return (
     <React.Fragment>
-      <div className={"employee-application-details"}>
+      {/* <div className={"employee-application-details"}>
         <Header>{t("UC_SEARCH_BILL_HEADER")}</Header>
         <SubmitBar onSubmit={() => history.push("/digit-ui/employee/mcollect/group-bill")} label={t("UC_GROUP_BILLS_LABEL")} />
-      </div>
+      </div> */}
 
       <Card>
         <FormProvider {...methods}>
@@ -361,8 +361,9 @@ const SearchBill = () => {
                   </span>
                 </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap:"12px" }}>
                 <SubmitBar label={t("Next")} submit="submit" />
+                <SubmitBar label={t("CS_COMMON_RESET")} onSubmit={() => { reset(); }} className="submit-bar ral-back-btn" />
               </div>
             </div>
           </form>

@@ -157,7 +157,7 @@ public class DemandService {
 			// --- FIX: Logic to separate Application Fee from Recurring Bill ---
 			if (request.getIsDisconnectionRequest() != null 
 				    && request.getIsDisconnectionRequest()
-				    && "PENDING_FOR_FIELD_INSPECTION".equalsIgnoreCase(request.getCalculationCriteria().get(0).getWaterConnection().getApplicationStatus())) {
+				    && WSCalculationConstant.PENDING_FOR_FIELD_INSPECTION.equalsIgnoreCase(request.getCalculationCriteria().get(0).getWaterConnection().getApplicationStatus())) {
 	            // FOR DISCONNECTION: Always use Application Number as the Consumer Code
 	            consumerCodes = calculations.stream()
 	                    .map(calculation -> calculation.getApplicationNO())

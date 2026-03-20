@@ -61,7 +61,9 @@ public class WCConstants {
 	public static final String ACTION_CANCEL = "CANCEL";
 
 	public static final String ACTION_PAY = "PAY";
-
+	
+	public static final String ACTION_PAYFEE = "PAY_FEE";
+	
 	public static final String STATUS_INITIATED = "INITIATED";
 
 	public static final String STATUS_APPLIED = "APPLIED";
@@ -269,6 +271,9 @@ public class WCConstants {
 	public static final String PDF_SANCTION_KEY = "ws-sanctionletter";
 
 	public static final String PENDING_FOR_CONNECTION_ACTIVATION = "PENDING_FOR_CONNECTION_ACTIVATION";
+	
+	public static final String FORWARD_FOR_FEE = "FORWARD_FOR_FEE";
+
 
 	public static final long DAYS_CONST = 86400000l;
 

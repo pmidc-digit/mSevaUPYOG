@@ -145,15 +145,32 @@ public class DemandService {
 			Long fromDateSearch = null;
 			Long toDateSearch = null;
 			Set<String> consumerCodes;
-			if (isForConnectionNo) {
-				fromDateSearch = fromDate;
-				toDateSearch = toDate;
-				consumerCodes = calculations.stream().map(calculation -> calculation.getConnectionNo())
-						.collect(Collectors.toSet());
-			} else {
-				consumerCodes = calculations.stream().map(calculation -> calculation.getApplicationNO())
-						.collect(Collectors.toSet());
-			}
+//			if (isForConnectionNo) {
+//				fromDateSearch = fromDate;
+//				toDateSearch = toDate;
+//				consumerCodes = calculations.stream().map(calculation -> calculation.getConnectionNo())
+//						.collect(Collectors.toSet());
+//			} else {
+//				consumerCodes = calculations.stream().map(calculation -> calculation.getApplicationNO())
+//						.collect(Collectors.toSet());
+//			}
+			// --- FIX: Logic to separate Application Fee from Recurring Bill ---
+	        if (request.getIsDisconnectionRequest() != null && request.getIsDisconnectionRequest()) {
+	            // FOR DISCONNECTION: Always use Application Number as the Consumer Code
+	            consumerCodes = calculations.stream()
+	                    .map(calculation -> calculation.getApplicationNO())
+	                    .collect(Collectors.toSet());
+	            isForConnectionNo = false; // Force it to search by Application
+	        } else if (isForConnectionNo) {
+	            // FOR RECURRING BILLS: Use Connection Number
+	            consumerCodes = calculations.stream()
+	                    .map(calculation -> calculation.getConnectionNo())
+	                    .collect(Collectors.toSet());
+	        } else {
+	            consumerCodes = calculations.stream()
+	                    .map(calculation -> calculation.getApplicationNO())
+	                    .collect(Collectors.toSet());
+	        }
 
 			List<Demand> demands = new ArrayList<>();
 			// If demand already exists add it updateCalculations else

@@ -122,7 +122,17 @@ public class PaymentUpdateService {
 						throw new CustomException("INVALID_RECEIPT",
 								"More than one application found on consumerCode " + criteria.getApplicationNumber());
 					}
-					waterConnections.forEach(waterConnection -> waterConnection.getProcessInstance().setAction((WCConstants.ACTION_PAY)));
+					
+//					waterConnections.forEach(waterConnection -> waterConnection.getProcessInstance().setAction((WCConstants.ACTION_PAY)));
+
+					waterConnections.forEach(waterConnection -> {
+					    // If it's a disconnection at the fee stage, use PAY_FEE; otherwise, use the default PAY
+					    String action = ("DISCONNECT_WATER_CONNECTION".equalsIgnoreCase(waterConnection.getApplicationType()) 
+					            && "PENDING_FOR_APPLICATION_FEE".equalsIgnoreCase(waterConnection.getApplicationStatus())) 
+					            ? WCConstants.ACTION_PAYFEE : WCConstants.ACTION_PAY;
+					            
+					    waterConnection.getProcessInstance().setAction(action);
+					});
 					WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder()
 							.waterConnection(connection).requestInfo(paymentRequest.getRequestInfo())
 							.build();

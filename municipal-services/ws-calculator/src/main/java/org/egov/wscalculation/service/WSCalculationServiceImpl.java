@@ -128,9 +128,12 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				}
 			}
 			connectionRequest = request.getIsDisconnectionRequest();
-			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
+//			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
+//					request.getCalculationCriteria().get(0).getTenantId());
+//			calculations = getCalculations(request, masterMap);
+			masterMap = masterDataService.loadExemptionMaster(request.getRequestInfo(),
 					request.getCalculationCriteria().get(0).getTenantId());
-			calculations = getCalculations(request, masterMap);
+			calculations = getFeeCalculation(request, masterMap);
 		} else if (request.getIsconnectionCalculation()) {
 			connectionRequest = request.getIsconnectionCalculation();
 			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),

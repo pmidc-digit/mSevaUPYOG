@@ -174,13 +174,12 @@ const formatFinancialYear = (year) => ({
             i18nKey: `TENANT_TENANTS_${(applicationData?.tenantId || "").toUpperCase().replace(".", "_")}`,
             name: applicationData?.tenantId || ""
           },
-          locality: tradeLicenseDetail?.address?.locality?.code || "",
-          // locality: {
-          //   code: applicationData?.tradeLicenseDetail?.address?.locality?.code || "",
-          //   i18nKey: applicationData?.tradeLicenseDetail?.address?.locality?.name.slice(0,applicationData?.tradeLicenseDetail?.address?.locality?.name.length - 5),
-          //   name: applicationData?.tradeLicenseDetail?.address?.locality?.name || "",
-          //   label: "Locality",
-          // },
+          locality: {
+            code: tradeLicenseDetail?.address?.locality?.code || "",
+            name: tradeLicenseDetail?.address?.locality?.name || "",
+            i18nkey: tradeLicenseDetail?.address?.locality?.name || "",
+            label: "Locality",
+          },
           street: tradeLicenseDetail?.address?.street || "",
           doorNo: tradeLicenseDetail?.address?.doorNo || "",
           electricityNo: tradeLicenseDetail?.address?.electricityNo || "",

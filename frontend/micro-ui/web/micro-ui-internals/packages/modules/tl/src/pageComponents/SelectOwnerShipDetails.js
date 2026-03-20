@@ -20,6 +20,9 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   //const isUpdateProperty = formData?.isUpdateProperty || false;
   //let isEditProperty = formData?.isEditProperty || false;
   let isEdit = window.location.href.includes("edit-application") || window.location.href.includes("renew-trade");
+  const isCitizenSendback = window.location.href.includes("citizen/tl") &&
+    window.location.href.includes("new-application") &&
+    new URLSearchParams(window.location.search).has("sendback");
   const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
   const [isResetting, setIsResetting] = useState(false);
   // const [getSubOwnerShip, setSubOwnerShip] = useState();
@@ -277,7 +280,7 @@ useEffect(() => {
           <Dropdown
             className="form-field"
             selected={ownershipTypeMainDerived}
-            disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner}
+            disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner || isCitizenSendback}
             option={ownershipTypeOptions}
             select={(value) => handleOwnershipMain(value)}
             optionKey="i18nKey"
@@ -294,7 +297,7 @@ useEffect(() => {
             className="form-field"
             selected={ownershipCategory?.code ? ownershipCategory : {}}
             errorStyle={!isResetting && formState.touched?.[config.key] && formState.errors[config.key]?.message ? true : false}
-            disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner}
+            disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner || isCitizenSendback}
             option={filteredOwnershipSubTypes}
             select={selectedValue}
             optionKey="i18nKey"
@@ -329,7 +332,7 @@ useEffect(() => {
               onChange={selectisSameAsPropertyOwner}
               value={isSameAsPropertyOwner}
               checked={isSameAsPropertyOwner || false}
-              disable={isEdit}
+              disable={isEdit || isCitizenSendback}
             />
           )}
           <RadioButtons
@@ -341,7 +344,7 @@ useEffect(() => {
             value={ownershipCategory}
             labelKey="PT_OWNERSHIP"
             isDependent={true}
-            disabled={isEdit}
+            disabled={isEdit || isCitizenSendback}
             isTLFlow={true}
           />
         </FormStep>

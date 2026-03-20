@@ -32,6 +32,9 @@ import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
+  const user = Digit.UserService.getUser();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT" ) || user?.info?.roles?.some(role => (role?.code?.includes("BPA") && role?.tenantId === tenantId));
 
   const getBreadcrumbs = () => {
     const breadcrumbs = [];
@@ -56,7 +59,7 @@ const OBPSBreadCrumbs = ({ location }) => {
     if (hasSecondBreadcrumb) {
       breadcrumbs.push(
         <span key="obps">
-          <Link to="/digit-ui/citizen/obps/home" style={{ textDecoration: "none" }}>
+          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"} style={{ textDecoration: "none" }}>
             OBPS Home
           </Link>
         </span>

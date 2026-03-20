@@ -247,7 +247,7 @@ const CustomUploadFile = (props) => {
 
     {!props?.disabled && (
       <div
-        className={`upload-file upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"
+        className={`upload-file-new upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"
           } ${props.disabled ? "disabled" : ""}`}
       >
         <div className="upload-container-flex">
@@ -298,7 +298,7 @@ const CustomUploadFile = (props) => {
         <input
           // className={`input-mirror-selector-button upload-file-input ${props.disabled ? "disabled" : ""
           //   }`}
-          className={`${props.disabled ? "upload-hidden" : ""}`}
+          className={`upload-file-input ${props.disabled ? "upload-hidden" : ""}`}
           ref={inpRef}
           type="file"
           id={props.id || `document-${getRandomId()}`}

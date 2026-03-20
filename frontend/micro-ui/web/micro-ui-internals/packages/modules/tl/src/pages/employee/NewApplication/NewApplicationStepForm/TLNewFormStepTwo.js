@@ -71,7 +71,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     const validateOwner = (owner, index = 1) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
-      if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
+
+      if (!owner?.mobileNumber) {
+        missingFields.push(`Mobile Number (Owner ${index})`);
+      } else if (!/^[6-9]\d{9}$/.test(String(owner.mobileNumber))) {
+        missingFields.push(`Mobile Number (Owner ${index}) must be a valid 10-digit number starting with 6-9`);
+      }
+
       if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
       if (!owner?.dob) {
         missingFields.push(`Date of Birth (Owner ${index})`);
@@ -81,10 +87,16 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         const age = today.getFullYear() - dob.getFullYear();
         const monthDiff = today.getMonth() - dob.getMonth();
         const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())));
+        const isOver100 = age > 100 || (age === 100 && (monthDiff > 0 || (monthDiff === 0 && today.getDate() > dob.getDate())));
         if (isUnder18) missingFields.push(`Owner ${index} must be at least 18 years old`);
+        if (isOver100) missingFields.push(`Owner ${index} date of birth is not valid (max age: 100 years)`);
       }
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
+
+      if (owner?.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner.emailId)) {
+        missingFields.push(`Email (Owner ${index}) is not valid`);
+      }
     };
 
     if (isSingleOwner) {

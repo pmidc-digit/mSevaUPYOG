@@ -203,8 +203,8 @@ const initAutocomplete = (position) => {
     if (position?.length === 0) return;
     const map = new window.google.maps.Map(document.getElementById("map"), {
         center: {
-            lat: position[0]?.latitude,
-            lng: position[0]?.longitude,
+            lat: Number(position[0]?.latitude),
+            lng: Number(position[0]?.longitude),
         },
         zoom: 15,
         mapTypeId: "roadmap",
@@ -229,7 +229,7 @@ const initAutocomplete = (position) => {
         const marker = new window.google.maps.Marker({
             map,
             title: `SITE ${index + 1}`, // tooltip on hover
-            position: { lat: loc?.latitude, lng: loc?.longitude },
+            position: { lat: Number(loc?.latitude), lng: Number(loc?.longitude) },
         });
 
         const infowindow = new window.google.maps.InfoWindow({
@@ -258,7 +258,7 @@ const CustomLocationSearch = (props) => {
     async function mapScriptCall() {
       const getLatLng = (position) => {
         initAutocomplete(position);
-      };      
+      };
 
       const initMaps = () => {        
           getLatLng(props.position);        

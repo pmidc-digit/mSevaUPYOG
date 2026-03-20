@@ -26,7 +26,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
-import { scrutinyDetailsData } from "../utils";
+import { amountToWords, scrutinyDetailsData } from "../utils";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
 import { PayTwoTable } from "./PayTwoTable";
@@ -109,7 +109,6 @@ const FeeEstimation = ({
         },
         queryKey: ["BPA_CALCULATION", currentStepData?.createdResponse?.applicationNo, "ApplicationFee"]
     });
-    console.log("data from bpa calculator", adjustedAmounts);
 
     const {
         isLoading: bpaCalculatorLoadingSan,
@@ -194,7 +193,11 @@ const FeeEstimation = ({
         const grandTotal = totalAmount + totalDeduction;
         return [
             ...adjustedAmounts,
-            { id: "san-total", taxHeadCode: "BPA_TOTAL", title: t("BPA_TOTAL"), amount: totalAmount, category: "", adjustedAmount: totalDeduction, grandTotal: grandTotal },
+            // { id: "san-total", taxHeadCode: "BPA_TOTAL", title: t("BPA_TOTAL"), amount: totalAmount, category: "", adjustedAmount: totalDeduction, grandTotal: grandTotal, remark: `₹ ${grandTotal.toLocaleString()}`  },
+            { id: "san-total", taxHeadCode: "BPA_TOTAL", title: t("BPA_TOTAL"), amount: totalAmount, category: "", adjustedAmount: totalDeduction, grandTotal: grandTotal, remark: (<div>
+                                                        <strong>{`₹ ${grandTotal.toLocaleString("en-IN")}`}</strong>
+                                                        <div>{amountToWords(grandTotal)}</div>
+                                                    </div>)  },
         ];
     }, [adjustedAmounts, t]);
 
@@ -268,7 +271,6 @@ const FeeEstimation = ({
     // }, [recalculate, refetchSanctionFee]);
 
     const handleAdjustedAmountChange = (index, value, ammount) => {
-        console.log("ammount", ammount, "value", value);
         if((ammount + Number(value)) < 0){
             setShowToast({ key: "error", message: "Adjusted_Amount_More_Than_Ammount" });
             return;
@@ -283,7 +285,6 @@ const FeeEstimation = ({
     };
 
     const handleAdjustedAmountChangeRegular = (index, value, ammount) => {
-        console.log("ammount", ammount, "value", value);
         if((Number(value)) < 0){
             setShowToast({ key: "error", message: "Amount_less_Than_Zero" });
             return;
@@ -298,7 +299,6 @@ const FeeEstimation = ({
     };
 
     const handleRemarkChange = (index, value, ammount) => {
-        console.log("ammount", ammount, "value", value);        
         setAdjustedAmounts((prev) =>
             prev.map((item) =>
                 item.index === index
@@ -374,6 +374,11 @@ const FeeEstimation = ({
         },
         {
             Header: t("BPA_AMOUNT"),
+            accessor: "amount",
+            Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
+        },
+        {
+            Header: t("BPA_ADJUSTED_AMOUNT"),
             accessor: "adjustedAmount",
             Cell: ({ value }) => (value !== null && value !== undefined ? `₹ ${value.toLocaleString()}` : t("CS_NA")),
         },
@@ -476,6 +481,7 @@ const FeeEstimation = ({
                 />
             </div>)}
 
+            {/* {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)} */}
             {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
 
             <FeeHistoryTable feeHistory={feeHistory} t={t} />

@@ -132,11 +132,29 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const onSubmit = async (data) => {
-  
+    // Resume mode: use the pre-built ResumePayload from Step 2, overlay documents
+    if (formData?.ResumePayload) {
+      const resumePayload = { ...formData.ResumePayload };
+      resumePayload.tradeLicenseDetail = { ...resumePayload.tradeLicenseDetail };
+      resumePayload.tradeLicenseDetail.applicationDocuments = formData?.Documents?.documents?.documents || null;
+      resumePayload.wfDocuments = formData?.Documents?.documents?.documents || null;
+      resumePayload.calculation = { ...(resumePayload.calculation || {}), applicationNumber: resumePayload.applicationNumber };
+      setLoader(true);
+      try {
+        const response = await Digit.TLService.update({ Licenses: [resumePayload] }, tenantId);
+        setLoader(false);
+        return response?.ResponseInfo?.status === "successful";
+      } catch (error) {
+        setLoader(false);
+        return false;
+      }
+    }
+
+    // Normal new application path
     let formdata = { ...data };
     formdata.tradeLicenseDetail.applicationDocuments = formData?.Documents?.documents?.documents;
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
-    formdata.calculation.applicationNumber = formdata.applicationNumber;
+    formdata.calculation = { ...(formdata.calculation || {}), applicationNumber: formdata.applicationNumber };
     formdata.action = "APPLY";
     setLoader(true);
     try {
@@ -145,7 +163,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {
       setLoader(false);
-      return error;
+      return false;
     }
 
   };

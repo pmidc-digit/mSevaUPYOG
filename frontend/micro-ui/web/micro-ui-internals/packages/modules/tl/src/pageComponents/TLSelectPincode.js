@@ -1,4 +1,7 @@
 import { FormStep, TextInput, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
 import _ from "lodash";
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -124,43 +127,48 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       const isFieldDisabled = isDisabledByProperty || isRenewal;
 
       return (
-        <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t(input.label)}`}</CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              name={input.name}
-              defaultValue={pincode || formData?.cpt?.details?.address?.pincode || ""}
-              render={(props) => (
-                <TextInput
-                  id={input.name}
-                  key={input.name}
-                  value={props.value}
-                  maxlength={6}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                    setLocalFormData((prev) => ({
-                      ...prev,
-                      [input.name]: e.target.value,
-                    }));
-                  }}
-                  disable={isFieldDisabled}
-                  placeholder={t(`${input.placeholder}`)}
-                  style={
-                    isFieldDisabled
-                      ? {
-                          color: "#505A5F",
-                          opacity: 1,
-                          WebkitTextFillColor: "#505A5F",
-                          backgroundColor: "#FFFFFF",
-                        }
-                      : {}
-                  }
+        <div style={twoColRow} key={index}>
+          <div style={colItem}>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t(input.label)}`}</CardLabel>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={input.name}
+                  defaultValue={pincode || formData?.cpt?.details?.address?.pincode || ""}
+                  render={(props) => (
+                    <TextInput
+                      id={input.name}
+                      key={input.name}
+                      value={props.value}
+                      maxlength={6}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                        setLocalFormData((prev) => ({
+                          ...prev,
+                          [input.name]: e.target.value,
+                        }));
+                      }}
+                      disable={isFieldDisabled}
+                      placeholder={t(`${input.placeholder}`)}
+                      style={
+                        isFieldDisabled
+                          ? {
+                              color: "#505A5F",
+                              opacity: 1,
+                              WebkitTextFillColor: "#505A5F",
+                              backgroundColor: "#FFFFFF",
+                            }
+                          : {}
+                      }
+                    />
+                  )}
                 />
-              )}
-            />
+              </div>
+            </LabelFieldPair>
           </div>
-        </LabelFieldPair>
+          <div style={colItem} />
+        </div>
       );
     });
   }

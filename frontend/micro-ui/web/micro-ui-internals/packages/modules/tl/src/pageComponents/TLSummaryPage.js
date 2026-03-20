@@ -11,7 +11,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const reduxFormData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
   const formData = reduxFormData || propsFormData || {};
   
-  const createdResponse = formData?.CreatedResponse || formData?.EditPayload || {};
+  const createdResponse = formData?.ResumePayload || formData?.CreatedResponse || formData?.EditPayload || {};
   const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory, propertyId} = createdResponse;
   const [isChecked, setIsChecked] = useState(false);
   const [showBreakupModal, setShowBreakupModal] = useState(false);
@@ -27,7 +27,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   // Fallback address data from Redux form (for fields API doesn't return)
   const reduxAddress = formData?.TraidDetails?.address || {};
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = createdResponse?.tenantId || Digit.ULBService.getCurrentTenantId();
   const consumerCode = createdResponse?.applicationNumber;
 
   // State to hold bill amounts fetched from billing API (for edit path where calculation is empty)
@@ -49,22 +49,66 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   // Fetch bill amounts when calculation data is missing (edit/INITIATED path)
   useEffect(() => {
     if (taxHeads.length === 0 && consumerCode && !billAmounts) {
-      (async () => {
+      const billTenantId = createdResponse?.tenantId || tradeLicenseDetail?.address?.tenantId || tenantId;
+      const fetchBill = async (retries) => {
         try {
-          const fetchBillRes = await Digit.TLService.fetch_bill({ tenantId, filters: { consumerCode, businessService: "TL" } });
+          const fetchBillRes = await Digit.TLService.fetch_bill({ tenantId: billTenantId, filters: { consumerCode, businessService: "TL" } });
           const bill = fetchBillRes?.Bill?.[0];
-          const billAccountDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
-          const tlTax = billAccountDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
-          const rebate = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
-          const penalty = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
-          const totalAmount = bill?.totalAmount || tlTax;
-          setBillAmounts({ tlTax, rebate, penalty, totalAmount });
+          if (bill) {
+            const billAccountDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
+            const tlTax = billAccountDetails.find((a) => a.taxHeadCode === "TL_TAX")?.amount || 0;
+            const rebate = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_REBATE")?.amount || 0;
+            const penalty = billAccountDetails.find((a) => a.taxHeadCode === "TL_RENEWAL_PENALTY")?.amount || 0;
+            const totalAmount = bill?.totalAmount || tlTax;
+            setBillAmounts({ tlTax, rebate, penalty, totalAmount });
+          } else if (retries < 2) {
+            setTimeout(() => fetchBill(retries + 1), 2000);
+          } else {
+            await fetchSlabFallback(billTenantId);
+          }
         } catch (e) {
           console.error("Error fetching bill amounts for summary:", e);
+          if (retries < 2) {
+            setTimeout(() => fetchBill(retries + 1), 2000);
+          } else {
+            await fetchSlabFallback(billTenantId);
+          }
         }
-      })();
+      };
+
+      const fetchSlabFallback = async (tid) => {
+        try {
+          const validityYears = tradeLicenseDetail?.additionalDetail?.validityYears || 1;
+          const getbillRes = await Digit.TLService.getbill({ tenantId: tid, filters: { consumerCode, businessService: "TL" } });
+          const billingSlabIds = getbillRes?.billingSlabIds || {};
+          const tradeSlabEntries = billingSlabIds?.tradeTypeBillingSlabIds || [];
+          const accessorySlabEntries = billingSlabIds?.accesssoryBillingSlabIds || [];
+          const allSlabIds = [...tradeSlabEntries, ...accessorySlabEntries]
+            .map((entry) => entry?.split("|")?.[0])
+            .filter(Boolean);
+
+          if (allSlabIds.length > 0) {
+            const slabRes = await Digit.TLService.billingslab({ tenantId: tid, filters: { ids: allSlabIds.join(",") } });
+            const slabs = slabRes?.billingSlab || [];
+            const tradeTotal = tradeSlabEntries.reduce((sum, entry) => {
+              const slab = slabs.find((s) => s.id === entry?.split("|")?.[0]);
+              return sum + (slab?.rate || 0);
+            }, 0);
+            const accTotal = accessorySlabEntries.reduce((sum, entry) => {
+              const slab = slabs.find((s) => s.id === entry?.split("|")?.[0]);
+              return sum + (slab?.rate || 0);
+            }, 0);
+            const total = (tradeTotal + accTotal) * (validityYears || 1);
+            setBillAmounts({ tlTax: total, rebate: 0, penalty: 0, totalAmount: total });
+          }
+        } catch (slabErr) {
+          console.error("Error fetching slab fallback for summary:", slabErr);
+        }
+      };
+
+      fetchBill(0);
     }
-  }, [consumerCode]);
+  }, [consumerCode, tenantId]);
 
   const fetchBreakupData = async () => {
     if (!consumerCode || breakupData) {
@@ -132,6 +176,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
 
       const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
       const accessoryTotal = accessoryBreakup.reduce((sum, item) => sum + item.rate, 0);
+      const slabBasedTotal = (tradeUnitTotal + accessoryTotal) * (validityYears || 1);
 
       setBreakupData({
         tradeUnitBreakup,
@@ -139,11 +184,11 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
         tradeUnitTotal,
         accessoryTotal,
         validityYears,
-        tlTax,
+        tlTax: tlTax || slabBasedTotal,
         rebate,
         penalty,
-        totalAmount,
-        finalAmount: totalAmount,
+        totalAmount: totalAmount || slabBasedTotal,
+        finalAmount: totalAmount || slabBasedTotal,
       });
       setShowBreakupModal(true);
     } catch (error) {
@@ -185,11 +230,11 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
     <div className="bpa-summary-page">
       <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
       <div className="bpa-summary-section">
-        {renderLabel(t("Trade License Tax"), getTaxAmount("TAX"))}
-        {renderLabel(t("Rebate"), getTaxAmount("REBATE"))}
-        {renderLabel(t("Penalty"), getTaxAmount("PENALTY"))}
-        {renderLabel(t("Total Amount"), `Rs ${billAmounts?.totalAmount || getTaxAmount("TAX")}`)}
-        {renderLabel(t("Payment Status"), status || "NA")}
+        {renderLabel(t("Trade License Tax"), getTaxAmount("TAX") || "NA")}
+        {renderLabel(t("Rebate"), getTaxAmount("REBATE") || "NA")}
+        {renderLabel(t("Penalty"), getTaxAmount("PENALTY") || "NA")}
+        {renderLabel(t("Total Amount"), billAmounts?.totalAmount ? `Rs ${billAmounts.totalAmount}` : (getTaxAmount("TAX") ? `Rs ${getTaxAmount("TAX")}` : "NA"))}
+        {renderLabel(t("Application Status"), status || "NA")}
         <div className="TL-mt-5">
           <span
             onClick={fetchBreakupData}
@@ -291,8 +336,8 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
         {renderLabel(t("Application Type"), applicationType)}
         {renderLabel(t("Licence Type"), licenseType)}
         {renderLabel(t("Trade Name"), tradeName)}
-        {renderLabel(t("Structure Type"), tradeLicenseDetail?.structureType?.split(".")[0])}
-        {renderLabel(t("Structure Sub Type"), tradeLicenseDetail?.structureType?.split(".")[1])}
+        {renderLabel(t("Structure Type"), tradeLicenseDetail?.structureType ? t(`COMMON_MASTERS_STRUCTURETYPE_${tradeLicenseDetail.structureType.split(".")[0]}`) : "")}
+        {renderLabel(t("Structure Sub Type"), tradeLicenseDetail?.structureType ? t(`COMMON_MASTERS_STRUCTURETYPE_${tradeLicenseDetail.structureType.replace(/\./g, "_")}`) : "")}
         {renderLabel(t("Trade Commencement Date"), formatDate(commencementDate))}
         {renderLabel(t("Trade GST No."), tradeLicenseDetail?.additionalDetail?.gstNo)}
         {renderLabel(t("Operational Area (Sq Ft)"), tradeLicenseDetail?.operationalArea)}
@@ -348,7 +393,7 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
       {owners.map((owner, index) => (
         <div key={index} className="bpa-summary-section">
           <div className="TL-item-index">#{index + 1}</div>
-          {renderLabel(t("Name"), owner?.name)}
+          {renderLabel(t("Name"), owner?.name || tradeLicenseDetail?.institution?.name)}
           {renderLabel(t("Mobile No."), owner?.mobileNumber)}
           {renderLabel(t("Gender"), owner?.gender)}
           {renderLabel(t("Father/Husband's Name"), owner?.fatherOrHusbandName)}

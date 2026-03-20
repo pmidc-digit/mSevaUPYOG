@@ -301,6 +301,9 @@ public class WCConstants {
 	public static final String NEW_WATER_CONNECTION = "NEW_WATER_CONNECTION";
 	public static final String MODIFY_WATER_CONNECTION = "MODIFY_WATER_CONNECTION";
 	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_WATER_CONNECTION";
+	
+	public static final String PENDING_FOR_APPLICATION_FEE = "PENDING_FOR_APPLICATION_FEE";
+
 	public static final String WATER_RECONNECTION = "WATER_RECONNECTION";
 	
 	public static final String WATER_SERVICE_BUSINESS_ID = "WS";

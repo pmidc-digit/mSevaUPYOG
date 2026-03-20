@@ -94,50 +94,99 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   // };
 
   const validateOwnerDetails = (data) => {
+    const { ownershipCategory, owners } = data || {};
+    const missingFields = [];
 
-    const { owners } = data;
-
-    // if (!ownershipCategory?.code || !owners?.length) return false;
-    
-    if (!owners?.every(
-      (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
-    )) return false;
-
-    // Validate that all owners with DOB are at least 18 years old
-    const today = new Date();
-    for (const owner of owners) {
-      if (owner?.dob) {
-        const dob = new Date(owner.dob);
-        const age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-        const isUnder18 = age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())));
-        if (isUnder18) return "under18";
-      }
+    const ownershipCode = ownershipCategory?.code || ownershipCategory?.value;
+    if (!ownershipCode) {
+      missingFields.push("Ownership Category");
+      return missingFields;
     }
 
-    return true;
+    const validOwners = (owners || []).filter(
+      (o) => o.name || o.mobileNumber || o.fatherOrHusbandName
+    );
+    if (validOwners.length === 0) {
+      missingFields.push("At least one Owner");
+      return missingFields;
+    }
+
+    const validateOwner = (owner, index = 1) => {
+      if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
+
+      if (!owner?.mobileNumber) {
+        missingFields.push(`Mobile Number (Owner ${index})`);
+      } else if (!/^[6-9]\d{9}$/.test(String(owner.mobileNumber))) {
+        missingFields.push(`Mobile Number (Owner ${index}) must be a valid 10-digit number starting with 6-9`);
+      }
+
+      if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+
+      if (!owner?.dob) {
+        missingFields.push(`Date of Birth (Owner ${index})`);
+      } else {
+        const dob = new Date(owner.dob);
+        const today = new Date();
+        const age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        const isUnder18 = age < 18 || (age === 18 && (m < 0 || (m === 0 && today.getDate() < dob.getDate())));
+        const isOver100 = age > 100 || (age === 100 && (m > 0 || (m === 0 && today.getDate() > dob.getDate())));
+        if (isUnder18) missingFields.push(`Owner ${index} must be at least 18 years old`);
+        if (isOver100) missingFields.push(`Owner ${index} date of birth is not valid (max age: 100 years)`);
+      }
+
+      if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
+      if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
+
+      if (owner?.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner.emailId)) {
+        missingFields.push(`Email (Owner ${index}) is not valid`);
+      }
+    };
+
+    if (ownershipCode === "INDIVIDUAL.SINGLEOWNER") {
+      validateOwner(validOwners[0], 1);
+    } else {
+      validOwners.forEach((o, i) => validateOwner(o, i + 1));
+    }
+
+    return missingFields;
   };
 
   const goNext = async (data) => {
+    // Resume mode: build ResumePayload and defer API call to Step 4 (Summary)
+    if (formData?.CreatedResponse?.applicationNumber) {
+      const { OwnerDetails } = formData || {};
+      const missingFields = validateOwnerDetails(OwnerDetails);
+      if (missingFields.length > 0) {
+        setError(`Please fill the following fields: ${missingFields.join(", ")}`);
+        setShowToast(true);
+        return;
+      }
+      buildAndSaveResumePayload(formData);
+      onGoNext();
+      return;
+    }
 
     const { OwnerDetails } = formData || {};
 
-    const validationResult = validateOwnerDetails(OwnerDetails);
-    if (validationResult === "under18") {
-      setError(t("TL_OWNER_AGE_ERROR") || "Owner must be at least 18 years old.");
+    if (
+      OwnerDetails?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" &&
+      (!OwnerDetails?.owners || OwnerDetails.owners.length < 2)
+    ) {
+      setError(t("TL_ERROR_MULTIPLE_OWNER") || "Please add at least 2 owners for Multiple Ownership!");
       setShowToast(true);
       return;
     }
-    if (!validationResult) {
-      setError(t("Please fill all owner mandatory details correctly."));
+
+    const missingFields = validateOwnerDetails(OwnerDetails);
+    if (missingFields.length > 0) {
+      setError(`Please fill the following fields: ${missingFields.join(", ")}`);
       setShowToast(true);
       return;
     }
 
     const res = await onSubmit(formData);
-  
-
-    if (res) {
+    if (res === true) {
       onGoNext();
     } else {
       console.error("Submission failed, not moving to next step.");
@@ -249,7 +298,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
           obj.gender = typeof genderCode === 'string' ? genderCode : owner.gender.code;
         }
         if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
-        if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
+        if (owner.name) obj.name = owner.name;
         if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
         obj.permanentAddress = obj.permanentAddress || null;
         if (owner.relationship) {
@@ -343,8 +392,154 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {
       setLoader(false);
-      return error;
+      const errMsg = error?.response?.data?.Errors?.[0]?.message || error?.message || t("TL_CREATE_ERROR");
+      setError(errMsg);
+      setShowToast(true);
+      return false;
     }
+  };
+
+  const buildAndSaveResumePayload = (data) => {
+    const createdResp = formData?.CreatedResponse;
+    if (!createdResp?.applicationNumber) return;
+
+    const { TraidDetails, OwnerDetails } = data;
+
+    const origAccessories = createdResp.tradeLicenseDetail?.accessories || [];
+    let accessories = [];
+    if (TraidDetails?.accessories?.length > 0) {
+      TraidDetails.accessories.forEach((item, index) => {
+        if (item?.accessoryCategory?.code) {
+          const origAcc = origAccessories[index] || {};
+          accessories.push({
+            id: origAcc.id || undefined,
+            tenantId: origAcc.tenantId || undefined,
+            active: true,
+            accessoryCategory: item.accessoryCategory.code || null,
+            uom: item.accessoryCategory.uom || null,
+            count: Number(item.count) || null,
+            uomValue: Number(item.uomValue) || null,
+          });
+        }
+      });
+    }
+
+    const origTradeUnits = createdResp.tradeLicenseDetail?.tradeUnits || [];
+    let tradeUnits = [];
+    if (TraidDetails?.tradeUnits?.length > 0) {
+      TraidDetails.tradeUnits.forEach((item, index) => {
+        const origUnit = origTradeUnits[index] || {};
+        tradeUnits.push({
+          id: origUnit.id || undefined,
+          tenantId: origUnit.tenantId || undefined,
+          active: true,
+          tradeType: item.tradeSubType?.code || null,
+          uom: item.tradeSubType?.uom || null,
+          uomValue: Number(item.uomValue) || null,
+        });
+      });
+    }
+
+    const origAddress = createdResp.tradeLicenseDetail?.address || {};
+    let address = {};
+    if (TraidDetails?.cpt?.details?.address) {
+      address.id = origAddress.id || undefined;
+      address.tenantId = origAddress.tenantId || undefined;
+      address.city = TraidDetails.cpt.details.address.city || null;
+      address.locality = { code: TraidDetails.cpt.details.address.locality?.code || null, name: TraidDetails.cpt.details.address.locality?.name || null };
+      if (TraidDetails.cpt.details.address.doorNo || TraidDetails.address?.doorNo)
+        address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address?.doorNo || null;
+      if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
+        address.street = TraidDetails.cpt.details.address.street || TraidDetails.address?.street || null;
+      if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
+    } else if (TraidDetails?.address) {
+      address.id = origAddress.id || undefined;
+      address.tenantId = origAddress.tenantId || undefined;
+      address.city = TraidDetails.address.city?.code || null;
+      address.locality = { code: TraidDetails.address.locality?.code || null, name: TraidDetails.address.locality?.name || null };
+      if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
+      if (TraidDetails.address.street) address.street = TraidDetails.address.street;
+      if (TraidDetails.address.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
+      if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
+    }
+    if (TraidDetails?.address?.geoLocation?.latitude) {
+      address.latitude = TraidDetails.address.geoLocation.latitude;
+      address.longitude = TraidDetails.address.geoLocation.longitude;
+    }
+
+    let owners = [];
+    if (OwnerDetails?.owners?.length > 0) {
+      OwnerDetails.owners.forEach((owner, index) => {
+        const origOwner = createdResp.tradeLicenseDetail?.owners?.[index] || {};
+        let obj = {
+          ...origOwner, // preserves roles, userName, type, active, tenantId, etc.
+          dob: owner?.dob ? convertDateToEpoch(owner.dob) : origOwner.dob,
+          additionalDetails: { ownerSequence: index, ownerName: owner.name || origOwner.name },
+          permanentAddress: owner.permanentAddress || origOwner.permanentAddress || null,
+        };
+        if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
+        if (owner.gender?.code) {
+          let genderCode = owner.gender.code;
+          while (genderCode && typeof genderCode === "object" && genderCode.code) genderCode = genderCode.code;
+          obj.gender = typeof genderCode === "string" ? genderCode : owner.gender.code;
+        }
+        if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
+        if (owner.name) obj.name = owner.name;
+        if (owner.relationship) {
+          let relCode = owner.relationship;
+          while (relCode && typeof relCode === "object" && relCode.code) relCode = relCode.code;
+          obj.relationship = typeof relCode === "string" ? relCode : owner.relationship?.code;
+        }
+        if (owner.emailId) obj.emailId = owner.emailId;
+        if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
+        owners.push(obj);
+      });
+    }
+
+    const structureType = TraidDetails?.tradedetils?.[0]?.structureSubType?.code || "";
+    const subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code || "";
+
+    const noOfEmployees = Number(TraidDetails?.tradedetils?.[0]?.noOfEmployees) || "";
+    const operationalArea = Number(TraidDetails?.tradedetils?.[0]?.operationalArea) || "";
+    const oldReceiptNo = TraidDetails?.tradedetils?.[0]?.oldReceiptNo || "";
+
+    const isSendBack = new URLSearchParams(window.location.search).get("sendback") === "true";
+    let payload = {
+      ...createdResp,
+      action: isSendBack ? "RESUBMIT" : "APPLY",
+      tradeName: TraidDetails?.tradedetils?.[0]?.tradeName || createdResp.tradeName,
+      commencementDate: convertDateToEpoch(TraidDetails?.tradedetils?.[0]?.commencementDate) || createdResp.commencementDate,
+      financialYear: TraidDetails?.tradedetils?.[0]?.financialYear?.code || createdResp.financialYear,
+      tradeLicenseDetail: { ...createdResp.tradeLicenseDetail },
+    };
+    if (oldReceiptNo) payload.oldLicenseNumber = oldReceiptNo;
+    if (noOfEmployees) payload.tradeLicenseDetail.noOfEmployees = noOfEmployees;
+    if (operationalArea) payload.tradeLicenseDetail.operationalArea = operationalArea;
+    if (tradeUnits.length > 0) payload.tradeLicenseDetail.tradeUnits = tradeUnits;
+    if (accessories.length > 0) payload.tradeLicenseDetail.accessories = accessories;
+    if (owners.length > 0) payload.tradeLicenseDetail.owners = owners;
+    if (Object.keys(address).length > 0) payload.tradeLicenseDetail.address = address;
+    if (structureType) payload.tradeLicenseDetail.structureType = structureType;
+    if (subOwnerShipCategory) payload.tradeLicenseDetail.subOwnerShipCategory = subOwnerShipCategory;
+    if (OwnerDetails?.owners?.length && subOwnerShipCategory.includes("INSTITUTIONAL")) {
+      payload.tradeLicenseDetail.institution = {
+        designation: OwnerDetails.owners[0]?.designation,
+        instituionName: OwnerDetails.owners[0]?.instituionName,
+        name: OwnerDetails.owners[0]?.name,
+        contactNo: OwnerDetails.owners[0]?.altContactNumber,
+      };
+    }
+    if (TraidDetails?.tradedetils?.[0]?.gstNo) {
+      payload.tradeLicenseDetail.gstNo = TraidDetails.tradedetils[0].gstNo;
+    }
+    payload.tradeLicenseDetail.additionalDetail = {
+      ...(payload.tradeLicenseDetail.additionalDetail || {}),
+      validityYears: TraidDetails?.validityYears?.code || payload.tradeLicenseDetail.additionalDetail?.validityYears,
+      gstNo: TraidDetails?.tradedetils?.[0]?.gstNo || payload.tradeLicenseDetail.additionalDetail?.gstNo,
+    };
+
+    dispatch(UPDATE_tlNewApplication("ResumePayload", payload));
   };
 
   function onGoBack(data) {

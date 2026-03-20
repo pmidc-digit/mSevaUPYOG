@@ -16,6 +16,7 @@ const getformDataforEdit = (ChallanData, fetchBillData) => {
     building: ChallanData[0].address.buildingName,
     streetName: ChallanData[0].address.street,
     pincode: ChallanData[0].address.pincode || "143001",
+    Comment : ChallanData[0].description,
     mohalla: {
       ...ChallanData[0].address.locality,
       i18nkey: `${stringReplaceAll(ChallanData[0].tenantId, ".", "_").toUpperCase()}_ADMIN_${ChallanData[0]?.address?.locality?.code}`,
@@ -31,27 +32,27 @@ const getformDataforEdit = (ChallanData, fetchBillData) => {
     },
     fromDate: ChallanData[0]
       ? new Date(ChallanData[0].taxPeriodFrom).getFullYear().toString() +
-        "-" +
-        `${new Date(ChallanData[0].taxPeriodFrom).getMonth() + 1 < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodFrom).getMonth() + 1}` +
-        "-" +
-        `${new Date(ChallanData[0].taxPeriodFrom).getDate() < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodFrom).getDate()}`
+      "-" +
+      `${new Date(ChallanData[0].taxPeriodFrom).getMonth() + 1 < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodFrom).getMonth() + 1}` +
+      "-" +
+      `${new Date(ChallanData[0].taxPeriodFrom).getDate() < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodFrom).getDate()}`
       : null,
     toDate: ChallanData[0]
       ? new Date(ChallanData[0].taxPeriodTo).getFullYear().toString() +
-        "-" +
-        `${new Date(ChallanData[0].taxPeriodTo).getMonth() + 1 < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodTo).getMonth() + 1}` +
-        "-" +
-        `${new Date(ChallanData[0].taxPeriodTo).getDate() < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodTo).getDate()}`
+      "-" +
+      `${new Date(ChallanData[0].taxPeriodTo).getMonth() + 1 < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodTo).getMonth() + 1}` +
+      "-" +
+      `${new Date(ChallanData[0].taxPeriodTo).getDate() < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodTo).getDate()}`
       : null,
   };
 
   defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`] = {};
 
-  // if (fetchBillData.Bill[0].billDetails[0].billAccountDetails.length > 0) {
-  //   fetchBillData.Bill[0].billDetails[0].billAccountDetails.map(
-  //     (ele) => (defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`][`${ele.taxHeadCode.split(".")[1]}`] = `${ele.amount}`)
-  //   );
-  // }
+   if (fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails?.length > 0) {
+     fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails?.map(
+       (ele) => (defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`][`${ele.taxHeadCode.split(".")[1]}`] = `${ele.amount}`)
+     );
+   }
 
   sessionStorage.setItem("InitialTaxFeilds", JSON.stringify(defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`]));
   return defaultval;
@@ -89,22 +90,21 @@ const NewChallan = ({ ChallanData }) => {
 
   const { data: fetchBillData } = ChallanData
     ? Digit.Hooks.useFetchBillsForBuissnessService(
-        {
-          businessService: ChallanData[0].businessService,
-          consumerCode: ChallanData[0].challanNo,
-        },
-        { lastModTime }
-      )
+      {
+        businessService: ChallanData[0].businessService,
+        consumerCode: ChallanData[0].challanNo,
+      },
+      { lastModTime }
+    )
     : {};
 
   useEffect(() => {
-    console.log("isEdit", isEdit, fetchBillData);
-    if (isEdit) {
+    if (isEdit && fetchBillData) {
       let formdata = getformDataforEdit(ChallanData, fetchBillData);
       setdefaultUpdatedValue(true);
       sessionStorage.setItem("mcollectEditObject", JSON.stringify({ consomerDetails1: [{ ...formdata }] }));
     }
-  }, [isEdit, fetchBillData]);
+  }, [isEdit, fetchBillData, ChallanData]);
 
   const closeToast = () => {
     setShowToast(null);
@@ -123,120 +123,176 @@ const NewChallan = ({ ChallanData }) => {
   const onFormValueChange = (setValue, formData, formState) => {
     setSubmitValve(!Object.keys(formState.errors).length);
   };
+  const validateForm = (data) => {
+  if (!data.ConsumerName || data.ConsumerName.trim() === "") {
+    return false;
+  }
+
+  if (!data.mobileNumber || !/^[6-9]\d{9}$/.test(data.mobileNumber)) {
+    return false;
+  }
+
+  if (!data.city || !data.city.code) {
+    return false;
+  }
+
+  if (!data.mohalla || !data.mohalla.code) {
+    return false;
+  }
+
+  if (!data.category || !data.category.code) {
+    return false;
+  }
+
+  if (!data.categoryType || !data.categoryType.code) {
+    return false;
+  }
+
+  if (!data.fromDate || !data.toDate) {
+    return false;
+  }
+
+  if (new Date(data.fromDate) > new Date(data.toDate)) {
+    return false;
+  }
+
+  // Validate CH taxes
+  // if (!data.CH) {
+  //   return false;
+  // }
+
+  // const taxValues = Object.values(data.CH);
+
+  // for (let tax of taxValues) {
+  //   if (!tax || Number(tax) <= 0) {
+  //     return false;
+  //   }
+  // }
+
+  return true;
+};
 
   const onSubmit = (data) => {
-    let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData"));
+    //let mcollectEditObject = JSON.parse(sessionStorage.getItem("mcollectEditObject"));
+    //let mcollectFormValue = isEdit ? mcollectEditObject?.consomerDetails1?.[0] : JSON.parse(sessionStorage.getItem("mcollectFormData"));
+    let mcollectFormValue =  JSON.parse(sessionStorage.getItem("mcollectFormData"));
     data = mcollectFormValue ? mcollectFormValue : data?.consomerDetails1?.[0];
+    console.log("form Data ", data)
     let TaxHeadMasterKeys = data[`${data?.category?.code?.split(".")[0]}`] ? Object.keys(data[`${data?.category?.code?.split(".")[0]}`]) : [];
     let TaxHeadMasterValues = data[`${data?.category?.code?.split(".")[0]}`] ? Object.values(data[`${data?.category?.code?.split(".")[0]}`]) : [];
-    let Challan = {};
-    if (!isEdit) {
-      let temp = data?.category?.code;
-      Challan = {
-        citizen: {
-          name: data.ConsumerName,
-          mobileNumber: data.mobileNumber,
-          emailId: data.emailId,
-        },
-        //businessService: selectedCategoryType ? temp + "." + humanized(selectedCategoryType.code, temp) : "",
-        businessService: data?.categoryType?.code,
-        consumerType: data?.category?.code?.split(".")[0],
-        description: data?.comments,
-        taxPeriodFrom: Date.parse(data?.fromDate),
-        taxPeriodTo: Date.parse(data?.toDate),
-        tenantId: tenantId,
-        address: {
-          buildingName: data.building,
-          doorNo: data.doorNo,
-          street: data.streetName,
-          locality: { code: data?.mohalla?.code },
-          pincode: data.pincode,
-        },
-        amount: TaxHeadMasterKeys.map((ele, index) => {
-          return {
-            taxHeadCode: `${data?.category?.code?.split(".")[0]}.${ele}`,
-            amount: TaxHeadMasterValues[index] ? Math.round(TaxHeadMasterValues[index]) : 0,
-          };
-        }),
-      };
-    } else {
-      Challan = {
-        accountId: ChallanData[0].accountId,
-        citizen: ChallanData[0].citizen,
-        applicationStatus: ChallanData[0].applicationStatus,
-        auditDetails: ChallanData[0].auditDetails,
-        id: ChallanData[0].id,
-        businessService: ChallanData[0].businessService,
-        challanNo: ChallanData[0].challanNo,
-        consumerType: data?.category?.code,
-        description: data.comments,
-        taxPeriodFrom: Date.parse(data.fromDate),
-        taxPeriodTo: Date.parse(data.toDate),
-        tenantId: tenantId,
-        address: ChallanData[0].address,
-        amount: TaxHeadMasterKeys.map((ele, index) => {
-          return {
-            taxHeadCode: `${data?.category?.code?.split(".")[0]}.${ele}`,
-            amount: TaxHeadMasterValues[index] ? Math.round(TaxHeadMasterValues[index]) : 0,
-          };
-        }),
-      };
-    }
+    let isvalid = validateForm(data);
+    if(isvalid){
+      let Challan = {};
+      if (!isEdit) {
+        let temp = data?.category?.code;
+        Challan = {
+          citizen: {
+            name: data.ConsumerName,
+            mobileNumber: data.mobileNumber,
+            emailId: data.emailId,
+          },
+          //businessService: selectedCategoryType ? temp + "." + humanized(selectedCategoryType.code, temp) : "",
+          businessService: data?.categoryType?.code,
+          consumerType: data?.category?.code?.split(".")[0],
+          description: data?.Comment,
+          taxPeriodFrom: Date.parse(data?.fromDate),
+          taxPeriodTo: Date.parse(data?.toDate),
+          tenantId: tenantId,
+          address: {
+            buildingName: data.building,
+            doorNo: data.doorNo,
+            street: data.streetName,
+            locality: { code: data?.mohalla?.code },
+            pincode: data.pincode,
+          },
+          amount: TaxHeadMasterKeys.map((ele, index) => {
+            return {
+              taxHeadCode: `${data?.category?.code?.split(".")[0]}.${ele}`,
+              amount: TaxHeadMasterValues[index] ? Math.round(TaxHeadMasterValues[index]) : 0,
+            };
+          }),
+        };
+      } else {
+        Challan = {
+          accountId: ChallanData[0].accountId,
+          citizen: ChallanData[0].citizen,
+          applicationStatus: ChallanData[0].applicationStatus,
+          auditDetails: ChallanData[0].auditDetails,
+          id: ChallanData[0].id,
+          businessService: ChallanData[0].businessService,
+          challanNo: ChallanData[0].challanNo,
+          consumerType: data?.category?.code,
+          description: data.Comment,
+          taxPeriodFrom: Date.parse(data.fromDate),
+          taxPeriodTo: Date.parse(data.toDate),
+          tenantId: tenantId,
+          address: ChallanData[0].address,
+          amount: TaxHeadMasterKeys.map((ele, index) => {
+            return {
+              taxHeadCode: `${data?.category?.code?.split(".")[0]}.${ele}`,
+              amount: TaxHeadMasterValues[index] ? Math.round(TaxHeadMasterValues[index]) : 0,
+            };
+          }),
+        };
+      }
 
-    if (isEdit) {
-      setLoading(true);
-      Digit.MCollectService.update({ Challan: Challan }, tenantId)
-        .then((result, err) => {
-          setLoading(false);
-          if (result.challans && result.challans.length > 0) {
-            const challan = result.challans[0];
-            sessionStorage.removeItem("mcollectEditObject");
-            let LastModifiedTime = Digit.SessionStorage.set("isMcollectAppChanged", challan.auditDetails.lastModifiedTime);
-            Digit.MCollectService.generateBill(challan.challanNo, tenantId, challan.businessService, "challan").then((response) => {
-              if (response.Bill && response.Bill.length > 0) {
-                history.push(
-                  `/digit-ui/employee/mcollect/acknowledgement?purpose=challan&status=success&tenantId=${tenantId}&billNumber=${
-                    response.Bill[0].billNumber
-                  }&serviceCategory=${response.Bill[0].businessService}&challanNumber=${response.Bill[0].consumerCode}&isEdit=${true}`,
-                  { from: url }
-                );
-              }
-            });
-          }
-        })
-        .catch((e) => {
-          setLoading(false);
-          setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message });
-        });
-    } else {
-      setLoading(true);
-      Digit.MCollectService.create({ Challan: Challan }, tenantId)
-        .then((result, err) => {
-          setLoading(false);
-          if (result.challans && result.challans.length > 0) {
-            const challan = result.challans[0];
-            sessionStorage.removeItem("mcollectFormData");
-            setLoading(true);
-            Digit.MCollectService.generateBill(challan.challanNo, tenantId, challan.businessService, "challan")
-              .then((response) => {
-                setLoading(false);
+      if (isEdit) {
+        setLoading(true);
+        Digit.MCollectService.update({ Challan: Challan }, tenantId)
+          .then((result, err) => {
+            setLoading(false);
+            if (result.challans && result.challans.length > 0) {
+              const challan = result.challans[0];
+              sessionStorage.removeItem("mcollectEditObject");
+              let LastModifiedTime = Digit.SessionStorage.set("isMcollectAppChanged", challan.auditDetails.lastModifiedTime);
+              Digit.MCollectService.generateBill(challan.challanNo, tenantId, challan.businessService, "challan").then((response) => {
                 if (response.Bill && response.Bill.length > 0) {
                   history.push(
-                    `/digit-ui/employee/mcollect/acknowledgement?purpose=challan&status=success&tenantId=${tenantId}&billNumber=${response.Bill[0].billNumber}&serviceCategory=${response.Bill[0].businessService}&challanNumber=${response.Bill[0].consumerCode}`,
+                    `/digit-ui/employee/mcollect/acknowledgement?purpose=challan&status=success&tenantId=${tenantId}&billNumber=${response.Bill[0].billNumber
+                    }&serviceCategory=${response.Bill[0].businessService}&challanNumber=${response.Bill[0].consumerCode}&isEdit=${true}`,
                     { from: url }
                   );
                 }
-              })
-              .catch((err) => {
-                setLoading(false);
-                console.log("err", err);
               });
-          }
-        })
-        .catch((e) => {
-          setLoading(false);
-          setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message });
-        });
+            }
+          })
+          .catch((e) => {
+            setLoading(false);
+            setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message });
+          });
+      } else {
+        setLoading(true);
+        Digit.MCollectService.create({ Challan: Challan }, tenantId)
+          .then((result, err) => {
+            setLoading(false);
+            if (result.challans && result.challans.length > 0) {
+              const challan = result.challans[0];
+              sessionStorage.removeItem("mcollectFormData");
+              setLoading(true);
+              Digit.MCollectService.generateBill(challan.challanNo, tenantId, challan.businessService, "challan")
+                .then((response) => {
+                  setLoading(false);
+                  if (response.Bill && response.Bill.length > 0) {
+                    history.push(
+                      `/digit-ui/employee/mcollect/acknowledgement?purpose=challan&status=success&tenantId=${tenantId}&billNumber=${response.Bill[0].billNumber}&serviceCategory=${response.Bill[0].businessService}&challanNumber=${response.Bill[0].consumerCode}`,
+                      { from: url }
+                    );
+                  }
+                })
+                .catch((err) => {
+                  setLoading(false);
+                  console.log("err", err);
+                });
+            }
+          })
+          .catch((e) => {
+            setLoading(false);
+            setShowToast({ key: "error", label: e?.response?.data?.Errors[0].message });
+          });
+      }
+    }else{
+      setLoading(false);
+      setShowToast({ key: "error", label: "Please fill all the Mandatory Fields" });
     }
   };
 
@@ -261,17 +317,16 @@ const NewChallan = ({ ChallanData }) => {
   }
 
   return (
-    <div >
-      {/* <div style={isMobile?{}:{ marginLeft: "15px" }}>
-        <Header>{isEdit ? t("UC_UPDATE_CHALLAN"):t("UC_COMMON_HEADER")}</Header>
-      </div> */}
+    <div className="card">
+      {<div style={isMobile ? {} : { marginLeft: "15px" }}>
+        <Header>{isEdit ? t("UC_UPDATE_CHALLAN") : t("UC_COMMON_HEADER")}</Header>
+      </div>}
       {isEdit && !JSON.parse(sessionStorage.getItem("mcollectEditObject")) && !defaultUpdatedValue ? (
         <Loader page={true} />
       ) : (
-        <div className="card">
 
         <FormComposer
-          heading={isEdit ? t("UC_UPDATE_CHALLAN") : t("UC_COMMON_HEADER")}
+          // heading={isEdit ? t("UC_UPDATE_CHALLAN") : t("UC_COMMON_HEADER")}
           //isDisabled={!canSubmit}
           label={t("ES_COMMON_APPLICATION_SUBMIT")}
           config={configs.map((config) => {
@@ -289,7 +344,6 @@ const NewChallan = ({ ChallanData }) => {
           onFormValueChange={onFormValueChange}
           breaklineStyle={{ border: "0px" }}
         />
-        </div>
       )}
       {showToast && <Toast error={showToast?.key === "error" ? true : false} label={showToast?.label} onClose={closeToast} />}
       {getLoading && <Loader page={true} />}

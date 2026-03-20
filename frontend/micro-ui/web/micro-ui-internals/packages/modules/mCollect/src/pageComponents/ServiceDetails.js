@@ -205,17 +205,19 @@ const OwnerForm1 = (_props) => {
   //   })
   // },[TaxHeadMasterFields])
 
-  useEffect(() => {
-    if (isEdit && TaxHeadMasterFields && !formValue[`${formValue?.categoryType?.code?.split(".")[0]}`]) {
+   useEffect(() => {
+     if (isEdit && TaxHeadMasterFields && !formValue[`${formValue?.categoryType?.code?.split(".")[0]}`]) { 
       let cdTax = JSON.parse(sessionStorage.getItem("InitialTaxFeilds"));
-      console.log("cdTax", cdTax);
-      TaxHeadMasterFields &&
-        TaxHeadMasterFields.length > 0 &&
-        TaxHeadMasterFields?.map((ob) => {
-          setValue("CH.BIDI_AND_CIGRETTE_CHALLAN_TAX", 400);
-        });
-    }
-  }, [TaxHeadMasterFields]);
+       console.log("cdTax", cdTax);
+       TaxHeadMasterFields &&
+         TaxHeadMasterFields.length > 0 &&
+         TaxHeadMasterFields?.map((ob) => {
+           if (cdTax && cdTax[ob.code.split(".")[1]]) {
+             setValue(ob.code, cdTax[ob.code.split(".")[1]]);
+           }
+         });
+     }
+   }, [TaxHeadMasterFields]);
 
   useEffect(() => {
     const city = cities ? cities.find((obj) => obj.pincode?.find((item) => item == pincode)) : [];
@@ -270,202 +272,174 @@ const OwnerForm1 = (_props) => {
 
   return (
     <div style={isMobile ? {} : { marginTop: "-50px" }}>
-
-          <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("UC_CITY_LABEL")} * `}</CardLabel>
+      <CardSectionHeader>{t("SERVICEDETAILS")}</CardSectionHeader>
+      <div style={isMobile ? {} : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("UC_CITY_LABEL")} `}<span>*</span></CardLabel>
+          <Controller
+            name="city"
+            rules={{ required: t("REQUIRED_FIELD") }}
+            defaultValue={consumerdetail?.city}
+            control={control}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={props.value}
+                id="city"
+                freeze={true}
+                disable={true}
+                option={getCities()}
+                select={props.onChange}
+                optionKey="i18nKey"
+                onBlur={props.onBlur}
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_SERVICE_CATEGORY_LABEL")}`}<span>*</span></CardLabel>
+          <Controller
+            name="category"
+            rules={{ required: t("REQUIRED_FIELD") }}
+            defaultValue={consumerdetail?.category}
+            control={control}
+            render={(props) => (
+              <Dropdown
+                isMandatory
+                className="form-field"
+                selected={props.value}
+                optionCardStyles={{ maxHeight: "960%" }}
+                id="businessService"
+                option={sortDropdownNames(categoires, "code", t)}
+                select={props.onChange}
+                optionKey="i18nkey"
+                onBlur={props.onBlur}
+                disable={isEdit}
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("UC_SERVICE_TYPE_LABEL")} `}<span>*</span></CardLabel>
+          <Controller
+            name="categoryType"
+            rules={{ required: t("REQUIRED_FIELD") }}
+            defaultValue={consumerdetail?.categoryType}
+            control={control}
+            render={(props) => (
+              <Dropdown
+                isMandatory
+                className="form-field"
+                selected={props.value}
+                id="businessService"
+                option={sortDropdownNames(categoiresType, "code", t)}
+                select={props.onChange}
+                optionKey="i18nkey"
+                onBlur={props.onBlur}
+                disable={isEdit}
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("UC_FROM_DATE_LABEL")} `}<span>*</span></CardLabel>
+          <div className="form-field">
             <Controller
-              name="city"
+              name="fromDate"
               rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={consumerdetail?.city}
+              isMandatory={true}
+              defaultValue={consumerdetail?.fromDate}
               control={control}
               render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={props.value}
-                  id="city"
-                  freeze={true}
-                  disable={true}
-                  //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
-                  // disable={financialYearOptions?.length === 1}
-                  option={getCities()}
-                  select={props.onChange}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  //disable={isRenewal}
-                  t={t}
+                <DatePicker
+                  date={props.value}
+                  name="fromDate"
+                  onChange={props.onChange}
                 />
               )}
             />
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_SERVICE_CATEGORY_LABEL")} * `}</CardLabel>
+          </div>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("UC_TO_DATE_LABEL")} `}<span>*</span></CardLabel>
+          <div className="form-field">
             <Controller
-              name="category"
+              name="toDate"
               rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={consumerdetail?.category}
+              isMandatory={true}
+              defaultValue={consumerdetail?.toDate}
               control={control}
               render={(props) => (
-                <Dropdown
-                  isMandatory
-                  className="form-field"
-                  selected={props.value}
-                  optionCardStyles={{ maxHeight: "960%" }}
-                  //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
-                  // disable={financialYearOptions?.length === 1}
-                  id="businessService"
-                  option={sortDropdownNames(categoires, "code", t)}
-                  //option={categoires}
-                  select={props.onChange}
-                  optionKey="i18nkey"
-                  onBlur={props.onBlur}
+                <DatePicker
+                  date={props.value}
+                  name="toDate"
+                  onChange={props.onChange}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {TaxHeadMasterFields &&
+          TaxHeadMasterFields.length > 0 &&
+          TaxHeadMasterFields.map((tax) => (
+            <div key={tax.code}>
+              <LabelFieldPair>
+                <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>
+                  {`${t(stringReplaceAll(tax?.name, ".", "_"))}`}
+                 <span>{tax.isRequired ? "*" : ""}</span> 
+                </CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={tax?.code}
+                    defaultValue=""
+                    rules={tax.isRequired ? { required: t("REQUIRED_FIELD") } : {}}
+                    render={(props) => (
+                      <div style={{ display: "flex" }}>
+                        <div className="employee-card-input employee-card-input--front">₹</div>
+                        <TextInput
+                          value={props.value}
+                          onChange={(e) => props.onChange(e.target.value)}
+                          onBlur={props.onBlur}
+                        />
+                      </div>
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+            </div>
+          ))}
+        <LabelFieldPair>
+          <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_COMMENT_LABEL")}`}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name={"Comment"}
+              defaultValue={consumerdetail?.Comment}
+              render={(props) => (
+                <TextArea
+                  value={props.value}
+                  autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                  errorStyle={localFormState.touched.Comment && errors?.Comment?.message ? true : false}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: -1 });
+                  }}
+                  onBlur={(e) => {
+                    setFocusIndex({ index: -1 });
+                    props.onBlur(e);
+                  }}
                   disable={isEdit}
-                  t={t}
                 />
               )}
             />
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("UC_SERVICE_TYPE_LABEL")} * `}</CardLabel>
-            <Controller
-              name="categoryType"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={consumerdetail?.categoryType}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  isMandatory
-                  className="form-field"
-                  selected={props.value}
-                  //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
-                  // disable={financialYearOptions?.length === 1}
-                  id="businessService"
-                  option={sortDropdownNames(categoiresType, "code", t)}
-                  //option={categoires}
-                  select={props.onChange}
-                  optionKey="i18nkey"
-                  onBlur={props.onBlur}
-                  disable={isEdit}
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("UC_FROM_DATE_LABEL")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                name="fromDate"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                isMandatory={true}
-                defaultValue={consumerdetail?.fromDate}
-                control={control}
-                render={(props) => (
-                  <DatePicker
-                    date={props.value}
-                    // date={CommencementDate}
-                    name="fromDate"
-                    onChange={props.onChange}
-                    //disabled={isRenewal}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("UC_TO_DATE_LABEL")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                name="toDate"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                isMandatory={true}
-                defaultValue={consumerdetail?.toDate}
-                control={control}
-                render={(props) => (
-                  <DatePicker
-                    date={props.value}
-                    // date={CommencementDate}
-                    name="toDate"
-                    onChange={props.onChange}
-                    //disabled={isRenewal}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {TaxHeadMasterFields &&
-            TaxHeadMasterFields.length > 0 &&
-            TaxHeadMasterFields.map((tax) => (
-              <div>
-                <LabelFieldPair>
-                  <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>
-                    {`${t(stringReplaceAll(tax?.name, ".", "_"))}`}
-                    {tax.isRequired ? "*" : ""}
-                  </CardLabel>
-                  <div className="form-field">
-                    <Controller
-                      control={control}
-                      name={tax?.code}
-                      defaultValue={consumerdetail[tax?.code]}
-                      isMandatory={tax.isRequired}
-                      componentInFront={<div className="employee-card-input employee-card-input--front">₹</div>}
-                      rules={tax.isRequired ? { required: t("REQUIRED_FIELD") } : ""}
-                      render={(props) => (
-                        <div style={{ display: "flex" }}>
-                          <div className="employee-card-input employee-card-input--front">₹</div>
-                          <TextInput
-                            value={props.value}
-                            //className="employee-card-input employee-card-input--front"
-                            componentInFront={<div className="employee-card-input employee-card-input--front">₹</div>}
-                            autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                            //errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
-                            onChange={(e) => {
-                              props.onChange(e.target.value);
-                              setFocusIndex({ index: consumerdetail.key, type: tax?.code });
-                            }}
-                            onBlur={(e) => {
-                              setFocusIndex({ index: -1 });
-                              props.onBlur(e);
-                            }}
-                            //disable={isRenewal}
-                          />
-                        </div>
-                      )}
-                    />
-                  </div>
-                </LabelFieldPair>
-              </div>
-            ))}
-
-          <LabelFieldPair>
-            <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_COMMENT_LABEL")}`}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"Comment"}
-                defaultValue={consumerdetail?.Comment}
-                // rules={{  validate: { pattern: (val) => (/^[a-zA-Z ]*$/.test(val) ? true : t("CS_ADDCOMPLAINT_NAME_ERROR")) } }}
-                render={(props) => (
-                  <TextArea
-                    value={props.value}
-                    autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    errorStyle={localFormState.touched.Comment && errors?.Comment?.message ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      //setFocusIndex({ index: consumerdetail.key, type: "ConsumerName" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isEdit}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-        </div>
-
+          </div>
+        </LabelFieldPair>
+      </div>
+    </div>
   );
 };
 

@@ -26,21 +26,35 @@ const SearchReceipt = () => {
   const [tableData, setTableData] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const { data: EmployeeStatusData = [], isLoading: callMDMS } = Digit.Hooks.useCustomMDMS(
-    tenantId,
-    "BillingService",
-    [{ name: "BusinessService", filter: "[?(@.type=='Adhoc')]" }],
-    {
-      select: (data) => {
-        const formattedData = data?.["BillingService"]?.["BusinessService"];
-        return formattedData;
-      },
-    }
-  );
+  const { data: EmployeeStatusData = [], isLoading: callMDMS } =
+    Digit.Hooks.useCustomMDMS(
+      tenantId,
+      "BillingService",
+      [{ name: "BusinessService" }],
+      {
+        select: (data) => {
+          const formattedData = data?.["BillingService"]?.["BusinessService"];
+
+          return formattedData?.map((item) => {
+            const formattedKey =
+              "BILLINGSERVICE_BUSINESSSERVICE_" +
+              item.code.replace(/\./g, "_").toUpperCase();
+
+            return {
+              ...item,
+              i18nKey: formattedKey,
+            };
+          });
+        },
+      }
+    );
 
   const methods = useForm({
     defaultValues: {
-      categoryName: "",
+      businessServices: null,
+      consumerCodes: "",
+      receiptNumbers: "",
+      mobileNumber: "",
     },
   });
 
@@ -168,7 +182,11 @@ const SearchReceipt = () => {
     ],
     [t]
   );
-
+  const handleReset = () => {
+    debugger
+    reset(); // resets all fields to defaultValues
+   
+  };
   return (
     <React.Fragment>
       <div className={"employee-application-details"}>
@@ -196,7 +214,7 @@ const SearchReceipt = () => {
                           select={(e) => {
                             props.onChange(e);
                           }}
-                          optionKey="code"
+                          optionKey="i18nKey"
                           onBlur={props.onBlur}
                           t={t}
                           selected={props.value}
@@ -270,8 +288,9 @@ const SearchReceipt = () => {
                   </span>
                 </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px" }}>
                 <SubmitBar label={t("Next")} submit="submit" />
+               <SubmitBar label={t("CS_COMMON_RESET")} onSubmit={() => { reset(); }} className="submit-bar ral-back-btn" />
               </div>
             </div>
           </form>

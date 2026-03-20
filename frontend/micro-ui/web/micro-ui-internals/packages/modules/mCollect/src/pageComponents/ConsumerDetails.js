@@ -122,6 +122,23 @@ const OwnerForm1 = (_props) => {
     trigger();
   }, []);
 
+  // Ensure consumer details are persisted even if the user does not edit any field.
+  // This is important for the final submit, which reads sessionStorage.mcollectFormData.
+  useEffect(() => {
+    const initialValues = {
+      ConsumerName: consumerdetail?.ConsumerName,
+      mobileNumber: consumerdetail?.mobileNumber,
+      emailId: consumerdetail?.emailId,
+    };
+
+    // Only persist if we have at least one value.
+    if (Object.values(initialValues).some((v) => v !== undefined && v !== "" && v !== null)) {
+      let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData")) || {};
+      mcollectFormValue = { ...mcollectFormValue, ...initialValues };
+      sessionStorage.setItem("mcollectFormData", JSON.stringify(mcollectFormValue));
+    }
+  }, [consumerdetail]);
+
   useEffect(() => {
     if (Object.entries(formValue).length > 0) {
       const keys = Object.keys(formValue);
@@ -156,64 +173,70 @@ const OwnerForm1 = (_props) => {
     <React.Fragment>
 
           <CardSectionHeader>{t("CONSUMERDETAILS")}</CardSectionHeader>
-          <LabelFieldPair>
-            <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_CONS_NAME_LABEL")} * `}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"ConsumerName"}
-                defaultValue={consumerdetail?.ConsumerName}
-                rules={{
-                  required: t("REQUIRED_FIELD"),
-                  validate: { pattern: (val) => (/^[a-zA-Z ]*$/.test(val) ? true : t("CS_ADDCOMPLAINT_NAME_ERROR")) },
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
-                    errorStyle={localFormState.touched.ConsumerName && errors?.ConsumerName?.message ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      //setFocusIndex({ index: consumerdetail.key, type: "ConsumerName" });
+          <div style={isMobile ? {} : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom : '16px' }}>
+            <div>
+              <LabelFieldPair>
+                <CardLabel className={isMobile ? "card-label-APK" : "card-label-smaller"}>{`${t("UC_CONS_NAME_LABEL")}`}<span>*</span></CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"ConsumerName"}
+                    defaultValue={consumerdetail?.ConsumerName}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: { pattern: (val) => (/^[a-zA-Z ]*$/.test(val) ? true : t("CS_ADDCOMPLAINT_NAME_ERROR")) },
                     }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isEdit}
+                    render={(props) => (
+                      <TextInput
+                        value={props.value}
+                        autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                        errorStyle={localFormState.touched.ConsumerName && errors?.ConsumerName?.message ? true : false}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                          //setFocusIndex({ index: consumerdetail.key, type: "ConsumerName" });
+                        }}
+                        onBlur={(e) => {
+                          setFocusIndex({ index: -1 });
+                          props.onBlur(e);
+                        }}
+                        disable={isEdit}
+                      />
+                    )}
                   />
-                )}
-              />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{localFormState.touched.ConsumerName ? errors?.ConsumerName?.message : ""}</CardLabelError>
             </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.ConsumerName ? errors?.ConsumerName?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={{ paddingTop: "10px" }} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")}`}</CardLabel>
-            <div className="form-field">
-              <Controller
-                control={control}
-                name={"mobileNumber"}
-                defaultValue={consumerdetail?.mobileNumber}
-                rules={{ required: t("REQUIRED_FIELD"), validate: (v) => (/^[6789]\d{9}$/.test(v) ? true : t("CORE_COMMON_MOBILE_ERROR")) }}
-                render={(props) => (
-                  <MobileNumber
-                    value={props.value}
-                    autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "mobileNumber"}
-                    onChange={(e) => {
-                      props.onChange(e);
-                      setFocusIndex({ index: consumerdetail.key, type: "mobileNumber" });
-                    }}
-                    labelStyle={{ marginTop: "unset", border: "1px solid #464646", borderRight: "none" }}
-                    onBlur={props.onBlur}
-                    errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message ? true : false}
-                    disable={isEdit}
-                    //style={ isMulitpleOwners ? { background: "#FAFAFA" }: ""}
+            <div>
+              <LabelFieldPair>
+                <CardLabel style={{ paddingTop: "10px" }} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")}`}<span>*</span></CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name={"mobileNumber"}
+                    defaultValue={consumerdetail?.mobileNumber}
+                    rules={{ required: t("REQUIRED_FIELD"), validate: (v) => (/^[6789]\d{9}$/.test(v) ? true : t("CORE_COMMON_MOBILE_ERROR")) }}
+                    render={(props) => (
+                      <MobileNumber
+                        value={props.value}
+                        autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "mobileNumber"}
+                        onChange={(e) => {
+                          props.onChange(e);
+                          setFocusIndex({ index: consumerdetail.key, type: "mobileNumber" });
+                        }}
+                        labelStyle={{ marginTop: "unset", border: "1px solid #464646", borderRight: "none" }}
+                        onBlur={props.onBlur}
+                        errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message ? true : false}
+                        disable={isEdit}
+                        //style={ isMulitpleOwners ? { background: "#FAFAFA" }: ""}
+                      />
+                    )}
                   />
-                )}
-              />
+                </div>
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
             </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+          </div>
           {/* <LabelFieldPair>  
           <CardLabel style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_EMAIL_ID")}`}</CardLabel>
           <div className="field">

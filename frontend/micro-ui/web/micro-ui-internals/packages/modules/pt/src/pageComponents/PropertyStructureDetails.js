@@ -2,6 +2,9 @@ import { CardLabel, Dropdown, FormStep, LinkButton, Loader, LabelFieldPair, Dele
 import React, { useEffect, useState ,Fragment} from "react";
 import Timeline from "../components/TLTimeline";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+
 
 const getUsageCategory = (usageCategory = "") => {
   let categoryArray = usageCategory?.split(".") || [];
@@ -192,36 +195,42 @@ console.log("fields",fields)
   if (userType === "employee") {
       return (
         <React.Fragment>
-          <LabelFieldPair key={0}>
-          <CardLabel>{`${t("PT_STRUCTURE_TYPE")}*`}</CardLabel>
-            <div className="field">
-            <Dropdown
-                  t={t}
-                  optionKey="i18nKey"
-                  isMandatory={config.isMandatory}
-                  option={structureType}
-                  selected={fields?.structureType}
-                  placeholder={"Select structure type"}
-                  select={(e) => selectstructureType(1, e)}
-                />
+          <div style={twoColRow}>
+            <div style={colItem}>
+              <LabelFieldPair key={0}>
+              <CardLabel>{`${t("PT_STRUCTURE_TYPE")}*`}</CardLabel>
+                <div className="field">
+                <Dropdown
+                      t={t}
+                      optionKey="i18nKey"
+                      isMandatory={config.isMandatory}
+                      option={structureType}
+                      selected={fields?.structureType}
+                      placeholder={"Select structure type"}
+                      select={(e) => selectstructureType(1, e)}
+                    />
 
+                </div>
+              </LabelFieldPair>
             </div>
-          </LabelFieldPair>
-          <LabelFieldPair key={1}>
-          <CardLabel>{`${t("PT_AGE_OF_PROPERTY")}*`}</CardLabel>
-            <div className="field">
-            <Dropdown
-                  t={t}
-                  optionKey="i18nKey"
-                  isMandatory={config.isMandatory}
-                  option={ageOfProperty}
-                  selected={fields?.ageOfProperty}
-                  placeholder={"Select Age of Property"}
-                  select={(e) => selectageOfProperty(2, e)}
-                />
+            <div style={colItem}>
+              <LabelFieldPair key={1}>
+              <CardLabel>{`${t("PT_AGE_OF_PROPERTY")}*`}</CardLabel>
+                <div className="field">
+                <Dropdown
+                      t={t}
+                      optionKey="i18nKey"
+                      isMandatory={config.isMandatory}
+                      option={ageOfProperty}
+                      selected={fields?.ageOfProperty}
+                      placeholder={"Select Age of Property"}
+                      select={(e) => selectageOfProperty(2, e)}
+                    />
 
+                </div>
+              </LabelFieldPair>
             </div>
-          </LabelFieldPair>
+          </div>
         </React.Fragment>
       );
   }

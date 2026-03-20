@@ -16,6 +16,10 @@ import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationAc
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+const singleCol = { flexDirection: "column", alignItems: "stretch" };
+
 const months = [
   { code: "1", name: "1" },
   { code: "2", name: "2" },
@@ -241,73 +245,73 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   }, [selectedFloors]);
 
   return (
-    <form className="card" onSubmit={handleSubmit(onSubmit)}>
-      {/* Property Usage Type */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("Property Usage Type")}*</CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="propertyUsageType"
-            rules={{ required: t("Property Usage Type is Required") }}
-            render={(props) => (
-              <Dropdown
-                select={(e) => {
-                  props.onChange(e);
-                  const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter((item) => item?.usageCategoryMinor == e?.code);
-                  setSubUsageData(checkData);
-                }}
-                selected={props.value}
-                option={getUsageData}
-                optionKey="name"
-                t={t}
-              />
-            )}
-          />
-          {errors.propertyUsageType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyUsageType?.message}</p>}
-        </div>
-      </LabelFieldPair>
+    <form  onSubmit={handleSubmit(onSubmit)}>
+      {/* Row 1: Property Usage Type + Property Type */}
+      <div style={twoColRow}>
+        <LabelFieldPair style={colItem}>
+          <CardLabel className="card-label-smaller">{t("Property Usage Type")}*</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="propertyUsageType"
+              rules={{ required: t("Property Usage Type is Required") }}
+              render={(props) => (
+                <Dropdown
+                  select={(e) => {
+                    props.onChange(e);
+                    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter((item) => item?.usageCategoryMinor == e?.code);
+                    setSubUsageData(checkData);
+                  }}
+                  selected={props.value}
+                  option={getUsageData}
+                  optionKey="name"
+                  t={t}
+                />
+              )}
+            />
+            {errors.propertyUsageType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyUsageType?.message}</p>}
+          </div>
+        </LabelFieldPair>
+        <LabelFieldPair style={colItem}>
+          <CardLabel className="card-label-smaller">{t("Property Type")}*</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="propertyType"
+              rules={{ required: t("Property Type is required") }}
+              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getPropertyTypeData} optionKey="name" t={t} />}
+            />
+            {errors.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType?.message}</p>}
+          </div>
+        </LabelFieldPair>
+      </div>
 
-      {/* Property Type */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("Property Type")}*</CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="propertyType"
-            rules={{ required: t("Property Type is required") }}
-            render={(props) => <Dropdown select={props.onChange} selected={props.value} option={getPropertyTypeData} optionKey="name" t={t} />}
-          />
-          {errors.propertyType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.propertyType?.message}</p>}
-        </div>
-      </LabelFieldPair>
-
-      {/* Business name */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("Business Name")}*</CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="businessName"
-            rules={{ required: t("Business Name is required") }}
-            render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
-          />
-          {errors.businessName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.businessName?.message}</p>}
-        </div>
-      </LabelFieldPair>
-
-      {/* Remarks */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("Remarks")}</CardLabel>
-        <div className="form-field">
-          <Controller
-            control={control}
-            name="remarks"
-            render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
-          />
-          {errors.remarks && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.remarks?.message}</p>}
-        </div>
-      </LabelFieldPair>
+      {/* Row 2: Business Name + Remarks */}
+      <div style={twoColRow}>
+        <LabelFieldPair style={colItem}>
+          <CardLabel className="card-label-smaller">{t("Business Name")}*</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="businessName"
+              rules={{ required: t("Business Name is required") }}
+              render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
+            />
+            {errors.businessName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.businessName?.message}</p>}
+          </div>
+        </LabelFieldPair>
+        <LabelFieldPair style={colItem}>
+          <CardLabel className="card-label-smaller">{t("Remarks")}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="remarks"
+              render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
+            />
+            {errors.remarks && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.remarks?.message}</p>}
+          </div>
+        </LabelFieldPair>
+      </div>
 
       {/* flammable*/}
       <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginBottom: " 20px" }}>
@@ -353,59 +357,57 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
         </label>
       </div>
 
-      {/* plot size */}
-      {(selectedPropertyType == "BUILTUP.INDEPENDENTPROPERTY" || selectedPropertyType == "VACANT") && (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("Plot Size (sq yards)")}*</CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              name={`plotSize`}
-              // defaultValue={item?.area || ""}
-              rules={{ required: t("Plot Size is required") }}
-              render={(props) => (
-                <TextInput
-                  type={"number"}
-                  value={props.value}
-                  onWheel={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      {/* Row: Plot Size + Select Floor (conditional) */}
+      <div style={twoColRow}>
+        {(selectedPropertyType == "BUILTUP.INDEPENDENTPROPERTY" || selectedPropertyType == "VACANT") && (
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">{t("Plot Size (sq yards)")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`plotSize`}
+                rules={{ required: t("Plot Size is required") }}
+                render={(props) => (
+                  <TextInput
+                    type={"number"}
+                    value={props.value}
+                    onWheel={(e) => {
                       e.preventDefault();
-                    }
-                  }}
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                  }}
-                  onBlur={(e) => {
-                    props.onBlur(e);
-                  }}
-                />
-              )}
-            />
-            {errors.plotSize && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotSize?.message}</p>}
-          </div>
-        </LabelFieldPair>
-      )}
-
-      {/* floors */}
-      {selectedPropertyType == "BUILTUP.INDEPENDENTPROPERTY" && (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              name={`noOfFloors`}
-              rules={{ required: t("Floor is required") }}
-              // defaultValue={item?.floor || ""}
-              render={(props) => <Dropdown select={props.onChange} selected={props.value} option={floorsMan} optionKey="name" t={t} />}
-            />
-            {errors.noOfFloors && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.noOfFloors?.message}</p>}
-          </div>
-        </LabelFieldPair>
-      )}
+                      e.stopPropagation();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+              {errors.plotSize && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.plotSize?.message}</p>}
+            </div>
+          </LabelFieldPair>
+        )}
+        {selectedPropertyType == "BUILTUP.INDEPENDENTPROPERTY" && (
+          <LabelFieldPair style={colItem}>
+            <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={`noOfFloors`}
+                rules={{ required: t("Floor is required") }}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={floorsMan} optionKey="name" t={t} />}
+              />
+              {errors.noOfFloors && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.noOfFloors?.message}</p>}
+            </div>
+          </LabelFieldPair>
+        )}
+      </div>
 
       {(selectedPropertyType == "BUILTUP.SHAREDPROPERTY" || watch("noOfFloors")) && (
         <CardSectionHeader style={{ marginTop: "50px" }}>{t("Unit Details")}</CardSectionHeader>
@@ -423,9 +425,9 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
               borderRadius: "4px",
             }}
           >
-            {/* Unit Usage Type */}
-            {/* {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && ( */}
-            <LabelFieldPair>
+            {/* Row 1: Unit Usage Type + Sub Usage Type */}
+            <div style={twoColRow}>
+            <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Unit Usage Type")}*</CardLabel>
               <div className="form-field">
                 <Controller
@@ -441,14 +443,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
-            {/* // )} */}
-
-            {/* sub usage type */}
-            {/* {selectedPropertyType != "VACANT" &&
-              selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" &&
-              selectedpropertyUsageType != "RESIDENTIAL" &&
-              selectedpropertyUsageType != "MIXED" && ( */}
-            <LabelFieldPair>
+            <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
               <div className="form-field">
                 <Controller
@@ -463,11 +458,11 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
-            {/* // )} */}
+            </div>
 
-            {/* Occupancy */}
-            {/* {selectedPropertyType != "VACANT" && selectedPropertyType != "BUILTUP.INDEPENDENTPROPERTY" && ( */}
-            <LabelFieldPair>
+            {/* Row 2: Occupancy + Built-up area */}
+            <div style={twoColRow}>
+            <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Occupancy")}*</CardLabel>
               <div className="form-field">
                 <Controller
@@ -486,11 +481,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
-            {/* )} */}
-
-            {/* Built up area */}
-            {/* {selectedPropertyType != "VACANT" && ( */}
-            <LabelFieldPair>
+            <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Built-up area (sq ft)")}*</CardLabel>
               <div className="form-field">
                 <Controller
@@ -525,11 +516,12 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
-            {/* )} */}
+            </div>
 
-            {/* Select Floor */}
+            {/* Select Floor + Usage for Pending Months */}
             {/* {selectedPropertyType != "VACANT" && ( */}
-            <LabelFieldPair>
+            <div style={twoColRow}>
+            <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Select Floor")}*</CardLabel>
               <div className="form-field">
                 <Controller
@@ -547,9 +539,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
             </LabelFieldPair>
             {/* )} */}
 
-            {/* Total rent collected */}
+            {/* Total rent collected + Months on Rent */}
             {(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
-              <LabelFieldPair>
+              <div style={twoColRow}>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Total Rent Collected")}*</CardLabel>
                 <div className="form-field">
                   <Controller
@@ -582,11 +575,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   )}
                 </div>
               </LabelFieldPair>
-            )}
-
-            {/* Months on Rent * */}
-            {(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
-              <LabelFieldPair>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Months on Rent")}*</CardLabel>
                 <div className="form-field">
                   <Controller
@@ -601,11 +590,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                   )}
                 </div>
               </LabelFieldPair>
+              </div>
             )}
-
-            {/* Usage for Pending Months  */}
             {(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
-              <LabelFieldPair>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Usage for Pending Months")}*</CardLabel>
                 <div className="form-field">
                   <Controller
@@ -621,6 +609,10 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 </div>
               </LabelFieldPair>
             )}
+            {!(watch(`unitDetails.${index}.occupancy`)?.code == "PG" || watch(`unitDetails.${index}.occupancy`)?.code == "RENTED") && (
+              <div style={colItem} />
+            )}
+            </div>
 
             {/* Remove button */}
             {fields.length > 1 && (

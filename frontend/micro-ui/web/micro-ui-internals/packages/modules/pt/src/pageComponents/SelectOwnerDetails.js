@@ -4,6 +4,9 @@ import { cardBodyStyle } from "../utils";
 import { useLocation, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+
 const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
@@ -103,108 +106,117 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerInde
   if (userType === "employee") {
     return (
       <div>
-        <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_MOBILE_NUMBER")}`}</CardLabel>
-          <div className="field">
-            <TextInput
-              type={"text"}
-              t={t}
-              isMandatory={false}
-              name="mobileNumber"
-              value={mobileNumber}
-              onChange={setMobileNo}
-              ValidationRequired = {true}
-              {...(validation = {
-                isRequired: true,
-                pattern: "[6-9]{1}[0-9]{9}",
-                type: "tel",
-                title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-              })}
-              disable={editScreen}
-            />
-          </div>
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_NAME")}`}</CardLabel>
-          <div className="field">
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={false}
-              name="name"
-              value={name}
-              onChange={setOwnerName}
-              ValidationRequired = {true}
-              {...(validation = {
-                isRequired: true,
-                pattern: "^[a-zA-Z ]+$",
-                type: "tel",
-                title: t("PT_NAME_ERROR_MESSAGE"),
-              })}
-              disable={editScreen}
-            />
-          </div>
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_GUARDIAN_NAME")}`}</CardLabel>
-          <div className="field">
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={false}
-              name="fatherOrHusbandName"
-              value={fatherOrHusbandName}
-              onChange={setGuardiansName}
-              ValidationRequired = {true}
-              {...(validation = {
-                pattern: "^[a-zA-Z ]+$",
-                title: t("PT_NAME_ERROR_MESSAGE"),
-              })}
-              disable={editScreen}
-            />
-          </div>
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_RELATIONSHIP")}`}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={relationship?.length === 1 ? relationship[0] : relationship}
-            disable={relationship?.length === 1 || editScreen}
-            option={GuardianOptions}
-            select={setGuardianName}
-            optionKey="i18nKey"
-            t={t}
-            name="relationship"
-          />
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_GENDER")}`}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={gender?.length === 1 ? gender[0] : gender}
-            disable={gender?.length === 1 || editScreen}
-            option={menu}
-            select={setGenderName}
-            optionKey="code"
-            t={t}
-            name="gender"
-          />
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_EMAIL")}`}</CardLabel>
-          <div className="field">
-            <TextInput
-              t={t}
-              type={"email"}
-              isMandatory={false}
+        {/* Row 1: Mobile + Name */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_MOBILE_NUMBER")}`}</CardLabel>
+            <div className="field">
+              <TextInput
+                type={"text"}
+                t={t}
+                isMandatory={false}
+                name="mobileNumber"
+                value={mobileNumber}
+                onChange={setMobileNo}
+                ValidationRequired = {true}
+                {...(validation = {
+                  isRequired: true,
+                  pattern: "[6-9]{1}[0-9]{9}",
+                  type: "tel",
+                  title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                })}
+                disable={editScreen}
+              />
+            </div>
+          </LabelFieldPair>
+          <LabelFieldPair style={colItem}>
+            <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_NAME")}`}</CardLabel>
+            <div className="field">
+              <TextInput
+                t={t}
+                type={"text"}
+                isMandatory={false}
+                name="name"
+                value={name}
+                onChange={setOwnerName}
+                ValidationRequired = {true}
+                {...(validation = {
+                  isRequired: true,
+                  pattern: "^[a-zA-Z ]+$",
+                  type: "tel",
+                  title: t("PT_NAME_ERROR_MESSAGE"),
+                })}
+                disable={editScreen}
+              />
+            </div>
+          </LabelFieldPair>
+        </div>
+        {/* Row 2: Guardian Name + Relationship */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_GUARDIAN_NAME")}`}</CardLabel>
+            <div className="field">
+              <TextInput
+                t={t}
+                type={"text"}
+                isMandatory={false}
+                name="fatherOrHusbandName"
+                value={fatherOrHusbandName}
+                onChange={setGuardiansName}
+                ValidationRequired = {true}
+                {...(validation = {
+                  pattern: "^[a-zA-Z ]+$",
+                  title: t("PT_NAME_ERROR_MESSAGE"),
+                })}
+                disable={editScreen}
+              />
+            </div>
+          </LabelFieldPair>
+          <LabelFieldPair style={colItem}>
+            <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_RELATIONSHIP")}`}</CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={relationship?.length === 1 ? relationship[0] : relationship}
+              disable={relationship?.length === 1 || editScreen}
+              option={GuardianOptions}
+              select={setGuardianName}
               optionKey="i18nKey"
-              name="email"
-              value={email}
-              onChange={setOwnerEmail}
-              disable={editScreen}
+              t={t}
+              name="relationship"
             />
-          </div>
-        </LabelFieldPair>
+          </LabelFieldPair>
+        </div>
+        {/* Row 3: Gender + Email */}
+        <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
+            <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_FORM3_GENDER")}`}</CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={gender?.length === 1 ? gender[0] : gender}
+              disable={gender?.length === 1 || editScreen}
+              option={menu}
+              select={setGenderName}
+              optionKey="code"
+              t={t}
+              name="gender"
+            />
+          </LabelFieldPair>
+          <LabelFieldPair style={colItem}>
+            <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_EMAIL")}`}</CardLabel>
+            <div className="field">
+              <TextInput
+                t={t}
+                type={"email"}
+                isMandatory={false}
+                optionKey="i18nKey"
+                name="email"
+                value={email}
+                onChange={setOwnerEmail}
+                disable={editScreen}
+              />
+            </div>
+          </LabelFieldPair>
+        </div>
       </div>
     );
   }

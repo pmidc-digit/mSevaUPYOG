@@ -17,6 +17,10 @@ import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationAc
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+const singleCol = { flexDirection: "column", alignItems: "stretch" };
+
 const owners = [
   {
     name: "Institutional - Government",
@@ -152,7 +156,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
   }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
 
   return (
-    <form className="card" onSubmit={handleSubmit(onSubmit)}>
+    <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -183,8 +187,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
 
       {isInstitution && (
         <React.Fragment>
-          {/* Institution name */}
-          <LabelFieldPair>
+          {/* Row: Institution Name + Institution Type */}
+          <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
             <CardLabel className="card-label-smaller">
               {`${t("Institution Name")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -214,9 +219,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               {errors?.institutionName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.institutionName.message}</p>}
             </div>
           </LabelFieldPair>
-
-          {/* Institution Type */}
-          <LabelFieldPair>
+          <LabelFieldPair style={colItem}>
             <CardLabel className="card-label-smaller">
               {t("Institution Type")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -230,6 +233,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               {errors.institutionType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.institutionType?.message}</p>}
             </div>
           </LabelFieldPair>
+          </div>
         </React.Fragment>
       )}
 
@@ -249,8 +253,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 {t("Owner")} {index + 1}
               </CardSectionHeader>
 
-              {/* Mobile */}
-              <LabelFieldPair>
+              {/* Row: Mobile + Name */}
+              <div style={twoColRow}>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Mobile Number")}*</CardLabel>
                 <Controller
                   control={control}
@@ -269,9 +274,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
                 )}
               </LabelFieldPair>
-
-              {/* Name */}
-              <LabelFieldPair>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Name")}*</CardLabel>
                 <Controller
                   control={control}
@@ -284,9 +287,11 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
                 )}
               </LabelFieldPair>
+              </div>
 
-              {/* Email */}
-              <LabelFieldPair>
+              {/* Email + Address */}
+              <div style={twoColRow}>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Email")}*</CardLabel>
                 <Controller
                   control={control}
@@ -305,17 +310,16 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].emailId.message}</p>
                 )}
               </LabelFieldPair>
-
-              {/* Address */}
-              <LabelFieldPair>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Address")}</CardLabel>
                 <Controller
                   control={control}
                   name={`owners.${index}.address`}
                   defaultValue={item?.address || ""}
-                  render={(props) => <TextArea {...props} />}
+                  render={(props) => <TextInput {...props} />}
                 />
               </LabelFieldPair>
+              </div>
 
               {/* checkBoxadress*/}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginBottom: " 20px" }}>

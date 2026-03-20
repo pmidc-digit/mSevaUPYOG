@@ -77,6 +77,8 @@ const RALApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
+  console.log("applicationData",applicationData)
+
   if (workflowDetails?.data?.actionState && !workflowDetails.isLoading) {
     workflowDetails.data.actionState.nextActions = workflowDetails.data.nextActions;
   }
@@ -145,17 +147,17 @@ const RALApplicationDetails = () => {
   }
   const dowloadOptions = [];
 
+  if ((applicationData?.status === "APPROVED" || applicationData?.status === "CLOSED")) {
+      dowloadOptions.push({
+        label: t("CHB_DOWNLOAD_ACK_FORM"),
+        onClick: () => getAcknowledgement(),
+      });
+  }
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
-    if (applicationData?.status === "APPROVED" || applicationData?.status === "CLOSED") {
-      dowloadOptions.push({
-        label: t("CHB_DOWNLOAD_ACK_FORM"),
-        onClick: () => getAcknowledgement(),
-      });
-    }
   }
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {

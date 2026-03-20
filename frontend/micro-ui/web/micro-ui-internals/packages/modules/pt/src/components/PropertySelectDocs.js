@@ -193,50 +193,61 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
 
-  return (
-    <React.Fragment>
-      {doc?.hasDropdown ? (
-        <LabelFieldPair style={{ display: "inline" }}>
-          <CardLabel style={{ width: "auto" }}>
-            {t(doc?.code)} {doc?.required && " *"}
-          </CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={doc?.dropdownData?.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null}
-      {!doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">
-            {t(doc?.code.replaceAll(".", "_"))} {doc?.required && " *"}
-          </CardLabel>
-        </LabelFieldPair>
-      ) : null}
-      <LabelFieldPair style={{ display: "inline" }}>
-        <CardLabel className="card-label-smaller"></CardLabel>
+  const docLabel = t("PT_" + doc?.code?.replaceAll(".", "_")) !== "PT_" + doc?.code?.replaceAll(".", "_")
+    ? t("PT_" + doc?.code?.replaceAll(".", "_"))
+    : t(doc?.code?.replaceAll(".", "_"));
 
-        <UploadFile
-          onUpload={selectfile}
-          onDelete={() => {
-            setUploadedFile(null);
-          }}
-          id={id}
-          message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-          textStyles={{ width: "100%" }}
-          inputStyles={{ width: "280px" }}
-          accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
-          buttonType="button"
-          error={!uploadedFile}
-        />
-      </LabelFieldPair>
+  return (
+    <div
+      style={{
+        border: "1px solid #e0e0e0",
+        borderRadius: "6px",
+        padding: "16px",
+        marginBottom: "16px",
+        background: "#fafafa",
+      }}
+    >
+      {/* Document Title */}
+      <CardLabel style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "8px" }}>
+        {docLabel} {doc?.required && <span style={{ color: "red" }}>*</span>}
+      </CardLabel>
+
+      {/* Row: Dropdown (left) + File Upload (right) */}
+      <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+        {/* Left col: Dropdown */}
+        <div style={{ flex: 1, minWidth: "250px" }}>
+          {doc?.hasDropdown ? (
+            <Dropdown
+              className="form-field"
+              selected={selectedDocument}
+              style={{ width: "100%" }}
+              option={doc?.dropdownData?.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+              select={handlePTRSelectDocument}
+              optionKey="i18nKey"
+              t={t}
+            />
+          ) : null}
+        </div>
+
+        {/* Right col: File Upload */}
+        <div style={{ flex: 1, minWidth: "250px" }}>
+          <UploadFile
+            onUpload={selectfile}
+            onDelete={() => {
+              setUploadedFile(null);
+            }}
+            id={id}
+            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+            textStyles={{ width: "100%" }}
+            inputStyles={{ width: "100%" }}
+            accept=".pdf, .jpeg, .jpg, .png"
+            buttonType="button"
+            error={!uploadedFile}
+          />
+        </div>
+      </div>
       {getLoading && <Loader page={true} />}
-    </React.Fragment>
+    </div>
   );
 }
 

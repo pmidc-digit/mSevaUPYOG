@@ -4,6 +4,9 @@ import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Timeline from "../components/TLTimeline";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+
 const PTSelectStreet = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors }) => {
   const onSkip = () => onSelect();
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
@@ -131,88 +134,93 @@ const setData=(config,data)=>{
 
       return (
         <div>
-        <LabelFieldPair key={0}>
-          <CardLabel className="card-label-smaller">
-            {!checkLocation ? t(inputs[0].label) : `${t(inputs[0].label)}:`}
-            {config.isMandatory ? " * " : ""}
-          </CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              defaultValue={formData?.address?.[inputs[0].name]}
-              name={inputs[0].name}
-              rules={{ validate: convertValidationToRules(inputs[0]) }}
-              type={"text"}
-              render={(_props) => (
-                
-                <TextInput
-                  id={inputs[0].name}
-                  key={inputs[0].name}
-                  value={_props.value}
+        <div style={twoColRow}>
+          <div style={colItem}>
+            <LabelFieldPair key={0}>
+              <CardLabel className="card-label-smaller">
+                {!checkLocation ? t(inputs[0].label) : `${t(inputs[0].label)}:`}
+                {config.isMandatory ? " * " : ""}
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  defaultValue={formData?.address?.[inputs[0].name]}
+                  name={inputs[0].name}
+                  rules={{ validate: convertValidationToRules(inputs[0]) }}
                   type={"text"}
-                  onChange={(e) => {
-                    setFocusIndex({ index:0  });
-                    _props.onChange(e.target.value);
-                  }}
-                  onBlur={_props.onBlur}
-                  disable={isRenewal}
-                  autoFocus={focusIndex?.index == 0}
-                  {...inputs[0].validation}
+                  render={(_props) => (
+                    
+                    <TextInput
+                      id={inputs[0].name}
+                      key={inputs[0].name}
+                      value={_props.value}
+                      type={"text"}
+                      onChange={(e) => {
+                        setFocusIndex({ index:0  });
+                        _props.onChange(e.target.value);
+                      }}
+                      onBlur={_props.onBlur}
+                      disable={isRenewal}
+                      autoFocus={focusIndex?.index == 0}
+                      {...inputs[0].validation}
+                    />
+                    
+             
+                  )}
                 />
-                
-         
-              )}
-            />
-           
-          </div>
-        </LabelFieldPair>
-        {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-              {formState.errors?.[config.key]?.message}
-            </CardLabelError>
-          ) : null}
-
-        <LabelFieldPair key={1}>
-          <CardLabel className="card-label-smaller">
-            {!checkLocation ? t(inputs[1].label) : `${t(inputs[1].label)}:`}
-            {config.isMandatory ? " * " : ""}
-          </CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              defaultValue={formData?.address?.[inputs[1].name]}
-              name={inputs[1].name}
-              rules={{ validate: convertValidationToRules(inputs[1]) }}
-              type={"text"}
-              render={(_props) => (
-          
-                <TextInput
-                  id={inputs[1].name}
-                  key={inputs[1].name}
-                  value={_props.value}
-                  type={"text"}
-                  onChange={(e) => {
-                    setFocusIndex({ index:1 });
-                    _props.onChange(e.target.value);
-                  }}
-                  onBlur={_props.onBlur}
-                  disable={isRenewal}
-                  autoFocus={focusIndex?.index == 1}
-                  {...inputs[1].validation}
-                  
-                />
-                
                
-              )}
-            />
-           
+              </div>
+            </LabelFieldPair>
+            {formState.touched[config.key] ? (
+                <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                  {formState.errors?.[config.key]?.message}
+                </CardLabelError>
+              ) : null}
           </div>
-        </LabelFieldPair>
-        {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-              {formState.errors?.[config.key]?.message}
-            </CardLabelError>
-          ) : null}
+          <div style={colItem}>
+            <LabelFieldPair key={1}>
+              <CardLabel className="card-label-smaller">
+                {!checkLocation ? t(inputs[1].label) : `${t(inputs[1].label)}:`}
+                {config.isMandatory ? " * " : ""}
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  defaultValue={formData?.address?.[inputs[1].name]}
+                  name={inputs[1].name}
+                  rules={{ validate: convertValidationToRules(inputs[1]) }}
+                  type={"text"}
+                  render={(_props) => (
+              
+                    <TextInput
+                      id={inputs[1].name}
+                      key={inputs[1].name}
+                      value={_props.value}
+                      type={"text"}
+                      onChange={(e) => {
+                        setFocusIndex({ index:1 });
+                        _props.onChange(e.target.value);
+                      }}
+                      onBlur={_props.onBlur}
+                      disable={isRenewal}
+                      autoFocus={focusIndex?.index == 1}
+                      {...inputs[1].validation}
+                      
+                    />
+                    
+                   
+                  )}
+                />
+               
+              </div>
+            </LabelFieldPair>
+            {formState.touched[config.key] ? (
+                <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                  {formState.errors?.[config.key]?.message}
+                </CardLabelError>
+              ) : null}
+          </div>
+        </div>
 
           <LabelFieldPair key={2}>
           <CardLabel className="card-label-smaller">

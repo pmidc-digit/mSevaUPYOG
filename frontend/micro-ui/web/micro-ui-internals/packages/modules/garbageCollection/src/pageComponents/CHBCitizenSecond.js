@@ -28,8 +28,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     { name: "GCBillingSlab" },
   ]);
 
-  console.log("amountData", amountData?.["gc-services-calculation"]?.GCBillingSlab);
-
   const {
     control,
     handleSubmit,
@@ -126,11 +124,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           },
         },
       };
-      console.log("payload=====", payload);
       try {
         const response = await Digit.GCService.create(payload);
         setLoader(false);
-        console.log("response", response);
         goNext(response?.GarbageConnection?.[0]);
       } catch (error) {
         setLoader(false);
@@ -171,6 +167,27 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   };
 
+  const selectedFloorUnits = React.useMemo(() => {
+    if (!watch("floorNo")) return [];
+
+    return getPUnits.filter((unit) => unit.floorNo === watch("floorNo")?.floorNo);
+  }, [watch("floorNo"), getPUnits]);
+
+  const uniqueUsageCategories = React.useMemo(() => {
+    if (!selectedFloorUnits?.length) return [];
+
+    const map = new Map();
+
+    selectedFloorUnits.forEach((unit) => {
+      if (!map.has(unit.usageCategory)) {
+        map.set(unit.usageCategory, unit);
+      }
+    });
+
+    return Array.from(map.values());
+  }, [selectedFloorUnits]);
+
+  // PT-1012-2006092
   useEffect(() => {
     if (propertyDetailsFetch?.Properties[0]) {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
@@ -192,17 +209,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         const frequency = backStepData?.frequency;
         const typeOfWaste = backStepData?.typeOfWaste;
         const connetionType = backStepData?.connectionCategory;
-        const pType = pTypeOptions?.find((item) => item?.code == usage);
+        const pType = pTypeOptions?.find((item) => item?.name == backStepData?.propertyType);
         const freType = freqTypeOptions?.find((item) => item.name == frequency);
         const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
         const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
+        const checkUnitid = getPUnits?.find((item) => item?.id == backStepData?.unitId);
         setValue("propertyType", pType || null);
         setValue("frequency", freType || null);
         setValue("typeOfWaste", wasteType || null);
         setValue("connectionCategory", connectionCategoryType || null);
+        setValue("unitId", checkUnitid || null);
       }
     }
-  }, [propertyDetailsFetch, GCData, setValue, currentStepData]);
+  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits]);
 
   const searchProperty = async () => {
     const pId = watch("propertyId");
@@ -246,30 +265,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
   }, [getPUnits]);
 
-  const selectedFloorUnits = React.useMemo(() => {
-    if (!watch("floorNo")) return [];
-
-    return getPUnits.filter((unit) => unit.floorNo === watch("floorNo")?.floorNo);
-  }, [watch("floorNo"), getPUnits]);
-
-  const uniqueUsageCategories = React.useMemo(() => {
-    if (!selectedFloorUnits?.length) return [];
-
-    const map = new Map();
-
-    selectedFloorUnits.forEach((unit) => {
-      if (!map.has(unit.usageCategory)) {
-        map.set(unit.usageCategory, unit);
-      }
-    });
-
-    return Array.from(map.values());
-  }, [selectedFloorUnits]);
-
   const filterAmountData = (freq, propertyType) => {
     const filterData = amountData?.["gc-services-calculation"]?.GCBillingSlab;
     const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType);
-    console.log("finalData", finalData[0]);
     setValue("defAmount", finalData[0]?.minimumCharge);
   };
 
@@ -410,8 +408,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         className="form-field"
                         select={(e) => {
                           props.onChange(e);
-                          console.log("frequency", e?.name);
-                          console.log("property type", watch("propertyType")?.code);
                           filterAmountData(e?.name, watch("propertyType")?.code);
                         }}
                         selected={props.value}

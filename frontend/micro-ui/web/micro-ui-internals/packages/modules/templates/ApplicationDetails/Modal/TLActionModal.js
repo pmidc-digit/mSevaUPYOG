@@ -78,7 +78,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         })
       );
     }
-  }, [approverData]);
+  }, [approverData,  EmployeeStatusData]);
 
   function selectFile(e) {
     setFile(e.target.files[0]);

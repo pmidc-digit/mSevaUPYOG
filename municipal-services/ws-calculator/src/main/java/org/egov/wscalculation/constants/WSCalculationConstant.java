@@ -232,6 +232,9 @@ public class WSCalculationConstant {
 	public static final String WC_ROADTYPE_MASTER = "RoadType";
 	
 	public static final String WC_DISCONNECTION_MASTER = "DisconnectionFee";
+	
+	public static final String PENDING_FOR_FIELD_INSPECTION = "PENDING_FOR_FIELD_INSPECTION";
+
 
 	
 	public static final String SUCCESS = "Success";

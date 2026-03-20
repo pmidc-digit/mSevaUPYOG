@@ -61,7 +61,9 @@ public class WCConstants {
 	public static final String ACTION_CANCEL = "CANCEL";
 
 	public static final String ACTION_PAY = "PAY";
-
+	
+	public static final String ACTION_PAYFEE = "PAY_FEE";
+	
 	public static final String STATUS_INITIATED = "INITIATED";
 
 	public static final String STATUS_APPLIED = "APPLIED";
@@ -269,6 +271,9 @@ public class WCConstants {
 	public static final String PDF_SANCTION_KEY = "ws-sanctionletter";
 
 	public static final String PENDING_FOR_CONNECTION_ACTIVATION = "PENDING_FOR_CONNECTION_ACTIVATION";
+	
+	public static final String FORWARD_FOR_FEE = "FORWARD_FOR_FEE";
+
 
 	public static final long DAYS_CONST = 86400000l;
 
@@ -296,6 +301,9 @@ public class WCConstants {
 	public static final String NEW_WATER_CONNECTION = "NEW_WATER_CONNECTION";
 	public static final String MODIFY_WATER_CONNECTION = "MODIFY_WATER_CONNECTION";
 	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_WATER_CONNECTION";
+	
+	public static final String PENDING_FOR_APPLICATION_FEE = "PENDING_FOR_APPLICATION_FEE";
+
 	public static final String WATER_RECONNECTION = "WATER_RECONNECTION";
 	
 	public static final String WATER_SERVICE_BUSINESS_ID = "WS";

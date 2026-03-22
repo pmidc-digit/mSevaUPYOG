@@ -263,9 +263,7 @@ public class Coverage extends FeatureProcess {
 //			}
 //		
 //		}
-		MdmsRuleEngine engine =
-		        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
-
+		
 		RuleContext context = RuleContext.builder()
 	    	    .numericInput(plotArea) // The plot area	    	   
 	    	    .build();
@@ -276,55 +274,18 @@ public class Coverage extends FeatureProcess {
 				|| A_FH.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())
 				|| A_R.equals(mostRestrictiveOccupancy.getSubtype().getCode()))
-		) {
-
-//			if(A_AIF.equals(mostRestrictiveOccupancy.getSubtype().getCode())) {
-//				//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);	
-//				permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
-//
-//			}else {			
-				//permissibleCoverageValue = ruleService.getSiteCoverage();
-//				JsonNode coverageSlab =
-//						engine.getObject("siteCoverage", context);
-//
-//				permissibleCoverageValue = coverageSlab.path("percentage").decimalValue();
-				permissibleCoverageValue = BigDecimal.ZERO;
-//		    	RuleResult<JsonNode> siteCoverage = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage", context, BigDecimal.class);
-//		    	permissibleCoverageValue = siteCoverage.getValue().path("percentage");
-				//permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.value.percentage", context, BigDecimal.class).getValue();
-
-				permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+		) {			
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
 				LOG.info("Coverage %: " + permissibleCoverageValue);
-
-			//}
-			
-				
-		
-		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);
-			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
-			//permissibleCoverageValue = calculateGroundCoverage(plotArea, pl).setScale(2, RoundingMode.HALF_UP);
-			
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-		        scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-		        permissibleCoverageValue = scOpt.get();
-			}
-			
-		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-				scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-				permissibleCoverageValue = scOpt.get();
-			}
-		}else if (L.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			//permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
-			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.SITE_COVERAGE_PATH, BigDecimal.class);
-				scOpt.ifPresent(sc -> LOG.info("Site Coverage Value: " + sc));
-				permissibleCoverageValue = scOpt.get();
-			}
+		}else if (F.equals(mostRestrictiveOccupancy.getType().getCode())) {			
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+			LOG.info("Coverage %: " + permissibleCoverageValue);			
+		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) {
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+			LOG.info("Coverage %: " + permissibleCoverageValue);
+		}else if (L.equals(mostRestrictiveOccupancy.getType().getCode())) {
+			permissibleCoverageValue = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "siteCoverage.percentage", context, BigDecimal.class).getValue();
+			LOG.info("Coverage %: " + permissibleCoverageValue);
 		}
 		 
 		

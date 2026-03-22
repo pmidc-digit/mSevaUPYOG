@@ -91,6 +91,7 @@ import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BuildingRuleService;
 import org.egov.commons.mdms.MdmsRuleEngine;
 import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
 import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
@@ -383,127 +384,12 @@ public class Parking extends FeatureProcess {
 
         
         if (mostRestrictiveOccupancy != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
-//        	noOfrequiredParking = parkingSlab.path("ECS").intValue();
-        	//noOfrequiredParking = 22;
-        	//noOfrequiredParking = ruleService.getParkingEcs().intValue();
-        	//noOfrequiredParking = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "parking.ECS", context, Integer.class).getValue();
-			//LOGGER.info("Parking ECS " + noOfrequiredParking);
-			
-			// 2. Fetch the ECS per DU from MDMS (replaces the old if/else block)
-			noOfrequiredParking = RuleUtil.getRule(
-			    pl.getMdmsRulesData().get("masterMdmsData"),"parking.ECS",context,Integer.class).getValue();
+//			noOfrequiredParking = RuleUtil.getRule(
+//			    pl.getMdmsRulesData().get("masterMdmsData"),"parking.ECS",context,Integer.class).getValue();
+//			LOGGER.info("Parking ECS " + noOfrequiredParking);
+			BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
+			noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
 			LOGGER.info("Parking ECS " + noOfrequiredParking);
-			
-			// Fallback to 0 if rule fails, otherwise use MDMS value
-//			double ecsPerDu = (ecsPerDuMdms != null) ? ecsPerDuMdms.doubleValue() : 0.0;
-//
-//			// 3. Calculate total ECS for DUs
-//			double totalDuEcs = ecsPerDu * totalDwellingUnits;
-//
-//			// 4. Add Additional 10% Guest Parking
-//			double guestEcs = totalDuEcs * 0.10;
-//
-//			// 5. Total required ECS (Rounded up as per your old logic)
-//			int finalRequiredEcs = (int) Math.ceil(totalDuEcs + guestEcs);
-//			noOfrequiredParking = finalRequiredEcs;
-
-
-        	//if(mostRestrictiveOccupancy.getSubtype()!=null
-//							&& A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-//        		// Reset parking calculation variables
-//                noOfrequiredParking = 0; // This will hold the total ECS required for DUs + Guest Parking
-//                // --- 1. Calculate base ECS based on Unit Area (per DU) from the first image ---
-//                double ecsPerDu = 0.0;
-//                
-//                if (averageUnitAreaSqM <= 120) {
-//                    // 1. Up to 120 sq. m -> 1.5 ECS / DU
-//                    ecsPerDu = 1.5;
-//                } else if (averageUnitAreaSqM > 120 && averageUnitAreaSqM <= 300) {
-//                    // 2. 120–300 sq. m -> 2 ECS / DU
-//                    ecsPerDu = 2.0;
-//                } else if (averageUnitAreaSqM > 300) {
-//                    // 3. Above 300 sq. m -> 3 ECS / DU
-//                    ecsPerDu = 3.0;
-//                }
-//
-//                // Calculate total ECS required for DUs
-//                double totalDuEcs = ecsPerDu * totalDwellingUnits;
-//                
-//                // --- 2. Add Additional 10% Guest Parking ---
-//                // (As per the second image: "Additional 10% guest parking shall also be provided")
-//                double guestEcs = totalDuEcs * 0.10;
-//                
-//                // Total required ECS (noOfrequiredParking)
-//                noOfrequiredParking = (int) Math.ceil(totalDuEcs + guestEcs);
-//                
-//                if (pl.getPlot() != null) {                 
-//                    if (openParkingArea != null && openParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
-//                    } else if (stiltParkingArea != null && stiltParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += STILT_ECS * noOfrequiredParking;
-//                    } else if (basementParkingArea != null && basementParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
-//                    } else if (coverParkingArea != null && coverParkingArea.doubleValue() > 0) {
-//                        requiredCarParkArea += COVER_ECS * noOfrequiredParking;
-//                    } 
-////                    else {
-////                         // Default to general ECS area if no specific area type is defined
-////                         requiredCarParkArea += GENERAL_ECS_AREA * noOfrequiredParking;
-////                    }
-//                }
-//        	}else {
-//        		if (pl.getPlot() != null) {
-//
-//        		    double area = plotArea.doubleValue();
-//
-//        		    if (area <= AREA_UPPER_100) { 
-//        		        noOfrequiredParking = ECS_TWO_WHEELER;
-//
-//        		    } else if (area > AREA_UPPER_100 && area <= AREA_UPPER_150) {
-//        		        noOfrequiredParking = ECS_1;
-//
-//        		    } else if (area > AREA_UPPER_150 && area <= AREA_UPPER_200) {
-//        		        noOfrequiredParking = ECS_1;
-//
-//        		    } else if (area > AREA_UPPER_200 && area <= AREA_UPPER_300) {
-//        		        noOfrequiredParking = ECS_2;
-//
-//        		    } else if (area > AREA_UPPER_300 && area <= AREA_UPPER_500) {
-//        		        noOfrequiredParking = ECS_3;
-//
-//        		    } else if (area > AREA_UPPER_500 && area <= AREA_UPPER_1000) {
-//        		        noOfrequiredParking = ECS_3;
-//
-//        		    } else {
-//        		        // Optional: for areas above 1000 sq.m (not in table)
-//        		        noOfrequiredParking = ECS_3;
-//        		    }
-//        		}
-
-//        		if (pl.getPlot() != null) { // Check plot is not null before using plotArea
-//                    double area = plotArea.doubleValue();
-//                    if (area < 100) {
-//                        // requiredCarParkArea += 2.5; // Original logic, commented out in provided code
-//                         noOfrequiredParking = 0; // Explicitly setting based on image for plotArea 83.61
-//                    } else if (area >= 100 && area <= 150) {
-//                        noOfrequiredParking += 1;
-//                    } else if (area > 150 && area <= 200) { // Adjusted condition slightly to match common patterns (>=150 was in original)
-//                        noOfrequiredParking += 2;
-//                    } else if (area > 200) { // Adjusted condition slightly (>=200 was in original)
-//                        noOfrequiredParking += 3;
-//                    }
-//                 }
-            	
-    	//            if (openParkingArea.doubleValue() > 0) {
-    	//                requiredCarParkArea += OPEN_ECS * noOfrequiredParking;
-    	//            } else if (stiltParkingArea.doubleValue() > 0) {
-    	//                requiredCarParkArea += STILT_ECS * noOfrequiredParking;
-    	//            } else if (basementParkingArea.doubleValue() > 0) {
-    	//                requiredCarParkArea += BSMNT_ECS * noOfrequiredParking;
-    	//            } else if (coverParkingArea.doubleValue() > 0) {
-    	//                requiredCarParkArea += COVER_ECS * noOfrequiredParking;
-            	//            }
-        	//}
         }else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
             if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
@@ -523,132 +409,25 @@ public class Parking extends FeatureProcess {
                 errors.put("Plot Area Error:", "Plot covered area must be greater than 0.");
                 pl.addErrors(errors);
             } else {            	
-            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-            	Integer multiplier = getGTypeMultiplier(subType);
-            	if (multiplier == null) {
-            	    HashMap<String, String> errors = new HashMap<>();
-            	    errors.put("Parking Calculation Error",
-            	            "No ECS rule defined for subtype: " + subType);
-            	    pl.addErrors(errors);
-            	} else {
-            	    // Divide first and round UP
-            	    int baseEcs = plotCoveredArea
-            	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
-            	            .intValue();
-            	    // Multiply after rounding
-            	    noOfrequiredParking = baseEcs * multiplier;
-            	}
-
-            	
-////                String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-////                BigDecimal divisor = BigDecimal.valueOf(100); // default
-////                int multiplier = 1; // default
-////                boolean ruleFound = true;
-////
-////                switch (subType) {
-////                    case "G-I": // Industrial
-////                    case "G-F": // Factory
-////                    case "G-S": // Storage
-////                    case "G-H": // Hazard
-////                    case "G-T": // Textile
-////                    case "G-K": // Knitwear
-////                    case "G-RS": // Retail
-////                    case "G-SP": // Sports Industry
-////                        divisor = BigDecimal.valueOf(100);
-////                        multiplier = 1;
-////                        break;
-////
-////                    case "G-W": // Warehouse
-////                    case "G-IT": // IT Units
-////                    case "G-GI": // General Industry
-////                        divisor = BigDecimal.valueOf(100);
-////                        multiplier = 2;
-////                        break;
-////
-////                    default:
-////                        ruleFound = false;
-////                        LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-////                }
-////
-////                if (!ruleFound) {
-////                    HashMap<String, String> errors = new HashMap<>();
-////                    errors.put("Parking Calculation Error:", 
-////                        "No ECS rule defined for subtype: " + subType);
-////                    pl.addErrors(errors);
-////                } else {
-////                    // Calculate required ECS, always round UP
-////                    BigDecimal requiredParking = plotCoveredArea
-////                            .divide(divisor, 0, RoundingMode.HALF_UP)
-////                            .multiply(BigDecimal.valueOf(multiplier));
-////
-////                    noOfrequiredParking = requiredParking.intValue();
-////                }
-////            }
-//            	
 //            	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-//
-//            	BigDecimal divisor = BigDecimal.valueOf(100); // per 100 sqm
-//            	BigDecimal multiplier = BigDecimal.ZERO;
-//            	boolean ruleFound = true;
-//
-////            	Set<String> oneEcs = new HashSet<String>(Arrays.asList(
-////            	        "G-G","G-F","G-S","G-HI","G-RSI","G-TI","G-KI","G-SI"
-////            	));
-////
-////            	Set<String> twoEcs = new HashSet<String>(Arrays.asList(
-////            	        "G-GIP","G-GIF","G-ITF","G-WT"
-////            	));
-////
-////            	String type = (subType == null) ? "" : subType.trim().toUpperCase();
-////
-////            	if (oneEcs.contains(type)) {
-////            	    multiplier = BigDecimal.ONE;
-////            	}
-////            	else if (twoEcs.contains(type)) {
-////            	    multiplier = BigDecimal.valueOf(2);
-////            	}
-////            	else {
-////            	    ruleFound = false;
-////            	    LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-////            	}
-//
-//            	Map<String, BigDecimal> ECS_RULES = new HashMap<String, BigDecimal>();
-//            	ECS_RULES.put("G-G", BigDecimal.ONE);
-//                ECS_RULES.put("G-F", BigDecimal.ONE);
-//                ECS_RULES.put("G-S", BigDecimal.ONE);
-//                ECS_RULES.put("G-HI", BigDecimal.ONE);
-//                ECS_RULES.put("G-RSI", BigDecimal.ONE);
-//                ECS_RULES.put("G-TI", BigDecimal.ONE);
-//                ECS_RULES.put("G-KI", BigDecimal.ONE);
-//                ECS_RULES.put("G-SI", BigDecimal.ONE);
-//
-//                ECS_RULES.put("G-GIP", BigDecimal.valueOf(2));
-//                ECS_RULES.put("G-GIF", BigDecimal.valueOf(2));
-//                ECS_RULES.put("G-ITF", BigDecimal.valueOf(2));
-//                ECS_RULES.put("G-WT", BigDecimal.valueOf(2));
-//                
-//                String type = (subType == null) ? "" : subType.trim().toUpperCase();
-//
-//                if (ECS_RULES.containsKey(type)) {
-//                    multiplier = ECS_RULES.get(type);
-//                } else {
-//                    ruleFound = false;
-//                    LOGGER.warn("No ECS rule defined for subtype: {}", subType);
-//                }
-//
-//            	if (!ruleFound) {
+//            	Integer multiplier = getGTypeMultiplier(subType);
+//            	if (multiplier == null) {
 //            	    HashMap<String, String> errors = new HashMap<>();
 //            	    errors.put("Parking Calculation Error",
 //            	            "No ECS rule defined for subtype: " + subType);
 //            	    pl.addErrors(errors);
 //            	} else {
-//            	    // ECS calculation → ALWAYS round UP
-//            	    BigDecimal requiredParking = plotCoveredArea
-//            	            .divide(divisor, 0, RoundingMode.CEILING)
-//            	            .multiply(multiplier);
-//            	    noOfrequiredParking = requiredParking.intValue();
+//            	    // Divide first and round UP
+//            	    int baseEcs = plotCoveredArea
+//            	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.CEILING)
+//            	            .intValue();
+//            	    // Multiply after rounding
+//            	    noOfrequiredParking = baseEcs * multiplier;
 //            	}
-//            }
+            	
+            	noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
+            	
+
             }
         }else if (mostRestrictiveOccupancy != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
         	BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
@@ -1243,5 +1022,39 @@ public class Parking extends FeatureProcess {
         }
     }
 
+    public int calculateRequiredParking(Plan pl, RuleContext context, BigDecimal plotCoveredArea) {
+        RuleResult<JsonNode> parkingRule = RuleUtil.getRule(
+            pl.getMdmsRulesData().get("masterMdmsData"), 
+            "parking", 
+            context, 
+            JsonNode.class
+        );
+
+        JsonNode slab = parkingRule.getValue();
+        if (slab == null || slab.isMissingNode()) return 0;
+
+        double ecsRate = slab.path("ECS").asDouble(0.0);
+        double denominator = slab.path("denominator").asDouble(0.0);
+        double totalParking = 0.0;
+
+        if (denominator > 0) {
+            BigDecimal area = (plotCoveredArea != null) ? plotCoveredArea : BigDecimal.ZERO;
+            int areaUnits = area.divide(BigDecimal.valueOf(denominator), 0, RoundingMode.CEILING).intValue();
+            totalParking = areaUnits * ecsRate;            
+            LOGGER.info("Area-based Parking (Generic): {} units of {}sqm * {} ECS", areaUnits, denominator, ecsRate);
+        } else {
+            // --- CASE: DU BASED (Residential) ---
+            // Logic: Total DUs * ECS_Rate
+            //double duCount = pl.getTotalDwellingUnits(); 
+            //totalParking = duCount * ecsRate;
+        	totalParking = ecsRate;
+            LOGGER.info("DU-based Parking (Generic): {} ECS",ecsRate);
+        }
+
+        // Add 10% Guest Parking
+        //double guestParking = totalParking * 0.10;
+//        return (int) Math.ceil(totalParking + guestParking);
+        return (int) Math.ceil(totalParking);
+    }
     
 }

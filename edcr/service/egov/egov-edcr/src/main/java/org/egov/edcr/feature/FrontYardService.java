@@ -90,6 +90,8 @@ import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 @Service
 public class FrontYardService extends GeneralRule {
 	
@@ -518,19 +520,20 @@ private class FrontYardResult {
 			        LOG.info("Front Setback Value from mdms : " + minVal);
 				}
 	        }else {
+	        	BigDecimal minPlotArea = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "plotArea.min", null, BigDecimal.class).getValue();
+				if (plotArea == null || plotArea.compareTo(minPlotArea) <= 0) {
+					errors.put("Plot Area Error:", "Plot area must be greater than : " + minPlotArea);
+			        pl.addErrors(errors);			        
+			    }
 	        	RuleContext context = RuleContext.builder()
-	    	    	    .numericInput(plotArea) // The plot area	    	   
+	    	    	    .numericInput(plotArea)     	   
 	    	    	    .build();	    		
 	    		if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
 			        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class).getValue();
 			        LOG.info("Front Setback Value from mdms : " + minVal);
 				}
 	        }
-	        BigDecimal minPlotArea = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "plotArea.min", null, BigDecimal.class).getValue();
-			if (plotArea == null || plotArea.compareTo(minPlotArea) <= 0) {
-				errors.put("Plot Area Error:", "Plot area must be greater than : " + minPlotArea);
-		        pl.addErrors(errors);			        
-		    }
+	        
 			
 //			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
 //				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
@@ -546,7 +549,7 @@ private class FrontYardResult {
 //		        minVal = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class).getValue();
 //		        LOG.info("Front Setback Value from mdms : " + minVal);
 //			}
-			
+
 	    }    
 	    
 	    
@@ -901,7 +904,8 @@ private class FrontYardResult {
 				&& G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
 			minVal = getMinValueForIndustrial(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
 			subRule = RULE_37_TWO_I;
-			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
+			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
+			valid = validateMinMax(minVal,min);
 			compareFrontYardResultIndustry(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
 		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
 		}
@@ -910,6 +914,7 @@ private class FrontYardResult {
 			minVal = getMinValueForPublicBuildingByMDMS(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
 			subRule = RULE_37_TWO_I;
 			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
+			
 			if (setback.getFrontYard().getMinimumDistance().compareTo(minVal) >= 0) {		    
 			}else {
 				valid=false;
@@ -942,6 +947,17 @@ private class FrontYardResult {
 //				minVal, meanVal, level);
 		return valid;
 	}	
+	
+	
+	private Boolean validateMinMax(final BigDecimal min, final BigDecimal max) {
+	    if (min == null || max == null) {
+	        return false;
+	    }
+	    if (min.compareTo(BigDecimal.ZERO) <= 0 || max.compareTo(BigDecimal.ZERO) <= 0) {
+	        return false;
+	    }
+	    return max.compareTo(min) >= 0;
+	}
 	
 	private void compareFrontYardResultPublicBuilding(String blockName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, Boolean valid,
@@ -1346,8 +1362,7 @@ private class FrontYardResult {
 
 		LOG.info("getMinValueForIndustrial for Industrial:");
 		
-		BigDecimal minVal = BigDecimal.ZERO;
-		
+		BigDecimal minVal = BigDecimal.ZERO;		
 		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
 			errors.put("Plot Area Error", "Plot area must be greater than 0.");
 			pl.addErrors(errors);
@@ -1363,111 +1378,46 @@ private class FrontYardResult {
 		String subType = mostRestrictiveOccupancy.getSubtype().getCode();
 		LOG.info("Evaluating setback for subType: {}", subType);
 		
-//		switch (subType) {
-//			
-//			// -------- Sports Industry (20% after min plotArea 300) --------
-//			case "G-SP":
-//			case "G-RS":
-//			case "G-H":
-//			case "G-S":
-//			case "G-F":
-//			case "G-I":
-//				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) >= 0) {
-//					minVal = plotArea.multiply(INDUSTRIAL_FRONT_SETBACK_PERCENT_20);
-//					frontYardResult.setBackPercentage = "20";
-//				}
-//				break;
-//			
-//			// -------- Warehouse (25% after min plotArea 300) --------
-//			case "G-W":
-//				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) >= 0) {
-//					minVal = plotArea.multiply(INDUSTRIAL_FRONT_SETBACK_PERCENT_25);
-//					frontYardResult.setBackPercentage = "25";
-//				}
-//				break;
-//			
-//			// -------- Knitwear, Textile, IT, General Industry → NBC based --------
-//			case "G-K":
-//			case "G-T":
-//			case "G-IT":
-//			case "G-GI":
-//				if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) >= 0) {
-//					minVal = getNBCFrontSetback(buildingHeight);
-//					isNbcType=true;
-//					frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");
-//				}
-//				break;
-//			
-//			default:
-//				LOG.warn("No Industrial setback rule defined for subType: {}", subType);
-//		}
-		
-//		if(mostRestrictiveOccupancy != null &&
-//				(G_GTKS.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()) 
-//						|| G_IT.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode()))) {
-//			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-//			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-//			            pl.getMdmsMasterData().get("masterMdmsData"),
-//			            MdmsFilter.FRONT_SETBACK_PATH,
-//			            BigDecimal.class
-//			    );
-//			    if (scOpt.isPresent()) {
-//			        BigDecimal mdmsValue = scOpt.get();
-//			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);
-//			        BigDecimal oneForthHeight = buildingHeight.divide(
-//			                BigDecimal.valueOf(FOUR_MTR), 2, RoundingMode.HALF_UP
-//			        );
-//			        LOG.info("One forth of building height is : " + oneForthHeight);		        
-//			        minVal = oneForthHeight.max(mdmsValue);		     
-//			    }else {
-//			    	LOG.error("No value found from mdms for the side setback");
-//			    }
-//			}
-//		}else {
-//			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-//	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-//	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
-//	        
-//	        if (fullListOpt.isPresent()) {
-//	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-//
-//	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
-//
-//	             requiredSetback.ifPresent(
-//	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
-//	             );
-//	             minVal = requiredSetback.get().abs().stripTrailingZeros();
-//	        }else {
-//	        	LOG.error("No value found from mdms for the side setback");
-//	        }			
-//		}
-		
 		if(mostRestrictiveOccupancy != null &&
 				(G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
-			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-			            pl.getMdmsMasterData().get("masterMdmsData"),
-			            MdmsFilter.FRONT_SETBACK_PATH,
-			            BigDecimal.class
-			    );
-			    if (scOpt.isPresent()) {
-			        BigDecimal mdmsValue = scOpt.get();
-			        LOG.info("Front Setback Value from MDMS : " + mdmsValue);
-			        BigDecimal oneSixHeight = buildingHeight.divide(
-			                BigDecimal.valueOf(SIX_MTR), 2, RoundingMode.HALF_UP
-			        );
-			        LOG.info("One six of building height is : " + oneSixHeight);		        
-			        minVal = oneSixHeight.max(mdmsValue);		     
-			    }else {
-			    	LOG.error("No value found from mdms for the front setback");
-			    }
-			}
-		}
-		
-		
-		return minVal.setScale(2, RoundingMode.HALF_UP);
+					minVal = getGTypeValue(mostRestrictiveOccupancy.getSubtype().getCode(),
+					plotArea,buildingHeight,pl.getMdmsRulesData().get("masterMdmsData"));
+		}		
+		return minVal;
 }
 
+	private BigDecimal getGTypeValue(String subType, BigDecimal plotArea,BigDecimal buildingHeight, JsonNode data) {
+
+        if (subType == null) {
+            return null;
+        }
+
+        String type = subType.trim().toUpperCase();
+
+        switch (type) {
+	        case "G-G":
+	        case "G-WT":	        	
+	        	return RuleUtil.getRule(data, "setbacks.front", 
+	        			RuleContext.builder().numericInput(plotArea).build(), BigDecimal.class).getValue();
+	        case "G-F":
+	        case "G-S":
+	        case "G-HI":
+	        case "G-RSI":
+	        case "G-TI":
+	        case "G-KI":
+	        case "G-SI":	                          
+	        case "G-GIP":
+	        case "G-GIF":
+	        case "G-ITF":	       
+	        case "G-ITP":	
+	        	Map<String, Object> vars = new HashMap<>();
+				vars.put("buildingHeight", buildingHeight);
+	        	return RuleUtil.getRule(data, "setbacks.front", 
+	        			RuleContext.builder().formulaVariables(vars).build(), BigDecimal.class).getValue();			       
+	        default:
+	        	return null;
+        }
+    }
 
 // Helper method to calculate NBC-based front setback using building height.
 

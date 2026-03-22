@@ -48,52 +48,6 @@
 package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.*;
-//import static org.egov.edcr.constants.DxfFileConstants.A2;
-//import static org.egov.edcr.constants.DxfFileConstants.A_AF;
-//import static org.egov.edcr.constants.DxfFileConstants.A_FH;
-//import static org.egov.edcr.constants.DxfFileConstants.A_R;
-//import static org.egov.edcr.constants.DxfFileConstants.A_SA;
-//import static org.egov.edcr.constants.DxfFileConstants.B2;
-//import static org.egov.edcr.constants.DxfFileConstants.D_A;
-//import static org.egov.edcr.constants.DxfFileConstants.D_B;
-//import static org.egov.edcr.constants.DxfFileConstants.D_C;
-//import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
-//import static org.egov.edcr.constants.DxfFileConstants.E_EARC;
-//import static org.egov.edcr.constants.DxfFileConstants.E_NS;
-//import static org.egov.edcr.constants.DxfFileConstants.E_PS;
-//import static org.egov.edcr.constants.DxfFileConstants.E_SACA;
-//import static org.egov.edcr.constants.DxfFileConstants.E_SFDAP;
-//import static org.egov.edcr.constants.DxfFileConstants.E_SFMC;
-//import static org.egov.edcr.constants.DxfFileConstants.F;
-//import static org.egov.edcr.constants.DxfFileConstants.H_PP;
-//import static org.egov.edcr.constants.DxfFileConstants.M_DFPAB;
-//import static org.egov.edcr.constants.DxfFileConstants.M_HOTHC;
-//import static org.egov.edcr.constants.DxfFileConstants.M_NAPI;
-//import static org.egov.edcr.constants.DxfFileConstants.M_OHF;
-//import static org.egov.edcr.constants.DxfFileConstants.M_VH;
-//import static org.egov.edcr.constants.DxfFileConstants.S_BH;
-//import static org.egov.edcr.constants.DxfFileConstants.S_CA;
-//import static org.egov.edcr.constants.DxfFileConstants.S_CRC;
-//import static org.egov.edcr.constants.DxfFileConstants.S_ECFG;
-//import static org.egov.edcr.constants.DxfFileConstants.S_ICC;
-//import static org.egov.edcr.constants.DxfFileConstants.S_MCH;
-//import static org.egov.edcr.constants.DxfFileConstants.S_SAS;
-//import static org.egov.edcr.constants.DxfFileConstants.S_SC;
-//import static org.egov.edcr.constants.DxfFileConstants.G;
-//import static org.egov.edcr.constants.DxfFileConstants.G_PHI;
-//import static org.egov.edcr.constants.DxfFileConstants.G_NPHI;
-//
-//import static org.egov.edcr.constants.DxfFileConstants.C;
-//import static org.egov.edcr.constants.DxfFileConstants.C_MA;
-//import static org.egov.edcr.constants.DxfFileConstants.C_MIP;
-//import static org.egov.edcr.constants.DxfFileConstants.C_MOP;
-//
-//import static org.egov.edcr.constants.DxfFileConstants.J;
-//import static org.egov.edcr.constants.DxfFileConstants.J_FS;
-//import static org.egov.edcr.constants.DxfFileConstants.J_FCSS;
-//import static org.egov.edcr.constants.DxfFileConstants.J_CNG;
-//import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
-
 import static org.egov.edcr.utility.DcrConstants.DECIMALDIGITS_MEASUREMENTS;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.PLOT_AREA;
@@ -185,26 +139,26 @@ public class Far extends FeatureProcess {
 	private static final BigDecimal ONE = BigDecimal.valueOf(1);
 	private static final BigDecimal ONE_POINTTWO = BigDecimal.valueOf(1.2);
 	private static final BigDecimal ONE_POINTFIVE = BigDecimal.valueOf(1.5);
-	private static final BigDecimal ONE_POINTEIGHT = BigDecimal.valueOf(1.8);
-	private static final BigDecimal TWO = BigDecimal.valueOf(2);
+	//private static final BigDecimal ONE_POINTEIGHT = BigDecimal.valueOf(1.8);
+	//private static final BigDecimal TWO = BigDecimal.valueOf(2);
 	private static final BigDecimal TWO_POINTFIVE = BigDecimal.valueOf(2.5);
-	private static final BigDecimal THREE = BigDecimal.valueOf(3);
-	private static final BigDecimal THREE_POINTTWOFIVE = BigDecimal.valueOf(3.25);
-	private static final BigDecimal THREE_POINTFIVE = BigDecimal.valueOf(3.5);
+	//private static final BigDecimal THREE = BigDecimal.valueOf(3);
+	//private static final BigDecimal THREE_POINTTWOFIVE = BigDecimal.valueOf(3.25);
+	//private static final BigDecimal THREE_POINTFIVE = BigDecimal.valueOf(3.5);
 	private static final BigDecimal FIFTEEN = BigDecimal.valueOf(15);
 
 	private static final BigDecimal ROAD_WIDTH_TWO_POINTFOUR = BigDecimal.valueOf(2.4);
-	private static final BigDecimal ROAD_WIDTH_TWO_POINTFOURFOUR = BigDecimal.valueOf(2.44);
-	private static final BigDecimal ROAD_WIDTH_THREE_POINTSIX = BigDecimal.valueOf(3.6);
-	private static final BigDecimal ROAD_WIDTH_FOUR_POINTEIGHT = BigDecimal.valueOf(4.8);
+	//private static final BigDecimal ROAD_WIDTH_TWO_POINTFOURFOUR = BigDecimal.valueOf(2.44);
+//	private static final BigDecimal ROAD_WIDTH_THREE_POINTSIX = BigDecimal.valueOf(3.6);
+//	private static final BigDecimal ROAD_WIDTH_FOUR_POINTEIGHT = BigDecimal.valueOf(4.8);
 	private static final BigDecimal ROAD_WIDTH_SIX_POINTONE = BigDecimal.valueOf(6.1);
-	private static final BigDecimal ROAD_WIDTH_NINE_POINTONE = BigDecimal.valueOf(9.1);
-	private static final BigDecimal ROAD_WIDTH_TWELVE_POINTTWO = BigDecimal.valueOf(12.2);
+//	private static final BigDecimal ROAD_WIDTH_NINE_POINTONE = BigDecimal.valueOf(9.1);
+//	private static final BigDecimal ROAD_WIDTH_TWELVE_POINTTWO = BigDecimal.valueOf(12.2);
 
-	private static final BigDecimal ROAD_WIDTH_EIGHTEEN_POINTTHREE = BigDecimal.valueOf(18.3);
-	private static final BigDecimal ROAD_WIDTH_TWENTYFOUR_POINTFOUR = BigDecimal.valueOf(24.4);
-	private static final BigDecimal ROAD_WIDTH_TWENTYSEVEN_POINTFOUR = BigDecimal.valueOf(27.4);
-	private static final BigDecimal ROAD_WIDTH_THIRTY_POINTFIVE = BigDecimal.valueOf(30.5);
+//	private static final BigDecimal ROAD_WIDTH_EIGHTEEN_POINTTHREE = BigDecimal.valueOf(18.3);
+//	private static final BigDecimal ROAD_WIDTH_TWENTYFOUR_POINTFOUR = BigDecimal.valueOf(24.4);
+//	private static final BigDecimal ROAD_WIDTH_TWENTYSEVEN_POINTFOUR = BigDecimal.valueOf(27.4);
+//	private static final BigDecimal ROAD_WIDTH_THIRTY_POINTFIVE = BigDecimal.valueOf(30.5);
 
 	public static final String OLD = "OLD";
 	public static final String NEW = "NEW";
@@ -246,15 +200,15 @@ public class Far extends FeatureProcess {
 	private static final BigDecimal COMMERCIAL_FAR_2_50 = BigDecimal.valueOf(2.50);
 	private static final BigDecimal COMMERCIAL_FAR_3_00 = BigDecimal.valueOf(3.00);
 	
-	// Constants for Industrial FAR
-	private static final BigDecimal INDUSTRIAL_FAR_1_50 = BigDecimal.valueOf(1.50);
-	private static final BigDecimal INDUSTRIAL_FAR_3_00 = BigDecimal.valueOf(3.00);
-	private static final BigDecimal INDUSTRIAL_FAR_2_50 = BigDecimal.valueOf(2.50);
+//	// Constants for Industrial FAR
+//	private static final BigDecimal INDUSTRIAL_FAR_1_50 = BigDecimal.valueOf(1.50);
+//	private static final BigDecimal INDUSTRIAL_FAR_3_00 = BigDecimal.valueOf(3.00);
+//	private static final BigDecimal INDUSTRIAL_FAR_2_50 = BigDecimal.valueOf(2.50);
 
-	// Industrial Plot Area Limits
-	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_300 = BigDecimal.valueOf(300);
-	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_2000 = BigDecimal.valueOf(2000);
-	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_10000 = BigDecimal.valueOf(10000);
+//	// Industrial Plot Area Limits
+//	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_300 = BigDecimal.valueOf(300);
+//	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_2000 = BigDecimal.valueOf(2000);
+//	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_10000 = BigDecimal.valueOf(10000);
 	
 	private static final BigDecimal ROAD_WIDTH_18 = BigDecimal.valueOf(18);
 	private static final BigDecimal ROAD_WIDTH_24 = BigDecimal.valueOf(24);
@@ -2151,32 +2105,20 @@ public class Far extends FeatureProcess {
 	
 	private void updateFarAsPerBalconyWidth(Plan pl){
 		BigDecimal totalBuiltUpArea1 = pl.getVirtualBuilding().getTotalBuitUpArea();
-		//LOG.info("Far before new case added 0.91 > -> Far : " +  " totalBuildUpArea : " + totalBuiltUpArea);
-		// Code added for: Balcony width > 0.91m is included in FAR calculation
-		//BigDecimal totalBuiltUpArea1 = BigDecimal.ZERO;
-
 		for (Block block : pl.getBlocks()) {
 		    for (Floor floor : block.getBuilding().getFloors()) {
-	            //BigDecimal floorArea = floor.getArea() != null ? floor.getArea() : BigDecimal.ZERO;
-	            
-	            //LOG.info("Floor Area : -> " + floorArea);
-
 		        for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
 		        	
 		        	LOG.info("Data for Floor :::: " + floor.getNumber());
 
 		            List<BigDecimal> widths = balcony.getWidths();
 		            List<Measurement> measurements = balcony.getMeasurements();
-
-		            // Skip if measurement list is empty
 		            if (measurements == null || measurements.isEmpty()) {
 		                LOG.warn("No measurement found for balcony, skipping.");
 		                continue;
 		            }
 
 		            Measurement m = measurements.get(0);
-
-		            // Round measurement values once
 		            BigDecimal area = m.getArea() != null
 		                ? m.getArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
 		                : BigDecimal.ZERO;
@@ -2206,50 +2148,29 @@ public class Far extends FeatureProcess {
 	                    LOG.info("Balcony length : " + length);
 	                    LOG.info("Balcony height : " + height);
 		                if (width.compareTo(threshold) > 0) {
-		                    
-
-		                    //totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
-		                    //providedFar = providedFar.add(area);
-		                    
-		                    // Add to this floor’s floor area
-	                        //floorArea = floorArea.add(area);
-		                    
-		                 // Add to total built-up area
 	                        totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
-
-	                        // ✅ Also distribute balcony area into each occupancy of this floor
 	                        for (Occupancy occ : floor.getOccupancies()) {
 	                            BigDecimal occFloorArea = occ.getFloorArea() != null ? occ.getFloorArea() : BigDecimal.ZERO;
 	                            BigDecimal occBuiltUpArea = occ.getBuiltUpArea() != null ? occ.getBuiltUpArea() : BigDecimal.ZERO;
-
 	                            LOG.info("Floor Area : " + occ.getFloorArea());
-	                            LOG.info("Floor Built Up Area : " + occ.getBuiltUpArea());
-
-	                            
+	                            LOG.info("Floor Built Up Area : " + occ.getBuiltUpArea());	                            
 	                            occ.setFloorArea(occFloorArea.add(area));
 	                            occ.setBuiltUpArea(occBuiltUpArea.add(area));
 
 	                            LOG.info("Updated Occupancy [type=" + occ.getType() + "] floorArea=" + occ.getFloorArea()
 	                                    + ", builtUpArea=" + occ.getBuiltUpArea());
-	                        }
-		                    
+	                        }		                    
 		                    addedToFar = true;
-		                    break; // Only add once per balcony
+		                    break;
 		                }
 		            }
 
 		            if (!addedToFar) {
 		                LOG.info("Balcony width <= 0.91m, excluded from FAR.");
 		            }
-		        }
-		     // update floor area for current floor
-	            //floor.setArea(floorArea);
-	            //LOG.info("Updated floor area for Floor " + floor.getNumber() + " : " + floorArea);
+		        }		    
 		    }
 		}
-
-		//pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
-
 
 		LOG.info("Far after new case added 0.91 > " + " totalBuildUpArea : " + totalBuiltUpArea1);
 		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
@@ -2374,113 +2295,15 @@ public class Far extends FeatureProcess {
 	    	LOG.info("MDSM enable property is : False , Skipping FAR calculation by MDMS.");
 	    }
 	}
-	
-//	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
-//	        try {	           	  
-//	        	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-//	            Optional<Double> normalFAR = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class);
-//	            normalFAR.ifPresent(normalFar -> LOG.info("normalFar get by mdms : " + normalFar));
-//				
-//				Optional<Double> purchasableFAR = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.PURCHASABLE_FAR, Double.class);
-//				purchasableFAR.ifPresent(purchasableFar -> LOG.info("purchasableFAR get by mdms : : " + purchasableFar));
-//
-//				Double regularPermissableFar = normalFAR.get();
-//	            Double purchasablePermissableFar = purchasableFAR.get();
-//	            Double providedFar = pl.getFarDetails() != null ? pl.getFarDetails().getProvidedFar() : 0.0;	                     
-//	            Double purchasableFar = 0.0;		           
-//	                        
-//		        if (Boolean.TRUE.equals(pl.getEdcrRequest().getPurchasableFar())) {	
-//			        // Step 1: Calculate purchasable FAR (if provided > regular)
-//			        if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
-//			        	  purchasableFar = providedFar - regularPermissableFar;
-//			         }
-//	
-//		            // Step 2: Determine total permissible FAR conditionally
-//		            Double totalPermissableFar;
-//		            if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
-//		                                // Provided FAR exceeds regular, allow adding purchasable permissible FAR
-//		                totalPermissableFar = (regularPermissableFar != null ? regularPermissableFar : 0.0)
-//		                                        + (purchasablePermissableFar != null ? purchasablePermissableFar : 0.0);
-//		            } else {
-//		                                // Provided FAR is within regular permissible, no need to add extra FAR
-//		                totalPermissableFar = regularPermissableFar != null ? regularPermissableFar : 0.0;
-//		            }
-//	
-//		            // Step 3: Round all values to 2 decimals
-//		            regularPermissableFar = BigDecimal.valueOf(regularPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            purchasablePermissableFar = BigDecimal.valueOf(purchasablePermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            providedFar = BigDecimal.valueOf(providedFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            purchasableFar = BigDecimal.valueOf(purchasableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            totalPermissableFar = BigDecimal.valueOf(totalPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//	
-//		            // Step 4: Check acceptance
-//		            boolean isAccepted = (providedFar <= totalPermissableFar);
-//	
-//		            // Step 5: Update FAR details in plan
-//		            pl.getFarDetails().setPermissableFar(regularPermissableFar);
-//		            pl.getFarDetails().setPurchasableFar(purchasablePermissableFar);
-//		            pl.getFarDetails().setProvidedPurchasableFar(purchasableFar);
-//		            pl.getFarDetails().setProvidedFar(providedFar);
-//	
-//		            // Step 6: Logging
-//		            LOG.info("Matched FAR -> OccupancyType: " + occType + ", PlotArea: " + plotArea);
-//		            LOG.info("Regular Permissible FAR: " + regularPermissableFar
-//		                    + ", Purchasable FAR Allowed: " + purchasablePermissableFar
-//		                    + ", Provided FAR: " + providedFar
-//		                    + ", Total Permissible FAR: " + totalPermissableFar
-//		                    + ", Accepted: " + isAccepted);
-//	
-//		            // Step 7: Build result
-//		            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissableFar,
-//		                                    typeOfArea, regularPermissableFar, isAccepted);	                           
-//
-//		        } else {
-//		        	LOG.info("Purchasable FAR is false, processing as normal Rules");
-//		            // If purchasable FAR is not enabled
-//		            boolean isAccepted = (providedFar <= regularPermissableFar);
-//		            pl.getFarDetails().setPermissableFar(regularPermissableFar);
-//		            pl.getFarDetails().setProvidedFar(providedFar);
-//		            pl.getFarDetails().setPurchasableFar(mdmsDataParser.toDouble(0.0));
-//		            pl.getFarDetails().setProvidedPurchasableFar(mdmsDataParser.toDouble(0.0));		                            
-//	
-//		            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasableFar,
-//	                                    typeOfArea, regularPermissableFar, isAccepted);	                            
-//	        }     
-//	        } catch (Exception e) {
-//	            LOG.error("Error while fetching FAR details from MDMS", e);
-//	        }
-//	    
-//	}
 
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-//	    	MdmsRuleEngine engine =
-//			        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
-			
-	    	// For SLAB/FORMULA rules
 	    	RuleContext context = RuleContext.builder()
 	    	    .numericInput(plotArea) // The plot area	    	   
 	    	    .build();
-	    	//RuleResult<JsonNode> farSlab = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR", context, JsonNode.class);
-			////JsonNode farSlab = engine.getObject("FAR", context);
-	    	// --- 1. Fetch & Initialize FAR values ---
-	    	Double regularPermissibleFar = 0.0;
-//	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
-//	    		//BigDecimal farValue = calculateFarProgressively(plotArea, pl);
-//	    		regularPermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.normal", context, Double.class).getValue();	    		
-//	    	}else {
-		        //regularPermissibleFar = ruleService.getNormalFAR().doubleValue();
-		        
-//		        regularPermissibleFar =
-//		                farSlab.path("normal").doubleValue();
-	    		//regularPermissibleFar = farSlab.getValue().path("normal").asDouble();
-	    		regularPermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.normal", context, Double.class).getValue();
-
-	    	//}
 	    	
-//	    	Double purchasablePermissibleFar = ruleService.getPurchasableFAR().doubleValue();
-	    	//Double purchasablePermissibleFar = farSlab.getValue().path("purchasable").asDouble();
+	    	Double regularPermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.normal", context, Double.class).getValue();
 	    	Double purchasablePermissibleFar = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "FAR.purchasable", context, Double.class).getValue();
 	        Double providedFar = Optional.ofNullable(pl.getFarDetails())
 	                .map(FarDetails::getProvidedFar)

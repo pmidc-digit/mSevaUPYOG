@@ -495,8 +495,8 @@ public class HeightOfRoom extends FeatureProcess {
 							if (floor.getDoors() != null && floor.getDoors().size() > 0) {
 								for (Door door : floor.getDoors()) {
 									if (door != null) {
-										BigDecimal doorHeight = door.getDoorHeight();
-										BigDecimal doorWidth = door.getDoorWidth();									
+										//BigDecimal doorHeight = door.getDoorHeight();
+										BigDecimal doorWidth = door.getDoorWidth().setScale(2, BigDecimal.ROUND_HALF_UP);;									
 											
 										// BigDecimal minDoorHeight = BigDecimal.valueOf(2.0);
 										//BigDecimal minDoorWidth = BigDecimal.valueOf(1);
@@ -505,12 +505,12 @@ public class HeightOfRoom extends FeatureProcess {
 										if (doorWidth.compareTo(minDoorWidth) >= 0) {
 											setReportOutputDetails2(pl, subRuleDoor, subRuleDesc,
 													floor.getNumber().toString(), 
-													" Width = " + minDoorWidth + DcrConstants.IN_METER, doorWidth.toString(),
+													" Width = " + minDoorWidth + DcrConstants.IN_M, doorWidth.toString(),
 													Result.Accepted.getResultVal(), scrutinyDetail2);
 										} else {
 											setReportOutputDetails2(pl, subRuleDoor, subRuleDesc, 
 													floor.getNumber().toString(),  
-													" Width = " + minDoorWidth + DcrConstants.IN_METER, doorWidth.toString(),
+													" Width = " + minDoorWidth + DcrConstants.IN_M, doorWidth.toString(),
 													Result.Not_Accepted.getResultVal(), scrutinyDetail2);
 										}
 									}

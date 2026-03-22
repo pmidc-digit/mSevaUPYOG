@@ -80,7 +80,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class RampService extends FeatureProcess {
 	
-	private static final Logger LOG = LogManager.getLogger(RearYardService.class);
+	private static final Logger LOG = LogManager.getLogger(RampService.class);
 
     private static final String SUBRULE_50_C_4_B = " 50-c-4-b";
     private static final String SUBRULE_40 = "40";

@@ -2,7 +2,9 @@
 -- drop table eg_rl_allotment_clsure;
 -- drop table eg_rl_document;
 -- drop table eg_rl_owner_info;
--- drop table eg_rl_allotment;-- Table: public.eg_rl_allotment
+-- drop table eg_rl_allotment;
+
+-- Table: public.eg_rl_allotment
 
 -- DROP TABLE IF EXISTS public.eg_rl_allotment;
 
@@ -37,7 +39,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_allotment
     CONSTRAINT pk_eg_rl_allotment PRIMARY KEY (id),
     CONSTRAINT eg_rl_allotment_application_number_key UNIQUE (application_number),
     CONSTRAINT unique_entry_eg_rl_applicant UNIQUE (property_id, tenant_id, previous_application_number)
-)
+); -- FIXED: added semicolon
 
 -- DROP INDEX IF EXISTS public.idx_eg_rl_allotment_property_id;
 
@@ -45,6 +47,7 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_property_id
     ON public.eg_rl_allotment USING btree
     (property_id COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
+
 -- Index: idx_eg_rl_allotment_start_end_date
 
 -- DROP INDEX IF EXISTS public.idx_eg_rl_allotment_start_end_date;
@@ -53,6 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_start_end_date
     ON public.eg_rl_allotment USING btree
     (start_date ASC NULLS LAST, end_date ASC NULLS LAST)
     TABLESPACE pg_default;
+
 -- Index: idx_eg_rl_allotment_tenant_id
 
 -- DROP INDEX IF EXISTS public.idx_eg_rl_allotment_tenant_id;
@@ -63,8 +67,7 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_allotment_tenant_id
     TABLESPACE pg_default;
 
 
-
-    -- Table: public.eg_rl_owner_info
+-- Table: public.eg_rl_owner_info
 
 -- DROP TABLE IF EXISTS public.eg_rl_owner_info;
 
@@ -83,7 +86,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_owner_info
         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+); -- FIXED: added semicolon
 
 -- DROP INDEX IF EXISTS public.idx_eg_rl_owner_info_allotment_id;
 
@@ -91,6 +94,7 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_owner_info_allotment_id
     ON public.eg_rl_owner_info USING btree
     (allotment_id COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
+
 -- Index: idx_eg_rl_owner_info_user_uuid
 
 -- DROP INDEX IF EXISTS public.idx_eg_rl_owner_info_user_uuid;
@@ -100,7 +104,8 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_owner_info_user_uuid
     (user_uuid COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
 
-    -- Table: public.eg_rl_document
+
+-- Table: public.eg_rl_document
 
 -- DROP TABLE IF EXISTS public.eg_rl_document;
 
@@ -120,7 +125,7 @@ CREATE TABLE IF NOT EXISTS public.eg_rl_document
         REFERENCES public.eg_rl_allotment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+); -- FIXED: added semicolon
 
 -- DROP INDEX IF EXISTS public.idx_eg_rl_document_tenantid;
 

@@ -7,10 +7,10 @@ import com.google.gson.JsonObject;
 import lombok.*;
 import org.egov.pt.calculator.web.models.property.AuditDetails;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**

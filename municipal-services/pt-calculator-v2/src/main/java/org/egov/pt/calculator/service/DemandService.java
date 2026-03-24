@@ -66,12 +66,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
+import org.springframework.context.annotation.Lazy;
 
 @Service
 @Slf4j
 public class DemandService {
 
 	@Autowired
+	@Lazy
 	private EstimationService estimationService;
 
 	@Autowired

@@ -15,7 +15,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
-import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
+//import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
 @Repository
 @Slf4j

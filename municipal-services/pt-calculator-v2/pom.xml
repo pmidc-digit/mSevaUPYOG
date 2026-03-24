@@ -5,18 +5,19 @@
 	<artifactId>pt-calculator-v2</artifactId>
 	<packaging>jar</packaging>
 	<name>egov-pt-calculator</name>
-	<version>1.1.5_beta-SNAPSHOT</version>
+	<version>1.1.6_beta-SNAPSHOT</version>
 	<properties>
-		<log4j2.version>2.17.1</log4j2.version>
-		<java.version>1.8</java.version>
+		<log4j2.version>2.21.1</log4j2.version>
+		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<cache2k-version>1.2.0.Final</cache2k-version>
+		
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.6.RELEASE</version>
+		<version>4.0.2</version>
 	</parent>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
@@ -94,7 +95,7 @@
 		</plugins>
 	</build>
 	<dependencies>
-	<dependency>
+		<dependency>
 			<groupId>org.cache2k</groupId>
 			<artifactId>cache2k-api</artifactId>
 			<version>${cache2k-version}</version>
@@ -121,7 +122,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>5.2.20.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -147,17 +147,31 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-kafka</artifactId>
+		</dependency>
 
 		<!-- Egov dependencies -->
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>tracer</artifactId>
-			<version>2.0.0-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+                    <groupId>org.springframework.kafka</groupId>
+                    <artifactId>spring-kafka</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.egov.services</groupId>
 			<artifactId>services-common</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -167,7 +181,7 @@
 		<dependency>
 			<groupId>org.egov</groupId>
 			<artifactId>mdms-client</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -176,9 +190,18 @@
 		</dependency>
 		<!-- Bean Validation API support -->
 		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
+	      <groupId>jakarta.validation</groupId>
+	      <artifactId>jakarta.validation-api</artifactId>
+    	</dependency>
+    	<dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
 		</dependency>
+	<dependency>
+    <groupId>com.google.code.gson</groupId>
+    <artifactId>gson</artifactId>
+    <version>2.10.1</version> 
+</dependency>
 	</dependencies>
 	<repositories>
 		<repository>

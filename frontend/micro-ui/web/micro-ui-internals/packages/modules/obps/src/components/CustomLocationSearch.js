@@ -203,8 +203,8 @@ const initAutocomplete = (position) => {
     if (position?.length === 0) return;
     const map = new window.google.maps.Map(document.getElementById("map"), {
         center: {
-            lat: Number(position[0]?.latitude),
-            lng: Number(position[0]?.longitude),
+            lat: Number(position[0]?.latitude) || 28.6139,
+            lng: Number(position[0]?.longitude) || 77.2090,
         },
         zoom: 15,
         mapTypeId: "roadmap",

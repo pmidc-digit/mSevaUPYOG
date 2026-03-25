@@ -648,6 +648,28 @@ public class DemandService {
 		demandRepository.updateDemand(requestInfo, Arrays.asList(demand));
 	}
 
+	/**
+	 * Fetches bills from billing service for saved demands.
+	 * Called after demand generation to materialize bills.
+	 */
+	public void fetchBillForDemands(List<Demand> demands, RequestInfo requestInfo) {
+		for (Demand demand : demands) {
+			try {
+				StringBuilder fetchBillURL = utill.getFetchBillURL(demand.getTenantId(), demand.getConsumerCode());
+				Object result = serviceRequestRepository.fetchResult(fetchBillURL,
+						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+				BillResponse billResponse = mapper.convertValue(result, BillResponse.class);
+				if (billResponse.getBill() != null && !billResponse.getBill().isEmpty()) {
+					log.info("Bill fetched successfully for consumerCode: {}", demand.getConsumerCode());
+				} else {
+					log.warn("No bill generated for consumerCode: {}", demand.getConsumerCode());
+				}
+			} catch (Exception ex) {
+				log.error("Error fetching bill for consumerCode: {}", demand.getConsumerCode(), ex);
+			}
+		}
+	}
+
 	public Demand createSingleDemand(long expireDate, AllotmentDetails allotmentDetails, RequestInfo requestInfo,
 			String cycle) {
 		List<Demand> demands = new ArrayList<>();

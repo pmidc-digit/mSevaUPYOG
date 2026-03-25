@@ -33,7 +33,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const [userDetails, setUserDetails] = useState(null);
   const [name, setName] = useState(userInfo?.name ? userInfo?.name : "");
   const dateOfBirth = userDetails?.dob;
-  console.log("ddd", dateOfBirth);
   const formattedDob = dateOfBirth !== undefined ? format(new Date(dateOfBirth), "MM/dd/yyyy") : "";
   //const dateOfBirth1= (dateOfBirth!==undefined) ?dateOfBirth.split("-").reverse().join("-") : ""
   const [dob, setDob] = useState(dateOfBirth);
@@ -105,12 +104,10 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     }
   }, [StateData, isStateLoading]);
 
-  console.log("uniqueDistricts", uniqueDistrictsCorrespondent, selectedCorrespondentState);
 
   useEffect(() => {
     if (typeof selectedState === "string" && stateOptions?.length > 0) {
       const state = stateOptions.find((state) => state.state_name === selectedState);
-      console.log("stateData", stateOptions, state, selectedState);
       setSelectedState(state);
     }
     // refetchDistricts();
@@ -135,7 +132,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     }
   }, [selectedDistrict, uniqueDistricts]);
 
-  useEffect(() => {
+  useEffect( async () => {
     setLoading(true);
 
     getUserInfo();
@@ -159,8 +156,10 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       setIsAddressSame(userDetails?.isAddressSame);
     }
 
-    const thumbs = userDetails?.photo?.split(",");
-    setProfileImg(thumbs?.at(0));
+    const imgFileStoreId = userDetails?.photo?.split(",")?.at(0)
+    const thumbs = imgFileStoreId ? await getThumbnails([imgFileStoreId], stateId) : null;
+        
+    setProfileImg(thumbs?.images?.[0]);
 
     setLoading(false);
   }, [userDetails !== null]);
@@ -284,7 +283,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         if (!requestData.dob) {
           throw JSON.stringify({ type: "error", message: t("CORE_COMMON_DOB_REQUIRED") });
         } else {
-          console.log("requestData.dob", requestData.dob);
           const [dd, mm, yyyy] = requestData.dob.split("/");
           const dobDate = new Date(`${yyyy}-${mm}-${dd}`);
           const today = new Date();
@@ -446,7 +444,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
 
     const thumbnails = fileStoreId ? await getThumbnails([fileStoreId], stateId) : null;
 
-    setProfileImg(thumbnails?.thumbs[0]);
+    setProfileImg(thumbnails?.images?.[0]);
 
     closeFileUploadDrawer();
   };
@@ -504,7 +502,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
 
   if (loading) return <Loader></Loader>;
 
-  console.log("stateOptions", stateOptions);
 
   return (
     <div className="user-profile">
@@ -560,7 +557,8 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                       type: "tel",
                       title: t("CORE_COMMON_PROFILE_NAME_ERROR_MESSAGE"),
                     })}
-                    disable={editScreen || isUserArchitect}
+                    // disable={editScreen || isUserArchitect}
+                    disable={editScreen}
                   />
                 </div>
 

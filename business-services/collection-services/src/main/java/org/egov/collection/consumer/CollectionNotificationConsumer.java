@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +67,6 @@ public class CollectionNotificationConsumer {
 	    Payment payment = paymentRequest.getPayment();
 	    
 	    for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
-	        String mobNo = payment.getMobileNumber();
 	        Bill bill = paymentDetail.getBill();
 	        String emailId = (bill != null) ? bill.getPayerEmail() : null;
 	        
@@ -74,104 +74,198 @@ public class CollectionNotificationConsumer {
 	        String message = buildSmsBody(bill, paymentDetail, paymentRequest.getRequestInfo(), paymentStatus);
 	        
 	        if (!StringUtils.isEmpty(message)) {
+	        // 1. Build the dynamic body content (text part used for SMS and [MAIL_CONTENT])
+	        String bodyContent = buildSmsBody(bill, paymentDetail, requestInfo, paymentStatus);
+	        
+	        if (!StringUtils.isEmpty(bodyContent)) {
 	            // --- SMS Notification ---
 	            HashMap<String, Object> smsRequest = new HashMap<>();
 	            smsRequest.put("mobileNumber", mobNo);
-	            smsRequest.put("message", message);
+	            smsRequest.put("message", bodyContent);
 	            producer.producer(applicationProperties.getSmsTopic(), smsRequest);
 
 	            // --- HTML Email Notification ---
 	            if (!StringUtils.isEmpty(emailId) && emailId.contains("@")) {
-	                HashMap<String, Object> emailRequest = new HashMap<>();
+	                String subject = "Payment Confirmation - " + paymentDetail.getReceiptNumber();
 	                
-	                // Call the new formatting method
-	                String htmlContent = buildHtmlEmailContent(message, payment, paymentDetail);
+	                // 2. Wrap the localized bodyContent inside the professional HTML Template
+	                String htmlContent = buildHtmlEmailFromLocalization(requestInfo, bill, paymentDetail, payment,subject, bodyContent);
 
+	                HashMap<String, Object> emailRequest = new HashMap<>();
 	                emailRequest.put("emailTo", emailId);
 	                emailRequest.put("body", htmlContent);
-	                emailRequest.put("subject", "Payment Successful Notification - mSeva");
+	                emailRequest.put("subject", subject);
 	                emailRequest.put("isHTML", true);
 
 	                producer.producer(applicationProperties.getEmailTopic(), emailRequest);
 	            }
 	        } else {
-	            log.error("Message not configured! No notification will be sent.");
+	            log.error("Message content empty! No notification sent for Receipt: " + paymentDetail.getReceiptNumber());
 	        }
 	    }
 	}
-	
-	private String buildHtmlEmailContent(String message, Payment payment, PaymentDetail paymentDetail) {
-	    Bill bill = paymentDetail.getBill();
+	private String buildHtmlEmailFromLocalization(RequestInfo requestInfo, Bill bill, PaymentDetail paymentDetail, Payment payment, String subject, String bodyContent) {
 	    
-	    // 1. Data Extraction
-	    String payerName = (bill != null && !StringUtils.isEmpty(bill.getPayerName())) ? bill.getPayerName() : "Citizen";
-	    String consumerCode = (bill != null) ? bill.getConsumerCode() : "N/A";
-	    String receiptNo = paymentDetail.getReceiptNumber();
+	    // 1. Fetch the Template
+	    String template = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(),
+	            COLLECTION_LOCALIZATION_MODULE, EMAIL_MESSAGE );
+
+	    if (StringUtils.isEmpty(template)) {
+	        log.error("Email Template not found in localization!");
+	        return bodyContent; 
+	    }
+
+	    // 2. Fetch the actual PDF Download Link
+	    // We pass the payment as a list because the service expects a List<Payment>
+	    List<Payment> paymentList = Collections.singletonList(payment);
+	    String downloadUrl = getPublicReceiptUrl(paymentList, requestInfo);
+	    
+	    // Fallback if PDF service fails
+	    if (StringUtils.isEmpty(downloadUrl)) {
+	        downloadUrl = "https://mseva.lgpunjab.gov.in/citizen";
+	    }
+
+	    // 3. Map Service Type (Using your helper method)
 	    String serviceType = mapServiceCode(paymentDetail.getBusinessService());
+
+	    // 4. City Name Title Case (pb.amritsar -> Amritsar)
+	    String cityName = "Punjab";
+	    if (paymentDetail.getTenantId() != null && paymentDetail.getTenantId().contains(".")) {
+	        String rawCity = paymentDetail.getTenantId().split("\\.")[1];
+	        cityName = rawCity.substring(0, 1).toUpperCase() + rawCity.substring(1).toLowerCase();
+	    }
+
+	    // 5. BigDecimal Calculation for Balance
+	    java.math.BigDecimal totalDue = paymentDetail.getTotalDue() != null ? paymentDetail.getTotalDue() : java.math.BigDecimal.ZERO;
+	    java.math.BigDecimal amountPaid = paymentDetail.getTotalAmountPaid() != null ? paymentDetail.getTotalAmountPaid() : java.math.BigDecimal.ZERO;
+	    java.math.BigDecimal balance = totalDue.subtract(amountPaid);
 	    
-	    // Formatting Amounts (Total and Bill Amount)
-	    String totalPaid = String.format("%.2f", payment.getTotalAmountPaid());
-	    String billAmount = (bill != null) ? String.format("%.2f", bill.getTotalAmount()) : totalPaid;
+	    if (balance.compareTo(java.math.BigDecimal.ZERO) < 0) {
+	        balance = java.math.BigDecimal.ZERO;
+	    }
 
-	    // 2. Time Conversion: UTC to IST (Local Indian Time)
-	    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MMM-yyyy hh:mm a");
-	    sdf.setTimeZone(java.util.TimeZone.getTimeZone("IST")); 
-	    String localDateStr = sdf.format(new java.util.Date(payment.getTransactionDate()));
+	    // 6. Date formatting (IST)
+	    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm");
+	    sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kolkata")); 
+	    String formattedDate = sdf.format(new java.util.Date(payment.getTransactionDate()));
 
-	    // 3. Constructing the Message
-	    String detailedMessage = "Dear <b><i>" + payerName + "</i></b>,<br><br>"
-	        + "Your payment for <b>" + serviceType + "</b> has been processed successfully. "
-	        + "A detailed summary of your transaction is provided below for your records.";
-
-	    return "<html>"
-	        + "<body style='font-family: Segoe UI, Tahoma, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333;'>"
-	        + "  <div style='max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e0e0e0;'>"
-	        + "    "
-	        + "    "
-	        + "    <div style='background-color: #2c3e50; padding: 20px; text-align: center; color: #ffffff;'>"
-	        + "      <h1 style='margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px;'>Payment Confirmation</h1>"
-	        + "      <p style='margin: 5px 0 0; font-size: 12px; opacity: 0.8;'>mSeva Punjab Municipal Infrastructure Development Company</p>"
-	        + "    </div>"
-	        + "    "
-	        + "    <div style='padding: 35px;'>"
-	        + "      <p style='font-size: 16px; line-height: 1.6;'>" + detailedMessage + "</p>"
-	        + "      "
-	        + "      <h3 style='font-size: 14px; text-transform: uppercase; color: #7f8c8d; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 30px;'>Transaction Details</h3>"
-	        + "      <table style='width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;'>"
-	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Consumer Code/Application No</td><td style='padding: 10px 0; text-align: right;'><b>" + consumerCode + "</b></td></tr>"
-	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Official Receipt No.</td><td style='padding: 10px 0; text-align: right;'><b>" + receiptNo + "</b></td></tr>"
-	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Payment Method</td><td style='padding: 10px 0; text-align: right;'><b>" + payment.getPaymentMode() + "</b></td></tr>"
-	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Transaction Date & Time (IST)</td><td style='padding: 10px 0; text-align: right;'><b>" + localDateStr + "</b></td></tr>"
-	        + "        <tr><td style='padding: 10px 0; color: #7f8c8d;'>Total Bill Amount</td><td style='padding: 10px 0; text-align: right;'>INR " + billAmount + "</td></tr>"
-	        + "        <tr style='font-size: 18px; color: #27ae60;'><td style='padding: 20px 0; border-top: 2px solid #f4f7f6;'>Amount Paid</td><td style='padding: 20px 0; text-align: right; border-top: 2px solid #f4f7f6;'><b>INR " + totalPaid + "</b></td></tr>"
-	        + "      </table>"
-	        + "      "
-	        + "      "
-	        + "      <div style='margin-top: 30px; padding: 20px; background-color: #f0f7ff; border-radius: 6px; border-left: 5px solid #3498db; text-align: center;'>"
-	        + "        <p style='margin: 0 0 15px; font-size: 14px; color: #2c3e50;'><b>Your receipt is ready for download</b></p>"
-	        + "        <a href='https://mseva.lgpunjab.gov.in/citizen' style='display: inline-block; background-color: #3498db; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold;'>Download Official Receipt</a>"
-	        + "      </div>"
-	        + "      "
-	        + "      <p style='margin-top: 30px; font-size: 14px; color: #555;'>Regards,<br><b style='color: #2c3e50;'>Team mSeva (PMIDC)</b></p>"
-	        + "    </div>"
-	        + "    "
-	        + "    <div style='background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee;'>"
-	        + "      This is a system-generated receipt for mSeva Punjab Services. No physical signature is required."
-	        + "    </div>"
-	        + "  </div>"
-	        + "</body></html>";
+	    // 7. Execute Replacements
+	    return template
+	            .replace("{cityName}", cityName)
+	            .replace("{serviceType}", serviceType)
+	            .replace("{ownerName}", (bill.getPayerName() != null) ? bill.getPayerName() : "Citizen")
+	            .replace("{consumerCode}", (bill.getConsumerCode() != null) ? bill.getConsumerCode() : "N/A")
+	            .replace("{referenceNo}", paymentDetail.getReceiptNumber())
+	            .replace("{transactionDate}", formattedDate)
+	            .replace("{paymentMode}", payment.getPaymentMode() != null ? payment.getPaymentMode().toString() : "CASH")
+	            .replace("{transactionId}", payment.getTransactionNumber() != null ? payment.getTransactionNumber() : "N/A")
+	            .replace("{totalPaid}", String.format("%.2f", amountPaid))
+	            .replace("{balanceAmount}", String.format("%.2f", balance))
+	            .replace("{actionButtonText}", "Download Official Receipt")
+	            .replace("https://mseva.lgpunjab.gov.in/citizen", downloadUrl); // Injects the PDF link
 	}
+	
+	public String getPublicReceiptUrl(List<Payment> validatedPayments, RequestInfo requestInfo) {
+	    if (CollectionUtils.isEmpty(validatedPayments)) return null;
+	    
+	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
+	    String fileStoreId = null;
 
+	    try {
+	        // --- STEP 1: Generate the PDF and get FileStoreId ---
+	        String pdfUri = applicationProperties.getEgovServiceHost() 
+	                      + applicationProperties.getEgovPdfCreate() 
+	                      + "?key=consolidatedreceipt&tenantId=" + stateId;
+
+	        Map<String, Object> pdfRequest = new HashMap<>();
+	        pdfRequest.put("RequestInfo", requestInfo);
+	        pdfRequest.put("Payments", validatedPayments);
+
+	        Map<String, Object> pdfResponse = restTemplate.postForObject(pdfUri, pdfRequest, Map.class);
+	        
+	        if (pdfResponse != null && pdfResponse.containsKey("filestoreIds")) {
+	            List<String> ids = (List<String>) pdfResponse.get("filestoreIds");
+	            if (!ids.isEmpty()) {
+	                fileStoreId = ids.get(0); // Pick the first ID
+	            }
+	        }
+
+	        if (StringUtils.isEmpty(fileStoreId)) {
+	            log.error("PDF Service failed to return a filestoreId");
+	            return null;
+	        }
+
+	        // --- STEP 2: Convert FileStoreId to a Public URL ---
+	        String fileStoreUri = applicationProperties.getFileStoreHost() 
+	                            + "/filestore/v1/files/url" 
+	                            + "?tenantId=" + stateId 
+	                            + "&fileStoreIds=" + fileStoreId;
+
+	        // Note: The /url endpoint is a GET request
+	        Map<String, Object> urlResponse = restTemplate.getForObject(fileStoreUri, Map.class);
+
+	        if (urlResponse != null && urlResponse.containsKey("fileStoreIds")) {
+	            List<Map<String, String>> fileDetails = (List<Map<String, String>>) urlResponse.get("fileStoreIds");
+	            if (!fileDetails.isEmpty()) {
+	                String publicUrl = fileDetails.get(0).get("url");
+	                log.info("Successfully generated public receipt link: " + publicUrl);
+	                return publicUrl;
+	            }
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Error in the Receipt Generation/URL flow: ", e);
+	    }
+
+	    return null;
+	}
+	
+	
 	private String mapServiceCode(String code) {
-	    if (code == null) return "General Service";
-	    switch (code.toUpperCase()) {
+	    if (code == null || code.isEmpty()) return "General Municipal Service";
+	    
+	    String upperCode = code.toUpperCase();
+
+	    // 1. Direct Overrides for common/important codes
+	    switch (upperCode) {
 	        case "PT": return "Property Tax";
 	        case "WS": return "Water Supply";
-	        case "SW": return "Sewerage";
+	        case "SW": return "Sewerage Service";
+	        case "BPA": return "Building Plan Approval";
 	        case "TL": return "Trade License";
-	        default: return code;
+	        case "FIRENOC": return "Fire NOC";
+	        case "NDC": return "No Due Certificate";
+	        case "BPAREG": return "Building Plan Registration";
+	        case "ADVT.HOARDINGS": return "Advertisement Hoardings";
 	    }
+
+	    // 2. Prefix-Based Logic for the groups in your list
+	    if (upperCode.startsWith("NKS.")) return "Building Control (NKS)";
+	    if (upperCode.startsWith("CH.")) return "Enforcement Challan";
+	    if (upperCode.startsWith("RT.")) return "Municipal Rent/Lease";
+	    if (upperCode.startsWith("FTP.")) return "Town Planning (FTP)";
+	    if (upperCode.startsWith("ADVT.")) return "Advertisement Tax";
+	    if (upperCode.startsWith("OTHER.")) return "Miscellaneous Fees";
+	    if (upperCode.startsWith("TX.")) return "Tax & Revenue";
+	    if (upperCode.startsWith("FN.")) return "Finance/Account Deposit";
+	    if (upperCode.startsWith("SNT.")) return "Sanitation & Health";
+	    if (upperCode.startsWith("ADMN.")) return "Administration Fees";
+	    if (upperCode.startsWith("OM.")) return "Operations & Maintenance";
+	    if (upperCode.startsWith("WF.")) return "Works/Tender Fees";
+	    if (upperCode.startsWith("LAYOUT.")) return "Layout Approval";
+	    if (upperCode.startsWith("GC.")) return "Garbage Collection";
+
+	    // 3. Fallback: Clean up the code if no match (e.g., "BPA.NC_APP_FEE" -> "Bpa Nc App Fee")
+	    return formatCodeString(code);
 	}
+
+	// Helper to make raw codes readable if no mapping is found
+	private String formatCodeString(String code) {
+	    String formatted = code.replace("_", " ").replace(".", " - ");
+	    return formatted.substring(0, 1).toUpperCase() + formatted.substring(1).toLowerCase();
+	}
+	
+	
 	private String buildSmsBody(Bill bill, PaymentDetail paymentDetail, RequestInfo requestInfo, String paymentStatus) {
 		log.info("Inside BodySms");;
 		String message = null;

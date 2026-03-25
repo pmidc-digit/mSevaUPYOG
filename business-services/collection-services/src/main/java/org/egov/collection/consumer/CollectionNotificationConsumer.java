@@ -62,18 +62,17 @@ public class CollectionNotificationConsumer {
 			log.error("Exception while reading from the queue: ", e);
 		}
 	}
-
 	private void sendNotification(PaymentRequest paymentRequest) {
 	    Payment payment = paymentRequest.getPayment();
+	    RequestInfo requestInfo = paymentRequest.getRequestInfo();
 	    
 	    for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
 	        Bill bill = paymentDetail.getBill();
+	        String mobNo = payment.getMobileNumber();
 	        String emailId = (bill != null) ? bill.getPayerEmail() : null;
-	        
+
 	        String paymentStatus = (payment.getPaymentStatus() == null) ? "NEW" : payment.getPaymentStatus().toString();
-	        String message = buildSmsBody(bill, paymentDetail, paymentRequest.getRequestInfo(), paymentStatus);
 	        
-	        if (!StringUtils.isEmpty(message)) {
 	        // 1. Build the dynamic body content (text part used for SMS and [MAIL_CONTENT])
 	        String bodyContent = buildSmsBody(bill, paymentDetail, requestInfo, paymentStatus);
 	        
@@ -196,7 +195,7 @@ public class CollectionNotificationConsumer {
 	        }
 
 	        // --- STEP 2: Convert FileStoreId to a Public URL ---
-	        String fileStoreUri = applicationProperties.getFileStoreHost() 
+	        String fileStoreUri = applicationProperties.getEgovServiceHost() 
 	                            + "/filestore/v1/files/url" 
 	                            + "?tenantId=" + stateId 
 	                            + "&fileStoreIds=" + fileStoreId;

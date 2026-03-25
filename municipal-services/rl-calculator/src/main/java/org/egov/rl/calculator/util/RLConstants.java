@@ -541,6 +541,7 @@ public class RLConstants {
     public static final String PENALTY_MASTER = "Penalty";
     public static final String BILLING_PERIOD_MASTER = "billingPeriod";
     public static final String PENALTY_TAXHEAD_CODE = "RL_PENALTY_FEE";
+    public static final String BUSINESSSERVICE_FIELD_FOR_SEARCH_URL = "businessService=";
     public static final String TIME_INTEREST = "TIME_INTEREST";
     public static final String MDMS_TENANT_MODULE_NAME = "tenant";
     public static final String MDMS_TENANT_MASTER_NAME = "tenants";

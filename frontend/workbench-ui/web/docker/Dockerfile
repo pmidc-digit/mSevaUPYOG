@@ -1,7 +1,6 @@
 # FROM egovio/alpine-node-builder-14:yarn AS build
 #FROM ghcr.io/egovernments/alpine-node-builder-14:yarn AS build
-#FROM upyogio/alpine-node-builder-14:yarn AS build
-FROM node:14.21.3-alpine AS build
+FROM upyogio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 ARG WORK_DIR
@@ -11,6 +10,7 @@ ENV NODE_OPTIONS "--max-old-space-size=8168"
 COPY ${WORK_DIR} .
 RUN ls -lah
 
+RUN yarn config set ignore-engines true
 #RUN node web/envs.js
 
 RUN cd web/ \

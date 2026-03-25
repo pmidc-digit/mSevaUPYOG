@@ -195,7 +195,7 @@ public class CollectionNotificationConsumer {
 	        }
 
 	        // --- STEP 2: Convert FileStoreId to a Public URL ---
-	        String fileStoreUri = applicationProperties.getEgovServiceHost() 
+	        String fileStoreUri = applicationProperties.getFileStoreHost()  
 	                            + "/filestore/v1/files/url" 
 	                            + "?tenantId=" + stateId 
 	                            + "&fileStoreIds=" + fileStoreId;

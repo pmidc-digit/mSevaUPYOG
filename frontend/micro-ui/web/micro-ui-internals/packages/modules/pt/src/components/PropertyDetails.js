@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   TextInput,
   CardLabel,
@@ -155,71 +155,69 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   const selectedPropertyType = watch("propertyType")?.code;
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
-  const floorOptions = FloorData?.PropertyTax?.Floor || [];
+  const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
 
-  const tesFloorOptions = floorOptions?.sort((a, b) => {
-    const aCode = Number(a.code);
-    const bCode = Number(b.code);
+  // Memoize floorOptions to prevent new [] reference each render (was causing infinite loop)
+  const floorOptionsRaw = FloorData?.PropertyTax?.Floor;
+  const floorOptions = useMemo(() => floorOptionsRaw || [], [floorOptionsRaw]);
 
-    // If one is negative and the other is not
-    if (aCode < 0 && bCode >= 0) return 1;
-    if (aCode >= 0 && bCode < 0) return -1;
-
-    // If both are positive or both are negative → sort normally
-    return aCode - bCode;
-  });
-
-  console.log("tesFloorOptions", tesFloorOptions);
+  const tesFloorOptions = useMemo(() => {
+    return [...floorOptions].sort((a, b) => {
+      const aCode = Number(a.code);
+      const bCode = Number(b.code);
+      if (aCode < 0 && bCode >= 0) return 1;
+      if (aCode >= 0 && bCode < 0) return -1;
+      return aCode - bCode;
+    });
+  }, [floorOptions]);
 
   useEffect(() => {
-    if (location?.state || stateDataCheck) {
-      setIsRestoring(true); // ✅ mark restore
+    if (!(location?.state || stateDataCheck)) return;
+    if (!getUsageData?.length || !getPropertyTypeData?.length) return; // wait for MDMS
 
-      const value = location?.state;
+    setIsRestoring(true);
 
-      const getResident = getUsageData?.find((item) => item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
+    const value = location?.state;
 
-      const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
-      const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter(
-        (item) => item?.usageCategoryMinor == stateDataCheck?.propertyUsageType?.code
-      );
-      const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
-      // defaultValue={floorOptions?.find((f) => f.code == item?.floor?.code || f.code == item?.floor) || null}
+    const getResident = getUsageData?.find((item) => item?.code == stateDataCheck?.propertyUsageType?.code || item?.name == (value?.useType || stateDataCheck?.propertyUsageType?.name));
 
-      setSubUsageData(checkData);
-      setValue("propertyUsageType", getResident);
-      setValue("propertyType", getPropertyType);
-      setValue("businessName", stateDataCheck?.businessName);
-      setValue("remarks", stateDataCheck?.remarks);
-      setValue("flammable", stateDataCheck?.flammable);
-      setValue("heightOfProperty", stateDataCheck?.heightOfProperty);
-      setValue("plotSize", stateDataCheck?.plotSize);
-      setValue("noOfFloors", checkFloors);
+    const getPropertyType = getPropertyTypeData?.find((item) => item?.code == stateDataCheck?.propertyType?.code);
+    const checkData = UsageCategoryNewData?.PropertyTax?.UsageCategory?.filter(
+      (item) => item?.usageCategoryMinor == stateDataCheck?.propertyUsageType?.code
+    );
+    const checkFloors = floorOptions?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
-      if (stateDataCheck?.unitDetails?.length > 0) {
-        remove([...Array(fields.length).keys()]);
+    setSubUsageData(checkData);
+    setValue("propertyUsageType", getResident);
+    setValue("propertyType", getPropertyType);
+    setValue("businessName", stateDataCheck?.businessName);
+    setValue("remarks", stateDataCheck?.remarks);
+    setValue("flammable", stateDataCheck?.flammable);
+    setValue("heightOfProperty", stateDataCheck?.heightOfProperty);
+    setValue("plotSize", stateDataCheck?.plotSize);
+    setValue("noOfFloors", checkFloors);
 
-        stateDataCheck.unitDetails.forEach((unit) => {
-          append(unit);
-        });
+    if (stateDataCheck?.unitDetails?.length > 0) {
+      remove([...Array(fields.length).keys()]);
 
-        // ✅ IMPORTANT
-        trigger();
-        setTimeout(() => setIsRestoring(false), 0);
-      }
+      stateDataCheck.unitDetails.forEach((unit) => {
+        append(unit);
+      });
+
+      trigger();
     }
-  }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData]);
+    setTimeout(() => setIsRestoring(false), 0);
+  }, [location, getUsageData, stateDataCheck, getPropertyTypeData, UsageCategoryNewData, floorOptions]);
 
   const propertyType = watch("propertyType");
 
   useEffect(() => {
-    if (stateDataCheck || floorOptions) {
-      const checkFloors = floorsMan?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
+    if (!stateDataCheck || !propertyType) return;
+    const checkFloors = floorsMan?.find((f) => f.code == stateDataCheck?.noOfFloors?.code);
 
-      setValue("plotSize", stateDataCheck?.plotSize);
-      setValue("noOfFloors", checkFloors);
-    }
-  }, [stateDataCheck, floorOptions, propertyType]);
+    setValue("plotSize", stateDataCheck?.plotSize);
+    setValue("noOfFloors", checkFloors);
+  }, [stateDataCheck, propertyType]);
 
   const selectedFloors = watch("noOfFloors")?.code;
 
@@ -443,6 +441,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
+            {!isResidentialFlat && (
             <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
               <div className="form-field">
@@ -458,6 +457,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
+            )}
             </div>
 
             {/* Row 2: Occupancy + Built-up area */}

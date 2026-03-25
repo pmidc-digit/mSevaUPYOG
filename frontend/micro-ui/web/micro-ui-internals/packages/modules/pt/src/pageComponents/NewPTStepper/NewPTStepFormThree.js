@@ -17,6 +17,8 @@ const NewPTStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
 
+  const isEditMode = !!currentStepData?._originalProperty;
+
   console.log("currentStepData", currentStepData);
 
   function goNext(data) {
@@ -35,7 +37,7 @@ const NewPTStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   return (
     <React.Fragment>
       <div className="employeeCard">
-        <OwnerDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+        <OwnerDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} isEditMode={isEditMode} />
         {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
       </div>
     </React.Fragment>

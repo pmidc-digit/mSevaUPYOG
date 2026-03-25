@@ -14,31 +14,36 @@ const NOCBreadCrumbs = ({ location }) => {
       show: true,
     },
     {
-      path: "/digit-ui/employee/noc/inbox",
+      path: "/digit-ui/employee/firenoc/inbox",
       content: t("ES_COMMON_INBOX"),
-      show: (location.pathname.includes("noc/inbox") || location.pathname.includes("noc/new-application")) ? true : false,
+      show: (location.pathname.includes("firenoc/inbox") || location.pathname.includes("firenoc/new-application")) ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/firenoc/new-application",
+      content: t("NOC_NEW_APPLICATION"),
+      show: location.pathname.includes("firenoc/new-application") ? true : false,
     },
    
     {
-      path: "/digit-ui/employee/noc/search/application",
+      path: "/digit-ui/employee/firenoc/search/application",
       content: t("ES_COMMON_SEARCH_APPLICATION"),
-      show: location.pathname.includes("noc/search/application") ? true : false,
+      show: location.pathname.includes("firenoc/search/application") ? true : false,
 
     },
     {
-      path: "/digit-ui/employee/noc/inbox/application-overview/:id",
+      path: "/digit-ui/employee/firenoc/inbox/application-overview/:id",
       content: t("NOC_APPLICATION_OVERVIEW_HEADER"),
-      show: location.pathname.includes("noc/inbox/application-overview") ? true : false,
+      show: location.pathname.includes("firenoc/inbox/application-overview") ? true : false,
     },
     {
-      path: "/digit-ui/employee/noc/search",
+      path: "/digit-ui/employee/firenoc/search",
       content: t("ES_COMMON_APPLICATION_SEARCH"),
-      show: location.pathname.includes("/digit-ui/employee/noc/search") ? true : false,
+      show: location.pathname.includes("/digit-ui/employee/firenoc/search") ? true : false,
     },
     {
-      path: "/digit-ui/employee/noc/search/application-overview/:id",
+      path: "/digit-ui/employee/firenoc/search/application-overview/:id",
       content: t("NOC_APP_OVER_VIEW_HEADER"),
-      show: location.pathname.includes("/digit-ui/employee/noc/search/application-overview") ? true : false,
+      show: location.pathname.includes("/digit-ui/employee/firenoc/search/application-overview") ? true : false,
     },
   ];
   return <BreadCrumb crumbs={crumbs} />;
@@ -50,6 +55,7 @@ const EmployeeApp = ({ path }) => {
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCApplicationOverview");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("FIRENOCInbox");
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCStepperForm");
+  const EmployeeNOCNewApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCEmployeeStepperForm");
   const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCEmployeeApplicationOverview");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCEditApplication");
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
@@ -78,6 +84,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/new-application`} component={EmployeeNOCNewApplication} />
         <PrivateRoute path={`${path}/response/:id`} component={Response} />
         <PrivateRoute path={`${path}/search/application`} component={NOCCitizenApplicationOverview} />
         <PrivateRoute path={`${path}/esign/complete/:id/:file`} component={NOCEsignResponse} />

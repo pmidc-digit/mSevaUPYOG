@@ -22,7 +22,7 @@ const SearchApplication = ({ tenantId, t, onSubmit, data, error, isLoading, Coun
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const getRedirectionLink = () => {
-    let redirectBS = "noc/inbox/application-overview";
+    let redirectBS = "firenoc/inbox/application-overview";
     return redirectBS;
   };
 

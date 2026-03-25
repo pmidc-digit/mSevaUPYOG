@@ -5,7 +5,6 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
-import { businessServiceList } from "../../../utils";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -19,16 +18,16 @@ const Inbox = ({ parentRoute }) => {
 
   const searchFormDefaultValues = {
     mobileNumber: "",
-    applicationNo: ""
+    applicationNo: "",
+    fireNOCNumber: "",
+    applicationStatus: null,
+    fromDate: "",
+    toDate: "",
   };
 
   const filterFormDefaultValues = {
-    moduleName: "noc-service",
-    applicationStatus: [],
-    businessService: "obpas_noc",
-    locality: [],
-    assignee: "ASSIGNED_TO_ME",
-    businessServiceArray: businessServiceList(true) || [],
+    areaType: null,
+    nocType: null,
   };
   const tableOrderFormDefaultValues = {
     sortBy: "",
@@ -40,32 +39,33 @@ const Inbox = ({ parentRoute }) => {
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("NOC.INBOX", { ...state, searchForm: payload.data });
+        Digit.SessionStorage.set("FIRENOC.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
       case "mutateFilterForm":
-        Digit.SessionStorage.set("NOC.INBOX", { ...state, filterForm: payload.data });
+        Digit.SessionStorage.set("FIRENOC.INBOX", { ...state, filterForm: payload.data });
         return { ...state, filterForm: payload.data };
       case "mutateTableForm":
-        Digit.SessionStorage.set("NOC.INBOX", { ...state, tableForm: payload.data });
+        Digit.SessionStorage.set("FIRENOC.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
       default:
         break;
     }
   }
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("NOC.INBOX");
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("FIRENOC.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null);
     setSearchFormValue("applicationNo", null);
+    setSearchFormValue("fireNOCNumber", null);
+    setSearchFormValue("applicationStatus", null);
+    setSearchFormValue("fromDate", null);
+    setSearchFormValue("toDate", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
 
   const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "noc-service");
-    setFilterFormValue("applicationStatus", "");
-    setFilterFormValue("locality", []);
-    setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
-    setFilterFormValue("applicationType", []);
+    setFilterFormValue("areaType", null);
+    setFilterFormValue("nocType", null);
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
   };
 
@@ -108,12 +108,6 @@ const Inbox = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
   };
 
-  const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(
-    tenantId,
-    "revenue",
-    {},
-    t
-  );
   const user = Digit.UserService.getUser();
 
 
@@ -134,7 +128,7 @@ const Inbox = ({ parentRoute }) => {
 
 
 
-  const { isLoading: isInboxLoading, data} = Digit.Hooks.noc.useInbox({
+  const { isLoading: isInboxLoading, data} = Digit.Hooks.firenoc.useInbox({
     tenantId,
     filters: { ...formState }
   });
@@ -165,35 +159,31 @@ const Inbox = ({ parentRoute }) => {
     links: [
       {
         text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/noc/search/application",
+        link: "/digit-ui/employee/firenoc/search/application",
       },
     ],
   };
 
   const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, searchFieldComponents }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />
+    ({ registerRef, searchFormState, searchFieldComponents, controlSearchForm }) => (
+      <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents, controlSearchForm, statuses }} />
     ),
-    []
+    [statuses]
   );
 
   const FilterFormFields = useCallback(
     ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
       <FilterFormFieldsComponent
         {...{
-          statuses,
-          isInboxLoading,
           registerRef,
           controlFilterForm,
           setFilterFormValue,
           filterFormState: formState?.filterForm,
           getFilterFormValue,
-          localitiesForEmployeesCurrentTenant,
-          loadingLocalitiesForEmployeesCurrentTenant,
         }}
       />
     ),
-    [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]
+    [formState?.filterForm]
   );
 
   const onSearchFormSubmit = (data) => {

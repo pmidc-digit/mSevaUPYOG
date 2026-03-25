@@ -108,7 +108,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
             {...{
                 data: propsMobileInboxCards,
                 isTwoDynamicPrefix: false,
-                linkPrefix: `/digit-ui/employee/noc/inbox/application-overview/`,
+                linkPrefix: `/digit-ui/employee/firenoc/inbox/application-overview/`,
                 serviceRequestIdKey: t("NOC_APPLICATION_NUMBER"),
             }}
             />

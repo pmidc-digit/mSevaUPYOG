@@ -1,87 +1,65 @@
-import React, { Fragment, useMemo, useState, useEffect } from "react";
-import { FilterFormField, Loader, RadioButtons, Localities, RemoveableTag, Dropdown, CheckBox } from "@mseva/digit-ui-react-components";
-import { Controller, useWatch } from "react-hook-form";
+import React,{Fragment} from "react";
+import { FilterFormField, Dropdown } from "@mseva/digit-ui-react-components";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { businessServiceList } from "../../../utils";
 
 const FilterFormFieldsComponent = ({
-  statuses,
-  isInboxLoading,
   registerRef,
   controlFilterForm,
   setFilterFormValue,
   filterFormState,
   getFilterFormValue,
-  applicationTypesOfBPA,
-  loadingApplicationTypesOfBPA,
-  localitiesForEmployeesCurrentTenant,
-  loadingLocalitiesForEmployeesCurrentTenant,
 }) => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getStateId();
 
-
-  const availableOptions = [
-    { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
-    { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
+  const areaTypeOptions = [
+    { code: "RURAL", name: t("FIRENOC_AREA_RURAL") },
+    { code: "URBAN", name: t("FIRENOC_AREA_URBAN") },
   ];
 
-  applicationTypesOfBPA?.forEach((type) => {
-    type.name = t(`WF_BPA_${type.code}`);
-    type.i18nKey = t(`WF_BPA_${type.code}`);
-  });
+  const nocTypeOptions = [
+    { code: "NEW", name: t("FIRENOC_NOC_TYPE_NEW") },
+    { code: "PROVISIONAL", name: t("FIRENOC_NOC_TYPE_PROVISIONAL") },
+    { code: "RENEWAL", name: t("FIRENOC_NOC_TYPE_RENEWAL") },
+  ];
 
   return (
     <>
       <FilterFormField>
+        <div className="filter-label">{t("FIRENOC_AREA_TYPE")}</div>
         <Controller
-          name="assignee"
+          name="areaType"
           control={controlFilterForm}
           render={(props) => (
-            <RadioButtons
-              onSelect={(e) => {
-                props.onChange(e.code);
-              }}
-              selectedOption={availableOptions.filter((option) => option.code === props.value)[0]}
-              optionsKey="name"
-              options={availableOptions}
+            <Dropdown
+              option={areaTypeOptions}
+              selected={props.value}
+              optionKey="name"
+              select={(val) => props.onChange(val)}
+              t={t}
+              placeholder={t("FIRENOC_AREA_TYPE")}
             />
           )}
         />
       </FilterFormField>
 
       <FilterFormField>
+        <div className="filter-label">{t("FIRENOC_NOC_TYPE")}</div>
         <Controller
-          name="applicationStatus"
+          name="nocType"
           control={controlFilterForm}
-          defaultValue={[]}
-          render={(props) => {
-            const toggleStatus = (statusCode) => {
-              if (props.value.includes(statusCode)) {
-                props.onChange(props.value.filter((code) => code !== statusCode));
-              } else {
-                props.onChange([...props.value, statusCode]);
-              }
-            };
-
-            return (
-              <>
-                {statuses?.map((status, index) => (
-                  <CheckBox
-                    key={status.applicationstatus}
-                    label={`${t(status.applicationstatus)} - ${status.count}`}
-                    value={status.applicationstatus}
-                    checked={props.value.includes(status.applicationstatus)}
-                    onChange={() => toggleStatus(status.applicationstatus)}
-                    index={index}
-                  />
-                ))}
-              </>
-            );
-          }}
+          render={(props) => (
+            <Dropdown
+              option={nocTypeOptions}
+              selected={props.value}
+              optionKey="name"
+              select={(val) => props.onChange(val)}
+              t={t}
+              placeholder={t("FIRENOC_NOC_TYPE")}
+            />
+          )}
         />
       </FilterFormField>
-
     </>
   );
 };

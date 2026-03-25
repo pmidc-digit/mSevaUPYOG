@@ -61,7 +61,7 @@ const NOCEsignResponse = () => {
           }, 1000);
 
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/noc/inbox/application-overview/${applicationNo}`);
+            history.push(`/digit-ui/employee/firenoc/inbox/application-overview/${applicationNo}`);
           }, 10000);
 
           return () => {
@@ -78,7 +78,7 @@ const NOCEsignResponse = () => {
 
           // redirect after showing toast
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/noc/inbox/application-overview/${applicationNo}`);
+            history.push(`/digit-ui/employee/firenoc/inbox/application-overview/${applicationNo}`);
           }, 10000);
 
           return () => clearTimeout(timeout);

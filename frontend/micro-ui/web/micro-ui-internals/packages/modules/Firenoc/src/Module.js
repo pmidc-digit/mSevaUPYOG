@@ -21,6 +21,13 @@ import NewNOCStepFormThree from "./pageComponents/NewNOCStepper/NewNOCStepFormTh
 import NewNOCStepFormFour from "./pageComponents/NewNOCStepper/NewNOCStepFormFour";
 import NewNOCStepFormNocDetails from "./pageComponents/NewNOCStepper/NewNOCStepFormNocDetails";
 
+import EmployeeNOCStepperForm from "./pageComponents/EmployeeNOCStepper/EmployeeNOCStepperForm";
+import EmployeeNOCStepFormOne from "./pageComponents/EmployeeNOCStepper/EmployeeNOCStepFormOne";
+import EmployeeNOCStepFormTwo from "./pageComponents/EmployeeNOCStepper/EmployeeNOCStepFormTwo";
+import EmployeeNOCStepFormThree from "./pageComponents/EmployeeNOCStepper/EmployeeNOCStepFormThree";
+import EmployeeNOCStepFormFour from "./pageComponents/EmployeeNOCStepper/EmployeeNOCStepFormFour";
+import EmployeeNOCStepFormNocDetails from "./pageComponents/EmployeeNOCStepper/EmployeeNOCStepFormNocDetails";
+
 import NOCApplicantDetails from "./pageComponents/NOCApplicantDetails";
 import NOCProfessionalDetails from "./pageComponents/NOCProfessionalDetails";
 import NOCSiteDetails from "./pageComponents/NOCSiteDetails";
@@ -128,7 +135,13 @@ const componentsToRegister = {
   FIRENOCEmployeeApplicationOverview: NOCEmployeeApplicationOverview,
   FIRENOCEditApplication: EditApplication,
   FIRENOCCitizenSearchApplication: CitizenSearchApplication,
-  FIRENOCInspectionReport: InspectionReport
+  FIRENOCInspectionReport: InspectionReport,
+  FIRENOCEmployeeStepperForm: EmployeeNOCStepperForm,
+  FIRENOCEmployeeStepFormOne: EmployeeNOCStepFormOne,
+  FIRENOCEmployeeStepFormTwo: EmployeeNOCStepFormTwo,
+  FIRENOCEmployeeStepFormThree: EmployeeNOCStepFormThree,
+  FIRENOCEmployeeStepFormFour: EmployeeNOCStepFormFour,
+  FIRENOCEmployeeStepFormNocDetails: EmployeeNOCStepFormNocDetails
 };
 
 export const initFIRENOCComponents = () => {

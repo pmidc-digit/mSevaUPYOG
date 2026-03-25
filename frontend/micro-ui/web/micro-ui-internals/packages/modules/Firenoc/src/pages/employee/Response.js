@@ -10,7 +10,7 @@ const Response = (props) => {
   const {pathname, state} = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const nocData = state?.data?.Noc?.[0];
+  const nocData = state?.data?.Noc?.[0] || state?.data?.FireNOCs?.[0]?.fireNOCDetails;
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   
 
@@ -24,15 +24,15 @@ const Response = (props) => {
   }
 
   const onGoToNOC = () => {
-    history.push(`/digit-ui/employee/noc/inbox`);
+    history.push(`/digit-ui/employee/firenoc/inbox`);
   };
 
    const handlePayment = () => {
-    history.push(`/digit-ui/employee/payment/collect/obpas_noc/${nocCode}/${tenantId}?tenantId=${tenantId}`);
+    history.push(`/digit-ui/employee/payment/collect/obpas_firenoc/${nocCode}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
   const onViewApplication = () => {
-    history.push(`/digit-ui/citizen/noc/search/application-overview/${nocCode}`);
+    history.push(`/digit-ui/citizen/firenoc/search/application-overview/${nocCode}`);
   };
 
   // const handleDownloadPdf = async () => {
@@ -54,10 +54,10 @@ const Response = (props) => {
         <Banner
          // message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
          // message={t("NOC_APPLICATION_SUCCESS_HEADER")}
-          message={t(`NOC_APPLICATION_${nocData?.workflow?.action}_SUCCESS_HEADER`)}
+          message={nocData?.workflow?.action ? t(`NOC_APPLICATION_${nocData?.workflow?.action}_SUCCESS_HEADER`) : t("NOC_APPLICATION_SUCCESS_HEADER")}
           applicationNumber={nocCode}
-          info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
-          successful={nocData?.applicationStatus == "REJECTED" ? false : true}
+          info={(nocData?.applicationStatus == "REJECTED" || nocData?.status == "REJECTED") ? "" : t(`${stringReplaceAll(nocData?.nocType || nocData?.fireNOCType || "", ".", "_")}_APPLICATION_NUMBER`)}
+          successful={(nocData?.applicationStatus == "REJECTED" || nocData?.status == "REJECTED") ? false : true}
           style={{ padding: "10px" }}
           headerStyles={{fontSize: "32px", wordBreak: "break-word"}}
         />

@@ -419,7 +419,7 @@ const handleDownloadPdf = async () => {
       // await mutation.mutateAsync({ Noc: updatedApplication });
       // refetch();
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/firenoc/esign/complete/${id}`;
 
       // Trigger eSign
       eSignCertificate(
@@ -696,7 +696,7 @@ const [displayMenu, setDisplayMenu] = useState(false);
 }     else if (action?.action == "UPDATE_ZONE") {
       setShowZoneModal(true);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/obpas_firenoc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       if (
         applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" &&
@@ -979,7 +979,7 @@ const validateSiteImages = (action) => {
           workflowDetails.revalidate();
           setSelectedAction(null);
           setTimeout(() => {
-            window.location.href = "/digit-ui/employee/noc/inbox";
+            window.location.href = "/digit-ui/employee/firenoc/inbox";
           }, 3000);
         } else if (filtData?.action === "UPDATE_ZONE") {
               setShowToast({ key: "true", success: true, message: "Zone updated successfully" });
@@ -988,12 +988,12 @@ const validateSiteImages = (action) => {
               setShowZoneModal(false);
               setSelectedAction(null);
               setTimeout(() => {
-                window.location.href = "/digit-ui/employee/noc/inbox";
+                window.location.href = "/digit-ui/employee/firenoc/inbox";
               }, 3000);
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
           history.replace({
-            pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            pathname: `/digit-ui/employee/firenoc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
           });
         } else {
@@ -1005,7 +1005,7 @@ const validateSiteImages = (action) => {
           setSelectedAction(null);
           refetchChecklist();
           setTimeout(() => {
-            window.location.href = "/digit-ui/employee/noc/inbox";
+            window.location.href = "/digit-ui/employee/firenoc/inbox";
           }, 3000);
         }
       } else {

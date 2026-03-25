@@ -2,7 +2,6 @@ import React, { useMemo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmployeeModuleCard } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
-import { businessServiceList } from "../../utils";
 
 const NOCEmployeeHomeCard = () => {
     const { t } = useTranslation();
@@ -11,21 +10,25 @@ const NOCEmployeeHomeCard = () => {
 
     if (!Digit.Utils.NOCAccess()) return null;
        
-    const searchFormDefaultValues = {}
+    const searchFormDefaultValues = {
+        mobileNumber: "",
+        applicationNo: "",
+        fireNOCNumber: "",
+        applicationStatus: null,
+        fromDate: "",
+        toDate: "",
+    }
   
     const filterFormDefaultValues = {
-        moduleName: "noc-services",
-        applicationStatus: "",
-        locality: [],
-        assignee: "ASSIGNED_TO_ME",
-        businessServiceArray: businessServiceList(true) || []
+        areaType: null,
+        nocType: null,
     }
 
     const tableOrderFormDefaultValues = {
-        // sortBy: "",
+        sortBy: "",
         limit: 10,
         offset: 0,
-        // sortOrder: "DESC"
+        sortOrder: "DESC",
     }
   
     const formInitValue = {
@@ -34,10 +37,9 @@ const NOCEmployeeHomeCard = () => {
       tableForm: tableOrderFormDefaultValues
     }
 
-    const { isLoading: isInboxLoading, data: {table , statuses, totalCount,nearingSlaCount} = {} } = Digit.Hooks.noc.useInbox({
+    const { isLoading: isInboxLoading, data: {table , statuses, totalCount,nearingSlaCount} = {} } = Digit.Hooks.firenoc.useInbox({
         tenantId,
         filters: { ...formInitValue },
-        config : { enabled : formInitValue?.filterForm?.businessServiceArray?.length > 0}
     });
 
     const ComplaintIcon = () => <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -47,7 +49,7 @@ const NOCEmployeeHomeCard = () => {
 
     useEffect(()=>{
       if (location.pathname === "/digit-ui/employee"){
-        Digit.SessionStorage.del("NOC.INBOX")
+        Digit.SessionStorage.del("FIRENOC.INBOX")
       }
     },[location.pathname])
 
@@ -69,11 +71,15 @@ const NOCEmployeeHomeCard = () => {
         {
           count: totalCount ,
           label: t("ES_COMMON_INBOX"),
-          link: `/digit-ui/employee/noc/inbox`
+          link: `/digit-ui/employee/firenoc/inbox`
+        },
+        {
+          label: t("NOC_NEW_APPLICATION"),
+          link: `/digit-ui/employee/firenoc/new-application`
         },
         {
           label: t("ES_COMMON_APPLICATION_SEARCH"),
-          link: `/digit-ui/employee/noc/search`
+          link: `/digit-ui/employee/firenoc/search`
         }
       ]
     }),[isInboxLoading, totalCount]);

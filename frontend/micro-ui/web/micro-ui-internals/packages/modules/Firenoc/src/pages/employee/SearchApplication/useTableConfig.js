@@ -21,7 +21,7 @@ const useSearchApplicationTableConfig = () => {
             return (
               <div>
                 <span className="link">
-                  <Link to={`/digit-ui/employee/noc/inbox/application-overview/${row.original["applicationNo"]}`}>
+                  <Link to={`/digit-ui/employee/firenoc/inbox/application-overview/${row.original["applicationNo"]}`}>
                     {row.original["applicationNo"]}
                   </Link>
                 </span>

@@ -8,6 +8,9 @@ import { getUniqueItemsFromArray, commonTransform, stringReplaceAll, getPattern 
 import isUndefined from "lodash/isUndefined";
 import { sortDropdownNames } from "../utils/index";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const createAccessoriesDetails = () => ({
   accessoryCategory: "",
   count: "",
@@ -339,6 +342,8 @@ const AccessoriersForm = (_props) => {
               </div>
             </div>
           ) : null}
+          <div style={twoColRow}>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_ACC_LABEL")} `}</CardLabel>
             <Controller
@@ -372,6 +377,8 @@ const AccessoriersForm = (_props) => {
             />
           </LabelFieldPair>
           {/* <CardLabelError style={errorStyle}>{localFormState.touched.accessoryCategory ? errors?.name?.message : ""}</CardLabelError> */}
+          </div>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {getValues("uom") ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} `}
@@ -402,6 +409,10 @@ const AccessoriersForm = (_props) => {
             </div>
           </LabelFieldPair>
           {/* <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError> */}
+          </div>
+          </div>
+          <div style={twoColRow}>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {accessor?.accessoryCategory?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}  `}
@@ -443,6 +454,8 @@ const AccessoriersForm = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.uomValue ? errors?.uomValue?.message : ""}</CardLabelError>
+          </div>
+          <div style={colItem}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")}` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}
@@ -479,6 +492,8 @@ const AccessoriersForm = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError>{localFormState.touched.count ? errors?.count?.message : ""}</CardLabelError>
+          </div>
+          </div>
         </div>
       </div>
     </React.Fragment>

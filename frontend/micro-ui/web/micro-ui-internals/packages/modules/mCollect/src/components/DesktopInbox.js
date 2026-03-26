@@ -1,7 +1,7 @@
 import { Card, Loader } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { getActionButton } from "../utils";
 import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
@@ -11,6 +11,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   const { data } = props;
   console.log("data", data);
   const { t } = useTranslation();
+  const history = useHistory();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
 
   // challans, workFlowData
@@ -187,6 +188,15 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   }
 
   return (
+    <React.Fragment>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 24px 16px 0" }}>
+        <button
+          className="TL-new-application-btn"
+          onClick={() => history.push("/digit-ui/employee/mcollect/new-application")}
+        >
+          <span style={{ fontSize: "24px", fontWeight: "bold", lineHeight: "1" }}>+</span> {t("UC_GENERATE_NEW_CHALLAN")}
+        </button>
+      </div>
     <div className="inbox-container" style={{ overflow: "auto" }}>
       {!props.isSearch && (
         <div className="filters-container">
@@ -225,6 +235,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
         </div>
       </div>
     </div>
+    </React.Fragment>
   );
 };
 

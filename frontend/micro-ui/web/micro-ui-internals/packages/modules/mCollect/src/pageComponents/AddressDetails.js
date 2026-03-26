@@ -178,6 +178,25 @@ const OwnerForm1 = (_props) => {
     trigger();
   }, []);
 
+  // Persist address details to session storage even if the user does not edit any field.
+  // This ensures the final onSubmit payload can include doorNo/building/streetName/pincode/mohalla/city.
+  useEffect(() => {
+    const initialValues = {
+      doorNo: consumerdetail?.doorNo,
+      building: consumerdetail?.building,
+      streetName: consumerdetail?.streetName,
+      pincode: consumerdetail?.pincode,
+      mohalla: consumerdetail?.mohalla,
+      city: consumerdetail?.city,
+    };
+
+    if (Object.values(initialValues).some((v) => v !== undefined && v !== "" && v !== null)) {
+      let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData")) || {};
+      mcollectFormValue = { ...mcollectFormValue, ...initialValues };
+      sessionStorage.setItem("mcollectFormData", JSON.stringify(mcollectFormValue));
+    }
+  }, [consumerdetail]);
+
   useEffect(() => {
     if(Object.entries(formValue).length>0){
     const keys = Object.keys(formValue);
@@ -215,6 +234,7 @@ const OwnerForm1 = (_props) => {
       <div style={{ marginBottom: "16px"}}>
 
           <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("UC_DOOR_NO_LABEL")} `}</CardLabel>
             <div className="form-field">
@@ -324,9 +344,9 @@ const OwnerForm1 = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel  style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOHALLA_LABEL")}`}</CardLabel>
+            <CardLabel  style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOHALLA_LABEL")}`}<span>*</span></CardLabel>
+            <div className="form-field">
             <Controller
               name="mohalla"
             
@@ -348,7 +368,10 @@ const OwnerForm1 = (_props) => {
                 />
               )}
             />
-          </LabelFieldPair>     
+            </div>
+          </LabelFieldPair>
+          </div>
+          <CardLabelError style={errorStyle}>{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
  
       </div>
        <hr style={{ width: "100%", border: "1px solid #D6D5D4", marginTop: "50px", marginBottom: "40px" }} />

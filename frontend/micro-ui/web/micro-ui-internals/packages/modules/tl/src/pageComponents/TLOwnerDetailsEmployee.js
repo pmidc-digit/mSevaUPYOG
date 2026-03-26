@@ -36,6 +36,9 @@ const createOwnerDetails = () => ({
   key: Date.now(),
 });
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const OwnerForm = (_props) => {
   const {
     owner,
@@ -55,6 +58,7 @@ const OwnerForm = (_props) => {
     setIsErrors,
     isErrors,
     isRenewal,
+    isOwnerReadOnly,
     isSameAsPropertyOwner,
     previousLicenseDetails,
     setPreviousLicenseDetails,
@@ -142,7 +146,10 @@ const OwnerForm = (_props) => {
     [mdmsData]
   );
 
-  const genderFilterTypeMenu = genderTypeData && genderTypeData["common-masters"]?.GenderType?.filter((e) => e.active);
+  const genderFilterTypeMenu = useMemo(
+    () => genderTypeData?.["common-masters"]?.GenderType?.filter((e) => e.active) || [],
+    [genderTypeData]
+  );
 
   const genderTypeMenu = useMemo(
     () =>
@@ -174,11 +181,14 @@ const OwnerForm = (_props) => {
     }
   }, []);
 
-  // ➡️ Renewal/Edit: restore owner fields including gender & dob
+  // ➡️ Renewal/Edit/Resume/Sendback: restore owner fields including gender & dob
   // Note: formData here is scoped to OwnerDetails step (no cpt.details), so we check URL + owner prop directly
   useEffect(() => {
-    const isRenewOrEdit = window.location.href.includes("tl/renew-application-details") || window.location.href.includes("tl/edit-application-details");
-    if (!isRenewOrEdit || !owner) return;
+    const isRenewOrEdit = window.location.href.includes("tl/renew-application-details") ||
+      window.location.href.includes("tl/edit-application-details");
+    const isResumeOrSendback = new URLSearchParams(window.location.search).has("resume") ||
+      new URLSearchParams(window.location.search).has("sendback");
+    if ((!isRenewOrEdit && !isResumeOrSendback) || !owner) return;
     
     if (typeOfOwner === "INSTITUTIONAL") {
       setValue("instituionName", owner?.instituionName);
@@ -293,7 +303,7 @@ const OwnerForm = (_props) => {
       {/* <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(errors)}> */}
       <div>
         <div className="clu-doc-required-card no-width">
-          {allOwners?.length > 1 ? (
+          {allOwners?.length > 1 && !isOwnerReadOnly ? (
             <div style={{ 
             display: "flex", 
             justifyContent: "flex-end", 
@@ -403,6 +413,8 @@ const OwnerForm = (_props) => {
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.subOwnerShipCategory ? errors?.subOwnerShipCategory?.message : ""}</CardLabelError> */}
               <CardSectionHeader>{t("TL_NEW_OWNER_DETAILS_HEADER_OWNER_INFO")}</CardSectionHeader>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel>
                   {`${t("TL_NEW_OWNER_AUTH_PER_LABEL")}`}
@@ -440,6 +452,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -475,6 +489,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
@@ -516,6 +534,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_PHONE_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -553,6 +573,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.altContactNumber ? errors?.altContactNumber?.message : ""}</CardLabelError>
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -593,7 +617,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
-
+              </div>
+              <div style={colItem}>
               {/**here */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
@@ -627,7 +652,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
-
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
@@ -685,7 +713,8 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
-
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
@@ -724,7 +753,10 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               
                 <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
-
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller hrms-text-transform-none">
                     {`${t("CORE_COMMON_DOB")}`}
@@ -745,7 +777,31 @@ const OwnerForm = (_props) => {
                       }
                       return "";
                     })()}
-                    rules={{ required: t("REQUIRED_FIELD") }}
+                    rules={{
+                      required: t("REQUIRED_FIELD"),
+                      validate: {
+                        minAge: (val) => {
+                          if (!val) return true;
+                          const dob = new Date(val);
+                          if (isNaN(dob.getTime())) return t("TL_INVALID_DOB") || "Invalid date of birth";
+                          const today = new Date();
+                          const age = today.getFullYear() - dob.getFullYear();
+                          const m = today.getMonth() - dob.getMonth();
+                          const isUnder18 = age < 18 || (age === 18 && (m < 0 || (m === 0 && today.getDate() < dob.getDate())));
+                          return !isUnder18 || t("TL_OWNER_MIN_AGE_ERROR") || "Owner must be at least 18 years old";
+                        },
+                        maxAge: (val) => {
+                          if (!val) return true;
+                          const dob = new Date(val);
+                          if (isNaN(dob.getTime())) return t("TL_INVALID_DOB") || "Invalid date of birth";
+                          const today = new Date();
+                          const age = today.getFullYear() - dob.getFullYear();
+                          const m = today.getMonth() - dob.getMonth();
+                          const isOver100 = age > 100 || (age === 100 && (m > 0 || (m === 0 && today.getDate() > dob.getDate())));
+                          return !isOver100 || t("TL_OWNER_MAX_AGE_ERROR") || "Owner cannot be more than 100 years old";
+                        },
+                      },
+                    }}
                     render={(props) => (
                       <TextInput
                       type="date"
@@ -767,8 +823,8 @@ const OwnerForm = (_props) => {
                   />
                 </LabelFieldPair>
                 <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError>
-              
-
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_OFF_ADDR_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -797,6 +853,10 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              </div>
+              </div>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -833,10 +893,15 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem} />
+              </div>
             </React.Fragment>
           )}
           {typeOfOwner !== "INSTITUTIONAL" && (
             <React.Fragment>
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_LOCALIZATION_TRADE_OWNER_NAME")}`}
@@ -876,6 +941,8 @@ const OwnerForm = (_props) => {
               {/* <LabelFieldPair>
                   <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
                 </LabelFieldPair> */}
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}
@@ -910,6 +977,11 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
+              </div>
+              </div>
+
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`}
@@ -942,6 +1014,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""} </CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}
@@ -999,7 +1073,11 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+              </div>
+              </div>
 
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
                   {`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}
@@ -1050,7 +1128,8 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
-
+              </div>
+              <div style={colItem}>
               {/* dob */}
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">
@@ -1061,7 +1140,31 @@ const OwnerForm = (_props) => {
                   control={control}
                   name={"dob"}
                   defaultValue={Digit.DateUtils.ConvertEpochToDate(owner?.dob) || ""}
-                  rules={{ required: t("REQUIRED_FIELD") }}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                    validate: {
+                      minAge: (val) => {
+                        if (!val) return true;
+                        const dob = new Date(val);
+                        if (isNaN(dob.getTime())) return t("TL_INVALID_DOB") || "Invalid date of birth";
+                        const today = new Date();
+                        const age = today.getFullYear() - dob.getFullYear();
+                        const m = today.getMonth() - dob.getMonth();
+                        const isUnder18 = age < 18 || (age === 18 && (m < 0 || (m === 0 && today.getDate() < dob.getDate())));
+                        return !isUnder18 || t("TL_OWNER_MIN_AGE_ERROR") || "Owner must be at least 18 years old";
+                      },
+                      maxAge: (val) => {
+                        if (!val) return true;
+                        const dob = new Date(val);
+                        if (isNaN(dob.getTime())) return t("TL_INVALID_DOB") || "Invalid date of birth";
+                        const today = new Date();
+                        const age = today.getFullYear() - dob.getFullYear();
+                        const m = today.getMonth() - dob.getMonth();
+                        const isOver100 = age > 100 || (age === 100 && (m > 0 || (m === 0 && today.getDate() > dob.getDate())));
+                        return !isOver100 || t("TL_OWNER_MAX_AGE_ERROR") || "Owner cannot be more than 100 years old";
+                      },
+                    },
+                  }}
                   render={(props) => (
                     <TextInput
                       type="date"
@@ -1083,7 +1186,11 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.dob ? errors?.dob?.message : ""}</CardLabelError> 
+              </div>
+              </div>
 
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -1091,7 +1198,15 @@ const OwnerForm = (_props) => {
                     control={control}
                     name={"emailId"}
                     defaultValue={owner?.emailId || ""}
-                    // rules={{ validate: (e) => ((e && getPattern("Email").test(e)) || !e ? true : t("INVALID_EMAIL")) }}
+                    rules={{
+                      validate: {
+                        pattern: (val) =>
+                          !val ||
+                          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
+                            ? true
+                            : t("TL_EMAIL_ERROR_MESSAGE") || "Enter a valid email address",
+                      },
+                    }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -1114,6 +1229,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
                 <Controller
@@ -1142,6 +1259,11 @@ const OwnerForm = (_props) => {
                 />
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
+              </div>
+              </div>
+
+              <div style={twoColRow}>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")} `}</CardLabel>
                 <div className="form-field">
@@ -1170,6 +1292,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+              </div>
+              <div style={colItem}>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_OWNER_PAN_LABEL")}`}</CardLabel>
                 <div className="form-field">
@@ -1206,6 +1330,8 @@ const OwnerForm = (_props) => {
                 </div>
               </LabelFieldPair>
               <CardLabelError>{localFormState.touched.pan ? errors?.pan?.message : ""}</CardLabelError>
+              </div>
+              </div>
             </React.Fragment>
           )}
         </div>
@@ -1346,6 +1472,9 @@ useEffect(() => {
   let isRenewal = window.location.href.includes("tl/renew-application-details");
   if (window.location.href.includes("tl/edit-application-details")) isRenewal = true;
 
+  const isOwnerReadOnly = window.location.href.includes("citizen/tl") && window.location.href.includes("new-application") &&
+    new URLSearchParams(window.location.search).has("sendback");
+
   useEffect(() => {
     if (formData?.tradeUnits?.length > 0 && !isRenewal) {
       let flag = true;
@@ -1382,6 +1511,7 @@ useEffect(() => {
     setIsErrors,
     isErrors,
     isRenewal,
+    isOwnerReadOnly,
     isSameAsPropertyOwner,
     previousLicenseDetails,
     setPreviousLicenseDetails,
@@ -1397,7 +1527,7 @@ useEffect(() => {
       {owners.map((owner, index) => (
         <OwnerForm key={owner.key} index={index} owner={owner} {...commonProps} />
       ))}
-      {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
+      {formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" && !isOwnerReadOnly ? (
         <div>
           {/* <LinkButton label={t("TL_NEW_OWNER_DETAILS_ADD_OWN")} onClick={addNewOwner} /> */}
           <LinkLabel onClick={addNewOwner}      

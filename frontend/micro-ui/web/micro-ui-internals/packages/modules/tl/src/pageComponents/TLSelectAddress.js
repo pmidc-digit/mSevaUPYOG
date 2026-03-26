@@ -4,6 +4,9 @@ import { useForm, Controller } from "react-hook-form";
 import _ from "lodash";
 import Timeline from "../components/TLTimeline";
 
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px" };
+
 const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const allCities = Digit.Hooks.tl.useTenants();
   
@@ -47,10 +50,15 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
 
 
   useEffect(()=>{
-    if(localities && typeof selectedLocality === "string" && checkingLocationForRenew){
-      const foundLocality = localities?.find((item) => item.code === selectedLocality)
-      setSelectedLocality(foundLocality)
-      setValue("locality",foundLocality);
+    if(localities && (checkingLocationForRenew || isResumeMode)){
+      const localityCode = typeof selectedLocality === "string" ? selectedLocality : selectedLocality?.code;
+      if (localityCode) {
+        const foundLocality = localities?.find((item) => item.code === localityCode);
+        if (foundLocality) {
+          setSelectedLocality(foundLocality);
+          setValue("locality", foundLocality);
+        }
+      }
     }
   },[localities])
 
@@ -172,9 +180,12 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
 
   let checkingLocationForRenew = window.location.href.includes("renew-application-details") || window.location.href.includes("renew-trade");
   if (window.location.href.includes("edit-application-details")) checkingLocationForRenew = true;
+  const isResumeMode = window.location.href.includes("new-application") && !!new URLSearchParams(window.location.search).get("resume");
   if (userType === "employee") {
     return (
       <div>
+        <div style={twoColRow}>
+        <div style={colItem}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("MYCITY_CODE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
@@ -198,6 +209,8 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
+        </div>
+        <div style={colItem}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller hrms-text-transform-none">{`${t("TL_NEW_TRADE_DETAILS_MOHALLA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
@@ -216,14 +229,14 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
                 selected={
                   formData?.cpt?.details?.address ? 
                   { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
-                  : checkingLocationForRenew ? selectedLocality || formData?.address?.locality : props.value
+                  : (checkingLocationForRenew || isResumeMode) ? selectedLocality || formData?.address?.locality : props.value
                 }
                 option={localities}
                 select={props.onChange}
                 onBlur={props.onBlur}
                 optionKey="i18nkey"
                 t={t}
-                disable={checkingLocationForRenew || formData?.cpt?.details ? true : false}
+                disable={checkingLocationForRenew || !!formData?.cpt?.details?.address ? true : false}
                 errorStyle={localFormState.touched.locality && errors?.locality?.message ? true : false}
                 placeholder={t("TL_NEW_TRADE_DETAILS_MOHALLA_PLACEHOLDER")}
               />
@@ -231,6 +244,8 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.locality ? errors?.locality?.message : ""}</CardLabelError>
+        </div>
+        </div>
       </div>
     );
   }

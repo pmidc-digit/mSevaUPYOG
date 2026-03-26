@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { config } from "../../../../config/citizen/NewApplicationStepFormConfig";
-import { SET_tlNewApplication, RESET_tlNewApplicationForm } from "../../../../redux/action/TLNewApplicationActions";
+import { SET_tlNewApplication, RESET_tlNewApplicationForm, UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
+import { mapApplicationDataToDefaultValues } from "../../../../utils/mapApplicationDataToDefaultValues";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+import { Loader } from "../../../../components/Loader";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -71,6 +73,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 
 const NewTLStepForm = () => {
   const history = useHistory();
+  const location = useLocation();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -79,13 +82,36 @@ const NewTLStepForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
+  const resumeAppNo = new URLSearchParams(location.search).get("resume");
+  const resumeAppTenantId = new URLSearchParams(location.search).get("appTenantId");
+  const [isReduxReady, setIsReduxReady] = useState(!resumeAppNo);
+
+  const { data: resumeSearchResult, isLoading: isResumeLoading } = Digit.Hooks.tl.useTradeLicenseSearch(
+    { tenantId: resumeAppTenantId || tenantId, filters: { applicationNumber: resumeAppNo } },
+    { enabled: !!resumeAppNo }
+  );
+  const resumeAppData = resumeSearchResult?.Licenses?.[0];
+
   const setStep = (updatedStepNumber) => {
     dispatch(SET_tlNewApplication(updatedStepNumber));
   };
 
   useEffect(() => {
+    if (resumeAppNo) return; // Skip reset when resuming an existing application
     dispatch(RESET_tlNewApplicationForm());
   }, []);
+
+  useEffect(() => {
+    if (!resumeAppNo || !resumeAppData) return;
+    const defaultValues = mapApplicationDataToDefaultValues(resumeAppData, t);
+    const updated = JSON.parse(JSON.stringify(defaultValues));
+    Object.entries(updated).forEach(([key, value]) => {
+      dispatch(UPDATE_tlNewApplication(key, value));
+    });
+    dispatch(UPDATE_tlNewApplication("CreatedResponse", resumeAppData));
+    dispatch(SET_tlNewApplication(1));
+    setIsReduxReady(true);
+  }, [resumeAppData]);
 
 
   const handleSubmit = () => {
@@ -98,6 +124,8 @@ const NewTLStepForm = () => {
     // });
     // onSubmit(data, tenantId, setShowToast, history);
   };
+
+  if (resumeAppNo && (isResumeLoading || !isReduxReady)) return <Loader page={true} />;
 
   return (
     <div className="employeeCard">

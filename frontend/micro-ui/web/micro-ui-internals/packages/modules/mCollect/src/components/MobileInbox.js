@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ApplicationCard } from "./inbox/ApplicationCard";
 import ApplicationLinks from "./inbox/ApplicationLinks";
 import { getActionButton, printReciept } from "../utils";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 const MobileInbox = ({
   data,
@@ -22,6 +22,7 @@ const MobileInbox = ({
   filterComponent,
 }) => {
   const { t } = useTranslation();
+  const history = useHistory();
 
   const convertEpochToDate = (dateEpoch) => {
     if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
@@ -61,6 +62,8 @@ const MobileInbox = ({
   };
 
   return (
+    <React.Fragment>
+     
     <div style={{ padding: 0 }}>
       <div className="inbox-container">
         {!isSearch && (
@@ -79,6 +82,15 @@ const MobileInbox = ({
             />
           </div>
         )}
+         <div style={{ padding: "8px 16px" }}>
+        <button
+          className="TL-new-application-btn"
+          style={{ width: "100%" }}
+          onClick={() => history.push("/digit-ui/employee/mcollect/new-application")}
+        >
+          <span style={{ fontSize: "24px", fontWeight: "bold", lineHeight: "1" }}>+</span> {t("UC_GENERATE_NEW_CHALLAN")}
+        </button>
+      </div>
         <ApplicationCard
           t={t}
           data={getData()}
@@ -97,6 +109,7 @@ const MobileInbox = ({
         />
       </div>
     </div>
+    </React.Fragment>
   );
 };
 

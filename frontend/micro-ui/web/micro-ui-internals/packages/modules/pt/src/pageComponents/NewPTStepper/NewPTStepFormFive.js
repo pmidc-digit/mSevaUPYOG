@@ -136,10 +136,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       },
       usageCategoryMinor: propertyDetails?.propertyUsageType?.code,
       usageCategoryMajor: propertyDetails?.propertyUsageType?.usageCategoryMajor,
-      landArea: propertyDetails?.unitDetails?.[0]?.area,
+      landArea: propertyDetails?.plotSize,
       propertyType: propertyDetails?.propertyType?.code,
-      noOfFloors: 1,
-      // ownershipCategory: `${ownerDetails?.ownerShip?.ownerShipCategory}.${ownerDetails?.ownerShip?.code}`,
+      noOfFloors: propertyDetails?.propertyType?.code == "VACANT" ? 1 : propertyDetails?.noOfFloors?.code || 1,
       ownershipCategory: `${ownerDetails?.ownerShip?.value}`,
       usageCategory: `${propertyDetails?.propertyUsageType?.usageCategoryMajor}.${propertyDetails?.propertyUsageType?.code}`,
       owners: ownerDetails?.owners?.map((owner) => ({
@@ -162,7 +161,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       channel: "CFC_COUNTER",
       creationReason: "CREATE",
       source: "MUNICIPAL_RECORDS",
-      // documents: allDocuments,
+      documents: documents?.documents?.documents,
       applicationStatus: "CREATE",
     };
 

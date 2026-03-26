@@ -29,6 +29,8 @@ const MobileInbox = ({
   localities,
 }) => {
   const { t } = useTranslation();
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const TLNewApplicationModal = Digit?.ComponentRegistryService?.getComponent("TLNewApplicationModal");
   
   const getData = () => data?.table.map(e => ({
       [t("WF_INBOX_HEADER_APPLICATION_NO")]:e?.["applicationId"],
@@ -44,6 +46,8 @@ const MobileInbox = ({
       [t("WF_INBOX_HEADER_SLA_DAYS_REMAINING")]:t(e?.["sla"])}))
 
   return (
+    <React.Fragment>
+      
     <div style={{ padding: 0 }}>
       <div className="inbox-container">
         <div className="filters-container">
@@ -81,6 +85,20 @@ const MobileInbox = ({
                       },
                     ]}
                     headerText={t("ACTION_TEST_TRADELICENSE")} isMobile={true} />
+          <div style={{ padding: "8px 16px" }}>
+            <button
+              className="TL-new-application-btn"
+              style={{ width: "100%" }}
+              onClick={() => {
+                sessionStorage.removeItem('tlModalShown');
+                setShowApplicationModal(false);
+                setTimeout(() => setShowApplicationModal(true), 0);
+              }}
+            >
+              <span style={{ fontSize: "24px", fontWeight: "bold", lineHeight: "1" }}>+</span> {t("TL_NEW_APPLICATION")}
+            </button>
+        </div>
+        {showApplicationModal ? <TLNewApplicationModal /> : null}
           <ApplicationCard
             t={t}
             data={getData()}
@@ -101,6 +119,7 @@ const MobileInbox = ({
         </div>
       </div>
     </div>
+    </React.Fragment>
   );
 };
 

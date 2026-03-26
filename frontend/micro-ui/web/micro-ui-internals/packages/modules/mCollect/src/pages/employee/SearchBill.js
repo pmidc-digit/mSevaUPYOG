@@ -17,6 +17,7 @@ import {
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import { round } from "lodash";
 
 const SearchBill = () => {
   const { t } = useTranslation();
@@ -27,17 +28,31 @@ const SearchBill = () => {
   const [tableData, setTableData] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const { data: EmployeeStatusData = [], isLoading: callMDMS } = Digit.Hooks.useCustomMDMS(
+ const { data: EmployeeStatusData = [], isLoading: callMDMS } =
+  Digit.Hooks.useCustomMDMS(
     tenantId,
     "BillingService",
-    [{ name: "BusinessService", filter: "[?(@.type=='Adhoc')]" }],
+    [{ name: "BusinessService" }],
     {
       select: (data) => {
         const formattedData = data?.["BillingService"]?.["BusinessService"];
-        return formattedData;
+
+        return formattedData?.map((item) => {
+          const formattedKey =
+            "BILLINGSERVICE_BUSINESSSERVICE_" +
+            item.code.replace(/\./g, "_").toUpperCase();
+
+          return {
+            ...item,
+            i18nKey: formattedKey,
+          };
+        });
       },
     }
   );
+
+
+ 
 
   const { data: ULBData = [], isLoading: ulbLoading } = Digit.Hooks.useCustomMDMS(tenantId, "tenant", [{ name: "tenants" }], {
     select: (data) => {
@@ -45,12 +60,27 @@ const SearchBill = () => {
       return formattedData;
     },
   });
-
+ 
+  const defaultULB = ULBData&& ULBData.find((item)=> item.code === tenantId)
+ //console.log("defaultULB",defaultULB)
   const methods = useForm({
     defaultValues: {
       categoryName: "",
+       ULB: defaultULB,
     },
   });
+
+  useEffect(() => {
+  if (ULBData?.length) {
+    const defaultULB = ULBData.find((item) => item.code === tenantId);
+    if (defaultULB) {
+      reset({
+        ...getValues(),
+        ULB: defaultULB,
+      });
+    }
+  }
+}, [ULBData]);
 
   const {
     register,
@@ -65,11 +95,12 @@ const SearchBill = () => {
     setIsLoading(true);
     setHasSearched(true);
     const businessServiceData = data?.businesService?.code;
-    delete data["ULB"];
+    //delete data["ULB"];
 
-    data["url"] = "egov-searcher/bill-genie/mcollectbills/_get";
-
+    //data["url"] = "egov-searcher/bill-genie/mcollectbills/_get";
+    data["url"] = data?.businesService?.billGineiURL ? `/${data?.businesService?.billGineiURL}` : "";
     // Filter out empty strings, null, undefined, and empty arrays
+    //console.log("data",data)
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       if (
         value !== null &&
@@ -84,7 +115,7 @@ const SearchBill = () => {
     }, {});
 
     try {
-      const response = await Digit.MCollectService.search_bill(tenantId, filteredData);
+      const response = await Digit.MCollectService.search_bill(data.ULB.code, filteredData);
       setTableData(response?.Bills);
       setIsLoading(false);
     } catch (error) {
@@ -96,11 +127,28 @@ const SearchBill = () => {
   const closeToast = () => {
     setShowToast(null);
   };
+  const routeToPaymentScreen =async (rowData)=>{
+    let businesService = rowData.businessService;
+    let applicationtenantId = rowData.tenantId;
+    let applicationnumber = rowData.consumerCode;
+    window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${businesService}/${applicationnumber}/${applicationtenantId}`);
+  }
+ const getBillType = (businessService) => {
+  const billMap = {
+    WS: "ws-bill",
+    SW: "sw-bill",
+    PT: "property-bill",
+  };
+
+  return billMap[businessService] || "mcollect-bill";
+};
+
 
   const downloadPDF = async (rowData) => {
     setIsLoading(true);
     try {
-      const response = await Digit.MCollectService.generatePdf(tenantId, { Bills: [{ ...rowData }] }, "mcollectbill");
+      const billType = getBillType(rowData?.businessService);
+      const response = await Digit.MCollectService.generatePdf(tenantId, { Bill: [{ ...rowData }] }, billType);
       setIsLoading(false);
       if (response?.filestoreIds?.[0]) {
         fileFetch(response?.filestoreIds?.[0]);
@@ -180,7 +228,7 @@ const SearchBill = () => {
         Header: t("UC_ACTION_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
-          return <SubmitBar onSubmit={() => alert("payment integration is pending")} label={t("UC_PAY_LABEL")} />;
+          return row?.status === 'ACTIVE'? <SubmitBar onSubmit={() => routeToPaymentScreen(row)} label={t("UC_PAY_LABEL")} /> : "";
         },
       },
     ],
@@ -189,10 +237,10 @@ const SearchBill = () => {
 
   return (
     <React.Fragment>
-      <div className={"employee-application-details"}>
+      {/* <div className={"employee-application-details"}>
         <Header>{t("UC_SEARCH_BILL_HEADER")}</Header>
         <SubmitBar onSubmit={() => history.push("/digit-ui/employee/mcollect/group-bill")} label={t("UC_GROUP_BILLS_LABEL")} />
-      </div>
+      </div> */}
 
       <Card>
         <FormProvider {...methods}>
@@ -212,6 +260,7 @@ const SearchBill = () => {
                       render={(props) => (
                         <Dropdown
                           option={ULBData}
+                          disable = "true"
                           select={(e) => {
                             props.onChange(e);
                           }}
@@ -238,7 +287,7 @@ const SearchBill = () => {
                           select={(e) => {
                             props.onChange(e);
                           }}
-                          optionKey="code"
+                          optionKey="i18nKey"
                           onBlur={props.onBlur}
                           t={t}
                           selected={props.value}
@@ -312,16 +361,18 @@ const SearchBill = () => {
                   </span>
                 </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap:"12px" }}>
                 <SubmitBar label={t("Next")} submit="submit" />
+                <SubmitBar label={t("CS_COMMON_RESET")} onSubmit={() => { reset(); }} className="submit-bar ral-back-btn" />
               </div>
             </div>
           </form>
         </FormProvider>
       </Card>
 
-      {tableData?.length > 0 ? (
-        <div style={{ marginTop: "24px", background: "white", padding: "16px", borderRadius: "8px" }}>
+      {tableData?.length > 0 ? 
+      (
+       <div style={{ marginTop: "24px", background: "white", padding: "16px", borderRadius: "8px" }}>
           <Table
             t={t}
             data={tableData}

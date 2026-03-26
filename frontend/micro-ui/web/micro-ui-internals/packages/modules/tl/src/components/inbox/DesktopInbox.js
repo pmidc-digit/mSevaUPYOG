@@ -20,6 +20,8 @@ const DesktopInbox = ({
   const { data, localities } = props;
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const TLNewApplicationModal = Digit?.ComponentRegistryService?.getComponent("TLNewApplicationModal");
   const GetCell = (value) => <span className="cell-text">{value}</span>;
 
   const GetSlaCell = (value) => {
@@ -189,6 +191,20 @@ const DesktopInbox = ({
   // }
 
   return (
+    <React.Fragment>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 24px 16px 0" }}>
+         <button
+          className="TL-new-application-btn"
+          onClick={() => {
+            sessionStorage.removeItem('tlModalShown');
+            setShowApplicationModal(false);
+            setTimeout(() => setShowApplicationModal(true), 0);
+          }}
+        >
+          <span className="TL-plus-icon">+</span>  {t("TL_NEW_APPLICATION")}
+        </button>
+      </div>
+      {showApplicationModal ? <TLNewApplicationModal /> : null}
     <div className="inbox-container">
       {!props.isSearch && (
         <div className="filters-container">
@@ -229,6 +245,7 @@ const DesktopInbox = ({
         </div>
       </div>
     </div>
+    </React.Fragment>
   );
 };
 

@@ -111,7 +111,9 @@ const NewPTStepperForm = () => {
   const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const userType = Digit.UserService.getUser()?.info?.type;
+  const stateTenantId = Digit.ULBService.getStateId();
+  const tenantId = userType === 'CITIZEN' ? stateTenantId :Digit.ULBService.getCurrentTenantId();
 
   console.log("history", history);
   console.log("location", location?.state);

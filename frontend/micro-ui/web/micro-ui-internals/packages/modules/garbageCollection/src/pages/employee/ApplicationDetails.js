@@ -166,22 +166,22 @@ const ChallanApplicationDetails = () => {
   const isCemp = user?.info?.roles.find((role) => role.code === "GC_CEMP")?.code;
 
   const getAcknowledgement = async () => {
-      setLoader(true);
-      try {
-        const applications = getChallanData;
-        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-        setTimeout(() => {
-          Digit.Utils.pdf.generate(acknowldgementDataAPI);
-          setLoader(false);
-        }, 0);
-      } catch (error) {
-        console.error("Error generating acknowledgement:", error);
+    setLoader(true);
+    try {
+      const applications = getChallanData;
+      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generate(acknowldgementDataAPI);
         setLoader(false);
-      }
-    };
+      }, 0);
+    } catch (error) {
+      console.error("Error generating acknowledgement:", error);
+      setLoader(false);
+    }
+  };
 
-    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
       businessService: "GC.ONE_TIME_FEE",
@@ -202,7 +202,7 @@ const ChallanApplicationDetails = () => {
       let response = null;
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
+      } else {
         response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
@@ -319,19 +319,84 @@ const ChallanApplicationDetails = () => {
     }
   };
 
+  const handleDiscontinue = async (data) => {
+    console.log("data", data);
+    // return;
+    setLoader(true);
+    const payload = {
+      GarbageConnection: {
+        ...data,
+        applicationType: "DISCONNECT_GARBAGE_CONNECTION",
+        processInstance: {
+          ...data?.processInstance,
+          action: "INITIATE",
+          businessService: "NewGC",
+        },
+      },
+      disconnectRequest: true,
+    };
+    console.log("payload===", payload);
+
+    try {
+      const response = await Digit.GCService.create(payload);
+      console.log("response", response);
+      setLable("Connection Disconnected Successfully");
+      setError(false);
+      setShowToast(true);
+
+      // ✅ Delay navigation so toast shows
+      setTimeout(() => {
+        history.push("/digit-ui/employee/garbagecollection/inbox");
+        window.location.reload();
+      }, 2000);
+      updateApplication(response?.GarbageConnection[0]);
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const updateApplication = async (response) => {
+    console.log("uddated response", response);
+    // return;
+    // setLoader(true);
+    const payload = {
+      GarbageConnection: {
+        ...response,
+        processInstance: {
+          ...response?.processInstance,
+          action: "SUBMIT_APPLICATION",
+        },
+      },
+    };
+    console.log("payload===", payload);
+    try {
+      const response = await Digit.GCService.update(payload);
+      console.log("response", response);
+      // setLoader(false);
+    } catch (error) {
+      setLoader(false);
+    }
+  };
+
+  const hideStatuses = ["INITIATED", "CONNECTION_ACTIVATED", "APPROVED"];
+
   return (
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions ral-app-details-header">
           <Header className="ral-header-32">{t("Application Details")}</Header>
-          {isCemp && (getChallanData?.applicationStatus === "APPROVED" ||getChallanData?.applicationStatus === "CONNECTION_ACTIVATED" ) && dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
+          {isCemp &&
+            (getChallanData?.applicationStatus === "APPROVED" || getChallanData?.applicationStatus === "CONNECTION_ACTIVATED") &&
+            dowloadOptions &&
+            dowloadOptions.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            )}
         </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>
@@ -408,7 +473,7 @@ const ChallanApplicationDetails = () => {
         )} */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
-        {getChallanData?.applicationStatus != "INITIATED" && actions && (
+        {!hideStatuses.includes(getChallanData?.applicationStatus) && actions && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu localeKeyPrefix={`WF_GC`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
@@ -425,6 +490,17 @@ const ChallanApplicationDetails = () => {
                 const id = getChallanData?.applicationNo;
                 history.push(`/digit-ui/employee/garbagecollection/create-application/${id}`);
               }}
+            />
+          </ActionBar>
+        )}
+
+        {getChallanData?.applicationStatus == "CONNECTION_ACTIVATED" && getChallanData?.status == "Active" && (
+          <ActionBar>
+            <SubmitBar
+              style={{ width: "200px" }}
+              label={t("GC_DISCONTINUE_SERVICE")}
+              onSubmit={() => handleDiscontinue(getChallanData)}
+              disabled={loader}
             />
           </ActionBar>
         )}

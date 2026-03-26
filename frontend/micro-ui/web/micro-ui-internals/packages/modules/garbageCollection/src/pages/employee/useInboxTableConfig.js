@@ -42,21 +42,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "status",
         Cell: ({ row }) => t(row.original?.status),
       },
-      // {
-      //   Header: t("ES_INBOX_NAME_LABEL"),
-      //   accessor: (row) =>
-      //     row?.Applicant?.firstname
-      //       ? row?.Applicant?.firstname
-      //       : "" + " " + row?.original?.Applicant?.lastname
-      //       ? row?.original?.Applicant?.lastname
-      //       : "",
-      //   disableSortBy: true,
-      // },
-      // {
-      //   Header: t("NDC_EMAIL_LABEL"),
-      //   accessor: (row) => (row?.Applicant?.["email"] ? row?.Applicant?.["email"] : "NA"),
-      //   disableSortBy: true,
-      // },
+      {
+        Header: t("ACTION_TEST_APPLICATION_STATUS"),
+        accessor: "statuss",
+        Cell: ({ row }) => t(row.original?.applicationStatus),
+      },
     ];
   });
 

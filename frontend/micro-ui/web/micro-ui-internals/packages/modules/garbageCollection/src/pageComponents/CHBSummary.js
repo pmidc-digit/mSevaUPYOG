@@ -96,15 +96,15 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
   const renderLabel = (label, value) => (
-    <div style={labelFieldPairStyle}>
-      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+    <div className="bpa-summary-label-field-pair">
+      <CardLabel className="card-label bpa-summary-bold-label swach-search-container">{label}</CardLabel>
       <div>{t(value) || "NA"}</div>
     </div>
   );
 
   return (
-    <div style={pageStyle}>
-      <h2 style={headingStyle}>{t("Application Summary")}</h2>
+    <div className="bpa-summary-page">
+      <h2 className="bpa-summary-heading">{t("Application Summary")}</h2>
 
       {/* Property Details Section */}
       <div style={sectionStyle}>

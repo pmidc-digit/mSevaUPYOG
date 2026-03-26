@@ -161,17 +161,44 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
 
             // --- Map Property Details ---
             const rawAdditionalDetails = allotmentDetails?.additionalDetails || {};
-            const apiAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
+            const apiAdditionalDetails = rawAdditionalDetails?.propertyDetails?.[0] || (Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails);
+
+            // Mapping for Dropdown Options
+            const applicationTypeOptions = [
+                  { name: t("Legacy"), code: "Legacy" },
+                  { name: t("New"), code: "new" },
+            ];
+
+            const appType = rawAdditionalDetails?.applicationType || allotmentDetails?.applicationType || apiAdditionalDetails?.applicationType || "NEW";
+            const formattedAppType = appType?.charAt(0)?.toUpperCase() + appType?.slice(1)?.toLowerCase();
 
             // Create a NEW object for the form, merging root fields and additionalDetails
             const formPropertyDetails = {
               ...apiAdditionalDetails,
+              applicationType: applicationTypeOptions?.find((opt) => opt?.code?.toLowerCase() === appType?.toLowerCase()) || {
+                name: t(formattedAppType),
+                code: formattedAppType,
+              },
               startDate: allotmentDetails?.startDate,
               endDate: allotmentDetails?.endDate,
               penaltyType: allotmentDetails?.penaltyType || apiAdditionalDetails?.penaltyType,
-              // latePayment: allotmentDetails?.latePayment || "2%",
-              // Add other root fields if they are missing in additionalDetails but needed in form
             };
+
+            // Map Legacy details if applicable
+            if (formattedAppType === "Legacy") {
+              formPropertyDetails.arrear = rawAdditionalDetails?.arrear;
+              formPropertyDetails.arrearStartDate = rawAdditionalDetails?.arrearStartDate
+                ? new Date(rawAdditionalDetails.arrearStartDate).toISOString().split("T")[0]
+                : "";
+              formPropertyDetails.arrearEndDate = rawAdditionalDetails?.arrearEndDate
+                ? new Date(rawAdditionalDetails.arrearEndDate).toISOString().split("T")[0]
+                : "";
+              formPropertyDetails.arrearReason = rawAdditionalDetails?.arrearReason
+                ? { name: t(rawAdditionalDetails.arrearReason), code: rawAdditionalDetails.arrearReason }
+                : null;
+              formPropertyDetails.remarks = rawAdditionalDetails?.remarks;
+              formPropertyDetails.arrearDoc = rawAdditionalDetails?.arrearDoc;
+            }
 
             // Define Options for Dropdown Mapping
             const propertyTypeOptions = [

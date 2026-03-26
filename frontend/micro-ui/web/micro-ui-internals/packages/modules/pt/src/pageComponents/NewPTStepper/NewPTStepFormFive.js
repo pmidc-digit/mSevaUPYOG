@@ -57,31 +57,24 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data, selectedAction) => {
     console.log("data", data);
-    // return;
     setLoader(true);
     const { propertyDetails, propertyAddress, ownerDetails, documents } = data;
-    // const units =
-    //   propertyDetails?.unitDetails?.map((unit) => ({
-    //     occupancyType: unit?.occupancy?.code,
-    //     floorNo: unit?.floor?.code,
-    //     arv: unit?.totalRent,
-    //     additionalDetails: {
-    //       rentedformonths: Number(unit?.rentMonths?.code),
-    //       usageForDueMonths: unit?.pendingUsageMonths?.code,
-    //     },
-    //     constructionDetail: {
-    //       builtUpArea: Number(unit?.area),
-    //     },
-    //     tenantId: null,
-    //     usageCategory: unit?.subUsageType?.code,
-    //     unitType: unit?.subUsageType?.code?.split(".").pop(),
-    //   })) || [];
+    const originalProperty = data._originalProperty;
+    const isEditMode = !!originalProperty;
+
+    const stateTenantId = tenantId?.split(".")?.[0] || tenantId;
+    const propertyUsageCode = propertyDetails?.propertyUsageType?.code;
+    const usageCategoryMajor = propertyDetails?.propertyUsageType?.usageCategoryMajor || propertyUsageCode;
 
     const units =
       propertyDetails?.unitDetails
-        ?.filter((unit) => unit?.floor) // skip units without area
-        ?.map((unit) => {
+        ?.filter((unit) => unit?.floor) // skip units without floor
+        ?.map((unit, index) => {
+          const unitUsageCategory = unit?.subUsageType?.code || propertyUsageCode;
+          const originalUnit = originalProperty?.units?.[index];
           const unitPayload = {
+            // Preserve original unit fields (id, etc.) in edit mode
+            ...(isEditMode && originalUnit ? originalUnit : {}),
             ...(unit?.occupancy?.code && { occupancyType: unit.occupancy.code }),
             ...(unit?.floor?.code && { floorNo: unit.floor.code }),
             ...(unit?.totalRent && { arv: unit.totalRent }),
@@ -105,50 +98,64 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
               },
             }),
 
-            ...(unit?.subUsageType?.code && { usageCategory: unit.subUsageType.code }),
+            usageCategory: unitUsageCategory,
 
             ...(unit?.subUsageType?.code && {
               unitType: unit.subUsageType.code.split(".").pop(),
             }),
 
-            tenantId: null,
+            tenantId: stateTenantId,
           };
 
           return unitPayload;
         }) || [];
 
+    const superBuiltUpArea = units.reduce((sum, u) => sum + (u?.constructionDetail?.builtUpArea || 0), 0) || null;
+
+    const computedOwners = ownerDetails?.owners?.map((owner, index) => {
+      const originalOwner = originalProperty?.owners?.[index];
+      return {
+        // Preserve original owner fields (id, uuid, etc.) in edit mode
+        ...(isEditMode && originalOwner ? originalOwner : {}),
+        ...owner,
+        ownerType: "NONE",
+        altContactNumber: owner?.mobileNumber,
+      };
+    });
+
     const formData = {
+      // Spread original property to preserve all IDs and audit fields in edit mode
+      ...(isEditMode ? originalProperty : {}),
       tenantId: tenantId,
       address: {
-        // ...data?.PersonalDetails?.address,
+        ...(isEditMode ? originalProperty.address : {}),
         city: propertyAddress?.city?.name,
         locality: {
+          ...(isEditMode ? originalProperty.address?.locality : {}),
           code: propertyAddress?.locality?.code,
           area: propertyAddress?.locality?.area,
         },
       },
       additionalDetails: {
+        ...(isEditMode ? originalProperty.additionalDetails : {}),
         yearConstruction: propertyAddress?.yearOfCreation?.code,
         businessName: propertyDetails?.businessName,
         remrks: propertyDetails?.remarks,
         inflammable: propertyDetails?.flammable,
         heightAbove36Feet: propertyDetails?.heightOfProperty,
       },
-      usageCategoryMinor: propertyDetails?.propertyUsageType?.code,
-      usageCategoryMajor: propertyDetails?.propertyUsageType?.usageCategoryMajor,
-      landArea: propertyDetails?.plotSize,
+      usageCategoryMinor: usageCategoryMajor === propertyUsageCode ? null : propertyUsageCode,
+      usageCategoryMajor: usageCategoryMajor,
+      landArea: propertyDetails?.plotSize || null,
+      superBuiltUpArea: superBuiltUpArea,
       propertyType: propertyDetails?.propertyType?.code,
       noOfFloors: propertyDetails?.propertyType?.code == "VACANT" ? 1 : propertyDetails?.noOfFloors?.code || 1,
       ownershipCategory: `${ownerDetails?.ownerShip?.value}`,
-      usageCategory: `${propertyDetails?.propertyUsageType?.usageCategoryMajor}.${propertyDetails?.propertyUsageType?.code}`,
-      owners: ownerDetails?.owners?.map((owner) => ({
-        ...owner,
-        ownerType: "NONE",
-        altContactNumber: owner?.mobileNumber,
-      })),
-      // "NONRESIDENTIAL.COMMERCIAL",
+      usageCategory: usageCategoryMajor === propertyUsageCode ? propertyUsageCode : `${usageCategoryMajor}.${propertyUsageCode}`,
+      owners: computedOwners,
       ...(ownerDetails?.institutionName && {
         institution: {
+          ...(isEditMode ? originalProperty.institution : {}),
           name: ownerDetails?.institutionName,
           type: ownerDetails?.institutionType?.code,
           nameOfAuthorizedPerson: ownerDetails?.owners?.[0]?.name,
@@ -159,14 +166,27 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
 
       ...(units?.length > 0 && { units }),
       channel: "CFC_COUNTER",
-      creationReason: "CREATE",
+      creationReason: isEditMode ? "UPDATE" : "CREATE",
       source: "MUNICIPAL_RECORDS",
       documents: documents?.documents?.documents,
-      applicationStatus: "CREATE",
+      ...(isEditMode
+        ? {
+            workflow: {
+              businessService: "PT.CREATE",
+              action: "OPEN",
+              moduleName: "PT",
+            },
+          }
+        : { applicationStatus: "CREATE" }),
     };
 
     try {
-      const response = await Digit.PTService.create({ Property: formData }, tenantId);
+      let response;
+      if (isEditMode) {
+        response = await Digit.PTService.update({ Property: formData }, tenantId);
+      } else {
+        response = await Digit.PTService.create({ Property: formData }, tenantId);
+      }
       console.log("response====", response);
       const id = response?.Properties[0]?.propertyId;
       setLoader(false);
@@ -175,14 +195,9 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       } else {
         history.push("/digit-ui/employee/garbagecollection/response/" + id);
       }
-      // if (response?.ResponseInfo?.status === "successful") {
-      //   return { isSuccess: true, response };
-      // } else {
-      //   return { isSuccess: false, response };
-      // }
     } catch (error) {
       setLoader(false);
-      alert("error while creating the property");
+      alert(isEditMode ? "Error while updating the property" : "Error while creating the property");
     }
   };
 

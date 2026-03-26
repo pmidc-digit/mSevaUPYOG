@@ -69,7 +69,7 @@ const App = () => {
           ) : null}
           <PrivateRoute path={`${path}/property/create-application`} component={CreatePropertyForm} />
           {/* <PrivateRoute path={`${path}/property/new-application`} component={CreatePropertyForm} /> */}
-          <PrivateRoute path={`${path}/property/edit-application/:id`} component={EditProperty} />
+          <PrivateRoute path={`${path}/property/edit-application/:id`} component={CreatePropertyForm} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
           <Route path={`${path}/property/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/property/application/:acknowledgementIds/:tenantId`} component={PTApplicationDetails}></PrivateRoute>

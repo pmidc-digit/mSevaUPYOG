@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   TextInput,
   CardLabel,
@@ -16,6 +16,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTNewApplication_FORM } from "../redux/action/PTNewApplicationActions";
 import { Loader } from "../components/Loader";
 import { useTranslation } from "react-i18next";
+
+const twoColRow = { display: "flex", gap: "24px", flexWrap: "wrap" };
+const colItem = { flex: 1, minWidth: "250px", flexDirection: "column", alignItems: "stretch" };
+const singleCol = { flexDirection: "column", alignItems: "stretch" };
 
 const owners = [
   {
@@ -45,7 +49,7 @@ const owners = [
   },
 ];
 
-const PropertyAddressDetails = ({ goNext, onGoBack }) => {
+const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
@@ -60,9 +64,12 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
     : window.localStorage.getItem("Employee.tenant-id");
   // const [getInstType, setInstType] = useState([]);
 
-  const { data: SubOwnerShipCategory = [], SubOwnerShipCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
+  const { data: SubOwnerShipCategoryRaw, isLoading: SubOwnerShipCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [
     { name: "SubOwnerShipCategory" },
   ]);
+
+  // Memoize to prevent new [] reference each render (was causing infinite loop)
+  const SubOwnerShipCategory = useMemo(() => SubOwnerShipCategoryRaw || {}, [SubOwnerShipCategoryRaw]);
 
   const {
     control,
@@ -94,6 +101,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
     goNext(data);
   };
 
+  // Track whether we've already restored data from Redux to prevent re-running
+  const isRestoredRef = useRef(false);
+
   useEffect(() => {
     if (tenants) {
       const checkCity = tenants?.find((item) => item?.code == getCity);
@@ -105,6 +115,8 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
   const isMultiple = ownerTypeCode === "INDIVIDUAL.MULTIPLEOWNERS";
 
   useEffect(() => {
+    // Don't wipe owners when ownerTypeCode changes due to restore from Redux
+    if (isRestoredRef.current) return;
     if (!isMultiple) {
       setValue("owners", [{ name: "", mobileNumber: "", emailId: "", address: "" }]);
     }
@@ -126,6 +138,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
 
   useEffect(() => {
     if (!ownerShip || !stateDataCheck) return;
+    if (isRestoredRef.current) return;
 
     setValue("institutionName", stateDataCheck?.institutionName || "");
 
@@ -146,13 +159,14 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
         append(owner);
       });
 
-      // ✅ IMPORTANT
       trigger();
     }
+
+    isRestoredRef.current = true;
   }, [ownerShip, SubOwnerShipCategory, stateDataCheck]);
 
   return (
-    <form className="card" onSubmit={handleSubmit(onSubmit)}>
+    <form  onSubmit={handleSubmit(onSubmit)}>
       {/* city */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
@@ -174,6 +188,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 option={owners}
                 optionKey="name"
                 t={t}
+                disable={isEditMode}
               />
             )}
           />
@@ -183,8 +198,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
 
       {isInstitution && (
         <React.Fragment>
-          {/* Institution name */}
-          <LabelFieldPair>
+          {/* Row: Institution Name + Institution Type */}
+          <div style={twoColRow}>
+          <LabelFieldPair style={colItem}>
             <CardLabel className="card-label-smaller">
               {`${t("Institution Name")}`} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -208,15 +224,14 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                       props.onBlur(e);
                     }}
                     t={t}
+                    disable={isEditMode}
                   />
                 )}
               />
               {errors?.institutionName && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.institutionName.message}</p>}
             </div>
           </LabelFieldPair>
-
-          {/* Institution Type */}
-          <LabelFieldPair>
+          <LabelFieldPair style={colItem}>
             <CardLabel className="card-label-smaller">
               {t("Institution Type")} <span style={{ color: "red" }}>*</span>
             </CardLabel>
@@ -225,11 +240,12 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 control={control}
                 name="institutionType"
                 rules={{ required: t("Institution Type is Required") }}
-                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={instTypeOptions} optionKey="name" t={t} />}
+                render={(props) => <Dropdown select={props.onChange} selected={props.value} option={instTypeOptions} optionKey="name" t={t} disable={isEditMode} />}
               />
               {errors.institutionType && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.institutionType?.message}</p>}
             </div>
           </LabelFieldPair>
+          </div>
         </React.Fragment>
       )}
 
@@ -249,8 +265,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                 {t("Owner")} {index + 1}
               </CardSectionHeader>
 
-              {/* Mobile */}
-              <LabelFieldPair>
+              {/* Row: Mobile + Name */}
+              <div style={twoColRow}>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Mobile Number")}*</CardLabel>
                 <Controller
                   control={control}
@@ -263,30 +280,30 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                       message: "Enter valid number",
                     },
                   }}
-                  render={(props) => <MobileNumber {...props} />}
+                  render={(props) => <MobileNumber {...props} disable={isEditMode} />}
                 />
                 {errors?.owners?.[index]?.mobileNumber && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].mobileNumber.message}</p>
                 )}
               </LabelFieldPair>
-
-              {/* Name */}
-              <LabelFieldPair>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Name")}*</CardLabel>
                 <Controller
                   control={control}
                   name={`owners.${index}.name`}
                   defaultValue={item?.name || ""}
                   rules={{ required: "Name required" }}
-                  render={(props) => <TextInput {...props} />}
+                  render={(props) => <TextInput {...props} disable={isEditMode} />}
                 />
                 {errors?.owners?.[index]?.name && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].name.message}</p>
                 )}
               </LabelFieldPair>
+              </div>
 
-              {/* Email */}
-              <LabelFieldPair>
+              {/* Email + Address */}
+              <div style={twoColRow}>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Email")}*</CardLabel>
                 <Controller
                   control={control}
@@ -299,23 +316,22 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                       message: "Invalid email",
                     },
                   }}
-                  render={(props) => <TextInput {...props} />}
+                  render={(props) => <TextInput {...props} disable={isEditMode} />}
                 />
                 {errors?.owners?.[index]?.emailId && (
                   <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.owners[index].emailId.message}</p>
                 )}
               </LabelFieldPair>
-
-              {/* Address */}
-              <LabelFieldPair>
+              <LabelFieldPair style={colItem}>
                 <CardLabel className="card-label-smaller">{t("Address")}</CardLabel>
                 <Controller
                   control={control}
                   name={`owners.${index}.address`}
                   defaultValue={item?.address || ""}
-                  render={(props) => <TextArea {...props} />}
+                  render={(props) => <TextInput {...props} disable={isEditMode} />}
                 />
               </LabelFieldPair>
+              </div>
 
               {/* checkBoxadress*/}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", marginBottom: " 20px" }}>
@@ -330,7 +346,8 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
                       onChange={(e) => {
                         props.onChange(e.target.checked);
                       }}
-                      style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                      style={{ width: "18px", height: "18px", cursor: isEditMode ? "not-allowed" : "pointer" }}
+                      disabled={isEditMode}
                     />
                   )}
                 />
@@ -340,7 +357,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
               </div>
 
               {/* Remove Button (only if multiple) */}
-              {isMultiple && fields.length > 1 && (
+              {isMultiple && fields.length > 1 && !isEditMode && (
                 <div style={{ textAlign: "right" }}>
                   <button type="button" onClick={() => remove(index)} style={{ color: "red", background: "none", border: "none" }}>
                     {t("Remove Owner")}
@@ -351,7 +368,7 @@ const PropertyAddressDetails = ({ goNext, onGoBack }) => {
           ))}
 
           {/* Add Button */}
-          {isMultiple && (
+          {isMultiple && !isEditMode && (
             <button
               type="button"
               onClick={() =>

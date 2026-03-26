@@ -22,7 +22,7 @@ export const PropertyApplicationDetails = () => {
         try{
        let filters={
         acknowledgementIds: applicationNumber,
-        tenantId: tenantId
+       // tenantId: tenantId
        }
        const auth =true
             Digit.PTService.applicationsearch({filters:filters,auth:auth}).then((response) => {
@@ -43,7 +43,7 @@ export const PropertyApplicationDetails = () => {
       )
      // let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, "pb.testing", applicationNumber);
      
-     let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId);
+     let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t,'pb', propertyId);
      console.log("applicationDetails",applicationDetails)
      const getTranslatedValues = (dataValue, isNotTranslated) => {
         if (dataValue) {

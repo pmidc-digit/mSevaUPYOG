@@ -9,6 +9,7 @@ import { SET_PTNewApplication_STEP, RESET_PT_NEW_APPLICATION_FORM, UPDATE_PTNewA
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
+import { mapPropertyToFormData } from "./mapPropertyToFormData";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -111,68 +112,58 @@ const NewPTStepperForm = () => {
   const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const userType = Digit.UserService.getUser()?.info?.type;
+  const stateTenantId = Digit.ULBService.getStateId();
+  const tenantId = userType === 'CITIZEN' ? stateTenantId :Digit.ULBService.getCurrentTenantId();
 
-  console.log("history", history);
-  console.log("location", location?.state);
-
-  // const id = window.location.pathname.split("/").pop();
-
+  // Edit mode detection
+  const isEditMode = window.location.pathname.includes("edit-application");
   const pathParts = window.location.pathname.split("/");
-  const id = pathParts.find((part) => part.startsWith("PB-PTR-"));
-  console.log("id", id);
+  const propertyId = isEditMode ? decodeURIComponent(pathParts[pathParts.length - 1]) : null;
+  const [editDataLoaded, setEditDataLoaded] = useState(false);
 
-  const shouldEnableSearch = Boolean(id && id.startsWith("PB-PTR-"));
+  // Fetch property data for edit mode
+  const { isLoading: isPropertyLoading, data: propertySearchData } = Digit.Hooks.pt.usePropertySearch(
+    { tenantId, filters: { propertyIds: propertyId } },
+    { enabled: isEditMode && !!propertyId && !editDataLoaded }
+  );
 
-  console.log("shouldEnableSearch", shouldEnableSearch);
-
-  // const isEdit = !!id;
-
-  const { isLoading, data: applicationData } = Digit.Hooks.ptr.usePTRSearch({
-    tenantId,
-    filters: { applicationNumber: id },
-    enabled: shouldEnableSearch,
-  });
-
+  // Pre-fill form with property data when in edit mode
   useEffect(() => {
-    if (id && applicationData?.PetRegistrationApplications?.length) {
-      dispatch(UPDATE_PTNewApplication_FORM("responseData", applicationData.PetRegistrationApplications));
+    if (isEditMode && propertySearchData?.Properties?.length > 0 && !editDataLoaded) {
+      const property = propertySearchData.Properties[0];
+      const mappedData = mapPropertyToFormData(property);
+      if (mappedData) {
+        Object.keys(mappedData).forEach((key) => {
+          dispatch(UPDATE_PTNewApplication_FORM(key, mappedData[key]));
+        });
+        dispatch(SET_PTNewApplication_STEP(1));
+        setEditDataLoaded(true);
+      }
     }
-  }, [applicationData, id, dispatch]);
+  }, [propertySearchData, isEditMode, editDataLoaded, dispatch]);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTNewApplication_STEP(updatedStepNumber));
   };
 
-  const handleSubmit = () => {
-    //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
-    // let data = {};
-    // createEmployeeConfig.forEach((config) => {
-    //   if (config.isStepEnabled) {
-    //     data = { ...data, ...formData[config.key] };
-    //   }
-    // });
-    // onSubmit(data, tenantId, setShowToast, history);
-  };
+  const handleSubmit = () => {};
 
   useEffect(() => {
     const unlisten = history.listen(() => {
-      // route changed
       dispatch(RESET_PT_NEW_APPLICATION_FORM());
-      // dispatch(updateNDCForm("reset", {}));
-      // dispatch(setNDCStep(1));
     });
 
     return () => unlisten();
   }, [history, dispatch]);
 
   return (
-    <div>
+    <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("PT_CREATE_PROPERTY")}
+        {t(isEditMode ? "PT_EDIT_PROPERTY" : "PT_CREATE_PROPERTY")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
-      {isLoading && <Loader page={true} />}
+      {isPropertyLoading && <Loader page={true} />}
       {showToast && (
         <Toast
           error={showToast.key}

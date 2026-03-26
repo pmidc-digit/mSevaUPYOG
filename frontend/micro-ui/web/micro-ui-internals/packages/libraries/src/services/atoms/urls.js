@@ -27,7 +27,7 @@ const Urls = {
   Swach_ViewAttendence: `/swach-services/v2/attendance/_search`,
   OTP_Send: "/user-otp/v1/_send",
   Authenticate: "/user/oauth/token",
-  Authenticatev1 : "/user/employee/_login",
+  Authenticatev1: "/user/employee/_login",
   RegisterUser: "/user/citizen/_create",
   ChangePassword: "/user/password/nologin/_update",
   ChangePassword1: "/user/password/_update",
@@ -155,6 +155,7 @@ const Urls = {
     reciept_search: "/collection-services/payments/:businessService/_search",
     generate_pdf: "/pdf-service/v1/_create",
     file_fetch: "/filestore/v1/files/url",
+    bill_generate: "/rl-calculator/v1/_generateBill",
   },
 
   hrms: {

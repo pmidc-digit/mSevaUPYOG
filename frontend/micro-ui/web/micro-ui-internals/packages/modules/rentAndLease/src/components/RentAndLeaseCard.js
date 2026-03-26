@@ -30,7 +30,11 @@ const RentAndLeaseCard = () => {
       },
       {
         label: t("UC_GENERATE_NEW_CHALLAN"),
-        link: `/digit-ui/employee/mcollect/new-application`
+        link: `/digit-ui/employee/rentandlease/new-application`
+      },
+      {
+        label: t("RAL_BILL_GENIE_HEADER"),
+        link: `/digit-ui/employee/rentandlease/bill-genie`
       },
     ]
   }

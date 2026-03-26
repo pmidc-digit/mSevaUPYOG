@@ -47,19 +47,19 @@ const GenerateBill = () => {
         isGroup: false,
       },
     };
-    // console.log("payload===", payload);
-    // return;
     try {
       const response = await Digit.GCService.schedulerCreate(payload);
       setLoader(false);
       setLable("Bill Generated Successfully");
       setError(false);
       setShowToast(true);
-      console.log("response", response);
     } catch (error) {
       setLoader(false);
-      // setShowToast(true);
-      // setError(error.response.data?.Errors?.[0]?.message);
+      if (error.response.data?.Errors?.[0]?.code == "GC_DUPLICATE_BILL_SCHEDULER") {
+        setError(true);
+        setShowToast(true);
+        setLable("Bill has been already generated.");
+      }
     }
   };
 
@@ -80,12 +80,9 @@ const GenerateBill = () => {
     try {
       const response = await Digit.GCService.location({ tenantId, filters });
       setLoader(false);
-      console.log("response==", response?.TenantBoundary?.[0]?.boundary);
       setData(response?.TenantBoundary?.[0]?.boundary);
     } catch (error) {
       setLoader(false);
-      console.log("error==", error);
-      // setLoader(false);
     }
   };
 

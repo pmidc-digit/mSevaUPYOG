@@ -69,9 +69,19 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
     {
       Header: t("RAL_ALLOTMENT_TYPE"),
       Cell: ({ row }) => {
-        return GetCell(`${row.original?.searchData?.additionalDetails?.propertyDetails[0]?.["allotmentType"]}`);
+        const additionalDetails = row.original?.searchData?.additionalDetails || {};
+        const propertyDetails = additionalDetails?.propertyDetails?.[0] || (Array.isArray(additionalDetails) ? additionalDetails[0] : additionalDetails);
+        const appType = additionalDetails?.applicationType || propertyDetails?.applicationType || row.original?.searchData?.applicationType || "NEW";
+        const allotmentType = propertyDetails?.allotmentType || "NA";
+        return GetCell(`${t(allotmentType.toUpperCase())} (${t(appType.toUpperCase())})`);
       },
-      mobileCell: (original) => GetMobCell(`${original?.searchData?.additionalDetails?.propertyDetails[0]?.["allotmentType"]}`),
+      mobileCell: (original) => {
+        const additionalDetails = original?.searchData?.additionalDetails || {};
+        const propertyDetails = additionalDetails?.propertyDetails?.[0] || (Array.isArray(additionalDetails) ? additionalDetails[0] : additionalDetails);
+        const appType = additionalDetails?.applicationType || propertyDetails?.applicationType || original?.searchData?.applicationType || "NEW";
+        const allotmentType = propertyDetails?.allotmentType || "NA";
+        return GetMobCell(`${t(allotmentType.toUpperCase())} (${t(appType.toUpperCase())})`);
+      },
     },
     {
       Header: t("RENT_AMOUNT "),

@@ -30,6 +30,11 @@ const RALBreadCrumbs = ({ location, t }) => {
       content: "Application Overview",
       show: location.pathname.includes("/rentandlease/property") || location.pathname.includes("/rentAndLease/property") ? true : false,
     },
+    {
+      path: "/digit-ui/employee/rentandlease/bill-genie",
+      content: t("RAL_BILL_GENIE_HEADER"),
+      show: location.pathname.includes("/rentandlease/bill-genie") ? true : false,
+    },
   ];
 
   return <BreadCrumb crumbs={crumbs} />;

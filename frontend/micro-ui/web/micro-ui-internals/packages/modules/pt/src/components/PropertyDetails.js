@@ -441,6 +441,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
+            {!isResidentialFlat && (
             <LabelFieldPair style={colItem}>
               <CardLabel className="card-label-smaller">{t("Sub Usage Type")}*</CardLabel>
               <div className="form-field">
@@ -456,6 +457,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                 )}
               </div>
             </LabelFieldPair>
+            )}
             </div>
 
             {/* Row 2: Occupancy + Built-up area */}

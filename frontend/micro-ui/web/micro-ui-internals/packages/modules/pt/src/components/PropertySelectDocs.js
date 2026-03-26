@@ -7,11 +7,12 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
+ const stateId = Digit.ULBService.getStateId();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
   console.log("tenantId", tenantId);
 
-  const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "Documents" }]);
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "PropertyTax", [{ name: "Documents" }]);
 
   // const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 

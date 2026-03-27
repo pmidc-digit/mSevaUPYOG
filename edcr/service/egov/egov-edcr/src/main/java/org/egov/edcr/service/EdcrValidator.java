@@ -9,7 +9,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.dcr.helper.ErrorDetail;
 import org.egov.edcr.contract.ComparisonRequest;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.utils.StringUtils;
 import org.jsoup.Jsoup;
@@ -25,7 +26,8 @@ public class EdcrValidator {
     private static Logger LOG = LogManager.getLogger(EdcrValidator.class);
     private static final String INVALID_VAL = "The %s value is invalid";
     private static final String ALPHANUMERIC_WITH_SPECIAL_CHARS = "^[a-zA-Z0-9]+(([ _\\-&:,/.][a-zA-Z0-9])?[a-zA-Z0-9]*)*$";
-    private static final String ALPHA_CHARS = "^[a-zA-Z ]*$";
+    //private static final String ALPHA_CHARS = "^[a-zA-Z ]*$";
+    private static final String ALPHA_CHARS ="^[a-zA-Z .]*$";
     private static final String INVALID_CHAR_MSG = " _-&:,/.";
     private static final String INVALID_CHAR = "The (%s) contains invalid value. Only following special characters are allowed %s, The String should not start with special characters and should not follow two immediately.";
     

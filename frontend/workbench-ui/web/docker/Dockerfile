@@ -11,8 +11,7 @@ RUN ls -lah
 RUN cd web/ \
     && yarn install --ignore-engines \
     && ./install-deps.sh \
-    && yarn install \
-    && yarn build --ignore-engine
+    && yarn build 
 
 FROM nginx:mainline-alpine
 ENV WORK_DIR=/var/web/digit-ui

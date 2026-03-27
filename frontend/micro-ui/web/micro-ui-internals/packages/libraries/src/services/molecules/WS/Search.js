@@ -43,7 +43,7 @@ const getAddress = (address, t) => {
 const getOwnerNames = (propertyData) => {
   const getActiveOwners = propertyData?.owners?.filter(owner => owner?.active);
   const getOwnersList = getActiveOwners?.map(activeOwner => activeOwner?.name)?.join(",");
-  return getOwnersList ? getOwnersList.split(",").reverse().join(",") : t("NA");
+  return getOwnersList ? getOwnersList.split(",").reverse().join(",") : "NA";
   
 }
 

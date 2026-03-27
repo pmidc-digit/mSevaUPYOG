@@ -10,8 +10,11 @@ const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   const [employeeName, setEmployeeName] = useState("");
   const [employeeRole, setEmployeeRole] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
-  
+  useEffect(() => {
+    Digit.SessionStorage.del("FIRENOC.INBOX");
+  }, []);
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -47,6 +50,12 @@ const Inbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("FIRENOC.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
+      case "mutateSearchAndTable":
+        Digit.SessionStorage.set("FIRENOC.INBOX", { ...state, searchForm: payload.data.searchForm, tableForm: payload.data.tableForm });
+        return { ...state, searchForm: payload.data.searchForm, tableForm: payload.data.tableForm };
+      case "mutateFilterAndTable":
+        Digit.SessionStorage.set("FIRENOC.INBOX", { ...state, filterForm: payload.data.filterForm, tableForm: payload.data.tableForm });
+        return { ...state, filterForm: payload.data.filterForm, tableForm: payload.data.tableForm };
       default:
         break;
     }
@@ -90,7 +99,7 @@ const Inbox = ({ parentRoute }) => {
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const onPageSizeChange = (e) => {
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value, offset: 0 } });
   };
   const onSortingByData = (e) => {
     if (e.length > 0) {
@@ -130,37 +139,42 @@ const Inbox = ({ parentRoute }) => {
 
   const { isLoading: isInboxLoading, data} = Digit.Hooks.firenoc.useInbox({
     tenantId,
-    filters: { ...formState }
+    filters: { ...formState },
+    config: { enabled: hasSearched },
   });
 
-  useEffect(()=>{
-    if(data){
-      data.revalidate();
-    }
-  },[])
   
 
   // let table = [];
-  const [table, setTable] = useState([]);
+  const [allTableData, setAllTableData] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
       if (data) {
         setStatuses(data?.statuses || []);
-        setTable(data?.table || []);
+        setAllTableData(data?.table || []);
         setTotalCount(data?.totalCount || 0);
       }
   }, [data]);
 
+  const table = useMemo(() => {
+    const { offset = 0, limit = 10 } = formState?.tableForm || {};
+    return allTableData.slice(offset, offset + Number(limit));
+  }, [allTableData, formState?.tableForm?.offset, formState?.tableForm?.limit]);
+
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
-    headerText: "ACTION_TEST_NOC",
+    headerText: "ACTION_TEST_FIRENOC",
     links: [
-      {
-        text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/firenoc/search/application",
-      },
+      // {
+      //   text: t("ES_COMMON_APPLICATION_SEARCH"),
+      //   link: "/digit-ui/employee/firenoc/search/application",
+      // },
+      // {
+      //   text: t("ES_COMMON_APPLICATION_NEW"),
+      //   link: "/digit-ui/employee/firenoc/new-application",
+      // },
     ],
   };
 
@@ -187,15 +201,15 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""]; 
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateSearchForm", data });
+    data.hasOwnProperty("") && delete data?.[""];
+    setHasSearched(true); 
+    dispatch({ action: "mutateSearchAndTable", data: { searchForm: data, tableForm: { ...tableOrderFormDefaultValues } } });
   };
 
   const onFilterFormSubmit = (data) => {
     data.hasOwnProperty("") && delete data?.[""];
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateFilterForm", data });
+    setHasSearched(true);
+    dispatch({ action: "mutateFilterAndTable", data: { filterForm: data, tableForm: { ...tableOrderFormDefaultValues } } });
   };
 
   const propsForSearchForm = {
@@ -226,9 +240,7 @@ const Inbox = ({ parentRoute }) => {
   return (
     <>
       <Header>
-        {employeeData &&
-          !isLoading &&
-          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+        {/* {employeeData &&  !isLoading &&`Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`} */}
         
         <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
       </Header>

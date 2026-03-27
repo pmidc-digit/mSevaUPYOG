@@ -266,6 +266,7 @@ import useNOCFeeCalculator from "./noc/useNOCFeeCalculator";
 
 import useNOCSearchByNumber, { useFIRENOCMyApplications, useFIRENOCApplicationDetails } from "./firenoc/useNOCSearchByNumber";
 import useFirenocInbox from "./firenoc/useFirenocInbox";
+import useFireNOCApplicationDetail from "./firenoc/useFireNOCApplicationDetail";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -786,6 +787,7 @@ const firenoc = {
   useFIRENOCMyApplications,
   useFIRENOCApplicationDetails,
   useInbox: useFirenocInbox,
+  useApplicationDetail: useFireNOCApplicationDetail,
 };
 
 const ndc = {

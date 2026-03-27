@@ -1,5 +1,5 @@
-import useInbox from "../useInbox";
-import { useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
+import { FIRENOCService } from "../../services/elements/FIRENOC";
 
 const useFirenocInbox = ({ tenantId, filters, config = {} }) => {
   const queryClient = useQueryClient();
@@ -7,60 +7,44 @@ const useFirenocInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm } = filters;
   const { areaType, nocType } = filterForm;
   const { mobileNumber, applicationNo, fireNOCNumber, applicationStatus, fromDate, toDate } = searchForm;
-  const { sortBy, limit, offset, sortOrder } = tableForm;
-  const user = Digit.UserService.getUser();
 
-  const _filters = {
+  const queryParams = {
     tenantId,
-    processSearchCriteria: {
-      assignee: "",
-      moduleName: "firenoc",
-      businessService: ["FIRE_NOC_SRV", "AIRPORT_NOC_SRV"],
-      ...(applicationStatus?.code ? { status: [applicationStatus.code] } : {}),
-    },
-    moduleSearchCriteria: {
-      ...(mobileNumber ? { mobileNumber } : {}),
-      ...(applicationNo ? { applicationNo } : {}),
-      ...(fireNOCNumber ? { fireNOCNumber } : {}),
-      ...(fromDate ? { fromDate: new Date(fromDate).getTime() } : {}),
-      ...(toDate ? { toDate: new Date(toDate).setHours(23, 59, 59, 999) } : {}),
-      ...(areaType?.code ? { areaType: areaType.code } : {}),
-      ...(nocType?.code ? { nocType: nocType.code } : {}),
-      ...(sortOrder ? { sortOrder } : {}),
-      ...(sortBy ? { sortBy } : {}),
-    },
-    limit,
-    offset,
+    ...(mobileNumber ? { mobileNumber } : {}),
+    ...(applicationNo ? { applicationNumber: applicationNo } : {}),
+    ...(fireNOCNumber ? { fireNOCNumber } : {}),
+    ...(fromDate ? { fromDate: new Date(fromDate).getTime() } : {}),
+    ...(toDate ? { toDate: new Date(toDate).setHours(23, 59, 59, 999) } : {}),
+    ...(areaType?.code ? { areaType: areaType.code } : {}),
+    ...(nocType?.code ? { fireNOCType: nocType.code } : {}),
+    ...(applicationStatus?.code ? { applicationStatus: applicationStatus.code } : {}),
   };
 
-  const queryKey = ["FIRENOC_INBOX_DATA", tenantId, ...Object.keys(_filters)?.map((e) => _filters?.[e])];
+  const queryKey = ["FIRENOC_SEARCH_DATA", ...Object.values(queryParams)];
 
-  return useInbox({
-    tenantId,
-    filters: _filters,
-    config: {
+  return useQuery(
+    queryKey,
+    () => FIRENOCService.search({ filters: queryParams }),
+    {
       select: (data) => {
-        const tableData = data?.items?.map((application) => ({
-          applicationId: application.businessObject?.applicationNo,
-          date: parseInt(application.businessObject?.auditDetails?.createdTime),
-          businessService: application?.ProcessInstance?.businessService,
-          locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
-          status: `${application.businessObject?.applicationStatus}`,
-          owner: application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
-          action: `${application?.ProcessInstance?.action}`,
+        const tableData = (data?.FireNOCs || []).map((noc) => ({
+          applicationId: noc?.fireNOCDetails?.applicationNumber,
+          date: parseInt(noc?.fireNOCDetails?.applicationDate || noc?.auditDetails?.createdTime),
+          status: noc?.fireNOCDetails?.status || "-",
+          owner: noc?.fireNOCDetails?.applicantDetails?.owners?.[0]?.name || "-",
+          action: noc?.fireNOCDetails?.action || "-",
         }));
 
         return {
-          statuses: data.statusMap,
+          statuses: [],
           table: tableData,
-          totalCount: data.totalCount,
-          nearingSlaCount: data.nearingSlaCount,
+          totalCount: data?.count || tableData.length,
           revalidate: () => queryClient.invalidateQueries(queryKey),
         };
       },
       ...config,
-    },
-  });
+    }
+  );
 };
 
 export default useFirenocInbox;

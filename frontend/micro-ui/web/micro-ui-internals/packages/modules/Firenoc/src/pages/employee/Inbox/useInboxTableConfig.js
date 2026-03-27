@@ -102,7 +102,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: Math.ceil(totalCount / 10) * 10 - parseInt(formState.tableForm?.limit) },
+        data: { ...formState.tableForm, offset: (Math.ceil(totalCount / parseInt(formState.tableForm?.limit)) - 1) * parseInt(formState.tableForm?.limit) },
       }),
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     // globalSearch: {searchForItemsInTable},

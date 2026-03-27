@@ -40,6 +40,7 @@ import FireNOCDocuments from "./pageComponents/FireNOCDocuments";
 import NOCSummary from "./pageComponents/NOCSummary";
 import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
 import EditApplication from "./pageComponents/EditApplication/EditApplication";
+import FireNOCApplicationDetails from "./pages/employee/Inbox/FireNOCApplicationDetails";
 
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
@@ -133,6 +134,7 @@ const componentsToRegister = {
   FIRENOCCitizenMyApplications: FireNOCMyApplications,
   FIRENOCCitizenApplicationOverview: FireNOCApplicationOverview,
   FIRENOCEmployeeApplicationOverview: NOCEmployeeApplicationOverview,
+  FIRENOCEmployeeInboxDetails: FireNOCApplicationDetails,
   FIRENOCEditApplication: EditApplication,
   FIRENOCCitizenSearchApplication: CitizenSearchApplication,
   FIRENOCInspectionReport: InspectionReport,

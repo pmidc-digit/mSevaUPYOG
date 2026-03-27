@@ -57,6 +57,7 @@ const EmployeeApp = ({ path }) => {
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCStepperForm");
   const EmployeeNOCNewApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCEmployeeStepperForm");
   const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("FIRENOCEmployeeApplicationOverview");
+  const FireNOCEmployeeInboxDetails = Digit?.ComponentRegistryService?.getComponent("FIRENOCEmployeeInboxDetails");
   const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("FIRENOCEditApplication");
   const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
   const NOCEsignResponse = Digit?.ComponentRegistryService?.getComponent("FIRENOCEsignResponse");
@@ -79,8 +80,7 @@ const EmployeeApp = ({ path }) => {
         <NOCBreadCrumbs location={location} />
       </div> : null} 
       <Switch>
-        {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} /> */}
-        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={NOCEmployeeApplicationOverview} />
+        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={FireNOCEmployeeInboxDetails} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />

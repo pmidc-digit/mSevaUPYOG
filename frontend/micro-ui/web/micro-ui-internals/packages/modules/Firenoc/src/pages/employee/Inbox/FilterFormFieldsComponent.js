@@ -13,8 +13,8 @@ const FilterFormFieldsComponent = ({
   const { t } = useTranslation();
 
   const areaTypeOptions = [
-    { code: "RURAL", name: t("FIRENOC_AREA_RURAL") },
-    { code: "URBAN", name: t("FIRENOC_AREA_URBAN") },
+    { code: "Rural", name: t("FIRENOC_AREA_RURAL") },
+    { code: "Urban", name: t("FIRENOC_AREA_URBAN") },
   ];
 
   const nocTypeOptions = [

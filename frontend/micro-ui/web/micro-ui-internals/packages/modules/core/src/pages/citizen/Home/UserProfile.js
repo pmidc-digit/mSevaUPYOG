@@ -367,9 +367,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         const user = Digit.UserService.getUser();
 
         if (user) {
-          Digit.UserService.setUser({
-            ...user,
-            info: {
+          const userObject = {
               ...user.info,
               name,
               //DOB,
@@ -377,8 +375,15 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
               emailId: email,
               permanentCity: city,
               photo: profileImg,
+            }
+          Digit.UserService.setUser({
+            ...user,
+            info: {
+              ...userObject
             },
           });
+          localStorage.setItem("user-info", JSON.stringify(userObject));
+          localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
         }
       }
 

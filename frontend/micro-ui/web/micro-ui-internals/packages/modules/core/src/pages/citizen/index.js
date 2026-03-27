@@ -33,6 +33,7 @@ import NavigationPage from "./NavigationPage";
 import CitizenHomeCardWithExternalLink from "./CitizenHomeCardWithExternalLink";
 import DashboardFooter from "./Home/DashboardFooter";
 import CitizenHomeCardSecond from "./CitizenHomeCardSecond";
+import OBPSNavbar from "../../components/OBPSNavbar";
 const sidebarHiddenFor = [
   "digit-ui/citizen/register/name",
   "/digit-ui/citizen/select-language",
@@ -124,6 +125,8 @@ const Home = ({
     return (
       <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
+        <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+        {mdmsDataObj && code === "OBPS" && (<OBPSNavbar/>)}
           <div
             className="moduleLinkHomePage"
             style={{
@@ -266,6 +269,7 @@ const Home = ({
               {/* <StaticDynamicCard moduleCode={code?.toUpperCase()} /> */}
             </div>
           </div>
+        </div>
         </Route>
         <Route key={"faq" + index} path={`${path}/${code.toLowerCase()}-faq`}>
           <FAQsSection module={code?.toUpperCase()} />
@@ -273,6 +277,7 @@ const Home = ({
         <Route key={"hiw" + index} path={`${path}/${code.toLowerCase()}-how-it-works`}>
           <HowItWorks module={code?.toUpperCase()} />
         </Route>
+        {/* </div> */}
       </React.Fragment>
     );
   });

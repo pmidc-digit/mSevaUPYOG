@@ -8,12 +8,9 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   // User authentication and role checks
   const { t } = useTranslation();
   const user = Digit.UserService?.getUser();
-  const tenantId = localStorage.getItem("CITIZEN.CITY");
-  const stateId = Digit.ULBService.getStateId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");  
   const isUserLoggedIn = user?.access_token;
   const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => role?.code?.includes("BPA") && role?.tenantId === tenantId);
-  const { data: apiData, isLoading} = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "uiObpsHomePage" }]);
-  const navItems = apiData?.["common-masters"]?.uiObpsHomePage?.[0]?.sectionHeaders;
 
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false;
 
@@ -211,8 +208,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
 
   return (
     <div className="chcwe-root" style={styles ? styles : undefined}>
-      {header && <h2 className="chcwe-header">{header}</h2>}
-      <OBPSNavbar items={navItems}/>
+      {header && <h2 className="chcwe-header">{header}</h2>}      
 
       <div className="chcwe-card-container">
         {links.map((link, index) => {

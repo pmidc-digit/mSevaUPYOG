@@ -70,6 +70,7 @@ public class ToiletDetails extends FeatureProcess {
     private static final Logger LOG = LogManager.getLogger(ToiletDetails.class);
     private static final String RULE_41_IV = "5.5.2";
     public static final String BATHROOM_DESCRIPTION = "Toilet";
+    public static final String VENTILATION_HEIGHT_ERROR = "Ventilation Height must be greater than zero";
 
     @Override
     public Plan validate(Plan pl) {
@@ -78,6 +79,7 @@ public class ToiletDetails extends FeatureProcess {
 
     @Override
     public Plan process(Plan pl) {
+    	HashMap<String, String> errors = new HashMap<>();
 
         ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 //        scrutinyDetail.setKey("Common_Toilet");
@@ -107,25 +109,31 @@ public class ToiletDetails extends FeatureProcess {
                                     BigDecimal ventilationHeight = toilet.getToiletVentilation() != null 
                                             ? toilet.getToiletVentilation().setScale(2, RoundingMode.HALF_UP)
                                             : BigDecimal.ZERO;
+
+//                                    if (area.compareTo(new BigDecimal(1.8)) >= 0
+//                                            && width.compareTo(new BigDecimal(1.2)) >= 0
+//                                            && ventilationHeight.compareTo(new BigDecimal(0.3)) >= 0) {
+//
+//                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
+//                                        details.put(PROVIDED, "Total Area = " + area
+//                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+//                                        details.put(STATUS, Result.Accepted.getResultVal());
+//
+//                                    } else {                                    	
+//                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
+//                                        details.put(PROVIDED, "Total Area = " + area
+//                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
+//                                        details.put(STATUS, Result.Not_Accepted.getResultVal());
+//                                        errors.put(VENTILATION_HEIGHT_ERROR, VENTILATION_HEIGHT_ERROR);
+//                                        pl.addErrors(errors);
+//                                    }                                    
                                     
                                     
-
-                                    if (area.compareTo(new BigDecimal(1.8)) >= 0
-                                            && width.compareTo(new BigDecimal(1.2)) >= 0
-                                            && ventilationHeight.compareTo(new BigDecimal(0.3)) >= 0) {
-
                                         details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
                                         details.put(PROVIDED, "Total Area = " + area
                                                 + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
                                         details.put(STATUS, Result.Accepted.getResultVal());
-
-                                    } else {
-                                        details.put(REQUIRED, "Total Area >= 1.8, Width >= 1.2, Ventilation >= 0.3");
-                                        details.put(PROVIDED, "Total Area = " + area
-                                                + ", Width = " + width + ", Ventilation Height = " + ventilationHeight);
-                                        details.put(STATUS, Result.Not_Accepted.getResultVal());
-                                    }
-
+                                        
                                     scrutinyDetail.getDetail().add(details);
                                 }
                             }

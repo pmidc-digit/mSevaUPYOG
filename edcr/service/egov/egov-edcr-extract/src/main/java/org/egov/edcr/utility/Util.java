@@ -831,7 +831,7 @@ public class Util {
                 while (styledParagraphIterator.hasNext()) {
                     StyledTextParagraph styledTextParagraph = (StyledTextParagraph) styledParagraphIterator.next();
                     String[] data = styledTextParagraph.getText().split("=");
-                    System.out.println(styledTextParagraph.getText());
+                    LOG.info(styledTextParagraph.getText());
                     if (data.length == 2)
                         planInfoProperties.put(data[0].trim(), data[1].trim());
                 }
@@ -889,6 +889,42 @@ public class Util {
 
         return polygonArea(x, y, dxfPolyline.getVertexCount());
     }
+    
+    public static BigDecimal getPolyLineLength(DXFPolyline dxfPolyline) {
+        if (dxfPolyline == null) {
+            return BigDecimal.ZERO;
+        }
+
+        List<Double> x = new ArrayList<>();
+        List<Double> y = new ArrayList<>();
+
+        Iterator<?> vertexIterator = dxfPolyline.getVertexIterator();
+        while (vertexIterator.hasNext()) {
+            DXFVertex dxfVertex = (DXFVertex) vertexIterator.next();
+            Point point = dxfVertex.getPoint();
+            x.add(point.getX());
+            y.add(point.getY());
+        }
+
+        double totalLength = 0.0;
+        int n = x.size();
+
+        for (int i = 0; i < n - 1; i++) {
+            double dx = x.get(i + 1) - x.get(i);
+            double dy = y.get(i + 1) - y.get(i);
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // If polyline is closed, add distance between last and first point
+        if (dxfPolyline.isClosed() && n > 1) {
+            double dx = x.get(0) - x.get(n - 1);
+            double dy = y.get(0) - y.get(n - 1);
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+
+        return BigDecimal.valueOf(totalLength).setScale(2, RoundingMode.HALF_UP);
+    }
+
 
     public static List<DXFLWPolyline> getPolyLinesByLayer(DXFDocument dxfDocument, String name) {
 
@@ -1319,40 +1355,70 @@ public class Util {
     public static void setOccupancyType(DXFLWPolyline pline, Occupancy occupancy) {
         if (pline.getColor() == DxfFileConstants.OCCUPANCY_A1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_A1);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A1_APARTMENT_COLOR_CODE)
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A4_APARTMENT_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_A4);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A1_PROFESSIONALOFFICE_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_A5);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_A2);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_A3);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_A3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_B1);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_B2);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_B2);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_B3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_C1);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_C2);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_C3);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_C2);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_C3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_D);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_D1);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_D2);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_E);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_F);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_E);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_F);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F1_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_F1);
+        	occupancy.setType(OccupancyType.OCCUPANCY_F1);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_F2);
+        	occupancy.setType(OccupancyType.OCCUPANCY_F2);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F3_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F3);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F4_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F4);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F5_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F5);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F6_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F6);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F7_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F7);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F8_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F8);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F9_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F9);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F10_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F10);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F11_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F11);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F12_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F12);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F13_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F13);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F14_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F14);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F15_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F15);
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F16_COLOR_CODE)
+        	occupancy.setType(OccupancyType.OCCUPANCY_F16);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_F2);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F3_HOTEL_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_F3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G1_COLOR_CODE)
@@ -1372,46 +1438,112 @@ public class Util {
     public static OccupancyType findOccupancyType(DXFLWPolyline pline) {
         if (pline.getColor() == DxfFileConstants.OCCUPANCY_A1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_A1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A1_APARTMENT_COLOR_CODE)
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A4_APARTMENT_COLOR_CODE)
             return OccupancyType.OCCUPANCY_A4;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A1_PROFESSIONALOFFICE_COLOR_CODE)
             return OccupancyType.OCCUPANCY_A5;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A6_INDEPENDENT_FLOOR_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_A6;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_COLOR_CODE)
             return OccupancyType.OCCUPANCY_A2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_A3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_A3;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_B1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B2;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
             return OccupancyType.OCCUPANCY_B3;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_C1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_C2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_C3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_C2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_C3;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
             return OccupancyType.OCCUPANCY_D;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_D1;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
             return OccupancyType.OCCUPANCY_D2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_E;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_E;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F2;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F1;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F3_HOTEL_COLOR_CODE)
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F3_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F3;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F4_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F4;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F5_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F5;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F6_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F6;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F7_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F7;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F8_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F8;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F9_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F9;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F10_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F10;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F11_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F11;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F12_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F12;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F13_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F13;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F14_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F14;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F15_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F15;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F16_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F16;
+        
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_G1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_G2;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_G1;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G2_COLOR_CODE)
             return OccupancyType.OCCUPANCY_G2;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G3_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G3;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G4_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G4;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G5_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G5;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G6_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G6;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G7_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G7;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G8_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G8;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G9_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G9;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G10_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G10;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G11_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G11;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G12_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_G12;
+        
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
             return OccupancyType.OCCUPANCY_H;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
@@ -1420,6 +1552,38 @@ public class Util {
             return OccupancyType.OCCUPANCY_I2;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F4;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_J;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_J1;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_J2;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_J3;
+        
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L1_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L1;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L2_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L2;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L3_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L3;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L4_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L4;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L5_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L5;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L6_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L6;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L7_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L7;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L8_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L8;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L9_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_L9;
+        
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_R_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_R;
+        
+        
         else
             return null;
     }
@@ -1546,38 +1710,86 @@ public class Util {
         return dxflwPolylines;
     }
 
+//    public static Map<String, Object> getTypicalFloorValues(Block block, Floor floor,
+//            Boolean isTypicalRepititiveFloor) {
+//        Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
+//        List<Integer> typicalFlrs = new ArrayList<>();
+//        String typicalFloors = null;
+//        Integer maxTypicalFloors;
+//        Integer minTypicalFloors;
+//        if (block.getTypicalFloor() != null)
+//            for (TypicalFloor typicalFloor : block.getTypicalFloor()) {
+//                if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber()))
+//                    isTypicalRepititiveFloor = true;
+//                if (typicalFloor.getModelFloorNo() == floor.getNumber()) {
+//                    typicalFlrs.add(floor.getNumber());
+//                    typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
+//                    if (!typicalFlrs.isEmpty()) {
+//                        maxTypicalFloors = typicalFlrs.get(0);
+//                        minTypicalFloors = typicalFlrs.get(0);
+//                        for (Integer typical : typicalFlrs) {
+//                            if (typical > maxTypicalFloors)
+//                                maxTypicalFloors = typical;
+//                            if (typical < minTypicalFloors)
+//                                minTypicalFloors = typical;
+//                        }
+//                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+//
+//                    }
+//                }
+//            }
+//        mapOfTypicalFloorValues.put("isTypicalRepititiveFloor", isTypicalRepititiveFloor);
+//        mapOfTypicalFloorValues.put("typicalFloors", typicalFloors);
+//        return mapOfTypicalFloorValues;
+//    }
+    
     public static Map<String, Object> getTypicalFloorValues(Block block, Floor floor,
-            Boolean isTypicalRepititiveFloor) {
-        Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
-        List<Integer> typicalFlrs = new ArrayList<>();
-        String typicalFloors = null;
-        Integer maxTypicalFloors;
-        Integer minTypicalFloors;
-        if (block.getTypicalFloor() != null)
-            for (TypicalFloor typicalFloor : block.getTypicalFloor()) {
-                if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber()))
-                    isTypicalRepititiveFloor = true;
-                if (typicalFloor.getModelFloorNo() == floor.getNumber()) {
-                    typicalFlrs.add(floor.getNumber());
-                    typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
-                    if (!typicalFlrs.isEmpty()) {
-                        maxTypicalFloors = typicalFlrs.get(0);
-                        minTypicalFloors = typicalFlrs.get(0);
-                        for (Integer typical : typicalFlrs) {
-                            if (typical > maxTypicalFloors)
-                                maxTypicalFloors = typical;
-                            if (typical < minTypicalFloors)
-                                minTypicalFloors = typical;
-                        }
-                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+            Boolean isTypicalRepititiveFloor) { // Reverting the signature change
+        
+    Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
+    List<Integer> typicalFlrs = new ArrayList<>();
+    String typicalFloors = null;
+    Integer maxTypicalFloors = null;
+    Integer minTypicalFloors = null;
 
+    if (block.getTypicalFloor() != null) {
+        for (TypicalFloor typicalFloor : block.getTypicalFloor()) {
+            
+            // Check if the current floor is a repetitive floor and update the input boolean
+            if (typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
+                isTypicalRepititiveFloor = true;
+            }
+
+            // This is the core fix: Check if the floor is EITHER the model or a repetitive floor.
+            if (typicalFloor.getModelFloorNo().equals(floor.getNumber())
+                    || typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
+                
+                // Add the model floor number and all repetitive floor numbers to a list.
+                typicalFlrs.add(typicalFloor.getModelFloorNo());
+                typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
+
+                // Calculate the min and max floor numbers for the typical set.
+                if (!typicalFlrs.isEmpty()) {
+                    // Use streams for a cleaner way to find min/max
+                    minTypicalFloors = typicalFlrs.stream().min(Integer::compareTo).orElse(null);
+                    maxTypicalFloors = typicalFlrs.stream().max(Integer::compareTo).orElse(null);
+                    
+                    if (minTypicalFloors != null && maxTypicalFloors != null) {
+                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
                     }
                 }
+                
+                // Break the loop once the typical floor set is found and processed
+                break; 
             }
-        mapOfTypicalFloorValues.put("isTypicalRepititiveFloor", isTypicalRepititiveFloor);
-        mapOfTypicalFloorValues.put("typicalFloors", typicalFloors);
-        return mapOfTypicalFloorValues;
+        }
     }
+    
+    // The map is populated with the potentially updated boolean and the calculated string
+    mapOfTypicalFloorValues.put("isTypicalRepititiveFloor", isTypicalRepititiveFloor);
+    mapOfTypicalFloorValues.put("typicalFloors", typicalFloors);
+    return mapOfTypicalFloorValues;
+}
 
     public static boolean checkExemptionConditionForBuildingParts(Block blk) {
         if (blk.getBuilding() != null && blk.getBuilding().getFloorsAboveGround() != null)
@@ -1730,4 +1942,113 @@ public class Util {
             return name;
         }
     }
+    
+    public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p) {
+
+        List<Point> pts = new ArrayList<>();
+
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+
+        int n = pts.size();
+        boolean inside = false;
+
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = pts.get(i).getX();
+            double yi = pts.get(i).getY();
+            double xj = pts.get(j).getX();
+            double yj = pts.get(j).getY();
+
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (yj - yi) + xi);
+
+            if (intersect)
+                inside = !inside;
+        }
+
+        // strictly inside → not on boundary
+        if (inside && !isPointOnPolygonBoundary(poly, p)) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p) {
+
+        Iterator it = poly.getVertexIterator();
+        Point prev = null;
+
+        if (it.hasNext()) {
+            prev = ((DXFVertex) it.next()).getPoint();
+        }
+
+        while (it.hasNext()) {
+            Point curr = ((DXFVertex) it.next()).getPoint();
+            if (isPointOnLine(prev, curr, p)) return true;
+            prev = curr;
+        }
+
+        // close last-to-first segment
+        Point first = ((DXFVertex) poly.getVertex(0)).getPoint();
+        if (isPointOnLine(prev, first, p)) return true;
+
+        return false;
+    }
+
+    public static boolean isPointOnLine(Point a, Point b, Point p) {
+        double cross = (p.getY() - a.getY()) * (b.getX() - a.getX())
+                - (p.getX() - a.getX()) * (b.getY() - a.getY());
+
+        if (Math.abs(cross) > 1e-6) return false;
+
+        double dot = (p.getX() - a.getX()) * (b.getX() - a.getX()) +
+                (p.getY() - a.getY()) * (b.getY() - a.getY());
+
+        if (dot < 0) return false;
+
+        double lenSq = (b.getX() - a.getX()) * (b.getX() - a.getX())
+                + (b.getY() - a.getY()) * (b.getY() - a.getY());
+
+        return dot <= lenSq;
+    }
+
+    public static boolean doLineSegmentsIntersect(Point p1, Point p2, Point q1, Point q2) {
+        // Check orientations
+        int o1 = orientation(p1, p2, q1);
+        int o2 = orientation(p1, p2, q2);
+        int o3 = orientation(q1, q2, p1);
+        int o4 = orientation(q1, q2, p2);
+
+        // General case
+        if (o1 != o2 && o3 != o4)
+            return true;
+
+        // Special Cases
+        if (o1 == 0 && onSegment(p1, q1, p2)) return true;
+        if (o2 == 0 && onSegment(p1, q2, p2)) return true;
+        if (o3 == 0 && onSegment(q1, p1, q2)) return true;
+        if (o4 == 0 && onSegment(q1, p2, q2)) return true;
+
+        return false;
+    }
+
+    private static int orientation(Point a, Point b, Point c) {
+        double val = (b.getY() - a.getY()) * (c.getX() - b.getX()) -
+                     (b.getX() - a.getX()) * (c.getY() - b.getY());
+
+        if (Math.abs(val) < 1e-10) return 0;  // Collinear
+        return (val > 0) ? 1 : 2;            // Clockwise or Counterclockwise
+    }
+
+    private static boolean onSegment(Point a, Point b, Point c) {
+        return b.getX() <= Math.max(a.getY(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
+               b.getY() <= Math.max(a.getY(), c.getY()) && b.getY() >= Math.min(a.getY(), c.getY());
+    }
+
+    
 }

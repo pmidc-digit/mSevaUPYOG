@@ -17,6 +17,7 @@ RUN cd web/ \
     && node -e 'console.log("workbench only")' \
     && cd workbench/ \
     && yarn install --ignore-engines \
+    && chmod 777 install-deps.sh \
     && ./install-deps.sh \
     && yarn build 
 

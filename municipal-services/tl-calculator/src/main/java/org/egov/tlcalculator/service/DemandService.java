@@ -18,6 +18,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.context.annotation.Lazy;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -34,6 +35,7 @@ import static org.egov.tlcalculator.utils.TLCalculatorConstants.businessService_
 public class DemandService {
 
     @Autowired
+    @Lazy
     private CalculationService calculationService;
 
     @Autowired

@@ -5,18 +5,18 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.2.6.RELEASE</version>
+    <version>4.0.2</version>
   </parent>
   <groupId>org.egov</groupId>
   <artifactId>tl-calculator</artifactId>
-  <version>1.1.5-SNAPSHOT</version>
+  <version>1.1.6-SNAPSHOT</version>
   <name>tl-calculator</name>
   <properties>
-    <log4j2.version>2.17.1</log4j2.version>
-    <java.version>1.8</java.version>
+    <log4j2.version>2.21.1</log4j2.version>
+    <java.version>21</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <lombok.version>1.18.8</lombok.version>
+    <lombok.version>1.18.32</lombok.version>
     <cache2k-version>1.2.0.Final</cache2k-version>
   </properties>
   <dependencies>
@@ -41,9 +41,12 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-kafka</artifactId>
+	</dependency>
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>5.2.20.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -55,6 +58,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-validation</artifactId>
+	</dependency>
+    <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-core</artifactId>
       <version>1.5.18</version>
@@ -63,10 +70,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.kafka</groupId>
@@ -93,7 +96,17 @@
     <dependency>
       <groupId>org.egov.services</groupId>
       <artifactId>tracer</artifactId>
-      <version>2.1.2-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
+  	  <exclusions>
+            <exclusion>
+                <groupId>org.springframework.kafka</groupId>
+                <artifactId>spring-kafka</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+            </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -103,7 +116,7 @@
     <dependency>
       <groupId>org.egov</groupId>
       <artifactId>mdms-client</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -113,12 +126,16 @@
     <dependency>
       <groupId>org.egov.services</groupId>
       <artifactId>services-common</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-    </dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+	</dependency>
+	<dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+	  <artifactId>jackson-databind</artifactId>
+	</dependency>
   </dependencies>
   <repositories>
     <repository>

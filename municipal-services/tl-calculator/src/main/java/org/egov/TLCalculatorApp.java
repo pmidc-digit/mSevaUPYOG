@@ -30,7 +30,7 @@ public class TLCalculatorApp {
     @Bean
     @Profile("!test")
     public CacheManager cacheManager() {
-        return new SpringCache2kCacheManager()
+        return new SpringCache2kCacheManager("spring-cache-manager-"+System.currentTimeMillis())
                 .addCaches(b->b.name("mdmsData").expireAfterWrite(masterDataCacheExpiry, TimeUnit.MINUTES).entryCapacity(50))
                 .addCaches(b->b.name("mdmsCache").expireAfterWrite(masterDataCacheExpiry, TimeUnit.MINUTES).entryCapacity(50));
     }

@@ -1,10 +1,12 @@
 package org.egov.infra.indexer.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -30,6 +32,11 @@ import java.util.Map;
 @Service
 @Slf4j
 public class DataTransformationService {
+
+    private static final int MAX_STRUCTURE_DEPTH = 3;
+    private static final int MAX_OBJECT_FIELDS_TO_LOG = 12;
+    private static final int MAX_ARRAY_ITEMS_TO_LOG = 3;
+    private static final int MAX_PAYLOAD_SNIPPET_LENGTH = 1000;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -156,6 +163,8 @@ public class DataTransformationService {
      */
     public String buildCustomJsonForIndex(CustomJsonMapping customJsonMappings, String kafkaJson) {
         Object indexMap = null;
+        String payloadStructure = buildPayloadStructure(kafkaJson);
+        log.info("Payload structure before custom index mapping: {}", payloadStructure);
         if (null != customJsonMappings.getIndexMapping()) {
             indexMap = customJsonMappings.getIndexMapping();
         } else {
@@ -171,7 +180,12 @@ public class DataTransformationService {
                     documentContext.put(expression, expressionArray[expressionArray.length - 1],
                             JsonPath.read(kafkaJson, fieldMapping.getInjsonpath()));
                 } catch (Exception e) {
-                    log.error("Error while building custom JSON for index: " + e.getMessage());
+                    String parentPath = extractParentJsonPath(fieldMapping.getInjsonpath());
+                    String parentType = getJsonNodeTypeAtPath(kafkaJson, parentPath);
+                    log.error("Error while building custom JSON for index. inJsonPath: {}, outJsonPath: {}, parentPath: {}, parentType: {}, error: {}",
+                            fieldMapping.getInjsonpath(), fieldMapping.getOutJsonPath(), parentPath, parentType, e.getMessage());
+                    log.debug("Problematic payload snippet for inJsonPath {}: {}", fieldMapping.getInjsonpath(),
+                            getPayloadSnippet(kafkaJson));
                     continue;
                 }
 
@@ -181,6 +195,121 @@ public class DataTransformationService {
         documentContext = denormalizeDataFromMDMS(documentContext, customJsonMappings, kafkaJson);
 
         return documentContext.jsonString().toString(); // jsonString has to be converted to string
+    }
+
+    private String buildPayloadStructure(String kafkaJson) {
+        try {
+            JsonNode rootNode = mapper.readTree(kafkaJson);
+            return describeNode(rootNode, 0);
+        } catch (IOException e) {
+            return "Unable to parse payload JSON for structure logging. snippet=" + getPayloadSnippet(kafkaJson);
+        }
+    }
+
+    private String describeNode(JsonNode node, int depth) {
+        if (node == null || node.isNull()) {
+            return "null";
+        }
+
+        if (depth >= MAX_STRUCTURE_DEPTH) {
+            return shortType(node);
+        }
+
+        if (node.isObject()) {
+            StringBuilder sb = new StringBuilder("object{");
+            int count = 0;
+            java.util.Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                if (count >= MAX_OBJECT_FIELDS_TO_LOG) {
+                    sb.append("...");
+                    break;
+                }
+                if (count > 0) {
+                    sb.append(", ");
+                }
+                sb.append(entry.getKey()).append(":").append(describeNode(entry.getValue(), depth + 1));
+                count++;
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+
+        if (node.isArray()) {
+            int size = node.size();
+            StringBuilder sb = new StringBuilder("array(size=").append(size).append(")[");
+            int limit = Math.min(size, MAX_ARRAY_ITEMS_TO_LOG);
+            for (int i = 0; i < limit; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append(describeNode(node.get(i), depth + 1));
+            }
+            if (size > MAX_ARRAY_ITEMS_TO_LOG) {
+                sb.append(", ...");
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+
+        return shortType(node);
+    }
+
+    private String shortType(JsonNode node) {
+        if (node.isTextual()) {
+            return "string";
+        }
+        if (node.isNumber()) {
+            return "number";
+        }
+        if (node.isBoolean()) {
+            return "boolean";
+        }
+        if (node.isObject()) {
+            return "object";
+        }
+        if (node.isArray()) {
+            return "array";
+        }
+        if (node.isNull()) {
+            return "null";
+        }
+        return "unknown";
+    }
+
+    private String extractParentJsonPath(String jsonPath) {
+        if (StringUtils.isBlank(jsonPath)) {
+            return "$";
+        }
+        int bracketIndex = jsonPath.lastIndexOf('[');
+        int dotIndex = jsonPath.lastIndexOf('.');
+        int parentCutIndex = Math.max(bracketIndex, dotIndex);
+        if (parentCutIndex <= 1) {
+            return "$";
+        }
+        return jsonPath.substring(0, parentCutIndex);
+    }
+
+    private String getJsonNodeTypeAtPath(String kafkaJson, String jsonPath) {
+        try {
+            Object value = JsonPath.read(kafkaJson, jsonPath);
+            if (value == null) {
+                return "null";
+            }
+            return value.getClass().getSimpleName();
+        } catch (Exception ex) {
+            return "unavailable(" + ex.getClass().getSimpleName() + ")";
+        }
+    }
+
+    private String getPayloadSnippet(String kafkaJson) {
+        if (kafkaJson == null) {
+            return "null";
+        }
+        if (kafkaJson.length() <= MAX_PAYLOAD_SNIPPET_LENGTH) {
+            return kafkaJson;
+        }
+        return kafkaJson.substring(0, MAX_PAYLOAD_SNIPPET_LENGTH) + "...(truncated)";
     }
 
     /**

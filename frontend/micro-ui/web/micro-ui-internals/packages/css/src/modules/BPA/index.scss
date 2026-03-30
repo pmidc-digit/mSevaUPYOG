@@ -147,12 +147,27 @@
     max-width: calc(100% - 16px);
     padding: 2px;
 
-    div {
-      @apply h-12 pl-sm py-md text-body-l text-text-primary;
+    /* Apply styles only to immediate menu items, not wrapper nodes like .menu-item-with-subsection */
+    > div,
+    > .menu-group,
+    > .menu-item {
+      @apply pl-sm py-md text-body-l text-text-primary;
 
       &:hover {
         @apply bg-grey-mid w-full;
       }
+    }
+
+    /* Ensure wrapper for submenu doesn't inherit the above div rules (prevents double padding/alignment issues) */
+    .menu-item-with-subsection {
+      padding: 0;
+      min-height: auto;
+      margin: 0;
+    }
+
+    /* Make sure the actual clickable item inside the subsection wrapper has the same metrics */
+    .menu-item-with-subsection > .menu-item {
+      @apply h-12 pl-sm py-md text-body-l text-text-primary;
     }
   }
 }

@@ -1,16 +1,18 @@
-import React, {useState} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import CustomMenu from "../../components/CustomMenu";
-import OBPSNavbar from "../../components/OBPSNavbar";
 
 const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   // User authentication and role checks
   const { t } = useTranslation();
   const user = Digit.UserService?.getUser();
-  const tenantId = localStorage.getItem("CITIZEN.CITY");  
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
+  const stateId = Digit.ULBService.getStateId();
   const isUserLoggedIn = user?.access_token;
   const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => role?.code?.includes("BPA") && role?.tenantId === tenantId);
+  const { data: apiData, isLoading} = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "uiObpsHomePage" }]);
+  const items = apiData?.["common-masters"]?.uiObpsHomePage?.[0]?.sectionHeaders || [];
 
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false;
 
@@ -133,6 +135,60 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
     </svg>
   );
 
+  const CardDropdown = ({ links, index = 0 }) => {
+    const [displayMenu, setDisplayMenu] = useState(false);
+    const wrapperRef = useRef(null);
+    const colorIdx = index % 6;
+
+    // Support passing either an array (links) or an item object with .links
+    const menuOptions = Array.isArray(links) ? links : (links?.links || []);
+    const titleLabel = Array.isArray(links)
+      ? links?.[0]?.displayName || links?.[0]?.name
+      : links?.displayName || links?.name || links?.title || (links?.links && links?.links[0]?.displayName);
+
+    const handleSelect = (option) => {
+      const url = option?.navigationURL || option?.link || option?.url;
+      if (url) window.open(url, "_blank");
+      setDisplayMenu(false);
+    };
+
+    useEffect(() => {
+      const onDocClick = (e) => {
+        if (displayMenu && wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+          setDisplayMenu(false);
+        }
+      };
+
+      document.addEventListener("click", onDocClick);
+      return () => document.removeEventListener("click", onDocClick);
+    }, [displayMenu]);
+
+    return (
+      <div ref={wrapperRef}>
+        <div className={`chcwe-card chcwe-card-bg-${colorIdx}`} onClick={() => setDisplayMenu(!displayMenu)}>
+          <div className={`chcwe-icon chcwe-icon-bg-${colorIdx}`}>{getServiceIcon(menuOptions?.[0]?.i18nKey || links?.i18nKey)}</div>
+          <div className="chcwe-content">
+            <div className="chcwe-title">{t(titleLabel)}</div>
+          </div>
+          <div className="chcwe-arrow-container">
+            <ArrowIcon />
+          </div>
+        </div>
+        <div className="action-bar-wrap-menu">
+          {displayMenu ? (
+            <CustomMenu
+              localeKeyPrefix={``}
+              options={menuOptions}
+              optionKey={"name"}
+              t={t}
+              onSelect={handleSelect}
+            />
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
   const renderCardContent = (link, index) => (
     <React.Fragment>
       <div className={`chcwe-icon chcwe-icon-bg-${index % 6}`}>{getServiceIcon(link.i18nKey, index)}</div>
@@ -145,36 +201,6 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
       </div>
     </React.Fragment>
   );
-  const renderCardDropDownContent = (link) => {
-    const [displayMenu, setDisplayMenu] = useState(false);    
-    const handleRedirect = (url) => {
-      if(url?.navigationURL) window.open(url?.navigationURL, "_blank");
-    };
-    
-    return (
-    <React.Fragment>
-      <div className={`chcwe-card chcwe-card-bg-2`} onClick={() => setDisplayMenu(!displayMenu)} >
-      <div className={`chcwe-icon chcwe-icon-bg-2`}>{getServiceIcon(link?.[0]?.i18nKey)}</div>
-      <div className="chcwe-content">
-        <div className="chcwe-title">{t(link?.[0]?.displayName)}</div>
-      </div>
-      <div className="chcwe-arrow-container">
-        <ArrowIcon />
-      </div>
-      </div>
-      <div className="action-bar-wrap-menu">
-        {displayMenu ? (
-          <CustomMenu
-            localeKeyPrefix={``}
-            options={link}
-            optionKey={"name"}
-            t={t}
-            onSelect={handleRedirect}
-          />
-        ) : null}
-      </div>
-    </React.Fragment>
-  )};
 
   // Links that should open in new tab (_blank)
   const linksToOpenInBlank = [
@@ -204,7 +230,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   
   const remainingVideoLink = links?.filter((value) => isVideo(value?.displayName))
 
-  console.log("remainingUserManualLinks", remainingUserManualLinks)
+  console.log("apiData", items, links, remainingUserManualLinks, remainingSampleFilesLink, remainingVideoLink)
 
   return (
     <div className="chcwe-root" style={styles ? styles : undefined}>
@@ -260,10 +286,21 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
           );
         })}
         
-        {remainingUserManualLinks?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingUserManualLinks)}</div>}
-        {remainingSampleFilesLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesLink?.sort((a,b) => a.order - b .order))}</div>}
-        {remainingVideoLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingVideoLink)}</div>}
+        {remainingUserManualLinks?.length > 0 && <div className="card-dropdown-wrapper" ><CardDropdown links={remainingUserManualLinks} index={0} /></div>}
+        {remainingSampleFilesLink?.length > 0 && <div className="card-dropdown-wrapper" ><CardDropdown links={remainingSampleFilesLink?.sort((a,b) => a.order - b .order)} index={1} /></div>}
+        {remainingVideoLink?.length > 0 && <div className="card-dropdown-wrapper" ><CardDropdown links={remainingVideoLink} index={2} /></div>}
       </div>
+
+      {<h2 className="chcwe-header">{t("BPA_CITIZEN_HOME_CARD_HEADER")}</h2>}
+
+      <div className="chcwe-card-container">
+        {items.map((item, idx) => (
+          <div className="card-dropdown-wrapper" key={item.code || item.name || idx}>
+            <CardDropdown links={item} index={idx} />
+          </div>
+        ))}
+      </div>
+      
 
       {isInfo && Info && (
         <div className="chcwe-info ">

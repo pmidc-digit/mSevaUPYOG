@@ -126,7 +126,7 @@ const Home = ({
       <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
         <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-        {mdmsDataObj && code === "OBPS" && (<OBPSNavbar/>)}
+        {/* {mdmsDataObj && code === "OBPS" && (<OBPSNavbar/>)} */}
           <div
             className="moduleLinkHomePage"
             style={{

@@ -15,14 +15,15 @@ RUN yarn config set ignore-engines true
 RUN cd web/ \
     && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(1024*1024))' \
     && node -e 'console.log("workbench only")' \
+    && cd workbench/ \
     && yarn install --ignore-engines \
     && ./install-deps.sh \
     && yarn build 
 
 FROM nginx:mainline-alpine
-ENV WORK_DIR=/var/web/digit-ui
+ENV WORK_DIR=/var/web/workbench-ui
 
 RUN mkdir -p ${WORK_DIR}
 
 COPY --from=build /app/web/build ${WORK_DIR}/
-COPY --from=build /app/web/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/web/workbench-ui/nginx.conf /etc/nginx/conf.d/default.conf

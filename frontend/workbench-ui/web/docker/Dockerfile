@@ -1,4 +1,4 @@
-FROM ghcr.io/egovernments/alpine-node-builder-14:yarn AS build
+FROM egovio/alpine-node-builder-14:yarn AS build
 #FROM ghcr.io/egovernments/alpine-node-builder-14:yarn AS build
 FROM node:14.21.3-alpine AS build
 RUN apk update && apk upgrade

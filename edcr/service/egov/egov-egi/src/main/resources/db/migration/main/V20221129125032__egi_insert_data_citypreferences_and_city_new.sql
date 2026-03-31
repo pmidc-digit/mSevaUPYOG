@@ -11,19 +11,19 @@ DECLARE
         'dhuri','dinanagar','dirba','doraha','faridkot','fatehgarhchurian','fatehgarhpanjtoor','fazilka',
         'firozpur','firozpurregion','gardhiwala','garhshankar','ghagga','ghanaur','gharuan','gidderbaha',
         'gobindgarh','goniana','goraya','gurdaspur','guruharsahai','handiaya','hariana','hoshiarpur',
-        'jagraon','jaitu','jalalabad','jalandhar','jalandharregion','jandiala','joga','kapurthala',
+        'jagraon','jaitu','jalalabad','jalandhar','jandiala','joga','kapurthala',
         'kartarpur','khamanon','khanauri','khanna','kharar','khemkaran','kiratpursahib','kotfatta',
         'kotissekhan','kotshamir','kothaguru','kotkapura','kurali','lalru','lehramohabbat','lehragaga',
-        'lohiankhass','longowal','ludhiana','ludhianaregion','machhiwara','mahilpur','majitha','makhu',
+        'lohiankhass','longowal','ludhiana','machhiwara','mahilpur','majitha','makhu',
         'malerkotla','mallanwalakhass','maloud','malout','maluka','mamdot','mandikalan','mansa','maur',
         'mehatpur','mehraj','moga','moonak','morinda','mudki','mukerian','mullanpurdakha','nabha','nadala',
         'nakodar','nangal','narotjaimalsingh','nathana','nawanshahr','nayagaon','nihalsinghwala','nurmahal',
         'pathankot','patiala','patialaregion','patran','patti','payal','phagwara','phillaur','qadian',
         'rahon','raikot','rajasansi','rajpura','raman','ramdas','rampura','rampuraphul','rayya','rupnagar',
-        'sasmohali','sahnewal','samana','samrala','sanaur','sangat','sangrur','sardulgarh','shahkot',
+        'mohali','sahnewal','samana','samrala','sanaur','sangat','sangrur','sardulgarh','shahkot',
         'shamchaurasi','sirhindfatehgarhsahib','srihargobindpur','srimuktsarsahib','sujanpur','sultanpur',
         'sunam','talwandibhai','talwandisabo','talwara','tapa','tarntaran','urmartanda','zira','zirakpur',
-        'generic','pb','public','state'
+        'generic','pb','state'
     ];
     s text;
 BEGIN

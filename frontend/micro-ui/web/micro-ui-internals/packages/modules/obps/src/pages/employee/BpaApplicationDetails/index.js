@@ -60,6 +60,8 @@ import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { LoaderNew } from "../../../components/LoaderNew";
+import BPASitePhotographs from "../../../components/BPASitePhotographs";
+import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -129,7 +131,6 @@ const BpaApplicationDetail = () => {
   // const [geoLocations, setGeoLocations] = useState(data?.applicationData?.additionalDetails?.geoLocations || [])
   const { isLoadingg, data: blockReason } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["BlockReason"]);
 
-  console.log("fileUrls", fileUrls);
 
   const [development, setDevelopment] = useState(() => {
     return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
@@ -156,7 +157,6 @@ const BpaApplicationDetail = () => {
   const [malbafees, setMalbafees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES || "");
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
-  console.log("DATA DATA", data);
   const [appData, setAppData] = useState(data);
   const [getLoading, setLoading] = useState(false);
 
@@ -183,7 +183,6 @@ const BpaApplicationDetail = () => {
     enabled: improvedDoc?.length > 0 ? true : false,
   });
   const application = data?.BPA?.[0] || {};
-  console.log(application, "YYY");
   let businessService = [];
 
   if (data?.applicationData?.businessService === "BPA_LOW") {
@@ -236,9 +235,6 @@ const BpaApplicationDetail = () => {
     }
   }, [isLoading, data]);
 
-  useEffect(() => {
-    console.log("SiteImagesInCustomHandler", siteImages);
-  }, [siteImages]);
 
   useEffect(() => {
     if (!bpaDocsLoading && !isLoading) {
@@ -378,7 +374,6 @@ const BpaApplicationDetail = () => {
   }, [data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
-    console.log("key,value", key, value);
     setFieldInspectionPending(value);
   };
 
@@ -465,9 +460,13 @@ const BpaApplicationDetail = () => {
     }
   }
 
-  const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  const sitePhotos = getOrderDocuments(applicationDocs)?.filter(
+                (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
+              )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
+  const remainingDoc = applicationDocs?.filter((doc) => (doc?.title != "SITEPHOTOGRAPH_ONE" && doc?.title != "SITEPHOTOGRAPH_TWO"))
+  const documentsData = (getOrderDocuments(remainingDoc?.filter(doc => doc?.fileStoreId)?.sort((a,b) => a?.order - b?.order)) || []).map((doc, index) => ({
     id: index,
-    title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+    title: doc.title ? (index+1) + ". " + t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
     fileUrl: doc.values?.[0]?.fileURL || null,
     fileStoreId: doc?.fileStoreId || null,
   }));
@@ -548,15 +547,15 @@ const BpaApplicationDetail = () => {
   const ecbcDocumentsData = useMemo(() => {
     const docs = getDocsFromFileUrls(fileUrls) || [];
 
-    if (docs.length === 0) {
-      return [
-        {
-          id: 0,
-          title: t("CS_NA"),
-          fileUrl: null,
-        },
-      ];
-    }
+    // if (docs.length === 0) {
+    //   return [
+    //     {
+    //       id: 0,
+    //       title: t("CS_NA"),
+    //       fileUrl: null,
+    //     },
+    //   ];
+    // }
 
     return docs.map((doc, index) => ({
       id: index,
@@ -657,7 +656,6 @@ const BpaApplicationDetail = () => {
 
   const onFormValueChange = (setValue, formData, formState) => {
     setSubmitValve(formData?.FieldReports?.[0]);
-    console.log("formDataForInspectionReport", formData);
   };
 
   let configs = newConfig?.InspectionReportConfig ? newConfig?.InspectionReportConfig : newConfigFI;
@@ -974,7 +972,6 @@ const BpaApplicationDetail = () => {
   };
 
   function onActionSelect(action) {
-    console.log("SelectedAction", action);
     if (
       action?.action === "SEND_FOR_INSPECTION_REPORT" &&
       (!siteImages?.documents || siteImages?.documents?.length < 4 || siteImages?.documents?.some((img) => !img?.filestoreId))
@@ -989,7 +986,6 @@ const BpaApplicationDetail = () => {
       } else if (action?.redirectionUrll) {
         window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
       } else if (!action?.redirectionUrl && action?.action != "EDIT PAY 2") {
-        console.log("SelectedAction 2", action, !action?.redirectionUrl && action?.action != "EDIT PAY 2");
         setShowModal(true);
       } else {
         history.push({
@@ -1082,7 +1078,6 @@ const BpaApplicationDetail = () => {
   ];
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
-    console.log("SelectedActionData", data);
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
     //   alert(t("Please fill in the comments before submitting  "))
     // }
@@ -1110,7 +1105,6 @@ const BpaApplicationDetail = () => {
       }
     }
 
-    console.log("fieldInspectionPending", fieldInspectionPending);
 
     if (data?.BPA?.comment?.length == 0) {
       closeModal();
@@ -1261,7 +1255,6 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
-  console.log("applicationDetailsData", actions, workflowDetails);
 
   if (isLoading || bpaDocsLoading || isEnableLoader) return <Loader />;
 
@@ -1326,10 +1319,6 @@ const BpaApplicationDetail = () => {
           {data?.applicationDetails
             ?.filter((ob) => Object.keys(ob)?.length > 0)
             .map((detail, index, arr) => {
-              console.log("detailforme", detail);
-              if (detail?.isFieldInspection) {
-                console.log("detailformeTrue", detail);
-              }
               return (
                 <div key={index}>
                   {detail?.title === "BPA_APPLICANT_DETAILS_HEADER" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
@@ -1530,6 +1519,25 @@ const BpaApplicationDetail = () => {
                             <>
                               {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                              <StatusTable
+                                style={{
+                                  display: "flex",
+                                  gap: "20px",
+                                  flexWrap: "wrap",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                {sitePhotos?.length > 0 &&
+                                  [...sitePhotos]
+                                    .map((doc, index) => (
+                                      <NocSitePhotographsBPA
+                                        key={doc?.values?.[0]?.filestoreId}
+                                        url={doc?.values?.[0]?.fileURL}
+                                        documentType={doc?.title}
+                                        coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                      />
+                                    ))}
+                              </StatusTable>
                               {pdfLoading ? (
                                 <Loader />
                               ) : (
@@ -1539,10 +1547,11 @@ const BpaApplicationDetail = () => {
                                   data={documentsData}
                                   columns={documentsColumns}
                                   getCellProps={() => ({ style: {} })}
-                                  disableSort={false}
-                                  autoSort={true}
+                                  disableSort={true}
+                                  autoSort={false}
                                   manualPagination={false}
                                   isPaginationRequired={false}
+                                  pageSizeLimit={30}
                                 />
                               )}
                               {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
@@ -1605,7 +1614,7 @@ const BpaApplicationDetail = () => {
 
                               {data?.applicationData?.status !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
                                 <Card>
-                                  <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
+                                  {/* <CardSectionHeader style={{ marginTop: "20px" }}>{t("BPA_FIELD_INSPECTION_DOCUMENTS")}</CardSectionHeader>
                                   <Table
                                     className="customTable table-border-style"
                                     t={t}
@@ -1616,7 +1625,27 @@ const BpaApplicationDetail = () => {
                                     autoSort={true}
                                     manualPagination={false}
                                     isPaginationRequired={false}
-                                  />
+                                  /> */}
+                                  <StatusTable
+                                    style={{
+                                      display: "flex",
+                                      gap: "20px",
+                                      flexWrap: "wrap",
+                                      justifyContent: "space-between",
+                                    }}
+                                  >
+                                    {siteImages?.documents?.length > 0 && siteImages?.documents?.map((doc) =>
+                                      <BPASitePhotographs
+                                        key={doc?.fileStoreId || doc?.documentUid}
+                                        filestoreId={doc?.fileStoreId || doc?.documentUid}
+                                        documentType={doc?.documentType}
+                                        coordinates={{
+                                          latitude: doc?.latitude,
+                                          longitude: doc?.longitude,
+                                        }}
+                                      />
+                                    )}
+                                  </StatusTable>
                                   {geoLocations?.length > 0 && (
                                     <React.Fragment>
                                       <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>

@@ -654,7 +654,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     option={stateOptions?.sort((a, b) => a.state_name.localeCompare(b.state_name)) || []}
                     selected={selectedState}
                     select={SelectState}
-                    disable={true}
+                    // disable={true}
                   />
                 </div>
 

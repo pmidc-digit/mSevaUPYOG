@@ -805,7 +805,7 @@ public class FireStair extends FeatureProcess {
         boolean valid = false;
 
         BigDecimal noOfRiserMdms = RuleUtil.getRule(
-                plan.getMdmsRulesData().get("masterMdmsData"),"fireStaircase.noOfRiserMdms.max",null,BigDecimal.class).getValue();
+                plan.getMdmsRulesData().get("masterMdmsData"),"fireStaircase.numberOfRisers.max",null,BigDecimal.class).getValue();
         
         if (!(Boolean) typicalFloorValues.get("isTypicalRepititiveFloor")) {
 //            if (Util.roundOffTwoDecimal(noOfRises).compareTo(Util.roundOffTwoDecimal(BigDecimal.valueOf(12))) <= 0) {

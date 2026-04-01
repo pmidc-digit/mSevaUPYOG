@@ -70,6 +70,7 @@ import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -85,6 +86,8 @@ import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
 import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.springframework.stereotype.Service;
@@ -216,50 +219,40 @@ public class RoadWidth extends FeatureProcess {
     
     public BigDecimal getRoadWidthFromMdms(Plan pl, BigDecimal roadWidth) {       
         OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
-        OccupancyHelperDetail subtype = mostRestrictiveOccupancy.getSubtype();
-//        String subType = subtype.getCode();        
-//        if (subType == null) {
-//            return; // Cannot validate without subtype
-//        }       
-
+        OccupancyHelperDetail subType = mostRestrictiveOccupancy.getType();
+        String OccType = subType.getCode(); 
         BigDecimal requiredRoadWidth = BigDecimal.valueOf(0);
+        if (OccType == null) {
+            return BigDecimal.ZERO;
+        }       
 
-//        switch (subType) {
-//            case DxfFileConstants.G_SP:  // Sports Industry
-//            case DxfFileConstants.G_RS:  // Retail Service Industry
-//            case DxfFileConstants.G_H:   // Hazard Industries
-//            case DxfFileConstants.G_S:   // Storage
-//            case DxfFileConstants.G_F:   // Factory
-//            case DxfFileConstants.G_I:   // Industrial
-//            case DxfFileConstants.G_IT:  // Information Technology
-//            case DxfFileConstants.G_T:   // Textile Industry
-//            case DxfFileConstants.G_K:   // Knitwear Industry
-//                requiredRoadWidth = ROAD_WIDTH_12;
-//                break;
-//
-//            case DxfFileConstants.G_W:   // Warehouse
-//                requiredRoadWidth = ROAD_WIDTH_24;
-//                break;
-//
-//            case DxfFileConstants.G_GI:  // General Industry
-//                requiredRoadWidth = ROAD_WIDTH_18;
-//                break;
-//
-//            default:
-//                // Not applicable for other types
-//                break;
-//        }
+        LOG.info("Fetching road width for type {} by mdms", OccType);
+        if(F.equalsIgnoreCase(OccType)) {
+        	if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {        		
+        		Map<String, Object> vars = new HashMap<>();        		
+        		BigDecimal plotArea = (pl.getPlot() != null) ? pl.getPlot().getArea() : BigDecimal.ZERO;
+        		vars.put("plotArea", plotArea);
+        		RuleContext updatedContext = RuleContext.builder()
+        		        .formulaVariables(vars)
+        		        //.numericInput(plotArea)
+        		        .build();
+        		RuleResult<BigDecimal> roadRule = RuleUtil.getRule(
+        		        pl.getMdmsRulesData().get("masterMdmsData"), 
+        		        "roadWidth", 
+        		        updatedContext, 
+        		        BigDecimal.class
+        		);
 
-//        if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-//			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_ROAD_WIDTH, BigDecimal.class);
-//			scOpt.ifPresent(sc -> LOG.info("Min Road width Value: " + sc));
-//			requiredRoadWidth = scOpt.get();
-//		}
-        if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
-        	requiredRoadWidth = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "roadWidth.min", null, BigDecimal.class).getValue();
-        	LOG.info("Min Road width Value: " + requiredRoadWidth);
+        		requiredRoadWidth = (roadRule.getValue() != null) ? roadRule.getValue().setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+
+        		LOG.info("Required Road Width for Area {}: {}m", plotArea, requiredRoadWidth);
+            }
+        }else {
+        	if(pl.getMdmsRulesData().get("masterMdmsData")!=null) {
+            	requiredRoadWidth = RuleUtil.getRule(pl.getMdmsRulesData().get("masterMdmsData"), "roadWidth.min", null, BigDecimal.class).getValue();
+            	LOG.info("Min Road width Value: " + requiredRoadWidth);
+            }
         }
-
         
         if (requiredRoadWidth != null && roadWidth.compareTo(requiredRoadWidth) < 0) {
             HashMap<String, String> errors = new HashMap<>();

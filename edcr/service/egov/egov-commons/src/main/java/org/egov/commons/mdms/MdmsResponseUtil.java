@@ -31,10 +31,10 @@ public class MdmsResponseUtil {
 
     /* ========================= ROOT ACCESS ========================= */
 
-    public static JsonNode getOccupancyNode(JsonNode root) {
+    public static JsonNode getOccupancyNode(JsonNode root, String moduleName) {
 
         JsonNode masterPlanArray = root.path("MdmsRes")
-                .path("edcrRules")
+                .path(moduleName)
                 .path("MasterPlan");
 
         if (!masterPlanArray.isArray() || masterPlanArray.size() == 0) {

@@ -376,9 +376,18 @@ public class Parking extends FeatureProcess {
         MdmsRuleEngine engine =
 		        new MdmsRuleEngine(pl.getMdmsRulesData().get("masterMdmsData"));
 		
+//        RuleContext context = RuleContext.builder()
+//	    	    .numericInput(plotArea) // The plot area	    	   
+//	    	    .build();
+        
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("plotArea", plotArea); // MUST match the default in findSlab ("plotArea")
+
         RuleContext context = RuleContext.builder()
-	    	    .numericInput(plotArea) // The plot area	    	   
-	    	    .build();
+            .numericInput(plotArea) 
+            .formulaVariables(vars) // Add the map here
+            .build();
+        
 //		JsonNode parkingSlab =
 //		        engine.getObject("parking", context);
 
@@ -394,12 +403,13 @@ public class Parking extends FeatureProcess {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
             if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
                 // 1 ECS per 50 sqm
-                BigDecimal divisor = BigDecimal.valueOf(50);
+                //BigDecimal divisor = BigDecimal.valueOf(50);
 
                 // Divide and always round UP since ECS must be whole
-                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
-
-                noOfrequiredParking = requiredParking.intValue();
+//                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.HALF_UP);
+//
+//                noOfrequiredParking = requiredParking.intValue();
+                noOfrequiredParking = calculateRequiredParking(pl, context, plotCoveredArea);
             }
         } else if (mostRestrictiveOccupancy != null && G.equals(mostRestrictiveOccupancy.getType().getCode())) {
             BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
@@ -1022,39 +1032,85 @@ public class Parking extends FeatureProcess {
         }
     }
 
+//    public int calculateRequiredParking(Plan pl, RuleContext context, BigDecimal plotCoveredArea) {
+//        RuleResult<JsonNode> parkingRule = RuleUtil.getRule(
+//            pl.getMdmsRulesData().get("masterMdmsData"), 
+//            "parking", 
+//            context, 
+//            JsonNode.class
+//        );
+//
+//        JsonNode slab = parkingRule.getValue();
+//        if (slab == null || slab.isMissingNode()) return 0;
+//
+//        double ecsRate = slab.path("ECS").asDouble(0.0);
+//        double denominator = slab.path("denominator").asDouble(0.0);
+//        double totalParking = 0.0;
+//
+//        if (denominator > 0) {
+//            BigDecimal area = (plotCoveredArea != null) ? plotCoveredArea : BigDecimal.ZERO;
+//            int areaUnits = area.divide(BigDecimal.valueOf(denominator), 0, RoundingMode.CEILING).intValue();
+//            totalParking = areaUnits * ecsRate;            
+//            LOGGER.info("Area-based Parking (Generic): {} units of {}sqm * {} ECS", areaUnits, denominator, ecsRate);
+//        } else {
+//            // --- CASE: DU BASED (Residential) ---
+//            // Logic: Total DUs * ECS_Rate
+//            //double duCount = pl.getTotalDwellingUnits(); 
+//            //totalParking = duCount * ecsRate;
+//        	totalParking = ecsRate;
+//            LOGGER.info("DU-based Parking (Generic): {} ECS",ecsRate);
+//        }
+//
+//        // Add 10% Guest Parking
+//        //double guestParking = totalParking * 0.10;
+////        return (int) Math.ceil(totalParking + guestParking);
+//        return (int) Math.ceil(totalParking);
+//    }
     public int calculateRequiredParking(Plan pl, RuleContext context, BigDecimal plotCoveredArea) {
+        BigDecimal totalCoveredArea = (plotCoveredArea != null) ? plotCoveredArea : BigDecimal.ZERO;
+        double totalDUs = 10.0; // Hardcoded as per your request
+        
+        double avgUnitArea = (totalDUs > 0) ? (totalCoveredArea.doubleValue() / totalDUs) : 0.0;
+
+        // --- FIX STARTS HERE ---
+        // 1. Create a NEW mutable HashMap and copy existing variables into it
+        Map<String, Object> updatedVars = new HashMap<>();
+        if (context.getFormulaVariables() != null) {
+            updatedVars.putAll(context.getFormulaVariables());
+        }
+        
+        // 2. Now you can safely put the new variable
+        updatedVars.put("averageUnitArea", BigDecimal.valueOf(avgUnitArea));
+
+        // 3. Create a NEW context with the updated variables to pass to RuleUtil
+        RuleContext updatedContext = RuleContext.builder()
+                .formulaVariables(updatedVars)
+                .numericInput(context.getNumericInput())
+                .withStilt(context.getWithStilt())
+                .build();
+        // --- FIX ENDS HERE ---
+
         RuleResult<JsonNode> parkingRule = RuleUtil.getRule(
             pl.getMdmsRulesData().get("masterMdmsData"), 
             "parking", 
-            context, 
+            updatedContext, // Use the new context here
             JsonNode.class
         );
 
         JsonNode slab = parkingRule.getValue();
-        if (slab == null || slab.isMissingNode()) return 0;
-
-        double ecsRate = slab.path("ECS").asDouble(0.0);
-        double denominator = slab.path("denominator").asDouble(0.0);
-        double totalParking = 0.0;
-
-        if (denominator > 0) {
-            BigDecimal area = (plotCoveredArea != null) ? plotCoveredArea : BigDecimal.ZERO;
-            int areaUnits = area.divide(BigDecimal.valueOf(denominator), 0, RoundingMode.CEILING).intValue();
-            totalParking = areaUnits * ecsRate;            
-            LOGGER.info("Area-based Parking (Generic): {} units of {}sqm * {} ECS", areaUnits, denominator, ecsRate);
-        } else {
-            // --- CASE: DU BASED (Residential) ---
-            // Logic: Total DUs * ECS_Rate
-            //double duCount = pl.getTotalDwellingUnits(); 
-            //totalParking = duCount * ecsRate;
-        	totalParking = ecsRate;
-            LOGGER.info("DU-based Parking (Generic): {} ECS",ecsRate);
+        if (slab == null || slab.isMissingNode()) {
+            LOGGER.error("Parking rule resolution failed for Average Unit Area: {}", avgUnitArea);
+            return 0;
         }
 
-        // Add 10% Guest Parking
-        //double guestParking = totalParking * 0.10;
-//        return (int) Math.ceil(totalParking + guestParking);
-        return (int) Math.ceil(totalParking);
+        double ecsRate = slab.path("ECS").asDouble(0.0);
+        double totalBaseParking = totalDUs * ecsRate;
+        double guestParking = totalBaseParking * 0.10;
+        double totalRequired = totalBaseParking + guestParking;
+
+        LOGGER.info("Parking Calc: Avg Unit Area: {}sqm, ECS: {}, Total DUs: {}, Base: {}, Guest: {}", 
+                     Math.round(avgUnitArea), ecsRate, totalDUs, totalBaseParking, guestParking);
+
+        return (int) Math.ceil(totalRequired);
     }
-    
 }

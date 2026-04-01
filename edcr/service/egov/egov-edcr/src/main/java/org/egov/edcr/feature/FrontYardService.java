@@ -84,6 +84,7 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
 import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
@@ -889,7 +890,8 @@ private class FrontYardResult {
 		// IT,ITES
 		if (mostRestrictiveOccupancy.getType() != null
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
-			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, frontYardResult, buildingHeight);
+//			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, frontYardResult, "front",buildingHeight);
+			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, "front",buildingHeight, frontYardResult);
 			subRule = RULE_37_TWO_I;
 			valid = validateMinimumAndMeanValue(min, setback.getFrontYard().getWidth(), minVal, meanVal);
 	    	if (setback.getFrontYard().getArea().compareTo(minVal) >= 0) {		    
@@ -904,7 +906,7 @@ private class FrontYardResult {
 				&& G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
 			minVal = getMinValueForIndustrial(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
 			subRule = RULE_37_TWO_I;
-			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
+			//valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
 			valid = validateMinMax(minVal,min);
 			compareFrontYardResultIndustry(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
 		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
@@ -1252,40 +1254,152 @@ private class FrontYardResult {
 		return valid;
 	}
 	
-	private BigDecimal getMinValueForCommercialFromMdms(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, 
-			FrontYardResult frontYardResult, BigDecimal buildingHeight) {
-	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
-	    BigDecimal minVal = BigDecimal.ZERO;
-	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
-	    	errors.put("Plot Area error","Plot area can not be 0");
-	    	pl.addErrors(errors);
-	    	return BigDecimal.ZERO;
-	    }
-	    
-	    /* ======================================================
-	     * HIGH RISE BUILDINGS (Height > 21 m)
-	     * ====================================================== */
-	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
-	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
-	    	if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
-	             requiredSetback.ifPresent(
-	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
-	             );
-	             minVal = requiredSetback.get().abs().stripTrailingZeros();
-	             frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");
-	        }	    	
-	    }else {
-	    	 /* ======================================================
-	         * LOW RISE BUILDINGS (Height ≤ 21 m)
-	         * ====================================================== */
-	    	minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // 10%
-		    frontYardResult.setBackPercentage = "10";			
-	    }
-	    return minVal.setScale(2, RoundingMode.HALF_UP);
+//	private BigDecimal getMinValueForCommercialFromMdms(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, 
+//			FrontYardResult frontYardResult, BigDecimal buildingHeight) {
+//	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
+//	    BigDecimal minVal = BigDecimal.ZERO;
+//	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+//	    	errors.put("Plot Area error","Plot area can not be 0");
+//	    	pl.addErrors(errors);
+//	    	return BigDecimal.ZERO;
+//	    }
+//	    
+//	    /* ======================================================
+//	     * HIGH RISE BUILDINGS (Height > 21 m)
+//	     * ====================================================== */
+//	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+//	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+//	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+//	        		MdmsFilter.LIST_FRONT_SETBACK_PATH, List.class);
+//	    	if (fullListOpt.isPresent()) {
+//	             List<Map<String, Object>> frontSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+//	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+//	             requiredSetback.ifPresent(
+//	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
+//	             );
+//	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+//	             frontYardResult.setBackPercentage = minVal.toPlainString().concat("m");
+//	        }	    	
+//	    }else {
+//	    	 /* ======================================================
+//	         * LOW RISE BUILDINGS (Height ≤ 21 m)
+//	         * ====================================================== */
+//	    	minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // 10%
+//		    frontYardResult.setBackPercentage = "10";			
+//	    }
+//	    return minVal.setScale(2, RoundingMode.HALF_UP);
+//	}
+	
+//	private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, 
+//	        HashMap<String, String> errors, String setbackType, BigDecimal buildingHeight) {
+//	    
+//	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+//	        errors.put("Plot Area error", "Plot area cannot be 0");
+//	        return BigDecimal.ZERO;
+//	    }
+//
+//	    // 1. Build Context (RuleUtil uses these for the Recursive SLABs)
+//	    Map<String, Object> vars = new HashMap<>();
+//	    vars.put("plotArea", plotArea);
+//	    vars.put("buildingHeight", buildingHeight);
+//	    vars.put("roadWidth", pl.getPlanInformation().getRoadWidth() != null ?
+//	    		pl.getPlanInformation().getRoadWidth() : BigDecimal.ZERO);
+//
+//	    RuleContext context = RuleContext.builder()
+//	            .formulaVariables(vars)
+//	            //.numericInput(plotArea)
+//	            .build();
+//
+//	    // 2. Fetch Rule
+//	    RuleResult<JsonNode> result = RuleUtil.getRule(
+//	            pl.getMdmsRulesData().get("masterMdmsData"), 
+//	            "setbacks." + setbackType, 
+//	            context, 
+//	            JsonNode.class
+//	    );
+//	    if (result.getValue() != null && !result.getValue().isMissingNode()) {
+//	        String unit = result.getUnit();
+//	        double val = result.getValue().asDouble();
+//	        
+//	        LOG.info("Successfully fetched: {} with unit: {}", val, unit);
+//	    } else {
+//	        LOG.error("Rule resolution failed for path setbacks.front");
+//	    }
+//
+//	    RuleResult<BigDecimal> resul1t = RuleUtil.getRule(
+//	    		pl.getMdmsRulesData().get("masterMdmsData"), "setbacks.front", context, BigDecimal.class // This ensures you get just the number
+//	    	);
+//	    
+//	    JsonNode node = result.getValue();
+//	    if (node == null || node.isMissingNode()) return BigDecimal.ZERO;
+//
+//	    double rawValue = node.asDouble(0.0);
+//	    String unit = result.getUnit(); // Now defined!
+//
+//	    BigDecimal finalSetback;
+//
+//	    // 3. Math logic: Area-based percentage vs Fixed Meters
+//	    if ("percent".equalsIgnoreCase(unit)) {
+//	        finalSetback = plotArea.multiply(BigDecimal.valueOf(rawValue))
+//	                               .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+//	        
+//	        LOG.info("Commercial {} Setback: {}% of Plot Area ({}) = {}", 
+//	                 setbackType, rawValue, plotArea, finalSetback);
+//	    } else {
+//	        finalSetback = BigDecimal.valueOf(rawValue);
+//	        LOG.info("Commercial {} Setback: Fixed Meters = {}", setbackType, finalSetback);
+//	    }
+//
+//	    return finalSetback.setScale(2, RoundingMode.HALF_UP);
+//	}
+	private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, 
+            HashMap<String, String> errors, String setbackType, BigDecimal buildingHeight, FrontYardResult frontYardResult) {    
+		    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+		        errors.put("Plot Area error", "Plot area cannot be 0");
+		        return BigDecimal.ZERO;
+		    }		
+		    
+		    Map<String, Object> vars = new HashMap<>();
+		    vars.put("plotArea", plotArea);
+		    vars.put("buildingHeight", buildingHeight);
+		    
+		    BigDecimal roadWidth = (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) 
+		                           ? pl.getPlanInformation().getRoadWidth() : BigDecimal.ZERO;
+		    vars.put("roadWidth", roadWidth);
+		
+		    RuleContext context = RuleContext.builder()
+		            .formulaVariables(vars)
+		            .numericInput(plotArea)
+		            .build();		
+		  
+		    RuleResult<BigDecimal> result = RuleUtil.getRule(
+		            pl.getMdmsRulesData().get("masterMdmsData"), "setbacks." + setbackType, context, BigDecimal.class );
+		
+		    if (result.getValue() == null) {
+		        LOG.error("Rule resolution failed for path: setbacks.{}", setbackType);
+		        return BigDecimal.ZERO;
+		    }
+		
+		    BigDecimal rawValue = result.getValue();
+		    String unit = result.getUnit();
+		
+		    LOG.info("Commercial {} Setback fetched: {} with unit: {}", setbackType, rawValue, unit);
+
+		    BigDecimal finalSetback;
+		
+		    if ("percent".equalsIgnoreCase(unit)) {
+		        finalSetback = plotArea.multiply(rawValue)
+		                               .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+		        frontYardResult.setBackPercentage = rawValue.toPlainString();
+		        
+		        LOG.info("Commercial {} Calculation: {}% of Area ({}) = {}", 
+		                 setbackType, rawValue, plotArea, finalSetback);
+		    } else {
+		        finalSetback = rawValue;
+		        LOG.info("Commercial {} Calculation: Fixed Meters = {}", setbackType, finalSetback);
+		    }
+		
+		    return finalSetback.setScale(2, RoundingMode.HALF_UP);
 	}
 	
 	private BigDecimal getMinValueForCommercial(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, 

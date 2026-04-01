@@ -241,7 +241,7 @@ public class Kitchen extends FeatureProcess {
                             }
 
                             if (!kitchenStoreAreas.isEmpty()) {
-                                totalArea = kitchenStoreAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                                totalArea = kitchenStoreAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, BigDecimal.ROUND_HALF_UP);
                                 //minimumHeight = MINIMUM_AREA_4_5;                                
                                 BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
                                         pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.storeArea.min",null,BigDecimal.class).getValue();
@@ -264,7 +264,7 @@ public class Kitchen extends FeatureProcess {
                                 boolean isTypicalRepititiveFloor = false;
                                 Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor,
                                         isTypicalRepititiveFloor);
-                                BigDecimal minRoomWidth = kitchenStoreWidths.stream().reduce(BigDecimal::min).get();
+                                BigDecimal minRoomWidth = kitchenStoreWidths.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
                                 //minWidth = MINIMUM_WIDTH_1_8;
                                 BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
                                         pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.storewidth.min",null,BigDecimal.class).getValue();
@@ -277,7 +277,7 @@ public class Kitchen extends FeatureProcess {
                             }
 
                             if (!kitchenDiningAreas.isEmpty()) {
-                                totalArea = kitchenDiningAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+                                totalArea = kitchenDiningAreas.stream().reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, BigDecimal.ROUND_HALF_UP);
                                 //minimumHeight = MINIMUM_AREA_7_5;
                                 BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
                                         pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.diningArea.min",null,BigDecimal.class).getValue();
@@ -300,7 +300,7 @@ public class Kitchen extends FeatureProcess {
                                 boolean isTypicalRepititiveFloor = false;
                                 Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor,
                                         isTypicalRepititiveFloor);
-                                BigDecimal minRoomWidth = kitchenDiningWidths.stream().reduce(BigDecimal::min).get();
+                                BigDecimal minRoomWidth = kitchenDiningWidths.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
                                 //minWidth = MINIMUM_WIDTH_2_1;
                                 BigDecimal kitchenStoreAreasMdms = RuleUtil.getRule(
                                         pl.getMdmsRulesData().get("masterMdmsData"),"kitchen.diningwidth.min",null,BigDecimal.class).getValue();

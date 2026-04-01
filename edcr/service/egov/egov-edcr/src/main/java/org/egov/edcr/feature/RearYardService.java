@@ -85,6 +85,7 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.commons.mdms.RuleContext;
+import org.egov.commons.mdms.RuleResult;
 import org.egov.commons.mdms.RuleUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
@@ -1095,7 +1096,8 @@ public class RearYardService extends GeneralRule {
 		// IT,ITES
 		if (mostRestrictiveOccupancy.getType() != null
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-			minVal = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, rearYardResult);
+			//minVal = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, rearYardResult);
+			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, "rear",buildingHeight, rearYardResult);
 			subRule = RULE_37_TWO_I;
 			valid = validateMinimumAndMeanValue(min, setback.getRearYard().getWidth(), minVal, meanVal);
 	    	if (setback.getRearYard().getWidth().compareTo(minVal) >= 0) {		    
@@ -1386,48 +1388,98 @@ public class RearYardService extends GeneralRule {
 	    return minVal.setScale(2, RoundingMode.HALF_UP);
 	}
 	
-	private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, HashMap<String, String> errors, 
-			BigDecimal buildingHeight, RearYardResult rearYardResult) {
-	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
+//	private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, HashMap<String, String> errors, 
+//			BigDecimal buildingHeight, RearYardResult rearYardResult) {
+//	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
+//
+//	    BigDecimal minVal = BigDecimal.ZERO;
+//	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+//	        errors.put("Plot Area error", "Plot area can not be 0");
+//	        pl.addErrors(errors);
+//	        return BigDecimal.ZERO;
+//	    }
+//
+//	    /* ======================================================
+//	     * HIGH RISE BUILDINGS (Height > 21 m)
+//	     * ====================================================== */
+//	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
+//	    	rearYardResult.isSetbackCombine=true;
+//	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+//	        		pl.getMdmsMasterData().get("masterMdmsData"), 
+//	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
+//	    	if (fullListOpt.isPresent()) {
+//	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
+//	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
+//	             requiredSetback.ifPresent(
+//	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
+//	             );
+//	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+//	             rearYardResult.setBackPercentage = minVal.toPlainString().concat("m");
+//	        }	    	
+//	    }else {
+//	    	rearYardResult.isSetbackCombine=true;
+//	    	 /* ======================================================
+//	         * LOW RISE BUILDINGS (Height ≤ 21 m)
+//	         * ====================================================== */	    		
+//	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, rearYardResult);
+//	    	if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
+//    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
+//    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
+//    			minVal = scOpt.get();
+//    		}
+//	    }
+//
+//	    return minVal.setScale(2, RoundingMode.HALF_UP);
+//	}
+	
+	private BigDecimal getMinValueForCommercialFromMdms(Plan pl, BigDecimal plotArea, 
+            HashMap<String, String> errors, String setbackType, BigDecimal buildingHeight, RearYardResult rearYardResult) {    
+		    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+		        errors.put("Plot Area error", "Plot area cannot be 0");
+		        return BigDecimal.ZERO;
+		    }		
+		    
+		    Map<String, Object> vars = new HashMap<>();
+		    vars.put("plotArea", plotArea);
+		    vars.put("buildingHeight", buildingHeight);
+		    
+		    BigDecimal roadWidth = (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) 
+		                           ? pl.getPlanInformation().getRoadWidth() : BigDecimal.ZERO;
+		    vars.put("roadWidth", roadWidth);
+		
+		    RuleContext context = RuleContext.builder()
+		            .formulaVariables(vars)
+		            .numericInput(plotArea)
+		            .build();		
+		  
+		    RuleResult<BigDecimal> result = RuleUtil.getRule(
+		            pl.getMdmsRulesData().get("masterMdmsData"), "setbacks." + setbackType, context, BigDecimal.class );
+		
+		    if (result.getValue() == null) {
+		        LOG.error("Rule resolution failed for path: setbacks.{}", setbackType);
+		        return BigDecimal.ZERO;
+		    }
+		
+		    BigDecimal rawValue = result.getValue();
+		    String unit = result.getUnit();
+		
+		    LOG.info("Commercial {} Setback fetched: {} with unit: {}", setbackType, rawValue, unit);
 
-	    BigDecimal minVal = BigDecimal.ZERO;
-	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
-	        errors.put("Plot Area error", "Plot area can not be 0");
-	        pl.addErrors(errors);
-	        return BigDecimal.ZERO;
-	    }
-
-	    /* ======================================================
-	     * HIGH RISE BUILDINGS (Height > 21 m)
-	     * ====================================================== */
-	    if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
-	    	rearYardResult.isSetbackCombine=true;
-	    	Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
-	        		pl.getMdmsMasterData().get("masterMdmsData"), 
-	        		MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
-	    	if (fullListOpt.isPresent()) {
-	             List<Map<String, Object>> rearSetBacks = (List<Map<String, Object>>) fullListOpt.get();
-	             Optional<BigDecimal> requiredSetback = BpaMdmsUtil.findSetbackValueByHeight(rearSetBacks, buildingHeight);
-	             requiredSetback.ifPresent(
-	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
-	             );
-	             minVal = requiredSetback.get().abs().stripTrailingZeros();
-	             rearYardResult.setBackPercentage = minVal.toPlainString().concat("m");
-	        }	    	
-	    }else {
-	    	rearYardResult.isSetbackCombine=true;
-	    	 /* ======================================================
-	         * LOW RISE BUILDINGS (Height ≤ 21 m)
-	         * ====================================================== */	    		
-	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, rearYardResult);
-	    	if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
-    			Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH, BigDecimal.class);
-    			scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
-    			minVal = scOpt.get();
-    		}
-	    }
-
-	    return minVal.setScale(2, RoundingMode.HALF_UP);
+		    BigDecimal finalSetback;
+		
+		    if ("percent".equalsIgnoreCase(unit)) {
+		        finalSetback = plotArea.multiply(rawValue)
+		                               .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+		        rearYardResult.setBackPercentage = rawValue.toPlainString();
+		        
+		        LOG.info("Commercial {} Calculation: {}% of Area ({}) = {}", 
+		                 setbackType, rawValue, plotArea, finalSetback);
+		    } else {
+		        finalSetback = rawValue;
+		        LOG.info("Commercial {} Calculation: Fixed Meters = {}", setbackType, finalSetback);
+		    }
+		
+		    return finalSetback.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	// calculate permissible Rear setback value for commercial below 21 m height

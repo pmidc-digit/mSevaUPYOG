@@ -217,6 +217,18 @@ public class Far extends FeatureProcess {
 	private static final BigDecimal FAR_2 = BigDecimal.valueOf(2.00);
 	private static final BigDecimal FAR_3 = BigDecimal.valueOf(3.00);
 	
+	private static final Map<String, String> MODULE_NAME = new HashMap<>();
+
+	static {
+	    MODULE_NAME.put("A", "residentialRules");
+	    MODULE_NAME.put("F", "commercialRules");
+	    MODULE_NAME.put("G", "industrialRules");
+	    MODULE_NAME.put("L", "publicBuildingsRules");
+	    MODULE_NAME.put("R", "mixLandUseRules");
+	}
+
+
+	
 	@Override
 	public Plan validate(Plan pl) {
 		if (pl.getPlot() == null || (pl.getPlot() != null
@@ -725,7 +737,8 @@ public class Far extends FeatureProcess {
 					&& DxfFileConstants.F.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
 //				processFarNonResidential(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
 //						errorMsgs,plotArea);
-				processFarCommercial(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs, plotArea);
+				//processFarCommercial(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs, plotArea);
+				processFarCommercialByMBMS(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs, plotArea);
 			}
 			if (mostRestrictiveOccupancyType.getType() != null
 					&& DxfFileConstants.L.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
@@ -1505,9 +1518,6 @@ public class Far extends FeatureProcess {
 	        String typeOfArea, BigDecimal roadWidth, HashMap<String, String> errors,
 	        BigDecimal plotArea) {
 
-	    String expectedResult = StringUtils.EMPTY;
-	    boolean isAccepted = false;
-
 	    /* ---------- Plot Area Validation ---------- */
 	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
 	        if (!shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_AREA)) {
@@ -1527,36 +1537,11 @@ public class Far extends FeatureProcess {
 	    if (occupancyType != null 
 		        && occupancyType.getType() != null 
 		        && occupancyType.getType().getCode() != null) {
-			OccupancyHelperDetail subtype = occupancyType.getSubtype();
+			//OccupancyHelperDetail subtype = occupancyType.getSubtype();
 			//occupancyName = subtype.getName();
 			getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
 	    }
 
-//	    /* ---------- FAR Determination (Ascending Order) ---------- */
-//	    if (roadWidth.compareTo(ROAD_WIDTH_18) >= 0
-//	            && roadWidth.compareTo(ROAD_WIDTH_24) < 0) {
-//
-//	        expectedResult = "2.0";
-//	        isAccepted = far != null && far.compareTo(FAR_2) <= 0;
-//
-//	    } else if (roadWidth.compareTo(ROAD_WIDTH_24) >= 0
-//	            && roadWidth.compareTo(ROAD_WIDTH_45) < 0) {
-//
-//	        expectedResult = "3.0";
-//	        isAccepted = far != null && far.compareTo(FAR_3) <= 0;
-//
-//	    } else { // roadWidth >= 45
-//
-//	        expectedResult = "UNLIMITED";
-//	        isAccepted = true;
-//	    }
-//
-//	    /* ---------- Build Result ---------- */
-//	    String occupancyName = occupancyType.getType().getName();
-//
-//	    if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
-//	        buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
-//	    }
 	}
 
 
@@ -2217,64 +2202,68 @@ public class Far extends FeatureProcess {
 	    return false;
 	}
 	
-	private void getMdmsMastersData1(Plan pl, String occType, OccupancyTypeHelper occupancyType) {
-	    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-	    if (Boolean.TRUE.equals(mdmsEnabled)) {
-	        try {
-	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-	            Object mdmsData = null;
-	            
-	            if (occupancyType != null
-	                    && occupancyType.getSubtype() != null
-	                    && occupancyType.getSubtype().getCode() != null
-	                    && !DxfFileConstants.F.equalsIgnoreCase(occupancyType.getType().getCode())) {
-	                mdmsData = bpaMdmsUtil.mDMSCall(
-	                		new RequestInfo(),pl.getEdcrRequest(), occupancyType.getSubtype().getCode(), plotArea);	               
-	            }else {
-	            	mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occupancyType.getType().getCode(), plotArea);
-	            }	            
-
-	            if (mdmsData != null) {
-	            	Map<String, List<Map<String, Object>>> masterPlanData1 =
-                            BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.MASTER_PLAN_FILTER);
-                    if (masterPlanData1 != null) {
-                        List<Object> wrapperList = new ArrayList<>();
-                        wrapperList.add(masterPlanData1);
-                        pl.getMdmsMasterData().putIfAbsent("masterMdmsData", wrapperList);
-                    }
-	            }else {
-	            	LOG.info("No matching MasterPlan record found for OccupancyType=" 
-                            + occType + ", area=" + plotArea);
-	            }
-	        } catch (Exception e) {
-	            LOG.error("Error while fetching details from MDMS", e);
-	        }
-	    }else {
-	    	LOG.info("MDSM enable property is : False , Skipping FAR calculation by MDMS.");
-	    }
-	}
+//	private void getMdmsMastersData1(Plan pl, String occType, OccupancyTypeHelper occupancyType) {
+//	    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+//	    if (Boolean.TRUE.equals(mdmsEnabled)) {
+//	        try {
+//	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+//	            Object mdmsData = null;
+//	            
+//	            String moduleName = MODULE_NAME.get(occupancyType.getType().getCode());
+//	            
+//	            if (occupancyType != null
+//	                    && occupancyType.getSubtype() != null
+//	                    && occupancyType.getSubtype().getCode() != null
+//	                    && !DxfFileConstants.F.equalsIgnoreCase(occupancyType.getType().getCode())) {
+//	                mdmsData = bpaMdmsUtil.mDMSCall(
+//	                		new RequestInfo(),pl.getEdcrRequest(), occupancyType.getSubtype().getCode(), moduleName);	               
+//	            }else {
+//	            	mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occupancyType.getType().getCode(), moduleName);
+//	            }	            
+//
+//	            if (mdmsData != null) {
+//	            	Map<String, List<Map<String, Object>>> masterPlanData1 =
+//                            BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.MASTER_PLAN_FILTER);
+//                    if (masterPlanData1 != null) {
+//                        List<Object> wrapperList = new ArrayList<>();
+//                        wrapperList.add(masterPlanData1);
+//                        pl.getMdmsMasterData().putIfAbsent("masterMdmsData", wrapperList);
+//                    }
+//	            }else {
+//	            	LOG.info("No matching MasterPlan record found for OccupancyType=" 
+//                            + occType + ", area=" + plotArea);
+//	            }
+//	        } catch (Exception e) {
+//	            LOG.error("Error while fetching details from MDMS", e);
+//	        }
+//	    }else {
+//	    	LOG.info("MDSM enable property is : False , Skipping FAR calculation by MDMS.");
+//	    }
+//	}
 	
 	private void getMdmsMastersData(Plan pl, String occType, OccupancyTypeHelper occupancyType) {
+		
 	    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
 	    if (Boolean.TRUE.equals(mdmsEnabled)) {
 	        try {
 	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
 	            Object mdmsData = null;
+	            String moduleName = MODULE_NAME.get(occupancyType.getType().getCode());
 	            
 	            if (occupancyType != null
 	                    && occupancyType.getSubtype() != null
 	                    && occupancyType.getSubtype().getCode() != null
 	                    && !DxfFileConstants.F.equalsIgnoreCase(occupancyType.getType().getCode())) {
 	                mdmsData = bpaMdmsUtil.mDMSCall(
-	                		new RequestInfo(),pl.getEdcrRequest(), occupancyType.getSubtype().getCode(), plotArea);	               
+	                		new RequestInfo(),pl.getEdcrRequest(), occupancyType.getSubtype().getCode(), moduleName);	               
 	            }else {
-	            	mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occupancyType.getType().getCode(), plotArea);
+	            	mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occupancyType.getType().getCode(), moduleName);
 	            }		            
 
 	            if (mdmsData != null) {
 	                ObjectMapper mapper = new ObjectMapper();
 	                JsonNode root = mapper.valueToTree(mdmsData);
-	                JsonNode occupancy = MdmsResponseUtil.getOccupancyNode(root);
+	                JsonNode occupancy = MdmsResponseUtil.getOccupancyNode(root,moduleName);
 	                if (occupancy != null) {
 //	                	if (pl.getMdmsRulesData() == null) {
 //	                	    pl.setMdmsRulesData(new HashMap<>());

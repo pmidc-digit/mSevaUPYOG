@@ -108,7 +108,8 @@ public class BpaMdmsUtil {
 		return mdmsCriteriaReq;
 	}
 
-	private MdmsCriteriaReq getBpaFARMDMSRequest(RequestInfo requestInfo, EdcrRequest edcrRequest, String occType, BigDecimal plotArea) {
+	private MdmsCriteriaReq getBpaFARMDMSRequest(RequestInfo requestInfo, EdcrRequest edcrRequest, String occType, 
+			String moduleName) {
 		// List<ModuleDetail> moduleRequest = getBPAFARModuleRequest();
 		// String code, String scheme, String fromFY, Long currentDate, String
 		// occCategory
@@ -118,9 +119,6 @@ public class BpaMdmsUtil {
 			finYear = today.getYear() + "-" + ((today.getYear() % 2000) +1);
 		else
 			finYear = (today.getYear()-1) + "-" + (today.getYear()) % 2000;
-		
-		//List<ModuleDetail> moduleRequest = getMDMSModuleRequest1("101", "SCHEME1", "2025-26", 1757496600979L, occType, plotArea);
-//		List<ModuleDetail> moduleRequest = getMDMSModuleRequest1(MdmsConstants.MasterPlanCode, MdmsConstants.Scheme, finYear, System.currentTimeMillis(), occType, plotArea);
 
 		List<ModuleDetail> moduleRequest =
 			    getMDMSModuleRequest1(
@@ -129,7 +127,8 @@ public class BpaMdmsUtil {
 			        finYear,
 			        System.currentTimeMillis(),
 			        occType,
-			        "1.0.0"  // occVersion
+			        "1.0.0" , // occVersion,
+			        moduleName
 			    );
 
 		List<ModuleDetail> moduleDetails = new LinkedList<>();
@@ -172,8 +171,8 @@ public class BpaMdmsUtil {
         return result;
     }
 
-	public Object mDMSCall(RequestInfo requestInfo, EdcrRequest edcrRequest, String occType, BigDecimal plotArea) {
-		MdmsCriteriaReq mdmsCriteriaReq = getBpaFARMDMSRequest(requestInfo, edcrRequest, occType, plotArea);
+	public Object mDMSCall(RequestInfo requestInfo, EdcrRequest edcrRequest, String occType, String moduleName) {
+		MdmsCriteriaReq mdmsCriteriaReq = getBpaFARMDMSRequest(requestInfo, edcrRequest, occType, moduleName);
 
 		try {
 			return serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
@@ -267,13 +266,8 @@ public class BpaMdmsUtil {
 		return Arrays.asList(bpaModuleDtls);
 	}
 
-	public List<ModuleDetail> getMDMSModuleRequest1(
-        String code,
-        String scheme,
-        String fromFY,
-        Long currentDate,
-        String occType,
-        String occVersion) {
+	public List<ModuleDetail> getMDMSModuleRequest1(String code, String scheme, String fromFY, Long currentDate, String occType,
+        String occVersion, String moduleName) {
 
     List<MasterDetail> masterDetails = new ArrayList<>();
 
@@ -329,7 +323,7 @@ public class BpaMdmsUtil {
     /* ================= MODULE DETAIL ================= */
 
     ModuleDetail moduleDetail = new ModuleDetail();
-    moduleDetail.setModuleName("edcrRules"); // ✅ correct module name
+    moduleDetail.setModuleName(moduleName); // ✅ correct module name
     moduleDetail.setMasterDetails(masterDetails);
 
     return Arrays.asList(moduleDetail);

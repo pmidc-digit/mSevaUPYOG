@@ -52,6 +52,7 @@ import static org.egov.edcr.utility.DcrConstants.DECIMALDIGITS_MEASUREMENTS;
 import static org.egov.edcr.utility.DcrConstants.ROUNDMODE_MEASUREMENTS;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -414,7 +415,9 @@ public class ExitWidth extends FeatureProcess {
         // calculate minimum of exit widths provided and validate for that.
         boolean isTypicalRepititiveFloor = false;
         if (!floor.getExitWidthDoor().isEmpty()) {
-            BigDecimal minimumExitWidth = floor.getExitWidthDoor().get(0).setScale(2, BigDecimal.ROUND_HALF_UP);
+        	BigDecimal minimumExitWidth = floor.getExitWidthDoor()
+        	        .get(0);        	        
+        	        minimumExitWidth = minimumExitWidth.setScale(2, RoundingMode.HALF_UP);
             for (BigDecimal exitWidthDoor : floor.getExitWidthDoor()) {
                 if (exitWidthDoor.compareTo(minimumExitWidth) < 0) {
                     minimumExitWidth = exitWidthDoor;

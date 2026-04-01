@@ -73,7 +73,18 @@ public class ChallanConfiguration {
     @Value("${egov.idgen.challanNum.format}")
     private String challanNumberIdgenFormat;
 
+    @Value("${egov.pdf.service.host}")
+    private String pdfServiceHost;
 
+    @Value("${egov.pdf.service.create.endpoint}")
+    private String pdfServiceCreateEndpoint;
+    
+    @Value("${egov.filestore.view.path}")
+    private String fileStoreViewPath;
+    
+    @Value("${egov.filestore.host}")
+    private String fileStoreHost;
+    
     //Persister Config
     @Value("${persister.save.echallan.topic}")
     private String saveChallanTopic;

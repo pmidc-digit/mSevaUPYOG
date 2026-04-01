@@ -1,6 +1,5 @@
 package org.egov.echallan.service;
 
-
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import static org.egov.echallan.util.ChallanConstants.*;
 
-
 @Service
 @Slf4j
 public class NotificationService {
@@ -46,34 +44,35 @@ public class NotificationService {
 
 	@Value("${egov.mdms.search.endpoint}")
 	private String mdmsUrl;
-	
+
 	private RestTemplate restTemplate;
-	
+
 	private NotificationUtil util;
-	
+
 	private Producer producer;
-	
-	 private ServiceRequestRepository serviceRequestRepository;
-	
+
+	private ServiceRequestRepository serviceRequestRepository;
+
 	private static final String BUSINESSSERVICE_MDMS_MODULE = "BillingService";
 	public static final String BUSINESSSERVICE_MDMS_MASTER = "BusinessService";
 	public static final String BUSINESSSERVICE_CODES_FILTER = "$.[?(@.type=='Adhoc')].code";
 	public static final String BUSINESSSERVICE_CODES_JSONPATH = "$.MdmsRes.BillingService.BusinessService";
-	public static final String  USREVENTS_EVENT_TYPE = "SYSTEMGENERATED";
-	public static final String  USREVENTS_EVENT_NAME = "Challan";
-	public static final String  USREVENTS_EVENT_POSTEDBY = "SYSTEM-CHALLAN";
-	
+	public static final String USREVENTS_EVENT_TYPE = "SYSTEMGENERATED";
+	public static final String USREVENTS_EVENT_NAME = "Challan";
+	public static final String USREVENTS_EVENT_POSTEDBY = "SYSTEM-CHALLAN";
+
 	@Autowired
-	public NotificationService(ChallanConfiguration config,RestTemplate restTemplate,NotificationUtil util,Producer producer,ServiceRequestRepository serviceRequestRepository) {
+	public NotificationService(ChallanConfiguration config, RestTemplate restTemplate, NotificationUtil util,
+			Producer producer, ServiceRequestRepository serviceRequestRepository) {
 		this.config = config;
 		this.restTemplate = restTemplate;
 		this.util = util;
 		this.producer = producer;
 		this.serviceRequestRepository = serviceRequestRepository;
 	}
-	
-	public void sendChallanNotification(ChallanRequest challanRequest,boolean isSave) {
-		String action="",code = null;
+
+	public void sendChallanNotification(ChallanRequest challanRequest, boolean isSave) {
+		String action = "", code = null;
 
 		if (isSave) {
 			action = CREATE_ACTION;
@@ -89,119 +88,120 @@ public class NotificationService {
 			code = PAYMENT_CODE;
 		}
 
-		List<String> configuredChannelNames =  util.fetchChannelList(new RequestInfo(), challanRequest.getChallan().getTenantId(), MCOLLECT_BUSINESSSERVICE, action);
-		if(configuredChannelNames.contains(CHANNEL_NAME_SMS)){
+		List<String> configuredChannelNames = util.fetchChannelList(new RequestInfo(),
+				challanRequest.getChallan().getTenantId(), MCOLLECT_BUSINESSSERVICE, action);
+		if (configuredChannelNames.contains(CHANNEL_NAME_SMS)) {
 			List<SMSRequest> smsRequests = new LinkedList<>();
 			if (null != config.getIsSMSEnabled()) {
-				log.info("is sms enabled: "+config.getIsSMSEnabled());
+				log.info("is sms enabled: " + config.getIsSMSEnabled());
 				if (config.getIsSMSEnabled()) {
 					enrichSMSRequest(challanRequest, smsRequests, code);
 					if (!CollectionUtils.isEmpty(smsRequests)) {
 						util.sendSMS(smsRequests, config.getIsSMSEnabled());
-						log.info("smsRequests is not empty: "+smsRequests);	
+						log.info("smsRequests is not empty: " + smsRequests);
 					}
 				}
 			}
 		}
 
+		
 		/*
-		 * if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)){ if (null !=
-		 * config.getIsUserEventEnabled()) { if (config.getIsUserEventEnabled()) {
-		 * EventRequest eventRequest = getEventsForChallan(challanRequest,isSave);
-		 * if(null != eventRequest) util.sendEventNotification(eventRequest); } } }
-		 * 
-		 * if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)){ List<EmailRequest>
-		 * emailRequests = new LinkedList<>(); if (null !=
-		 * config.getIsEmailNotificationEnabled()) { if
-		 * (config.getIsEmailNotificationEnabled()) { enrichEmailRequest(challanRequest,
-		 * emailRequests, code.replace(".sms",".email")); if
-		 * (!CollectionUtils.isEmpty(emailRequests)) util.sendEmail(emailRequests); } }
-		 * }
+		 * // if (configuredChannelNames.contains(CHANNEL_NAME_EVENT)) { // if (null !=
+		 * config.getIsUserEventEnabled()) { // if (config.getIsUserEventEnabled()) { //
+		 * EventRequest eventRequest = getEventsForChallan(challanRequest, isSave); //
+		 * if (null != eventRequest) // util.sendEventNotification(eventRequest); // }
+		 * // } // }
 		 */
+		if (configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
+			List<EmailRequest> emailRequests = new LinkedList<>();
+			if (null != config.getIsEmailNotificationEnabled()) {
+				if (config.getIsEmailNotificationEnabled()) {
+					enrichEmailRequest(challanRequest, emailRequests, code.replace(".sms", ".email"));
+					if (!CollectionUtils.isEmpty(emailRequests))
+						util.sendEmail(emailRequests);
+				}
+			}
+		}
+		 
 	}
 
-	private EventRequest getEventsForChallan(ChallanRequest request,boolean isSave) {
-    	List<Event> events = new ArrayList<>();
- 		Challan challan = request.getChallan();
-		String message="";
-		if(isSave)
-			message = util.getCustomizedMsg(request.getRequestInfo(), challan ,CREATE_CODE_INAPP);
-		else if(challan.getApplicationStatus()==StatusEnum.ACTIVE)
-			message = util.getCustomizedMsg(request.getRequestInfo(),challan, UPDATE_CODE_INAPP);
-		else if(challan.getApplicationStatus()==StatusEnum.CANCELLED)
-			message = util.getCustomizedMsg(request.getRequestInfo(),challan, CANCEL_CODE_INAPP );
-		else if(challan.getApplicationStatus()==StatusEnum.PAID)
-			message = util.getCustomizedMsg(request.getRequestInfo(),challan, PAYMENT_CODE_INAPP );
+	private EventRequest getEventsForChallan(ChallanRequest request, boolean isSave) {
+		List<Event> events = new ArrayList<>();
+		Challan challan = request.getChallan();
+		String message = "";
+		if (isSave)
+			message = util.getCustomizedMsg(request.getRequestInfo(), challan, CREATE_CODE_INAPP);
+		else if (challan.getApplicationStatus() == StatusEnum.ACTIVE)
+			message = util.getCustomizedMsg(request.getRequestInfo(), challan, UPDATE_CODE_INAPP);
+		else if (challan.getApplicationStatus() == StatusEnum.CANCELLED)
+			message = util.getCustomizedMsg(request.getRequestInfo(), challan, CANCEL_CODE_INAPP);
+		else if (challan.getApplicationStatus() == StatusEnum.PAID)
+			message = util.getCustomizedMsg(request.getRequestInfo(), challan, PAYMENT_CODE_INAPP);
 
+		Map<String, String> mobileNumberToOwner = new HashMap<>();
+		String mobile = challan.getCitizen().getMobileNumber();
+		if (mobile != null)
+			mobileNumberToOwner.put(mobile, challan.getCitizen().getName());
 
-        Map<String,String > mobileNumberToOwner = new HashMap<>();
-        String mobile = challan.getCitizen().getMobileNumber();
-        if(mobile!=null)
-             mobileNumberToOwner.put(mobile,challan.getCitizen().getName());
-        
-        Map<String, String> mapOfPhnoAndUUIDs = fetchUserUUIDs(mobile, request.getRequestInfo(), request.getChallan().getTenantId());
-        if (CollectionUtils.isEmpty(mapOfPhnoAndUUIDs.keySet()))
-            return null;
-    		
-    	List<String> toUsers = new ArrayList<>();
-    	toUsers.add(mapOfPhnoAndUUIDs.get(mobile));
-    	Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
-    	List<String> payTriggerList = Arrays.asList(config.getPayTriggers().split("[,]"));
-    	Action action = null;
-    	if(payTriggerList.contains(challan.getApplicationStatus().toString())) {
-           List<ActionItem> items = new ArrayList<>();
-           String actionLink = config.getPayLink().replace("$mobile", mobile)
-        						.replace("$applicationNo", challan.getChallanNo())
-        						.replace("$tenantId", challan.getTenantId())
-        						.replace("$businessService", challan.getBusinessService());
-           actionLink = config.getUiAppHost() + actionLink;
-           ActionItem item = ActionItem.builder().actionUrl(actionLink).code(config.getPayCode()).build();
-           items.add(item);
-           action = Action.builder().actionUrls(items).build();
-    	}
-		if(challan.getApplicationStatus()==StatusEnum.PAID) {
+		Map<String, String> mapOfPhnoAndUUIDs = fetchUserUUIDs(mobile, request.getRequestInfo(),
+				request.getChallan().getTenantId());
+		if (CollectionUtils.isEmpty(mapOfPhnoAndUUIDs.keySet()))
+			return null;
+
+		List<String> toUsers = new ArrayList<>();
+		toUsers.add(mapOfPhnoAndUUIDs.get(mobile));
+		Recepient recepient = Recepient.builder().toUsers(toUsers).toRoles(null).build();
+		List<String> payTriggerList = Arrays.asList(config.getPayTriggers().split("[,]"));
+		Action action = null;
+		if (payTriggerList.contains(challan.getApplicationStatus().toString())) {
+			List<ActionItem> items = new ArrayList<>();
+			String actionLink = config.getPayLink().replace("$mobile", mobile)
+					.replace("$applicationNo", challan.getChallanNo()).replace("$tenantId", challan.getTenantId())
+					.replace("$businessService", challan.getBusinessService());
+			actionLink = config.getUiAppHost() + actionLink;
+			ActionItem item = ActionItem.builder().actionUrl(actionLink).code(config.getPayCode()).build();
+			items.add(item);
+			action = Action.builder().actionUrls(items).build();
+		}
+		if (challan.getApplicationStatus() == StatusEnum.PAID) {
 			List<ActionItem> items = new ArrayList<>();
 			PaymentResponse paymentResponse = util.getPaymentObject(request);
-			String actionLink = util.getRecepitDownloadLink(request,paymentResponse,mobile);
+			String actionLink = util.getRecepitDownloadLink(request, paymentResponse, mobile);
 			ActionItem item = ActionItem.builder().actionUrl(actionLink).code(DOWNLOAD_RECEIPT_CODE).build();
 			items.add(item);
 			action = Action.builder().actionUrls(items).build();
 		}
 
-    	events.add(Event.builder().tenantId(challan.getTenantId()).description(message)
-						.eventType(USREVENTS_EVENT_TYPE).name(USREVENTS_EVENT_NAME)
-						.postedBy(USREVENTS_EVENT_POSTEDBY).source(Source.WEBAPP).recepient(recepient)
-    					.eventDetails(null).actions(action).build());
-        if(!CollectionUtils.isEmpty(events)) {
-    		return EventRequest.builder().requestInfo(request.getRequestInfo()).events(events).build();
-        }else {
-        	return null;
-        }
-    	
-		
-    }
-	
+		events.add(Event.builder().tenantId(challan.getTenantId()).description(message).eventType(USREVENTS_EVENT_TYPE)
+				.name(USREVENTS_EVENT_NAME).postedBy(USREVENTS_EVENT_POSTEDBY).source(Source.WEBAPP)
+				.recepient(recepient).eventDetails(null).actions(action).build());
+		if (!CollectionUtils.isEmpty(events)) {
+			return EventRequest.builder().requestInfo(request.getRequestInfo()).events(events).build();
+		} else {
+			return null;
+		}
 
-	private List<String> fetchBusinessServiceFromMDMS(RequestInfo requestInfo, String tenantId){
+	}
+
+	private List<String> fetchBusinessServiceFromMDMS(RequestInfo requestInfo, String tenantId) {
 		List<String> masterData = new ArrayList<>();
 		StringBuilder uri = new StringBuilder();
 		uri.append(mdmsHost).append(mdmsUrl);
-		if(StringUtils.isEmpty(tenantId))
+		if (StringUtils.isEmpty(tenantId))
 			return masterData;
 		MdmsCriteriaReq request = getRequestForEvents(requestInfo, tenantId.split("\\.")[0]);
 		try {
 			Object response = restTemplate.postForObject(uri.toString(), request, Map.class);
 			masterData = JsonPath.read(response, BUSINESSSERVICE_CODES_JSONPATH);
-		}catch(Exception e) {
-			log.error("Exception while fetching business service codes: ",e);
+		} catch (Exception e) {
+			log.error("Exception while fetching business service codes: ", e);
 		}
 		return masterData;
 	}
-	
-	
+
 	private MdmsCriteriaReq getRequestForEvents(RequestInfo requestInfo, String tenantId) {
-		MasterDetail masterDetail = org.egov.mdms.model.MasterDetail.builder()
-				.name(BUSINESSSERVICE_MDMS_MASTER).filter(BUSINESSSERVICE_CODES_FILTER).build();
+		MasterDetail masterDetail = org.egov.mdms.model.MasterDetail.builder().name(BUSINESSSERVICE_MDMS_MASTER)
+				.filter(BUSINESSSERVICE_CODES_FILTER).build();
 		List<MasterDetail> masterDetails = new ArrayList<>();
 		masterDetails.add(masterDetail);
 		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName(BUSINESSSERVICE_MDMS_MODULE)
@@ -211,97 +211,132 @@ public class NotificationService {
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
 		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 	}
-	
+
 	private Map<String, String> fetchUserUUIDs(String mobileNumber, RequestInfo requestInfo, String tenantId) {
-    	Map<String, String> mapOfPhnoAndUUIDs = new HashMap<>();
-    	StringBuilder uri = new StringBuilder();
-    	uri.append(config.getUserHost()).append(config.getUserSearchEndpoint());
-    	Map<String, Object> userSearchRequest = new HashMap<>();
-    	userSearchRequest.put("RequestInfo", requestInfo);
+		Map<String, String> mapOfPhnoAndUUIDs = new HashMap<>();
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getUserHost()).append(config.getUserSearchEndpoint());
+		Map<String, Object> userSearchRequest = new HashMap<>();
+		userSearchRequest.put("RequestInfo", requestInfo);
 		userSearchRequest.put("tenantId", tenantId);
 		userSearchRequest.put("userType", "CITIZEN");
-    	userSearchRequest.put("userName", mobileNumber);
-    	try {
-    		Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
-    		if(null != user) {
-    			List<User> users = JsonPath.read(user, "$.user");
-    			if(users.size()!=0) {
-    			String uuid = JsonPath.read(user, "$.user[0].uuid");
-    			mapOfPhnoAndUUIDs.put(mobileNumber, uuid);
-    			}
-    		}else {
-        		log.error("Service returned null while fetching user for username - "+mobileNumber);
-    		}
-    	}catch(Exception e) {
-    		log.error("Exception while fetching user for username - "+mobileNumber);
-    		log.error("Exception trace: ",e);
-    	}
-    	return mapOfPhnoAndUUIDs;
-    }
+		userSearchRequest.put("userName", mobileNumber);
+		try {
+			Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+			if (null != user) {
+				List<User> users = JsonPath.read(user, "$.user");
+				if (users.size() != 0) {
+					String uuid = JsonPath.read(user, "$.user[0].uuid");
+					mapOfPhnoAndUUIDs.put(mobileNumber, uuid);
+				}
+			} else {
+				log.error("Service returned null while fetching user for username - " + mobileNumber);
+			}
+		} catch (Exception e) {
+			log.error("Exception while fetching user for username - " + mobileNumber);
+			log.error("Exception trace: ", e);
+		}
+		return mapOfPhnoAndUUIDs;
+	}
 
 	/**
 	 * Enriches the smsRequest with the customized messages
 	 *
-	 * @param challanRequest
-	 *            The challanRequest
-	 * @param smsRequestslist
-	 *            List of SMSRequets
-	 * @param code
-	 *            Notification Template Code
+	 * @param challanRequest  The challanRequest
+	 * @param smsRequestslist List of SMSRequets
+	 * @param code            Notification Template Code
 	 */
 	private void enrichSMSRequest(ChallanRequest challanRequest, List<SMSRequest> smsRequestslist, String code) {
 		String message = util.getCustomizedMsg(challanRequest.getRequestInfo(), challanRequest.getChallan(), code);
 		String mobilenumber = challanRequest.getChallan().getCitizen().getMobileNumber();
 
 		if (message != null && !StringUtils.isEmpty(message)) {
-			SMSRequest smsRequest = SMSRequest.builder().
-					mobileNumber(mobilenumber).
-					message(message).build();
+			SMSRequest smsRequest = SMSRequest.builder().mobileNumber(mobilenumber).message(message).build();
 			smsRequestslist.add(smsRequest);
 		} else {
 			log.error("No message configured! Notification will not be sent.");
 		}
 	}
-		/**
-		 * Enriches the emailRequests with the customized messages
-		 *
-		 * @param challanRequest
-		 *            The challanRequest
-		 * @param emailRequestList
-		 *            List of EmailRequests
-		 * @param code
-		 *            Notification Template Code
-		 */
-		private void enrichEmailRequest(ChallanRequest challanRequest, List<EmailRequest> emailRequestList, String code) {
-			Set<String> mobileNumbers = new HashSet<>();
-			String mobilenumber = challanRequest.getChallan().getCitizen().getMobileNumber();
 
-			mobileNumbers.add(mobilenumber);
-			Map<String, String> mapOfPhnoAndEmail = util.fetchUserEmailIds(mobileNumbers, challanRequest.getRequestInfo(), challanRequest.getChallan().getTenantId());
+	/**
+	 * Enriches the emailRequests with the customized messages
+	 *
+	 * @param challanRequest   The challanRequest
+	 * @param emailRequestList List of EmailRequests
+	 * @param code             Notification Template Code
+	 */
+	private void enrichEmailRequest(ChallanRequest challanRequest, List<EmailRequest> emailRequestList, String code) {
+		Set<String> mobileNumbers = new HashSet<>();
+		String mobilenumber = challanRequest.getChallan().getCitizen().getMobileNumber();
 
-			if(challanRequest.getChallan().getCitizen().getEmail()!=null && !StringUtils.isEmpty(challanRequest.getChallan().getCitizen().getEmail()) )
-				mapOfPhnoAndEmail.put(mobilenumber, challanRequest.getChallan().getCitizen().getEmail());
+		mobileNumbers.add(mobilenumber);
+		Map<String, String> mapOfPhnoAndEmail = util.fetchUserEmailIds(mobileNumbers, challanRequest.getRequestInfo(),
+				challanRequest.getChallan().getTenantId());
 
-			String message = util.getEmailCustomizedMsg(challanRequest.getRequestInfo(), challanRequest.getChallan(), code);
+		if (challanRequest.getChallan().getCitizen().getEmail() != null
+				&& !StringUtils.isEmpty(challanRequest.getChallan().getCitizen().getEmail()))
+			mapOfPhnoAndEmail.put(mobilenumber, challanRequest.getChallan().getCitizen().getEmail());
 
-			if (message!=null && !StringUtils.isEmpty(message)) {
-				String subject = message.substring(message.indexOf("<h2>")+4,message.indexOf("</h2>"));
-				String body = message.substring(message.indexOf("</h2>")+5);
-				Email emailobj=null;
-				EmailRequest email = null;
-				if(mapOfPhnoAndEmail.get(mobilenumber)!=null) {
-					emailobj = Email.builder().emailTo(Collections.singleton(mapOfPhnoAndEmail.get(mobilenumber))).isHTML(true).body(body).subject(subject).build();
-					email = new EmailRequest(challanRequest.getRequestInfo(),emailobj);
-					emailRequestList.add(email);
-				}
-				else
-				{
-					log.error("No email for username - "+mobilenumber);
-				}
-			} else {
-				log.error("No message configured! Notification will not be sent.");
-			}
+		String message = util.getEmailCustomizedMsg(challanRequest.getRequestInfo(), challanRequest.getChallan(), code);
+
+		if (message != null && !StringUtils.isEmpty(message)) {
+		    try {
+		        // 1. Robust Extraction of Subject (Everything inside <h2>)
+		        String subject = "Violation Notice - " + challanRequest.getChallan().getChallanNo();
+		        if (message.contains("<h2>") && message.contains("</h2>")) {
+		            subject = message.substring(message.indexOf("<h2>") + 4, message.indexOf("</h2>"));
+		        }
+
+		        // 2. The entire HTML is the body since isHTML is set to true
+		        // We don't need to substring after </h2> because the mail server needs the <html> and <style> tags at the start.
+		        String body = message; 
+
+		        String mobileNumber = challanRequest.getChallan().getCitizen().getMobileNumber();
+		        String recipientEmail = mapOfPhnoAndEmail.get(mobileNumber);
+
+		        if (recipientEmail != null && !recipientEmail.trim().isEmpty()) {
+		        	  Map<String, String> inlineResources = new HashMap<>();
+
+		      	    if (challanRequest.getChallan().getUploadedDocumentDetails() != null) {
+		      	        for (DocumentDetail doc : challanRequest.getChallan().getUploadedDocumentDetails()) {
+		      	            String url = util.getPublicUrlFromFilestore(doc.getFileStoreId(), "pb");
+		      	            
+		      	            if (url != null && !url.isEmpty()) {
+		      	                if ("CHALLAN.ID_PROOF".equals(doc.getDocumentType())) {
+		      	                    // This key "evidence1" must match the <img src="cid:evidence1"> in SQL
+		      	                    inlineResources.put("evidence1", url);
+		      	                }
+		      	                
+		      	                if ("CHALLAN.EVIDENCE_IMAGE".equals(doc.getDocumentType())) {
+		      	                    // This key "evidence2" must match the <img src="cid:evidence2"> in SQL
+		      	                    inlineResources.put("evidence2", url);
+		      	                }
+		      	            }
+		      	        }
+		      	    }
+		           
+		      	    
+		      	  Email emailobj = Email.builder()
+		                    .emailTo(Collections.singleton(recipientEmail))
+		                    .isHTML(true)
+		                    .body(body)
+		                    .subject(subject)
+		                    .inlineResources(inlineResources) 
+		                    .build();
+
+		            EmailRequest emailRequest = new EmailRequest(challanRequest.getRequestInfo(), emailobj);
+		            emailRequestList.add(emailRequest);
+		            
+		            log.info("Challan Email queued for: {} with Subject: {}", recipientEmail, subject);
+		        } else {
+		            log.error("Notification aborted: No email ID found for Citizen: {}", mobileNumber);
+		        }
+		    } catch (Exception e) {
+		        log.error("Error parsing Challan Email template: {}", e.getMessage());
+		    }
+		} else {
+		    log.error("No message configured in egov-localization for Challan Notification!");
+		}
 	}
-	
 
 }

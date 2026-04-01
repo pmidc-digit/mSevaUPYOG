@@ -2,6 +2,7 @@ package org.egov.web.notification.mail.consumer.contract;
 
 import java.util.Set;
 import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +26,7 @@ public class Email {
 	@JsonProperty("isHTML")
 	private boolean isHTML;
 	
+	private Map<String, String> inlineResources; // Key: "evidence1", Value: "https://..."
 	@JsonProperty("attachments")
     private List<String> attachments;
 

@@ -3,7 +3,9 @@ package org.egov.web.notification.mail.service;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Map;
 
+import javax.activation.URLDataSource;
 import javax.mail.internet.MimeMessage;
 
 import org.egov.web.notification.mail.consumer.contract.Email;
@@ -60,25 +62,45 @@ public class ExternalEmailService implements EmailService {
     private void sendHTMLEmail(Email email) {
         MimeMessage message = mailSender.createMimeMessage();
         try {
-            // true flag indicates multipart message for attachments
+            // 'true' flag is mandatory for supporting inline images (multipart/related)
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setFrom(mailSender.getUsername());
             helper.setTo(email.getEmailTo().toArray(new String[0]));
             helper.setSubject(email.getSubject());
+            
+            // Set the HTML body
             helper.setText(email.getBody(), true);
 
+            // 1. Handle Inline Images (The fix for your Google Proxy error)
+            if (email.getInlineResources() != null) {
+                for (Map.Entry<String, String> entry : email.getInlineResources().entrySet()) {
+                    String cid = entry.getKey();
+                    String urlString = entry.getValue();
+                    
+                    if (isValidUrl(urlString)) {
+                        URL url = new URL(urlString);
+                        // This maps <img src="cid:xxx"> to the actual file data
+                        helper.addInline(cid, new URLDataSource(url));
+                    }
+                }
+            }
+
+            // 2. Handle Regular Attachments (PDFs, etc.)
             if (!CollectionUtils.isEmpty(email.getAttachments())) {
                 processAttachments(email.getAttachments(), helper);
             }
 
-            log.info("Handing over to SMTP Server ({}) for delivery...", mailSender.getHost());
             mailSender.send(message);
-            log.info("Email sent successfully to: {}", String.join(", ", email.getEmailTo()));
+            log.info("Email with inline images sent successfully.");
 
         } catch (Exception e) {
-            log.error("CRITICAL: Error during SMTP handover for HTML email", e);
+            log.error("Failed to send email", e);
         }
+    }
+
+    private boolean isValidUrl(String url) {
+        return url != null && url.startsWith("http") && !url.contains("placeholder");
     }
 
     private void processAttachments(List<String> attachments, MimeMessageHelper helper) {

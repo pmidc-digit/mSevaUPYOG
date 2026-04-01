@@ -9,7 +9,7 @@ import {
 import CustomUploadFile from "../components/CustomUploadFile";
 import { amountToWords } from "../utils";
 
-export const PayTwoTable = ({
+export const PayTwoTableRegular = ({
     sanctionFeeDataWithTotal,
     disable,
     isEmployee,
@@ -33,7 +33,7 @@ export const PayTwoTable = ({
                     <tr>
                         <th>{t("BPA_TAXHEAD_CODE")}</th>
                         <th>{t("BPA_AMOUNT")}</th>
-                        <th>{t("BPA_ADJUSTED_AMOUNT")}</th>
+                        {/* <th>{t("BPA_ADJUSTED_AMOUNT")}</th> */}
                         <th>{t("BPA_FILE_UPLOAD")}</th>
                         <th>{t("BPA_REMARKS")}</th>
                     </tr>
@@ -42,11 +42,11 @@ export const PayTwoTable = ({
                     {sanctionFeeDataWithTotal.map((row, i) => (
                         <tr key={row.index || i}>
                             <td>{row.title || t("CS_NA")}</td>
-                            <td>
+                            {/* <td>
                                 {row.amount !== null && row.amount !== undefined
                                     ? `₹ ${row.amount.toLocaleString()}`
                                     : t("CS_NA")}
-                            </td>
+                            </td> */}
                             <td>
                                 {row?.taxHeadCode === "BPA_TOTAL" ? (
                                     row.adjustedAmount !== null && row.adjustedAmount !== undefined
@@ -88,10 +88,10 @@ export const PayTwoTable = ({
                             )}
                             <td>
                                 {row?.taxHeadCode === "BPA_TOTAL" ? (
-                                    row?.grandTotal !== null && row?.grandTotal !== undefined
+                                    row?.adjustedAmount !== null && row?.adjustedAmount !== undefined
                                         ? <div>
-                                            <strong>{`₹ ${row.grandTotal.toLocaleString("en-IN")}`}</strong>
-                                            <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.grandTotal)}</div>
+                                            <strong>{`₹ ${row.adjustedAmount.toLocaleString("en-IN")}`}</strong>
+                                            <div style={{ fontSize: "0.9em", color: "#555", marginTop: "4px" }}>{amountToWords(row.adjustedAmount)}</div>
                                         </div>
                                         : t("CS_NA")
                                 ) : <TextInput

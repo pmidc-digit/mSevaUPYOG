@@ -34,7 +34,6 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const [showToast, setShowToast] = useState(null);
   const stateCode = Digit.ULBService.getStateId();
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"]);
-  console.log("formDataInScrutiniy ", formData, currentStepData, mdmsData);
   // const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumbe?.edcrNumber, {
   //   enabled: true,
   // });
@@ -42,7 +41,6 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [apiLoading, setApiLoading] = useState(false);
 
-  console.log("OCCUPANCY", formData);
 
   useEffect(() => {
     window.scrollTo({
@@ -52,10 +50,10 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   }, []);
 
   useEffect(() => {
-    if (!isMdmsLoading && currentStepData?.BasicDetails?.occupancyType) {
+    if (!isMdmsLoading && currentStepData?.createdResponse?.additionalDetails?.subcategories) {
       const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
 
-      const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === currentStepData?.BasicDetails?.occupancyType.toLowerCase());
+      const matched = subOccupancyMaster.find((item) => item?.code === currentStepData?.createdResponse?.additionalDetails?.subcategories);
 
       if (matched) {
         const formatted = {

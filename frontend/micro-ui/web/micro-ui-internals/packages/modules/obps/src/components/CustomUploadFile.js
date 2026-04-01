@@ -7,6 +7,14 @@ const getRandomId = () => {
   return Math.floor((Math.random() || 1) * 139);
 };
 
+const CloseBtn = (props) => {
+  return (
+    <div className="close-btn" onClick={props.onClick}>      
+      <Close />
+    </div>
+  );
+};
+
 const getCitizenStyles = (value) => {
   let citizenStyles = {};
   if (value == "propertyCreate") {
@@ -239,7 +247,7 @@ const CustomUploadFile = (props) => {
 
     {!props?.disabled && (
       <div
-        className={`upload-file upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"
+        className={`upload-file-new upload-file-min-height ${user_type === "employee" ? "" : "upload-file-max-width"
           } ${props.disabled ? "disabled" : ""}`}
       >
         <div className="upload-container-flex">
@@ -277,15 +285,20 @@ const CustomUploadFile = (props) => {
               <SubmitBar
                 onSubmit={() => routeTo(props.uploadedFile)}
                 label={t("CS_VIEW_DOCUMENT")}
-              />
+              />              
             </div>
           )}
+          {/* {!props.uploadedFile || props.error ? null : (
+            <div className="upload-tag-container">
+              <CloseBtn onClick={() => props.onDelete(props.uploadedFile)} />
+            </div>
+          )} */}
         </div>
 
         <input
           // className={`input-mirror-selector-button upload-file-input ${props.disabled ? "disabled" : ""
           //   }`}
-          className={`${props.disabled ? "upload-hidden" : ""}`}
+          className={`upload-file-input ${props.disabled ? "upload-hidden" : ""}`}
           ref={inpRef}
           type="file"
           id={props.id || `document-${getRandomId()}`}

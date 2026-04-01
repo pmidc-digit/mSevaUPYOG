@@ -51,6 +51,7 @@ import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
+import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
 
 
 const BpaApplicationDetail = () => {
@@ -429,12 +430,19 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     window.open(jumpTo, "_blank");
   }
 
-  const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => (obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0) && obj?.title != "SITEPHOTOGRAPH_ONE" && obj?.title != "SITEPHOTOGRAPH_TWO")?.map((doc, index) => ({
     id: index,
+    index: index,
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-    fileUrl: doc.values?.[0]?.fileURL || null,
+    fileUrl: doc?.values?.[0]?.fileURL || null,
+    fileStoreId: doc?.values?.[0]?.fileStoreId || null,
   }));
-  const documentsColumnsOwner = [
+
+  const sitePhotos = getOrderDocuments(applicationDocs)?.filter(
+              (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
+            )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
+
+  const documentsColumnsOwner = [    
     {
       Header: t("BPA_OWNER_DETAILS_LABEL"),
       accessor: "title",
@@ -455,6 +463,12 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     },
   ];
   const documentsColumns = [
+    {
+      Header: t("SR_NO"),
+      accessor: "index",
+      width:"20px",
+      Cell: ({ value }) => <div style={{width: "20px"}}>{value + 1}</div>,
+    },
     {
       Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
       accessor: "title",
@@ -979,11 +993,13 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t, path)
     }
-    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY"){
-      if (path == "bpa") {
+    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY" || action === "APPLY"){
+      if (path == "bpa" && isBPA) {
         if (!validateDataForAction(action)) {
           return;
         }
+      }else if(path == "bpa" && isBPA){
+
       }
       saveAsDraft(data?.applicationData, action)
     }
@@ -1050,6 +1066,32 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         return true
       }
     }
+    else{
+      return true;
+    }
+  }
+
+  const validateDataForNewAction = (action) => {
+    if(action === "SEND_TO_CITIZEN"){
+      const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      const isFeesDeclared = data?.applicationData?.additionalDetails?.isFeesDeclared;
+      const ownerData = data?.applicationData?.landInfo?.owners
+      const documentData = data?.applicationData?.documents
+      if(!(ownerData?.length > 0)){
+        setShowToast({
+          key: "error",
+          action: t("Please Insert Owner Data before Submiting")
+        })
+        return false
+      }
+      if((documentData?.length > 0)){
+        console.log("All The Document Data")
+        return false
+      }
+      else{
+        return true
+      }
+    }    
     else{
       return true;
     }
@@ -1351,7 +1393,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     }
    }
 
-    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
+    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded && !isOCApplication && isBPA ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
 
     mutation.mutate(
       { BPA: payload },
@@ -1861,17 +1903,41 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           ))
                           : null}
 
+                        
+
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
                           {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */} 
+                          <CardSubHeader className="bpa-section-header" >{t("BPA_DOCUMENT_SITE_DETAILS_LABEL")}</CardSubHeader>
+                          <StatusTable
+                            style={{
+                              display: "flex",
+                              gap: "20px",
+                              flexWrap: "wrap",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            {sitePhotos?.length > 0 &&
+                              [...sitePhotos]
+                                .map((doc, index) => (
+                                  <NocSitePhotographsBPA
+                                    key={doc?.values?.[0]?.filestoreId}
+                                    url={doc?.values?.[0]?.fileURL}
+                                    documentType={doc?.title}
+                                    coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                  />
+                                ))}
+                          </StatusTable>
+
                             {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={documentsData}
+                              pageSizeLimit={100}
                               columns={documentsColumns}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
-                              autoSort={true}
+                              // autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
                             />}                          
@@ -2014,9 +2080,9 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           : null}
 
                         {/* to get Fee values */}
-                        {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                        {/* {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
                           <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
-                        )}
+                        )} */}
                         {/*blocking reason*/}
                         {detail?.additionalDetails?.inspectionReport &&
                           detail?.isFeeDetails &&

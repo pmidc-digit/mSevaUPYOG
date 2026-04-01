@@ -33,7 +33,7 @@ const useQueryParam = (key) => {
 
 const LayoutApplicantDetails = (_props) => {
   const dispatch = useDispatch();
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, trigger, getValues, clearErrors } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -57,7 +57,6 @@ const LayoutApplicantDetails = (_props) => {
   const [additionalOwnerMobileNo, setAdditionalOwnerMobileNo] = useState({});
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
   const [primaryApplicantType, setPrimaryApplicantType] = useState({});
-
   //console.log("userInfo here", getValues("aplicantType"), applicants);
   const closeToast = () => setShowToast(null);
 
@@ -288,6 +287,7 @@ const LayoutApplicantDetails = (_props) => {
         gender: genderObj,
         uuid: user?.uuid || "",
       };
+      clearErrors(`applicants.${index}`);
       setApplicants(updatedApplicants);
 
       setShowToast({
@@ -364,6 +364,7 @@ const LayoutApplicantDetails = (_props) => {
 
   const handleAddApplicant = () => {
     const newApplicant = {
+      actualIndex: applicants?.length,
       name: "",
       fatherOrHusbandName: "",
       mobileNumber: "",
@@ -371,21 +372,31 @@ const LayoutApplicantDetails = (_props) => {
       address: "",
       dob: "",
       gender: "",
+      status: true,
     };
     setApplicants([...applicants, newApplicant]);
   };
 
   const handleRemoveApplicant = (index) => {
-    const updatedApplicants = applicants.filter((_, i) => i !== index);
-    setApplicants(updatedApplicants);
+    // const updatedApplicants = applicants.filter((_, i) => i !== index);
+    // setApplicants(updatedApplicants);
+    clearErrors(`applicants`);
+    setApplicants((prev) => {
+      const newApplicantArray = [...prev]
 
+      newApplicantArray[index].status = false;
+
+      return newApplicantArray
+    });
+
+    // In order to remove applicant in any case, we are changing its {status: false} this way, DB will automatically remove applicant from Backend
     // Remove associated files
-    const newDocFiles = { ...documentUploadedFiles };
+    {const newDocFiles = { ...documentUploadedFiles };
     const newPhotoFiles = { ...photoUploadedFiles };
     delete newDocFiles[index];
     delete newPhotoFiles[index];
     setDocumentUploadedFiles(newDocFiles);
-    setPhotoUploadedFiles(newPhotoFiles);
+    setPhotoUploadedFiles(newPhotoFiles);}
 
     // Remove errors for this applicant
     const newErrors = { ...applicantErrors };
@@ -394,6 +405,7 @@ const LayoutApplicantDetails = (_props) => {
   };
 
   const updateApplicant = (index, field, value) => {
+    clearErrors(`applicants.${index}.${field}`);
     const updatedApplicants = [...applicants];
     updatedApplicants[index] = { ...updatedApplicants[index], [field]: value };
     setApplicants(updatedApplicants);
@@ -416,12 +428,13 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("documentUploadedFiles", fileId, { shouldValidate: true });
         }else{
+          clearErrors(`applicants.${index}.documentUploadedFiles`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
             updated[index-1].documentUploadedFiles = fileId;
             return updated;
-          })
+          })          
         }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("documentUploadedFiles", updatedDocFiles));
@@ -452,12 +465,13 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("photoUploadedFiles", fileId, { shouldValidate: true });
         }else{
+          clearErrors(`applicants.${index}.photoUploadedFiles`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
             updated[index-1].photoUploadedFiles = fileId;
             return updated;
-          })
+          })          
         }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("photoUploadedFiles", updatedPhotoFiles));
@@ -505,12 +519,13 @@ const LayoutApplicantDetails = (_props) => {
         if(index === 0){
           setValue("panDocumentUploadedFiles", fileId, { shouldValidate: true });
         }else{
+          clearErrors(`applicants.${index}.panDocumentUploadedFiles`);
           setApplicants(prev => {
             const updated = [...prev];
             if(!updated[index-1]) updated[index-1] = {};
             updated[index-1].panDocumentUploadedFiles = fileId;
             return updated;
-          })
+          })          
         }
         // Immediately dispatch to Redux for persistence
         dispatch(UPDATE_LayoutNewApplication_FORM("panDocumentUploadedFiles", updatedPanDocFiles));
@@ -539,6 +554,8 @@ const LayoutApplicantDetails = (_props) => {
     return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{message}</div>;
   };
 
+  const activeApplicants = applicants?.filter(a => a?.status);
+
   return (
     <React.Fragment>
       {loader && <Loader />}
@@ -547,13 +564,13 @@ const LayoutApplicantDetails = (_props) => {
           {t("BPA_APPLICANT_DETAILS")}
         </CardSectionHeader> */}
 
-        {isEdit && (
+        {/* {isEdit && (
           <CardSectionSubText style={{ color: "red", margin: "10px 0px 20px 0px" }}>
             {t(
               "To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section, and you cannot edit the applicant detail"
             )}
           </CardSectionSubText>
-        )}
+        )} */}
 
         <div style={{ marginTop: "20px" }}>
           <CardSectionHeader className="card-section-header" style={{ marginTop: "20px", marginBottom: "20px" }}>
@@ -586,21 +603,46 @@ const LayoutApplicantDetails = (_props) => {
                       setMobileNo(e.target.value);
                     }}
                     onBlur={props.onBlur}
-                    disabled={isEdit}
+                    // disabled={isEdit}
                     t={t}
                   />
                 )}
               />
-              <div style={{ marginTop: "25px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}>
+              {/* <div style={{ marginTop: "25px" }} className="search-icon" onClick={isEdit ? null : getOwnerDetails}> */}
+              <div style={{ marginTop: "25px" }} className="search-icon" onClick={getOwnerDetails}>
                 <SearchIcon />
               </div>
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
+          
+
+          {/* Applicant Name */}
           <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
-              {`${t("Applicant Type")}`} <span className="requiredField">*</span>
+              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL") : t("APPLICANT_NAME")}`}
+              <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="applicantOwnerOrFirmName"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
+                }}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
+                // disabled={isEdit}
+                 t={t} />}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
+
+          <LabelFieldPair style={{ marginBottom: "15px" }}>
+            <CardLabel className="card-label-smaller">
+              {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
                 <Controller
@@ -620,7 +662,7 @@ const LayoutApplicantDetails = (_props) => {
                         {name: "Firm", code: "FIRM"},
                       ]}
                       optionKey="name"
-                      disable={isEditMode}
+                      // disable={isEditMode}
                       t={t}
                     />
                   )}
@@ -629,25 +671,27 @@ const LayoutApplicantDetails = (_props) => {
             </div>
           </LabelFieldPair>
 
-          {/* Applicant Name */}
-          <LabelFieldPair style={{ marginBottom: "15px" }}>
+          {(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") &&<React.Fragment> <LabelFieldPair style={{ marginBottom: "15px" }}>
             <CardLabel className="card-label-smaller">
-              {`${(getValues("aplicantType")?.code === "FIRM" || primaryApplicantType?.code === "FIRM") ? t("NEW_LAYOUT_FIRM_NAME_LABEL") : t("NEW_LAYOUT_FIRM_OWNER_NAME_LABEL")}`}
+              {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
               <span className="requiredField">*</span>
             </CardLabel>
             <div className="field">
               <Controller
                 control={control}
-                name="applicantOwnerOrFirmName"
+                name="authorisedPerson"
                 rules={{
                   required: t("REQUIRED_FIELD"),
                   maxLength: { value: 100, message: t("MAX_100_CHARACTERS_ALLOWED") },
                 }}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} disabled={isEdit} t={t} />}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} 
+                // disabled={isEdit}
+                t={t} />}
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{errors?.authorisedPerson ? errors.authorisedPerson.message : ""}</CardLabelError>
+          </React.Fragment>}
 
           {/* Father/Husband Name */}
           <LabelFieldPair  >
@@ -757,7 +801,7 @@ const LayoutApplicantDetails = (_props) => {
                     value={props.value}
                     onChange={props.onChange}
                     onBlur={props.onBlur}
-                    disabled={isEdit}
+                    // disabled={isEdit}
                     min="1900-01-01"
                     max={new Date().toISOString().split("T")[0]}
                   />
@@ -789,7 +833,7 @@ const LayoutApplicantDetails = (_props) => {
                       props.onChange(e);
                     }}
                     isDependent={true}
-                    disabled={isEdit}
+                    // disabled={isEdit}
                   />
                 )}
               />
@@ -990,9 +1034,13 @@ const LayoutApplicantDetails = (_props) => {
                 {t("Additional Applicants")}
               </CardSectionHeader>
 
-              {applicants.map(
-                (applicant, index) => (
-                    <div key={index}>
+              {applicants?.map(
+                (applicant, index) => {
+                  if (!applicant?.status) return null;
+                  const visibleIndex = activeApplicants.findIndex(a => a === applicant); // index of visible Applicant is not same to the index of total applicants
+
+                  return (
+                    <div key={index}>                    
                       <div
                         style={{
                           display: "flex",
@@ -1004,9 +1052,10 @@ const LayoutApplicantDetails = (_props) => {
                         }}
                       >
                         <CardLabel className="card-label-smaller" style={{ fontSize: "16px", fontWeight: "600" }}>
-                          {`${t("Applicant")} ${index + 2}`}
+                          {`${t("Applicant")} ${visibleIndex + 2}`}
                         </CardLabel>
-                        {!isEditMode && (
+                        {/* {!isEditMode && ( */}
+                        {(
                           <span
                             onClick={() => handleRemoveApplicant(index)}
                             style={{
@@ -1273,13 +1322,13 @@ const LayoutApplicantDetails = (_props) => {
                           />
                         </div>
                       </LabelFieldPair>
-                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panNumber?.message || ""}</CardLabelError>
+                      <CardLabelError style={errorStyle}>{errors?.applicants?.[index]?.panNumber?.message || ""}</CardLabelError>                    
                     </div>
-                  )
+                  )}
               )}
 
               {/* Add More Applicants Button */}
-              {!isEditMode && (
+              {/* {applicants.length === 0  && (
                 <div style={{ marginTop: "20px" }}>
                   <div
                     onClick={handleAddApplicant}
@@ -1294,12 +1343,13 @@ const LayoutApplicantDetails = (_props) => {
                     + Add Applicant
                   </div>
                 </div>
-              )}
+              )} */}
             </React.Fragment>
           )}
 
           {/* Add First Additional Applicant Button */}
-          {applicants.length === 0 && !isEditMode && (
+          {/* {applicants.length === 0 && !isEditMode && ( */}
+          {(
             <div style={{ marginTop: "20px" }}>
               <div
                 onClick={handleAddApplicant}

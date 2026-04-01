@@ -16,35 +16,35 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validation.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 /**
  * NOC application object to capture the details of noc related information, landid and related documents.
  */
 @ApiModel(description = "NOC application object to capture the details of noc related information, landid and related documents.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
 public class Noc   {
-  @SafeHtml
+//  @SafeHtml
   @JsonProperty("id")
   private String id = null;
 
-  @SafeHtml
+//  @SafeHtml
   @JsonProperty("tenantId")
   private String tenantId = null;
 
-  @SafeHtml
+//  @SafeHtml
   @JsonProperty("applicationNo")
   private String applicationNo = null;
 
-  @SafeHtml
+//  @SafeHtml
   @JsonIgnore
   @JsonProperty("nocNo")
   private String nocNo = null;
@@ -57,11 +57,11 @@ public class Noc   {
   @JsonProperty("owners")
   private List<OwnerInfo> owners;
 
-  @SafeHtml
+//  @SafeHtml
   @JsonProperty("nocType")
   private String nocType = null;
 
-  @SafeHtml
+//  @SafeHtml
   @JsonIgnore
   @JsonProperty("accountId")
   private String accountId = null;
@@ -83,7 +83,7 @@ public class Noc   {
   @JsonProperty("status")
   private Status status = null;
 
-  @SafeHtml
+//  @SafeHtml
   @JsonProperty("applicationStatus")
   private String applicationStatus = null;
 

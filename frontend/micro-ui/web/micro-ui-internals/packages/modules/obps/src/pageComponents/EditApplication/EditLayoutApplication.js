@@ -120,6 +120,8 @@ const EditLayoutApplication = () => {
     fatherOrHusbandName: primaryOwner?.fatherOrHusbandName || "",
     panNumber: professionalDetails?.panNumber || primaryOwner?.pan || "",
     aplicantType: primaryOwner?.additionalDetails?.aplicantType,
+    authorisedPerson: primaryOwner?.additionalDetails?.authorisedPerson,
+
     // Professional details
     professionalName: professionalDetails?.professionalName || "",
     professionalEmailId: professionalDetails?.professionalEmailId || "",
@@ -479,6 +481,8 @@ const EditLayoutApplication = () => {
             primaryOwnerPhoto: applicantDetails?.primaryOwnerPhoto || "",
             primaryOwnerDocument: applicantDetails?.primaryOwnerDocument || "",
             aplicantType: applicantDetails?.aplicantType,
+            authorisedPerson: applicantDetails?.authorisedPerson,
+            
           };
     
           const districtObj = cities?.find((obj) => obj?.name === siteDetails?.district?.name || obj?.name === siteDetails?.district);
@@ -542,11 +546,12 @@ const EditLayoutApplication = () => {
           };
     
           // Map all owners including primary (index 0)
-          const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner) => {
+          const allApplicants = ownersFromApi?.filter((owner, index) => (index !== 0))?.map((owner, index) => {
             const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
             const formattedDob = formatDobToDate(owner?.dob);
     
             return {
+              actualIndex: index,
               name: owner?.name || "",
               fatherOrHusbandName: owner?.fatherOrHusbandName || "",
               mobileNumber: owner?.mobileNumber || "",
@@ -561,6 +566,7 @@ const EditLayoutApplication = () => {
               // Store original owner data for reference
               uuid: owner?.uuid || "",
               id: owner?.id || "",
+              status: owner?.status
             };
           });
     

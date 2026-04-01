@@ -162,6 +162,11 @@ t,
     }
 
     const commentsText = data?.comments?.toString().trim()
+    const conditionalText = data?.conditionalComments?.trim();
+    let finalComments = commentsText;
+    if (action?.action === "APPROVE" && conditionalText) {
+      finalComments = `${commentsText}[#?..**]${conditionalText}`;
+    }
 
     // if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
     //   setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })
@@ -170,8 +175,7 @@ t,
 
     // Do NOT require assignee when SEND BACK TO PROFESSIONAL
 if (
-  action?.action !== "APPROVE" &&
-  action?.action !== "SENDBACKTOPROFESSIONAL"  && action?.action !== "SEND_FOR_INSPECTION_REPORT" &&
+  action?.action !== "APPROVE" && action?.action !== "SENDBACKTOPROFESSIONAL"  && action?.action !== "SEND_FOR_INSPECTION_REPORT" && action?.action == "SENDBACKTOCITIZEN"  && action?.action == "REJECT" && action?.action == "SENDBACK" &&
   !selectedApprover?.uuid
 ) {
   setShowToast({ key: "true", warning: true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") })
@@ -188,7 +192,7 @@ if (
     applicationData = {
       ...applicationData,
       action: action?.action,
-      comment: data?.comments,
+      comment: finalComments,
       // assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
       assignee:
   action?.action === "SENDBACKTOPROFESSIONAL"

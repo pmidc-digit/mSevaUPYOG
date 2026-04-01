@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import CustomMenu from "../../components/CustomMenu";
+import Dropdown from "../../components/Dropdown";
 
 const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
   // User authentication and role checks
@@ -176,13 +177,14 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
         </div>
         <div className="action-bar-wrap-menu">
           {displayMenu ? (
-            <CustomMenu
-              localeKeyPrefix={``}
-              options={menuOptions}
-              optionKey={"name"}
-              t={t}
-              onSelect={handleSelect}
-            />
+            // <CustomMenu
+            //   localeKeyPrefix={``}
+            //   options={menuOptions}
+            //   optionKey={"name"}
+            //   t={t}
+            //   onSelect={handleSelect}
+            // />
+            <Dropdown />
           ) : null}
         </div>
       </div>

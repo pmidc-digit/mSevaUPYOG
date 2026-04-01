@@ -28,7 +28,7 @@ const LayoutProfessionalDetails = (_props) => {
 
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
   const userInfoData = userInfos ? JSON.parse(userInfos) : {};
-  const userInfo = userInfoData?.value;
+  const userInfo = Digit.UserService.getUser();
   const requestor = userInfo?.info?.mobileNumber;
 
   // Extract roles safely
@@ -340,7 +340,7 @@ const LayoutProfessionalDetails = (_props) => {
                 message: t("MIN_4_CHARACTERS_REQUIRED"),
               },
               maxLength: {
-                value: 100,
+                value: 1000,
                 message: t("MAX_100_CHARACTERS_ALLOWED"),
               },
             }}

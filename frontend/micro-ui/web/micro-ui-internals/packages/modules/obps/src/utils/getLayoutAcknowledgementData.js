@@ -71,39 +71,54 @@ const getProfessionalDetails = (appData, t) => {
 }
 
 const getApplicantDetails = (appData, t) => {
-  const values = [
+  const values = []
+
+  appData?.owners?.map((owner) => {
+    const value = [
     {
-      title: t("NOC_FIRM_OWNER_NAME_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "N/A",
+      title: t("NOC_FIRM_OWNER_NAME_LABEL"),      
+      value: owner?.name || "N/A",
     },
     {
+      title: t("CLU_OWNER_TYPE_LABEL"),      
+      value: owner?.additionalDetails?.aplicantType?.name || owner?.additionalDetails?.aplicantType || "N/A",
+    },
+    ...[
+      owner?.additionalDetails?.aplicantType?.code === "FIRM" ? {
+        title: t("NEW_LAYOUT_FIRM_NAME_LABEL"),      
+        value: owner?.additionalDetails?.authorisedPerson
+      } : null
+    ],
+    {
       title: t("NOC_APPLICANT_EMAIL_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantEmailId || "N/A",
+      value: owner?.emailId || "N/A",
     },
     {
       title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-      value: appData?.owners?.[0]?.fatherOrHusbandName || "Not Provided",
+      value: owner?.fatherOrHusbandName || "Not Provided",
     },
     {
       title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantMobileNumber || "N/A",
+      value: owner?.mobileNumber || "N/A",
     },
     {
       title: t("NOC_APPLICANT_DOB_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth || "N/A",
+      value: Digit.DateUtils.ConvertTimestampToDate(owner?.dob , "dd/MM/yyyy") || "N/A",
     },
     {
       title: t("NOC_APPLICANT_GENDER_LABEL"),
       value:
-        appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantGender?.code ||
-        appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantGender ||
+        owner?.gender?.code ||
+        owner?.gender ||
         "N/A",
     },
     {
       title: t("NOC_APPLICANT_ADDRESS_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
+      value: owner?.permanentAddress || "N/A",
     }
-  ]
+    ]
+    values.push(...value?.filter((owner) => owner !== null))
+  })
 
   return {
     title: t("NOC_APPLICANT_DETAILS"),
@@ -157,7 +172,7 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_NET_TOTAL_AREA_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.totalAreaUnderLayout || "N/A",
+      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.areaLeftForRoadWidening || "N/A",
     },
     {
       title: t("NOC_ROAD_WIDTH_AT_SITE_LABEL"),
@@ -185,10 +200,10 @@ const getSiteDetails = (appData, t) => {
       title: t("NOC_SITE_VILLAGE_NAME_LABEL"),
       value: appData?.layoutDetails?.additionalDetails?.siteDetails?.villageName || "N/A",
     },
-    {
-      title: t("NOC_SITE_COLONY_NAME_LABEL"),
-      value: appData?.layoutDetails?.additionalDetails?.siteDetails?.layoutApprovedColonyName || "N/A",
-    },
+    // {
+    //   title: t("NOC_SITE_COLONY_NAME_LABEL"),
+    //   value: appData?.layoutDetails?.additionalDetails?.siteDetails?.layoutApprovedColonyName || "N/A",
+    // },
     
     {
       title: t("NOC_BUILDING_STATUS_LABEL"),
@@ -265,8 +280,8 @@ const getSpecificationDetails = (appData, t) => {
     {
       title: t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
       value:
-        appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
-        appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan ||
+        appData?.layoutDetails?.additionalDetails?.siteDetails?.isAreaUnderMasterPlan?.name ||
+        appData?.layoutDetails?.additionalDetails?.siteDetails?.isAreaUnderMasterPlan ||
         "No",
     },
   ]
@@ -280,13 +295,12 @@ const getSpecificationDetails = (appData, t) => {
 const getDocuments = async (appData, t) => {
   const filteredDocs = appData?.documents?.filter(
     (doc) => doc?.documentType !== "OWNER.SITEPHOTOGRAPHONE" && doc?.documentType !== "OWNER.SITEPHOTOGRAPHTWO"
-  );
+  )?.sort((a,b) => a?.order - b?.order);
 
   const filesArray = filteredDocs?.map((value) => value?.uuid);
 
   const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
 
-  console.log("res here==>", res);
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
@@ -295,7 +309,7 @@ const getDocuments = async (appData, t) => {
         ? filteredDocs.map((document, index) => {
             const documentLink = pdfDownloadLink(res?.data, document?.uuid);
             return {
-              title: t(document?.documentType.replace(/\./g, "_")) || t("CS_NA"),
+              title: t(document?.documentType.replace(/\./g, "_")) ? index+1 + ". " + t(document?.documentType.replace(/\./g, "_")) : t("CS_NA"),
               value: " ",
               link: documentLink || "",
             };
@@ -366,7 +380,6 @@ const getSitePhotographs = async (appData, t) => {
 export const getLayoutAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, t) => {
   const stateCode = Digit.ULBService.getStateId()
   const appData = applicationDetails || {}
- console.log('appData', appData)
   let detailsArr = [],
   imageURL = ""
   const ownerFileStoreId= appData?.layoutDetails?.additionalDetails?.applicationDetails?.primaryOwnerPhoto || "";
@@ -377,7 +390,6 @@ export const getLayoutAcknowledgementData = async (applicationDetails, tenantInf
 
   if (appData?.layoutDetails?.additionalDetails?.applicationDetails?.professionalName)
     detailsArr.push(getProfessionalDetails(appData, t))
-  console.log('imageURL', imageURL)
 
   return {
     t: t,

@@ -79,10 +79,10 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           applicationType: application?.businessObject?.additionalDetails?.applicationType
             ? `WF_BPA_${application?.businessObject?.additionalDetails?.applicationType}`
             : "-",
-          locality: `${application.businessObject?.tenantId
+          locality: application.businessObject?.landInfo?.address?.locality?.code ? `${application.businessObject?.tenantId
             ?.toUpperCase()
             ?.split(".")
-            ?.join("_")}_REVENUE_${application.businessObject?.landInfo?.address?.locality?.code?.toUpperCase()}`,
+            ?.join("_")}_REVENUE_${application.businessObject?.landInfo?.address?.locality?.code?.toUpperCase()}` : "NA",
           status: application?.ProcessInstance?.state?.state,
           state: application?.ProcessInstance?.state?.state,
           owner: application?.businessObject?.landInfo?.owners?.find(item => item?.isPrimaryOwner)?.name || "NA",

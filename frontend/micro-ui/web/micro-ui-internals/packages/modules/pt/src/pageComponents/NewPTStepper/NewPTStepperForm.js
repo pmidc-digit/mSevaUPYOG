@@ -9,7 +9,7 @@ import { SET_PTNewApplication_STEP, RESET_PT_NEW_APPLICATION_FORM, UPDATE_PTNewA
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { Loader } from "../../components/Loader";
-import { mapPropertyToFormData } from "./mapPropertyToFormData";
+import { mapGISDataToFormData, mapPropertyToFormData } from "./mapPropertyToFormData";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -115,6 +115,8 @@ const NewPTStepperForm = () => {
   const userType = Digit.UserService.getUser()?.info?.type;
   const stateTenantId = Digit.ULBService.getStateId();
   const tenantId = userType === 'CITIZEN' ? stateTenantId :Digit.ULBService.getCurrentTenantId();
+  const params = new URLSearchParams(location.search);
+  const isGIS = params.get("isGIS") === "true" || false;
 
   // Edit mode detection
   const isEditMode = window.location.pathname.includes("edit-application");
@@ -125,12 +127,12 @@ const NewPTStepperForm = () => {
   // Fetch property data for edit mode
   const { isLoading: isPropertyLoading, data: propertySearchData } = Digit.Hooks.pt.usePropertySearch(
     { tenantId, filters: { propertyIds: propertyId } },
-    { enabled: isEditMode && !!propertyId && !editDataLoaded }
+    { enabled: isEditMode && !!propertyId && !editDataLoaded && !isGIS }
   );
 
   // Pre-fill form with property data when in edit mode
   useEffect(() => {
-    if (isEditMode && propertySearchData?.Properties?.length > 0 && !editDataLoaded) {
+    if (isEditMode && propertySearchData?.Properties?.length > 0 && !editDataLoaded && !isGIS) {
       const property = propertySearchData.Properties[0];
       const mappedData = mapPropertyToFormData(property);
       if (mappedData) {
@@ -141,7 +143,19 @@ const NewPTStepperForm = () => {
         setEditDataLoaded(true);
       }
     }
-  }, [propertySearchData, isEditMode, editDataLoaded, dispatch]);
+    else if(isGIS){
+      const gisData = location.state;
+      if(gisData){
+        const mappedData = mapGISDataToFormData(gisData, true);
+        if (mappedData) {
+          Object.keys(mappedData).forEach((key) => {
+            dispatch(UPDATE_PTNewApplication_FORM(key, mappedData[key]));
+          });
+          dispatch(SET_PTNewApplication_STEP(1));
+        }
+      }
+    }
+  }, [propertySearchData, isEditMode, editDataLoaded, dispatch, isGIS]);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTNewApplication_STEP(updatedStepNumber));

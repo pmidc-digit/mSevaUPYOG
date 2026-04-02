@@ -41,7 +41,7 @@ public class EnrichmentConsumer implements KafkaConsumer {
 	@Autowired
 	private IESService elasticService;
 
-	@KafkaListener(id = INTENT, groupId = INTENT, topics = { Constants.KafkaTopics.TRANSFORMED_DATA}, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
+	@KafkaListener(id = INTENT, groupId = "${kafka.consumer.group.enrichment:enrichment-v2}", topics = { Constants.KafkaTopics.TRANSFORMED_DATA}, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
 	public void processMessage(final Map incomingData,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 

@@ -48,7 +48,7 @@ export const GISIntegration = () => {
     console.log("Formatted State:", state);
 
     history.push({
-      pathname: "/digit-ui/citizen/pt/property/create-application",
+      pathname: "/digit-ui/citizen/pt/property/create-application?isGIS=true",
       state: state,
     });
   }, [location]);

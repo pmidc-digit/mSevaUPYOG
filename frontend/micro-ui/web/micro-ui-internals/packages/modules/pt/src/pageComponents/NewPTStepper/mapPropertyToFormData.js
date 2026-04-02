@@ -100,3 +100,109 @@ export const mapPropertyToFormData = (property) => {
     _originalProperty: property,
   };
 };
+
+export const mapGISDataToFormData = (gisData) => {
+  if (!gisData) return null;
+
+  // Helper function to sanitize values - convert NA, null, undefined to empty string
+  const sanitize = (value) => {
+    if (value === null || value === undefined || value === "NA") return "";
+    return String(value).trim();
+  };
+
+  // Helper function to check if value is valid (not NA, null, undefined)
+  const isValid = (value) => {
+    return value !== null && value !== undefined && value !== "NA" && value !== "";
+  };
+
+  const floorToNoFloor = (floor) => {
+    if (!isValid(floor)) return "";
+
+    const floorStr = sanitize(floor)
+
+    // Case: "G"
+    if (floorStr === "G") return 1;
+
+    // Case: "G+2", "G+3"
+    if (floorStr.startsWith("G+")) {
+      const num = Number(floorStr.split("+")[1]);
+      return isNaN(num) ? 1 : num + 1;
+    }
+
+    const num = Number(floorStr);
+    if (!isNaN(num)) return num;
+
+    // Default fallback
+    return "";
+  }
+
+  const propertyAddress = {
+    surveyId: sanitize(gisData.surveyId || gisData.uid),
+    city: { code: "", name: "" },
+    houseNo: sanitize(gisData.flatNo),
+    buildingName: sanitize(gisData.buildingName),
+    streetName: sanitize(gisData.road),
+    locality: null,
+    pincode: sanitize(gisData.pincode),
+    yearOfCreation: isValid(gisData.constructionYear) 
+      ? { code: sanitize(gisData.constructionYear) } 
+      : null,
+    sector: sanitize(gisData.sector),
+    block: sanitize(gisData.block),
+    ward: sanitize(gisData.ward),
+  };
+
+  const propertyDetails = {
+    // propertyUsageType: isValid(gisData.useType) 
+    //   ? { code: sanitize(gisData.useType) } 
+    //   : null,
+    // propertyType: isValid(gisData.constructionType) 
+    //   ? { code: sanitize(gisData.constructionType) } 
+    //   : null,
+    propertyUsageType: null,
+    propertyType: null,
+    businessName: "",
+    remarks: "",
+    flammable: false,
+    heightOfProperty: false,
+    plotSize: sanitize(gisData.area),
+    noOfFloors: isValid(gisData.floor)
+      ? { code: floorToNoFloor(gisData.floor), name: floorToNoFloor(gisData.floor) }
+      : null,
+    unitDetails: [
+      // {
+      //   unitUsageType: sanitize(gisData.useType),
+      //   subUsageType: null,
+      //   occupancy: isValid(gisData.occupancy) 
+      //     ? { code: sanitize(gisData.occupancy) } 
+      //     : null,
+      //   floor: isValid(gisData.floor) 
+      //     ? { code: sanitize(gisData.floor) } 
+      //     : null,
+      //   area: sanitize(gisData.builtUpArea || gisData.area),
+      //   totalRent: "",
+      //   rentMonths: null,
+      //   pendingUsageMonths: null,
+      // },
+    ],
+  };
+
+  const ownerDetails = {
+    ownerShip: null,
+    owners: [{ name: "", mobileNumber: "", emailId: "", address: "" }],
+  };
+
+  const documents = {
+    documents: {
+      documents: [],
+    },
+  };
+
+  return {
+    propertyAddress,
+    propertyDetails,
+    ownerDetails,
+    documents,
+    _originalGISData: gisData,
+  };
+};

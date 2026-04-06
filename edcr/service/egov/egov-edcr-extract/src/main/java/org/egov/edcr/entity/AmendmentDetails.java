@@ -6,12 +6,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.egov.edcr.feature.DimensionMeasurement;
+
 /**
  * 
  * @author mani
  *
  */
 public class AmendmentDetails implements Comparable<AmendmentDetails> {
+	private static final Logger LOG = LogManager.getLogger(AmendmentDetails.class);
+
 	private String code;
 	private Date dateOfBylaw;
 	private Map<String, String> changes=new HashMap<>();
@@ -95,8 +101,8 @@ public class AmendmentDetails implements Comparable<AmendmentDetails> {
 	public int compareTo(AmendmentDetails o) {
 		if(o==null)
 			return -1;
-		System.out.println(this.dateOfBylaw);
-		System.out.println(o.dateOfBylaw);
+		LOG.info(this.dateOfBylaw);
+		LOG.info(o.dateOfBylaw);
 		return this.dateOfBylaw.compareTo(o.getDateOfBylaw());
 		 
 	}

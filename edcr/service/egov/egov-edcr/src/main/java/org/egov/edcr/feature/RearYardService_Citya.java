@@ -315,7 +315,7 @@ public class RearYardService_Citya extends GeneralRule {
 			String rule, BigDecimal minVal, BigDecimal meanVal, BigDecimal depthOfPlot, Boolean valid,
 			String occupancyName,  Map<String, List<Map<String, Object>>>   edcrRuleList) {
 		
-		System.out.println("000" + edcrRuleList);
+		LOG.info("000 : " + edcrRuleList);
 
 		
 		String feature = "RearSetBack";
@@ -335,7 +335,7 @@ public class RearYardService_Citya extends GeneralRule {
 		try {
 			permissibleValue = fetchEdcrRulesMdms.getPermissibleValue(edcrRuleList, params, valueFromColumn);
 			LOG.info("permissibleValue" + permissibleValue);
-			System.out.println("permis___ for RearYard+++" + permissibleValue);
+			LOG.info("permis___ for RearYard+++" + permissibleValue);
 
 		} catch (NullPointerException e) {
 
@@ -347,7 +347,7 @@ public class RearYardService_Citya extends GeneralRule {
 			meanVal = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("permissibleValue").toString()));
 
 		}
-		System.out.println("meanVllll" + meanVal);
+		LOG.info("meanVllll" + meanVal);
 		/*
 		 * 
 		 * 

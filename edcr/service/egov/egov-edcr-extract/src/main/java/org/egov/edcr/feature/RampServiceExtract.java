@@ -42,6 +42,7 @@ public class RampServiceExtract extends FeatureExtract {
 
                     List<Measurement> convertedPolyLines = polyLines.stream()
                             .map(polyLine -> new MeasurementDetail(polyLine, true)).collect(Collectors.toList());
+                    
 
                     if (!polyLines.isEmpty() && polyLines != null && !layerArray[4].isEmpty()
                             && layerArray[4] != null) {
@@ -50,6 +51,7 @@ public class RampServiceExtract extends FeatureExtract {
                         daRamp.setMeasurements(convertedPolyLines);
                         daRamp.setPresentInDxf(true);
                         daRamp.setSlope(slope);
+                        daRamp.setWidth(convertedPolyLines.get(0).getWidth());
                         block.addDARamps(daRamp);
                     }
 

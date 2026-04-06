@@ -79,17 +79,17 @@ public class UserInfo implements Serializable {
     private String idToken;
     
     @NotNull
-    private List<Role> primaryrole;
+    private List<Role> roles;
 
     private List<TenantRole> additionalroles;	
     
     @NotNull
     private String tenantId;
 
-    public UserInfo(final List<Role> primaryrole, final String id, final String userName, final String name, final String email,
+    public UserInfo(final List<Role> roles, final String id, final String userName, final String name, final String email,
             final String mobile, final String type, final String tenantId) {
         super();
-        this.primaryrole = primaryrole;
+        this.roles = roles;
         this.id = id;
         this.userName = userName;
         this.name = name;
@@ -156,14 +156,14 @@ public class UserInfo implements Serializable {
 
 	public void setIdToken(String idToken) {
 		this.idToken = idToken;
+	}	
+
+	public List<Role> getRoles() {
+		return roles;
 	}
 
-	public List<Role> getPrimaryrole() {
-		return primaryrole;
-	}
-
-	public void setPrimaryrole(List<Role> primaryrole) {
-		this.primaryrole = primaryrole;
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
 	}
 
 	public List<TenantRole> getAdditionalroles() {
@@ -201,8 +201,8 @@ public class UserInfo implements Serializable {
     @Override
     public String toString() {
         return "UserInfo [id=" + id + ", userName=" + userName + ", name=" + name + ", type=" + type + ", mobile=" + mobile
-                + ", email=" + email + ", uuid=" + uuid + ", password=" + password + ", idToken=" + idToken + ", primaryrole="
-                + primaryrole + ", additionalroles=" + additionalroles + ", tenantId=" + tenantId + "]";
+                + ", email=" + email + ", uuid=" + uuid + ", password=" + password + ", idToken=" + idToken + ", roles="
+                + roles + ", additionalroles=" + additionalroles + ", tenantId=" + tenantId + "]";
     }
 
 }

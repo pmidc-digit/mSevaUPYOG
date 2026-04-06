@@ -6,7 +6,7 @@ const LocationSelect = ({ onLocationChange, selectedCity }) => {
   const { t } = useTranslation();
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
 
-  const cityOptions = cities?.map((city) => ({ ...city, displayName: t(city.i18nKey) })) || [];
+  const cityOptions = cities?.map((city) => ({ ...city, displayName: t(city.i18nKey) }))?.filter((city) => city.code != "pb.punjab") || [];
 
   function setCity(city) {
     Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", city);

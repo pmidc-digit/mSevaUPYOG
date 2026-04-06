@@ -100,9 +100,10 @@ const PropertyAddressDetails = ({ goNext }) => {
     console.log("stateDataCheck", stateDataCheck);
     if (location?.state || stateDataCheck) {
       const value = location?.state;
-      const checkSurveyId = value?.surveyId || stateDataCheck?.surveyId;
-      const checkHouseNo = value?.flatNo || stateDataCheck?.houseNo;
-      const checkBuildingName = value?.buildingName || stateDataCheck?.buildingName;
+      const sanitize = (v) => (!v || v === "NA" ? "" : v);
+      const checkSurveyId = sanitize(value?.surveyId) || stateDataCheck?.surveyId;
+      const checkHouseNo = sanitize(value?.flatNo) || stateDataCheck?.houseNo;
+      const checkBuildingName = sanitize(value?.buildingName) || stateDataCheck?.buildingName;
       const checkLocality = getLocality?.find((item) => item?.code == stateDataCheck?.locality?.code);
       console.log("checkLocality", checkLocality);
       console.log("getLocality", getLocality);

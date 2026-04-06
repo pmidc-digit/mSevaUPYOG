@@ -197,7 +197,7 @@ export const mapGISDataToFormData = (gisData) => {
       documents: [],
     },
   };
-
+  console.log("propertyAddress",propertyAddress)
   return {
     propertyAddress,
     propertyDetails,

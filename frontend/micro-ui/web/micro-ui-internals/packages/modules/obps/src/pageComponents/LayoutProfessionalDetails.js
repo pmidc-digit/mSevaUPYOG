@@ -340,7 +340,7 @@ const LayoutProfessionalDetails = (_props) => {
                 message: t("MIN_4_CHARACTERS_REQUIRED"),
               },
               maxLength: {
-                value: 100,
+                value: 1000,
                 message: t("MAX_100_CHARACTERS_ALLOWED"),
               },
             }}

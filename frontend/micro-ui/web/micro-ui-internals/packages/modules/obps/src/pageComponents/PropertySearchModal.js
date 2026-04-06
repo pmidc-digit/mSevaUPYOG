@@ -109,7 +109,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
         {
             Header: t("Plot Area"),
             accessor: "landArea",
-            Cell: ({ value }) => value || t("CS_NA"),
+            Cell: ({ value }) => value + " sq. yd." || t("CS_NA"),
         },
         {
             Header: t(""),

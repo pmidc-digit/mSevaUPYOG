@@ -295,8 +295,9 @@ const CitizenApplicationOverview = () => {
       // console.error("Sanction Letter download error:", error);
     } finally {
       setLoading(false);
-    }
+    
   }
+}
   async function getRejectionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-rejectionletter", ...params }) {
     try {
       setLoading(true);
@@ -319,7 +320,7 @@ const CitizenApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  console.log('EmpData', EmpData)
+  // console.log('EmpData', EmpData)
   dowloadOptions.push({
     label: t("Application Form"),
     onClick: handleDownloadPdf,
@@ -348,6 +349,16 @@ const CitizenApplicationOverview = () => {
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ismigrationtrue && applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getSanctionLetterReceipt({
+            tenantId: tenantId,
+            payments: {},
+            EmpData,
+          }),
       });
     }
   }

@@ -4,21 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.SafeHtml;
-
+import jakarta.validation.constraints.NotEmpty;
+import org.egov.domain.model.SanitizeHtml;
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeleteMessage {
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String code;
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String module;
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String locale;
 }

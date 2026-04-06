@@ -4,24 +4,28 @@ import org.apache.commons.io.IOUtils;
 import org.egov.TestConfiguration;
 import org.egov.domain.model.*;
 import org.egov.domain.service.MessageService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+//import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+//import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+//import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+//import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,19 +33,46 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@WebMvcTest(MessageController.class)
-@Import(TestConfiguration.class)
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class MessageControllerTest {
 
     private static final String TENANT_ID = "default";
     private static final String LOCALE = "kn_IN";
 
-    @Autowired
+    // This is the tool that performs the requests
     private MockMvc mockMvc;
 
-    @MockBean
+    // This tells Mockito to create a mock version of your service
+    @Mock
     private MessageService messageService;
+
+    // This tells Mockito to create the controller and inject the 'messageService' mock into it
+    @InjectMocks
+    private MessageController messageController; 
+    
+    @BeforeEach
+    public void setup() {
+        // Now 'messageController' exists and is used to build the mock environment
+    	this.mockMvc = MockMvcBuilders.standaloneSetup(messageController)
+    	        .setControllerAdvice(new org.egov.web.controller.CustomControllerAdvice()) // <--- ADD THIS
+    	        .build();
+    }
 
     @Test
     public void test_should_fetch_messages_for_given_locale_via_get_endpoint() throws Exception {
@@ -56,7 +87,7 @@ public class MessageControllerTest {
             .param("tenantId", TENANT_ID)
             .param("locale", LOCALE))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().json(getFileContents("messagesResponse.json")));
     }
 
@@ -74,7 +105,7 @@ public class MessageControllerTest {
             .param("module", "CS")
             .param("locale", LOCALE))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().json(getFileContents("messagesResponse.json")));
     }
 
@@ -104,12 +135,12 @@ public class MessageControllerTest {
         List<Message> expectedMessages = Arrays.asList(message1, message2);
         mockMvc.perform(post("/messages/v1/_create")
             .content(getFileContents("createMessageRequest.json"))
-            .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().json(getFileContents("messagesResponse.json")));
 
-        verify(messageService).create(eq(defaultTenant), anyListOf(Message.class), eq(new AuthenticatedUser(1L)));
+        verify(messageService).create(eq(defaultTenant), anyList(), eq(new AuthenticatedUser(1L)));
     }
 
     @Test
@@ -117,26 +148,26 @@ public class MessageControllerTest {
         throws Exception {
         mockMvc.perform(post("/messages/v1/_create").content(getFileContents
             ("createNewMessageRequestMissingMandatoryFields.json"))
-            .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(content().string(containsString("createMessages.messageRequest.messages[1].message: may not be empty")))
-            .andExpect(content().string(containsString("createMessages.messageRequest.messages[1].module: may not be empty")))
-            .andExpect(content().string(containsString("createMessages.messageRequest.messages[1].code: may not be empty")))
-            .andExpect(content().string(containsString("createMessages.messageRequest.messages[1].locale: may not be empty")))
-            .andExpect(content().string(containsString("createMessages.messageRequest.tenantId: may not be empty")));
+            .andExpect(content().string(containsString("\"field\":\"messages[1].message\"")))
+            .andExpect(content().string(containsString("\"message\":\"must not be empty\"")))
+            .andExpect(content().string(containsString("\"field\":\"messages[1].module\"")))
+            .andExpect(content().string(containsString("\"field\":\"messages[1].code\"")))
+            .andExpect(content().string(containsString("\"field\":\"messages[1].locale\"")))
+            .andExpect(content().string(containsString("\"field\":\"tenantId\"")));
     }
 
     @Test
     public void test_should_update_messages() throws Exception {
         mockMvc.perform(post("/messages/v1/_update")
             .content(getFileContents("updateMessageRequest.json"))
-            .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().json(getFileContents("createNewMessageResponse.json")));
         verify(messageService)
-            .updateMessagesForModule(eq(new Tenant("default")), anyListOf(Message.class),
+            .updateMessagesForModule(eq(new Tenant("default")), anyList(),
                 eq(new AuthenticatedUser(1L)));
     }
 
@@ -145,23 +176,23 @@ public class MessageControllerTest {
         throws Exception {
         mockMvc.perform(post("/messages/v1/_update")
             .content(getFileContents("updateMessageRequestWithMissingMandatoryFields.json"))
-            .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(content().string(containsString("update.messageRequest.messages[1].message: may not be empty")))
-            .andExpect(content().string(containsString("update.messageRequest.messages[1].code: may not be empty")))
-            .andExpect(content().string(containsString("update.messageRequest.locale: may not be empty")))
-            .andExpect(content().string(containsString("update.messageRequest.tenantId: may not be empty")))
-            .andExpect(content().string(containsString("update.messageRequest.module: may not be empty")));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string(containsString("\"field\":\"messages[1].message\"")))
+            .andExpect(content().string(containsString("\"field\":\"messages[1].code\"")))
+            .andExpect(content().string(containsString("\"field\":\"locale\"")))
+            .andExpect(content().string(containsString("\"field\":\"tenantId\"")))
+            .andExpect(content().string(containsString("\"field\":\"module\"")));
     }
 
     @Test
     public void test_should_delete_messages() throws Exception {
         mockMvc.perform(post("/messages/v1/_delete")
             .content(getFileContents("deleteMessageRequest.json"))
-            .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().json(getFileContents("deleteMessagesResponse.json")));
         final MessageIdentity messageIdentity1 = MessageIdentity.builder()
             .code("code1")

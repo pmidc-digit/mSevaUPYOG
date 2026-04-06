@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.NotEmpty;
+import org.egov.domain.model.SanitizeHtml;
 
 @Builder
 @Getter
@@ -13,9 +13,9 @@ import org.hibernate.validator.constraints.SafeHtml;
 @NoArgsConstructor
 public class UpdateMessage {
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String code;
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String message;
 }

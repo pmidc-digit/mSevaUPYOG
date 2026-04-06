@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import javax.validation.constraints.Null;
+import jakarta.validation.constraints.Null;
 
 @Builder
 @Getter

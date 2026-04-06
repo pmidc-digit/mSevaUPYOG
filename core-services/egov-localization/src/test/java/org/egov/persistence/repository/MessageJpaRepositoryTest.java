@@ -1,8 +1,7 @@
 package org.egov.persistence.repository;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -10,18 +9,14 @@ import java.util.List;
 
 import org.egov.TestConfiguration;
 import org.egov.persistence.entity.Message;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StringUtils;
 
-@RunWith(SpringRunner.class)
-@DataJpaTest
+
 @Import(TestConfiguration.class)
 public class MessageJpaRepositoryTest {
 
@@ -29,7 +24,7 @@ public class MessageJpaRepositoryTest {
     private MessageJpaRepository messageJpaRepository;
 
     @Test
-    @Ignore
+    @Disabled
     @Sql(scripts = {"/sql/clearMessages.sql", "/sql/createMessages.sql"})
     public void shouldFetchMessagesForGivenTenantAndLocale() {
         final List<Message> actualMessages = messageJpaRepository
@@ -39,12 +34,14 @@ public class MessageJpaRepositoryTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     @Sql(scripts = {"/sql/clearMessages.sql", "/sql/createMessages.sql"})
     public void shouldSaveMessages() {
         final String locale = "newLocale";
         final String tenant = "newTenant";
-        final Message message1 = Message.builder().tenantId(tenant)
+
+        final Message message1 = Message.builder()
+            .tenantId(tenant)
             .code("code1")
             .locale(locale)
             .message("New message1")
@@ -64,8 +61,9 @@ public class MessageJpaRepositoryTest {
 
         messageJpaRepository.saveAll(Arrays.asList(message1, message2));
 
-        assertTrue("Id generated for message1", StringUtils.isEmpty(message1.getId()));
-        assertTrue("Id generated for message2", StringUtils.isEmpty(message2.getId()));
+        assertTrue(!StringUtils.hasText(message1.getId()), "Id generated for message1");
+        assertTrue(!StringUtils.hasText(message2.getId()), "Id generated for message2");
+
         assertEquals(2, messageJpaRepository.find(tenant, locale).size());
     }
 }

@@ -6,9 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.egov.domain.model.MessageIdentity;
+import org.egov.domain.model.SanitizeHtml;
 import org.egov.domain.model.Tenant;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.NotEmpty;
+import org.egov.domain.model.SanitizeHtml;
 
 @Builder
 @Getter
@@ -16,16 +17,16 @@ import org.hibernate.validator.constraints.SafeHtml;
 @NoArgsConstructor
 public class Message {
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String code;
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String message;
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
 	private String module;
 	@NotEmpty
-    @SafeHtml
+	@SanitizeHtml
 	private String locale;
 
 	public Message(org.egov.domain.model.Message domainMessage) {

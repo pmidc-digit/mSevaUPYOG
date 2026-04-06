@@ -11,9 +11,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+//import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @SpringBootApplication
@@ -29,28 +30,28 @@ public class LocalizationServiceApplication {
 	}
 
 	@Bean
-	public WebMvcConfigurerAdapter webMvcConfigurerAdapter() {
-		return new WebMvcConfigurerAdapter() {
-
-			@Override
-			public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-				configurer.defaultContentType(MediaType.APPLICATION_JSON_UTF8);
-			}
-		};
+	public WebMvcConfigurer webMvcConfigurer() {
+	    return new WebMvcConfigurer() {
+	        @Override
+	        public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+	            configurer.defaultContentType(MediaType.APPLICATION_JSON);
+	        }
+	    };
 	}
 
 	@Bean
 	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
+	    return new ObjectMapper()
+	        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
-	@Bean
-	public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		converter.setObjectMapper(objectMapper);
-		return converter;
-	}
+//	@Bean
+//	public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
+//		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+//		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+//		converter.setObjectMapper(objectMapper);
+//		return converter;
+//	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(LocalizationServiceApplication.class, args);

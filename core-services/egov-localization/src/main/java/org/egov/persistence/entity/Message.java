@@ -4,7 +4,7 @@ import lombok.*;
 import org.egov.domain.model.MessageIdentity;
 import org.egov.domain.model.Tenant;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity

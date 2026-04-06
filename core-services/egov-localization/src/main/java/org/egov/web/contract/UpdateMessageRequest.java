@@ -9,11 +9,11 @@ import org.egov.domain.model.AuthenticatedUser;
 import org.egov.domain.model.MessageIdentity;
 import org.egov.domain.model.NotAuthenticatedException;
 import org.egov.domain.model.Tenant;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.NotEmpty;
+import org.egov.domain.model.SanitizeHtml;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,15 +24,15 @@ public class UpdateMessageRequest {
 	@JsonProperty("RequestInfo")
 	private RequestInfo requestInfo;
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
     @Size(max = 256)
 	private String tenantId;
 	@NotEmpty
-    @SafeHtml
+	@SanitizeHtml
     @Size(max = 255)
 	private String locale;
 	@NotEmpty
-    @SafeHtml
+	@SanitizeHtml
     @Size(max = 255)
 	private String module;
 	@Size(min = 1)

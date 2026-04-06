@@ -8,11 +8,11 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.domain.model.AuthenticatedUser;
 import org.egov.domain.model.NotAuthenticatedException;
 import org.egov.domain.model.Tenant;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.SafeHtml;
+import jakarta.validation.constraints.NotEmpty;
+import org.egov.domain.model.SanitizeHtml;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,7 +24,7 @@ public class CreateMessagesRequest {
 	private RequestInfo requestInfo;
 
 	@NotEmpty
-    @SafeHtml
+    @SanitizeHtml
     @Size(max = 256)
 	private String tenantId;
 

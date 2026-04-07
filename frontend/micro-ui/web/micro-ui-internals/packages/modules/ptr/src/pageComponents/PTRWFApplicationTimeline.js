@@ -38,6 +38,10 @@ const PTRWFApplicationTimeline = (props) => {
 
   console.log("workflowDetails", workflowDetails);
 
+  const { data, isLoading: isMDMSLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PetService", [{ name: "ApplicationType" }]);
+  const checkRenewTime = data?.PetService?.ApplicationType?.filter((item) => item.code == "RENEWAPPLICATION");
+  const checkTimeRenew = checkRenewTime?.[0]?.renewalPeriod * 1000;
+
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
 
@@ -270,6 +274,19 @@ const PTRWFApplicationTimeline = (props) => {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   };
   =================================================================== */
+  const validToObj = props.application?.validityDate;
+  const validToMillis = validToObj ? validToObj * 1000 : null;
+
+  const currentDateObj = Date.now();
+
+  // ✅ Use timestamps for duration calculation
+  const duration = validToObj && currentDateObj ? validToMillis - currentDateObj : null;
+
+  // const days = duration ? Math.round(duration / (1000 * 60 * 60 * 24)) : null;
+  // ✅ Renewal check logic
+
+  const checkDuration = duration !== null && duration <= checkTimeRenew;
+  const checkRenewal = props.application?.status == "APPROVED" || props.application?.status == "EXPIRED";
 
   return (
     <React.Fragment>
@@ -305,7 +322,7 @@ const PTRWFApplicationTimeline = (props) => {
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {(props.application?.status != "CITIZENACTIONREQUIRED" || props.application?.status != "INITIATED") &&
-          actions &&
+          actions && actions.length > 0 &&
           actions[0]?.action != "PAY" &&
           !isCitizen && (
             <ActionBar>
@@ -329,6 +346,17 @@ const PTRWFApplicationTimeline = (props) => {
               label={t("COMMON_EDIT")}
               onSubmit={() => {
                 history.push(`/digit-ui/employee/ptr/petservice/new-application/${props.application?.applicationNumber}`);
+              }}
+            />
+          </ActionBar>
+        )}
+
+        {checkRenewal && checkDuration &&(props.application?.status == "APPROVED") && !isCitizen && (
+          <ActionBar>
+            <SubmitBar
+              label={t("PT_RENEW_HEADER")}
+              onSubmit={() => {
+                history.push(`/digit-ui/employee/ptr/petservice/new-application/${props?.application?.applicationNumber}/renew-application`);
               }}
             />
           </ActionBar>

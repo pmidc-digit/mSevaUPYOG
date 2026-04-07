@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import Search from "./Search";
 import OBPSResponse from "./OBPSResponse";
 import StakeholderResponse from "./StakeholderResponse";
+import GlobalSearchApplication from "../../components/GlobalSearchApplication";
 
 
 
@@ -102,14 +103,14 @@ const EmployeeApp = ({ path }) => {
         <Switch>
            <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/inbox/application-overview/:id/:tenant`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
           <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
           <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />
           <PrivateRoute path={`${path}/search/application/editApplication/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/search/application/bpa/:id`} component={BpaApplicationDetail} />
-          <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/search/application`} component={(props) => <GlobalSearchApplication parentRoute={path} />} />
           <PrivateRoute path={`${path}/inbox/editApplication/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
@@ -119,7 +120,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
 
           <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
-          <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/application-overview/:id/:tenant`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />
         </Switch>

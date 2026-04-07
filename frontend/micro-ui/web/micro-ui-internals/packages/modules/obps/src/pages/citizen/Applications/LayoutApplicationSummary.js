@@ -119,10 +119,10 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
 
 const LayoutApplicationOverview = () => {
-  const { id } = useParams()
+  const { id, tenant } = useParams()
   const { t } = useTranslation()
   const history = useHistory()
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
+  const tenantId = tenant || window.localStorage.getItem("CITIZEN.CITY")
   const stateCode = Digit.ULBService.getStateId();
 const [viewTimeline, setViewTimeline] = useState(false);
   const [displayData, setDisplayData] = useState({})

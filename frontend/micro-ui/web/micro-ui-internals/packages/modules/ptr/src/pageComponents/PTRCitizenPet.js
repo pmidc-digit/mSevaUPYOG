@@ -37,9 +37,26 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const genderTypeObj = mdmsPetData?.genderTypes?.find((gt) => gt.name === apiDataCheck?.[0]?.petDetails?.petGender) || null;
 
   const pathParts = window.location.pathname.split("/");
-  const id = pathParts[pathParts.length - 1];
+  const startIndex = pathParts.findIndex((part) => part === "new-application");
+  let id = null;
+  if (startIndex !== -1) {
+    const nextPart = pathParts[startIndex + 1];
+
+    // ✅ Case 1: PB-PTR format
+    if (nextPart?.startsWith("PB-PTR-")) {
+      id = nextPart;
+    }
+    // ✅ Case 2: PL/.../.../... format
+    else if (nextPart === "PL") {
+      id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
+    }
+  }
+
+  id = id ? decodeURIComponent(id) : null;
+
+  // const id = pathParts[pathParts.length - 1];
   const checkNumber = pathParts[pathParts.length - 2];
-  const checkForRenew = id == "renew-application";
+  const checkForRenew = window.location.pathname.includes("renew-application");
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max
@@ -106,9 +123,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       },
       address: {
         pincode,
-        addressId: currentStepData.ownerDetails.address,
+        addressId: apiDataCheck?.[0]?.address?.addressId ? apiDataCheck?.[0]?.address?.addressId : currentStepData?.ownerDetails?.address,
       },
-      previousApplicationNumber: checkNumber ? checkNumber : null,
+      previousApplicationNumber: id ? id : null,
       applicationType: checkForRenew ? "RENEWAPPLICATION" : "NEWAPPLICATION",
       ownerName: name, //change to ownerName
       fatherName: filteredOwnerDetails?.fatherOrHusbandName,
@@ -310,7 +327,8 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   // - OR 15 (no decimal)
   // - OR 0.x or .x with x in 1..11
   // const AGE_REGEX = /^(?:(?:[1-9]|1[0-4])(?:\.(?:[1-9]|1[01]))?|40|0?\.(?:[1-9]|1[01]))$/;
-  const AGE_REGEX = /^(?:(?:[1-9]|[1-3][0-9])(?:\.(?:[1-9]|1[01]))?|40(?:\.0?)?|0?\.(?:[1-9]|1[01]))$/;
+  // const AGE_REGEX = /^(?:(?:[1-9]|[1-3][0-9])(?:\.(?:[1-9]|1[01]))?|40(?:\.0?)?|0?\.(?:[1-9]|1[01]))$/;
+  const AGE_REGEX = /^(?:(?:[1-9]|[1-3][0-9])(?:\.(?:0|[1-9]|1[01]))?|40(?:\.0?)?|0?\.(?:[1-9]|1[01]))$/;
 
   // Watch for petAge change
   const petAgeVal = watch("petAge");

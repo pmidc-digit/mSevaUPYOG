@@ -40,7 +40,8 @@ import {
   getDocsFromFileUrls,
   scrutinyDetailsData,
   amountToWords,
-  getBase64Img
+  getBase64Img,
+  getApproveRejectComments
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -83,6 +84,8 @@ const BpaApplicationDetail = () => {
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [userSelected, setUser] = useState(null);
+  const [comments , setComments] = useState (null)
+
 
   const user = Digit.UserService.getUser()
 
@@ -301,6 +304,15 @@ console.log('userInfo', userInfo)
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid") || "";
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
+
+  useEffect(() => {
+    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")){
+      const commentobj = getApproveRejectComments(workflowDetails);
+      if (commentobj){
+        setComments(commentobj)
+      }
+    }
+  }, [workflowDetails]);
 
   useEffect(() => {
       if (!userSelected) {
@@ -748,7 +760,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     console.log("validity date",approvalDatePlusThree); 
 
     const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
     console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
@@ -1554,36 +1566,37 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     })
   }
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0 && data?.applicationData?.additionalDetails?.isSanctionLetterGenerated) {
+  if (
+    data &&
+    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.collectionBillDetails?.length > 0 &&
+    data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
+  ) {
     !data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
-      })
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+      });
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
         label: t("BPA_REVOCATION_PDF_LABEL"),
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
-      })
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.collectionBillDetails?.length > 0) {
-    if (data?.applicationData?.status === "APPROVED") {
+      });
+  } else if (data && data?.collectionBillDetails?.length > 0 && data?.applicationData?.status === "APPROVED") {
+    if (!data?.additionalDetails?.isSelfCertification) {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
-      })
-    }
-  } else {
-    if (data?.applicationData?.status === "APPROVED") {
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit-normal"),
+      });
+    } else {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_OC_CERTIFICATE"),
-        onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
-      })
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+      });
     }
   }
 

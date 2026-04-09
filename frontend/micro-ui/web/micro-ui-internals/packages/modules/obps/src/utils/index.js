@@ -1442,3 +1442,38 @@ export function formatDuration(totalTimeMs) {
 
   return { days, hours, minutes, seconds };
 }
+
+export function getApproveRejectComments(workflowDetails) {
+  try {
+    const processInstances =
+      workflowDetails?.data?.processInstances || [];
+    // ✅ Get latest APPROVE / REJECT
+    const decisionInstance =
+      processInstances
+        .filter(
+          pi => pi?.action === "APPROVE" || pi?.action === "REJECT"
+        )
+        .sort(
+          (a, b) =>
+            (b?.auditDetails?.lastModifiedTime || 0) -
+            (a?.auditDetails?.lastModifiedTime || 0)
+        )[0] || null;
+
+    // ✅ Normalize comment safely
+    const rawComment = decisionInstance?.comment || "";
+
+    const conditionText = rawComment.includes("[#?..**]")
+      ? rawComment.split("[#?..**]")[1] || ""
+      : rawComment;
+
+    const finalComment = conditionText
+      ? ` ${conditionText}`
+      : "";
+
+    return finalComment;
+    
+  } catch (e) {
+    console.error("comments error", e);
+    return null; // ✅ ALWAYS return something
+  }
+}

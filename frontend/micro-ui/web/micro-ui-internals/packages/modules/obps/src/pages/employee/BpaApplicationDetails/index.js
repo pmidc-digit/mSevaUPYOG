@@ -62,6 +62,7 @@ import InspectionReportDisplay from "../../../pageComponents/InspectionReportDis
 import { LoaderNew } from "../../../components/LoaderNew";
 import BPASitePhotographs from "../../../components/BPASitePhotographs";
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew";
+import BPADocumentChecklist from "../../../pageComponents/BPADocumentChecklist";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -117,6 +118,7 @@ const BpaApplicationDetail = () => {
   const [imageUrl, setImageUrl] = useState(null);
   let { id: applicationNumber } = useParams();
   const [isEnableLoader, setIsEnableLoader] = useState(false);
+  const [checklistRemarks, setChecklistRemarks] = useState({});
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
@@ -157,7 +159,7 @@ const BpaApplicationDetail = () => {
   const [malbafees, setMalbafees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES || "");
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
   const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
-  const [appData, setAppData] = useState(data);
+  const appData = data;
   const [getLoading, setLoading] = useState(false);
 
   const geoLocations = useMemo(() => {
@@ -193,11 +195,12 @@ const BpaApplicationDetail = () => {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
   }
 
+  const { data: searchChecklistData } = Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);
+
   useEffect(() => {
     if (!isLoading && data?.applicationData?.additionalDetails) {
       const charges = data.applicationData.additionalDetails.selfCertificationCharges || {};
 
-      setAppData(data);
       setDevelopment(charges.BPA_DEVELOPMENT_CHARGES || "");
       setOtherCharges(charges.BPA_OTHER_CHARGES || "");
       setLessAdjusment(charges.BPA_LESS_ADJUSMENT_PLOT || "");
@@ -981,7 +984,9 @@ const BpaApplicationDetail = () => {
       return;
     }
     if (action) {
-      if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
+      if(action?.action == "ESIGN"){
+        // openSanctionLetterPopup();
+      }else if (action?.action == "EDIT PAY 2" && window.location.href.includes("bpa")) {
         window.location.assign(window.location.href.split("bpa")[0] + "editApplication/bpa" + window.location.href.split("bpa")[1]);
       } else if (action?.redirectionUrll) {
         window.location.assign(`${window.location.origin}/digit-ui/employee/payment/collect/${action?.redirectionUrll?.pathname}`);
@@ -1077,6 +1082,26 @@ const BpaApplicationDetail = () => {
     },
   ];
 
+  function areAllRemarksFilledForDocumentCheckList(record) {
+    const entries = Object.entries(record);
+
+    //remove null enteries
+    const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
+    // Rule 1: Must have exact entries equal to 
+    if (entries.length !== nonNullEntries?.length) {
+      return false;
+    }
+
+    // Rule 2: Every value must be a non-empty string (trimmed)
+    const allFilled = entries.every(([key, value]) => {
+      const isFilled = typeof value === "string" && value.trim().length > 0;
+      if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
+      return isFilled;
+    });
+
+    return allFilled;
+  }
+
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
     //   alert(t("Please fill in the comments before submitting  "))
@@ -1102,6 +1127,19 @@ const BpaApplicationDetail = () => {
           setShowToast({ error: true, label: t("Please fill in all the questions in Field Inspection Report before submitting") });
           return;
         }
+      }
+    }
+
+    if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING") {
+      const allRemarksFilled = areAllRemarksFilledForDocumentCheckList(checklistRemarks);
+
+      if (!allRemarksFilled) {
+        closeModal();
+        setTimeout(() => {
+          setShowToast(null);
+        }, 3000);
+        setShowToast({ key: "true", error: true, label: t("BPA_DOCUMENT_VERIFICATION_VALIDATION_LABEL") });
+        return;
       }
     }
 
@@ -1138,6 +1176,39 @@ const BpaApplicationDetail = () => {
           setTimeout(closeToast, 5000);
           return;
         }
+      }
+      try{
+        const nonNullEntries = remainingDoc.filter((value) => !!value?.fileURL);
+        const checklistPayload = {
+        checkList: (nonNullEntries || []).map((doc) => {
+          const existing = searchChecklistData?.checkList?.find((c) => c.documentuid === doc.id);
+          return {
+            id: existing?.id, // include if updating
+            documentuid: doc?.id,
+            applicationNo: id,
+            tenantId,
+            action: existing ? "update" : "INITIATE",
+            remarks: checklistRemarks[doc?.id] || "",
+          };
+        }),
+      };
+
+      if (data?.BPA?.workflow?.action !== "UPDATE_ZONE" && appData?.applicationData?.status === "DOC_VERIFICATION_PENDING" && checklistPayload?.checkList?.length > 0) {
+        if (searchChecklistData?.checkList?.length > 0) {
+          await Digit.OBPSService.BPACheckListUpdate({
+            details: checklistPayload,
+            filters: { tenantId },
+          });
+        } else {
+          await Digit.OBPSService.BPACheckListCreate({
+            details: checklistPayload,
+            filters: {},
+          });
+        }
+      }
+
+      }catch(err){
+
       }
       let payload = {
         ...data,
@@ -1538,22 +1609,35 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
-                              {pdfLoading ? (
-                                <Loader />
-                              ) : (
-                                <Table
-                                  className="customTable table-border-style"
-                                  t={t}
-                                  data={documentsData}
-                                  columns={documentsColumns}
-                                  getCellProps={() => ({ style: {} })}
-                                  disableSort={true}
-                                  autoSort={false}
-                                  manualPagination={false}
-                                  isPaginationRequired={false}
-                                  pageSizeLimit={30}
-                                />
-                              )}
+                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && <div>
+                                {(
+                                    <StatusTable>
+                                      {remainingDoc?.length > 0 && (
+                                        <BPADocumentChecklist
+                                          documents={remainingDoc}
+                                          applicationNo={id}
+                                          tenantId={tenantId}
+                                          onRemarksChange={setChecklistRemarks}
+                                          readOnly="true"
+                                        />
+                                      )}
+                                    </StatusTable>
+                                )}
+                              </div>}
+                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 &&  <div>
+                                <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+                                <StatusTable>
+                                  {remainingDoc?.length > 0 && (
+                                    <BPADocumentChecklist
+                                      documents={remainingDoc}
+                                      applicationNo={id}
+                                      tenantId={tenantId}
+                                      onRemarksChange={setChecklistRemarks}
+                                      readOnly={false}
+                                    />
+                                  )}
+                                </StatusTable>
+                              </div>}
                               {/* <CardSubHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardSubHeader>
                           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
                               {ecbcDocumentsData?.length > 0 && (

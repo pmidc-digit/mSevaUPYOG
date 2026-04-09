@@ -96,10 +96,10 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
-const NOCEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+const SearchNOCEmployeeApplicationOverview = () => {
+  const { id, tenant } = useParams();
   const { t } = useTranslation();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = tenant || window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
@@ -117,7 +117,6 @@ const NOCEmployeeApplicationOverview = () => {
   const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
-  console.log("applicationDetails", applicationDetails);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const [checklistRemarks, setChecklistRemarks] = useState({});
@@ -1566,4 +1565,4 @@ const NOCEmployeeApplicationOverview = () => {
   );
 };
 
-export default NOCEmployeeApplicationOverview;
+export default SearchNOCEmployeeApplicationOverview;

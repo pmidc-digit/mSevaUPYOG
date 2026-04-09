@@ -26,6 +26,10 @@ import LayoutResponseCitizen from "./Applications/LayoutResponseCitizen";
 import LayoutApplicantDetails from "../../pageComponents/LayoutApplicantDetails";
 import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
 import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
+import SearchBpaApplicationDetail from "./BpaApplicationDetail/SearchBpaApplicationDetail";
+import SearchCLUApplicationDetails from "./Applications/SearchCLUApplicationDetails";
+import SearchLayoutApplicationOverview from "./Applications/SearchLayoutApplicationSummary";
+import GlobalSearchApplication from "../../components/GlobalSearchApplication";
 
 
 
@@ -132,6 +136,7 @@ const App = ({ path }) => {
 
         <PrivateRoute path={`${path}/layout/search-application`} component={(props) => <AppContainer><LayoutSearchApplication {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <AppContainer><LayoutApplicationSummary {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/layout/search-overview/:id/:tenant`} component={(props) => <AppContainer><SearchLayoutApplicationOverview {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/layout/my-applications`} component={(props) => <AppContainer><LayoutMyApplications {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <AppContainer><NewLayoutEditLayoutApplication {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/layout/apply`} component={LayoutStepperForm} />
@@ -143,11 +148,13 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <AppContainer><CLUResponse {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/clu/my-applications`} component={(props) => <AppContainer><CLUMyApplications {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <AppContainer><CLUApplicationDetails {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/clu/search-overview/:id/:tenant`} component={(props) => <AppContainer><SearchCLUApplicationDetails {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/search/clu-application`} component={(props) => <AppContainer><CLUSearchApplication {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/clu/edit-application/:id`} component={(props) => <AppContainer><CLUEditApplication {...props} /></AppContainer>} />
 
         <PrivateRoute path={`${path}/home`} component={(props) => <AppContainer><BPACitizenHomeScreen {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/search/application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
+        {/* <PrivateRoute path={`${path}/search/application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} /> */}
+        <PrivateRoute path={`${path}/search/application`} component={(props) => <AppContainer><GlobalSearchApplication {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={(props) => <AppContainer><CreateEDCR {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={(props) => <AppContainer><CreateOCEDCR {...props} /></AppContainer>} />
@@ -161,6 +168,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/edcr/inbox`} component={(props) => <AppContainer><EdcrInbox {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/stakeholder/:id`} component={(props) => <AppContainer><ApplicationDetails {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/bpa/:id`} component={(props) => <AppContainer><BpaApplicationDetail {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/bpa/search-overview/:id/:tenant`} component={(props) => <AppContainer><SearchBpaApplicationDetail {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/editApplication/bpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><BPASendToArchitect {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/editApplication/ocbpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><OCSendToArchitect {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><BPASendBackToCitizen {...props} /></AppContainer>} />

@@ -8,6 +8,9 @@ import Search from "./Search";
 import OBPSResponse from "./OBPSResponse";
 import StakeholderResponse from "./StakeholderResponse";
 import GlobalSearchApplication from "../../components/GlobalSearchApplication";
+import SearchCLUEmployeeApplicationDetails from "./ApplicationOverview/SearchCLUApplicationOverview";
+import SearchBpaApplicationDetail from "./ApplicationOverview/SearchBpaApplicationDetails";
+import SearchLayoutEmployeeApplicationOverview from "./ApplicationOverview/SearchLayoutApplicationOverview";
 
 
 
@@ -75,7 +78,6 @@ const OBPSBreadCrumbs = ({ location }) => {
 }
 
 const EmployeeApp = ({ path }) => {
-  console.log(path, "PATHHH");
   const location = useLocation()
   const { t } = useTranslation();
   const Inbox = Digit.ComponentRegistryService.getComponent("BPAInbox");
@@ -103,7 +105,8 @@ const EmployeeApp = ({ path }) => {
         <Switch>
            <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/layout/inbox/application-overview/:id/:tenant`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/inbox/application-overview/:id`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/layout/search-application/application-overview/:id/:tenant`} component={(props) => <SearchLayoutEmployeeApplicationOverview {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/edit-application/:id`} component={(props) => <NewLayoutEditLayoutApplication {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/inbox`} component={(props) => <LayoutInbox {...props} parentRoute={path} />} />        
           <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
@@ -116,11 +119,13 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/bpa/search-application/:id/:tenant`} component={SearchBpaApplicationDetail} />
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
 
           <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
-          <PrivateRoute path={`${path}/clu/application-overview/:id/:tenant`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/search-application/application-overview/:id/:tenant`} component={(props) => <SearchCLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />
         </Switch>

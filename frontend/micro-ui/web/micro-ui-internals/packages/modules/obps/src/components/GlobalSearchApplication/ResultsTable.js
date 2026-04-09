@@ -40,28 +40,27 @@ const ResultsTable = ({
 
   // Helper function to get redirection link based on business service type
   const getRedirectionLink = (bService) => {
-    console.log("row.orignal",bService);
     if(bService?.includes("BPA")){
-        let service = "obps/search/application/bpa";
+        let service = "obps/bpa/search-application";
         if (window.location.href.includes("/citizen")) {
-            service = "obps/bpa";
+            service = "obps/bpa/search-overview";
         }
         return service;
     }else if(bService?.includes("NOC")){
         if (window.location.href.includes("/citizen")) {
-            return "noc/search/application-overview";
+            return "noc/search-page/application-overview";
         }
-        return "noc/inbox/application-overview"
+        return "noc/search-page/application-overview"
     }else if(bService?.includes("CLU")){
         if (window.location.href.includes("/citizen")) {
-            return "obps/clu/application-overview";
+            return "obps/clu/search-overview";
         }
-        return "obps/clu/application-overview"
+        return "obps/clu/search-application/application-overview"
     }else if(bService?.includes("LAYOUT")){
         if (window.location.href.includes("/citizen")) {
-            return "obps/layout/application-overview";
+            return "obps/layout/search-overview";
         }
-        return "obps/layout/inbox/application-overview"
+        return "obps/layout/search-application/application-overview"
     }
   };
 

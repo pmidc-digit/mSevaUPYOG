@@ -28,6 +28,7 @@ const GlobalSearchApplication = ({ error = null }) => {
         toDate: "",
         status: "",
     });
+    const userInfo = Digit.UserService.getUser();
     const { data: cities, isLoading } = Digit.Hooks.useTenants();
 
     // Tenant options  
@@ -51,6 +52,10 @@ const GlobalSearchApplication = ({ error = null }) => {
             offset: offset,
         };
 
+        if (window.location.href.includes("/citizen")) {
+            filters.createdBy = userInfo?.info?.uuid
+        }
+
         // Add filters only if they have values
         if (formData.applicationNo) filters.applicationNo = formData.applicationNo;
         if (formData.name) filters.name = formData.name;
@@ -59,8 +64,6 @@ const GlobalSearchApplication = ({ error = null }) => {
         if (formData.status?.code) filters.status = formData.status.code;
         if (formData.fromDate) filters.fromDate = new Date(formData.fromDate).getTime();
         if (formData.toDate) filters.toDate = new Date(formData.toDate).getTime();
-
-        console.log("Search Filters with Pagination:", filters);
 
         if (formData.serviceType?.code === "BPA" || formData.serviceType?.code === "BPA_OC") {
             try {
@@ -83,7 +86,6 @@ const GlobalSearchApplication = ({ error = null }) => {
                 setTotalRecords(response?.Count || 0);
                 setCurrentPage(offset / limit);
                 setShowResults(true);
-                console.log("BPA Search Response:", response?.BPA, "Total Count:", response?.Count);
             } catch (err) {
                 const errorMessage = err?.response?.data?.Errors?.[0]?.message || err?.message || "Error searching applications. Please try again.";
                 setValidationError(errorMessage);
@@ -109,13 +111,10 @@ const GlobalSearchApplication = ({ error = null }) => {
                     businessService: item?.nocDetails?.additionalDetails?.businessService || item?.businessService || "NOC",
                 })}) || [];
 
-                console.log("NOCformattedData",formattedData, response)
-
                 setSearchResults(formattedData);
                 setTotalRecords(response?.Count || 0);
                 setCurrentPage(offset / limit);
                 setShowResults(true);
-                console.log("NOC Search Response:", response?.NOC, "Total Count:", response?.Count);
             } catch (err) {
                 const errorMessage = err?.response?.data?.Errors?.[0]?.message || err?.message || "Error searching applications. Please try again.";
                 setValidationError(errorMessage);
@@ -144,7 +143,6 @@ const GlobalSearchApplication = ({ error = null }) => {
                 setTotalRecords(response?.count || 0);
                 setCurrentPage(offset / limit);
                 setShowResults(true);
-                console.log("CLU Search Response:", response?.Clu, "Total Count:", response?.count);
             } catch (err) {
                 const errorMessage = err?.response?.data?.Errors?.[0]?.message || err?.message || "Error searching applications. Please try again.";
                 setValidationError(errorMessage);
@@ -173,7 +171,6 @@ const GlobalSearchApplication = ({ error = null }) => {
                 setTotalRecords(response?.count || 0);
                 setCurrentPage(offset / limit);
                 setShowResults(true);
-                console.log("Layout Search Response:", response?.Layout, "Total Count:", response?.count);
             } catch (err) {
                 const errorMessage = err?.response?.data?.Errors?.[0]?.message || err?.message || "Error searching applications. Please try again.";
                 setValidationError(errorMessage);

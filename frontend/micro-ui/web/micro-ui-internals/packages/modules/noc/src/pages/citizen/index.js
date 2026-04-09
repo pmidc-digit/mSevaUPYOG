@@ -3,6 +3,7 @@ import React from "react";
 import { Route, Switch, useRouteMatch, Link, useLocation } from "react-router-dom";
 import { shouldHideBackButton } from "../../utils";
 import { useTranslation } from "react-i18next";
+import SearchCitizenApplicationOverview from "./Applications/SearchApplicationsOverview";
 
 const hideBackButtonConfig = [];
 
@@ -69,6 +70,7 @@ const App = () => {
           <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} />
           <PrivateRoute path={`${path}/edit-application/:id`} component={NewNOCEditApplication} />
           <PrivateRoute path={`${path}/search/application-overview/:id`} component={NOCCitizenApplicationOverview} />
+          <PrivateRoute path={`${path}/search-page/application-overview/:id/:tenant`} component={SearchCitizenApplicationOverview} />
           <PrivateRoute path={`${path}/search-application`} component={NOCCitizenSearchApplication}  />
         </AppContainer>
       </Switch>

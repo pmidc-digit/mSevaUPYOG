@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import SearchApplication from "./SearchApplication";
 import { Switch, useLocation, useHistory } from "react-router-dom";
 import Response from "./Response";
+import SearchNOCEmployeeApplicationOverview from "./ApplicationOverview/SearchApplicationOverview";
 
 const NOCBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -77,6 +78,7 @@ const EmployeeApp = ({ path }) => {
       <Switch>
         {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} /> */}
         <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={NOCEmployeeApplicationOverview} />
+        <PrivateRoute path={`${path}/search-page/application-overview/:id/:tenant`} component={SearchNOCEmployeeApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />

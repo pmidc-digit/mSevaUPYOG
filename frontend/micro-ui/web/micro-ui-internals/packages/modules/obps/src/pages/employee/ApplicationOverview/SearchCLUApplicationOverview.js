@@ -107,11 +107,11 @@ const CloseBtn = (props) => {
   );
 };
 
-const CLUEmployeeApplicationDetails = () => {
-  const { id } = useParams();
+const SearchCLUEmployeeApplicationDetails = () => {
+  const { id, tenant } = useParams();
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = tenant ||window.localStorage.getItem("Employee.tenant-id");
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
@@ -957,7 +957,6 @@ const CLUEmployeeApplicationDetails = () => {
             })
           );
           setDistances(results);
-          console.log("Final distances (m):", results);
         } catch (err) {
           console.error("Error fetching distances:", err);
         }
@@ -1409,4 +1408,4 @@ const CLUEmployeeApplicationDetails = () => {
   );
 };
 
-export default CLUEmployeeApplicationDetails;
+export default SearchCLUEmployeeApplicationDetails;

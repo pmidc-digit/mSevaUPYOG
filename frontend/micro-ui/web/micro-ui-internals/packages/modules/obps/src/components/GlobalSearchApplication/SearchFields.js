@@ -14,10 +14,11 @@ const SearchFields = ({ formData, onFieldChange, onClearAll, isMobile, tenantOpt
 //     Applicationtype: formData?.applicationType?.code || "BUILDING_PLAN_SCRUTINY",
 //     tenantId: stateTenantId,
 //   });
+  const isEmployee = window.location.href.includes("/employee");
 
   const ServiceTypes = [
     { code: "BPA", i18nKey: "BUILDING_PLAN_SCRUTINY", value: "BPA" },
-    { code: "BPA_OC", i18nKey: "BUILDING_OC_PLAN_SCRUTINY", value: "BPA_OC" },
+    // { code: "BPA_OC", i18nKey: "BUILDING_OC_PLAN_SCRUTINY", value: "BPA_OC" },
     { code: "NOC", i18nKey: "NO_OBJECTION_CERTIFICATE", value: "NOC" },
     { code: "CLU", i18nKey: "CHANGE_OF_LAND_USE", value: "CLU" },
     { code: "LAYOUT", i18nKey: "LAYOUT", value: "LAYOUT" },
@@ -98,13 +99,13 @@ const SearchFields = ({ formData, onFieldChange, onClearAll, isMobile, tenantOpt
       </SearchField>
 
       {/* Owner Name */}
-      <SearchField>
+      {/* <SearchField>
         <div className="label">{t("BPA_SEARCH_OWNER_NAME")}</div>
         <TextInput
           value={formData.name}
           onChange={handleNameChange}
         />
-      </SearchField>
+      </SearchField> */}
 
       {/* Mobile Number */}
       <SearchField>

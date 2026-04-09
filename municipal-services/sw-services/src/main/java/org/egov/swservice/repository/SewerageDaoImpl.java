@@ -69,7 +69,8 @@ public class SewerageDaoImpl implements SewerageDao {
 
 	@Override
 	public void saveSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest) {
-		sewarageConnectionProducer.push(createSewarageConnection, sewerageConnectionRequest);
+		String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+		sewarageConnectionProducer.push(createSewarageConnection,key , sewerageConnectionRequest);
 	}
 
 	@Override
@@ -135,7 +136,8 @@ public class SewerageDaoImpl implements SewerageDao {
 			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
-			sewarageConnectionProducer.push(updateSewarageConnection, sewerageConnectionRequest);
+			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+			sewarageConnectionProducer.push(updateSewarageConnection, key , sewerageConnectionRequest);
 		} else if (sewerageConnectionRequest.getSewerageConnection().getApplicationType()
 		        .equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION)) {
 
@@ -145,10 +147,12 @@ public class SewerageDaoImpl implements SewerageDao {
 			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
-			sewarageConnectionProducer.push(updateSewarageConnection, sewerageConnectionRequest);
+			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+			sewarageConnectionProducer.push(updateSewarageConnection, key , sewerageConnectionRequest);
 
 		} else {
-			sewarageConnectionProducer.push(swConfiguration.getWorkFlowUpdateTopic(), sewerageConnectionRequest);
+			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+			sewarageConnectionProducer.push(swConfiguration.getWorkFlowUpdateTopic(), key , sewerageConnectionRequest);
 		}
 	}
 
@@ -161,7 +165,8 @@ public class SewerageDaoImpl implements SewerageDao {
 										boolean isStateUpdatable) {
 		if (isStateUpdatable && !SWConstants.EDIT_NOTIFICATION_STATE
 				.contains(sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction())) {
-			sewarageConnectionProducer.push(swConfiguration.getEditNotificationTopic(), sewerageConnectionRequest);
+			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+			sewarageConnectionProducer.push(swConfiguration.getEditNotificationTopic(), key , sewerageConnectionRequest);
 		}
 	}
 
@@ -171,7 +176,8 @@ public class SewerageDaoImpl implements SewerageDao {
 	 * @param sewerageConnectionRequest - Sewerage Connection Request Object
 	 */
 	public void enrichFileStoreIds(SewerageConnectionRequest sewerageConnectionRequest) {
-		sewarageConnectionProducer.push(swConfiguration.getFileStoreIdsTopic(), sewerageConnectionRequest);
+		String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+		sewarageConnectionProducer.push(swConfiguration.getFileStoreIdsTopic(), key , sewerageConnectionRequest);
 	}
 
 	/**
@@ -180,7 +186,8 @@ public class SewerageDaoImpl implements SewerageDao {
 	 * @param sewerageConnectionRequest - Sewerage Connection Request Object
 	 */
 	public void saveFileStoreIds(SewerageConnectionRequest sewerageConnectionRequest) {
-		sewarageConnectionProducer.push(swConfiguration.getSaveFileStoreIdsTopic(), sewerageConnectionRequest);
+		String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+		sewarageConnectionProducer.push(swConfiguration.getSaveFileStoreIdsTopic(), key , sewerageConnectionRequest);
 	}
 	
 	@Override
@@ -208,7 +215,8 @@ public class SewerageDaoImpl implements SewerageDao {
 	/* Method to push the encrypted data to the 'update' topic  */
 	@Override
 	public void updateOldSewerageConnections(SewerageConnectionRequest sewerageConnectionRequest) {
-		sewarageConnectionProducer.push(updateOldDataEncTopic, sewerageConnectionRequest);
+		String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
+		sewarageConnectionProducer.push(updateOldDataEncTopic, key , sewerageConnectionRequest);
 
 	}
 	
@@ -236,7 +244,8 @@ public class SewerageDaoImpl implements SewerageDao {
 	/* Method to push the old data encryption status to the 'ws-enc-audit' topic  */
 	@Override
 	public void updateEncryptionStatus(EncryptionCount encryptionCount) {
-		sewarageConnectionProducer.push(encryptionStatusTopic, encryptionCount);
+		String key = encryptionCount.getId();
+		sewarageConnectionProducer.push(encryptionStatusTopic, key , encryptionCount);
 	}
 
 	/* Method to find the last execution details in dB */

@@ -101,7 +101,8 @@ public class NotificationConsumer {
 	 * @param record
 	 * @param topic
 	 */
-	@KafkaListener(topics = { "${kafka.topics.billgen.topic.name}", "${kafka.topics.cancel.bill.topic.name}" })
+	@KafkaListener(topics = { "${kafka.topics.billgen.topic.name}", "${kafka.topics.cancel.bill.topic.name}" },
+			concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(Map<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		try {

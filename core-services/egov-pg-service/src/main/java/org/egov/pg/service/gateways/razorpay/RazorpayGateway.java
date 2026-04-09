@@ -5,6 +5,7 @@ import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,6 +27,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -92,6 +94,16 @@ public class RazorpayGateway implements Gateway{
 			notesData.put("ServiceType",transaction.getBusinessService());
 			notesData.put("TenantId",transaction.getTenantId());
 			notesData.put("BillId",transaction.getBillId());
+			//Add OBPAS Service code and ULB data in Razorpay Payload
+			if(!Objects.isNull(transaction.getAdditionalDetails())) {
+				ObjectNode additionDetails = (ObjectNode)transaction.getAdditionalDetails();
+				if(additionDetails.has("serviceCode")) {
+					notesData.put("ServiceCode",additionDetails.get("serviceCode").asText());
+					notesData.put("ULBType",additionDetails.get("ulbType").asText());
+					notesData.put("ULBCode",additionDetails.get("ulbCode").asText());
+					notesData.put("ULBName",additionDetails.get("ulbName").asText());
+				}
+			}
 	        	request.put("notes", notesData);
 	        
 	     		transfers.put(transfer);

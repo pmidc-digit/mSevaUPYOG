@@ -237,7 +237,7 @@ public class EnrichmentService {
 			}
 		}
 		
-		if (noc.getWorkflow() != null && noc.getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE)) {
+		if (noc.getApplicationStatus().equalsIgnoreCase(NOCConstants.FI_STATUS)) {
 			Map<String, String> details = (Map<String, String>) noc.getNocDetails().getAdditionalDetails();
 			details.put(NOCConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
 

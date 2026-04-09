@@ -49,7 +49,8 @@ public class WorkflowNotificationConsumer {
 	 */
 
 	@KafkaListener(topics = { "${egov.sewarageservice.createconnection.topic}", "${egov.sewarageservice.updateconnection.topic}",
-			"${egov.sewerageservice.updatesewerageconnection.workflow.topic}" })
+			"${egov.sewerageservice.updatesewerageconnection.workflow.topic}" },
+			concurrency = "${kafka.consumer.config.concurrency.count}")
 	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 		try {
 			SewerageConnectionRequest sewerageConnectionRequest = mapper.convertValue(record,

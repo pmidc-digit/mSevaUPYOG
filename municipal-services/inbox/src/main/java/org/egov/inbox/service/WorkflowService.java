@@ -281,7 +281,8 @@ public class WorkflowService {
                          List<State> states = service.getStates();
                          states.forEach(state -> {
                              Set<String> stateRoles = stateToRoleMap.get(state.getUuid());
-                             if(!CollectionUtils.isEmpty(stateRoles) && !Collections.disjoint(stateRoles,entry.getValue())){
+                             if(Boolean.TRUE.equals(state.getIsTerminateState()) ||
+                                     (!CollectionUtils.isEmpty(stateRoles) && !Collections.disjoint(stateRoles,entry.getValue()))){
                                  actionableStatuses.put(state.getUuid(), state.getApplicationStatus());
                              }
 

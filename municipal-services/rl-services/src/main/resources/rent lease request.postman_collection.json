@@ -1,0 +1,261 @@
+{
+	"info": {
+		"_postman_id": "c30a761f-a459-4544-9b03-3a16556c5e46",
+		"name": "rent lease request",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48986038",
+		"_collection_link": "https://rameshdas-a29164a8-3689249.postman.co/workspace/rameshdas-a29164a8's-Workspace~b27d76af-941d-45a7-88eb-afac442b097b/collection/48986038-c30a761f-a459-4544-9b03-3a16556c5e46?action=share&source=collection_link&creator=48986038"
+	},
+	"item": [
+		{
+			"name": "property-report Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-GB,en-US;q=0.9,en;q=0.8"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json;charset=UTF-8"
+					},
+					{
+						"key": "Origin",
+						"value": "http://localhost:3000"
+					},
+					{
+						"key": "Referer",
+						"value": "http://localhost:3000/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/check"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "empty"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "cors"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"filterData\": {\r\n        \"tenantId\": \"pb.testing\",\r\n        \"searchType\": \"1\"\r\n        // \"fromDate\": 1640995200000,\r\n        // \"toDate\": 1924905600000,\r\n        // \"filter\": \"$.[?(@.propertyId=='PB-RL-PT2025000003')]\"\r\n    },\r\n    \"RequestInfo\": {\r\n        \"apiId\": \"\",\r\n        \"authToken\": \"ff450baa-bca1-4f75-8d78-1bde494ca44d\",\r\n        \"userInfo\": {\r\n            \"id\": 5044684,\r\n            \"uuid\": \"bd11de45-4f6f-474f-a646-485ae7b1e30a\",\r\n            \"userName\": \"MC-MOHALI\",\r\n            \"name\": \"MC Mohali\",\r\n            \"mobileNumber\": \"9509676127\",\r\n            \"emailId\": null,\r\n            \"locale\": null,\r\n            \"type\": \"EMPLOYEE\",\r\n            \"roles\": [\r\n                {\r\n                    \"name\": \"Professional verifier\",\r\n                    \"code\": \"PROFESSIONAL_VERIFIER\",\r\n                    \"tenantId\": \"pb.mohali\"\r\n                },\r\n                {\r\n                    \"name\": \"Professional Approver\",\r\n                    \"code\": \"PROFESSIONAL_APPROVER\",\r\n                    \"tenantId\": \"pb.mohali\"\r\n                },\r\n                {\r\n                    \"name\": \"Professional doc verifier\",\r\n                    \"code\": \"PROFESSIONAL_DOC_VERIFIER\",\r\n                    \"tenantId\": \"pb.mohali\"\r\n                },\r\n                {\r\n                    \"name\": \"VIEW BPA Stakeholder Card\",\r\n                    \"code\": \"VIEW_BPA_STAKEHOLDER_CARD\",\r\n                    \"tenantId\": \"pb.mohali\"\r\n                },\r\n                {\r\n                    \"name\": \"Employee\",\r\n                    \"code\": \"EMPLOYEE\",\r\n                    \"tenantId\": \"pb.mohali\"\r\n                }\r\n            ],\r\n            \"active\": true,\r\n            \"tenantId\": \"pb.mohali\",\r\n            \"permanentCity\": null\r\n        },\r\n        \"msgId\": \"\",\r\n        \"plainAccessRequest\": {}\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{local}}rl-services/property/_report",
+					"host": [
+						"{{local}}rl-services"
+					],
+					"path": [
+						"property",
+						"_report"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "save allotment Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"RequestInfo\": {\r\n\r\n       \"apiId\": \"Rainmaker\",\r\n        \"authToken\": \"0aaa4382-742e-47d9-ab9d-73ef5ec7249b\",\r\n        \"msgId\": \"1756728031554|en_IN\",\r\n        \"plainAccessRequest\": {},\r\n        \"userInfo\": {\r\n        \"id\": 5044036,\r\n        \"uuid\": \"da24f5b8-1ece-42f2-8de9-d8496efe9b41\",\r\n        \"userName\": \"7291089688\",\r\n        \"name\": \"test\",\r\n        \"mobileNumber\": \"7291089688\",\r\n        \"emailId\": \"saurabh36484@gmail.com\",\r\n        \"locale\": null,\r\n        \"type\": \"CITIZEN\",\r\n        \"roles\": [\r\n            {\r\n                \"name\": \"Citizen\",\r\n                \"code\": \"CITIZEN\",\r\n                \"tenantId\": \"pb\"\r\n            }\r\n        ],\r\n        \"active\": true,\r\n        \"tenantId\": \"pb\",\r\n        \"permanentCity\": null\r\n    }\r\n    },\r\n    \"AllotmentDetails\": [{\r\n        \"propertyId\": \"PB-RL-PT2025000077\",\r\n        \"tenantId\": \"pb.testing\",\r\n        \"previousApplicationNumber\": null,\r\n        \"tradeLicenseNumber\":null,\r\n        \"registrationNumber\":null,\r\n        \"startDate\": 1730457600000,\r\n        \"endDate\": 1768310394477,\r\n        \"isGSTApplicable\": true,\r\n        \"isCowCessApplicable\": true,\r\n        \"isRefundApplicableOnDiscontinuation\": true,\r\n        \"workflow\": {\r\n            \"action\": \"INITIATE\",\r\n            \"comments\": \"\",\r\n            \"status\": \"INITIATED\"\r\n        },\r\n        \"OwnerInfo\": [\r\n            {\r\n                \"name\": \"Ramesh kumar\",\r\n                \"mobileNo\": \"9872904782\",\r\n                \"emailId\": \"ramesh@gmail.com\",\r\n                \"correspondenceAddress\": {\r\n                    \"pinCode\": \"160055\",\r\n                    \"city\": \"Mohali 1\",\r\n                    \"addressId\": \"#123 house no\"\r\n                },\r\n                \"permanentAddress\": {\r\n                    \"pinCode\": \"160055\",\r\n                    \"city\": \"Mohali 1\",\r\n                    \"addressId\": \"#123 house no\"\r\n                }\r\n            }\r\n        ]\r\n    }]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{local}}rl-services/allotment/_create",
+					"host": [
+						"{{local}}rl-services"
+					],
+					"path": [
+						"allotment",
+						"_create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update allotment Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"RequestInfo\": {\r\n       \"apiId\": \"Rainmaker\",\r\n        \"authToken\": \"e2d83564-da48-42d1-beb1-a6244512d633\",\r\n        \"msgId\": \"1756728031554|en_IN\",\r\n        \"plainAccessRequest\": {},\r\n     \"userInfo\": {\r\n        \"id\": 4829392,\r\n        \"uuid\": \"2bac0d65-0214-4a58-8aab-feda715cbdaf\",\r\n        \"userName\": \"EMP-RL-CEMP\",\r\n        \"name\": \"RL Counter Employee\",\r\n        \"mobileNumber\": \"8811223311\",\r\n        \"emailId\": null,\r\n        \"locale\": null,\r\n        \"type\": \"EMPLOYEE\",\r\n        \"roles\": [\r\n            {\r\n                \"name\": \"RL Allotment Closed\",\r\n                \"code\": \"RL_CLOSED\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"View Rent And Lease Card\",\r\n                \"code\": \"VIEW_RENTANDLEASE_CARD\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"RL Counter User\",\r\n                \"code\": \"RL_CEMP\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"Employee\",\r\n                \"code\": \"EMPLOYEE\",\r\n                \"tenantId\": \"pb.testing\"\r\n            }\r\n        ],\r\n        \"active\": true,\r\n        \"tenantId\": \"pb.testing\",\r\n        \"permanentCity\": null\r\n    }\r\n    },\r\n    \"AllotmentDetails\":  {\r\n        \"id\": \"dde4e095-bc74-4716-b153-1d4bdd7f2824\",\r\n        \"propertyId\": \"PB-RL-PT2025000077\",\r\n        \"tenantId\": \"pb.testing\",\r\n        \"status\": \"INITIATED\",\r\n        \"applicationNumber\": \"PB-RL-2025-26-000003\",\r\n        \"previousApplicationNumber\": null,\r\n        \"applicationType\": \"NEW\",\r\n        \"startDate\": 1766534400000,\r\n        \"endDate\": 1798070399999,\r\n        \"amountToBeDeducted\":0,\r\n        \"isGSTApplicable\": false,\r\n        \"isCowCessApplicable\": false,\r\n        \"isRefundApplicableOnDiscontinuation\": false,\r\n        \"termAndCondition\": null,\r\n        \"penaltyType\": null,\r\n        \"witnessDetails\": null,\r\n        \"Document\": [\r\n            {\r\n                \"docId\": \"54c01ebc-6234-4756-97f9-cfdea91b40bc\",\r\n                \"documentUid\": \"dde4e095-bc74-4716-b153-1d4bdd7f2824\",\r\n                \"documentType\": \"APPLICANT.IDENTITYPROOF.AADHAAR\",\r\n                \"fileStoreId\": \"199a3fcf-4cb3-4382-8d19-14008541d6df\",\r\n                \"status\": \"ACTIVE\",\r\n                \"auditDetails\": {\r\n                    \"createdBy\": \"2bac0d65-0214-4a58-8aab-feda715cbdaf\",\r\n                    \"lastModifiedBy\": \"2bac0d65-0214-4a58-8aab-feda715cbdaf\",\r\n                    \"createdTime\": 1766591233664,\r\n                    \"lastModifiedTime\": 1766592904587\r\n                },\r\n                \"additionalDetails\": null\r\n            },\r\n            {\r\n                \"docId\": \"3e4b42d0-81d6-46ed-8646-c3186ea4eb32\",\r\n                \"documentUid\": \"dde4e095-bc74-4716-b153-1d4bdd7f2824\",\r\n                \"documentType\": \"APPLICANT.AUCTION.COPY\",\r\n                \"fileStoreId\": \"4fb92cd5-3d86-4660-9726-fce39cffef8e\",\r\n                \"status\": \"ACTIVE\",\r\n                \"auditDetails\": {\r\n                    \"createdBy\": \"2bac0d65-0214-4a58-8aab-feda715cbdaf\",\r\n                    \"lastModifiedBy\": \"2bac0d65-0214-4a58-8aab-feda715cbdaf\",\r\n                    \"createdTime\": 1766591233664,\r\n                    \"lastModifiedTime\": 1766592904587\r\n                },\r\n                \"additionalDetails\": null\r\n            }\r\n        ],\r\n        \"OwnerInfo\": [\r\n             {\r\n                \"ownerId\": \"bd8ba94d-597d-46dd-b9f1-8f27dad9ab31\",\r\n                \"allotmentId\": \"dde4e095-bc74-4716-b153-1d4bdd7f2824\",\r\n                \"isPrimaryOwner\": null,\r\n                \"ownershipPercentage\": null,\r\n                \"ownerType\": null,\r\n                \"name\": \"Ramesh kumar\",\r\n                \"emailId\": \"ramesh@gmail.com\",\r\n                \"mobileNo\": \"9872904782\",\r\n                \"permanentAddress\": {\r\n                    \"addressId\": \"#123 house no\",\r\n                    \"city\": \"Mohali 1\",\r\n                    \"pincode\": \"160055\"\r\n                },\r\n                \"correspondenceAddress\": {\r\n                    \"addressId\": \"#123 house no\",\r\n                    \"city\": \"Mohali 1\",\r\n                    \"pincode\": \"160055\"\r\n                }\r\n             }\r\n        ],\r\n        \"workflow\": {\r\n            \"action\": \"APPROVE\",\r\n            \"comments\": \"\",\r\n            \"status\": \"APPROVE\"\r\n        },\r\n        \"registrationNumber\": \"PB-RL-2025-26-000046\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{uat}}rl-services/allotment/_update",
+					"host": [
+						"{{uat}}rl-services"
+					],
+					"path": [
+						"allotment",
+						"_update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "renewal allotment Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n  \"RequestInfo\": {\r\n        \"apiId\": \"Rainmaker\",\r\n        \"authToken\": \"18b04308-1e16-4642-8e59-a161692064cb\",\r\n        \"userInfo\": {\r\n            \"id\": 5044027,\r\n            \"uuid\": \"cc43a3c3-9d08-4594-8f11-221d8c4e84dc\",\r\n            \"userName\": \"9992983014\",\r\n            \"name\": \"Aman Aman\",\r\n            \"mobileNumber\": \"9992983014\",\r\n            \"emailId\": \"aman@gmail.com\",\r\n            \"locale\": null,\r\n            \"type\": \"CITIZEN\",\r\n            \"roles\": [\r\n                {\r\n                    \"name\": \"Citizen\",\r\n                    \"code\": \"CITIZEN\",\r\n                    \"tenantId\": \"pb\"\r\n                }\r\n            ],\r\n            \"active\": true,\r\n            \"tenantId\": \"pb\",\r\n            \"permanentCity\": null\r\n        },\r\n        \"msgId\": \"1760684068508|en_IN\",\r\n        \"plainAccessRequest\": {}\r\n    },\r\n    \"AllotmentDetails\":{\r\n    \"propertyId\": \"RL271020250002\",\r\n    \"tenantId\": \"pb.testing\",\r\n    \"previousApplicationNumber\":\"PB-RL-2025-26-000014\",\r\n    \"isAutoRenewal\": false,\r\n    \"startDate\": 1730457600000,\r\n    \"endDate\": 1768310394477,\r\n    \"termAndCondition\": \"Standard terms and conditions apply.\",\r\n    \"penaltyType\": \"FIXED\",\r\n    \"workflow\": {\r\n        \"action\": \"INITIATE\",\r\n        \"comments\": \"\",\r\n        \"status\": \"INITIATED\"\r\n    },\r\n    \"document\": [\r\n        {\r\n        \"documentType\": \"OwnershipProof\",\r\n        \"fileStoreId\": \"file-store-id-123\",\r\n        \"documentUid\": \"doc-uid-001\"\r\n        },\r\n        {\r\n        \"documentType\": \"OwnershipProof\",\r\n        \"fileStoreId\": \"file-store-id-123\",\r\n        \"documentUid\": \"doc-uid-001\"\r\n        }\r\n    ],\r\n    \"OwnerInfo\": [\r\n        {\r\n        \"firstName\": \"Ramesh\",\r\n        \"middleName\": \"Kumar\",\r\n        \"lastName\": \"Das\",\r\n        \"gender\": \"MALE\",\r\n        \"mobileNo\": \"9876543211\",\r\n        \"emailId\": \"rameshabcdas@gmail.com\",\r\n        \"isPrimaryOwner\": true,\r\n        \"ownerType\": \"INDIVIDUAL\",\r\n        \"ownershipPercentage\": 50,\r\n        \"relationship\": \"frd\",\r\n        \"status\": 1 ,\r\n        \"correspondenceAddress\":{\r\n            \"pinCode\":\"160055\",\r\n            \"city\":\"Mohali\",\r\n            \"addressId\":\"#123 house no\"\r\n        },\r\n         \"permanentAddress\":{\r\n            \"pinCode\":\"160055\",\r\n            \"city\":\"Mohali\",\r\n            \"addressId\":\"#123 house no\"\r\n        }   \r\n        },\r\n        {\r\n        \"firstName\": \"Ramesh2\",\r\n        \"middleName\": \"Kumar2\",\r\n        \"lastName\": \"Das2\",\r\n        \"gender\": \"MALE\",\r\n        \"mobileNo\": \"1111111112\",\r\n        \"emailId\": \"ramesh@gmail.com\",\r\n        \"isPrimaryOwner\": true,\r\n        \"ownerType\": \"INDIVIDUAL\",\r\n        \"ownershipPercentage\": 50,\r\n        \"relationship\": \"frd\",\r\n        \"status\": 1 ,   \r\n        \"correspondenceAddress\":{\r\n            \"pinCode\":\"160055\",\r\n            \"city\":\"Mohali 1\",\r\n            \"addressId\":\"#123 house no\"\r\n        },\r\n        \"permanentAddress\":{\r\n            \"pinCode\":\"160055\",\r\n            \"city\":\"Mohali 1\",\r\n            \"addressId\":\"#123 house no\"\r\n        } \r\n        }\r\n    ]\r\n  }\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{rent_local}}rl-services/allotment/_create",
+					"host": [
+						"{{rent_local}}rl-services"
+					],
+					"path": [
+						"allotment",
+						"_create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "search alloted application Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n     \"RequestInfo\": {\r\n        \"apiId\": \"Rainmaker\",\r\n        \"authToken\": \"0aaa4382-742e-47d9-ab9d-73ef5ec7249b\",\r\n        \"msgId\": \"1756728031554|en_IN\",\r\n        \"plainAccessRequest\": null,\r\n         \"userInfo\": {\r\n              \"id\": 5044823,\r\n        \"uuid\": \"468ae8d9-1e1e-44e7-ba61-7634f7235ef8\",\r\n        \"userName\": \"ramesh123\",\r\n        \"name\": \"Ramesh\",\r\n        \"mobileNumber\": \"9872904782\",\r\n        \"emailId\": \"ramesh123@kpmg.com\",\r\n        \"locale\": null,\r\n        \"type\": \"EMPLOYEE\",\r\n        \"roles\": [\r\n            {\r\n                \"name\": \"RL Document Verifier\",\r\n                \"code\": \"RL_DOC_VERIFIER\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"RL Allotment Closed\",\r\n                \"code\": \"RL_CLOSED\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"RL Apply Employee\",\r\n                \"code\": \"RL_APPLY_EMPLOYEE\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"View Rent And Lease Card\",\r\n                \"code\": \"VIEW_RENTANDLEASE_CARD\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"RL Application Approver\",\r\n                \"code\": \"RL_APPROVER\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"RL Field Inspector\",\r\n                \"code\": \"RL_FIELD_INSPECTOR\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"RL Counter User\",\r\n                \"code\": \"RL_CEMP\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"Employee\",\r\n                \"code\": \"EMPLOYEE\",\r\n                \"tenantId\": \"pb.testing\"\r\n            },\r\n            {\r\n                \"name\": \"SYSTEM user for cron job\",\r\n                \"code\": \"SYSTEM\",\r\n                \"tenantId\": \"pb.testing\"\r\n            }\r\n        ],\r\n        \"active\": true,\r\n        \"tenantId\": \"pb.testing\",\r\n        \"permanentCity\": null\r\n    }}\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{local}}rl-services/allotment/v1/_search?tenantId=pb.testing&applicationNumbers=PB-RL-2025-26-000403",
+					"host": [
+						"{{local}}rl-services"
+					],
+					"path": [
+						"allotment",
+						"v1",
+						"_search"
+					],
+					"query": [
+						{
+							"key": "tenantId",
+							"value": "pb.testing"
+						},
+						{
+							"key": "mobileNumber",
+							"value": "9872904782",
+							"disabled": true
+						},
+						{
+							"key": "applicationNumbers",
+							"value": "PB-RL-2025-26-000403"
+						},
+						{
+							"key": "limit",
+							"value": "8",
+							"disabled": true
+						},
+						{
+							"key": "status",
+							"value": "APPROVED ",
+							"disabled": true
+						},
+						{
+							"key": "currentDate",
+							"value": "AAAA",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://template.postman-echo.com"
+		}
+	]
+}

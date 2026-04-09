@@ -248,6 +248,98 @@ public class ReportService {
 
         return reportResponse;
     }
+    
+    
+    public List<Object> getpdcReportData(PdcRequest reportRequest, String moduleName, String reportName, String authToken) {
+        // Get the report definition for the provided moduleName and reportName
+        ReportDefinitions rds = ReportApp.getReportDefs();
+        ReportDefinition reportDefinition = rds.getReportDefinition(moduleName + " " + reportName);
+        
+        // Fetch the data for the report
+        List<Map<String, Object>> maps = reportRepository.getpdcData(reportRequest, reportDefinition, authToken);
+        
+        // Decryption if required
+        if (reportDefinition.getdecryptionPathId() != null && 
+            reportRequest.getRequestInfo() != null && 
+            reportRequest.getRequestInfo().getUserInfo() != null) {
+            try {
+                User userInfo = getEncrichedandCopiedUserInfo(reportRequest.getRequestInfo().getUserInfo());
+                maps = encryptionService.decryptJson(maps, reportDefinition.getdecryptionPathId(), userInfo, Map.class);
+                auditDecryptRequest(maps, reportDefinition.getdecryptionPathId(), reportRequest.getRequestInfo().getUserInfo());
+            } catch (IOException e) {
+                log.error("IO exception while decrypting report: " + e.getMessage());
+                throw new CustomException("REPORT_DECRYPTION_ERROR", "Error while decrypting report data");
+            }
+        }
+
+        List<Object> dataList = new ArrayList<>();
+
+        // Process each map based on the reportName
+        for (Map<String, Object> record : maps) {
+            if ("authority".equalsIgnoreCase(reportName)) {
+                // Process as Authority Data
+                String authorityId = record.get("authorityID") != null ? record.get("authorityID").toString() : null;
+                String authorityName = record.get("authorityName") != null ? record.get("authorityName").toString() : null;
+                String departmentId = record.get("departmentID") != null ? record.get("departmentID").toString() : null;
+                String totalApplicationReceived = record.get("TotalApplicationReceived") != null ? record.get("TotalApplicationReceived").toString() : null;
+                String pendingBeyondTimelineApplicationCount = record.get("PendingBeyondTimelineApplicationCount") != null ? record.get("PendingBeyondTimelineApplicationCount").toString() : null;
+                
+                // Set values in AuthorityData with exact field names
+                PdcResponse.AuthorityData authority = new PdcResponse.AuthorityData(
+                    authorityId, 
+                    authorityName,
+                    departmentId, 
+                    totalApplicationReceived, 
+                    pendingBeyondTimelineApplicationCount
+                );
+                dataList.add(authority);
+            } else if ("department".equalsIgnoreCase(reportName)) {
+                // Process as Department Data
+                String departmentId = record.get("departmentid") != null ? record.get("departmentid").toString() : null;
+                String departmentName = record.get("departmentname") != null ? record.get("departmentname").toString() : null;
+                String totalApplicationReceived = record.get("totalapplicationreceived") != null ? record.get("totalapplicationreceived").toString() : null;
+                String pendingBeyondTimelineApplicationCount = record.get("pendingbeyondtimelineapplicationcount") != null ? record.get("pendingbeyondtimelineapplicationcount").toString() : null;
+
+                // Set values in DepartmentData with exact field names
+                PdcResponse.DepartmentData department = new PdcResponse.DepartmentData(
+                    departmentId, 
+                    departmentName,
+                    totalApplicationReceived, 
+                    pendingBeyondTimelineApplicationCount
+                );
+                dataList.add(department);
+            } else if ("service".equalsIgnoreCase(reportName)) {
+                // Process as Service Data
+                String serviceId = record.get("serviceID") != null ? record.get("serviceID").toString() : null;
+                String serviceName = record.get("serviceName") != null ? record.get("serviceName").toString() : null;
+                String authorityId = record.get("authorityID") != null ? record.get("authorityID").toString() : null;
+                String departmentId = record.get("departmentID") != null ? record.get("departmentID").toString() : null;
+                String totalApplicationReceived = record.get("TotalApplicationReceived") != null ? record.get("TotalApplicationReceived").toString() : null;
+                String pendingBeyondTimelineApplicationCount = record.get("PendingBeyondTimelineApplicationCount") != null ? record.get("PendingBeyondTimelineApplicationCount").toString() : null;
+
+                // Set values in ServiceData with exact field names
+                PdcResponse.ServiceData service = new PdcResponse.ServiceData(
+                    serviceId, 
+                    serviceName,
+                    authorityId,
+                    departmentId,
+                    totalApplicationReceived,
+                    pendingBeyondTimelineApplicationCount
+                );
+                dataList.add(service);
+            }
+        }
+
+        return dataList;  // Return the processed data list (either AuthorityData, DepartmentData, or ServiceData)
+    }
+    /**
+     * Utility method to parse a string value to a long
+     */
+    private long parseLong(Object value) {
+        return value != null ? Long.parseLong(value.toString()) : 0L;
+    }
+
+    
 
     private void populateData(List<SourceColumn> columns, List<Map<String, Object>> maps,
                               ReportResponse reportResponse) {

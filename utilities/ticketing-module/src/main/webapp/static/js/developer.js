@@ -706,7 +706,6 @@ function validateCommentForm(tktId,userId)
 	else
 		{
 		$('#loading').show();
-		debugger;
 		var data = new FormData();
 		data.append("tktId",tktId);
 		data.append("userId",userId);

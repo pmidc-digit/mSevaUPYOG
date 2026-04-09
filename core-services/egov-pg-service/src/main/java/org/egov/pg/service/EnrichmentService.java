@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -19,11 +20,13 @@ import org.egov.pg.repository.BankAccountRepository;
 import org.egov.pg.web.models.TransactionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,13 +38,16 @@ public class EnrichmentService {
     private BankAccountRepository bankAccountRepository;
     private ObjectMapper objectMapper;
     private UserService userService;
+    private MdmsService mdmsService;
 
     @Autowired
-    EnrichmentService(IdGenService idGenService, BankAccountRepository bankAccountRepository, ObjectMapper objectMapper, UserService userService) {
+    EnrichmentService(IdGenService idGenService, BankAccountRepository bankAccountRepository, ObjectMapper objectMapper, UserService userService,
+    		MdmsService mdmsService) {
         this.idGenService = idGenService;
         this.bankAccountRepository = bankAccountRepository;
         this.objectMapper = objectMapper;
         this.userService = userService;
+        this.mdmsService = mdmsService;
     }
 
     void enrichCreateTransaction(TransactionRequest transactionRequest) {
@@ -87,6 +93,26 @@ public class EnrichmentService {
                 .createdTime(System.currentTimeMillis())
                 .build();
         transaction.setAuditDetails(auditDetails);
+        
+        //Add OBPAS Service code and ULB data
+        Object mdmsData = mdmsService.getMdmsdata(requestInfo, transaction.getTenantId());
+        mdmsData = objectMapper.convertValue(mdmsData, Map.class);
+        List<String> serviceCode = JsonPath
+        		.read(mdmsData, "$.MdmsRes.PAYMENT.ServiceCodeMapping.[?(@.active==true && @.businessService contains '" + transaction.getBusinessService() + "')].serviceCode");
+        if(!CollectionUtils.isEmpty(serviceCode)) {
+        	if(Objects.isNull(transaction.getAdditionalDetails()))
+        		transaction.setAdditionalDetails(objectMapper.createObjectNode());
+        	
+        	ObjectNode additionDetails = (ObjectNode)transaction.getAdditionalDetails();
+        	additionDetails.put("serviceCode",serviceCode.get(0));
+            List<String> ulbType = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.*.city.ulbType");
+            additionDetails.put("ulbType",ulbType.get(0));
+            List<String> ulbCode = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.*.ulbCode");
+            additionDetails.put("ulbCode",ulbCode.get(0));
+            List<String> ulbName = JsonPath.read(mdmsData, "$.MdmsRes.tenant.tenants.*.ulbName");
+            additionDetails.put("ulbName",ulbName.get(0));
+        }
+        
         try {
 			log.info(objectMapper.writeValueAsString(transaction));
 		} catch (JsonProcessingException e) {

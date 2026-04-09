@@ -342,7 +342,8 @@ public class SWCalculationUtil {
 			if (CollectionUtils.isEmpty(smsRequestList))
 				 log.info("Messages from localization couldn't be fetched!");
 			for (SMSRequest smsRequest : smsRequestList) {
-				producer.push(config.getSmsNotifTopic(), smsRequest);
+				String key = smsRequest.getMobileNumber()+ smsRequest.getCategory();
+				producer.push(config.getSmsNotifTopic(),key ,smsRequest);
 				log.info(" Messages: " + smsRequest.getMessage());
 			}
 		}
@@ -357,7 +358,8 @@ public class SWCalculationUtil {
 			if (CollectionUtils.isEmpty(emailRequestList))
 				log.info("Messages from localization couldn't be fetched!");
 			emailRequestList.forEach(emailRequest -> {
-				producer.push(config.getEmailNotifTopic(), emailRequest);
+				String key = emailRequest.getEmail().toString();
+				producer.push(config.getEmailNotifTopic(),key, emailRequest);
 				log.info("Email To : " + emailRequest.getEmail() + " Body: " + emailRequest.getEmail().getBody() + " Subject: " + emailRequest.getEmail().getSubject());
 			});
 
@@ -370,7 +372,8 @@ public class SWCalculationUtil {
 	 * @param request - Event Request Object
 	 */
 	public void sendEventNotification(EventRequest request) {
-		producer.push(config.getSaveUserEventsTopic(), request);
+		String key = request.getEvents().get(0).getEventDetails().getEventId().toString();
+		producer.push(config.getSaveUserEventsTopic(),key ,request);
 	}
 	
 	

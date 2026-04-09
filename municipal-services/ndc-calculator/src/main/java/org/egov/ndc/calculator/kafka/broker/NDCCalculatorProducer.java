@@ -1,5 +1,7 @@
 package org.egov.ndc.calculator.kafka.broker;
 
+import java.util.UUID;
+
 import org.egov.tracer.kafka.CustomKafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,7 +18,18 @@ public class NDCCalculatorProducer {
 	 * @param value The object to be pushed
 	 */
 	public void push(String topic, Object value) {
-		kafkaTemplate.send(topic, value);
+		String key = UUID.randomUUID().toString();
+		kafkaTemplate.send(topic, key, value);
+	}
+
+	/**
+	 * Listener method to push records to kafka queue with a custom key.
+	 * @param topic The kafka topic to push to
+	 * @param key The key for the message
+	 * @param value The object to be pushed
+	 */
+	public void push(String topic, String key, Object value) {
+		kafkaTemplate.send(topic, key, value);
 	}
 
 }

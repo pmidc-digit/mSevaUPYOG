@@ -34,6 +34,9 @@ public class NocSearchCriteria {
     @JsonProperty("applicationNo")
     private String applicationNo;
 
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
+
     @SafeHtml
     @JsonProperty("mobileNumber")
     private String mobileNumber;

@@ -139,14 +139,14 @@ public class User {
 
         @Size(max=64)
         @JsonProperty("createdBy")
-        private Long createdBy;
+        private String createdBy;
 
         @JsonProperty("createdDate")
         private Long createdDate;
 
         @Size(max=64)
         @JsonProperty("lastModifiedBy")
-        private Long lastModifiedBy;
+        private String lastModifiedBy;
 
         @JsonProperty("lastModifiedDate")
         private Long lastModifiedDate;

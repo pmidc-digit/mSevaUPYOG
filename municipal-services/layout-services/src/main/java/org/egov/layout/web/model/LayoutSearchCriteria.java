@@ -38,6 +38,9 @@ public class LayoutSearchCriteria {
     @JsonProperty("mobileNumber")
     private String mobileNumber;
 
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
+
     @SafeHtml
     @JsonProperty("layoutNo")
     private String layoutNo;

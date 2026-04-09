@@ -45,7 +45,7 @@ public class NocQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', nocdoc.uuid, " +
 					"'documentType', nocdoc.documenttype, " +
-					"'documentAttachment', nocdoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', nocdoc.documentAttachment, 'order', nocdoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', nocowner.additionalDetails, " +
 					"'uuid', nocowner.uuid " +
@@ -53,7 +53,7 @@ public class NocQueryBuilder {
 					"FROM eg_noc noc " +
 					"LEFT JOIN eg_noc_details details ON details.nocid = noc.id " +
 					"LEFT JOIN eg_noc_document nocdoc ON nocdoc.nocid = noc.id " +
-					"LEFT JOIN eg_noc_owner nocowner ON nocowner.nocid = noc.id " +
+					"LEFT JOIN eg_noc_owner nocowner ON nocowner.nocid = noc.id AND nocowner.status = true " +
 					"WHERE 1=1";
 
 
@@ -103,7 +103,7 @@ public class NocQueryBuilder {
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT uuid FROM eg_noc_owner WHERE nocid = ?");
+		sb.append("SELECT uuid FROM eg_noc_owner WHERE status = true and nocid = ?");
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();
@@ -186,7 +186,18 @@ public class NocQueryBuilder {
                         addToPreparedStatement(preparedStmtList, applicationNos);
                     }
                 }
-
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" noc.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
+			} else {
+				builder.append(" noc.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatuses);
+			}
+		}
 		
 		String approvalNo = criteria.getNocNo();
                 if (approvalNo != null) {

@@ -26,7 +26,8 @@ public class FileStoreConsumer {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    @KafkaListener(topics = { "${kafka.topics.filestore}" })
+    @KafkaListener(topics = { "${kafka.topics.filestore}" },
+    		concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         List<Map<String,Object>> jobMaps = (List<Map<String,Object>>)record.get(KEY_PDF_JOBS);

@@ -45,7 +45,7 @@ public class LayoutQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', layoutdoc.uuid, " +
 					"'documentType', layoutdoc.documenttype, " +
-					"'documentAttachment', layoutdoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', layoutdoc.documentAttachment, 'order', layoutdoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', layoutowner.additionalDetails, " +
 					"'uuid', layoutowner.uuid " +
@@ -54,7 +54,7 @@ public class LayoutQueryBuilder {
 					"FROM eg_layout layout " +
 					"LEFT JOIN eg_layout_details details ON details.layoutid = layout.id " +
 					"LEFT JOIN eg_layout_document layoutdoc ON layoutdoc.layoutid = layout.id " +
-					"LEFT JOIN eg_layout_owner layoutowner ON layoutowner.layoutid = layout.id " +
+					"LEFT JOIN eg_layout_owner layoutowner ON layoutowner.layoutid = layout.id AND layoutowner.status = true " +
 					"WHERE 1=1";
 
 
@@ -64,7 +64,7 @@ public class LayoutQueryBuilder {
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT uuid FROM eg_layout_owner WHERE layoutid = ?");
+		sb.append("SELECT uuid FROM eg_layout_owner WHERE status = true and layoutid = ?");
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();
@@ -193,6 +193,19 @@ public class LayoutQueryBuilder {
                         addToPreparedStatement(preparedStmtList, approvalNos);
                     }
                 }
+
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" layout.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
+			} else {
+				builder.append(" layout.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatuses);
+			}
+		}
 
 		
 //		String source = criteria.getSource();

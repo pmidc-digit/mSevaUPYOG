@@ -59,6 +59,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.DARamp;
 import org.egov.common.entity.edcr.Floor;
@@ -77,6 +79,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RampService extends FeatureProcess {
+	
+	private static final Logger LOG = LogManager.getLogger(RearYardService.class);
 
     private static final String SUBRULE_50_C_4_B = " 50-c-4-b";
     private static final String SUBRULE_40 = "40";
@@ -95,7 +99,13 @@ public class RampService extends FeatureProcess {
     private static final String SUBRULE_50_C_4_B_SLOPE_DESCRIPTION = "Maximum Slope of DA Ramp %s";
     private static final String FLOOR = "Floor";
     // private static final String SUBRULE_40_A_3_WIDTH_DESCRIPTION = "Minimum Width of Ramp %s";
-    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope of DA Ramp";
+//    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Slope width of DA Ramp";
+    private static final String SUBRULE_50_C_4_B_SLOPE_MAN_DESC = "Width of DA Ramp";
+    
+    
+    private static final String TO_BE_DEFINED = "To be Defined";
+    
+    private static final BigDecimal MIN_SLOPE_WIDTH= BigDecimal.valueOf(1.5);
 
     @Override
     public Plan validate(Plan pl) {
@@ -207,7 +217,8 @@ public class RampService extends FeatureProcess {
                 scrutinyDetail2.addColumnHeading(3, REQUIRED);
                 scrutinyDetail2.addColumnHeading(4, PROVIDED);
                 scrutinyDetail2.addColumnHeading(5, STATUS);
-                scrutinyDetail2.setKey("Block_" + block.getNumber() + "_" + "DA Ramp - Maximum Slope");
+//                scrutinyDetail2.setKey("Block_" + block.getNumber() + "_" + "DA Ramp - Maximum Slope");
+                scrutinyDetail2.setKey("Block_" + block.getNumber() + "_" + "DA Ramp");
 
                 ScrutinyDetail scrutinyDetail3 = new ScrutinyDetail();
                 scrutinyDetail3.addColumnHeading(1, RULE_NO);
@@ -257,50 +268,138 @@ public class RampService extends FeatureProcess {
                             && !A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
                         if (!block.getDARamps().isEmpty()) {
                             boolean isSlopeDefined = false;
+                            BigDecimal slopeWidth = BigDecimal.ZERO;
                             for (DARamp daRamp : block.getDARamps()) {
                                 if (daRamp != null && daRamp.getSlope() != null
                                         && daRamp.getSlope().compareTo(BigDecimal.valueOf(0)) > 0) {
                                     isSlopeDefined = true;
                                 }
+                                slopeWidth = daRamp.getWidth().setScale(2, RoundingMode.HALF_UP);
                             }
-                            if (isSlopeDefined) {
-                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
-                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail1);
-                            } else {
-                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
-                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
-                                        scrutinyDetail1);
-                            }
+//                            if (isSlopeDefined) {
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
+//                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail1);
+//                            } else {
+//                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, "",
+//                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+//                                        scrutinyDetail1);
+//                            }
+//                            BigDecimal expectedSlope1 = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
+//                                    RoundingMode.HALF_UP);
+//                            if (isSlopeDefined) {
+////                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
+////                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
+//                            	setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, TO_BE_DEFINED,
+//                                        DcrConstants.OBJECTDEFINED_DESC, Result.Accepted.getResultVal(), scrutinyDetail2);
+//                            } else {
+////                                setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, expectedSlope1.toPlainString(),
+////                                        DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+////                                        scrutinyDetail2);
+//
+//                            	 setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, TO_BE_DEFINED,
+//                                         DcrConstants.OBJECTNOTDEFINED_DESC, Result.Not_Accepted.getResultVal(),
+//                                         scrutinyDetail2);
+//                            }
+                            
+                           
+                                // Validate minimum slope width
+                                if (slopeWidth.compareTo(MIN_SLOPE_WIDTH) >= 0) {
+                                    LOG.info("DA Ramp slope width is valid: " + slopeWidth);
+                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, MIN_SLOPE_WIDTH.toPlainString(),
+                                          slopeWidth.toPlainString(), Result.Accepted.getResultVal(), scrutinyDetail2);
+                                } else {
+                                    LOG.error("DA Ramp slope width is less than minimum required (1.5 m): " + slopeWidth);
+                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B, SUBRULE_50_C_4_B_SLOPE_MAN_DESC, MIN_SLOPE_WIDTH.toPlainString(),
+                                          slopeWidth.toPlainString(), Result.Not_Accepted.getResultVal(),
+                                          scrutinyDetail2);
+                                }
+                           
+                            
                             valid = false;
                             if (isSlopeDefined) {
-                                Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
-                                BigDecimal expectedSlope = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
-                                        RoundingMode.HALF_UP);
-                                for (DARamp daRamp : block.getDARamps()) {
-                                    BigDecimal slope = daRamp.getSlope();
-                                    if (slope != null && slope.compareTo(BigDecimal.valueOf(0)) > 0
-                                            && expectedSlope != null) {
-                                        if (slope.compareTo(expectedSlope) <= 0) {
-                                            valid = true;
-                                            mapOfRampNumberAndSlopeValues.put("daRampNumber", daRamp.getNumber().toString());
-                                            mapOfRampNumberAndSlopeValues.put("slope", slope.toString());
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (valid) {
-                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B,
-                                            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION,
-                                                    mapOfRampNumberAndSlopeValues.get("daRampNumber")),
-                                            expectedSlope.toString(),
-                                            mapOfRampNumberAndSlopeValues.get("slope"), Result.Accepted.getResultVal(),
-                                            scrutinyDetail2);
-                                } else {
-                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B,
-                                            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""), expectedSlope.toString(),
-                                            "Less than 0.08 for all da ramps", Result.Not_Accepted.getResultVal(),
-                                            scrutinyDetail2);
-                                }
+//                                Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
+//                                BigDecimal expectedSlope = BigDecimal.valueOf(1).divide(BigDecimal.valueOf(12), 2,
+//                                        RoundingMode.HALF_UP);
+//                                for (DARamp daRamp : block.getDARamps()) {
+//                                    BigDecimal slope = daRamp.getSlope();
+//                                    if (slope != null && slope.compareTo(BigDecimal.valueOf(0)) > 0
+//                                            && expectedSlope != null) {
+//                                        if (slope.compareTo(expectedSlope) <= 0) {
+//                                            valid = true;
+//                                            mapOfRampNumberAndSlopeValues.put("daRampNumber", daRamp.getNumber().toString());
+//                                            mapOfRampNumberAndSlopeValues.put("slope", slope.toString());
+//                                            break;
+//                                        }
+//                                    }
+//                                }
+//                                if (valid) {
+//                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B,
+//                                            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION,
+//                                                    mapOfRampNumberAndSlopeValues.get("daRampNumber")),
+//                                            expectedSlope.toString(),
+//                                            mapOfRampNumberAndSlopeValues.get("slope"), Result.Accepted.getResultVal(),
+//                                            scrutinyDetail2);
+//                                } else {
+//                                    setReportOutputDetails(pl, SUBRULE_50_C_4_B,
+//                                            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""), expectedSlope.toString(),
+//                                            "Less than 0.08 for all da ramps", Result.Not_Accepted.getResultVal(),
+//                                            scrutinyDetail2);
+//                                }
+                            	Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
+
+                            	String expectedRatio = "1:12";
+                            	BigDecimal expectedDenominator = extractDenominator(expectedRatio);
+
+                            	for (DARamp daRamp : block.getDARamps()) {
+
+                            	    String actualRatio = daRamp.getSlopeRatio();
+
+                            	    if (isValidSlopeFormat(actualRatio)) {
+
+                            	        BigDecimal actualDenominator = extractDenominator(actualRatio);
+
+                            	        if (actualDenominator != null
+                            	                && expectedDenominator != null
+                            	                && actualDenominator.compareTo(BigDecimal.ZERO) > 0
+                            	                && expectedDenominator.compareTo(BigDecimal.ZERO) > 0) {
+
+                            	            if (actualDenominator.compareTo(expectedDenominator) >= 0) {
+                            	                valid = true;
+
+                            	                mapOfRampNumberAndSlopeValues.put("daRampNumber",
+                            	                        daRamp.getNumber().toString());
+
+                            	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
+
+                            	                break;
+                            	            }
+                            	        }
+                            	    }
+                            	}
+
+                            	if (valid) {
+                            	    setReportOutputDetails(
+                            	            pl,
+                            	            SUBRULE_50_C_4_B,
+                            	            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION,
+                            	                    mapOfRampNumberAndSlopeValues.get("daRampNumber")),
+                            	            expectedRatio,
+                            	            mapOfRampNumberAndSlopeValues.get("slope"),
+                            	            Result.Accepted.getResultVal(),
+                            	            scrutinyDetail2
+                            	    );
+                            	} else {
+                            	    setReportOutputDetails(
+                            	            pl,
+                            	            SUBRULE_50_C_4_B,
+                            	            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""),
+                            	            expectedRatio,
+                            	            "Required: " + expectedRatio + ", Provided: Invalid or steeper slope",
+                            	            Result.Not_Accepted.getResultVal(),
+                            	            scrutinyDetail2
+                            	    );
+                            	}
+
                             }
 
                         }
@@ -427,6 +526,24 @@ public class RampService extends FeatureProcess {
         return pl;
     }
 
+    private BigDecimal extractDenominator(String ratio) {
+        if (ratio == null || !ratio.contains(":")) {
+            return null;
+        }
+
+        try {
+            String[] parts = ratio.split(":");
+            return new BigDecimal(parts[1].trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isValidSlopeFormat(String ratio) {
+        return ratio != null && ratio.matches("1\\s*:\\s*\\d+(\\.\\d+)?");
+    }
+
+    
     private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String expected, String actual, String status,
             ScrutinyDetail scrutinyDetail) {
         Map<String, String> details = new HashMap<>();

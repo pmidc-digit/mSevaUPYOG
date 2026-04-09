@@ -45,7 +45,7 @@ public class CluQueryBuilder {
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'uuid', cludoc.uuid, " +
 					"'documentType', cludoc.documenttype, " +
-					"'documentAttachment', cludoc.documentAttachment)) AS documents, " +
+					"'documentAttachment', cludoc.documentAttachment, 'order', cludoc.doc_order)) AS documents, " +
 					"jsonb_agg(DISTINCT jsonb_build_object(" +
 					"'additionalDetails', cluowner.additionalDetails, " +
 					"'uuid', cluowner.uuid " +
@@ -54,7 +54,7 @@ public class CluQueryBuilder {
 					"FROM eg_clu clu " +
 					"LEFT JOIN eg_clu_details details ON details.cluid = clu.id " +
 					"LEFT JOIN eg_clu_document cludoc ON cludoc.cluid = clu.id " +
-					"LEFT JOIN eg_clu_owner cluowner ON cluowner.cluid = clu.id " +
+					"LEFT JOIN eg_clu_owner cluowner ON cluowner.cluid = clu.id AND cluowner.status = true " +
 					"WHERE 1=1";
 
 
@@ -117,7 +117,7 @@ public class CluQueryBuilder {
 
 	public String getOwnerUserIdsQuery(String layoutId, List<Object> preparedStmtList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT uuid FROM eg_clu_owner WHERE cluid = ?");
+		sb.append("SELECT uuid FROM eg_clu_owner WHERE status = true and cluid = ?");
 
 		preparedStmtList.add(layoutId);
 		return sb.toString();
@@ -192,7 +192,18 @@ public class CluQueryBuilder {
                         addToPreparedStatement(preparedStmtList, approvalNos);
                     }
                 }
-
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" clu.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
+			} else {
+				builder.append(" clu.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatuses);
+			}
+		}
 		
 //		String source = criteria.getSource();
 //		if (source!=null) {

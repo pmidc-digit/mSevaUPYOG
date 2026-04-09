@@ -41,7 +41,8 @@ public class BillGenerationConsumer {
 	 */
 	@KafkaListener(
 		    topics = "${egov.swcalculatorservice.billgenerate.topic}",
-		    containerFactory = "kafkaListenerContainerFactoryBatch"
+		    containerFactory = "kafkaListenerContainerFactoryBatch",
+		    concurrency = "${egov.sw.calculator.concurrency.count}"
 		)
 		public void listen(final List<ConsumerRecord<String, Object>> records) {
 		    log.info("📥 SW bill generator consumer received batch with {} records", records.size());

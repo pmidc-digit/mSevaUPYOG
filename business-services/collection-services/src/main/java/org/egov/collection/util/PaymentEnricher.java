@@ -7,6 +7,8 @@ import static org.egov.collection.config.CollectionServiceConstants.MASTER_ISADV
 import static org.egov.collection.config.CollectionServiceConstants.MASTER_PARTPAYMENTALLOWED_KEY;
 import static org.egov.collection.config.CollectionServiceConstants.MDMS_BUSINESSSERVICE_PATH;
 import static org.egov.collection.model.enums.InstrumentTypesEnum.CARD;
+import static org.egov.collection.model.enums.InstrumentTypesEnum.BBPS;
+
 import static org.egov.collection.model.enums.InstrumentTypesEnum.CASH;
 import static org.egov.collection.model.enums.InstrumentTypesEnum.ONLINE;
 import static org.egov.collection.model.enums.PaymentModeEnum.ONLINE_NEFT;
@@ -195,10 +197,15 @@ public class PaymentEnricher {
 		Payment payment = paymentRequest.getPayment();
 		String paymentMode = payment.getPaymentMode().toString();
 
-		if (paymentMode.equalsIgnoreCase(CASH.name())) {
+		if (paymentMode.equalsIgnoreCase(CASH.name()) ||paymentMode.equalsIgnoreCase(BBPS.name()) ) {
 			String transactionId = idGenRepository.generateTransactionNumber(paymentRequest.getRequestInfo(),
 					payment.getTenantId());
 			payment.setTransactionNumber(transactionId);
+		}
+		
+		if (paymentMode.equalsIgnoreCase(BBPS.name())  ) {
+			payment.setInstrumentNumber(paymentRequest.getPayment().getInstrumentNumber());
+			payment.setInstrumentDate(paymentRequest.getPayment().getInstrumentDate());;
 		}
 		if (paymentMode.equalsIgnoreCase(ONLINE.name()) || paymentMode.equalsIgnoreCase(CARD.name()) ||
 				paymentMode.equalsIgnoreCase(ONLINE_NEFT.name()) || paymentMode.equalsIgnoreCase(ONLINE_RTGS.name()))
@@ -207,7 +214,7 @@ public class PaymentEnricher {
 			payment.setInstrumentStatus(InstrumentStatusEnum.APPROVED);
 
 		payment.setTransactionDate(new Date().getTime());
-		if(paymentMode.equalsIgnoreCase(CASH.name()) || paymentMode.equalsIgnoreCase(CARD.name()) || paymentMode.equalsIgnoreCase(ONLINE.name())
+		if(paymentMode.equalsIgnoreCase(CASH.name())||paymentMode.equalsIgnoreCase(BBPS.name()) || paymentMode.equalsIgnoreCase(CARD.name()) || paymentMode.equalsIgnoreCase(ONLINE.name())
 				|| paymentMode.equalsIgnoreCase(ONLINE_NEFT.name()) || paymentMode.equalsIgnoreCase(ONLINE_RTGS.name())) {
 			payment.setInstrumentDate(payment.getTransactionDate());
 		}

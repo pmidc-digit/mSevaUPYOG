@@ -576,7 +576,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 										try {
 											permissibleValue = fetchEdcrRulesMdms.getPermissibleValue(pl.getEdcrRulesFeatures(), params, valueFromColumn);
 											LOG.info("permissibleValue" + permissibleValue);
-											System.out.println("permis___ for doorsd+++" + permissibleValue);
+											LOG.info("permis___ for doorsd+++" + permissibleValue);
 
 										} catch (NullPointerException e) {
 
@@ -588,7 +588,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 											minDoorWidth = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("permissibleValue").toString()));
 									
 										} 
-								      System.out.println("minDoorWidth" + minDoorWidth);
+										LOG.info("minDoorWidth : " + minDoorWidth);
 										subRule = SUBRULE_41_II_B;
 										subRuleDesc = SUBRULE_41_II_B;
 										if (doorWidth.compareTo(minDoorWidth) >= 0) {
@@ -643,7 +643,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 										try {
 											permissibleValue = fetchEdcrRulesMdms.getPermissibleValue(edcrRuleList, params, valueFromColumn);
 											LOG.info("permissibleValue" + permissibleValue);
-											System.out.println("permis___ for nonHabitational doors +++" + permissibleValue);
+											LOG.info("permis___ for nonHabitational doors +++" + permissibleValue);
 
 										} catch (NullPointerException e) {
 
@@ -656,7 +656,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 											minDoorHeight = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("minDoorHeight").toString()));
 									
 										} 
-								      System.out.println("minDoorWidth" + minDoorWidth);
+										LOG.info("minDoorWidth : " + minDoorWidth);
 
 										if (doorHeight.compareTo(minDoorHeight) >= 0
 												&& doorWidth.compareTo(minDoorWidth) >= 0) {
@@ -761,7 +761,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 										totalWindowArea = totalWindowArea.add(windowArea);
 									}
 
-									System.out.println(
+									LOG.info(
 											"Total Window Area for Room " + room.getNumber() + " = " + totalWindowArea);
 								}
 
@@ -776,7 +776,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 										totalDoorArea = totalDoorArea.add(doorArea);
 									}
 
-									System.out.println(
+									LOG.info(
 											"Total Door Area for Room " + room.getNumber() + " = " + totalDoorArea);
 								}
 
@@ -873,7 +873,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 										for (Door door : room.getDoors()) {
 											BigDecimal doorHeight = door.getDoorHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 											BigDecimal doorWidth = door.getDoorWidth().setScale(2, BigDecimal.ROUND_HALF_UP);
-											System.out.println("rum number" + room.getNumber());
+											LOG.info("room number : " + room.getNumber());
 											
 											Map<String, Object> params = new HashMap<>();
 											String feature = "roomWiseDoorArea";
@@ -898,7 +898,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 											try {
 												permissibleValue = fetchEdcrRulesMdms.getPermissibleValue(edcrRuleList, params, valueFromColumn);
 												LOG.info("permissibleValue" + permissibleValue);
-												System.out.println("permis___ for roomwise doors +++" + permissibleValue);
+												LOG.info("permis___ for roomwise doors +++" + permissibleValue);
 
 											} catch (NullPointerException e) {
 
@@ -911,7 +911,7 @@ public class HeightOfRoom_Citya extends FeatureProcess {
 												minDoorHeight = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("minDoorHeight").toString()));
 										
 											} 
-									      System.out.println("minDoorWidth" + minDoorWidth);
+											LOG.info("minDoorWidth : " + minDoorWidth);
 
 
 											if (doorHeight.compareTo(minDoorHeight) >= 0

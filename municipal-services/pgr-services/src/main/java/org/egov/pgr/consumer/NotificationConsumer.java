@@ -32,7 +32,8 @@ public class NotificationConsumer {
      * @param topic
      */
 
-    @KafkaListener(topics = { "${pgr.kafka.create.topic}" ,"${pgr.kafka.update.topic}"})
+    @KafkaListener(topics = { "${pgr.kafka.create.topic}" ,"${pgr.kafka.update.topic}"},
+    		concurrency = "${kafka.config.consumer.concurrency.count}")
     public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
             ServiceRequest request = mapper.convertValue(record, ServiceRequest.class);

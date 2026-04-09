@@ -244,40 +244,67 @@ public class DemandValidatorV1 {
 	 * @param businessServicesWithNoTaxPeriods
 	 */
 	private void validateTaxPeriod(Map<String, List<TaxPeriod>> taxPeriodBusinessMap, Demand demand,
-			Map<String, String> errorMap, Set<String> businessServicesWithNoTaxPeriods) {
-		
-		/*
-		 * Getting the list of tax periods belonging to the current business service
-		 */
-		List<TaxPeriod> taxPeriods = taxPeriodBusinessMap.get(demand.getBusinessService());
+	        Map<String, String> errorMap, Set<String> businessServicesWithNoTaxPeriods) {
 
+	    List<TaxPeriod> taxPeriods = taxPeriodBusinessMap.get(demand.getBusinessService());
 
-		if (taxPeriods != null) {
+	    if (taxPeriods != null) {
 
-			/*
-			 * looping the list of business services to check if the given demand periods gets match
-			 */
-			TaxPeriod taxPeriod = taxPeriods.stream()
-					.filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
-							&& demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0)
-					.findAny().orElse(null);
+	        TaxPeriod taxPeriod = null;
 
-			if (taxPeriod == null) {
+	        // Extract connectionType safely from additionalDetails
+	        String connectionType = null;
 
-				String msg = TAXPERIOD_NOT_FOUND_MSG
-						.replace(TAXPERIOD_NOT_FOUND_FROMDATE, demand.getTaxPeriodFrom().toString())
-						.replace(TAXPERIOD_NOT_FOUND_TODATE, demand.getTaxPeriodTo().toString());
-				errorMap.put(TAXPERIOD_NOT_FOUND_KEY, msg);
-			}
+	        if (demand.getAdditionalDetails() instanceof Map) {
 
-		} else {
-			/*
-			 * Adding business service name to the set "businessServicesWithNoTaxPeriods"
-			 */
-			businessServicesWithNoTaxPeriods.add(demand.getBusinessService());
-		}
+	            Map<String, Object> additionalDetails =
+	                    (Map<String, Object>) demand.getAdditionalDetails();
 
+	            Object typeObj = additionalDetails.get("connectionType");
+
+	            if (typeObj != null) {
+	                connectionType = typeObj.toString();
+	            }
+	        }
+
+	        /*
+	         * Special handling only for:
+	         * BusinessService = WS or SW
+	         * AND connectionType = Metered
+	         */
+	        if (("WS".equalsIgnoreCase(demand.getBusinessService())
+	                || "SW".equalsIgnoreCase(demand.getBusinessService()))
+	                && "Metered".equalsIgnoreCase(connectionType)) {
+
+	            // Overlap based validation
+	            taxPeriod = taxPeriods.stream()
+	                .filter(t -> demand.getTaxPeriodFrom().compareTo(t.getToDate()) <= 0
+	                          && demand.getTaxPeriodTo().compareTo(t.getFromDate()) >= 0)
+	                .findAny().orElse(null);
+
+	        } else {
+
+	            // Existing strict validation for all other cases
+	            taxPeriod = taxPeriods.stream()
+	                .filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
+	                          && demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0)
+	                .findAny().orElse(null);
+	        }
+
+	        if (taxPeriod == null) {
+
+	            String msg = TAXPERIOD_NOT_FOUND_MSG
+	                    .replace(TAXPERIOD_NOT_FOUND_FROMDATE, demand.getTaxPeriodFrom().toString())
+	                    .replace(TAXPERIOD_NOT_FOUND_TODATE, demand.getTaxPeriodTo().toString());
+
+	            errorMap.put(TAXPERIOD_NOT_FOUND_KEY, msg);
+	        }
+
+	    } else {
+	        businessServicesWithNoTaxPeriods.add(demand.getBusinessService());
+	    }
 	}
+
 
 	/**
 	 * Method to enrich the businessConsumerMap which will be passed to consumer code validator

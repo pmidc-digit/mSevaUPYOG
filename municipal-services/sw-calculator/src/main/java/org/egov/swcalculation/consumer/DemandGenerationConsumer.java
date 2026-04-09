@@ -77,7 +77,8 @@ public class DemandGenerationConsumer {
 	 */
 	@KafkaListener(
 		    topics = {"${egov.seweragecalculatorservice.createdemand.topic}"},
-		    containerFactory = "kafkaListenerContainerFactoryBatch"
+		    containerFactory = "kafkaListenerContainerFactoryBatch",
+		    concurrency = "${egov.sw.calculator.concurrency.count}"
 		)
 		@SuppressWarnings("unchecked")
 		public void listen(final List<ConsumerRecord<String, Object>> records) {
@@ -124,7 +125,8 @@ public class DemandGenerationConsumer {
 	 *            failed batch processing
 	 */
 	@KafkaListener(topics = {
-			"${persister.demand.based.dead.letter.topic.batch}" }, containerFactory = "kafkaListenerContainerFactory")
+			"${persister.demand.based.dead.letter.topic.batch}" }, containerFactory = "kafkaListenerContainerFactory",
+					concurrency = "${egov.sw.calculator.concurrency.count}")
 	public void listenDeadLetterTopic(final List<Message<?>> records) {
 		CalculationReq calculationReq = mapper.convertValue(records.get(0).getPayload(), CalculationReq.class);
 		Map<String, Object> masterMap = mDataService.loadMasterData(calculationReq.getRequestInfo(),

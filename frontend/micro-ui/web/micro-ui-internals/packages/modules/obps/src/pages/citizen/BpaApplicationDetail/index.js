@@ -1584,14 +1584,14 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         label: t("BPA_REVOCATION_PDF_LABEL"),
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
       });
-  } else if (data && data?.collectionBillDetails?.length > 0 && data?.applicationData?.status === "APPROVED") {
-    if (!data?.additionalDetails?.isSelfCertification) {
+  } else if (data && data?.collectionBillDetails?.length > 0 ) {
+    if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "ESIGNED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
         onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit-normal"),
       });
-    } else {
+    } else if(data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_OC_CERTIFICATE"),

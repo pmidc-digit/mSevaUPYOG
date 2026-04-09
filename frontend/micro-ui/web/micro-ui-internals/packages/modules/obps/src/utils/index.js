@@ -1467,8 +1467,8 @@ export function getApproveRejectComments(workflowDetails) {
       : rawComment;
 
     const finalComment = conditionText
-      ? ` ${conditionText}`
-      : "";
+      ? `16. The Approval is subjected to the following conditions: ${conditionText}`
+      : " ";
 
     return finalComment;
     

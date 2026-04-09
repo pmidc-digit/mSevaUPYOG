@@ -306,7 +306,7 @@ console.log('userInfo', userInfo)
   const [isFileLoading, setIsFileLoading] = useState(false)
 
   useEffect(() => {
-    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")){
+    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "ESIGNED" || data?.applicationStatus === "REJECTED")){
       const commentobj = getApproveRejectComments(workflowDetails);
       if (commentobj){
         setComments(commentobj)

@@ -350,6 +350,16 @@ const CitizenApplicationOverview = () => {
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
       });
+    }else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.ismigrationtrue && applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getSanctionLetterReceipt({
+            tenantId: tenantId,
+            payments: {},
+            EmpData,
+          }),
+      });
     }
   }
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "REJECTED") {

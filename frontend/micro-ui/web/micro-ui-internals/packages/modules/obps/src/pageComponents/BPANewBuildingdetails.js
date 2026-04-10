@@ -868,11 +868,10 @@ console.log("appDate", nocApprovedOn);
     try{
       const response = await Digit.OBPSService.NOCSearch(tenantId, { applicationNo: NocNumber });
       setLoader(false);
-      console.log("NOC Search Response:", response);
-      if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus === "APPROVED"){
+      if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus === "E-SIGNED"){
         const nocObject = response?.Noc?.[0];
-        if(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName){
-          setApplicantOwnerOrFirmName(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName)
+        if(nocObject?.owners?.[0]?.name){
+          setApplicantOwnerOrFirmName(nocObject?.owners?.[0]?.name)
         }
         if(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName){
           setNocULBName(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName)
@@ -892,13 +891,15 @@ console.log("appDate", nocApprovedOn);
           }          
         }
         setLoader(true);
-        let EmpData = await EmployeeData(tenantId, NocNumber);
-        console.log("Employee Data", EmpData);
-
-        const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
-        if(reciept_data?.Payments?.length > 0){
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        if(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+          setUploadedFile(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId)
         }
+        // let EmpData = await EmployeeData(tenantId, NocNumber);
+        // console.log("Employee Data", EmpData);
+        // const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
+        // if(reciept_data?.Payments?.length > 0){
+        //   getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        // }
         setLoader(false);
         return;
       }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
@@ -939,6 +940,28 @@ console.log("appDate", nocApprovedOn);
     setEcbcAirConditionedFileObj(e.target.files[0])
     setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: "" }))
   }
+
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    setLoader(true);
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], tenantId);
+      setLoader(false);
+      if (result?.data) {
+        const fileUrl = result?.data?.[filestoreId];
+        if (fileUrl) {
+          window.open(fileUrl, "_blank");
+        } else {
+          alert(t("CS_FILE_FETCH_ERROR"));
+        }
+      } else {        
+        alert(t("CS_FILE_FETCH_ERROR"));        
+      }
+    } catch (e) {
+      setLoader(false);
+      alert(t("CS_FILE_FETCH_ERROR"));
+    }
+  };
 
   const goNext = async () => {
     if (!validateFields()) {
@@ -1254,6 +1277,7 @@ console.log("appDate", nocApprovedOn);
               message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.file}
               accept="image/*,.pdf"
+              customOpen = {getUrlForDocumentView}
             />
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.NocDocument && <ErrorMessage error={errors.NocDocument} />}

@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import Search from "./Search";
 import OBPSResponse from "./OBPSResponse";
 import StakeholderResponse from "./StakeholderResponse";
+import BPAEsignResponse from "./BPAEsignResponse";
 
 
 
@@ -114,6 +115,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
           <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />

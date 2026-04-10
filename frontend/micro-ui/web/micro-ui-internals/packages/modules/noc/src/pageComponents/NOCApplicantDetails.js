@@ -192,6 +192,10 @@ const NOCApplicantDetails = (_props) => {
     return menu.find((g) => g.code === code) || null;
   };
 
+  const convertSquareYardsToMeters = (yards) => {
+    return yards ? parseFloat((yards * 0.836127).toFixed(2)) : null;
+  };
+
   const cptObj = nocCpt?.details?.Properties?.[0]?.Properties?.[0]?.Properties?.[0];
   // default owner object
   const defaultOwner = () => ({
@@ -433,7 +437,7 @@ const NOCApplicantDetails = (_props) => {
         shouldDirty: true,
       });
       // setValue(`owners[${currentIndex}].PropertyOwnerAddress`, property?.owners?.[0]?.permanentAddress || "", { shouldValidate: true, shouldDirty: true });
-      setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, property?.landArea || null, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${currentIndex}].PropertyOwnerPlotArea`, convertSquareYardsToMeters(property?.landArea), { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${currentIndex}].propertyVasikaNo`, property?.additionalDetails?.vasikaNo || null, {
         shouldValidate: true,
         shouldDirty: true,
@@ -472,7 +476,7 @@ const NOCApplicantDetails = (_props) => {
                   PropertyOwnerName: property?.owners?.[0]?.name,
                   PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
                   PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
-                  PropertyOwnerPlotArea: property?.landArea,
+                  PropertyOwnerPlotArea: convertSquareYardsToMeters(property?.landArea),
                   propertyVasikaNo: property?.additionalDetails?.vasikaNo,
                   propertyVasikaDate: property?.additionalDetails?.vasikaDate,
                   localityAreaType: property?.address?.locality,
@@ -493,7 +497,7 @@ const NOCApplicantDetails = (_props) => {
           ...currentStepData?.siteDetails,
           vasikaNumber: property?.additionalDetails?.vasikaNo,
           vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
-          netTotalArea: property?.landArea,
+          netTotalArea: convertSquareYardsToMeters(property?.landArea),
           proposedSiteAddress: property?.owners?.[0]?.permanentAddress,
           localityAreaType: property?.address?.locality,
         })
@@ -682,7 +686,7 @@ const NOCApplicantDetails = (_props) => {
                         <Row label={t("PROPERTY_OWNER_NAME")} text={watch(`owners[${index}].PropertyOwnerName`)} />{" "}
                         <Row label={t("PROPERTY_OWNER_MOBILE_NUMBER")} text={watch(`owners[${index}].PropertyOwnerMobileNumber`)} />{" "}
                         <Row label={t("WS_PROPERTY_ADDRESS_LABEL")} text={watch(`owners[${index}].PropertyOwnerAddress`)} />{" "}
-                        <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`)} />
+                        <Row label={t("PROPERTY_PLOT_AREA")} text={watch(`owners[${index}].PropertyOwnerPlotArea`) + " SQ.MT."} />
                         <Row label={t("Vasika Number")} text={watch(`owners[${index}].propertyVasikaNo`)} />
                         <Row label={t("Vasika Date")} text={watch(`owners[${index}].propertyVasikaDate`)} />
                       </StatusTable>

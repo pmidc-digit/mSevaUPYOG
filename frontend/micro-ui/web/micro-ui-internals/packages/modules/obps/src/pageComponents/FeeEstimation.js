@@ -482,7 +482,7 @@ const FeeEstimation = ({
             </div>)}
 
             {/* {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)} */}
-            {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
 
             <FeeHistoryTable feeHistory={feeHistory} t={t} />
 

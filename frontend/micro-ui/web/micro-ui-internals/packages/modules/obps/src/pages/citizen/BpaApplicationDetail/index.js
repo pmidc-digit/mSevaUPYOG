@@ -40,7 +40,8 @@ import {
   getDocsFromFileUrls,
   scrutinyDetailsData,
   amountToWords,
-  getBase64Img
+  getBase64Img,
+  getApproveRejectComments
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -83,6 +84,8 @@ const BpaApplicationDetail = () => {
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [userSelected, setUser] = useState(null);
+  const [comments , setComments] = useState (null)
+
 
   const user = Digit.UserService.getUser()
 
@@ -301,6 +304,15 @@ console.log('userInfo', userInfo)
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid") || "";
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
+
+  useEffect(() => {
+    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "ESIGNED" || data?.applicationStatus === "REJECTED")){
+      const commentobj = getApproveRejectComments(workflowDetails);
+      if (commentobj){
+        setComments(commentobj)
+      }
+    }
+  }, [workflowDetails]);
 
   useEffect(() => {
       if (!userSelected) {
@@ -735,21 +747,18 @@ useEffect(() => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
 
-  async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+  async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
-    console.log('nowIST', nowIST)
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
 
     // validity date = approval date + 3 as per feedback
     newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
     const approvalDatePlusThree = newValidityDate.getTime();
 
-    console.log("validity date",approvalDatePlusThree); 
 
     const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
-    console.log('requestData', requestData)
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
       if (
@@ -766,25 +775,25 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     if (stakeholderAddress && requestData && requestData?.additionalDetails) {
       requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
     }
-    if(requestData && requestData?.additionalDetails?.signature?.signURL){
+    if (requestData && requestData?.additionalDetails?.signature?.signURL) {
       const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
-      requestData.additionalDetails.signature = {...requestData.additionalDetails.signature, base64Signature: result};
+      requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
       requestData.additionalDetails.permitData =
         "The plot has been officially regularized under No. " +
         requestData?.additionalDetails?.NocNumber +
-        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn +  " , registered in the name of "+  requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
         requestData?.additionalDetails?.UlbName +
         ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData =
         "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
-    }else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
       requestData.additionalDetails.permitData =
         "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
-    }else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
       requestData.additionalDetails.permitData =
         "The building plan falls under Stand-Alone Project."
     } else {
@@ -794,14 +803,85 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType
-    // const edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } })
-    // const responseStatus = Number.parseInt(edcrResponse.status, 10)
-    // if (responseStatus === 201 || responseStatus === 200) {
-    //   mode == "print"
-    //     ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
-    //     : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`)
-    // }
   }
+   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
+     try {
+       setIsEnableLoader(true);
+       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+
+       const newValidityDate = new Date(data?.applicationData?.approvalDate);
+
+       // validity date = approval date + 3 as per feedback
+       newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
+       const approvalDatePlusThree = newValidityDate.getTime();
+       let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+
+       if (!fileStoreId) {
+         const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+         const requestData = {
+           ...data?.applicationData,
+           edcrDetail: [{ ...data?.edcrDetails }],
+           subjectLine,
+           fileno,
+           nowIST,
+           newValidityDate,
+           designation,
+           approverComment: comments,
+         };
+         let count = 0;
+         for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+           if (
+             (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+               workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+             workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+             count == 0
+           ) {
+             requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+             count = 1;
+           }
+         }
+         if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+           requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+         }
+         if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+           const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+           requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+         }
+
+         if (requestData?.additionalDetails?.approvedColony == "NO") {
+           requestData.additionalDetails.permitData =
+             "The plot has been officially regularized under No. " +
+             requestData?.additionalDetails?.NocNumber +
+             "  dated " +
+             requestData?.additionalDetails?.nocObject?.approvedOn +
+             " , registered in the name of " +
+             requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+             ". This regularization falls within the jurisdiction of " +
+             requestData?.additionalDetails?.UlbName +
+             ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+         } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+           requestData.additionalDetails.permitData =
+             "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+         } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+           requestData.additionalDetails.permitData =
+             "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
+         } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+           requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
+         } else {
+           requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+         }
+         const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+         fileStoreId = response?.filestoreIds[0];
+       }
+       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+       window.open(fileStore[fileStoreId], "_blank");
+       requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
+     } catch (error) {
+       console.log("error", error);
+     } finally {
+       setIsEnableLoader(true);
+     }
+   }
 
   async function getRevocationPDFSearch({ tenantId, ...params }) {
     const requestData = { ...data?.applicationData }
@@ -1554,36 +1634,37 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     })
   }
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0 && data?.applicationData?.additionalDetails?.isSanctionLetterGenerated) {
+  if (
+    data &&
+    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.collectionBillDetails?.length > 0 &&
+    data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
+  ) {
     !data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
-      })
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+      });
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
         label: t("BPA_REVOCATION_PDF_LABEL"),
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
-      })
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.collectionBillDetails?.length > 0) {
-    if (data?.applicationData?.status === "APPROVED") {
+      });
+  } else if (data && data?.collectionBillDetails?.length > 0 ) {
+    if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
-      })
-    }
-  } else {
-    if (data?.applicationData?.status === "APPROVED") {
+        onClick: () => getPermitOccupancyOrderSearchFilestore({ tenantId: stateCode }, "buildingpermit-normal"),
+      });
+    } else if(data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_OC_CERTIFICATE"),
-        onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
-      })
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+      });
     }
   }
 

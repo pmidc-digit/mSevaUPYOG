@@ -1653,7 +1653,7 @@ useEffect(() => {
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
       });
   } else if (data && data?.collectionBillDetails?.length > 0 ) {
-    if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "ESIGNED") {
+    if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),

@@ -1447,6 +1447,7 @@ export function getApproveRejectComments(workflowDetails) {
   try {
     const processInstances =
       workflowDetails?.data?.processInstances || [];
+      const delimiter = "[#?..**]";
     // ✅ Get latest APPROVE / REJECT
     const decisionInstance =
       processInstances
@@ -1462,9 +1463,14 @@ export function getApproveRejectComments(workflowDetails) {
     // ✅ Normalize comment safely
     const rawComment = decisionInstance?.comment || "";
 
-    const conditionText = rawComment.includes("[#?..**]")
-      ? rawComment.split("[#?..**]")[1] || ""
-      : rawComment;
+    let conditionText = "";
+
+    if (rawComment?.includes(delimiter)) {
+      conditionText = rawComment?.split(delimiter)[1] || "";
+    } else {
+      // If REJECT, keep rawComment. If APPROVE, keep it empty.
+      conditionText = decisionInstance?.action === "REJECT" ? rawComment : "";
+    }
 
     const finalComment = conditionText
       ? `16. The Approval is subjected to the following conditions: ${conditionText}`

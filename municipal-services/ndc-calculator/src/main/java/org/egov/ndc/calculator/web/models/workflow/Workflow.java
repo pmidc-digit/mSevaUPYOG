@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.egov.ndc.calculator.web.models.ndc.Document;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.ndc.calculator.web.models.SanitizeHtml;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,9 +18,9 @@ import java.util.Objects;
  */
 @ApiModel(description = "BPA application object to capture the details of land, land owners, and address of the land.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class Workflow {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("action")
   private String action = null;
 
@@ -28,7 +28,7 @@ public class Workflow {
   @Valid
   private List<String> assignes = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("comment")
   private String comment = null;
 

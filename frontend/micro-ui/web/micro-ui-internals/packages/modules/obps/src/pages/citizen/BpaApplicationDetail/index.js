@@ -747,21 +747,18 @@ useEffect(() => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
 
-  async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+  async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
-    console.log('nowIST', nowIST)
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
 
     // validity date = approval date + 3 as per feedback
     newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
     const approvalDatePlusThree = newValidityDate.getTime();
 
-    console.log("validity date",approvalDatePlusThree); 
 
     const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
     const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
-    console.log('requestData', requestData)
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
       if (
@@ -778,25 +775,25 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     if (stakeholderAddress && requestData && requestData?.additionalDetails) {
       requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
     }
-    if(requestData && requestData?.additionalDetails?.signature?.signURL){
+    if (requestData && requestData?.additionalDetails?.signature?.signURL) {
       const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
-      requestData.additionalDetails.signature = {...requestData.additionalDetails.signature, base64Signature: result};
+      requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
       requestData.additionalDetails.permitData =
         "The plot has been officially regularized under No. " +
         requestData?.additionalDetails?.NocNumber +
-        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn +  " , registered in the name of "+  requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
         requestData?.additionalDetails?.UlbName +
         ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData =
         "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
-    }else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
       requestData.additionalDetails.permitData =
         "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
-    }else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
       requestData.additionalDetails.permitData =
         "The building plan falls under Stand-Alone Project."
     } else {
@@ -806,13 +803,6 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType
-    // const edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } })
-    // const responseStatus = Number.parseInt(edcrResponse.status, 10)
-    // if (responseStatus === 201 || responseStatus === 200) {
-    //   mode == "print"
-    //     ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
-    //     : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`)
-    // }
   }
 
   async function getRevocationPDFSearch({ tenantId, ...params }) {

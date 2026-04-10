@@ -115,6 +115,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
           <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
@@ -123,7 +124,6 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />
-          <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
         </Switch>
       </div>
     </Fragment>

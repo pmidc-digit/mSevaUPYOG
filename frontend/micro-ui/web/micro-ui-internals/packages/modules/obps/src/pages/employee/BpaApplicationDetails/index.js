@@ -42,6 +42,7 @@ import {
   getDocsFromFileUrls,
   scrutinyDetailsData,
   getBase64Img,
+  getApproveRejectComments
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -105,6 +106,8 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
+  const [comments , setComments] = useState (null)
+  
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -276,6 +279,7 @@ const BpaApplicationDetail = () => {
     }
   }, [isLoading, data]);
 
+  
 
   useEffect(() => {
     if (!bpaDocsLoading && !isLoading) {
@@ -726,6 +730,15 @@ const BpaApplicationDetail = () => {
     });
   }
 
+  useEffect(() => {
+      if (workflowDetails?.data!=null && !workflowDetails?.isLoading ){
+        const commentobj = getApproveRejectComments(workflowDetails);
+        if (commentobj){
+          setComments(commentobj)
+        }
+      }
+    }, [workflowDetails]);
+
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {
     if ((item.code == "CEMP" && item.tenantId === tenantId) || item.code == "CITIZEN") return true;
@@ -1021,7 +1034,7 @@ const BpaApplicationDetail = () => {
       const approvalDatePlusThree = newValidityDate.getTime();
   
       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate, designation }
+      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate, designation, approverComment: comments }
       let count = 0
       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
         if (
@@ -1072,7 +1085,7 @@ const BpaApplicationDetail = () => {
     try {
       setLoader(true);
 
-      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit");
+      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
 
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
@@ -1431,7 +1444,7 @@ const BpaApplicationDetail = () => {
     try {
       // console.log("🎯 Starting certificate eSign process...");
 
-      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit");
+      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
 

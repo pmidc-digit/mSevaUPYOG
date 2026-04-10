@@ -1,7 +1,7 @@
 import { Banner, Card, Loader, Toast } from "@mseva/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import { stringReplaceAll } from "../../utils";
 
 const BPAEsignResponse = () => {
@@ -14,58 +14,61 @@ const BPAEsignResponse = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [showToast, setShowToast] = useState(null);
+  const { id: applicationNo, file: fileStoreId } = useParams();
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiLoading, setApiLoading] = useState(false);
 
-  const parts = pathname.split("/").filter(Boolean);
-  const applicationNo = parts[parts.length - 2];
-  const fileStoreId = parts[parts.length - 1];
 
-  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: applicationNo });
+  useEffect(async () => {
+      if (applicationNo) {
+        try {
+          setIsLoading(true)
+          const response = await Digit.OBPSService.BPASearch(tenantId, { applicationNo })
+          if (response?.ResponseInfo?.status === "successful") {
+            // dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
+            setData({ ...response })
+            setIsLoading(false)
+          } else {
+            // setError()
+            setShowToast({
+              warning: true,
+              message: t("Some_Unknown_Error")
+            });
+            setIsLoading(false)
+          }
+        } catch (e) {
+          setShowToast({
+              warning: true,
+              message: t(e.response?.data?.Errors?.[0]?.message) || t("Some_Unknown_Error")
+          });
+          setIsLoading(false)
+        }
+      }
+    }, [applicationNo])
 
-  const {
-    isLoading: updatingApplication,
-    isError: updateApplicationError,
-    data: updateResponse,
-    error: updateError,
-    mutate,
-  } = Digit.Hooks.obps.useApplicationActions(tenantId);
-
-  useEffect(() => {
-    if (!isLoading && data?.resData?.Clu?.[0] && fileStoreId) {
-      const application = data?.resData?.Clu[0];
-
-      const updatedApplication = {
-        ...application,
-        workflow: { action: "ESIGN" },
-        cluDetails: {
-          ...application?.cluDetails,
-          additionalDetails: {
-            ...application?.cluDetails?.additionalDetails,
-            sanctionLetterFilestoreId: fileStoreId,
-          },
-        },
-      };
-
+  useEffect(async () => {
+    if (!isLoading && data?.BPA?.[0] && fileStoreId) {
+      const application = data?.BPA?.[0];
       let payload = {
-        ...data?.applicationData,
         BPA: {
-          ...data?.applicationData,
+          ...application,
           additionalDetails: {
-            ...data?.applicationData?.additionalDetails,
+            ...application?.additionalDetails,
             sanctionLetterFilestoreId: fileStoreId,
           },
-          workflow: { action: "ESIGN" },
+          workflow: { 
+            action: "ESIGN",
+            assignes: [application?.accountId, ...(application?.landInfo?.owners?.map(owner => owner?.uuid) || [])]
+          },
         },
       };
 
-      // 🔹 Show "in progress" toast
-      setShowToast({ key: "true", warning: true, message: "KINDLY_WAIT_ESIGN_IN_PROGRESS" });
-
-      setLoading(true);
-
-    //   mutation.mutateAsync({ Clu: updatedApplication })
-      mutate(payload)
-        .then(() => {
-         
+      try{
+        setApiLoading(true);
+        const result = await Digit.OBPSService.update(payload, tenantId)
+        if(result?.ResponseInfo?.status === "successful"){
+          setApiLoading(false);
           setLoading(false);
 
           // 🔹 Show success toast
@@ -85,12 +88,12 @@ const BPAEsignResponse = () => {
             clearInterval(interval);
             clearTimeout(timeout);
           };
-        })
-        .catch(() => {
-          setLoading(false);
-
-          // 🔹 Show failure toast
-          setShowToast({ key: "true", warning: true, message: "Failed to update esign in sanction letter" });
+        }else{
+          setShowToast({
+              error: true,
+              message: t("BPA_CREATE_APPLICATION_FAILED")
+          });
+          setApiLoading(false);
           setTimeout(() => setShowToast(null), 3000);
 
           // redirect after showing toast
@@ -98,12 +101,27 @@ const BPAEsignResponse = () => {
             history.push(`/digit-ui/employee/obps/inbox/bpa/${applicationNo}`);
           }, 10000);
 
-          return () => clearTimeout(timeout);
+          return () => clearTimeout(timeout);          
+        }
+      }catch(e){
+        setShowToast({
+          error: true,
+          message: t(e.response?.data?.Errors?.[0]?.message) || t("BPA_CREATE_APPLICATION_FAILED")
         });
+        setApiLoading(false);
+        setTimeout(() => setShowToast(null), 3000);
+
+        // redirect after showing toast
+        const timeout = setTimeout(() => {
+          history.push(`/digit-ui/employee/obps/inbox/bpa/${applicationNo}`);
+        }, 10000);
+
+        return () => clearTimeout(timeout);    
+      }   
     }
   }, [isLoading, data, applicationNo]);
 
-  if (loading || isLoading) {
+  if (loading || isLoading || apiLoading) {
     return <Loader />;
   }
 
@@ -114,8 +132,8 @@ const BPAEsignResponse = () => {
       <Card>
         <Banner
           message={t("NOC_APPLICATION_ESIGN_SUCCESS_HEADER")}
-          info={t(`${stringReplaceAll(data?.resData?.Clu?.[0]?.cluType, ".", "_")}_APPLICATION_NUMBER`)}
-          // successful={!!fileStoreId}
+          info={t(`${stringReplaceAll(data?.BPA?.[0]?.businessService, ".", "_")}_APPLICATION_NUMBER`)}
+          successful={!!fileStoreId}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
         />
@@ -133,7 +151,7 @@ const BPAEsignResponse = () => {
       </Card>
 
       {showToast && (
-        <Toast success={showToast?.success} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
+        <Toast success={showToast?.success} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
       )}
     </div>
   );

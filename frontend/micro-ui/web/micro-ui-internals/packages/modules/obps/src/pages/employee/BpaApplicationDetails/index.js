@@ -1444,7 +1444,7 @@ const BpaApplicationDetail = () => {
     try {
       // console.log("🎯 Starting certificate eSign process...");
 
-      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit");
+      const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
 

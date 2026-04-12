@@ -85,7 +85,10 @@
     letter-spacing: 0.5px;
     width: 100%;
   }
-
+  .card-label span{
+    color: #dc2626;
+    font-weight: "bold";
+  }
   .card-label-error {
     display: block;
     font-size: 12px;

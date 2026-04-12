@@ -40,7 +40,8 @@ import {
   getDocsFromFileUrls,
   scrutinyDetailsData,
   amountToWords,
-  getBase64Img
+  getBase64Img,
+  getApproveRejectComments
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -51,6 +52,7 @@ import FeeEstimation from "../../../pageComponents/FeeEstimation"
 import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
+import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
 
 
 const BpaApplicationDetail = () => {
@@ -82,6 +84,8 @@ const BpaApplicationDetail = () => {
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [userSelected, setUser] = useState(null);
+  const [comments , setComments] = useState (null)
+
 
   const user = Digit.UserService.getUser()
 
@@ -302,6 +306,15 @@ console.log('userInfo', userInfo)
   const [isFileLoading, setIsFileLoading] = useState(false)
 
   useEffect(() => {
+    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "ESIGNED" || data?.applicationStatus === "REJECTED")){
+      const commentobj = getApproveRejectComments(workflowDetails);
+      if (commentobj){
+        setComments(commentobj)
+      }
+    }
+  }, [workflowDetails]);
+
+  useEffect(() => {
       if (!userSelected) {
         return;
       }
@@ -429,12 +442,19 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     window.open(jumpTo, "_blank");
   }
 
-  const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => (obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0) && obj?.title != "SITEPHOTOGRAPH_ONE" && obj?.title != "SITEPHOTOGRAPH_TWO")?.map((doc, index) => ({
     id: index,
+    index: index,
     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-    fileUrl: doc.values?.[0]?.fileURL || null,
+    fileUrl: doc?.values?.[0]?.fileURL || null,
+    fileStoreId: doc?.values?.[0]?.fileStoreId || null,
   }));
-  const documentsColumnsOwner = [
+
+  const sitePhotos = getOrderDocuments(applicationDocs)?.filter(
+              (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
+            )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
+
+  const documentsColumnsOwner = [    
     {
       Header: t("BPA_OWNER_DETAILS_LABEL"),
       accessor: "title",
@@ -455,6 +475,12 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     },
   ];
   const documentsColumns = [
+    {
+      Header: t("SR_NO"),
+      accessor: "index",
+      width:"20px",
+      Cell: ({ value }) => <div style={{width: "20px"}}>{value + 1}</div>,
+    },
     {
       Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
       accessor: "title",
@@ -721,21 +747,18 @@ useEffect(() => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
 
-  async function getPermitOccupancyOrderSearch({ tenantId}, order, mode = "download") {
-const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
+  async function getPermitOccupancyOrderSearch({ tenantId }, order, mode = "download") {
+    const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
 
-    console.log('nowIST', nowIST)
     const newValidityDate = new Date(data?.applicationData?.approvalDate);
 
     // validity date = approval date + 3 as per feedback
     newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
     const approvalDatePlusThree = newValidityDate.getTime();
 
-    console.log("validity date",approvalDatePlusThree); 
 
     const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation}
-    console.log('requestData', requestData)
+    const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine , fileno, nowIST, newValidityDate,designation , approverComment: comments}
     let count = 0
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
       if (
@@ -752,25 +775,25 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     if (stakeholderAddress && requestData && requestData?.additionalDetails) {
       requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
     }
-    if(requestData && requestData?.additionalDetails?.signature?.signURL){
+    if (requestData && requestData?.additionalDetails?.signature?.signURL) {
       const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
-      requestData.additionalDetails.signature = {...requestData.additionalDetails.signature, base64Signature: result};
+      requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
     }
 
     if (requestData?.additionalDetails?.approvedColony == "NO") {
       requestData.additionalDetails.permitData =
         "The plot has been officially regularized under No. " +
         requestData?.additionalDetails?.NocNumber +
-        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn +  " , registered in the name of "+  requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
+        "  dated " + requestData?.additionalDetails?.nocObject?.approvedOn + " , registered in the name of " + requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName + ". This regularization falls within the jurisdiction of " +
         requestData?.additionalDetails?.UlbName +
         ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
     } else if (requestData?.additionalDetails?.approvedColony == "YES") {
       requestData.additionalDetails.permitData =
         "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony
-    }else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+    } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
       requestData.additionalDetails.permitData =
         "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony
-    }else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+    } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
       requestData.additionalDetails.permitData =
         "The building plan falls under Stand-Alone Project."
     } else {
@@ -780,14 +803,85 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType
-    // const edcrResponse = await Digit.OBPSService.edcr_report_download({ BPA: { ...requestData } })
-    // const responseStatus = Number.parseInt(edcrResponse.status, 10)
-    // if (responseStatus === 201 || responseStatus === 200) {
-    //   mode == "print"
-    //     ? printPdf(new Blob([edcrResponse.data], { type: "application/pdf" }))
-    //     : downloadPdf(new Blob([edcrResponse.data], { type: "application/pdf" }), `edcrReport.pdf`)
-    // }
   }
+   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
+     try {
+       setIsEnableLoader(true);
+       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+
+       const newValidityDate = new Date(data?.applicationData?.approvalDate);
+
+       // validity date = approval date + 3 as per feedback
+       newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
+       const approvalDatePlusThree = newValidityDate.getTime();
+       let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
+
+       if (!fileStoreId) {
+         const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+         const requestData = {
+           ...data?.applicationData,
+           edcrDetail: [{ ...data?.edcrDetails }],
+           subjectLine,
+           fileno,
+           nowIST,
+           newValidityDate,
+           designation,
+           approverComment: comments,
+         };
+         let count = 0;
+         for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+           if (
+             (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+               workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+             workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+             count == 0
+           ) {
+             requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+             count = 1;
+           }
+         }
+         if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+           requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+         }
+         if (requestData && requestData?.additionalDetails?.signature?.signURL) {
+           const result = await getBase64Img(requestData?.additionalDetails?.signature?.signURL, state);
+           requestData.additionalDetails.signature = { ...requestData.additionalDetails.signature, base64Signature: result };
+         }
+
+         if (requestData?.additionalDetails?.approvedColony == "NO") {
+           requestData.additionalDetails.permitData =
+             "The plot has been officially regularized under No. " +
+             requestData?.additionalDetails?.NocNumber +
+             "  dated " +
+             requestData?.additionalDetails?.nocObject?.approvedOn +
+             " , registered in the name of " +
+             requestData?.additionalDetails?.nocObject?.applicantOwnerOrFirmName +
+             ". This regularization falls within the jurisdiction of " +
+             requestData?.additionalDetails?.UlbName +
+             ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+         } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+           requestData.additionalDetails.permitData =
+             "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+         } else if (requestData?.additionalDetails?.approvedColony == "Colony Prior to 1995 (colony name)") {
+           requestData.additionalDetails.permitData =
+             "The building plan falls under Colonies prior to 1995  " + requestData?.additionalDetails?.nameofApprovedcolony;
+         } else if (requestData?.additionalDetails?.approvedColony == "Stand Alone Projects") {
+           requestData.additionalDetails.permitData = "The building plan falls under Stand-Alone Project.";
+         } else {
+           requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+         }
+         const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+         fileStoreId = response?.filestoreIds[0];
+       }
+       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+       window.open(fileStore[fileStoreId], "_blank");
+       requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
+     } catch (error) {
+       console.log("error", error);
+     } finally {
+       setIsEnableLoader(true);
+     }
+   }
 
   async function getRevocationPDFSearch({ tenantId, ...params }) {
     const requestData = { ...data?.applicationData }
@@ -979,11 +1073,13 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t, path)
     }
-    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY"){
-      if (path == "bpa") {
+    if(action === "SEND_TO_CITIZEN" || action === "RESUBMIT" || action === "RESUBMIT_AND_PAY" || action === "APPROVE_AND_PAY" || action === "APPLY"){
+      if (path == "bpa" && isBPA) {
         if (!validateDataForAction(action)) {
           return;
         }
+      }else if(path == "bpa" && isBPA){
+
       }
       saveAsDraft(data?.applicationData, action)
     }
@@ -1050,6 +1146,32 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
         return true
       }
     }
+    else{
+      return true;
+    }
+  }
+
+  const validateDataForNewAction = (action) => {
+    if(action === "SEND_TO_CITIZEN"){
+      const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some(item => item?.documentType === "ARCHITECT.UNDERTAKING");
+      const isFeesDeclared = data?.applicationData?.additionalDetails?.isFeesDeclared;
+      const ownerData = data?.applicationData?.landInfo?.owners
+      const documentData = data?.applicationData?.documents
+      if(!(ownerData?.length > 0)){
+        setShowToast({
+          key: "error",
+          action: t("Please Insert Owner Data before Submiting")
+        })
+        return false
+      }
+      if((documentData?.length > 0)){
+        console.log("All The Document Data")
+        return false
+      }
+      else{
+        return true
+      }
+    }    
     else{
       return true;
     }
@@ -1351,7 +1473,7 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     }
    }
 
-    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
+    let payload = { ...app, applicationType, documents: isCitizenConsentIncluded && !isOCApplication && isBPA ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow }; //
 
     mutation.mutate(
       { BPA: payload },
@@ -1512,36 +1634,37 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
     })
   }
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW" && data?.collectionBillDetails?.length > 0 && data?.applicationData?.additionalDetails?.isSanctionLetterGenerated) {
+  if (
+    data &&
+    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.collectionBillDetails?.length > 0 &&
+    data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
+  ) {
     !data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
-      })
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+      });
     data?.applicationData?.status.includes("REVOCATION") &&
       dowloadOptions.push({
         order: 3,
         label: t("BPA_REVOCATION_PDF_LABEL"),
         onClick: () => getRevocationPDFSearch({ tenantId: data?.applicationData?.tenantId }),
-      })
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.collectionBillDetails?.length > 0) {
-    if (data?.applicationData?.status === "APPROVED") {
+      });
+  } else if (data && data?.collectionBillDetails?.length > 0 ) {
+    if (!data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode}, "buildingpermit"),
-      })
-    }
-  } else {
-    if (data?.applicationData?.status === "APPROVED") {
+        onClick: () => getPermitOccupancyOrderSearchFilestore({ tenantId: stateCode }, "buildingpermit-normal"),
+      });
+    } else if(data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_OC_CERTIFICATE"),
-        onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
-      })
+        onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
+      });
     }
   }
 
@@ -1861,17 +1984,41 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           ))
                           : null}
 
+                        
+
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
                           {/* <CardSubHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
-                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}                                                   
+                          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */} 
+                          <CardSubHeader className="bpa-section-header" >{t("BPA_DOCUMENT_SITE_DETAILS_LABEL")}</CardSubHeader>
+                          <StatusTable
+                            style={{
+                              display: "flex",
+                              gap: "20px",
+                              flexWrap: "wrap",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            {sitePhotos?.length > 0 &&
+                              [...sitePhotos]
+                                .map((doc, index) => (
+                                  <NocSitePhotographsBPA
+                                    key={doc?.values?.[0]?.filestoreId}
+                                    url={doc?.values?.[0]?.fileURL}
+                                    documentType={doc?.title}
+                                    coordinates={index === 0 ? data?.applicationData?.landInfo?.address?.geoLocation : data?.applicationData?.additionalDetails?.geoLocationTwo}
+                                  />
+                                ))}
+                          </StatusTable>
+
                             {pdfLoading ? <Loader /> : <Table
                               className="customTable table-border-style"
                               t={t}
                               data={documentsData}
+                              pageSizeLimit={100}
                               columns={documentsColumns}
                               getCellProps={() => ({ style: {} })}
                               disableSort={false}
-                              autoSort={true}
+                              // autoSort={true}
                               manualPagination={false}
                               isPaginationRequired={false}
                             />}                          
@@ -2014,9 +2161,9 @@ const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', ho
                           : null}
 
                         {/* to get Fee values */}
-                        {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                        {/* {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
                           <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
-                        )}
+                        )} */}
                         {/*blocking reason*/}
                         {detail?.additionalDetails?.inspectionReport &&
                           detail?.isFeeDetails &&

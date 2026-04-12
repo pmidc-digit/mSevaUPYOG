@@ -24,11 +24,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             );
             },
         },
-        {
-            Header: t("CS_APPLICATION_DETAILS_APPLICATION_DATE"),
-            accessor: "applicationDate",
-            Cell: ({row}) => row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), 'dd/MM/yyyy')) : ""
-            },
+        // {
+        //     Header: t("CS_APPLICATION_DETAILS_APPLICATION_DATE"),
+        //     accessor: "applicationDate",
+        //     Cell: ({row}) => row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), 'dd/MM/yyyy')) : ""
+        //     },
         {
                 Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
                 accessor: "submissionDate",
@@ -41,7 +41,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
         {
             Header: t("EVENTS_STATUS_LABEL"),
-            accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`WF_${row?.businessService}_${row?.status}`),
+            accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`),
             disableSortBy: true,
         },
         {
@@ -55,7 +55,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             disableSortBy: true,
         },
         {
-            Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
+            Header: t("TIME_TAKEN"),
             accessor: row => GetStatusCell(row?.sla),
         }
         ]

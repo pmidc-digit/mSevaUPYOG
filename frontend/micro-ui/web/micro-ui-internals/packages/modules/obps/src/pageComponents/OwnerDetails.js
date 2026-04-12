@@ -937,7 +937,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         {!isLoading ? (
           <div style={{ marginBottom: "10px" }}>
             <div>
-              <CardLabel>{`${t("BPA_TYPE_OF_OWNER_LABEL")} *`}</CardLabel>
+              <CardLabel>{`${t("BPA_TYPE_OF_OWNER_LABEL")} `}<span className="requiredField">*</span></CardLabel>
               <RadioButtons
                 isMandatory={true}
                 options={ownershipCategoryList}
@@ -964,7 +964,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       />
                     )}
                   <div className="bpa-owner-owner-card">
-                    <CardLabel className="bpa-owner-cardlabel-negative-margin">{`${t("CORE_COMMON_MOBILE_NUMBER")} *`}</CardLabel>
+                    <CardLabel className="bpa-owner-cardlabel-negative-margin">{`${t("CORE_COMMON_MOBILE_NUMBER")} `}<span className="requiredField">*</span></CardLabel>
                     <div className="bpa-owner-mobile-row">
                       <div className="bpa-owner-field-container">
                           <MobileNumber 
@@ -982,10 +982,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       </div>
                       <ErrorMessage message={errors[`mobileNumber_${index}`]} />
                     </div>
-                    <CardLabel>{`${t("CORE_COMMON_NAME")} *`}</CardLabel>
+                    <CardLabel>{`${t("CORE_COMMON_NAME")} `}<span className="requiredField">*</span></CardLabel>
                     <TextInput className="bpa-owner-input-bg-fa" t={t} type={"text"} disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.name ? true : false} isMandatory={false} optionKey="i18nKey" name="name" value={field.name} onChange={(e) => setOwnerName(index, e)} {...(validation = { isRequired: true, pattern: "^[a-zA-Z ]*$", type: "text", title: t("TL_NAME_ERROR_MESSAGE"), })} />
                     <ErrorMessage message={errors[`name_${index}`]} />
-                    <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")} *`}</CardLabel>
+                    <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")} `}<span className="requiredField">*</span></CardLabel>
                     <RadioOrSelect
                       name="gender"
                       options={genderList}
@@ -1026,7 +1026,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                     />
                     <ErrorMessage message={errors[`documentType_${index}`]} /> */}
 
-                    <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB) ")} *`}</CardLabel>
+                    <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Valid ID Copy (PAN/Voter ID/ Driving License) (PDF, Max 5MB) ")} `}<span className="requiredField">*</span></CardLabel>
                     <div className="bpa-owner-upload-row">
                     <CustomUploadFile
                       id={`document-upload-${index}`}
@@ -1041,14 +1041,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       error={errors[`documentFile_${index}`]}
                       uploadMessage=""
                       accept=".pdf"
-                    />
+                    />                    
                     {/* {fields?.[index]?.additionalDetails?.documentFile ? <div>
                       <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.documentFile)}} label={t("CS_VIEW_DOCUMENT")} />
                     </div> : null } */}
                     </div>
+                    <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf files are accepted with maximum size of 5 MB")}</p>  
                     <ErrorMessage message={errors[`documentFile_${index}`]} />
 
-                    <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Owner Photo")} *`}</CardLabel>
+                    <CardLabel className="bpa-owner-cardlabel-margin-top">{`${t("Upload Owner Photo")} `}<span className="requiredField">*</span></CardLabel>
                     <div className="bpa-owner-upload-row">
                     <CustomUploadFile
                       id={`photo-upload-${index}`}
@@ -1063,14 +1064,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       error={errors[`ownerPhoto_${index}`]}
                       uploadMessage=""
                       accept="image/*"
-                    />
+                    />                    
                     {/* {fields?.[index]?.additionalDetails?.ownerPhoto ? <div>
                       <SubmitBar onSubmit={() => {routeTo(fields?.[index]?.additionalDetails?.ownerPhoto)}} label={t("CS_VIEW_DOCUMENT")} />
                     </div> : null } */}
                     </div>
+                    <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>  
                     <ErrorMessage message={errors[`ownerPhoto_${index}`]} />
 
-                    <CardLabel style={{ marginTop: "30px" }}>{`${t("Date of Birth")} *`}</CardLabel>
+                    <CardLabel style={{ marginTop: "30px" }}>{`${t("Date of Birth")} `}<span className="requiredField">*</span></CardLabel>
                     <TextInput className="bpa-owner-input-bg-fa" t={t} type={"date"} isMandatory={false} name="dob" disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.dob ? true : false} value={field.dob} onChange={(e) => setDateOfBirth(index, e)} />
                     <ErrorMessage message={errors[`dob_${index}`]} />
 
@@ -1105,7 +1107,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       </React.Fragment>
                     )}
 
-                    <CardLabel>{`${t("Owner's Address")} *`}</CardLabel>
+                    <CardLabel>{`${t("Owner's Address")} `}<span className="requiredField">*</span></CardLabel>
                     <TextArea className="bpa-owner-owner-textarea" placeholder="Enter complete address" disabled={currentStepData?.PlotDetails?.landInfo?.owners?.[index]?.permanentAddress ? true : false} value={field?.permanentAddress || ""} onChange={(e) => setOwnerAddress(index, e)} />
                     <ErrorMessage message={errors[`address_${index}`]} />
 

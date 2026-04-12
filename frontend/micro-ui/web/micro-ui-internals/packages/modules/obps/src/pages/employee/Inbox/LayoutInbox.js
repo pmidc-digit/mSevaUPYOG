@@ -15,11 +15,25 @@ const LayoutInbox = ({ parentRoute }) => {
   const { t } = useTranslation()
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id")
+  const user = Digit.UserService.getUser();
+  const {data: employeeData , isLoading: isEmployeeLoading} = Digit.Hooks.useEmployeeSearch(tenantId, { codes: user?.info?.userName, isActive: true }, { enabled: !!user?.info?.userName });
 
   const searchFormDefaultValues = {
     mobileNumber: "",
     applicationNumber: "",
   }
+
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeRole, setEmployeeRole] = useState("");
+
+  useEffect(() => {
+      if (!isEmployeeLoading && employeeData) {
+        const code=  employeeData?.Employees?.[0]?.user?.name || "";
+        const desig = employeeData?.Employees?.[0]?.assignments?.[0]?.designation || ""
+        setEmployeeName(code);
+        setEmployeeRole(desig);
+      }
+  }, [employeeData, isEmployeeLoading]);
 
   const filterFormDefaultValues = {
     moduleName: "layout-service",
@@ -95,7 +109,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([])
   const [totalCountData, setTotalCountData] = useState(0)
 
-  const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
+  const { isLoading: isInboxLoading, data: inboxData, refetch } = Digit.Hooks.obps.useLayoutInbox({
     tenantId,
     filters: { ...formState },
   })
@@ -117,6 +131,7 @@ const LayoutInbox = ({ parentRoute }) => {
     if (inboxData) {
       inboxData.revalidate()
     }
+    refetch();
   }, [])
 
   const onPageSizeChange = (e) => {
@@ -233,6 +248,9 @@ const LayoutInbox = ({ parentRoute }) => {
       <Header>
         {t("ES_COMMON_INBOX")}
         {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null}
+        <p className="inbox-name">{employeeData &&
+          !isEmployeeLoading &&
+          `  ${t("Welcome")} ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}</p>
       </Header>
       <InboxComposer
         {...{

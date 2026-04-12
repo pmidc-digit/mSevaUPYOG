@@ -26,17 +26,17 @@ export const uuidv4 = () => {
   return require("uuid/v4")();
 };
 
-export const EmployeeData = async (tenantId, consumerCode) => {
+export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) => {
   const wfData = await Digit.WorkflowService.getDetailsById({
     tenantId,
     id: consumerCode,
-    moduleCode: "obpas_noc",
+    moduleCode: moduleCode || "obpas_noc",
     role: "EMPLOYEE",
     getTripData: false,
   });
   console.log("Workflow Data", wfData);
 
-  const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE");
+  const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = await Digit.UserService.employeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
@@ -1441,4 +1441,45 @@ export function formatDuration(totalTimeMs) {
   const seconds = totalSeconds % 60;
 
   return { days, hours, minutes, seconds };
+}
+
+export function getApproveRejectComments(workflowDetails) {
+  try {
+    const processInstances =
+      workflowDetails?.data?.processInstances || [];
+      const delimiter = "[#?..**]";
+    // ✅ Get latest APPROVE / REJECT
+    const decisionInstance =
+      processInstances
+        .filter(
+          pi => pi?.action === "APPROVE" || pi?.action === "REJECT"
+        )
+        .sort(
+          (a, b) =>
+            (b?.auditDetails?.lastModifiedTime || 0) -
+            (a?.auditDetails?.lastModifiedTime || 0)
+        )[0] || null;
+
+    // ✅ Normalize comment safely
+    const rawComment = decisionInstance?.comment || "";
+
+    let conditionText = "";
+
+    if (rawComment?.includes(delimiter)) {
+      conditionText = rawComment?.split(delimiter)[1] || "";
+    } else {
+      // If REJECT, keep rawComment. If APPROVE, keep it empty.
+      conditionText = decisionInstance?.action === "REJECT" ? rawComment : "";
+    }
+
+    const finalComment = conditionText
+      ? `16. The Approval is subjected to the following conditions: ${conditionText}`
+      : " ";
+
+    return finalComment;
+    
+  } catch (e) {
+    console.error("comments error", e);
+    return null; // ✅ ALWAYS return something
+  }
 }

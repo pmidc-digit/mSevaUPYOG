@@ -28,6 +28,7 @@ const OBPSResponse = (props) => {
       top: 0,
       behavior: "smooth"
     });
+    setTimeout(async () => {    
     const bpaResponse = await Digit.OBPSService.BPASearch(tenantId, { applicationNo: bpaData?.applicationNo });
     console.log(bpaResponse, "UYTRTYU");
     // let businessService = "BPA.LOW_RISK_PERMIT_FEE";
@@ -45,6 +46,7 @@ const OBPSResponse = (props) => {
     setIsLoader(false);
     setApplicationData(bpaResponse?.BPA?.[0]);
     setBillData(fetchBill?.Bill);
+    }, 3000)
   }, []);
 
   const getHeaderMessage = () => {

@@ -1657,7 +1657,7 @@ useEffect(() => {
       dowloadOptions.push({
         order: 3,
         label: t("BPA_PERMIT_ORDER"),
-        onClick: () => getPermitOccupancyOrderSearchFilestore({ tenantId: stateCode }, "buildingpermit-normal"),
+        onClick: () => getPermitOccupancyOrderSearchFilestore({ tenantId: data?.applicationData?.tenantId }, "buildingpermit-normal"),
       });
     } else if(data?.applicationData?.status === "APPROVED") {
       dowloadOptions.push({

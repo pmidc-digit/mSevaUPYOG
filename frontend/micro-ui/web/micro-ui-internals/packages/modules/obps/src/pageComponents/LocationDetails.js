@@ -635,7 +635,7 @@ return (
             </span>
           ) : (
             <span className={"form-pt-dropdown-only"}>
-              <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")} `}<span className="requiredField">*</span></CardLabel>
+              {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")} `}<span className="requiredField">*</span></CardLabel> */}
               <TextInput
                
                 isMandatory={false}

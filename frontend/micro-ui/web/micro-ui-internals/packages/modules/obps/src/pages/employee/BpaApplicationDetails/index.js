@@ -2260,7 +2260,7 @@ const BpaApplicationDetail = () => {
           />
         ) : null}
 
-        {!workflowDetails?.isLoading && (
+        {(!workflowDetails?.isLoading) && (workflowDetails?.data?.actionState?.nextActions?.length > 0 || workflowDetails?.data?.nextActions?.length > 0) && (
           <ActionBar>
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu

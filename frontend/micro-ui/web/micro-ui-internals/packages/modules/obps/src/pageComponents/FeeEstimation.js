@@ -87,6 +87,12 @@ const FeeEstimation = ({
     const isEditable =
         (isCitizen && isNewConstructionPage) || isEmployee;
 
+    const citizenHiddenStatuses = ["INITIATED", "INPROGRESS", "CITIZEN_APPROVAL_INPROCESS", "PENDING_APPL_FEE", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"];
+    const shouldShowCitizenSanctionFee = !hidePayTwo && isCitizen && currentStepData?.createdResponse?.businessService != "BPA_LOW" && !citizenHiddenStatuses.includes(currentStepData?.createdResponse?.status);
+
+    const employeeHiddenStatuses = ["INITIATED", "INPROGRESS", "CITIZEN_APPROVAL_INPROCESS", "PENDING_APPL_FEE", "FIELDINSPECTION_INPROGRESS"];
+    const shouldShowEmployeeSanctionFee = !hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && !employeeHiddenStatuses.includes(currentStepData?.createdResponse?.status);
+
 
 
     const {
@@ -464,7 +470,7 @@ const FeeEstimation = ({
 
             {!hidePayTwo && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
             
-            {!hidePayTwo && isCitizen && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
+            {shouldShowCitizenSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
                 {t("BPA_SANCTION_FEE")}
             </CardSubHeader>
                 <Table
@@ -482,7 +488,7 @@ const FeeEstimation = ({
             </div>)}
 
             {/* {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTableRegular {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange: handleAdjustedAmountChangeRegular,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)} */}
-            {!hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            {shouldShowEmployeeSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
 
             <FeeHistoryTable feeHistory={feeHistory} t={t} />
 

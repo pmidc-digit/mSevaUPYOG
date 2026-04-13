@@ -2284,7 +2284,7 @@ useEffect(() => {
                       </div>
                     )}
 
-                    {workflowDetails?.data?.actionState?.applicationStatus === "INPROGRESS" && !isUserCitizen && (
+                    {workflowDetails?.data?.actionState?.applicationStatus === "INPROGRESS" && !isUserCitizen && isBPA &&(
                       !workflowDetails?.isLoading &&
                       workflowDetails?.data?.newNextAction?.length > 0 &&
                       !isFromSendBack &&

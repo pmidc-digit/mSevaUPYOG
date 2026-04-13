@@ -2,7 +2,7 @@ package org.egov.bpa.calculator.web.models.landinfo;
 
 import java.util.Objects;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 import org.springframework.validation.annotation.Validated;
 
@@ -14,7 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Institution
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:54:07.373Z[GMT]")
 public class Institution   {
   @JsonProperty("id")
   private String id = null;

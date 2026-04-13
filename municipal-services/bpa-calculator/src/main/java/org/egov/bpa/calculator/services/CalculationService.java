@@ -37,6 +37,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.springframework.util.StringUtils;
+import org.springframework.context.annotation.Lazy;
 
 @Service
 @Slf4j
@@ -48,6 +49,7 @@ public class CalculationService {
 	private MDMSService mdmsService;
 
 	@Autowired
+	@Lazy
 	private DemandService demandService;
 
 	@Autowired

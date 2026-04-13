@@ -2,7 +2,7 @@ package org.egov.bpa.calculator.web.models;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

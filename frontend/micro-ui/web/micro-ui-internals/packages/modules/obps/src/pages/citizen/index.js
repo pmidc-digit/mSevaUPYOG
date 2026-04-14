@@ -45,6 +45,8 @@ const OBPSBreadCrumbs = ({ location }) => {
         location.pathname.includes("obps/edcrscrutiny") ||
         location.pathname.includes("obps/layout") ||
         location.pathname.includes("obps/clu") ||
+        location.pathname.includes("obps/edcr") ||
+        location.pathname.includes("/response") ||
         location.pathname.includes("obps/search");
     
     breadcrumbs.push(
@@ -122,12 +124,10 @@ const App = ({ path }) => {
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
-    <span className={"ws-citizen-wrapper"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
-      {!isResponse && !window.location.href.includes("/stepper") ? (
+    <span className={"ws-citizen-wrapper"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px",  ...(window.location.href.includes("inbox") ? { paddingTop:"56px" } : {} ) }}>
         <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
           <OBPSBreadCrumbs location={location} />
         </div>
-      ) : null}
       <Switch>
 
         <PrivateRoute path={`${path}/layout/search-application`} component={(props) => <AppContainer><LayoutSearchApplication {...props} /></AppContainer>} />

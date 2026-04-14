@@ -1776,7 +1776,7 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
-                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && <div>
+                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
                                 {(
                                     <StatusTable>
                                       {remainingDoc?.length > 0 && (
@@ -1791,7 +1791,7 @@ const BpaApplicationDetail = () => {
                                     </StatusTable>
                                 )}
                               </div>}
-                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 &&  <div>
+                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) &&  <div>
                                 <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
                                 <StatusTable>
                                   {remainingDoc?.length > 0 && (

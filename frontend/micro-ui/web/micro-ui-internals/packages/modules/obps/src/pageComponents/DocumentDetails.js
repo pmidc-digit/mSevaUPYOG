@@ -433,7 +433,7 @@ function SelectDocument({
       <LabelFieldPair>
         {/* {console.log("doc", doc)} */}
         <CardLabel className="card-label-smaller">
-          {t(doc?.code)} {doc?.required && <div>{" "} <span className="requiredField">*</span></div>}
+          {t(doc?.code)} {doc?.required && <span className="requiredField">{" *"}</span>}
         </CardLabel>
         <div className="field">
           <CustomUploadFile

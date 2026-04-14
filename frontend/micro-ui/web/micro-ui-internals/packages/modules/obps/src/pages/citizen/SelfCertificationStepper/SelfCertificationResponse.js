@@ -1,12 +1,13 @@
 import { Banner, Card, CardText, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import React, {useEffect , useState} from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import { getBusinessServices, stringReplaceAll } from "../../../utils";
 
 const SelfCertificationResponse = (props) => {
 //   const { state } = props.location;
   const { t } = useTranslation();
+  const { id: selfCertificationCode } = useParams();
   const history = useHistory();
 //   const bpaData = state?.data?.BPA?.[0];
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -16,11 +17,6 @@ const SelfCertificationResponse = (props) => {
   const [bpaData , setBpaData] = useState({})
   const location = useLocation();
   const { workflowAction } = location.state || {};
-  console.log("workflowAction",workflowAction);
-
-
-  const pathname = history?.location?.pathname || "";
-  const selfCertificationCode = pathname.split("/").pop(); // ✅ Extracts the last segment
 
   const onSubmit = () => {
     history.push(`/digit-ui/citizen`);
@@ -67,7 +63,7 @@ const SelfCertificationResponse = (props) => {
 
   const handlePayment = () => {
     window.location.assign(
-      `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(bpaData?.businessService, bpaData?.applicationStatus, bpaData?.additionalDetails?.applicationType)}/${bpaData?.applicationNo}/${bpaData?.tenantId}?tenantId=${bpaData?.tenantId}`}`,
+      `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(bpaData?.businessService, (bpaData?.applicationStatus || bpaData?.status), bpaData?.additionalDetails?.applicationType)}/${bpaData?.applicationNo}/${bpaData?.tenantId}?tenantId=${bpaData?.tenantId}`}`,
     )
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };

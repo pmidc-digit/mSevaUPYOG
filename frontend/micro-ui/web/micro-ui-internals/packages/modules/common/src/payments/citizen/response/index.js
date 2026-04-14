@@ -353,6 +353,7 @@ const WrapPaymentComponent = (props) => {
           } else {
             updatedpayments = {
               ...paymentData,
+               BPA: [bpaData?.[0]],
               additionalDetails: {
                 ...paymentData.additionalDetails,
                 designation: designation,

@@ -41,7 +41,8 @@ import {
   scrutinyDetailsData,
   amountToWords,
   getBase64Img,
-  getApproveRejectComments
+  getApproveRejectComments,
+  fetchUrl,
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
@@ -555,7 +556,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
                     value ? (
                         <LinkButton style={{ float: "right", display: "inline" }}
                             label={t("View")}
-                            onClick={() => routeTo(value)}
+                            onClick={() => fetchUrl(value, tenantId)}
                         />
                     ) : (
                         t("CS_NA")

@@ -519,6 +519,8 @@ useEffect(() => {
       newErrors.approxinhabitants = t("BPA_APPROX_INHABITANTS_REQUIRED");
     } else if (isNaN(approxinhabitants)) {
       newErrors.approxinhabitants = t("BPA_APPROX_INHABITANTS_INVALID");
+    } else if (approxinhabitants.length > 3) {
+      newErrors.approxinhabitants = t("BPA_APPROX_INHABITANTS_MINIMUM_3_DIGITS");
     }
 
     if (!distancefromsewer) {

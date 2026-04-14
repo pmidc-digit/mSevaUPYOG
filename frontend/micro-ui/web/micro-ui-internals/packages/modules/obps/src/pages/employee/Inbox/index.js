@@ -200,7 +200,7 @@ const Inbox = ({ parentRoute }) => {
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
   return (
-    <>
+    <React.Fragment>
       <Header>
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
@@ -226,7 +226,7 @@ const Inbox = ({ parentRoute }) => {
           formState,
         }}
       ></InboxComposer>
-    </>
+    </React.Fragment>
   );
 };
 

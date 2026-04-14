@@ -10,7 +10,7 @@ const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("Citizen.tenant-id");
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const searchFormDefaultValues = {};
   const filterFormDefaultValues = {
     appliactionType: "",
@@ -111,14 +111,14 @@ const Inbox = ({ parentRoute }) => {
     logoIcon: <CaseIcon />,
     headerText: "ACTION_TEST_EDCR_SCRUTINY",
     links: [
-      {
-        link: `/digit-ui/citizen/obps/edcrscrutiny/apply`,
-        text: t("BPA_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
-      },
-      {
-        link: `/digit-ui/citizen/obps/edcrscrutiny/oc-apply`,
-        text: t("BPA_OC_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
-      },
+      // {
+      //   link: `/digit-ui/citizen/obps/edcrscrutiny/apply`,
+      //   text: t("BPA_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
+      // },
+      // {
+      //   link: `/digit-ui/citizen/obps/edcrscrutiny/oc-apply`,
+      //   text: t("BPA_OC_PLAN_SCRUTINY_FOR_NEW_CONSTRUCTION_LABEL"),
+      // },
     ],
   };
 
@@ -171,7 +171,7 @@ const Inbox = ({ parentRoute }) => {
     onFilterFormReset,
   };
 
-  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } });
+  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId } });
 
   const propsForInboxMobileCards = useInboxMobileCardsData({ table });
 

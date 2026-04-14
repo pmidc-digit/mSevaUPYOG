@@ -34,14 +34,24 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 accessor: "submissionDate",
                 Cell: ({row}) =>{ return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "NA"}
         },
+        // {
+        //     Header: t("ES_INBOX_LOCALITY"),
+        //     accessor: (row) => t(row?.locality),
+        //     disableSortBy: true,
+        // },
         {
-            Header: t("ES_INBOX_LOCALITY"),
-            accessor: (row) => t(row?.locality),
+            Header: t("ZONE"),
+            accessor: (row) => t(row?.zone),
             disableSortBy: true,
         },
         {
             Header: t("EVENTS_STATUS_LABEL"),
             accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`),
+            disableSortBy: true,
+        },
+        {
+            Header: t("CATEGORY"),
+            accessor: row => row?.category,
             disableSortBy: true,
         },
         {
@@ -52,6 +62,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         {
             Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
             accessor: (row) => t(row?.applicationType),
+            disableSortBy: true,
+        },
+        {
+            Header: t("IS_SELF_CERTIFICATION"),
+            accessor: (row) => t(row?.selfCertification),
             disableSortBy: true,
         },
         {
@@ -68,6 +83,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             padding: "20px 18px",
             fontSize: "16px"
         }}},
+        tableStyle: {overflowX: "auto"},
         disableSort: false,
         autoSort:false,
         manualPagination:true,

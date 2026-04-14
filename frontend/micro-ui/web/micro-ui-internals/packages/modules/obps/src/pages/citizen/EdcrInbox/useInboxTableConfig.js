@@ -1,27 +1,16 @@
 import { format } from "date-fns";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MultiLink } from "@mseva/digit-ui-react-components";
+import { PrimaryDownlaodIcon } from "../../../utils/svgindex";
+import { fetchUrl } from "../../../utils";
+import { ActionMenu } from "../../../components/ActionMenu";
 
 const Download = ({ dowloadOptions }) => {
-  const [showOptions, setShowOptions] = useState(false);
-
-  return (
-    <div>
-      <MultiLink
-        className="multilinkWrapper"
-        onHeadClick={() => setShowOptions(!showOptions)}
-        displayOptions={showOptions}
-        // showOptions={setShowOptions}
-        options={dowloadOptions}
-        style={{ right: "0", position: "unset", top: "0px", margin: "0px" }}
-        optionsStyle={{ right: "10px", top: "unset", margin: "0px", position: "absolute" }}
-      />
-    </div>
-  );
+  return <ActionMenu options={dowloadOptions} />;
 };
 
-const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) =>  value === "Accepted" ? <span className="sla-cell-success " style={{background:"none",padding:"unset"}}>{value}</span> : <span className="sla-cell-error" style={{background:"none",padding:"unset"}}>{value}</span>;
   const { t } = useTranslation();
@@ -74,12 +63,13 @@ const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, d
             <Download
               dowloadOptions={[
                 {
-                  label: t("BPA_UPLOADED_PLAN_DXF"),
-                  onClick: () => window.open(`${row.original["dxfFileurl"]}`),
+                  label: t("Building Plan"),
+                  onClick: () => fetchUrl(`${row.original["dxfFileurl"]}`, tenantId),
+                  // onClick: () => window.open(`${row.original["dxfFileurl"]}`, tenantId),
                 },
                 {
                   label: t("EDCR_SCUTINY_REPORT"),
-                  onClick: () => window.open(`${row.original["planReportUrl"]}`),
+                  onClick: () => fetchUrl(`${row.original["planReportUrl"]}`, tenantId),
                 },
               ]}
             />

@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useMemo, useReducer } from "react";
-import { InboxComposer, CaseIcon, Header, SubmitBar } from "@mseva/digit-ui-react-components";
+import { InboxComposer, CaseIcon, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
@@ -200,16 +200,11 @@ const Inbox = ({ parentRoute }) => {
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
   return (
-    <>
+    <React.Fragment>
       <Header>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div>
-            {t("ES_COMMON_INBOX")}
-            {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
-            {isEmoployee && <p className="inbox-name">{employeeName}</p>}
-          </div>
-          <SubmitBar label={t("User Manual")} onSubmit={() => window.open("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FBPA%2FMarch%2F13%2F1773381614243uFJyzhFqyR.pdf", "_blank")} />
-        </div>
+        {t("ES_COMMON_INBOX")}
+        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+        {isEmoployee && <p className="inbox-name">{employeeName}</p>}
       </Header>
       {Digit.Utils.browser.isMobile() &&
         <div style={{marginLeft: "12px"}}>
@@ -231,7 +226,7 @@ const Inbox = ({ parentRoute }) => {
           formState,
         }}
       ></InboxComposer>
-    </>
+    </React.Fragment>
   );
 };
 

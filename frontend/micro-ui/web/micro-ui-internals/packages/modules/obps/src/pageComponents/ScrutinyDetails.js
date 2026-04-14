@@ -18,7 +18,7 @@ import { render } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory, useParams } from "react-router-dom";
 import Timeline from "../components/Timeline";
-import { stringReplaceAll } from "../utils";
+import { fetchUrl, stringReplaceAll } from "../utils";
 
 const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData, onGoBack }) => {
   const { t } = useTranslation();
@@ -501,9 +501,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                 label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
                 text={
                   <SubmitBar
-                    label={t("Uploaded Plan.pdf")}
+                    label={t("Building Plan.pdf")}
                     onSubmit={() => {
-                      routeTo(data?.updatedDxfFile);
+                      fetchUrl(data?.updatedDxfFile, tenantId);
                     }}
                   />
                 }
@@ -515,7 +515,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                   <SubmitBar
                     label={t("BPA_SCRUTINY_REPORT_PDF")}
                     onSubmit={() => {
-                      routeTo(data?.planReport);
+                      fetchUrl(data?.planReport, tenantId);
                     }}
                   />
                 }

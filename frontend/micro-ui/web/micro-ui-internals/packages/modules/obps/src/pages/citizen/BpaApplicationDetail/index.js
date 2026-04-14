@@ -731,15 +731,15 @@ useEffect(() => {
       response = { filestoreIds: [payments?.fileStoreId] }
     } else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
       const fileNo = fileno
-      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo  }] }, "bpa-receiptsecond")
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo, BPA: [data]  }] }, "bpa-receiptsecond")
       console.log("Final Payments array:", [{ ...payments, usage }]);
     }
     else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
-      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords  }] }, "bpa-obps-receipt")
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords, BPA: [data]}] }, "bpa-obps-receipt")
       console.log("Final Payments array:", [{ ...payments, usage }]);
     }
     else{
-        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords  }] }, "bpa-receipt") //to do: bpa-obps-receipt
+        response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords , BPA: [data]  }] }, "bpa-receipt") //to do: bpa-obps-receipt
         console.log("Final Payments array:", [{ ...payments, usage }]);
     }
 

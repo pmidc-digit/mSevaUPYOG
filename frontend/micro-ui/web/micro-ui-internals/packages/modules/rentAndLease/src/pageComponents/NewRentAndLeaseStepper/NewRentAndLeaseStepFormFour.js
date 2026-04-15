@@ -151,7 +151,6 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           : null;
 
       // Get the allotmentId from CreatedResponse for new documents
-      const allotmentIdForNewDocs = CreatedResponse?.AllotmentDetails?.[0]?.id;
 
       formData = {
         ...CreatedResponse?.AllotmentDetails?.[0],
@@ -169,31 +168,50 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
         ...(applicationType === "Legacy" && { securityDeposit: null }),
-        Document: updatedDocuments.map((doc) => {
-          const originalDoc =
-            (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
-              (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
-            ) || {};
+        ...(updatedDocuments?.length > 0 && {
+          Document: updatedDocuments.map((doc) => {
+            const originalDoc =
+              (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
+                (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
+              ) || {};
 
-          // Check if this is a new document (not found in original documents)
-          const isNewDocument = !originalDoc?.documentUid && !originalDoc?.fileStoreId;
+            const docId = doc?.docId || originalDoc?.docId;
+            const allotmentId = doc?.allotmentId || originalDoc?.allotmentId;
 
-          // Get docId and allotmentId
-          const docId = doc?.docId || originalDoc?.docId;
-          const allotmentId = doc?.allotmentId || originalDoc?.allotmentId || (isNewDocument ? allotmentIdForNewDocs : undefined);
-
-          return {
-            documentType: doc?.documentType || originalDoc?.documentType || "",
-            fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-            documentUid: doc?.documentUid || originalDoc?.documentUid,
-            id: doc?.id || originalDoc?.id,
-            // Only include docId if it exists (backend generates it for new documents)
-            ...(docId ? { docId } : {}),
-            // Always include allotmentId (use parent allotment ID for new documents)
-            ...(allotmentId ? { allotmentId } : {}),
-            active: true,
-          };
+            return {
+              documentType: doc?.documentType || originalDoc?.documentType || "",
+              fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+              ...(docId ? { docId } : {}),
+              ...(allotmentId ? { allotmentId } : {}),
+              active: true,
+            };
+          }),
         }),
+        // Document: updatedDocuments.map((doc) => {
+        //   const originalDoc =
+        //     (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
+        //       (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
+        //     ) || {};
+
+        //   // Check if this is a new document (not found in original documents)
+        //   const isNewDocument = !originalDoc?.documentUid && !originalDoc?.fileStoreId;
+
+        //   // Get docId and allotmentId
+        //   const docId = doc?.docId || originalDoc?.docId;
+        //   const allotmentId = doc?.allotmentId || originalDoc?.allotmentId || (isNewDocument ? allotmentIdForNewDocs : undefined);
+
+        //   return {
+        //     documentType: doc?.documentType || originalDoc?.documentType || "",
+        //     fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+        //     documentUid: doc?.documentUid || originalDoc?.documentUid,
+        //     id: doc?.id || originalDoc?.id,
+        //     // Only include docId if it exists (backend generates it for new documents)
+        //     ...(docId ? { docId } : {}),
+        //     // Always include allotmentId (use parent allotment ID for new documents)
+        //     ...(allotmentId ? { allotmentId } : {}),
+        //     active: true,
+        //   };
+        // }),
         workflow: {
           ...existingWorkflow,
           action: selectedAction?.action || "",
@@ -267,23 +285,42 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
         OwnerInfo: mergedOwnerInfo,
         ...(additionalDetails && { additionalDetails: additionalDetails }),
         propertyId: updatedPropertyDetails?.propertyId || updatedPropertyDetails?.selectedProperty?.propertyId,
-        Document: updatedDocuments.map((doc) => {
-          const originalDoc =
-            (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
-              (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
-            ) || {};
+        ...(updatedDocuments?.length > 0 && {
+          Document: updatedDocuments.map((doc) => {
+            const originalDoc =
+              (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
+                (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
+              ) || {};
 
-          const docId = doc?.docId || originalDoc?.docId;
-          const allotmentId = doc?.allotmentId || originalDoc?.allotmentId;
+            const docId = doc?.docId || originalDoc?.docId;
+            const allotmentId = doc?.allotmentId || originalDoc?.allotmentId;
 
-          return {
-            documentType: doc?.documentType || originalDoc?.documentType || "",
-            fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
-            ...(docId ? { docId } : {}),
-            ...(allotmentId ? { allotmentId } : {}),
-            active: true,
-          };
+            return {
+              documentType: doc?.documentType || originalDoc?.documentType || "",
+              fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+              ...(docId ? { docId } : {}),
+              ...(allotmentId ? { allotmentId } : {}),
+              active: true,
+            };
+          }),
         }),
+        // Document: updatedDocuments?.map((doc) => {
+        //   const originalDoc =
+        //     (CreatedResponse?.AllotmentDetails?.[0]?.Document || [])?.find(
+        //       (d) => d.documentUid === doc?.documentUid || d.fileStoreId === doc?.fileStoreId || d.documentType === doc?.documentType
+        //     ) || {};
+
+        //   const docId = doc?.docId || originalDoc?.docId;
+        //   const allotmentId = doc?.allotmentId || originalDoc?.allotmentId;
+
+        //   return {
+        //     documentType: doc?.documentType || originalDoc?.documentType || "",
+        //     fileStoreId: doc?.fileStoreId || originalDoc?.fileStoreId || "",
+        //     ...(docId ? { docId } : {}),
+        //     ...(allotmentId ? { allotmentId } : {}),
+        //     active: true,
+        //   };
+        // }),
         workflow: {
           ...existingWorkflow,
           action: selectedAction?.action || "",
@@ -291,6 +328,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           status: selectedAction?.action || "",
         },
       };
+    }
+
+    if (!formData?.Document || (Array.isArray(formData.Document) && formData.Document.length === 0)) {
+      delete formData.Document;
     }
 
     // Adapt this to your actual service call

@@ -1,8 +1,8 @@
 package org.egov.echallancalculation.web.models.demand;
 
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 
-import jakarta.validation.constraints.Email;
+import org.hibernate.validator.constraints.Email;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

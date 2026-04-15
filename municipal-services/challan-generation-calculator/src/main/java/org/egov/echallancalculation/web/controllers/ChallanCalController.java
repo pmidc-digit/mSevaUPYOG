@@ -3,7 +3,7 @@ package org.egov.echallancalculation.web.controllers;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 import org.egov.echallancalculation.service.CalculationService;
 import org.egov.echallancalculation.web.models.calculation.Calculation;

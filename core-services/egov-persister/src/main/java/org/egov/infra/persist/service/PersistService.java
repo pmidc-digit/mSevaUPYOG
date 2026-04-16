@@ -14,11 +14,13 @@ import org.egov.infra.persist.web.contract.TopicMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.*;
 
 @Service
 @Slf4j
+@Lazy
 public class PersistService {
 
 	@Autowired

@@ -10,6 +10,7 @@ import org.egov.infra.persist.service.PersistService;
 import org.egov.tracer.kafka.CustomKafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.BatchAcknowledgingConsumerAwareMessageListener;
 import org.springframework.kafka.listener.BatchAcknowledgingMessageListener;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
+@Lazy
 public class PersisterBatchListner implements BatchAcknowledgingMessageListener<String, Object> {
 
 	@Autowired

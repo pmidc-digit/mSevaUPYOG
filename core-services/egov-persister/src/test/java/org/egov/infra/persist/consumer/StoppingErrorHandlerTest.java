@@ -7,7 +7,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+//import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -15,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(classes = {StoppingErrorHandler.class})
 @ExtendWith(SpringExtension.class)
 class StoppingErrorHandlerTest {
-    @MockBean
+	@MockitoBean
     private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
 
     @Autowired
@@ -25,7 +26,7 @@ class StoppingErrorHandlerTest {
     void testHandle() {
         doNothing().when(this.kafkaListenerEndpointRegistry).stop();
         Exception thrownException = new Exception("An error occurred");
-        this.stoppingErrorHandler.handle(thrownException, new ConsumerRecord<>("Topic", 1, 1L, "Key", "Value"));
+        this.stoppingErrorHandler.handleOne(thrownException, new ConsumerRecord<>("Topic", 1, 1L, "Key", "Value") , null, null);
         verify(this.kafkaListenerEndpointRegistry).stop();
     }
 }

@@ -7,7 +7,7 @@ import org.egov.infra.persist.web.contract.TopicMap;
 import org.egov.tracer.KafkaConsumerErrorHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -19,14 +19,15 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.SeekToCurrentBatchErrorHandler;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer2;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @EnableKafka
@@ -38,6 +39,7 @@ public class PersisterConsumerConfig {
 	private StoppingErrorHandler stoppingErrorHandler;
 
 	@Autowired
+	@Lazy
 	private PersisterMessageListener indexerMessageListener;
 
 	@Autowired
@@ -80,7 +82,7 @@ public class PersisterConsumerConfig {
 
 		JsonDeserializer jsonDeserializer = new JsonDeserializer<>(Object.class, false);
 
-		ErrorHandlingDeserializer2<String> errorHandlingDeserializer = new ErrorHandlingDeserializer2<>(
+		ErrorHandlingDeserializer<String> errorHandlingDeserializer = new ErrorHandlingDeserializer<>(
 				jsonDeserializer);
 
 		return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), errorHandlingDeserializer);
@@ -94,7 +96,7 @@ public class PersisterConsumerConfig {
 		factory.getContainerProperties();
 		factory.setConcurrency(Integer.parseInt(concurrency));
 		factory.getContainerProperties().setPollTimeout(Integer.parseInt(pollTime));
-		factory.setErrorHandler(kafkaConsumerErrorHandler);
+		factory.setCommonErrorHandler(kafkaConsumerErrorHandler);
 		
 		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 		log.info("Custom KafkaListenerContainerFactory built...");

@@ -19,11 +19,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import org.springframework.context.annotation.Lazy;
 
 @SpringBootApplication
 @Slf4j
@@ -36,6 +37,7 @@ public class EgovPersistApplication {
     private String configPaths;
 
     @Autowired
+    @Lazy
     private ApplicationContext applicationContext;
 
 
@@ -85,7 +87,6 @@ public class EgovPersistApplication {
         return configFolderList;
     }
 
-    @PostConstruct
     @Bean
     public TopicMap loadConfigs() {
         TopicMap topicMap = new TopicMap();

@@ -11,7 +11,7 @@ import org.egov.tracer.KafkaConsumerErrorHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -22,10 +22,11 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.*;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer2;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -91,8 +92,8 @@ public class PersisterBatchConsumerConfig {
 
         JsonDeserializer jsonDeserializer = new JsonDeserializer<>(Object.class,false);
 
-        ErrorHandlingDeserializer2<String> errorHandlingDeserializer
-                = new ErrorHandlingDeserializer2<>(jsonDeserializer);
+        ErrorHandlingDeserializer<String> errorHandlingDeserializer
+                = new ErrorHandlingDeserializer<>(jsonDeserializer);
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), errorHandlingDeserializer);
 
@@ -107,7 +108,7 @@ public class PersisterBatchConsumerConfig {
         factory.setConcurrency(Integer.parseInt(concurrency));
         factory.getContainerProperties().setPollTimeout(Integer.parseInt(pollTime));
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
-        factory.setBatchErrorHandler(new SeekToCurrentBatchErrorHandler());
+        factory.setCommonErrorHandler(new DefaultErrorHandler());
 
 
         // BATCH PROPERTY

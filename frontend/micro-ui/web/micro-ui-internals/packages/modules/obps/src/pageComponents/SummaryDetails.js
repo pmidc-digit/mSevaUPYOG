@@ -1065,7 +1065,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                         <div className="row border-none">
                             <h2>{t("BPA_DISTRICT")}</h2>
-                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}</div>
+                            <div className="value">{currentStepData?.additionalDetails?.District || t("CS_NA")}</div>
                         </div>
                         <div className="row border-none">
                             <h2>{t(`BPA_LOC_MOHALLA_LABEL`)}</h2>

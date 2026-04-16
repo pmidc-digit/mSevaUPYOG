@@ -359,8 +359,6 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
           )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
 
-    console.log("applicationDocs", getOrderDocuments(applicationDocs), sitePhotos)
-
     // const ecbcDocumentsData = useMemo(() => {
     //     return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
     //         id: index,
@@ -1067,7 +1065,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                         <div className="row border-none">
                             <h2>{t("BPA_DISTRICT")}</h2>
-                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}</div>
+                            <div className="value">{currentStepData?.additionalDetails?.District || t("CS_NA")}</div>
                         </div>
                         <div className="row border-none">
                             <h2>{t(`BPA_LOC_MOHALLA_LABEL`)}</h2>

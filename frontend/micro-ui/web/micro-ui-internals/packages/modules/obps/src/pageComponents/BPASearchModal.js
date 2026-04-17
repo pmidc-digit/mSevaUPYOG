@@ -64,7 +64,7 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
             const response = await Digit.OBPSService.BPASearch(tenantId, { 
                 ...(mobileNumber?.length>0? {mobileNumber: mobileNumber} : {}),
                 ...(applicationNumber?.length>0?{ applicationNo: applicationNumber} : {}),
-                status: "BLOCKED",                
+                status: "BLOCKED,INITIATED",                
             });
             setIsLoading(false);
             if(response?.BPA?.length>0){

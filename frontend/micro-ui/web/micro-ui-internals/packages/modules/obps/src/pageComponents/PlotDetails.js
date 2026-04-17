@@ -375,14 +375,6 @@ console.log("sessionStorageData",currentStepData, userDetails);
     }
   }, [LicenseData]);
 
-  useEffect(()=>{
-    if(data && data?.planDetail?.planInfoProperties?.KHASRA_NO){
-      setKhasraNumber(data?.planDetail?.planInfoProperties?.KHASRA_NO);
-    }
-    if(data && data?.planDetail?.planInformation?.plotBndryWallLength && boundaryWallLength === ""){
-      setBoundaryWallLength(data?.planDetail?.planInformation?.plotBndryWallLength?.toString());
-    }
-  },[currentStepData?.BasicDetails?.edcrDetails])
 
   useEffect(() => {
   if (currentStepData?.createdResponse?.additionalDetails) {
@@ -413,6 +405,15 @@ console.log("sessionStorageData",currentStepData, userDetails);
     // setPropertyUid(details?.propertyuid || "");
   }
 }, [currentStepData?.createdResponse]);
+
+useEffect(()=>{
+    if(data && data?.planDetail?.planInfoProperties?.KHASRA_NO){
+      setKhasraNumber(data?.planDetail?.planInfoProperties?.KHASRA_NO);
+    }
+    if(data && data?.planDetail?.planInformation?.plotBndryWallLength && boundaryWallLength === ""){
+      setBoundaryWallLength(data?.planDetail?.planInformation?.plotBndryWallLength?.toString());
+    }
+  },[currentStepData?.BasicDetails?.edcrDetails])
 
 // useEffect(() => {
 //   if (menuList && currentStepData?.cpt?.details?.address?.locality && !currentStepData?.createdResponse?.additionalDetails) {
@@ -518,6 +519,8 @@ useEffect(() => {
       newErrors.approxinhabitants = t("BPA_APPROX_INHABITANTS_REQUIRED");
     } else if (isNaN(approxinhabitants)) {
       newErrors.approxinhabitants = t("BPA_APPROX_INHABITANTS_INVALID");
+    } else if (approxinhabitants.length > 3) {
+      newErrors.approxinhabitants = t("BPA_APPROX_INHABITANTS_MINIMUM_3_DIGITS");
     }
 
     if (!distancefromsewer) {

@@ -1483,3 +1483,79 @@ export function getApproveRejectComments(workflowDetails) {
     return null; // ✅ ALWAYS return something
   }
 }
+
+export const fetchUrl = async (docUrl, tenantId) => {
+  if (docUrl) {
+    let id = docUrl;
+    let fullTenantId = tenantId;
+
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        id = urlParams.get("fileStoreId") || id;
+        fullTenantId = urlParams.get("tenantId") || fullTenantId;
+      }
+    }
+
+    // const parts = (typeof fullTenantId === "string" ? fullTenantId.split(".") : []);
+    // const tenantIdForFetch = parts.length > 0 ? parts[parts.length - 1] : fullTenantId; // Get part after dot
+
+    try {
+      const result = await Digit.UploadServices.Filefetch([id], fullTenantId);
+      if (result?.data?.[id]) {
+        window.open(result.data[id], "_blank");
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
+  }
+};
+
+export const fetchOnlyUrl = async (docUrl, tenantId) => {
+  if (docUrl) {
+    let id = docUrl;
+    let fullTenantId = tenantId;
+
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        id = urlParams.get("fileStoreId") || id;
+        fullTenantId = urlParams.get("tenantId") || fullTenantId;
+      }
+    }
+
+    // const parts = (typeof fullTenantId === "string" ? fullTenantId.split(".") : []);
+    // const tenantIdForFetch = parts.length > 0 ? parts[parts.length - 1] : fullTenantId; // Get part after dot
+
+    try {
+      const result = await Digit.UploadServices.Filefetch([id], fullTenantId);
+      if (result?.data?.[id]) {
+        return result.data[id];
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
+  }
+};
+
+export const mergePDFsWithoutLibrary = async (urls) => {
+  const container = document.createElement("div");
+
+  for (const url of urls) {
+    const iframe = document.createElement("iframe");
+    iframe.src = url;
+    iframe.style.width = "100%";
+    iframe.style.height = "1000px";
+    iframe.style.marginBottom = "20px";
+
+    container.appendChild(iframe);
+  }
+
+  document.body.appendChild(container);
+
+  setTimeout(() => {
+    window.print(); // User selects "Save as PDF"
+  }, 2000);
+}

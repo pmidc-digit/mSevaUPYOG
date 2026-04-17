@@ -19,7 +19,7 @@ import getPetAcknowledgementData from "../../getPetAcknowledgementData";
 import PTRWFApplicationTimeline from "../../pageComponents/PTRWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
 import PTRDocument from "../../pageComponents/PTRDocument";
-import QRCode from "qrcode"
+import QRCode from "qrcode";
 import get from "lodash/get";
 import { size } from "lodash";
 
@@ -43,8 +43,7 @@ const ApplicationDetails = () => {
     filters: { applicationNumber: id },
     config: { staleTime: 0, refetchOnMount: "always" },
   });
-    const tenantInfo = tenants?.find((tenant) => tenant?.code === tenantId);
-
+  const tenantInfo = tenants?.find((tenant) => tenant?.code === tenantId);
 
   const [billData, setBillData] = useState(null);
 
@@ -60,18 +59,18 @@ const ApplicationDetails = () => {
 
   const [loading, setLoading] = useState(false);
 
-   const { data: approverData, isLoading: approverDataLoading } = Digit.Hooks.useWorkflowDetails({
-      tenantId,
-      id: id,
-      moduleCode: "ptr",
-    });
-  
-    useEffect(() => {
-      if (!approverDataLoading && approverData) {
-        const name = approverData?.processInstances?.[1]?.assigner?.name;
-        setApprover(name);
-      }
-    }, [approverDataLoading, approverData]);
+  const { data: approverData, isLoading: approverDataLoading } = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: id,
+    moduleCode: "ptr",
+  });
+
+  useEffect(() => {
+    if (!approverDataLoading && approverData) {
+      const name = approverData?.processInstances?.[1]?.assigner?.name;
+      setApprover(name);
+    }
+  }, [approverDataLoading, approverData]);
 
   const fetchBillData = async () => {
     setLoading(true);
@@ -125,28 +124,28 @@ const ApplicationDetails = () => {
   }
 
   const printCertificate = async () => {
-      const qrDataURL = await QRCode.toDataURL(window.location.href);
-  
-      try {
-        if (!data?.PetRegistrationApplications?.[0]) {
-          throw new Error("Pet registration data is missing");
-        }
-  
-        const createCertificateHTML = () => {
-          const petData = data.PetRegistrationApplications[0];
-          const currentDate = new Date().toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          });
-  
-          const petImage = petData?.documents?.find((doc) => doc?.documentType === "PET.PETPHOTO");
-  
-          const petImageUrl = petImage?.filestoreId
-            ? `${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${petImage.filestoreId}`
-            : `${window.location.origin}/adorable-golden-retriever.png`;
-  
-          const content = `
+    const qrDataURL = await QRCode.toDataURL(window.location.href);
+
+    try {
+      if (!data?.PetRegistrationApplications?.[0]) {
+        throw new Error("Pet registration data is missing");
+      }
+
+      const createCertificateHTML = () => {
+        const petData = data.PetRegistrationApplications[0];
+        const currentDate = new Date().toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+
+        const petImage = petData?.documents?.find((doc) => doc?.documentType === "PET.PETPHOTO");
+
+        const petImageUrl = petImage?.filestoreId
+          ? `${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${petImage.filestoreId}`
+          : `${window.location.origin}/adorable-golden-retriever.png`;
+
+        const content = `
             <html>
               <head>
                 <title>Pet Registration Certificate</title>
@@ -336,10 +335,10 @@ const ApplicationDetails = () => {
                 </div>
               </div>
                   <span class="header-value">This is to certify that the ${petData?.petDetails?.petType || "Dog"} kept by Mr./Mrs./Ms. ${
-            petData?.owner?.name || "Not Specified"
-          } at ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
-            petData?.owner?.mobileNumber || "Not Specified"
-          } is registered with ${ulbType} ${ulb} as per following details:</span>
+          petData?.owner?.name || "Not Specified"
+        } at ${petData?.address?.addressId || "Not Specified"}, ${petData?.address?.pincode || ""} mobile no. ${
+          petData?.owner?.mobileNumber || "Not Specified"
+        } is registered with ${ulbType} ${ulb} as per following details:</span>
                   <div class="main-content">
                     <div class="details-section">
                       <span class="detail-label">Pet Information</span> <br>
@@ -467,8 +466,8 @@ const ApplicationDetails = () => {
                     <div class="terms-title">${t("PET_TERMS_HEADER")}</div>
                     <ol class="terms-list">
                       <li>${t("PET_TERM1A")} <strong> ${petData?.petRegistrationNumber || ""} </strong> ${t(
-            "PET_TERM1B"
-          )} <strong>'https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home'</strong></li>
+          "PET_TERM1B"
+        )} <strong>'https://mseva.lgpunjab.gov.in/digit-ui/citizen/ptr-home'</strong></li>
                       <li>${t("PET_NEW_TERM_2")}</li>
                       <li>${t("PET_NEW_TERM_3")}</li>
                       <li>${t("PET_NEW_TERM_4")}</li>
@@ -494,50 +493,50 @@ const ApplicationDetails = () => {
               </body>
             </html>
           `;
-  
-          const printWindow = window.open("", "_blank");
-          printWindow.document.write(content);
-          printWindow.document.close();
-  
-          printWindow.onload = () => {
-            setTimeout(() => {
-              printWindow.print();
-              printWindow.onafterprint = () => {
-                printWindow.close();
-              };
-            }, 500);
-          };
+
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(content);
+        printWindow.document.close();
+
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print();
+            printWindow.onafterprint = () => {
+              printWindow.close();
+            };
+          }, 500);
         };
-  
-        createCertificateHTML();
-        setShowToast({
-          key: false,
-          label: "PTR_CERTIFICATE_DOWNLOADED_SUCCESSFULLY",
-        });
-      } catch (error) {
-        setShowToast({
-          key: true,
-          label: `PTR_CERTIFICATE_DOWNLOAD_ERROR: ${error.message}`,
-        });
+      };
+
+      createCertificateHTML();
+      setShowToast({
+        key: false,
+        label: "PTR_CERTIFICATE_DOWNLOADED_SUCCESSFULLY",
+      });
+    } catch (error) {
+      setShowToast({
+        key: true,
+        label: `PTR_CERTIFICATE_DOWNLOAD_ERROR: ${error.message}`,
+      });
+    }
+  };
+
+  const downloadAcknowledgement = async () => {
+    try {
+      if (!data?.PetRegistrationApplications?.[0]) {
+        throw new Error("Pet registration data is missing");
       }
-    };
-  
-    const downloadAcknowledgement = async () => {
-      try {
-        if (!data?.PetRegistrationApplications?.[0]) {
-          throw new Error("Pet registration data is missing");
-        }
-  
-        const createAcknowledgementHTML = () => {
-          const petData = data.PetRegistrationApplications[0];
-          const ulb = petData?.tenantId.split(".")[1];
-          const currentDate = new Date().toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          });
-  
-          const content = `
+
+      const createAcknowledgementHTML = () => {
+        const petData = data.PetRegistrationApplications[0];
+        const ulb = petData?.tenantId.split(".")[1];
+        const currentDate = new Date().toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        });
+
+        const content = `
             <html>
               <head>
                 <title>Pet Registration Acknowledgement</title>
@@ -694,33 +693,33 @@ const ApplicationDetails = () => {
               </body>
             </html>
           `;
-  
-          const printWindow = window.open("", "_blank");
-          printWindow.document.write(content);
-          printWindow.document.close();
-  
-          printWindow.onload = () => {
-            setTimeout(() => {
-              printWindow.print();
-              printWindow.onafterprint = () => {
-                printWindow.close();
-              };
-            }, 500);
-          };
+
+        const printWindow = window.open("", "_blank");
+        printWindow.document.write(content);
+        printWindow.document.close();
+
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print();
+            printWindow.onafterprint = () => {
+              printWindow.close();
+            };
+          }, 500);
         };
-  
-        createAcknowledgementHTML();
-        setShowToast({
-          key: false,
-          label: "PTR_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY",
-        });
-      } catch (error) {
-        setShowToast({
-          key: true,
-          label: `PTR_ACKNOWLEDGEMENT_DOWNLOAD_ERROR: ${error.message}`,
-        });
-      }
-    };
+      };
+
+      createAcknowledgementHTML();
+      setShowToast({
+        key: false,
+        label: "PTR_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY",
+      });
+    } catch (error) {
+      setShowToast({
+        key: true,
+        label: `PTR_ACKNOWLEDGEMENT_DOWNLOAD_ERROR: ${error.message}`,
+      });
+    }
+  };
 
   let documentDate = t("CS_NA");
   if (pet_details?.additionalDetails?.documentDate) {
@@ -736,13 +735,10 @@ const ApplicationDetails = () => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
-
-  
-  
   let dowloadOptions = [];
-    let user = Digit.UserService.getUser();
+  let user = Digit.UserService.getUser();
 
-  const isCemp = user?.info?.roles.find((role) => role.code === "PET_REG_EMPLOYEE")?.code;
+  const isCemp = user?.info?.roles.filter((role) => role.code === "CEMP");
 
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
@@ -803,7 +799,7 @@ const ApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {isCemp && (reciept_data?.Payments[0]?.paymentStatus === "NEW" || reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") && dowloadOptions && dowloadOptions.length > 0 && (
+          {isCemp && dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}
@@ -830,7 +826,7 @@ const ApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
           <StatusTable>
-            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
             {/* <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_STREET_NAME")} text={pet_details?.address?.street || t("CS_NA")} />

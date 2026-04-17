@@ -123,7 +123,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       },
       address: {
         pincode,
-        addressId: apiDataCheck?.[0]?.address?.addressId ? apiDataCheck?.[0]?.address?.addressId : currentStepData?.ownerDetails?.address,
+        addressLine1: currentStepData?.ownerDetails?.address,
       },
       previousApplicationNumber: id ? id : null,
       applicationType: checkForRenew ? "RENEWAPPLICATION" : "NEWAPPLICATION",
@@ -136,9 +136,6 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         status: "INITIATED",
       },
     };
-
-    console.log("formData", formData);
-    console.log("apiDataCheck check", apiDataCheck);
 
     const pick = (newV, oldV) => (newV !== undefined && newV !== null && newV !== "" ? newV : oldV);
     const existing = apiDataCheck?.[0] || currentStepData?.responseData?.[0] || {};
@@ -165,7 +162,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         address: {
           ...existing.address,
           pincode: pick(pincode, existing.address?.pincode),
-          addressId: pick(currentStepData.ownerDetails.address, existing.address?.addressId),
+          addressLine1: pick(currentStepData.ownerDetails.address, existing.address?.addressLine1),
           tenantId,
         },
 

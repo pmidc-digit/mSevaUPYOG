@@ -117,6 +117,7 @@ public class NDCService {
 				}
 			}
 			userService.createUser(ndcApplicationRequest.getRequestInfo(),application);
+			setWorkflowAssigneeForSendBackToCitizen(application, ndcApplicationRequest.getRequestInfo());
 			NdcApplicationRequest ndcApplicationRequest1 = NdcApplicationRequest.builder().requestInfo(ndcApplicationRequest.getRequestInfo()).applications(Collections.singletonList(application)).build();
 			if(!skipWorkFlow) {
 				workflowIntegrator.callWorkFlow(ndcApplicationRequest1, NDCConstants.NDC_BUSINESS_SERVICE);
@@ -189,6 +190,7 @@ public class NDCService {
 			if (owners != null) {
 				userService.createUser(requestInfo,application);
 			}
+			setWorkflowAssigneeForSendBackToCitizen(application, requestInfo);
 
 			NdcApplicationRequest requestTobeUpdated = NdcApplicationRequest.builder().requestInfo(requestInfo).applications(Collections.singletonList(application)).build();
 			log.info("ndc request with current applications :", requestTobeUpdated);
@@ -203,6 +205,114 @@ public class NDCService {
 
 			return ndcApplicationRequest;
 		}
+
+	private void setWorkflowAssigneeForSendBackToCitizen(Application application, RequestInfo requestInfo) {
+		if (application == null || application.getWorkflow() == null
+				|| StringUtils.isBlank(application.getWorkflow().getAction())) {
+			return;
+		}
+
+		if (!"SENDBACKTOCITIZEN".equalsIgnoreCase(application.getWorkflow().getAction())) {
+			return;
+		}
+
+		OwnerInfo ownerToAssign = getOwnerForCitizenAction(application);
+		if (ownerToAssign == null || StringUtils.isBlank(ownerToAssign.getMobileNumber())) {
+			throw new CustomException("INVALID_CITIZEN_ASSIGNEE", "Unable to resolve owner mobile for send back to citizen");
+		}
+
+		String assigneeUuid = resolveCitizenUuidByMobile(ownerToAssign, requestInfo);
+		if (StringUtils.isBlank(assigneeUuid)) {
+			throw new CustomException("INVALID_CITIZEN_ASSIGNEE", "Unable to resolve citizen UUID for send back to citizen");
+		}
+
+		application.getWorkflow().setAssignes(Collections.singletonList(assigneeUuid));
+
+		if (application.getOwners() != null) {
+			for (OwnerInfo owner : application.getOwners()) {
+				if (owner != null && StringUtils.equals(owner.getMobileNumber(), ownerToAssign.getMobileNumber())) {
+					owner.setUuid(assigneeUuid);
+				}
+			}
+		}
+	}
+
+	private OwnerInfo getOwnerForCitizenAction(Application application) {
+		if (!CollectionUtils.isEmpty(application.getOwners())) {
+			for (OwnerInfo owner : application.getOwners()) {
+				if (owner != null && Boolean.TRUE.equals(owner.getIsPrimaryOwner())) {
+					return owner;
+				}
+			}
+			return application.getOwners().get(0);
+		}
+
+		if (StringUtils.isBlank(application.getUuid()) || StringUtils.isBlank(application.getTenantId())) {
+			return null;
+		}
+
+		NdcApplicationSearchCriteria criteria = NdcApplicationSearchCriteria.builder()
+				.tenantId(application.getTenantId())
+				.uuid(Collections.singletonList(application.getUuid()))
+				.build();
+		List<Application> existingApplications = ndcRepository.fetchNdcApplications(criteria);
+		if (CollectionUtils.isEmpty(existingApplications) || CollectionUtils.isEmpty(existingApplications.get(0).getOwners())) {
+			return null;
+		}
+
+		List<OwnerInfo> owners = existingApplications.get(0).getOwners();
+		for (OwnerInfo owner : owners) {
+			if (owner != null && Boolean.TRUE.equals(owner.getIsPrimaryOwner())) {
+				return owner;
+			}
+		}
+		return owners.get(0);
+	}
+
+	private String resolveCitizenUuidByMobile(OwnerInfo owner, RequestInfo requestInfo) {
+		NdcApplicationSearchCriteria userCriteria = NdcApplicationSearchCriteria.builder()
+				.tenantId(owner.getTenantId())
+				.mobileNumber(owner.getMobileNumber())
+				.build();
+		UserResponse userResponse = userService.getUser(userCriteria, requestInfo);
+		if (userResponse == null || CollectionUtils.isEmpty(userResponse.getUser())) {
+			return owner.getUuid();
+		}
+
+		List<OwnerInfo> citizens = userResponse.getUser().stream()
+				.filter(Objects::nonNull)
+				.filter(user -> Boolean.TRUE.equals(user.getActive()))
+				.filter(user -> "CITIZEN".equalsIgnoreCase(user.getType()))
+				.collect(Collectors.toList());
+
+		if (CollectionUtils.isEmpty(citizens)) {
+			return owner.getUuid();
+		}
+
+		List<OwnerInfo> usernameMatchesMobile = citizens.stream()
+				.filter(user -> StringUtils.equals(user.getUserName(), owner.getMobileNumber()))
+				.collect(Collectors.toList());
+
+		if (usernameMatchesMobile.size() == 1) {
+			return usernameMatchesMobile.get(0).getUuid();
+		}
+
+		if (StringUtils.isNotBlank(owner.getUuid())) {
+			Optional<OwnerInfo> ownerUuidMatch = citizens.stream()
+					.filter(user -> StringUtils.equals(user.getUuid(), owner.getUuid()))
+					.findFirst();
+			if (ownerUuidMatch.isPresent()) {
+				return ownerUuidMatch.get().getUuid();
+			}
+		}
+
+		if (citizens.size() == 1) {
+			return citizens.get(0).getUuid();
+		}
+
+		throw new CustomException("AMBIGUOUS_CITIZEN_FOR_MOBILE",
+				"Multiple citizen accounts found for mobile " + owner.getMobileNumber() + ". Please merge user accounts before send-back.");
+	}
 
 	public NdcApplicationRequest deleteNdcApplication(NdcDeleteRequest ndcDeleteRequest) {
 

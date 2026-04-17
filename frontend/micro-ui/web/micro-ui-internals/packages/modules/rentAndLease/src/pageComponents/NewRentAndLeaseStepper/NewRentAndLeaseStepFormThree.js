@@ -12,6 +12,10 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     : window.localStorage.getItem("Employee.tenant-id");
   const { isLoading, data: mdmsData } = Digit?.Hooks?.rentandlease.useRALDocumentsMDMS(tenantId);
 
+  const fullFormData = useSelector((state) => state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData);
+
+  const checkLegacy = fullFormData?.propertyDetails?.applicationType?.name === "Legacy";
+
   const { triggerToast } = config?.currStepConfig[0];
 
   const currentStepData = useSelector(function (state) {
@@ -22,12 +26,14 @@ const NewRentAndLeaseStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   function goNext(finaldata) {
-    const missingFields = validation(finaldata);
-    if (missingFields.length > 0) {
-      // triggerToast(`${t("RAL_UPLOAD_MISSING_DOC_MSG")} ${t(missingFields[0].replace(/\./g, "_").toUpperCase())}`, true);
-      triggerToast(`${t(missingFields[0].replace(/\./g, "_").toUpperCase())} is required`, true);
+    if (!checkLegacy) {
+      const missingFields = validation(finaldata);
+      if (missingFields.length > 0) {
+        // triggerToast(`${t("RAL_UPLOAD_MISSING_DOC_MSG")} ${t(missingFields[0].replace(/\./g, "_").toUpperCase())}`, true);
+        triggerToast(`${t(missingFields[0].replace(/\./g, "_").toUpperCase())} is required`, true);
 
-      return;
+        return;
+      }
     }
     onGoNext();
   }

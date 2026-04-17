@@ -885,7 +885,7 @@ const PTRApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
           <StatusTable>
-            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
           </StatusTable>
 

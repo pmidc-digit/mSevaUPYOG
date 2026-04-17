@@ -307,6 +307,15 @@ const CLUEmployeeApplicationDetails = () => {
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
+      const hasConditionText =
+      typeof conditionText === "string" && conditionText?.trim().length > 0;
+
+      const conditionData = {
+        conditionLine: hasConditionText
+          ? "The above approval is subjected to the following conditions:"
+          : " ",
+        conditionText: hasConditionText ? conditionText : " ",
+      };
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
@@ -319,6 +328,7 @@ const CLUEmployeeApplicationDetails = () => {
                 ...payments,
                 Clu: application,
                 ApproverComment: finalComment,
+                conditionData:conditionData,
                 usage,
                 amountinwords,
                 approvalDate: approvalDate,

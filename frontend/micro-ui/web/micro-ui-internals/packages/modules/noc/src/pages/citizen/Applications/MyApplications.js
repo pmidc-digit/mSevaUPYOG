@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
 import { format } from "date-fns";
+import { encodeURIComponentCustom } from "../../../utils";
 const MyApplications = ({ view }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -70,7 +71,7 @@ const MyApplications = ({ view }) => {
         Header: t("NOC_APPLICATION_NUMBER"),
         accessor: (row) => row?.Applications?.applicationNo,
         Cell: ({ row }) => (
-          <Link to={`/digit-ui/citizen/noc/search/application-overview/${row.original?.Applications?.applicationNo}`}>
+          <Link to={`/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(row.original?.Applications?.applicationNo)}`}>
             <b>{GetCell(row.original?.Applications?.applicationNo)}</b>
           </Link>
         ),

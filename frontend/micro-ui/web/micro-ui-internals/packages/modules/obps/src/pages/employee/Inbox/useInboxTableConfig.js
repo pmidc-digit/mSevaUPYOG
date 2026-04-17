@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData}) => {
     const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-    const GetStatusCell = (value) => value === "CS_NA" ? t(value) : value === "Active" || value>0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span> 
+    const GetStatusCell = (value, isSelfCertification) => value === "CS_NA" ? t(value) : value === "Active" || (value>10 && isSelfCertification === "Yes") ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span> 
     const { t } = useTranslation()
     
     const tableColumnConfig = useMemo(() => {
@@ -40,13 +40,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         //     disableSortBy: true,
         // },
         {
-            Header: t("ZONE"),
-            accessor: (row) => t(row?.zone),
-            disableSortBy: true,
-        },
-        {
-            Header: t("EVENTS_STATUS_LABEL"),
-            accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`),
+            Header: t("WF_INBOX_HEADER_OWNER_NAME"),
+            accessor: (row) => t(row?.owner),
             disableSortBy: true,
         },
         {
@@ -55,10 +50,15 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             disableSortBy: true,
         },
         {
-            Header: t("WF_INBOX_HEADER_OWNER_NAME"),
-            accessor: (row) => t(row?.owner),
+            Header: t("EVENTS_STATUS_LABEL"),
+            accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`),
             disableSortBy: true,
         },
+        {
+            Header: t("ZONE"),
+            accessor: (row) => t(row?.zone),
+            disableSortBy: true,
+        },        
         {
             Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
             accessor: (row) => t(row?.applicationType),
@@ -71,7 +71,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
         {
             Header: t("TIME_TAKEN"),
-            accessor: row => GetStatusCell(row?.sla),
+            accessor: row => GetStatusCell(row?.sla, row?.selfCertification),
         }
         ]
     })

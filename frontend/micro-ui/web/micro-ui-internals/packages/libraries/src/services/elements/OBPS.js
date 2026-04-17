@@ -940,6 +940,7 @@ const getFormattedULBName = (ulbCode = "") => {
       values: [
         { title: "BPA_ULB_NAME", value: BPA?.additionalDetails?.UlbName || "NA", isNotTranslated: true },
         { title: "BPA_ULB_TYPE", value: BPA?.additionalDetails?.Ulblisttype || "NA", isNotTranslated: true },
+        { title: "BPA_DISTRICT", value: BPA?.additionalDetails?.District || "NA", isNotTranslated: true },
         { title: "BPA_APPROVED_COLONY", value: BPA?.additionalDetails?.approvedColony || "NA", isNotTranslated: true },
         ...(BPA?.additionalDetails?.approvedColony === "YES"
           ? [{ title: "BPA_APPROVED_COLONY_NAME", value: BPA?.additionalDetails?.nameofApprovedcolony || "NA", isNotTranslated: true }]

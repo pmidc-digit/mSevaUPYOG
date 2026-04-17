@@ -186,6 +186,14 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }
 
   async function submit(data) {
+
+    const commentsText = data?.comments?.toString().trim();
+    const conditionalText = data?.conditionalComments?.trim();
+    let finalComments = commentsText;
+    if (action?.action === "APPROVE" && conditionalText) {
+      finalComments = `${commentsText}[#?..**]${conditionalText || ""}`;
+    }
+
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {
       ...applicationData,
@@ -193,8 +201,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       additionalDetails: {...applicationData?.additionalDetails, fieldinspection_pending:getfeildInspection(applicationData), pendingapproval: getPendingApprovals(),blockingReason:selectedBlockReason?.name  },
        workflow:{
         action: action?.action,
-        comment: data?.comments?.length > 0 ? selectedBlockReason?.name ? selectedBlockReason?.name + " - " + data?.comments : data?.comments : null,
-        comments: data?.comments?.length > 0 ? selectedBlockReason?.name ? selectedBlockReason?.name + " - " + data?.comments : data?.comments : null,
+        comment: data?.comments?.length > 0 ? selectedBlockReason?.name ? selectedBlockReason?.name + " - " + finalComments : finalComments : null,
+        comments: data?.comments?.length > 0 ? selectedBlockReason?.name ? selectedBlockReason?.name + " - " + finalComments : finalComments : null,
         assignee: (workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus==="FIELDINSPECTION_INPROGRESS")? [workflowDetails?.data?.processInstances?.[0]?.assigner?.uuid]: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
         assignes:  (workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus==="FIELDINSPECTION_INPROGRESS")? [workflowDetails?.data?.processInstances?.[0]?.assigner?.uuid]: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
         varificationDocuments: uploadedFile

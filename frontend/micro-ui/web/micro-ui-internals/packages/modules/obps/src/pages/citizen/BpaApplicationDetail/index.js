@@ -725,7 +725,6 @@ useEffect(() => {
     console.log('payments here here', payments)
     const fee = payments?.totalAmountPaid;
     
-    console.log('fee', fee)
 
     const adjustedAmounts = data?.[0]?.applicationData?.additionalDetails?.adjustedAmounts;
 

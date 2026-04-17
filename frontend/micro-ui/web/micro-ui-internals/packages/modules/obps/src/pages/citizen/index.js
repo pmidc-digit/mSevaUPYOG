@@ -45,7 +45,11 @@ const OBPSBreadCrumbs = ({ location }) => {
         location.pathname.includes("obps/edcrscrutiny") ||
         location.pathname.includes("obps/layout") ||
         location.pathname.includes("obps/clu") ||
+        location.pathname.includes("obps/edcr") ||
+        location.pathname.includes("/response") ||
         location.pathname.includes("obps/search");
+
+    const bpainbox = location.pathname.includes("obps/bpa/PB");
     
     breadcrumbs.push(
       <span key="home">
@@ -59,11 +63,24 @@ const OBPSBreadCrumbs = ({ location }) => {
     if (hasSecondBreadcrumb) {
       breadcrumbs.push(
         <span key="obps">
-          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"} style={{ textDecoration: "none" }}>
-            OBPS Home
+          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"} style={{ textDecoration: "none", marginRight: "5px" }}>
+            {t("OBAPS Home")}
           </Link>
+          {bpainbox && <span style={{ marginRight: "5px" }}>/</span>}
         </span>
       );
+    }
+
+    if(bpainbox){
+      breadcrumbs.push(
+        <span key="bpa-inbox">
+          <Link to="/digit-ui/citizen/obps/bpa/inbox" style={{ textDecoration: "none" }}>
+            {t("CS_COMMON_INBOX")}
+          </Link>
+         {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
+        </span>
+      );
+
     }
 
     return breadcrumbs;
@@ -122,12 +139,10 @@ const App = ({ path }) => {
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
   return (
-    <span className={"ws-citizen-wrapper"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
-      {!isResponse && !window.location.href.includes("/stepper") ? (
+    <span className={"ws-citizen-wrapper"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px",  ...((window.location.href.includes("inbox") || window.location.href.includes("search/application")) ? { paddingTop:"56px" } : {} ) }}>
         <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
           <OBPSBreadCrumbs location={location} />
         </div>
-      ) : null}
       <Switch>
 
         <PrivateRoute path={`${path}/layout/search-application`} component={(props) => <AppContainer><LayoutSearchApplication {...props} /></AppContainer>} />

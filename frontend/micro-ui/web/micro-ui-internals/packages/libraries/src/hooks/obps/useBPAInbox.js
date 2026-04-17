@@ -56,8 +56,13 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     _filters = { ..._filters, offset };
   }
 
-  const getDaysSinceCreated = (createdTime) => {
-    if (!createdTime) return "CS_NA";
+  const getDaysSinceCreated = (createdTime, approvedDate) => {
+    if (!createdTime) return "NA";
+
+    if(approvedDate){
+      const diffInMs = approvedDate - createdTime;
+      return Math.floor(diffInMs / (24 * 60 * 60 * 1000));
+    }
 
     const today = Date.now(); // current time in epoch (ms)
     const diffInMs = today - createdTime;
@@ -87,10 +92,14 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           state: application?.ProcessInstance?.state?.state,
           owner: application?.businessObject?.landInfo?.owners?.find(item => item?.isPrimaryOwner)?.name || "NA",
           mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
-          sla: application?.businessObject?.status.match(/^(APPROVED)$/)
-            ? "CS_NA"
-            : getDaysSinceCreated(application?.ProcessInstance?.auditDetails?.createdTime),
-          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER",)
+          // sla: application?.businessObject?.status.match(/^(APPROVED)$/)
+          //   ? getDaysSinceCreated(application?.businessObject?.applicationDate, application?.businessObject?.approvalDate)
+          //   : getDaysSinceCreated(application?.businessObject?.applicationDate),
+          sla: getDaysSinceCreated(application?.businessObject?.applicationDate, application?.businessObject?.approvalDate),
+          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER",),
+          category: application.businessObject?.additionalDetails?.categoriesName,
+          zone: application.businessObject?.additionalDetails?.zonenumber,
+          selfCertification: application.businessObject?.additionalDetails?.isSelfCertification ? "Yes" : "No",
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

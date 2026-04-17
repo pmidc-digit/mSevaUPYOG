@@ -27,7 +27,11 @@ export const configBPAApproverApplication = ({
   if(action?.action == "REVOCATE" || action?.action == "REJECT") {
     isCommentRequired = true;
   }
-  console.log("actionInModal", action);
+  
+  let isCondittionalComentsRequired = false;
+  if(action?.action == "APPROVE") {
+    isCondittionalComentsRequired = true;
+  }
   
   return {
     label: {
@@ -68,6 +72,13 @@ export const configBPAApproverApplication = ({
               />
             ):null ,
           },
+          ...(isCondittionalComentsRequired ? [{
+            label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+            type: "textarea",
+            populators: {
+              name: "conditionalComments",
+            },
+          }] : []),
           {
             label: t("WF_COMMON_COMMENTS"),
             type: "textarea",

@@ -1075,6 +1075,8 @@ const BpaApplicationDetail = () => {
       } else {
         requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
       }
+
+      requestData["approvalDate"] = Date.now();
       const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
       // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
       
@@ -1776,7 +1778,7 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
-                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && <div>
+                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
                                 {(
                                     <StatusTable>
                                       {remainingDoc?.length > 0 && (
@@ -1791,7 +1793,7 @@ const BpaApplicationDetail = () => {
                                     </StatusTable>
                                 )}
                               </div>}
-                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 &&  <div>
+                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) &&  <div>
                                 <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
                                 <StatusTable>
                                   {remainingDoc?.length > 0 && (

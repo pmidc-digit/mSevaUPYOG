@@ -26,7 +26,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/Timeline"
-import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData } from "../utils"
+import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData, fetchUrl } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
@@ -492,7 +492,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 value ? (
                     <LinkButton
                         label={t("View")}
-                        onClick={() => routeTo(value)}
+                        onClick={() => fetchUrl(value, tenantId)}
                     />
                 ) : (
                     t("CS_NA")
@@ -1065,7 +1065,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                         <div className="row border-none">
                             <h2>{t("BPA_DISTRICT")}</h2>
-                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}</div>
+                            <div className="value">{currentStepData?.additionalDetails?.District || t("CS_NA")}</div>
                         </div>
                         <div className="row border-none">
                             <h2>{t(`BPA_LOC_MOHALLA_LABEL`)}</h2>
@@ -1095,7 +1095,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</h2>
                             <div className="value">
                                 {currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile ? (
-                                    <LinkButton label={t("View")} onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile)} />
+                                    <LinkButton label={t("View")} onClick={() => fetchUrl(currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile, tenantId)} />
                                 ) : t("CS_NA")}
                             </div>
                         </div>
@@ -1103,7 +1103,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</h2>
                             <div className="value">
                                 {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
-                                    <LinkButton label={t("View")} onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.planReport)} />
+                                    <LinkButton label={t("View")} onClick={() => fetchUrl(currentStepData?.BasicDetails?.edcrDetails?.planReport, tenantId)} />
                                 ) : t("CS_NA")}
                             </div>
                         </div>

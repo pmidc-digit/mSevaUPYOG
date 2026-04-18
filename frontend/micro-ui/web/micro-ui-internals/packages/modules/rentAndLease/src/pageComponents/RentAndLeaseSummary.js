@@ -13,7 +13,7 @@ function RentAndLeaseSummary({ t }) {
 
   const property = formData?.propertyDetails || {};
   const standardDocs = formData?.documents?.documents?.documents || [];
-  const arrearDoc = property.arrearDoc ? [{ documentType: "Arrear Doc", fileStoreId: property.arrearDoc }] : [];
+  const arrearDoc = property.arrearDoc ? [{ documentType: "Other Document", fileStoreId: property.arrearDoc }] : [];
   const docs = [...standardDocs, ...arrearDoc];
 
   const mergedDocsObject = {
@@ -120,14 +120,14 @@ function RentAndLeaseSummary({ t }) {
               <h3 className="ral-summary-heading">{t("Additional Details")}</h3>
             </div>
             {renderRow(t("Arrears"), property?.arrear)}
-            {property?.arrearStartDate &&
+            {/* {property?.arrearStartDate &&
               renderRow(
                 t("RAL_START_DATE"),
                 typeof property.arrearStartDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearStartDate) : property.arrearStartDate
-              )}
+              )} */}
             {property?.arrearEndDate &&
               renderRow(
-                t("RAL_END_DATE"),
+                t("RAL_ARR_END_DATE"),
                 typeof property.arrearEndDate === "number" ? Digit.DateUtils.ConvertEpochToDate(property.arrearEndDate) : property.arrearEndDate
               )}
             {property?.arrearReason?.name && renderRow(t("Reason"), property?.arrearReason?.name)}

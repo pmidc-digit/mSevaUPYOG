@@ -18,7 +18,7 @@ import { render } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory, useParams } from "react-router-dom";
 import Timeline from "../components/Timeline";
-import { stringReplaceAll } from "../utils";
+import { fetchUrl, stringReplaceAll } from "../utils";
 
 const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData, onGoBack }) => {
   const { t } = useTranslation();
@@ -34,7 +34,6 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const [showToast, setShowToast] = useState(null);
   const stateCode = Digit.ULBService.getStateId();
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"]);
-  console.log("formDataInScrutiniy ", formData, currentStepData, mdmsData);
   // const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumbe?.edcrNumber, {
   //   enabled: true,
   // });
@@ -42,7 +41,6 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [apiLoading, setApiLoading] = useState(false);
 
-  console.log("OCCUPANCY", formData);
 
   useEffect(() => {
     window.scrollTo({
@@ -52,10 +50,10 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   }, []);
 
   useEffect(() => {
-    if (!isMdmsLoading && currentStepData?.BasicDetails?.occupancyType) {
+    if (!isMdmsLoading && currentStepData?.createdResponse?.additionalDetails?.subcategories) {
       const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
 
-      const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === currentStepData?.BasicDetails?.occupancyType.toLowerCase());
+      const matched = subOccupancyMaster.find((item) => item?.code === currentStepData?.createdResponse?.additionalDetails?.subcategories);
 
       if (matched) {
         const formatted = {
@@ -503,9 +501,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                 label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
                 text={
                   <SubmitBar
-                    label={t("Uploaded Plan.pdf")}
+                    label={t("Building Plan.pdf")}
                     onSubmit={() => {
-                      routeTo(data?.updatedDxfFile);
+                      fetchUrl(data?.updatedDxfFile, tenantId);
                     }}
                   />
                 }
@@ -517,7 +515,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                   <SubmitBar
                     label={t("BPA_SCRUTINY_REPORT_PDF")}
                     onSubmit={() => {
-                      routeTo(data?.planReport);
+                      fetchUrl(data?.planReport, tenantId);
                     }}
                   />
                 }

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData}) => {
     const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-    const GetStatusCell = (value) => value === "CS_NA" ? t(value) : value === "Active" || value>0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span> 
+    const GetStatusCell = (value, isSelfCertification) => value === "CS_NA" ? t(value) : value === "Active" || (value>10 && isSelfCertification === "Yes") ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span> 
     const { t } = useTranslation()
     
     const tableColumnConfig = useMemo(() => {
@@ -24,39 +24,54 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             );
             },
         },
-        {
-            Header: t("CS_APPLICATION_DETAILS_APPLICATION_DATE"),
-            accessor: "applicationDate",
-            Cell: ({row}) => row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), 'dd/MM/yyyy')) : ""
-            },
+        // {
+        //     Header: t("CS_APPLICATION_DETAILS_APPLICATION_DATE"),
+        //     accessor: "applicationDate",
+        //     Cell: ({row}) => row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), 'dd/MM/yyyy')) : ""
+        //     },
         {
                 Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
                 accessor: "submissionDate",
                 Cell: ({row}) =>{ return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "NA"}
         },
-        {
-            Header: t("ES_INBOX_LOCALITY"),
-            accessor: (row) => t(row?.locality),
-            disableSortBy: true,
-        },
-        {
-            Header: t("EVENTS_STATUS_LABEL"),
-            accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`WF_${row?.businessService}_${row?.status}`),
-            disableSortBy: true,
-        },
+        // {
+        //     Header: t("ES_INBOX_LOCALITY"),
+        //     accessor: (row) => t(row?.locality),
+        //     disableSortBy: true,
+        // },
         {
             Header: t("WF_INBOX_HEADER_OWNER_NAME"),
             accessor: (row) => t(row?.owner),
             disableSortBy: true,
         },
         {
+            Header: t("CATEGORY"),
+            accessor: row => row?.category,
+            disableSortBy: true,
+        },
+        {
+            Header: t("EVENTS_STATUS_LABEL"),
+            accessor: row => row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`),
+            disableSortBy: true,
+        },
+        {
+            Header: t("ZONE"),
+            accessor: (row) => t(row?.zone),
+            disableSortBy: true,
+        },        
+        {
             Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
             accessor: (row) => t(row?.applicationType),
             disableSortBy: true,
         },
         {
-            Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-            accessor: row => GetStatusCell(row?.sla),
+            Header: t("IS_SELF_CERTIFICATION"),
+            accessor: (row) => t(row?.selfCertification),
+            disableSortBy: true,
+        },
+        {
+            Header: t("TIME_TAKEN"),
+            accessor: row => GetStatusCell(row?.sla, row?.selfCertification),
         }
         ]
     })
@@ -68,6 +83,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             padding: "20px 18px",
             fontSize: "16px"
         }}},
+        tableStyle: {overflowX: "auto"},
         disableSort: false,
         autoSort:false,
         manualPagination:true,

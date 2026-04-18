@@ -26,17 +26,17 @@ export const uuidv4 = () => {
   return require("uuid/v4")();
 };
 
-export const EmployeeData = async (tenantId, consumerCode) => {
+export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) => {
   const wfData = await Digit.WorkflowService.getDetailsById({
     tenantId,
     id: consumerCode,
-    moduleCode: "obpas_noc",
+    moduleCode: moduleCode || "obpas_noc",
     role: "EMPLOYEE",
     getTripData: false,
   });
   console.log("Workflow Data", wfData);
 
-  const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE");
+  const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = await Digit.UserService.employeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
@@ -1441,4 +1441,121 @@ export function formatDuration(totalTimeMs) {
   const seconds = totalSeconds % 60;
 
   return { days, hours, minutes, seconds };
+}
+
+export function getApproveRejectComments(workflowDetails) {
+  try {
+    const processInstances =
+      workflowDetails?.data?.processInstances || [];
+      const delimiter = "[#?..**]";
+    // ✅ Get latest APPROVE / REJECT
+    const decisionInstance =
+      processInstances
+        .filter(
+          pi => pi?.action === "APPROVE" || pi?.action === "REJECT"
+        )
+        .sort(
+          (a, b) =>
+            (b?.auditDetails?.lastModifiedTime || 0) -
+            (a?.auditDetails?.lastModifiedTime || 0)
+        )[0] || null;
+
+    // ✅ Normalize comment safely
+    const rawComment = decisionInstance?.comment || "";
+
+    let conditionText = "";
+
+    if (rawComment?.includes(delimiter)) {
+      conditionText = rawComment?.split(delimiter)[1] || "";
+    } else {
+      // If REJECT, keep rawComment. If APPROVE, keep it empty.
+      conditionText = decisionInstance?.action === "REJECT" ? rawComment : "";
+    }
+
+    const finalComment = conditionText
+      ? `16. The Approval is subjected to the following conditions: ${conditionText}`
+      : " ";
+
+    return finalComment;
+    
+  } catch (e) {
+    console.error("comments error", e);
+    return null; // ✅ ALWAYS return something
+  }
+}
+
+export const fetchUrl = async (docUrl, tenantId) => {
+  if (docUrl) {
+    let id = docUrl;
+    let fullTenantId = tenantId;
+
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        id = urlParams.get("fileStoreId") || id;
+        fullTenantId = urlParams.get("tenantId") || fullTenantId;
+      }
+    }
+
+    // const parts = (typeof fullTenantId === "string" ? fullTenantId.split(".") : []);
+    // const tenantIdForFetch = parts.length > 0 ? parts[parts.length - 1] : fullTenantId; // Get part after dot
+
+    try {
+      const result = await Digit.UploadServices.Filefetch([id], fullTenantId);
+      if (result?.data?.[id]) {
+        window.open(result.data[id], "_blank");
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
+  }
+};
+
+export const fetchOnlyUrl = async (docUrl, tenantId) => {
+  if (docUrl) {
+    let id = docUrl;
+    let fullTenantId = tenantId;
+
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        id = urlParams.get("fileStoreId") || id;
+        fullTenantId = urlParams.get("tenantId") || fullTenantId;
+      }
+    }
+
+    // const parts = (typeof fullTenantId === "string" ? fullTenantId.split(".") : []);
+    // const tenantIdForFetch = parts.length > 0 ? parts[parts.length - 1] : fullTenantId; // Get part after dot
+
+    try {
+      const result = await Digit.UploadServices.Filefetch([id], fullTenantId);
+      if (result?.data?.[id]) {
+        return result.data[id];
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
+  }
+};
+
+export const mergePDFsWithoutLibrary = async (urls) => {
+  const container = document.createElement("div");
+
+  for (const url of urls) {
+    const iframe = document.createElement("iframe");
+    iframe.src = url;
+    iframe.style.width = "100%";
+    iframe.style.height = "1000px";
+    iframe.style.marginBottom = "20px";
+
+    container.appendChild(iframe);
+  }
+
+  document.body.appendChild(container);
+
+  setTimeout(() => {
+    window.print(); // User selects "Save as PDF"
+  }, 2000);
 }

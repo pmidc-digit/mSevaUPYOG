@@ -19,17 +19,20 @@ import {
     Loader,
     TextArea,
     ActionBar,
-    Menu
+    Menu,
+    StatusTable
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/Timeline"
-import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData } from "../utils"
+import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData, fetchUrl } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError, Toast } from "@mseva/digit-ui-react-components";
 import FeeEstimation from "./FeeEstimation"
+import NocSitePhotographsBPA from "../components/NocSitePhotographsNew";
+import CitizenAndArchitectPhoto from "./CitizenAndArchitectPhoto";
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const { t } = useTranslation();
@@ -344,11 +347,17 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }));
     });
 
-    const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+    const documentsData = (getOrderDocuments(applicationDocs) || [])?.filter((obj) => (obj?.values?.[0]?.fileStoreId && obj?.values?.[0]?.fileStoreId?.length>0) && obj?.title != "SITEPHOTOGRAPH_ONE" && obj?.title != "SITEPHOTOGRAPH_TWO")?.map((doc, index) => ({
         id: index,
+        index: index,
         title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
         fileUrl: doc.values?.[0]?.fileURL || null,
+        fileStoreId: doc.values?.[0]?.fileStoreId || null,
     }));
+
+    const sitePhotos = getOrderDocuments(applicationDocs)?.filter(
+            (doc) => doc?.title === "SITEPHOTOGRAPH_ONE" || doc?.title === "SITEPHOTOGRAPH_TWO"
+          )?.sort((a,b) => a?.values?.[0]?.order-b?.values?.[0]?.order);
 
     // const ecbcDocumentsData = useMemo(() => {
     //     return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
@@ -367,6 +376,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     
       return docs.map((doc, index) => ({
         id: index,
+        index: index,
         title: doc.title ? t(doc.title) : t("CS_NA"),
         fileUrl: doc.fileURL || null,
       }));
@@ -435,6 +445,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     
         return {
           id: index,
+          index: index,
           title,
           fileUrl: doc.fileURL || null,
         };
@@ -443,6 +454,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
 
     const documentsColumns = [
+        {
+            Header: t("SR_NO"),
+            accessor: "index",
+            width: "20px",
+            Cell: ({ value }) => <div style={{ width: "20px" }}>{value + 1}</div>,
+        },
         {
             Header: t("BPA_DOCUMENT_NAME"),
             accessor: "title",
@@ -475,7 +492,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 value ? (
                     <LinkButton
                         label={t("View")}
-                        onClick={() => routeTo(value)}
+                        onClick={() => fetchUrl(value, tenantId)}
                     />
                 ) : (
                     t("CS_NA")
@@ -855,6 +872,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </div>
                 </div>
 
+                <CitizenAndArchitectPhoto data={currentStepData?.createdResponse} />
+
                 <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
                     {currentStepData?.createdResponse?.landInfo?.owners &&
@@ -906,7 +925,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             columns={documentsColumns}
                             getCellProps={() => ({ style: {} })}
                             disableSort={false}
-                            autoSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
@@ -1046,7 +1065,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                         <div className="row border-none">
                             <h2>{t("BPA_DISTRICT")}</h2>
-                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}</div>
+                            <div className="value">{currentStepData?.createdResponse?.additionalDetails?.District || t("CS_NA")}</div>
                         </div>
                         <div className="row border-none">
                             <h2>{t(`BPA_LOC_MOHALLA_LABEL`)}</h2>
@@ -1076,7 +1095,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</h2>
                             <div className="value">
                                 {currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile ? (
-                                    <LinkButton label={t("View")} onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile)} />
+                                    <LinkButton label={t("View")} onClick={() => fetchUrl(currentStepData?.BasicDetails?.edcrDetails?.updatedDxfFile, tenantId)} />
                                 ) : t("CS_NA")}
                             </div>
                         </div>
@@ -1084,7 +1103,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</h2>
                             <div className="value">
                                 {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
-                                    <LinkButton label={t("View")} onClick={() => routeTo(currentStepData?.BasicDetails?.edcrDetails?.planReport)} />
+                                    <LinkButton label={t("View")} onClick={() => fetchUrl(currentStepData?.BasicDetails?.edcrDetails?.planReport, tenantId)} />
                                 ) : t("CS_NA")}
                             </div>
                         </div>
@@ -1394,7 +1413,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             columns={documentsColumns}
                             getCellProps={() => ({ style: {} })}
                             disableSort={false}
-                            autoSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
@@ -1402,6 +1421,27 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 </div>}
 
                 <div className="bpa-stepper-form-section">
+                    <CardSubHeader className="bpa-section-header" >{t("BPA_DOCUMENT_SITE_DETAILS_LABEL")}</CardSubHeader>
+                    <StatusTable
+                        style={{
+                            display: "flex",
+                            gap: "20px",
+                            flexWrap: "wrap",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        {sitePhotos?.length > 0 &&
+                            [...sitePhotos]
+                                .map((doc, index) => (
+                                    <NocSitePhotographsBPA
+                                        key={doc?.values?.[0]?.filestoreId}
+                                        url={doc?.values?.[0]?.fileURL}
+                                        documentType={doc?.title}
+                                        coordinates={index === 0 ? currentStepData?.createdResponse?.landInfo?.address?.geoLocation : currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo}
+                                    />
+                                ))}
+                    </StatusTable>
+
                     <CardSubHeader className="bpa-section-header">{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardSubHeader>
                     <div className="bpa-table-container">
                         {pdfLoading ? <Loader /> : <Table
@@ -1409,9 +1449,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             t={t}
                             data={documentsData}
                             columns={documentsColumns}
+                            pageSizeLimit={100}
                             getCellProps={() => ({ style: {} })}
                             disableSort={false}
-                            autoSort={true}
+                            // autoSort={true}
                             manualPagination={false}
                             isPaginationRequired={false}
                         />}
@@ -1436,6 +1477,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             setError={setError}
                             adjustedAmounts={adjustedAmounts}
                             setAdjustedAmounts={setAdjustedAmounts}
+                            hidePayTwo={currentStepData?.createdResponse?.businessService != "BPA_LOW"}
                         />}
                     </div>
                     {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />}

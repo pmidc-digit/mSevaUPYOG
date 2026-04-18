@@ -8,9 +8,6 @@ import { useHistory, useRouteMatch } from "react-router-dom";
 // import useQualificationTypes from "../../../../libraries/src/hooks/obps/QualificationTypesForLicense";
 
 const LicenseType = ({ t, config, onSelect, userType, formData }) => {
-
-
-  console.log(formData, "MAIN FORM DATA");
   const index = window.location.href?.split("/").pop();
   const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();

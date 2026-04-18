@@ -3,6 +3,7 @@ import React from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import ChangeCity from "../ChangeCity";
 import ChangeLanguage from "../ChangeLanguage";
+import ProfessionalChangeCity from "../ProfessionalChangeCity";
 
 const TextToImg = (props) => (
   <span className="user-img-txt" onClick={props.toggleMenu} title={props.name}>
@@ -119,6 +120,8 @@ const TopBar = ({
   
   // Check if user is logged in using userDetails prop (more reliable than sessionStorage)
   const isLoggedIn = !!userDetails?.access_token;
+  const userInfo = Digit.UserService.getUser()?.info;
+  const isUserProfessional = window.location.href.includes("/citizen") && userInfo?.roles?.some(role => role?.code?.startsWith("BPA"))
 
   if (CITIZEN) {
     return (
@@ -136,6 +139,14 @@ const TopBar = ({
             {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}>
               {/* <ChangeLanguage dropdown={true} /> */}
             </div>}
+            {isUserProfessional && (
+              <div className="left">
+                {!window.location.href.includes("employee/user/login") &&
+                  !window.location.href.includes("employee/user/language-selection") && (
+                    <ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo}/>
+                  )}
+              </div>
+            )}
             {!urlsToDisableNotificationIcon(pathname) && (
               <div className="notification-wrapper" onClick={onNotificationIconClick}>
                 {notificationCountLoaded && unreadNotificationCount ? (

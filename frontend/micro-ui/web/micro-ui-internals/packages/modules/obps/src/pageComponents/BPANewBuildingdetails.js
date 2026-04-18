@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useMemo, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker, Toast } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader, DatePicker, Toast, CardLabelError } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
@@ -799,10 +799,36 @@ console.log("appDate", nocApprovedOn);
     setErrors((prev) => ({ ...prev, applicantOwnerOrFirmName: "" }))
   }
 
+  // function handleApproveDateChange(date) {
+  //   console.log("Selected date:", date);
+  //   setNocApprovedOn(date);
+  //   setErrors((prev) => ({ ...prev, nocApprovedOn: "" }))
+  // }
+
   function handleApproveDateChange(date) {
     console.log("Selected date:", date);
+
+    if (!date) return;
+
+    const selectedDate = new Date(date);
+    const today = new Date();
+
+    // Remove time part to compare only dates
+    selectedDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    // ❌ Block future dates
+    if (selectedDate > today) {
+      setErrors((prev) => ({
+        ...prev,
+        nocApprovedOn: "Future date is not allowed",
+      }));
+      return;
+    }
+
+    // ✅ Valid date → update state
     setNocApprovedOn(date);
-    setErrors((prev) => ({ ...prev, nocApprovedOn: "" }))
+    setErrors((prev) => ({ ...prev, nocApprovedOn: "" }));
   }
 
   function selectfile(e) {
@@ -842,11 +868,10 @@ console.log("appDate", nocApprovedOn);
     try{
       const response = await Digit.OBPSService.NOCSearch(tenantId, { applicationNo: NocNumber });
       setLoader(false);
-      console.log("NOC Search Response:", response);
-      if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus === "APPROVED"){
+      if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus === "E-SIGNED"){
         const nocObject = response?.Noc?.[0];
-        if(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName){
-          setApplicantOwnerOrFirmName(nocObject?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName)
+        if(nocObject?.owners?.[0]?.name){
+          setApplicantOwnerOrFirmName(nocObject?.owners?.[0]?.name)
         }
         if(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName){
           setNocULBName(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName)
@@ -866,13 +891,15 @@ console.log("appDate", nocApprovedOn);
           }          
         }
         setLoader(true);
-        let EmpData = await EmployeeData(tenantId, NocNumber);
-        console.log("Employee Data", EmpData);
-
-        const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
-        if(reciept_data?.Payments?.length > 0){
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        if(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+          setUploadedFile(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId)
         }
+        // let EmpData = await EmployeeData(tenantId, NocNumber);
+        // console.log("Employee Data", EmpData);
+        // const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
+        // if(reciept_data?.Payments?.length > 0){
+        //   getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
+        // }
         setLoader(false);
         return;
       }else if(response && response?.Noc?.length>0 && response?.Noc?.[0]?.applicationStatus !== "APPROVED"){
@@ -913,6 +940,28 @@ console.log("appDate", nocApprovedOn);
     setEcbcAirConditionedFileObj(e.target.files[0])
     setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: "" }))
   }
+
+  const getUrlForDocumentView = async (filestoreId) => {
+    if (filestoreId?.length === 0) return;
+    setLoader(true);
+    try {
+      const result = await Digit.UploadServices.Filefetch([filestoreId], tenantId);
+      setLoader(false);
+      if (result?.data) {
+        const fileUrl = result?.data?.[filestoreId];
+        if (fileUrl) {
+          window.open(fileUrl, "_blank");
+        } else {
+          alert(t("CS_FILE_FETCH_ERROR"));
+        }
+      } else {        
+        alert(t("CS_FILE_FETCH_ERROR"));        
+      }
+    } catch (e) {
+      setLoader(false);
+      alert(t("CS_FILE_FETCH_ERROR"));
+    }
+  };
 
   const goNext = async () => {
     if (!validateFields()) {
@@ -1024,7 +1073,7 @@ console.log("appDate", nocApprovedOn);
 
   const ErrorMessage = ({ error }) => {
     if (!error) return null
-    return <div className="newbuilding-error-message">{error}</div>
+    return <CardLabelError>{error}</CardLabelError>
   }
 
 
@@ -1047,7 +1096,7 @@ console.log("appDate", nocApprovedOn);
       <div className="bpa-newbuilding-bpa-section">
         {/* <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2> */}
 
-        <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_ULB_NAME")} `}<span className="requiredField">*</span></CardLabel>
         <TextInput
           t={t}
           type={"text"}
@@ -1061,7 +1110,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.UlbName} />
 
-        <CardLabel>{`${t("BPA_DISTRICT")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_DISTRICT")} `}<span className="requiredField">*</span></CardLabel>
         <TextInput
           t={t}
           type={"text"}
@@ -1075,7 +1124,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.District} />
 
-        <CardLabel>{`${t("BPA_ULB_TYPE")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_ULB_TYPE")} `}<span className="requiredField">*</span></CardLabel>
         <TextInput
           t={t}
           type={"text"}
@@ -1092,7 +1141,7 @@ console.log("appDate", nocApprovedOn);
 
       <div > */}
 
-        <CardLabel>{`${t("BPA_APPROVED_COLONY")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_APPROVED_COLONY")} `}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"approvedColony"}
@@ -1112,7 +1161,7 @@ console.log("appDate", nocApprovedOn);
 
         {(approvedColony?.code === "YES" || approvedColony?.code === "Colony Prior to 1995 (colony name)") && (
           <React.Fragment>
-            <CardLabel>{`${t("BPA_APPROVED_COLONY_NAME")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_APPROVED_COLONY_NAME")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -1134,8 +1183,8 @@ console.log("appDate", nocApprovedOn);
 
         {approvedColony?.code === "NO" && (
           <React.Fragment>
-            <CardLabel>{`${t("BPA_NOC_NUMBER")} *`}</CardLabel>
-            <div className="bpa-newbuilding-field-container">
+            <CardLabel>{`${t("BPA_NOC_NUMBER")} `}<span className="requiredField">*</span></CardLabel>
+            <div className="bpa-owner-field-container">
               <TextInput
                 t={t}
                 type={"text"}
@@ -1150,12 +1199,12 @@ console.log("appDate", nocApprovedOn);
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <div className="bpa-newbuilding-search-icon-container" onClick={(e) => onClick(e)}>
+              <div className="bpa-owner-search-icon-container" onClick={(e) => onClick(e)}>
                 <SearchIcon />
               </div>
             </div>
             {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
-            <CardLabel>{`${t("BPA_NOC_APPLICANT_NAME")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_NOC_APPLICANT_NAME")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
                 t={t}
                 type={"text"}
@@ -1171,7 +1220,7 @@ console.log("appDate", nocApprovedOn);
                 })}
             />
             {errors.applicantOwnerOrFirmName && <ErrorMessage error={errors.applicantOwnerOrFirmName} />}              
-            <CardLabel>{`${t("BPA_NOC_ULB_NAME")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_NOC_ULB_NAME")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
                 t={t}
                 type={"text"}
@@ -1187,7 +1236,7 @@ console.log("appDate", nocApprovedOn);
                 })}
             />
             {errors.nocULBName && <ErrorMessage error={errors.nocULBName} />}              
-            <CardLabel>{`${t("BPA_NOC_ULB_TYPE")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_NOC_ULB_TYPE")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
                 t={t}
                 type={"text"}
@@ -1205,7 +1254,7 @@ console.log("appDate", nocApprovedOn);
             {errors.nocULBType && <ErrorMessage error={errors.nocULBType} />}
 
               <div>
-                <CardLabel>{t("BPA_NOC_APPROVED_ON")}</CardLabel> 
+                <CardLabel>{t("BPA_NOC_APPROVED_ON")}<span className="requiredField">*</span></CardLabel> 
                 <DatePicker
                   date={nocApprovedOn}
                   onChange={handleApproveDateChange}
@@ -1228,7 +1277,9 @@ console.log("appDate", nocApprovedOn);
               message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errors.file}
               accept="image/*,.pdf"
+              customOpen = {getUrlForDocumentView}
             />
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.NocDocument && <ErrorMessage error={errors.NocDocument} />}
             </div>
           </React.Fragment>
@@ -1237,7 +1288,7 @@ console.log("appDate", nocApprovedOn);
 
       <div> */}
 
-        <CardLabel>{`${t("BPA_MASTER_PLAN")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_MASTER_PLAN")} `}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"masterPlan"}
@@ -1257,7 +1308,7 @@ console.log("appDate", nocApprovedOn);
 
         {masterPlan?.code === "YES" && (
           <React.Fragment>
-            <CardLabel>{`${t("BPA_USE")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_USE")} `}<span className="requiredField">*</span></CardLabel>
             <Controller
               control={control}
               name={"use"}
@@ -1295,7 +1346,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.buildingStatus} /> */}
 
-        <CardLabel>{`${t("BPA_PURCHASED_FAR")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_PURCHASED_FAR")} `}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"purchasedFAR"}
@@ -1316,7 +1367,7 @@ console.log("appDate", nocApprovedOn);
 
         {purchasedFAR?.code === "YES" && (
           <React.Fragment>
-            <CardLabel>{`${t("BPA_ALLOWED_PROVIDED_FAR")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_ALLOWED_PROVIDED_FAR")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -1325,7 +1376,7 @@ console.log("appDate", nocApprovedOn);
               disable={true}
             />
             {errors.purchasableFAR && <ErrorMessage error={errors.purchasableFAR} />}
-            <CardLabel>{`${t("BPA_PROVIDED_FAR")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_PROVIDED_FAR")} `}<span className="requiredField">*</span></CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -1337,7 +1388,7 @@ console.log("appDate", nocApprovedOn);
           </React.Fragment>
         )}
 
-        <CardLabel>{`${t("BPA_GREEN_BUIDINGS")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_GREEN_BUIDINGS")} `}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"greenbuilding"}
@@ -1369,10 +1420,11 @@ console.log("appDate", nocApprovedOn);
               error={errors.files}
               accept="image/*,.pdf"
             />
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.greenuploadedFile && <ErrorMessage error={errors.greenuploadedFile} />}
             <br />
 
-            <CardLabel>{`${t("BPA_SELECT_RATINGS")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_SELECT_RATINGS")} `}<span className="requiredField">*</span></CardLabel>
             <Controller
               control={control}
               name={"rating"}
@@ -1395,7 +1447,7 @@ console.log("appDate", nocApprovedOn);
 
       <div> */}
 
-        <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}</CardLabel>
+        <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"restrictedArea"}
@@ -1413,7 +1465,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.restrictedArea} />
 
-        <CardLabel>{`${t("BPA_PROPOSED_SITE_TYPE")} *`}</CardLabel>
+        <CardLabel>{`${t("BPA_PROPOSED_SITE_TYPE")} `}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"proposedSite"}
@@ -1434,7 +1486,7 @@ console.log("appDate", nocApprovedOn);
 
       <div> */}
 
-        <CardLabel>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)}</CardLabel>
+        <CardLabel>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw `)}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"ecbcElectricalLoad"}
@@ -1452,7 +1504,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.ecbcElectricalLoad} />
 
-        <CardLabel>{t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)}</CardLabel>
+        <CardLabel>{t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw `)}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"ecbcDemandLoad"}
@@ -1470,7 +1522,7 @@ console.log("appDate", nocApprovedOn);
         />
         <ErrorMessage error={errors.ecbcDemandLoad} />
 
-        <CardLabel>{t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)}</CardLabel>
+        <CardLabel>{t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt `)}<span className="requiredField">*</span></CardLabel>
         <Controller
           control={control}
           name={"ecbcAirConditioned"}
@@ -1492,7 +1544,7 @@ console.log("appDate", nocApprovedOn);
           ecbcDemandLoad?.code === "YES" ||
           ecbcAirConditioned?.code === "YES") && (
           <div className="field">
-            <CardLabel>{`${t("BPA_UPLOAD_ECBC_DOCUMENT")} *`}</CardLabel>
+            <CardLabel>{`${t("BPA_UPLOAD_ECBC_DOCUMENT")} `}<span className="requiredField">*</span></CardLabel>
             <CustomUploadFile
               id="ecbc-certificate"
               accept=".pdf,.jpg,.png"
@@ -1505,8 +1557,9 @@ console.log("appDate", nocApprovedOn);
               // message={ecbcCertificateFileObj?.name || "Choose a file"}
               message={ecbcCertificateFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
             />
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
             {errors.ecbcCertificateFile && (
-              <p className="error ecbc-error-text">{errors.ecbcCertificateFile}</p>
+              <ErrorMessage error={errors.ecbcCertificateFile} />
             )}
           </div>
         )}

@@ -30,7 +30,7 @@ import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
-import { EmployeeData } from "../../../utils/index";
+import { decodeURIComponentCustom, EmployeeData } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -92,7 +92,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 };
 
 const CitizenApplicationOverview = () => {
-  const { id } = useParams();
+  const { nocid } = useParams();
+  const id = decodeURIComponentCustom(nocid);
   // console.log('id', id.length)
   const { t } = useTranslation();
   const history = useHistory();
@@ -349,6 +350,16 @@ const CitizenApplicationOverview = () => {
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+      });
+    }else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue && applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getSanctionLetterReceipt({
+            tenantId: tenantId,
+            payments: {},
+            EmpData,
+          }),
       });
     }
   }

@@ -940,6 +940,7 @@ const getFormattedULBName = (ulbCode = "") => {
       values: [
         { title: "BPA_ULB_NAME", value: BPA?.additionalDetails?.UlbName || "NA", isNotTranslated: true },
         { title: "BPA_ULB_TYPE", value: BPA?.additionalDetails?.Ulblisttype || "NA", isNotTranslated: true },
+        { title: "BPA_DISTRICT", value: BPA?.additionalDetails?.District || "NA", isNotTranslated: true },
         { title: "BPA_APPROVED_COLONY", value: BPA?.additionalDetails?.approvedColony || "NA", isNotTranslated: true },
         ...(BPA?.additionalDetails?.approvedColony === "YES"
           ? [{ title: "BPA_APPROVED_COLONY_NAME", value: BPA?.additionalDetails?.nameofApprovedcolony || "NA", isNotTranslated: true }]
@@ -1229,9 +1230,9 @@ const getFormattedULBName = (ulbCode = "") => {
       ];
     }
 
-    if (billDetails?.additionalDetails?.values?.length) {
-      details.push(billDetails);
-    }
+    // if (billDetails?.additionalDetails?.values?.length) {
+    //   details.push(billDetails);
+    // }
 
     let bpaFilterDetails = details?.filter((data) => data);
 
@@ -1278,5 +1279,35 @@ const getFormattedULBName = (ulbCode = "") => {
       auth: false,
       userService: false,
       data: data,
-    })
+    }),
+    BPACheckListCreate: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.bpaCheckListCreate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+
+    BPACheckListUpdate: ({ filters, details }) => 
+    Request({
+      url: Urls.obps.bpaCheckListUpdate,
+      useCache: true,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: details,
+      params:filters
+    }),
+    BPACheckListSearch: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.obps.bpaCheckListSearch,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
 };

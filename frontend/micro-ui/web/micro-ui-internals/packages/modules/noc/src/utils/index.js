@@ -377,3 +377,31 @@ export const downloadPdfFromURL = async (receiptUrl) => {
     window.open(downloadUrl, "_blank");
   }
 };
+
+export function encodeURIComponentCustom(str) {
+  return str
+    .split("")
+    .map((char) => {
+      const code = char.charCodeAt(0);
+
+      // Keep alphanumeric and safe characters unchanged
+      if (
+        (code >= 48 && code <= 57) || // 0-9
+        (code >= 65 && code <= 90) || // A-Z
+        (code >= 97 && code <= 122) || // a-z
+        ["-", "_", ".", "~"].includes(char)
+      ) {
+        return char;
+      }
+
+      // Convert other characters to percent-encoded hex
+      return "%" + code.toString(16).toUpperCase();
+    })
+    .join("");
+}
+
+export function decodeURIComponentCustom(str) {
+  return str.replace(/%([0-9A-F]{2})/gi, (_, hex) =>
+    String.fromCharCode(parseInt(hex, 16))
+  );
+}

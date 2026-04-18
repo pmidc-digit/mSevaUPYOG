@@ -13,6 +13,8 @@ const Inbox = ({ parentRoute }) => {
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
+  const isEmoployee = window.location.href.includes("employee");
+  const employeeName = Digit.UserService.getUser()?.info?.name;
 
   const searchFormDefaultValues = {};
 
@@ -198,10 +200,11 @@ const Inbox = ({ parentRoute }) => {
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
   return (
-    <>
+    <React.Fragment>
       <Header>
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+        {isEmoployee && <p className="inbox-name">{employeeName}</p>}
       </Header>
       {Digit.Utils.browser.isMobile() &&
         <div style={{marginLeft: "12px"}}>
@@ -223,7 +226,7 @@ const Inbox = ({ parentRoute }) => {
           formState,
         }}
       ></InboxComposer>
-    </>
+    </React.Fragment>
   );
 };
 

@@ -68,7 +68,7 @@ const App = () => {
           <PrivateRoute path={`${path}/response/:id`} component={NOCResponseCitizen} />
           <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} />
           <PrivateRoute path={`${path}/edit-application/:id`} component={NewNOCEditApplication} />
-          <PrivateRoute path={`${path}/search/application-overview/:id`} component={NOCCitizenApplicationOverview} />
+          <PrivateRoute path={`${path}/search/application-overview/:nocid`} component={NOCCitizenApplicationOverview} />
           <PrivateRoute path={`${path}/search-application`} component={NOCCitizenSearchApplication}  />
         </AppContainer>
       </Switch>

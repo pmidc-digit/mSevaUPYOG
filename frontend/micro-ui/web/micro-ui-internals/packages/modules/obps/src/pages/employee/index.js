@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import Search from "./Search";
 import OBPSResponse from "./OBPSResponse";
 import StakeholderResponse from "./StakeholderResponse";
+import BPAEsignResponse from "./BPAEsignResponse";
 
 
 
@@ -24,7 +25,7 @@ const OBPSBreadCrumbs = ({ location }) => {
       show: location.pathname.includes("obps/inbox") ? true : false,
     },
     {
-      path: "/digit-ui/employee/layout/inbox",
+      path: "/digit-ui/employee/obps/layout/inbox",
       content: t("Layout Inbox"),
       show: location.pathname.includes("layout/inbox") ? true : false,
     },
@@ -114,6 +115,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
           <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />

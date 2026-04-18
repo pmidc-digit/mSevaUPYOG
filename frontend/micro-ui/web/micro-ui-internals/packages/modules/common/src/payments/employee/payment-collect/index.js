@@ -64,6 +64,9 @@ export const CollectPayment = (props) => {
   const [toast, setToast] = useState(null);
 
   const isChallanGeneration = location.pathname.includes("Challan_Generation");
+  const isPetService = location.pathname.includes("pet-services");
+
+  console.log("isPetService", isPetService);
 
   useEffect(() => {
     if (paymentdetails?.Bill && paymentdetails.Bill.length === 0) {
@@ -74,13 +77,13 @@ export const CollectPayment = (props) => {
   const defaultPaymentModes = [
     { code: "CASH", label: t("COMMON_MASTERS_PAYMENTMODE_CASH") },
     { code: "CHEQUE", label: t("COMMON_MASTERS_PAYMENTMODE_CHEQUE") },
-    ...(!isChallanGeneration ? [{ code: "CARD", label: t("COMMON_MASTERS_PAYMENTMODE_CREDIT/DEBIT CARD") }] : []),
+    ...(!(isChallanGeneration || isPetService) ? [{ code: "CARD", label: t("COMMON_MASTERS_PAYMENTMODE_CREDIT/DEBIT CARD") }] : []),
     { code: "DD", label: "Demand Draft" },
-    ...(isChallanGeneration ? [{ code: "ONLINE", label: "Online" }] : []),
-    ...(!isChallanGeneration ? [{ code: "OFFLINE_NEFT", label: "NEFT" }] : []),
-    ...(!isChallanGeneration ? [{ code: "OFFLINE_RTGS", label: "RTGS" }] : []),
-    ...(!isChallanGeneration ? [{ code: "POSTAL_ORDER", label: "Postal Order" }] : []),
-    ...(!isChallanGeneration ? [{ code: "QR_CODE", label: "QR Code" }] : []),
+    ...(isChallanGeneration || isPetService ? [{ code: "ONLINE", label: "Online" }] : []),
+    ...(!(isChallanGeneration || isPetService) ? [{ code: "OFFLINE_NEFT", label: "NEFT" }] : []),
+    ...(!(isChallanGeneration || isPetService) ? [{ code: "OFFLINE_RTGS", label: "RTGS" }] : []),
+    ...(!(isChallanGeneration || isPetService) ? [{ code: "POSTAL_ORDER", label: "Postal Order" }] : []),
+    ...(!(isChallanGeneration || isPetService) ? [{ code: "QR_CODE", label: "QR Code" }] : []),
   ];
 
   const formConfigMap = {

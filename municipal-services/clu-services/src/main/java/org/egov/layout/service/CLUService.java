@@ -225,15 +225,16 @@ public class CLUService {
 				.findFirst().orElse(new Action()).getNextState();
 		State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
-		String action = clu.getWorkflow() != null ? clu.getWorkflow().getAction() : "";
-
-		if (nextState != null && nextState.getState().equalsIgnoreCase(CLUConstants.FI_STATUS)
-				&& (CLUConstants.ACTION_PAY.equalsIgnoreCase(action) || CLUConstants.ACTION_RESUBMIT.equalsIgnoreCase(action))) {
+		if (nextState != null && CollectionUtils.isEmpty(clu.getWorkflow().getAssignes())
+				&& !CollectionUtils.isEmpty(nextState.getActions())) {
 			List<String> roles = new ArrayList<>();
-			nextState.getActions().forEach(stateAction -> {
-				roles.addAll(stateAction.getRoles());
-			});
-			List<String> assignee = userService.getAssigneeFromCLU(clu, roles, nocRequest.getRequestInfo());
+			nextState.getActions().stream()
+			.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId)).forEach(stateAction -> 
+				roles.addAll(stateAction.getRoles())
+			);
+			List<String> assignee = null;
+			if(!CollectionUtils.isEmpty(roles))
+				assignee = userService.getAssigneeFromCLU(clu, roles, nocRequest.getRequestInfo());
 			clu.getWorkflow().setAssignes(assignee);
 		}
 		if(nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_INITIATE) || nocRequest.getLayout().getWorkflow().getAction().equals(CLUConstants.ACTION_APPLY)){

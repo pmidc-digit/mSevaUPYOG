@@ -602,9 +602,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
           {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
 
           {/* arrear Start Date */}
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel>
-              {t("RAL_START_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+              {t("RAL_ARR_START_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
             </CardLabel>
             <div className="form-field">
               <Controller
@@ -632,12 +632,12 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
               />
             </div>
           </LabelFieldPair>
-          {errors.arrearStartDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearStartDate")}</CardLabelError>}
+          {errors.arrearStartDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearStartDate")}</CardLabelError>} */}
 
           {/*arrear End Date */}
           <LabelFieldPair>
             <CardLabel>
-              {t("RAL_END_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
+              {t("RAL_ARR_END_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
             </CardLabel>
             <div className="form-field">
               <Controller

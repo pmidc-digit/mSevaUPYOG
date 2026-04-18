@@ -271,6 +271,22 @@ const PTRWFApplicationTimeline = (props) => {
   };
   =================================================================== */
 
+    const { data } = Digit.Hooks.useCustomMDMS(tenantId, "PetService", [{ name: "ApplicationType" }]);
+  const checkRenewTime = data?.PetService?.ApplicationType?.filter((item) => item.code == "RENEWAPPLICATION");
+  const checkTimeRenew = checkRenewTime?.[0]?.renewalPeriod * 1000;
+
+ const validToObj = props.application?.validityDate;
+  const validToMillis = validToObj ? validToObj * 1000 : null;
+
+  const currentDateObj = Date.now();
+    const duration = validToObj && currentDateObj ? validToMillis - currentDateObj : null;
+
+
+    const checkDuration = duration !== null && duration <= checkTimeRenew;
+
+    const checkRenewal = props.application?.status == "APPROVED" || props.application?.status == "EXPIRED";
+
+
   return (
     <React.Fragment>
       <Fragment>
@@ -305,7 +321,7 @@ const PTRWFApplicationTimeline = (props) => {
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {(props.application?.status != "CITIZENACTIONREQUIRED" || props.application?.status != "INITIATED") &&
-          actions &&
+          actions && actions.length > 0 &&
           actions[0]?.action != "PAY" &&
           !isCitizen && (
             <ActionBar>
@@ -329,6 +345,17 @@ const PTRWFApplicationTimeline = (props) => {
               label={t("COMMON_EDIT")}
               onSubmit={() => {
                 history.push(`/digit-ui/employee/ptr/petservice/new-application/${props.application?.applicationNumber}`);
+              }}
+            />
+          </ActionBar>
+        )}
+
+         {checkRenewal && checkDuration &&(props.application?.status == "APPROVED") && !isCitizen && (
+          <ActionBar>
+            <SubmitBar
+              label={t("PT_RENEW_HEADER")}
+              onSubmit={() => {
+                history.push(`/digit-ui/employee/ptr/petservice/new-application/${props?.application?.applicationNumber}/renew-application`);
               }}
             />
           </ActionBar>

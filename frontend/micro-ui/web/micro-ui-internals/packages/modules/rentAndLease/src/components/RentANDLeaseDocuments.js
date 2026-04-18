@@ -230,7 +230,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     <div className="challan-documents">
       <LabelFieldPair className="challan-label-field">
         <CardLabel className="challan-card-label">
-          {t(doc?.code)} <span className="requiredField"> {doc?.required && " *"}</span>
+          {/* {t(doc?.code)}  */}
+          Other Document
+          <span className="requiredField"> {doc?.required && " *"}</span>
         </CardLabel>
         <div className="field" style={{ width: "100%" }}>
           <UploadFile

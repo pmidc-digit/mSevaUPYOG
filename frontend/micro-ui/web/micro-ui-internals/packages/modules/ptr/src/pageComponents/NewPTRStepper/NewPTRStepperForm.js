@@ -93,11 +93,29 @@ const NewPTRStepperForm = () => {
   // const id = window.location.pathname.split("/").pop();
 
   const pathParts = window.location.pathname.split("/");
-  const id = pathParts.find((part) => part.startsWith("PB-PTR-"));
-  console.log("id", id);
+  const startIndex = pathParts.findIndex((part) => part === "new-application");
+  let id = null;
+  if (startIndex !== -1) {
+  const nextPart = pathParts[startIndex + 1];
 
-  const shouldEnableSearch = Boolean(id && id.startsWith("PB-PTR-"));
+  // ✅ Case 1: PB-PTR format
+  if (nextPart?.startsWith("PB-PTR-")) {
+    id = nextPart;
+  } 
+  // ✅ Case 2: PL/.../.../... format
+  else if (nextPart === "PL") {
+    id = pathParts.slice(startIndex + 1, startIndex + 5).join("/");
+  }
+}
 
+id = id ? decodeURIComponent(id) : null;
+
+console.log("id:", id);
+
+
+  // const id = pathParts.find((part) => part.startsWith("PB-PTR-"));
+
+const shouldEnableSearch = Boolean(id);
   console.log("shouldEnableSearch", shouldEnableSearch);
 
   // const isEdit = !!id;
@@ -110,6 +128,8 @@ const NewPTRStepperForm = () => {
 
   useEffect(() => {
     console.log("applicationData for hereee:>> ", applicationData);
+    console.log("id",id);
+    
     if (id && applicationData?.PetRegistrationApplications?.length) {
       dispatch(UPDATE_PTRNewApplication_FORM("responseData", applicationData.PetRegistrationApplications));
     }

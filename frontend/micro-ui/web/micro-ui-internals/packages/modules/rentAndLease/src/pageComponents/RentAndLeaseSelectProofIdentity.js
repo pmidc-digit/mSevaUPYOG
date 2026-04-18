@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { CardLabel, UploadFile, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
+import { useSelector } from "react-redux";
 
 const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
   const { triggerToast } = config;
 
+  const currentStepData = useSelector(function (state) {
+    return state?.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData;
+  });
+
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
     allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],
   };
+
+  console.log("currentStepData====????", currentStepData?.propertyDetails?.applicationType?.name);
+
+  const checkLegacy = currentStepData?.propertyDetails?.applicationType?.name == "Legacy";
 
   const validateFile = (file, docCode) => {
     if (!file) return null;
@@ -56,13 +65,26 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
 
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   // Centralized required-doc validation
+  // useEffect(() => {
+  //   if (mdmsDocsData) {
+  //     const validateDocs = makeDocumentsValidator(mdmsDocsData);
+  //     const errors = validateDocs(documents);
+  //     setFormErrors(errors);
+  //   }
+  // }, [documents, mdmsDocsData]);
+
   useEffect(() => {
     if (mdmsDocsData) {
+      if (checkLegacy) {
+        setFormErrors({});
+        return;
+      }
+
       const validateDocs = makeDocumentsValidator(mdmsDocsData);
       const errors = validateDocs(documents);
       setFormErrors(errors);
     }
-  }, [documents, mdmsDocsData]);
+  }, [documents, mdmsDocsData, checkLegacy]);
 
   useEffect(() => {
     const incomingDocs = formData?.documents?.documents || [];
@@ -81,11 +103,12 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
   }, [documents, config.key]);
 
   const handleSubmit = () => {
-    if (Object.keys(formErrors)?.length > 0) {
+    if (!checkLegacy && Object.keys(formErrors)?.length > 0) {
       triggerToast(t(formErrors?.missingRequired || "PTR_VALIDATION_ERROR"), true);
       onSelect(config.key, { missingDocs: formErrors?.missingDocs || [] });
       return;
     }
+
     let documentStep = { ...mdmsDocsData, documents };
     onSelect(config.key, documentStep);
   };
@@ -110,6 +133,7 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
                   makeDocumentsValidator={makeDocumentsValidator}
                   mdms={mdmsDocsData}
                   setFormErrors={setFormErrors}
+                  checkLegacy={checkLegacy}
                   formErrors={formErrors} // ✅ pass down
                 />
               );
@@ -133,6 +157,7 @@ function RentAndLeaseSelectDocument({
   setFormErrors,
   formErrors,
   submitted,
+  checkLegacy,
 }) {
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(doc?.fileStoreId || null);
@@ -186,8 +211,14 @@ function RentAndLeaseSelectDocument({
 
     if (!_.isEqual(updatedDocs, documents)) {
       setDocuments(updatedDocs);
-      const errors = makeDocumentsValidator(mdms)(updatedDocs);
-      setFormErrors(errors);
+      if (!checkLegacy) {
+        const errors = makeDocumentsValidator(mdms)(updatedDocs);
+        setFormErrors(errors);
+      } else {
+        setFormErrors({});
+      }
+      // const errors = makeDocumentsValidator(mdms)(updatedDocs);
+      // setFormErrors(errors);
     }
   };
 
@@ -199,7 +230,7 @@ function RentAndLeaseSelectDocument({
         {/* <CardLabel className="card-label-smaller" style={{width:"100%"}}>{t(doc?.code.replaceAll(".", "_")) + (doc?.required && <span style={mandatoryStyle}>  *</span>)}</CardLabel> */}
         <CardLabel className="card-label-smaller ral-doc-label">
           {t(doc?.code?.replaceAll(".", "_"))}
-          {doc?.required && <span className="mandatory-asterisk"> *</span>}
+          {doc?.required && !checkLegacy && <span className="mandatory-asterisk"> *</span>}
         </CardLabel>
       </LabelFieldPair>
 

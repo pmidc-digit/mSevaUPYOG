@@ -61,7 +61,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
-      setValue("address", apiDataCheck?.[0]?.address?.addressId || currentStepData?.ownerDetails?.address || "");
+      setValue("address", (apiDataCheck?.[0]?.address?.addressLine1 ? apiDataCheck?.[0]?.address?.addressLine1 : apiDataCheck?.[0]?.address?.addressId) || currentStepData?.ownerDetails?.address || "");
       setValue("pincode", apiDataCheck?.[0]?.address?.pincode || currentStepData?.ownerDetails?.pincode || "");
     }
   }, [apiDataCheck, currentStepData, setValue]);

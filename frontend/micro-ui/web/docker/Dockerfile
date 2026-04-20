@@ -15,11 +15,11 @@ RUN yarn add @mseva/digit-ui-module-core@1.0.66-UAT.10
 RUN yarn add @mseva/digit-ui-module-common@1.1.88-UAT.13
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
-RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-UAT.13
+RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-UAT.14
 RUN yarn add @mseva/digit-ui-module-swach@1.0.55-UAT.1
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39-UAT.5
 RUN yarn add @mseva/digit-ui-module-tl@1.0.31-UAT.1.2
-RUN yarn add @mseva/digit-ui-module-obps@1.1.89-UAT.17
+RUN yarn add @mseva/digit-ui-module-obps@1.1.89-UAT.18
 RUN yarn add @mseva/digit-ui-module-sv@1.1.49-UAT.7
 RUN yarn add @mseva/upyog-ui-module-ads@1.1.86-UAT.8
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.91-UAT.7

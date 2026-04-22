@@ -445,10 +445,11 @@ const NOCEmployeeApplicationOverview = () => {
       // refetch();
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
+      const authToken = localStorage.getItem('token');
 
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl },
+        { fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {

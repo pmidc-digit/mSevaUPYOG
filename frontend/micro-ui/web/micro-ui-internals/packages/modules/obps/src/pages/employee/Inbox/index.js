@@ -6,6 +6,7 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
+import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
@@ -22,7 +23,7 @@ const Inbox = ({ parentRoute }) => {
     moduleName: "bpa-services",
     applicationStatus: [],
     locality: [],
-    assignee: "ASSIGNED_TO_ALL",
+    assignee: "ASSIGNED_TO_ME",
     applicationType: [],
   };
   const tableOrderFormDefaultValues = {
@@ -121,10 +122,15 @@ const Inbox = ({ parentRoute }) => {
 
   const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = Digit.Hooks.obps.useBPAInbox({
     tenantId,
-    filters: { ...formState },
+    filters: { 
+      ...formState,
+      filterForm: {
+        ...formState.filterForm,
+        businessService: formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
+      }
+     },
   });
 
-  console.log("IS IT HERE");
 
   const PropsForInboxLinks = {
     logoIcon: <CaseIcon />,

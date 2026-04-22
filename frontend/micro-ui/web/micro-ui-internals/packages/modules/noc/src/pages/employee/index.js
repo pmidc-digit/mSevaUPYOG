@@ -76,7 +76,7 @@ const EmployeeApp = ({ path }) => {
       </div> : null} 
       <Switch>
         {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} /> */}
-        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={NOCEmployeeApplicationOverview} />
+        <PrivateRoute path={`${path}/inbox/application-overview/:nocid`} component={NOCEmployeeApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />

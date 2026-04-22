@@ -2,6 +2,7 @@ import React, { Fragment, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { encodeURIComponentCustom } from "../../../utils";
 
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
           console.log('row in inbox', row)
           return (
             <div>
-              <Link to={`${parentRoute}/inbox/application-overview/${row.original["applicationId"]}`}>
+              <Link to={`${parentRoute}/inbox/application-overview/${encodeURIComponentCustom(row.original["applicationId"])}`}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>

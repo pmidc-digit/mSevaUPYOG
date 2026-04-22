@@ -478,14 +478,12 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     <Fragment>
   
       <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
-      <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
+      {/* <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
         <span className="link">
           <Link to="/digit-ui/citizen/obps/search/obps-application">{t("BPA_CLICK_HERE_TO_SEARCH_LINK")}</Link>
         </span>
-      </div>
-
-{console.log(finalData, "VVV")}
+      </div> */}
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           console.log("applicationDataForBPAREG", application)

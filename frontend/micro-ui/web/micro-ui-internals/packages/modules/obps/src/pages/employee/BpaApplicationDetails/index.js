@@ -42,7 +42,8 @@ import {
   getDocsFromFileUrls,
   scrutinyDetailsData,
   getBase64Img,
-  getApproveRejectComments
+  getApproveRejectComments,
+  fetchUrl
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -565,7 +566,7 @@ const BpaApplicationDetail = () => {
       Header: t(" "),
       accessor: "value",
       Cell: ({ value }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA");
+        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA");
       },
     },
   ];
@@ -579,7 +580,7 @@ const BpaApplicationDetail = () => {
     {
       Header: t(""),
       accessor: "planReport",
-      Cell: ({ value }) => (value ? <LinkButton className="view-link-button" label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA")),
+      Cell: ({ value }) => (value ? <LinkButton className="view-link-button" label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
     },
   ];
   // const ecbcDocumentsData = useMemo(() => {

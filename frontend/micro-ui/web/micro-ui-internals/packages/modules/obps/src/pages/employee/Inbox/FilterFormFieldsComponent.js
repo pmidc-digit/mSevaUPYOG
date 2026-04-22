@@ -57,7 +57,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
     }}
     />
   </FilterFormField>: null}
-  {!window.location.href.includes("/citizen") ? <FilterFormField>
+  {/* {!window.location.href.includes("/citizen") ? <FilterFormField>
       <Controller
           name="locality"
           control={controlFilterForm}
@@ -92,7 +92,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
           }
         }
         />
-    </FilterFormField>: null}
+    </FilterFormField>: null} */}
     <FilterFormField>
       <Controller
         name="applicationType"
@@ -136,7 +136,9 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
         }
         />
     </FilterFormField> : null}
-    {(selectedApplicationType == "BUILDING_OC_PLAN_SCRUTINY" || (selectedApplicationType?.length > 0 && selectedBusinessService?.length > 0)) ? <FilterFormField>
+    {
+    (selectedApplicationType == "BUILDING_OC_PLAN_SCRUTINY" || (selectedApplicationType?.length > 0 && selectedBusinessService?.length > 0)) ?
+    <FilterFormField>
       <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("ACTION_TEST_APPLICATION_STATUS")}</div>
       <Controller
         name="applicationStatus"
@@ -147,8 +149,11 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
           }
           const renderStatusCheckBoxes = useMemo(()=>statuses?.filter( e => {
               let value = cloneDeep(selectedBusinessService);
-              if (selectedApplicationType == "BUILDING_OC_PLAN_SCRUTINY") {
-                value = "BPA_OC"
+              if (selectedApplicationType === "BUILDING_OC_PLAN_SCRUTINY") {
+                return e?.businessservice === "BPA_OC"
+              }
+              else if(selectedBusinessService === "BPA"){
+                return e?.businessservice !== "BPA_LOW" && e?.businessservice !== "BPA_OC"
               }
               return e.businessservice === value
             
@@ -169,7 +174,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
                 }
               }
               checked={props?.value?.includes(status?.statusid)}
-              label={`${t(`WF_STATE_${status.businessservice}_${status.applicationstatus}`)} (${status.count})`}
+              label={`${t(`WF_${status.businessservice}_${status.applicationstatus}`)} (${status.count})`}
               //Hidden due to RAIN-5010 percieved as wrong count here
               // (${status.count})`}
             />}),[props.value, statuses, selectedBusinessService, selectedApplicationType])
@@ -178,7 +183,9 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
           </>
         }}
       />
-    </FilterFormField> : null}
+    </FilterFormField>
+     : null
+    }
   </>
 }
 

@@ -1,4 +1,4 @@
-import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../constants/constants";
+import { OBPS_BPA_BUSINESS_SERVICES, OBPS_BPA_OC_BUSINESS_SERVICES } from "../../../../constants/constants";
 import useInbox from "../useInbox";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +19,12 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     applicationType === "BUILDING_OC_PLAN_SCRUTINY" &&
     (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox"))
   ) {
+    businessService = OBPS_BPA_OC_BUSINESS_SERVICES;
+  }
+  else if (
+    applicationType !== "BUILDING_OC_PLAN_SCRUTINY" &&
+    (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox")) && !businessService
+  ) {
     businessService = OBPS_BPA_BUSINESS_SERVICES;
   }
 
@@ -30,7 +36,9 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
       businessService:
         moduleName !== "BPAREG"
           ? businessService
-            ? [businessService]
+            ? typeof businessService === "string"
+              ? [businessService]
+              : [...businessService]
             : OBPS_BPA_BUSINESS_SERVICES
           : businessService
           ? [businessService.identifier]
@@ -79,7 +87,9 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
         table: data?.items.map((application) => ({
           applicationId: application.businessObject.applicationNo || application.businessObject.applicationNumber,
           date: application.businessObject.auditDetails.createdTime,
-          submissionDate: application?.ProcessInstance?.auditDetails?.lastModifiedTime,
+          // submissionDate: application?.ProcessInstance?.auditDetails?.lastModifiedTime,
+          submissionDate: application?.businessObject?.applicationDate,
+          createdDate: application.businessObject.auditDetails.createdTime,
           businessService: application?.ProcessInstance?.businessService,
           applicationType: application?.businessObject?.additionalDetails?.applicationType
             ? `WF_BPA_${application?.businessObject?.additionalDetails?.applicationType}`

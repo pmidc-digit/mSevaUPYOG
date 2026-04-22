@@ -30,9 +30,16 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         //     Cell: ({row}) => row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), 'dd/MM/yyyy')) : ""
         //     },
         {
+                Header: t("BPA_COMMON_TABLE_COL_APP_DATE_LABEL"),
+                accessor: "createdDate",
+                Cell: ({row}) =>{ return row.original?.["createdDate"] ? GetCell(format(new Date(row.original?.["createdDate"]), 'dd/MM/yyyy')) : "-"},
+                disableSortBy: true,
+        },
+        {
                 Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
                 accessor: "submissionDate",
-                Cell: ({row}) =>{ return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "NA"}
+                Cell: ({row}) =>{ return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "-"},
+                disableSortBy: true,
         },
         // {
         //     Header: t("ES_INBOX_LOCALITY"),
@@ -72,6 +79,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         {
             Header: t("TIME_TAKEN"),
             accessor: row => GetStatusCell(row?.sla, row?.selfCertification),
+            disableSortBy: true,
         }
         ]
     })
@@ -84,6 +92,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             fontSize: "16px"
         }}},
         tableStyle: {overflowX: "auto"},
+        className: "table cancel-table",
         disableSort: false,
         autoSort:false,
         manualPagination:true,

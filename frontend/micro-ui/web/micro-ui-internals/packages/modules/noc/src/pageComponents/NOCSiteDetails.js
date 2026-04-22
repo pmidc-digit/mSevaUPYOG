@@ -1093,10 +1093,10 @@ const sortedRoadType = useMemo(
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
 
-                  pattern: {
-                    value: /^[0-9]+$/, // only digits allowed
-                    message: t("ONLY_NUMERIC_VALUES_ALLOWED"),
-                  },
+                  // pattern: {
+                  //   value: /^[0-9]+$/, // only digits allowed
+                  //   message: t("ONLY_NUMERIC_VALUES_ALLOWED"),
+                  // },
                 }}
                 render={(props) => (
                   <TextInput

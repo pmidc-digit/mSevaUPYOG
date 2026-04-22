@@ -1,10 +1,11 @@
 import React, { Fragment } from "react";
 import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, CardLabelError, MobileNumber } from "@mseva/digit-ui-react-components";
 import { useWatch } from "react-hook-form";
+import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../constants/constants";
 
 const SearchFormFieldsComponent = ({ formState, Controller, register, control, t, reset, previousPage }) => {
   const stateTenantId = Digit.ULBService.getStateId();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
   // const userInformation = Digit.UserService.getUser()?.info;
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
   const userInfo = userInfos ? JSON.parse(userInfos) : {};
@@ -20,7 +21,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
     Applicationtype: applicationType?.code || (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_") ).length>0 &&  userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN") ).length<=0 ?"BPA_STAKEHOLDER_REGISTRATION" :"BUILDING_PLAN_SCRUTINY"),
     tenantId: stateTenantId,
   });
-  const businessServices = "BPA,BPA_LOW,BPA_OC,ARCHITECT,BUILDER,ENGINEER,STRUCTURALENGINEER";
+  const businessServices = OBPS_BPA_BUSINESS_SERVICES.join(",");
   const { isLoading, data: businessServiceData } = Digit.Hooks.obps.useBusinessServiceData(tenantId, businessServices, {});
   let bpaStatus = [],
     bpaOCStatus = [],
@@ -112,18 +113,18 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
         <label>{t("BPA_SEARCH_APPLICATION_NO_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
-      <SearchField>
+      {/* <SearchField>
         <label>{t("BPA_SEARCH_OWNER_NAME")}</label>
         <TextInput name="name" inputRef={register({})} />
-      </SearchField>
+      </SearchField> */}
       {
-        !window.location.href.includes("citizen/obps/search/application") &&
+        // !window.location.href.includes("citizen/obps/search/application") &&
         <SearchField>
           <label>{t("BPA_APP_MOBILE_NO_SEARCH_PARAM")}</label>
           <div className="obps-search-mobile-wrapper">
             <MobileNumber
               name="mobileNumber"
-              disable={window.location.href.includes("obps/search/obps-application") ? true : false}
+              // disable={window.location.href.includes("obps/search/obps-application") ? true : false}
               inputRef={register({
                 minLength: {
                   value: 10,
@@ -184,7 +185,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
           )}
         />
       </SearchField>
-      {window.location.href.includes("citizen/obps/search/application") && <SearchField></SearchField>}
+      {/* {window.location.href.includes("citizen/obps/search/application") && <SearchField></SearchField>} */}
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p className="obps-search-application-container"

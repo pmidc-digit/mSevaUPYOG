@@ -36,6 +36,33 @@ const useSearchApplicationTableConfig = ({t}) => {
             accessor: (row) => GetCell(row?.auditDetails?.createdTime ? convertEpochToDateDMY(row?.auditDetails?.createdTime) : ""),
         },
         {
+            Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
+            disableSortBy: true,
+            accessor: (row) => GetCell(row?.applicationDate ? convertEpochToDateDMY(row?.applicationDate) : ""),
+        },
+        {
+          Header: t("BPA_OWNER_HEAD"),
+          accessor: (row) => GetCell(row?.landInfo?.owners?.[0]?.name || "NA"),
+          // accessor: (row) => GetCell(row.businessService === "BPAREG"?row?.tradeLicenseDetail?.owners.map( o => o.name ). join(",") || "-" : row?.landInfo?.owners.map( o => o.name ). join(",") || "-"),
+          disableSortBy: true,
+        },
+        {
+            Header: t("CATEGORY"),
+            disableSortBy: true,
+            accessor: (row) => GetCell(row?.additionalDetails?.categoriesName || ""),
+        },
+        {
+          Header: t("BPA_STATUS_LABEL"),
+          accessor: (row) =>GetCell(t(row?.state&&`WF_BPA_${row.state}` || row?.status&&`WF_BPA_${row.status}`|| "NA") ),
+          disableSortBy: true,
+        },
+        {
+          Header: t("ZONE"),
+          accessor: (row) => GetCell(row?.additionalDetails?.zonenumber || "NA"),
+          // accessor: (row) => GetCell(row.businessService === "BPAREG"?row?.tradeLicenseDetail?.owners.map( o => o.name ). join(",") || "-" : row?.landInfo?.owners.map( o => o.name ). join(",") || "-"),
+          disableSortBy: true,
+        },
+        {
             Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
             disableSortBy: true,
             accessor: "applicationType",
@@ -49,20 +76,15 @@ const useSearchApplicationTableConfig = ({t}) => {
                   );
             },
         },
+        // {
+        //     Header: t("BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL"),
+        //     disableSortBy: true,
+        //     accessor: (row) => GetCell(t(row.additionalDetails?.serviceType || t(`TRADELICENSE_TRADETYPE_${row?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "-")),
+        // },
         {
-            Header: t("BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL"),
-            disableSortBy: true,
-            accessor: (row) => GetCell(t(row.additionalDetails?.serviceType || t(`TRADELICENSE_TRADETYPE_${row?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`) || "-")),
-        },
-        {
-          Header: t("BPA_OWNER_HEAD"),
-          accessor: (row) => GetCell(row?.additionalDetails?.ownerName || "NA"),
+          Header: t("IS_SELF_CERTIFICATION"),
+          accessor: (row) => GetCell(row?.additionalDetails?.isSelfCertification ? "Yes" : "No"),
           // accessor: (row) => GetCell(row.businessService === "BPAREG"?row?.tradeLicenseDetail?.owners.map( o => o.name ). join(",") || "-" : row?.landInfo?.owners.map( o => o.name ). join(",") || "-"),
-          disableSortBy: true,
-        },
-        {
-          Header: t("BPA_STATUS_LABEL"),
-          accessor: (row) =>GetCell(t(row?.state&&`WF_BPA_${row.state}` || row?.state&&`WF_BPA_${row.status}`|| "NA") ),
           disableSortBy: true,
         }
       ]), [] )

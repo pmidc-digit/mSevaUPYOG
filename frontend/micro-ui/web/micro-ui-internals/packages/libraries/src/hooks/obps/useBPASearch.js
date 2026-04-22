@@ -54,8 +54,8 @@ const useBPASearch = (tenantId, filters = {}, config = {}) => {
   }
 
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-  const userInfo = userInfos ? JSON.parse(userInfos) : {};
-  const userInformation = userInfo?.value?.info;
+  const userInfo = Digit.UserService.getUser();
+  const userInformation = userInfo?.info;
 
   if (window.location.href.includes("/citizen") && window.location.href.includes("/search")) {
     if (!filters?.createdBy && !window.location.href.includes("obps-application")) filters.createdBy = userInformation?.uuid;

@@ -4,8 +4,8 @@ import { useLocation } from "react-router-dom";
 
 const Search = ({ path }) => {
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-  const userInfo = userInfos ? JSON.parse(userInfos) : {};
-  const userInformation = userInfo?.value?.info;
+  const userInfo = Digit.UserService.getUser();
+  const userInformation = userInfo?.info;
 
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -119,7 +119,10 @@ const Search = ({ path }) => {
   }
   const { data: bpaData = [], isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     selectedType,
-    payload,
+    {
+      ...payload,
+      createdBy: payload?.createdBy || (window.location.href.includes("/citizen") ? userInformation?.uuid : ""),
+    },
     tenantId,
     filters,
     params,

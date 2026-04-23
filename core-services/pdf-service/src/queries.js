@@ -181,7 +181,6 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
       const merger = new PDFMerger();
       logger.info('Files to be merged:', fileNames);
 
-      // 🔥 Merge all PDFs
       for (let i = 0; i < fileNames.length; i++) {
         const filePath = baseFolder + fileNames[i];
         logger.info(filePath);
@@ -192,7 +191,10 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
 
       await merger.save(outputFile);
 
-      // 🔍 Validate file
+      // 🔥 ensure file is fully written
+      await new Promise(res => setTimeout(res, 300));
+
+      // 🔍 validation
       if (!fs.existsSync(outputFile)) {
         throw new Error("Output PDF not created");
       }
@@ -204,10 +206,9 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
         throw new Error("Output PDF is empty");
       }
 
-      // 🔥 Upload (PASS FILE PATH, NOT STREAM)
+      // 🔥 FIXED upload
       const filestoreid = await fileStoreAPICall(outputFile, tenantId);
 
-      // 🔥 Update DB
       const updateQuery = `
         UPDATE egov_bulk_pdf_info 
         SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 
@@ -217,6 +218,7 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
       const currentTime = new Date().getTime();
       const status = 'DONE';
 
+      // 🔥 await DB + notification
       await pool.query(updateQuery, [
         filestoreid,
         userid,
@@ -225,10 +227,9 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
         status
       ]);
 
-      // 🔥 Notification
       await sendNoitification(filestoreid, mobileNumber, tenantId);
 
-      // 🔥 CLEANUP (SAFE: after upload + DB + notification)
+      // 🔥 cleanup (same logic, just runs AFTER everything)
       try {
         if (fs.existsSync(baseFolder)) {
           fs.readdirSync(baseFolder).forEach(file => {

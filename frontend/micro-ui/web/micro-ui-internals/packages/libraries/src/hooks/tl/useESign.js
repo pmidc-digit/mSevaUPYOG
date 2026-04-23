@@ -6,7 +6,7 @@ const useESign = () => {
 
 
       // eSignPayload should be: { fileStoreId, tenantId }
-      const { fileStoreId, tenantId , callbackUrl } = eSignPayload;
+      const { fileStoreId, tenantId , callbackUrl, authToken } = eSignPayload;
       if (!fileStoreId || !tenantId || !callbackUrl) {
         throw new Error('fileStoreId and tenantId & callbackUrl are required for eSign.');
       }
@@ -16,10 +16,13 @@ const useESign = () => {
       formData.append('tenantid', tenantId);
       formData.append('callbackUrl', callbackUrl)
 
-      const response = await fetch('/egov-esign/upload', {
-        method: 'POST',
+      const response = await fetch("/egov-esign/upload", {
+        method: "POST",
         body: formData,
-        credentials: 'include' // Send cookies (JSESSIONID)
+        headers: {
+          "auth-token": authToken,
+        },
+        credentials: "include", // Send cookies (JSESSIONID)
       });
 
       if (!response.ok) {

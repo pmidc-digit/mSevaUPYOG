@@ -1028,7 +1028,7 @@ const BpaApplicationDetail = () => {
 
   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
       const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
-      const newValidityDate = Date.now();
+      const newValidityDate = new Date.now();
   
       // validity date = approval date + 3 as per feedback
       newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
@@ -1450,10 +1450,11 @@ const BpaApplicationDetail = () => {
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
+      const authToken = localStorage.getItem('token');
 
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl },
+        { fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {

@@ -54,8 +54,8 @@ export const fileStoreAPICall = async function(filePath, tenantId) {
     return get(response.data, "files[0].fileStoreId");
 
   } catch (error) {
-    console.error("UPLOAD STATUS:", error.response?.status);
-    console.error("UPLOAD ERROR:", error.response?.data || error.message);
+    console.error("UPLOAD STATUS:", error.response.status);
+    console.error("UPLOAD ERROR:", error.response.data || error.message);
     throw error;
   }
 };

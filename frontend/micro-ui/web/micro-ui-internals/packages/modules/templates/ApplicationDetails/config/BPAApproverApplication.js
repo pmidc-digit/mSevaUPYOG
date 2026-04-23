@@ -19,7 +19,7 @@ export const configBPAApproverApplication = ({
   blockReasonFiltered
 }) => {
   let isRejectOrRevocate = false;
-  if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE") {
+  if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE" || action?.action == "PULLBACK") {
     isRejectOrRevocate = true;
   }
 

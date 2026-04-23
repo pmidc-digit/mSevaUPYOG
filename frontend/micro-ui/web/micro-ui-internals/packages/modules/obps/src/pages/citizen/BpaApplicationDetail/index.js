@@ -223,6 +223,13 @@ console.log("building category here: & fileNo", usage,fileno);
   //         }));
   // }, [fileUrls, t]);
 
+  useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });    
+  }, [])
+
   const ecbcDocumentsData = useMemo(() => {
   const docs = getDocsFromFileUrls(fileUrls) || [];
 

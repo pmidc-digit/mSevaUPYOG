@@ -66,7 +66,6 @@ const DocumentDetails = ({
 
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
-  console.log("currentStepData", currentStepData);
   const searchObj = currentStepData?.createdResponse;
   const { data: bpaTaxDocuments, isLoading } = Digit.Hooks.obps.useBPATaxDocuments(
     stateId,
@@ -304,7 +303,7 @@ function SelectDocument({
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || filteredDocument?.fileStoreId === "" ? filteredDocument?.fileStoreId : null);
   const [loader, setLoader] = useState(false);
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
@@ -346,8 +345,9 @@ function SelectDocument({
     if (uploadedFile) {
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+        const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
 
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
+        if (uploadedFile === null) {
           return filteredDocumentsByDocumentType;
         }
 
@@ -355,6 +355,7 @@ function SelectDocument({
         return [
           ...filteredDocumentsByFileStoreId,
           {
+            ...selectedDoc,
             documentType: doc?.code,
             fileStoreId: uploadedFile,
             documentUid: uploadedFile,
@@ -362,7 +363,29 @@ function SelectDocument({
           },
         ];
       });
-    } else if (uploadedFile === null) {
+    } else if (uploadedFile === ""){
+      
+      const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
+      if(!selectedDoc?.id){
+        setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
+      } else {
+        setDocuments((prev) => {
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        return [
+          ...filteredDocumentsByFileStoreId,
+          {
+            ...selectedDoc,
+            documentType: doc?.code,
+            fileStoreId: "",
+            documentUid: "",
+            order: doc?.order
+          },
+        ];
+      });
+      }
+    }else if (uploadedFile === null) {
       setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
     }
     // if (!isHidden) {
@@ -386,7 +409,7 @@ function SelectDocument({
         } else {
           setLoader(true);
           try {
-            setUploadedFile(null);
+            setUploadedFile("");
             const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
             setLoader(false);
             if (response?.data?.files?.length > 0) {
@@ -444,6 +467,8 @@ function SelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept="image/*,.pdf"
+            required={doc?.required}
+            isRemovable={!doc?.required}
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
           <p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>

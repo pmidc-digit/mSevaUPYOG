@@ -44,10 +44,15 @@ const OBPSBreadCrumbs = ({ location }) => {
       content: t("ES_COMMON_STAKEHOLDER_INBOX_LABEL"),
       show: location.pathname.includes("obps/stakeholder-inbox") ? true : false,
     },
+    // {
+    //   path: "/digit-ui/employee/obps/inbox/bpa/:id",
+    //   content: t("ES_OBPS_SEARCH_BPA"),
+    //   show: location.pathname.includes("obps/inbox/bpa") ? true : false,
+    // },
     {
-      path: "/digit-ui/employee/obps/inbox/bpa/:id",
-      content: t("ES_OBPS_SEARCH_BPA"),
-      show: location.pathname.includes("obps/inbox/bpa") ? true : false,
+      path: "/digit-ui/employee/obps/inbox",
+      content: t("ES_COMMON_OBPS_INBOX_TITLE"),
+      show: location.pathname.includes("obps/response") ? true : false,
     },
     {
       path: "/digit-ui/employee/obps/inbox/stakeholder/:id",
@@ -99,7 +104,7 @@ const EmployeeApp = ({ path }) => {
   return (
     <Fragment>
       <div className="ground-container">
-        {!isFromNoc && !isRes ? <OBPSBreadCrumbs location={location} /> : null}
+        {!isFromNoc ? <OBPSBreadCrumbs location={location} /> : null}
         <Switch>
            <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />

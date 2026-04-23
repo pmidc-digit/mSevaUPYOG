@@ -211,6 +211,13 @@ const [viewTimeline, setViewTimeline] = useState(false);
   };
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
+  useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
 
     //console.log("=== useEffect for displayData ===")

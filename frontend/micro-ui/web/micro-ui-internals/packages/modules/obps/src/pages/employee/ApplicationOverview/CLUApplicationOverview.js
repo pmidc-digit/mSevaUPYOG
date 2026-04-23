@@ -942,7 +942,14 @@ const CLUEmployeeApplicationDetails = () => {
         doc?.documentType?.includes("Owner Id") ||
         doc?.documentType?.includes("Owner Photo")
       )
-  )?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  )?.filter((doc) => doc?.documentAttachment)?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+
+  React.useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });    
+  }, [])
 
   useEffect(() => {
     const fetchDistances = async () => {

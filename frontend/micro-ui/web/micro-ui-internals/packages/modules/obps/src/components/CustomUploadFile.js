@@ -10,7 +10,7 @@ const getRandomId = () => {
 const CloseBtn = (props) => {
   return (
     <div className="close-btn" onClick={props.onClick}>      
-      <Close />
+      <Close style={{ fill: "red" }}  />
     </div>
   );
 };
@@ -288,11 +288,11 @@ const CustomUploadFile = (props) => {
               />              
             </div>
           )}
-          {/* {!props.uploadedFile || props.error ? null : (
-            <div className="upload-tag-container">
+          {(props.uploadedFile && props?.isRemovable) ? (
+            // <div className="upload-tag-container">
               <CloseBtn onClick={() => props.onDelete(props.uploadedFile)} />
-            </div>
-          )} */}
+            // </div>
+          ) : null}
         </div>
 
         <input

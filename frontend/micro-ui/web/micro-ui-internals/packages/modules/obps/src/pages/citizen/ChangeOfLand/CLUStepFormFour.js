@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Menu, ActionBar, FormComposer, Toast, SubmitBar, CheckBox } from "@mseva/digit-ui-react-components";
 import { UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
@@ -54,6 +54,13 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   else {
     tenantId = window.localStorage.getItem("Employee.tenant-id");
   }
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
 
   const goNext = async (action) => {
     onSubmit(currentStepData, action);
@@ -184,12 +191,13 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       const apiResponseDocumentType = new Set(apiResponseDocuments?.map((d) => d.documentType));
 
       const updatedApiResponseDocuments = apiResponseDocuments?.map((doc) => {
+        const uuid = docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid ||
+          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
         const fileStoreId =
-          docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.uuid ||
           docsArrayFromRedux?.find((obj) => obj.documentType === doc.documentType)?.documentAttachment;
         return {
           ...doc,
-          uuid: fileStoreId,
+          uuid: uuid,
           documentAttachment: fileStoreId,
         };
       });
@@ -263,11 +271,7 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const ownersList = currentStepData?.applicationDetails?.owners?.map(
     (item) => item.ownerOrFirmName
   );
-  const applicantDetails = currentStepData?.applicationDetails?.owners;
-  const firmName = applicantDetails?.[0]?.firmName;
-  const isFirm = currentStepData?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
-  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
-
+  const combinedOwnersName = ownersList?.join(", ");
 
   const CLUSummary = Digit?.ComponentRegistryService?.getComponent("CLUSummary");
 

@@ -61,6 +61,13 @@ const ApplicationOverview = () => {
     setShowToast(null);
   };
 
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
   useEffect(() => {
     setNocDetails([applicationDetails?.applicationData]);
   }, [applicationDetails?.applicationData]);

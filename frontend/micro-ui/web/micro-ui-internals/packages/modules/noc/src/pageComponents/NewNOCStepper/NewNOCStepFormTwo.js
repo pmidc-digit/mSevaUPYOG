@@ -45,6 +45,13 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.ownerIds;
   });
 
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
   const handleBack = () => {
     const data = getValues();
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));

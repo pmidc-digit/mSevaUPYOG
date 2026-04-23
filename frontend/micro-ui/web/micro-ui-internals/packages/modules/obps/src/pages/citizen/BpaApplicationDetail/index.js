@@ -223,6 +223,13 @@ console.log("building category here: & fileNo", usage,fileno);
   //         }));
   // }, [fileUrls, t]);
 
+  useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });    
+  }, [])
+
   const ecbcDocumentsData = useMemo(() => {
   const docs = getDocsFromFileUrls(fileUrls) || [];
 
@@ -535,7 +542,7 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
         value ? (
           <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
-            onClick={() => routeTo(value)}
+            onClick={() => fetchUrl(value, tenantId)}
           />
         ) : (
           t("CS_NA")
@@ -725,7 +732,6 @@ useEffect(() => {
     console.log('payments here here', payments)
     const fee = payments?.totalAmountPaid;
     
-    console.log('fee', fee)
 
     const adjustedAmounts = data?.[0]?.applicationData?.additionalDetails?.adjustedAmounts;
 

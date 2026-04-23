@@ -32,7 +32,7 @@ const CLUDocumentTableView = ({ documents }) => {
   const documentObj = useMemo(() => {
     return {
       value: {
-        workflowDocs: documents?.map((doc) => ({
+        workflowDocs: documents?.filter((doc) => doc?.documentAttachment)?.map((doc) => ({
           documentType: doc?.documentType || "",
           filestoreId: doc?.filestoreId || doc?.fileStoreId || "",
           documentUid: doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "",
@@ -46,7 +46,7 @@ const CLUDocumentTableView = ({ documents }) => {
     enabled: documents?.length > 0 ? true : false,
   });
 
-  const mappedDocuments = documents?.map((doc) => {
+  const mappedDocuments = documents?.filter((doc) => doc?.documentAttachment)?.map((doc) => {
     const docUid = doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "";
     const { documentType } = doc;
     const url = urlsList?.pdfFiles?.[docUid];

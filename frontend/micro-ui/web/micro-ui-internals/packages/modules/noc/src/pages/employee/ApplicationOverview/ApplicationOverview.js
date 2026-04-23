@@ -35,7 +35,7 @@ import NOCImageView from "../../../pageComponents/NOCImageView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { EmployeeData } from "../../../utils/index";
+import { decodeURIComponentCustom, EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
@@ -49,9 +49,7 @@ import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { format } from "date-fns";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  console.log("checkpoint here", checkpoint);
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
@@ -99,7 +97,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 };
 
 const NOCEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+  const { nocid } = useParams();
+  const id = decodeURIComponentCustom(nocid);
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();

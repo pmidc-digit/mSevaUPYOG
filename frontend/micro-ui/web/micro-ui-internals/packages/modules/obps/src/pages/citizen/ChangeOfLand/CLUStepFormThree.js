@@ -24,6 +24,13 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const coordinates = useSelector(function (state) {
       return state?.obps?.OBPSFormReducer?.coordinates || {};
   });
+
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
   
 
   function goNext(finaldata) {

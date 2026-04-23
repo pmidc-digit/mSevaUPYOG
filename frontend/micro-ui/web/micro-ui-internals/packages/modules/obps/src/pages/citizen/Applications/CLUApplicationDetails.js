@@ -114,6 +114,13 @@ const CLUApplicationDetails = () => {
   }, [applicationDetails?.Clu]);
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
+  useEffect(() => {
     EmployeeData(tenantId, id, businessServiceCode).then((res) => {
       setEmpData(res);
     });

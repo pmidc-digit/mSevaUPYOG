@@ -161,9 +161,9 @@ function CLUSelectDocument({
   );
 
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
+  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.documentAttachment || null);
 
-  const handlePTRSelectDocument = (value) => setSelectedDocument(value);
+  // const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
 
@@ -226,11 +226,13 @@ function CLUSelectDocument({
   const [getLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (selectedDocument?.code) {
+    // if (selectedDocument?.code) {
+      if(uploadedFile){
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+        const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
 
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
+        if (uploadedFile === null) {
           return filteredDocumentsByDocumentType;
         }
 
@@ -238,7 +240,8 @@ function CLUSelectDocument({
         return [
           ...filteredDocumentsByFileStoreId,
           {
-            documentType: selectedDocument?.code,
+            ...selectedDoc,
+            documentType: doc?.code,
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
             documentAttachment: uploadedFile,
@@ -246,8 +249,31 @@ function CLUSelectDocument({
           },
         ];
       });
-    }
-  }, [uploadedFile, selectedDocument]);
+      }else if(uploadedFile === ""){
+        const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
+        if(!selectedDoc?.cluId){
+          setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
+        }else{
+          setDocuments((prev) => {
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
+
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
+        return [
+          ...filteredDocumentsByFileStoreId,
+          {
+            ...selectedDoc,
+            documentType: doc?.code,
+            filestoreId: "",
+            documentUid: filteredDocument?.documentUid || "",
+            documentAttachment: "",
+            order: doc?.order,
+          },
+        ];
+      });
+        }
+      }
+    // }
+  }, [uploadedFile]);
 
   useEffect(() => {
     if (documents?.length > 0) {
@@ -263,7 +289,7 @@ function CLUSelectDocument({
         .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
       if (!docType) setHidden(true);
       else {
-        setSelectedDocument(docType);
+        // setSelectedDocument(docType);
         setUploadedFile(originalDoc?.fileStoreId);
       }
     } else if (action === "create") {
@@ -272,7 +298,7 @@ function CLUSelectDocument({
 
   useEffect(() => {
     if (!doc?.hasDropdown) {
-      setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") });
+      // setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") });
       // setHidden(true);
     }
   }, []);
@@ -363,7 +389,7 @@ function CLUSelectDocument({
             id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
@@ -375,12 +401,14 @@ function CLUSelectDocument({
             id={"clu-doc"}
             onUpload={selectfile}
             onDelete={() => {
-              setUploadedFile(null);
+              setUploadedFile("");
             }}
             uploadedFile={uploadedFile}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
+            required={doc?.required}
+            isRemovable={!doc?.required}
           />
         )}
             {doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  ? (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>) : (<p style={{ padding: "10px", fontSize: "14px" }}>{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>)}

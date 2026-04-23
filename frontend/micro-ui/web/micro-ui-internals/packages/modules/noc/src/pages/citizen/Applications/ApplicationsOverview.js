@@ -153,6 +153,13 @@ const CitizenApplicationOverview = () => {
     [siteImages]
   );
 
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
 

@@ -32,6 +32,13 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   console.log("ownerIds", ownerIds);
   console.log("ownerPhotos", ownerPhotos);
+
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
   useEffect(() => {
     console.log("useffect 8");
     if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);

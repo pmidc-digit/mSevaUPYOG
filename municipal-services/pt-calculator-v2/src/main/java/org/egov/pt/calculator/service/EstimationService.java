@@ -982,12 +982,6 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 				.build();
 	}
 	   
-	   private BigDecimal getExemption(BigDecimal exemption) {
-			 if (exemption.signum() > 0) {
-			    exemption = exemption.negate();
-			}
-			 return exemption;
-	   }
 
 	/**
 	 * method to do a first level filtering on the slabs based on the values present in Property detail
@@ -2198,16 +2192,14 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			double totalTax = tax_payable_roundoff;
 
 			taxHeadEstimates.add(buildTaxHead("PT_TAX", PT_TAX));
-			taxHeadEstimates.add(buildTaxHead("PT_OWNER_EXEMPTION", exemption));
-			taxHeadEstimates.add(buildTaxHead("PT_UNIT_USAGE_EXEMPTION", unit_usage_exemption));
+			taxHeadEstimates.add(buildTaxHead("PT_OWNER_EXEMPTION", -Math.abs(exemption)));
+			taxHeadEstimates.add(buildTaxHead("PT_UNIT_USAGE_EXEMPTION", -Math.abs(unit_usage_exemption)));
 			taxHeadEstimates.add(buildTaxHead("PT_FIRE_CESS", FireCess));
 			taxHeadEstimates.add(buildTaxHead("PT_TIME_PENALTY", penality));
 			taxHeadEstimates.add(buildTaxHead("PT_CANCER_CESS", 0.0));
-			taxHeadEstimates.add(buildTaxHead("PT_TIME_REBATE", additional_rebate));
+			taxHeadEstimates.add(buildTaxHead("PT_TIME_REBATE", -Math.abs(additional_rebate)));
 			taxHeadEstimates.add(buildTaxHead("PT_TIME_INTEREST", totalInterest));
 			taxHeadEstimates.add(buildTaxHead("PT_ROUNDOFF", round_off));
-
-
 			calculation.put("tenantId", tenantId);
 			calculation.put("exemption", exemption);
 			calculation.put("rebate", additional_rebate);
@@ -2216,7 +2208,6 @@ if(collectedAmtForOldDemand.compareTo(BigDecimal.ZERO) > 0)
 			calculation.put("penalty", penality);
 
 			calculation.set("taxHeadEstimates", taxHeadEstimates);
-
 
 			ArrayNode billingSlabIds = mapper.createArrayNode();
 			if(isVacant){

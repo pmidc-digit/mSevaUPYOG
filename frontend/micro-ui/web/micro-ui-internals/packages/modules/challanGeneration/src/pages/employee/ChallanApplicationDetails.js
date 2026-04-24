@@ -179,7 +179,7 @@ const ChallanApplicationDetails = () => {
       const location = await getLocationName(
         applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
         applicationDetails?.challans?.[0]?.additionalDetail?.longitude
-      );
+      ) || applicationDetails?.challans?.[0]?.address?.addressLine1;
       console.log("location", location);
       const challan = {
         ...applicationDetails,

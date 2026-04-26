@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { SearchField, RadioButtons } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
 import { format } from "date-fns";
+import { encodeURIComponentCustom } from "../../../utils";
 
 
 const useInboxMobileCardsData = ({parentRoute, table }) => {
@@ -15,6 +16,7 @@ const useInboxMobileCardsData = ({parentRoute, table }) => {
             // [t("ES_INBOX_LOCALITY")]: locality,
             [t("NOC_PRIMARY_OWNER_NAME_LABEL")]: t(owner),
             [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(status),
+            "Generated ID": encodeURIComponentCustom(applicationId)
             //  [t("ES_INBOX_LOCALITY")]: t(locality),
             // [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: t(sla)
@@ -47,7 +49,7 @@ const useInboxMobileCardsData = ({parentRoute, table }) => {
     }
 
 
-    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/inbox/application-overview/`, serviceRequestIdKey:t("NOC_APPLICATION_NUMBER"), MobileSortFormValues})
+    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/inbox/application-overview/`, serviceRequestIdKey:"Generated ID", MobileSortFormValues})
 
 }
 

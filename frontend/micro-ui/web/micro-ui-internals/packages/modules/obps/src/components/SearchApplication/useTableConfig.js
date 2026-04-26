@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { convertEpochToDateDMY } from "../../utils";
+import { encryptId } from "../../utils/index";
 
 const useSearchApplicationTableConfig = ({t}) => {
 
@@ -19,10 +20,11 @@ const useSearchApplicationTableConfig = ({t}) => {
           accessor: "applicationNo",
           disableSortBy: true,
           Cell: ({ row }) => {
+            const encryptedId = encryptId(row.original["applicationNo"] || row.original["applicationNumber"]);
             return (
               <div>
                 <span className="link">
-                  <Link to={window.location.href.includes("/citizen")  ? `/digit-ui/citizen/obps/${getRedirectionLink(row.original["businessService"]) || "--"}/${row.original["applicationNo"] || row.original["applicationNumber"]}` : `/digit-ui/employee/obps/${getRedirectionLink(row.original["businessService"]) || "--"}/${row.original["applicationNo"] || row.original["applicationNumber"]}`}>
+                  <Link to={window.location.href.includes("/citizen")  ? `/digit-ui/citizen/obps/bpa-app/${encryptedId}` : `/digit-ui/employee/obps/${getRedirectionLink(row.original["businessService"]) || "--"}/${encryptedId}`}>
                     {row.original["applicationNo"] || row.original["applicationNumber"]}
                   </Link>
                 </span>

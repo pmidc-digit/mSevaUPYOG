@@ -107,7 +107,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
                 data: propsMobileInboxCards,
                 isTwoDynamicPrefix: false,
                 linkPrefix: `/digit-ui/citizen/obps/clu/application-overview/`,
-                serviceRequestIdKey: t("BPA_APPLICATION_NUMBER_LABEL"),
+                serviceRequestIdKey: "Generated ID",
             }}
             />
         )}

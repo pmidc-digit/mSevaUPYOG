@@ -5,10 +5,11 @@ import React, { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
-import { convertEpochToDate, stringReplaceAll } from "../../../utils";
+import { convertEpochToDate, decodeURIComponentCustom, stringReplaceAll } from "../../../utils";
 
 const ApplicationOverview = () => {
-  const { id } = useParams();
+  const { nocid } = useParams();
+  const id = decodeURIComponentCustom(nocid);
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = tenantId?.split('.')[0]
@@ -32,7 +33,7 @@ const ApplicationOverview = () => {
   const { isLoading: nocDocsLoading, data: nocDocs } = Digit.Hooks.obps.useMDMS(state, "NOC", ["DocumentTypeMapping"]);
   const { isLoading: commonDocsLoading, data: commonDocs } = Digit.Hooks.obps.useMDMS(state, "common-masters", ["DocumentType"]);
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCDetails(t, tenantId, { applicationNo: id });
+  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCDetails(t, tenantId, { applicationNo: id }, { enabled: !!id});
 
   const {
     isLoading: updatingApplication,

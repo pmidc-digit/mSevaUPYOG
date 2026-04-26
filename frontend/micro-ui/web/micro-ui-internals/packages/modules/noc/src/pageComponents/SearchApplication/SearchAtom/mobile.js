@@ -107,7 +107,7 @@ const SearchApplicationMobileView = ({ SearchFormFieldsComponent, propsMobileInb
                 data: propsMobileInboxCards,
                 isTwoDynamicPrefix: false,
                 linkPrefix: `/digit-ui/citizen/noc/search/application-overview/`,
-                serviceRequestIdKey: t("NOC_APPLICATION_NUMBER"),
+                serviceRequestIdKey: "Generated ID",
             }}
             />
         )}

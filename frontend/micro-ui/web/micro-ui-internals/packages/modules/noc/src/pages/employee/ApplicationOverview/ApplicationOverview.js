@@ -115,7 +115,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
   console.log("applicationDetails", applicationDetails);

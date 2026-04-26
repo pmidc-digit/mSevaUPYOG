@@ -10,7 +10,7 @@ const Search = ({ path }) => {
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   // const tenantId = window?.localStorage?.getItem("Citizen.tenant-id");
-  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const tenantId = window.location.href.includes("citizen") ? window?.localStorage?.getItem("CITIZEN.CITY") : Digit.ULBService.getCurrentTenantId();
 
   console.log("HWWWW");
   const location = useLocation();

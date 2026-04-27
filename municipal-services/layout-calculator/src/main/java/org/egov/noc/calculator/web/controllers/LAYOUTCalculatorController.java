@@ -2,8 +2,8 @@ package org.egov.noc.calculator.web.controllers;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import org.egov.noc.calculator.web.models.RequestInfoWrapper;
 import org.egov.noc.calculator.web.models.demand.DemandResponse;

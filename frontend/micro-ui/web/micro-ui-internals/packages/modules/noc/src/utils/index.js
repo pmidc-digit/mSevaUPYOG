@@ -1,4 +1,7 @@
 import React from "react";
+import CryptoJS from "crypto-js";
+
+const SECRET_KEY = localStorage.getItem("token");
 
 export const shouldHideBackButton = (config = []) => {
   return config.filter((key) => window.location.href.includes(key.screenPath)).length > 0 ? true : false;
@@ -378,30 +381,56 @@ export const downloadPdfFromURL = async (receiptUrl) => {
   }
 };
 
-export function encodeURIComponentCustom(str) {
-  return str
-    .split("")
-    .map((char) => {
-      const code = char.charCodeAt(0);
+// export function encodeURIComponentCustom(str) {
+//   return str
+//     .split("")
+//     .map((char) => {
+//       const code = char.charCodeAt(0);
 
-      // Keep alphanumeric and safe characters unchanged
-      if (
-        (code >= 48 && code <= 57) || // 0-9
-        (code >= 65 && code <= 90) || // A-Z
-        (code >= 97 && code <= 122) || // a-z
-        ["-", "_", ".", "~"].includes(char)
-      ) {
-        return char;
-      }
+//       // Keep alphanumeric and safe characters unchanged
+//       if (
+//         (code >= 48 && code <= 57) || // 0-9
+//         (code >= 65 && code <= 90) || // A-Z
+//         (code >= 97 && code <= 122) || // a-z
+//         ["-", "_", ".", "~"].includes(char)
+//       ) {
+//         return char;
+//       }
 
-      // Convert other characters to percent-encoded hex
-      return "%" + code.toString(16).toUpperCase();
-    })
-    .join("");
-}
+//       // Convert other characters to percent-encoded hex
+//       return "%" + code.toString(16).toUpperCase();
+//     })
+//     .join("");
+// }
 
-export function decodeURIComponentCustom(str) {
-  return str.replace(/%([0-9A-F]{2})/gi, (_, hex) =>
-    String.fromCharCode(parseInt(hex, 16))
-  );
-}
+// export function decodeURIComponentCustom(str) {
+//   return str.replace(/%([0-9A-F]{2})/gi, (_, hex) =>
+//     String.fromCharCode(parseInt(hex, 16))
+//   );
+// }
+
+
+export const encodeURIComponentCustom = (text) => {
+  const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+
+  // Make URL safe
+  return encrypted
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
+};
+
+// Decrypt
+export const decodeURIComponentCustom = (cipherText) => {
+  try {
+    // Restore base64
+    const base64 = cipherText
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    const bytes = CryptoJS.AES.decrypt(base64, SECRET_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  } catch (e) {
+    return null;
+  }
+};

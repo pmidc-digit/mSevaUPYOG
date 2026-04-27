@@ -7,6 +7,7 @@ import { CardHeader, Toast, Loader } from "@mseva/digit-ui-react-components";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { cluStepperConfig } from "../../config/cluStepperConfig";
 import { SET_OBPS_STEP,RESET_OBPS_FORM, UPDATE_OBPS_FORM, UPDATE_OBPS_CoOrdinates, UPDATE_OBPS_OwnerPhotos, UPDATE_OBPS_OwnerIds} from "../../redux/actions/OBPSActions";
+import { decryptId } from "../../utils";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -70,7 +71,8 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 });
 
 const CLUEditApplication = () => {
-  const { id } = useParams();
+  const { cluid } = useParams();
+  const id = decryptId(cluid);
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -88,7 +90,7 @@ const CLUEditApplication = () => {
   }
   console.log("tenantId here", tenantId);
 
-  const { isLoading, data} = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data} = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
   

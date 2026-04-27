@@ -49,7 +49,7 @@ const OBPSBreadCrumbs = ({ location }) => {
         location.pathname.includes("/response") ||
         location.pathname.includes("obps/search");
 
-    const bpainbox = location.pathname.includes("obps/bpa/PB") || location.pathname.includes("obps/bpa/building_plan_scrutiny") || location.pathname.includes("obps/self-certification/response") || location.pathname.includes("obps/ocbpa/PB") || location.pathname.includes("/obps/search/application");
+    const bpainbox = location.pathname.includes("obps/bpa-app") || location.pathname.includes("obps/bpa/building_plan_scrutiny") || location.pathname.includes("obps/self-certification/response") || location.pathname.includes("obps/ocbpa/PB") || location.pathname.includes("/obps/search/application");
     
     breadcrumbs.push(
       <span key="home">
@@ -157,9 +157,9 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/clu/apply`} component={CLUStepperForm} />
         <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <AppContainer><CLUResponse {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/clu/my-applications`} component={(props) => <AppContainer><CLUMyApplications {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/clu/application-overview/:id`} component={(props) => <AppContainer><CLUApplicationDetails {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/clu/application-overview/:cluid`} component={(props) => <AppContainer><CLUApplicationDetails {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/search/clu-application`} component={(props) => <AppContainer><CLUSearchApplication {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/clu/edit-application/:id`} component={(props) => <AppContainer><CLUEditApplication {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/clu/edit-application/:cluid`} component={(props) => <AppContainer><CLUEditApplication {...props} /></AppContainer>} />
 
         <PrivateRoute path={`${path}/home`} component={(props) => <AppContainer><BPACitizenHomeScreen {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
@@ -175,7 +175,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/bpa/inbox`} component={(props) => <AppContainer><Inbox {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcr/inbox`} component={(props) => <AppContainer><EdcrInbox {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/stakeholder/:id`} component={(props) => <AppContainer><ApplicationDetails {...props} /></AppContainer>} />
-        <PrivateRoute path={`${path}/bpa/:id`} component={(props) => <AppContainer><BpaApplicationDetail {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/bpa-app/:bpaid`} component={(props) => <AppContainer><BpaApplicationDetail {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/editApplication/bpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><BPASendToArchitect {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/editApplication/ocbpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><OCSendToArchitect {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={(props) => <AppContainer><BPASendBackToCitizen {...props} /></AppContainer>} />

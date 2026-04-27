@@ -2,6 +2,7 @@ import React, { Fragment, useMemo } from "react"
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { encryptId } from "../../../utils/index";
 
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData}) => {
     const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
@@ -15,9 +16,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             accessor: "applicationNo",
             disableSortBy: true,
             Cell: ({ row }) => {
+                const encryptedId = encryptId(row.original["applicationId"]);
             return (
                 <div>
-                <Link to={window.location.href.includes("/citizen") ? `${parentRoute}/bpa/${row.original["applicationId"]}` : `${parentRoute}/inbox/bpa/${row.original["applicationId"]}`}>
+                <Link to={window.location.href.includes("/citizen") ? `${parentRoute}/bpa-app/${encryptedId}` : `${parentRoute}/inbox/bpa/${encryptedId}`}>
                     <span className="link">{row.original["applicationId"]}</span>
                 </Link>
                 </div>

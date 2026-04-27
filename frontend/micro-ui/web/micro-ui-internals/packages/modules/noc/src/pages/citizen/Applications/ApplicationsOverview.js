@@ -30,7 +30,7 @@ import NOCModal from "../../../pageComponents/NOCModal";
 import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import NOCFeeEstimationDetails from "../../../pageComponents/NOCFeeEstimationDetails";
-import { decodeURIComponentCustom, EmployeeData } from "../../../utils/index";
+import { decodeURIComponentCustom, EmployeeData, encodeURIComponentCustom } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import NOCImageView from "../../../pageComponents/NOCImageView";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
@@ -101,7 +101,7 @@ const CitizenApplicationOverview = () => {
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const applicationDetails = data?.resData;
   const [timeObj, setTimeObj] = useState(null);
   const [appDate, setAppDate] = useState(null);
@@ -520,7 +520,8 @@ const CitizenApplicationOverview = () => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/noc/edit-application/${appNo}`);
+      const encyptedID = encodeURIComponentCustom(appNo)
+      history.push(`/digit-ui/citizen/noc/edit-application/${encyptedID}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(() => {

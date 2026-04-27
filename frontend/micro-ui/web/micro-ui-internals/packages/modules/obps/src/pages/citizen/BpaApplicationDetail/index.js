@@ -54,10 +54,12 @@ import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitec
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
+import { decryptId } from "../../../utils/index";
 
 
 const BpaApplicationDetail = () => {
-  const { id } = useParams()
+  const { bpaid } = useParams()
+  const id = decryptId(bpaid)
   const { t } = useTranslation()
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem("CITIZEN.CITY")
@@ -103,7 +105,9 @@ const BpaApplicationDetail = () => {
   )
   const value = "";
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"])
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id })
+  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+    enabled: !!id, // 👈 only runs when valid
+  })
   console.log('data for obps inbox', data)
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;

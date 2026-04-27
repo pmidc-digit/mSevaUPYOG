@@ -107,8 +107,27 @@ const ChallanResponseCitizen = (props) => {
     if (chbPermissionLoading) return;
     setChbPermissionLoading(true);
     try {
+      
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: ndcCode } });
-      const location = await getLocationName(applicationDetails?.challans?.[0]?.additionalDetail?.latitude,applicationDetails?.challans?.[0]?.additionalDetail?.longitude)
+      
+      const challanDetails = applicationDetails?.challans?.[0];
+
+      const latitude = challanDetails?.additionalDetail?.latitude;
+      const longitude = challanDetails?.additionalDetail?.longitude;
+      const addressFallback = challanDetails?.address?.addressLine1;
+
+      let location = addressFallback;
+
+      if (latitude && longitude) {
+        try {
+          const geoLocation = await getLocationName(latitude, longitude);
+          if (geoLocation) {
+            location = geoLocation;
+          }
+        } catch (err) {
+          console.warn("Reverse geocoding failed, using address fallback", err);
+        }
+      }
       console.log('location', location)
       const challan = {
         ...applicationDetails,

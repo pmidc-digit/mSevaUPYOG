@@ -372,9 +372,9 @@ function SelectDocument({
         setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
 
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        // const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
         return [
-          ...filteredDocumentsByFileStoreId,
+          ...filteredDocumentsByDocumentType,
           {
             ...selectedDoc,
             documentType: doc?.code,

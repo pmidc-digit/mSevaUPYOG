@@ -45,6 +45,7 @@ export const useNOCSearchApplication = (params, tenantId, config = {}, t) => {
   const client = useQueryClient();
   const result = useQuery(["NOC_SEARCH_APPLICATION", params], useNOCSearch(params, tenantId, config), {
     staleTime: Infinity,
+    ...config,
     select: (data) => {
       return{
         resData: data?.data,

@@ -88,10 +88,10 @@ const FeeEstimation = ({
         (isCitizen && isNewConstructionPage) || isEmployee;
 
     const citizenHiddenStatuses = ["INITIATED", "INPROGRESS", "CITIZEN_APPROVAL_INPROCESS", "PENDING_APPL_FEE", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"];
-    const shouldShowCitizenSanctionFee = !hidePayTwo && isCitizen && currentStepData?.createdResponse?.businessService != "BPA_LOW" && !citizenHiddenStatuses.includes(currentStepData?.createdResponse?.status);
+    const shouldShowCitizenSanctionFee = !hidePayTwo && isCitizen && !currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && !citizenHiddenStatuses.includes(currentStepData?.createdResponse?.status);
 
     const employeeHiddenStatuses = ["INITIATED", "INPROGRESS", "CITIZEN_APPROVAL_INPROCESS", "PENDING_APPL_FEE", "FIELDINSPECTION_INPROGRESS"];
-    const shouldShowEmployeeSanctionFee = !hidePayTwo && isEmployee && currentStepData?.createdResponse?.businessService != "BPA_LOW" && !employeeHiddenStatuses.includes(currentStepData?.createdResponse?.status);
+    const shouldShowEmployeeSanctionFee = !hidePayTwo && isEmployee && !currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && !employeeHiddenStatuses.includes(currentStepData?.createdResponse?.status);
 
 
 
@@ -468,7 +468,7 @@ const FeeEstimation = ({
                 />
             </div>}
 
-            {!hidePayTwo && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
+            {!hidePayTwo && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (bpaCalculatorLoadingSan ? <Loader /> :<PayTwoTable {...{sanctionFeeDataWithTotal,disable,isEmployee,sanctionFeeData,handleAdjustedAmountChange,onAdjustedAmountBlur,handleFileUpload,handleFileDelete,routeTo, t, handleRemarkChange}}/>)}
             
             {shouldShowCitizenSanctionFee && (bpaCalculatorLoadingSan ? <Loader /> :<div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
                 {t("BPA_SANCTION_FEE")}

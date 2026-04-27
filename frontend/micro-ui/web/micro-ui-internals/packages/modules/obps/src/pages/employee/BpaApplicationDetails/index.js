@@ -230,12 +230,12 @@ const BpaApplicationDetail = () => {
   const application = data?.BPA?.[0] || {};
   let businessService = [];
 
-  if (data?.applicationData?.businessService === "BPA_LOW") {
+  if (data?.applicationData?.additionalDetails?.isSelfCertification) {
     businessService = ["BPA.LOW_RISK_PERMIT_FEE"];
-  } else if (data?.applicationData?.businessService === "BPA") {
-    businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
   } else if (data?.applicationData?.businessService === "BPA_OC") {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
+  }else if (!data?.applicationData?.additionalDetails?.isSelfCertification) {
+    businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
   }
 
   const { data: searchChecklistData } = Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);

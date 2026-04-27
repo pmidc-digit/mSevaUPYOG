@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
-import { formatDateForInput } from "../../utils";
+import { decodeURIComponentCustom, formatDateForInput } from "../../utils";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper"
 import { stepperConfig } from "../../config/Create/stepperConfig";
 import { SET_NOCNewApplication_STEP, RESET_NOC_NEW_APPLICATION_FORM, 
@@ -72,7 +72,8 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 });
 
 const EditApplication = () => {
-  const { id } = useParams();
+  const { nocid } = useParams();
+  const id = decodeURIComponentCustom(nocid);
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -91,7 +92,7 @@ const EditApplication = () => {
   }
   // console.log("tenantId here", tenantId);
 
-  const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
   

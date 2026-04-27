@@ -40,7 +40,7 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-import { amountToWords, formatDuration } from "../../../utils";
+import { amountToWords, decryptId, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
@@ -108,7 +108,8 @@ const CloseBtn = (props) => {
 };
 
 const CLUEmployeeApplicationDetails = () => {
-  const { id } = useParams();
+  const { cluid } = useParams();
+  const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -135,7 +136,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
     const [showPdfModal, setShowPdfModal] = useState(false);
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages

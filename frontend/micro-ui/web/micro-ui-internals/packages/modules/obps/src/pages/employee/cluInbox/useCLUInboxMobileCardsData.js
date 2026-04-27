@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { SearchField, RadioButtons } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
+import { encryptId } from "../../../utils";
 
 const useCLUInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
     const { t } = useTranslation()
@@ -16,6 +17,7 @@ const useCLUInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) =>
             [t("BPA_PRIMARY_OWNER_NAME_LABEL")]: owner,
             [t("BPA_PROFESSIONAL_NAME_LABEL")]: professionalName,
             [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(`BPA_STATUS_${status}`),
+            "Generated ID": encryptId(applicationId)
             // [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla
     }))
@@ -46,7 +48,7 @@ const useCLUInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) =>
         </SearchField>
     }
 
-    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/clu/application-overview/`, serviceRequestIdKey:t("BPA_APPLICATION_NUMBER_LABEL"), MobileSortFormValues})
+    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/clu/application-overview/`, serviceRequestIdKey:"Generated ID", MobileSortFormValues})
 
 }
 

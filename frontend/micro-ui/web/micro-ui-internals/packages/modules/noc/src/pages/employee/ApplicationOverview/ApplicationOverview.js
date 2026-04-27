@@ -115,7 +115,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
   console.log("applicationDetails", applicationDetails);
@@ -445,10 +445,9 @@ const NOCEmployeeApplicationOverview = () => {
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
-
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken },
+        { fileStoreId, tenantId, callbackUrl, authToken  },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {

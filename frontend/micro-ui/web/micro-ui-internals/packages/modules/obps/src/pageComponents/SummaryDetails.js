@@ -1107,6 +1107,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 ) : t("CS_NA")}
                             </div>
                         </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL")}</h2>
+                            <div className="value">
+                                {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
+                                    <LinkButton label={t("View")} onClick={() => window.open(currentStepData?.BasicDetails?.edcrDetails?.dxfFile)} />
+                                ) : t("CS_NA")}
+                            </div>
+                        </div>
                     </div>
 
                     {currentStepData?.createdResponse?.additionalDetails?.oldEDCR?.length > 0 && <div>

@@ -16,8 +16,8 @@ const useESign = () => {
       formData.append('tenantid', tenantId);
       formData.append('callbackUrl', callbackUrl)
 
-      const response = await fetch('/egov-esign/upload', {
-        method: 'POST',
+      const response = await fetch("/egov-esign/upload", {
+        method: "POST",
         body: formData,
         headers: {
           "auth-token": authToken,

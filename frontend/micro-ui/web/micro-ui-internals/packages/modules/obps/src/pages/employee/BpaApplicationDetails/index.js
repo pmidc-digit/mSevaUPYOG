@@ -1038,12 +1038,16 @@ const BpaApplicationDetail = () => {
       const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
       const newValidityDate = new Date.now();
   
-      // validity date = approval date + 3 as per feedback
-      newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
-      const approvalDatePlusThree = newValidityDate.getTime();
+            
+      const validityDateObj = new Date(newValidityDate);
+
+      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+
+      const approvalDatePlusThree = validityDateObj.getTime();
+
   
       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate, designation, approverComment: comments }
+      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate : approvalDatePlusThree, designation, approverComment: comments }
       let count = 0
       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
         if (

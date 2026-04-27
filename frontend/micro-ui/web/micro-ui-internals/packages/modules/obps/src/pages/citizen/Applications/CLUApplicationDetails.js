@@ -68,7 +68,7 @@ const CLUApplicationDetails = () => {
   const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"];
   const disableSiteInspectionImage = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS"];
 
-  //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+  //   if (window.location.href.includes("/obps") || window.location.href.includes("/clu")) {
   //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
   //     const userInfo = userInfos ? JSON.parse(userInfos) : {};
   //     user = userInfo?.value;
@@ -631,7 +631,10 @@ const CLUApplicationDetails = () => {
   )?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
   const ownersList = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
+  const firmName = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+
+  const isFirm = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
 
   const siteInspectionEmp = useMemo(() => {
     return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;

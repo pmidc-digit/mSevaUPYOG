@@ -384,11 +384,13 @@ export const SuccessfulPayment = (props) => {
     setPrinting(true);
     const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
     try {
+      const applicationDetails = await Digit.PTRService.search({ tenantId, filters: { applicationNumber: consumerCode } });
+      const application = applicationDetails?.PetRegistrationApplications?.[0];
       let fileStoreId = payments.Payments[0]?.fileStoreId;
       if (!fileStoreId) {
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}) }] },
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), application }] },
           "pet-receipt-employee"
         );
         fileStoreId = response?.filestoreIds[0];

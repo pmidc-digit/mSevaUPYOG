@@ -1,55 +1,27 @@
-import { Card, CardSubHeader, CardText, Header, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
-import React ,{useState,useEffect}from "react";
+import { Header } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link , useParams} from "react-router-dom";
+import { Link } from "react-router-dom";
 import MyProperty from "./my-properties";
-import { propertyCardBodyStyle } from "../../../utils";
 
 export const MyProperties = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
-  const user = Digit.UserService.getUser().userInfo;
-  const { id: applicationNumber } = useParams();
-  console.log("propertyId",applicationNumber)
-  // let filter = window.location.href.split("/").pop();
-  // let t1;
-  // let off;
-  // if (!isNaN(parseInt(filter))) {
-  //   off = filter;
-  //   t1 = parseInt(filter) + 50;
-  // } else {
-  //   t1 = 4;
-  // }
-  // let filter1 = !isNaN(parseInt(filter))
-  //   ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId ,status:"ACTIVE,INACTIVE"}
-  //   : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0",mobileNumber:user?.mobileNumber, tenantId,status:"ACTIVE,INACTIVE" };
-  // const { isLoading, isError, error, data } = Digit.Hooks.pt.usePropertySearchNew({ filters: filter1,searchedFrom:"myPropertyCitizen" }, { filters: filter1 });
+  const [applicationsList, setApplicationsList] = useState([]);
 
-  // if (isLoading) {
-  //   return <Loader />;
-  // }
-const [applicationsList,setApplicationsList]=useState([])
-  useEffect(()=>{
-    try{
-       let filters={propertyIds: applicationNumber,}  
-      Digit.PTService.search({tenantId: tenantId,filters:filters}).then((response) => {
-       console.log("response",response)
-       if(response?.Properties?.length>0){
-        setApplicationsList(response.Properties)
-       }
-      //  else{
-      //   setShowToast({ key: true, label: `${response?.Errors?.message}`,error:true });
-      //  }
-      })
-    }
-    catch(error)
-    {
-      console.log(error);
-    }
-  },[]);
-
- // const { Properties: applicationsList } = data || {};
- console.log("applicationsListInMyproperties",applicationsList)
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const filters = { tenantId };
+        const auth = true;
+        const response = await Digit.PTService.applicationsearch({ filters, auth });
+        setApplicationsList(response?.Properties?.length ? response.Properties : []);
+      } catch (error) {
+        setApplicationsList([]);
+      }
+    };
+    fetchProperties();
+  }, [tenantId]);
 
   return (
     <React.Fragment>
@@ -61,7 +33,7 @@ const [applicationsList,setApplicationsList]=useState([])
               <MyProperty application={application} />
             </div>
           ))}
-        {!applicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>}
+        {!(applicationsList?.length > 0) && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>}
 
         {/* {applicationsList?.length !== 0 && (
           <div>

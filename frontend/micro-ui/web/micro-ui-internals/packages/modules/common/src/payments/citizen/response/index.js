@@ -440,7 +440,28 @@ const WrapPaymentComponent = (props) => {
       });
     }
   };
-
+  const printPetReceipt = async () => {
+    if (printing) return;
+    setPrinting(true);
+    const payments = await Digit.PaymentService.getReciept(tenantId, business_service, { receiptNumbers: receiptNumber });
+    try {
+      const applicationDetails = await Digit.PTRService.search({ tenantId, filters: { applicationNumber: consumerCode } });
+      const application = applicationDetails?.PetRegistrationApplications?.[0];
+      let fileStoreId = payments.Payments[0]?.fileStoreId;
+      if (!fileStoreId) {
+        let response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), application }] },
+          "petservice-receipt"
+        );
+        fileStoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      window.open(fileStore[fileStoreId], "_blank");
+    } finally {
+      setPrinting(false);
+    }
+  }
   const downloadPdf = (blob, fileName) => {
     if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {
       var reader = new FileReader();
@@ -1312,6 +1333,29 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null}
 
+      {business_service == "pet-services" ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",flexWrap:"wrap", gap:"20px" }}>
+          <div style={IconWrapperStyle} onClick={printing ? undefined : printPetReceipt}>
+            {printing ? (
+              <Loader />
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("CHB_FEE_RECEIPT")}
+              </>
+            )}
+          </div>
+          {business_service == "pet-services" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "10px", marginLeft: "100px" }} />
+            </Link>
+          )}
+        </div>
+      ) : null}
+
       {business_service == "sv-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
@@ -1402,6 +1446,7 @@ const WrapPaymentComponent = (props) => {
       ) : (
         !(
           business_service === "adv-services" ||
+           business_service === "pet-services" ||
           business_service === "chb-services" ||
           business_service === "NDC" ||
           business_service === "Challan_Generation"||

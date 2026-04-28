@@ -733,10 +733,10 @@ useEffect(() => {
     const fee = payments?.totalAmountPaid;
     
 
-    const adjustedAmounts = data?.[0]?.applicationData?.additionalDetails?.adjustedAmounts;
+    const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
 
-    data[0].additionalDetails = {
-      ...data[0].additionalDetails,
+    data.additionalDetails = {
+      ...data?.applicationData?.additionalDetails,
       adjustedAmounts
     };
 

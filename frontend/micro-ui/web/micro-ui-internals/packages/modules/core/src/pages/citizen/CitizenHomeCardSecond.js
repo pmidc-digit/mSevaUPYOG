@@ -280,6 +280,10 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
       <div style={containerStyle}>
         {links.map((link, index) => {
           const isHovered = hoveredIndices[index]
+          const linkPathname =
+            typeof link?.link === "string" && link.link.startsWith("/mseva-ui")
+              ? link.link.replace("/mseva-ui", "/digit-ui")
+              : link?.link
           const isExternalLink =
             link?.parentModule?.toUpperCase() === "BIRTH" ||
             link?.parentModule?.toUpperCase() === "DEATH" ||
@@ -309,7 +313,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
             return (
               <Link
                 key={index}
-                to={{ pathname: link.link, state: link.state }}
+                to={{ pathname: linkPathname, state: link.state }}
                 style={getCardStyle(index, isHovered)}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}

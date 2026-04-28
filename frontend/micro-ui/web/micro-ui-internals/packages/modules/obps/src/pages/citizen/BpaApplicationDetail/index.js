@@ -724,7 +724,15 @@ useEffect(() => {
     let response = null
     console.log('payments here here', payments)
     const fee = payments?.totalAmountPaid;
-    console.log('fee', fee)
+    
+
+    const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+
+    data.additionalDetails = {
+      ...data?.applicationData?.additionalDetails,
+      adjustedAmounts
+    };
+
 
   const amountinwords = amountToWords(fee)
   console.log('amountinwords', amountinwords)

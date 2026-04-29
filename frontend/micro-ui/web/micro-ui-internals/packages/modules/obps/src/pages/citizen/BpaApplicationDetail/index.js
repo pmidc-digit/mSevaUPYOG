@@ -54,12 +54,10 @@ import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitec
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
-import { decryptId } from "../../../utils/index";
 
 
 const BpaApplicationDetail = () => {
-  const { bpaid } = useParams()
-  const id = decryptId(bpaid)
+  const { id } = useParams()
   const { t } = useTranslation()
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem("CITIZEN.CITY")
@@ -105,16 +103,14 @@ const BpaApplicationDetail = () => {
   )
   const value = "";
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"])
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
-    enabled: !!id, // 👈 only runs when valid
-  })
+  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id })
   console.log('data for obps inbox', data)
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
   const applicationType = data?.edcrDetails?.appliactionType
   const isOCApplication = applicationType === "BUILDING_OC_PLAN_SCRUTINY";
-  const isBPA = data?.applicationData?.businessService === "BPA_LOW"
+  const isBPA = data?.applicationData?.additionalDetails?.isSelfCertification
 
 
 
@@ -542,11 +538,11 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) =>
+      Cell: ({ value, row }) =>
         value ? (
           <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
-            onClick={() => fetchUrl(value, tenantId)}
+            onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)}
           />
         ) : (
           t("CS_NA")
@@ -581,9 +577,9 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
   let businessService = []
   let acceptFormat = ".pdf";
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW") {
+  if (data && data?.applicationData?.additionalDetails?.isSelfCertification) {
     businessService = ["BPA.LOW_RISK_PERMIT_FEE"]
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.applicationData?.riskType === "HIGH") {
+  } else if (data && !data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.riskType === "HIGH") {
     businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"]
   } else {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"]
@@ -1656,7 +1652,7 @@ useEffect(() => {
 
   if (
     data &&
-    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.applicationData?.additionalDetails?.isSelfCertification &&
     data?.collectionBillDetails?.length > 0 &&
     data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
   ) {

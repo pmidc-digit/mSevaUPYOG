@@ -43,8 +43,7 @@ import {
   scrutinyDetailsData,
   getBase64Img,
   getApproveRejectComments,
-  fetchUrl,
-  decryptId
+  fetchUrl
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -85,8 +84,7 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid } = useParams();
-  const id = decryptId(bpaid)
+  const { id } = useParams();
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem("tenant-id");
@@ -148,9 +146,7 @@ const BpaApplicationDetail = () => {
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
-  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
-    enabled: !!id, // 👈 only runs when valid
-  });
+  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
 
   const loading = isLoading || getLoader;
 
@@ -234,12 +230,12 @@ const BpaApplicationDetail = () => {
   const application = data?.BPA?.[0] || {};
   let businessService = [];
 
-  if (data?.applicationData?.businessService === "BPA_LOW") {
+  if (data?.applicationData?.additionalDetails?.isSelfCertification) {
     businessService = ["BPA.LOW_RISK_PERMIT_FEE"];
-  } else if (data?.applicationData?.businessService === "BPA") {
-    businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
   } else if (data?.applicationData?.businessService === "BPA_OC") {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
+  }else if (!data?.applicationData?.additionalDetails?.isSelfCertification) {
+    businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
   }
 
   const { data: searchChecklistData } = Digit.Hooks.obps.useBPACheckListSearch({ applicationNo: id }, tenantId);
@@ -577,8 +573,8 @@ const BpaApplicationDetail = () => {
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA");
+      Cell: ({ value, row }) => {
+        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
       },
     },
   ];
@@ -722,9 +718,6 @@ const BpaApplicationDetail = () => {
     tenantId: tenantId,
     id: id,
     moduleCode: "BPA",
-    config: {
-    enabled: !!id, // 👈 prevents API call if invalid
-  },
   });
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
@@ -1043,7 +1036,7 @@ const BpaApplicationDetail = () => {
 
   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
       const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
-      const newValidityDate = Date.now();
+      const newValidityDate = new Date.now();
   
             
       const validityDateObj = new Date(newValidityDate);

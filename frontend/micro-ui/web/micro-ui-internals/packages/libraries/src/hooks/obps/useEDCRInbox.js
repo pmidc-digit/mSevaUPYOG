@@ -40,7 +40,7 @@ const useEDCRInbox = ({ tenantId, filters, config = { retry: false, retryOnMount
           state: application?.status,
           owner: application?.planDetail?.planInformation?.applicantName,
           planReportUrl: application?.planReport,
-          dxfFileurl: application?.updatedDxfFile,
+          dxfFileurl: application?.dxfFile,
           sla: "NA",
         })) || [],
         totalCount: data?.count||0,

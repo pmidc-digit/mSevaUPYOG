@@ -235,11 +235,24 @@ export const SuccessfulPayment = (props) => {
     setChbPermissionLoading(true);
     try {
       const applicationDetails = await Digit.ChallanGenerationService.search({ tenantId, filters: { challanNo: consumerCode } });
-      const location = await getLocationName(
-        applicationDetails?.challans?.[0]?.additionalDetail?.latitude,
-        applicationDetails?.challans?.[0]?.additionalDetail?.longitude
-      );
-      console.log("location", location);
+      const challanDetails = applicationDetails?.challans?.[0];
+
+      const latitude = challanDetails?.additionalDetail?.latitude;
+      const longitude = challanDetails?.additionalDetail?.longitude;
+      const addressFallback = challanDetails?.address?.addressLine1;
+
+      let location = addressFallback;
+
+      if (latitude && longitude) {
+        try {
+          const geoLocation = await getLocationName(latitude, longitude);
+          if (geoLocation) {
+            location = geoLocation;
+          }
+        } catch (err) {
+          console.warn("Reverse geocoding failed, using address fallback", err);
+        }
+      }
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
@@ -378,11 +391,13 @@ export const SuccessfulPayment = (props) => {
     setPrinting(true);
     const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
     try {
+      const applicationDetails = await Digit.PTRService.search({ tenantId, filters: { applicationNumber: consumerCode } });
+      const application = applicationDetails?.PetRegistrationApplications?.[0];
       let fileStoreId = payments.Payments[0]?.fileStoreId;
       if (!fileStoreId) {
         let response = await Digit.PaymentService.generatePdf(
           tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}) }] },
+          { Payments: [{ ...(payments?.Payments?.[0] || {}), application }] },
           "pet-receipt-employee"
         );
         fileStoreId = response?.filestoreIds[0];

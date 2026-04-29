@@ -127,6 +127,7 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
     { code: "BPA_DOC_ANY_OTHER_SUPPORTING" },
     { code: "BPA_DOC_LAST_PROPERTY_TAX" },
     { code: "BPA_DOC_PHOTOGRAPH" },
+    { code: "SITEPHOTOGRAPHTWO" },
   ];
 
   if (isLoading) {

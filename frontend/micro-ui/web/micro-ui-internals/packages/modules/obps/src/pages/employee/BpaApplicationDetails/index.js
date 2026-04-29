@@ -1027,7 +1027,7 @@ const BpaApplicationDetail = () => {
 
   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
       const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
-      const newValidityDate = new Date(data?.applicationData?.approvalDate);
+      const newValidityDate = Date.now();
   
             
       const validityDateObj = new Date(newValidityDate);

@@ -423,7 +423,7 @@ const CreateChallen = ({ ChallanData }) => {
             name: "name",
             populators: {
               name: "name",
-              disable: isEdit,
+              disable: false,
               validation: {
                 required: true,
                 pattern: /^[A-Za-z]/,
@@ -439,7 +439,7 @@ const CreateChallen = ({ ChallanData }) => {
             name: "mobileNumber",
             populators: {
               name: "mobileNumber",
-              disable: isEdit,
+              disable: false,
               validation: {
                 required: true,
                 pattern: /^[6-9]\d{9}$/,
@@ -455,7 +455,7 @@ const CreateChallen = ({ ChallanData }) => {
             name: "doorNo",
             populators: {
               name: "doorNo",
-              disable: isEdit,
+              disable: false,
               error: t("UC_COMMON_FIELD_ERROR"),
               onChange: handleData
             },
@@ -466,7 +466,7 @@ const CreateChallen = ({ ChallanData }) => {
             name: "buildingName",
             populators: {
               name: "buildingName",
-              disable: isEdit,
+              disable: false,
             },
             error: t("UC_COMMON_FIELD_ERROR"),
             onChange: handleData
@@ -477,7 +477,7 @@ const CreateChallen = ({ ChallanData }) => {
             name: "street",
             populators: {
               name: "street",
-              disable: isEdit,
+              disable: false,
             },
             error: t("UC_COMMON_FIELD_ERROR"),
             onChange: handleData
@@ -488,7 +488,7 @@ const CreateChallen = ({ ChallanData }) => {
             name: "pincode",
             populators: {
               name: "pincode",
-              disable: isEdit,
+              disable: false,
               validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
               error: t("UC_PINCODE_INVALID"),
               onChange: handlePincode,
@@ -504,7 +504,7 @@ const CreateChallen = ({ ChallanData }) => {
               <Dropdown
                 isMandatory
                 selected={selectedLocality}
-                disable={isEdit}
+                disable={false}
                 optionKey="i18nkey"
                 id="locality"
                 option={localities}
@@ -547,7 +547,7 @@ const CreateChallen = ({ ChallanData }) => {
                 isMandatory
                 selected={selectedCategory}
                 optionKey="code"
-                disable={isEdit}
+                disable={false}
                 id="businessService"
                 option={sortDropdownNames(categoires, "code", t)}
                 select={setcategories}
@@ -565,7 +565,7 @@ const CreateChallen = ({ ChallanData }) => {
               <Dropdown
                 isMandatory
                 selected={selectedCategoryType}
-                disable={isEdit}
+                disable={false}
                 optionKey="code"
                 id="businessService"
                 option={sortDropdownNames(categoiresType, "code", t)}

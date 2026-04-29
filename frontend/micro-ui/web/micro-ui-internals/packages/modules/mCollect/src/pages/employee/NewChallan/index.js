@@ -213,6 +213,14 @@ const NewChallan = ({ ChallanData }) => {
           }),
         };
       } else {
+        const updatedAddress = {
+          ...ChallanData[0].address,
+          buildingName: data.building,
+          doorNo: data.doorNo,
+          street: data.streetName,
+          pincode: data.pincode,
+          locality: { code: data?.mohalla?.code },
+        };
         Challan = {
           accountId: ChallanData[0].accountId,
           citizen: ChallanData[0].citizen,
@@ -226,7 +234,7 @@ const NewChallan = ({ ChallanData }) => {
           taxPeriodFrom: Date.parse(data.fromDate),
           taxPeriodTo: Date.parse(data.toDate),
           tenantId: tenantId,
-          address: ChallanData[0].address,
+          address: updatedAddress,
           amount: TaxHeadMasterKeys.map((ele, index) => {
             return {
               taxHeadCode: `${data?.category?.code?.split(".")[0]}.${ele}`,

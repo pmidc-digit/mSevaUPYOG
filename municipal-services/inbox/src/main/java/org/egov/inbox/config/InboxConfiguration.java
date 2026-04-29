@@ -1,6 +1,5 @@
 package org.egov.inbox.config;
 
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -114,10 +113,16 @@ public class InboxConfiguration {
 	@Value("${sewerage.es.index}")
 	private String esSWIndex;
 
+	@Value("${chb.es.index:chb-booking-application-index}")
+	private String esCHBIndex;
+
 	// Inbox service Config
 
 	@Value("${inbox.water.search.allowed}")
 	private Boolean isInboxSearchAllowed;
+
+	@Value("${inbox.chb.elastic.search.enabled:false}")
+	private Boolean chbElasticSearchEnabled;
 
 	@Value("${es.search.pagination.default.limit}")
 	private Long defaultLimit;

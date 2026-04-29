@@ -4,6 +4,8 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.inbox.config.InboxConfiguration;
+import org.egov.inbox.esservice.CHBElasticSearchService;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
@@ -50,6 +52,12 @@ public class CHBInboxFilterService {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
+    @Autowired
+    private InboxConfiguration inboxConfiguration;
+
+    @Autowired
+    private CHBElasticSearchService chbElasticSearchService;
+
     /**
      * Fetch application numbers from searcher
      */
@@ -87,6 +95,11 @@ public class CHBInboxFilterService {
         Map<String, Object> searcherRequest = new HashMap<>();
         Map<String, Object> searchCriteria = getSearchCriteria(criteria, statusIdNameMap,
                 moduleSearchCriteria, processCriteria,userUUIDs,citizenRoles);
+
+        if (Boolean.TRUE.equals(inboxConfiguration.getChbElasticSearchEnabled())) {
+            return chbElasticSearchService.fetchApplicationNumbersFromElasticSearch(
+                criteria, statusIdNameMap, requestInfo, userUUIDs, citizenRoles);
+        }
 
 
         // Pagination
@@ -130,20 +143,6 @@ public class CHBInboxFilterService {
         }
 
         return uri.toString();
-    }
-
-    /**
-     * Try multiple JsonPath expressions in order until values are found
-     */
-    private List<String> tryJsonPaths(Object result, List<String> jsonPaths) {
-        for (String path : jsonPaths) {
-            try {
-                List<String> values = JsonPath.read(result, path);
-                if (values != null && !values.isEmpty()) return values;
-            } catch (Exception ignore) {
-            }
-        }
-        return Collections.emptyList();
     }
 
     /**
@@ -229,6 +228,34 @@ public class CHBInboxFilterService {
     public Integer fetchApplicationCountFromSearcher(InboxSearchCriteria criteria,
                                                      HashMap<String, String> statusIdNameMap,
                                                      RequestInfo requestInfo) {
+
+        if (Boolean.TRUE.equals(inboxConfiguration.getChbElasticSearchEnabled())) {
+            HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+            Boolean isMobileNumberPresent = moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM);
+            List<String> userUUIDs = new ArrayList<>();
+            List<String> citizenRoles = Collections.emptyList();
+
+            if (isMobileNumberPresent) {
+                String tenantId = criteria.getTenantId();
+                String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+                Map<String, List<String>> userDetails = fetchUserUUID(mobileNumber, requestInfo, tenantId);
+                userUUIDs = userDetails.get(USER_UUID);
+                citizenRoles = userDetails.get(USER_ROLES);
+
+                if (CollectionUtils.isEmpty(userUUIDs)) {
+                    return 0;
+                }
+            } else {
+                List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+                if(roles.contains(CITIZEN)) {
+                    userUUIDs.add(requestInfo.getUserInfo().getUuid());
+                    citizenRoles = roles;
+                }
+            }
+
+            return chbElasticSearchService.fetchApplicationCountFromElasticSearch(
+                    criteria, statusIdNameMap, requestInfo, userUUIDs, citizenRoles);
+        }
 
         if (chbInboxSearcherCountEndpoint != null && !chbInboxSearcherCountEndpoint.isEmpty()) {
             HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();

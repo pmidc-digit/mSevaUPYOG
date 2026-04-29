@@ -256,7 +256,7 @@ const OwnerForm1 = (_props) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={isEdit}
+                    disable={false}
                   />
                 )}
               />
@@ -283,7 +283,7 @@ const OwnerForm1 = (_props) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={isEdit}
+                    disable={false}
                   />
                 )}
               />
@@ -310,7 +310,7 @@ const OwnerForm1 = (_props) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={isEdit}
+                    disable={false}
                   />
                 )}
               />
@@ -330,15 +330,16 @@ const OwnerForm1 = (_props) => {
                     autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "pincode"}
                     errorStyle={(localFormState.touched.pincode && errors?.pincode?.message) ? true : false}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setPincode(e.target.value);
+                      const nextPincode = (e.target.value || "").replace(/\D/g, "").slice(0, 6);
+                      props.onChange(nextPincode);
+                      setPincode(nextPincode);
                       setFocusIndex({ index: consumerdetail.key, type: "pincode" });
                     }}
                     onBlur={(e) => {
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disable={isEdit}
+                    disable={false}
                   />
                 )}
               />
@@ -363,7 +364,7 @@ const OwnerForm1 = (_props) => {
                   select={props.onChange}
                   optionKey="i18nkey"
                   onBlur={props.onBlur}
-                  disable={isEdit}
+                  disable={false}
                   t={t}
                 />
               )}

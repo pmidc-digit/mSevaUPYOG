@@ -136,7 +136,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
     const [showPdfModal, setShowPdfModal] = useState(false);
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
+  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -512,13 +512,15 @@ const CLUEmployeeApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   useEffect(() => {
-    if (workflowDetails) {
-      workflowDetails.revalidate();
-    }
+    // if (workflowDetails) {
+    //   workflowDetails.revalidate();
+    // }
 
-    if (data) {
-      data.revalidate();
-    }
+    // if (data) {
+    //   data.revalidate();
+    // }
+    refetch();
+    workflowDetails.revalidate();
   }, []);
 
   let actions =

@@ -995,6 +995,7 @@ const getFormattedULBName = (ulbCode = "") => {
         scruntinyDetails: [
           { title: "BPA_UPLOADED_PLAN_DIAGRAM", value: edcr?.updatedDxfFile, text: "BPA_UPLOADED_PLAN_DXF" },
           { title: "BPA_SCRUNTINY_REPORT_OUTPUT", value: edcr?.planReport, text: "BPA_SCRUTINY_REPORT_PDF" },
+          { title: "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL", value: edcr?.dxfFile, text: "BPA_BASIC_DETAILS_UPLOADED_DIAGRAM_DXF" },
         ],
       },
     };

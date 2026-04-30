@@ -157,7 +157,9 @@ const CitizenApplicationOverview = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
-    });    
+    });
+    refetch();
+    workflowDetails.revalidate();   
   }, [])
 
   useEffect(() => {

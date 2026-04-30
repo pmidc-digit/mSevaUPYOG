@@ -28,7 +28,9 @@ import {
   Loader,
   Modal,
   LinkButton,
+  LinkLabel,
   SectionalDropdown,
+  ViewsIcon,
 } from "@mseva/digit-ui-react-components";
 
 import { Close } from "../../Icons";
@@ -156,10 +158,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
               ? t("CS_ACTION_ASSIGN")
               : selectedAction === "REJECT"
-              ? t("CS_ACTION_REJECT")
-              : selectedAction === "REOPEN"
-              ? t("CS_COMMON_REOPEN")
-              : t("CS_COMMON_RESOLVE")
+                ? t("CS_ACTION_REJECT")
+                : selectedAction === "REOPEN"
+                  ? t("CS_COMMON_REOPEN")
+                  : t("CS_COMMON_RESOLVE")
           }
         />
       }
@@ -170,10 +172,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
         selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
           ? t("CS_COMMON_ASSIGN")
           : selectedAction === "REJECT"
-          ? t("CS_COMMON_REJECT")
-          : selectedAction === "REOPEN"
-          ? t("CS_COMMON_REOPEN")
-          : t("CS_COMMON_RESOLVE")
+            ? t("CS_COMMON_REJECT")
+            : selectedAction === "REOPEN"
+              ? t("CS_COMMON_REOPEN")
+              : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
         //debugger;
@@ -455,8 +457,8 @@ export const ComplaintDetails = (props) => {
       mobileNumber: checkpoint?.assigner?.mobileNumber,
       ...(checkpoint.status === "COMPLAINT_FILED" && complaintDetails?.audit
         ? {
-            source: complaintDetails.audit.source,
-          }
+          source: complaintDetails.audit.source,
+        }
         : {}),
     };
     const isFirstPendingForAssignment = arr.length - (index + 1) === 1 ? true : false;
@@ -519,14 +521,14 @@ export const ComplaintDetails = (props) => {
       </>
     );
   };
-
+  //console.log("complaintDetails", complaintDetails);
   const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
   const localityObj = localities?.find((loc) => loc?.code == localityCode);
   const localityName = localityObj?.name || "";
   const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
   const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
   const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
-
+  const mediaURL = complaintDetails?.service?.additionalDetail?.mediaURL || "";
   return (
     <React.Fragment>
       <Card>
@@ -551,7 +553,7 @@ export const ComplaintDetails = (props) => {
                         ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                         : t(complaintDetails?.details[k]) || "N/A"
                     }
-                    // last={arr.length - 1 === i}
+                  // last={arr.length - 1 === i}
                   />
                 ))}
 
@@ -568,17 +570,38 @@ export const ComplaintDetails = (props) => {
             )}
           </StatusTable>
         )}
-        <h1 className="swach-comp-detils-maps-link">
-          <a
-            href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
-            rel="noopener noreferrer"
+        <div style={{ display: "flex", gap: "16px", alignItems: "center", marginTop: "10px" }}>
+
+          {/* Google Maps Link */}
+          <LinkLabel
+            style={{ cursor: "pointer" }}
+            onClick={() =>
+              window.open(
+                `https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`,
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
           >
-            View Location on Google Maps
-          </a>
-        </h1>
+            📍 View Location on Map
+          </LinkLabel>
+
+          {/* Video Button */}
+          {mediaURL && (
+            <div style={{ width: "200px" }}>
+              <SubmitBar
+                label="▶ View Media"
+                onSubmit={() => window.open(mediaURL, "_blank", "noopener,noreferrer")}
+              />
+            </div>
+          )}
+
+        </div>
         {imagesToShowBelowComplaintDetails?.thumbs ? (
           <DisplayPhotos srcs={imagesToShowBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
         ) : null}
+
+
         <BreakLine />
         {workflowDetails?.isLoading && <Loader />}
         {!workflowDetails?.isLoading && (

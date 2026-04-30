@@ -109,7 +109,7 @@ const Inbox = ({ parentRoute }) => {
     if (bService === "BPAREG") {
       redirectBS = "search/application/stakeholder";
     } else {
-      redirectBS = window.location.href.includes("/citizen") ? "bpa" : "search/application/bpa"
+      redirectBS = window.location.href.includes("/citizen") ? "bpa-app" : "search/application/bpa"
     }
     return redirectBS;
   };

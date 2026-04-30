@@ -43,7 +43,8 @@ import {
   scrutinyDetailsData,
   getBase64Img,
   getApproveRejectComments,
-  fetchUrl
+  fetchUrl,
+  decryptId
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -84,7 +85,9 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { id } = useParams();
+  const { bpaid } = useParams();
+  const id = decryptId(bpaid)
+  console.log("decryptedID",id)
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem("tenant-id");
@@ -146,7 +149,9 @@ const BpaApplicationDetail = () => {
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
-  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+    enabled: !!id, // 👈 only runs when valid
+  });
 
   const loading = isLoading || getLoader;
 
@@ -718,6 +723,9 @@ const BpaApplicationDetail = () => {
     tenantId: tenantId,
     id: id,
     moduleCode: "BPA",
+    config: {
+    enabled: !!id, // 👈 prevents API call if invalid
+  },
   });
 
   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
@@ -1089,7 +1097,7 @@ const BpaApplicationDetail = () => {
         requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
       }
 
-      requestData["approvalDate"] = Date.now();
+      requestData["approvalDate"] = new Date.now();
       const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
       // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
       

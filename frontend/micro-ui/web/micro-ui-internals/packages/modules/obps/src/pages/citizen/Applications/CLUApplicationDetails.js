@@ -28,7 +28,7 @@ import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
-import { amountToWords, formatDuration } from "../../../utils/index";
+import { amountToWords, decryptId, encryptId, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
@@ -39,7 +39,8 @@ import PaymentHistory from "../../../../../templates/ApplicationDetails/componen
 import { EmployeeData } from "../../../utils/index";
 
 const CLUApplicationDetails = () => {
-  const { id } = useParams();
+  const { cluid } = useParams();
+  const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -50,7 +51,7 @@ const CLUApplicationDetails = () => {
   const [empDesignation, setEmpDesignation] = useState(null);
   const [timeObj, setTimeObj] = useState(null);
   const [EmpData, setEmpData] = useState(null);
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -158,6 +159,9 @@ const CLUApplicationDetails = () => {
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode,
+    config: {
+      enabled: !!id
+    }
   });
 
   const geoLocations = useMemo(() => {
@@ -540,7 +544,8 @@ const CLUApplicationDetails = () => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/obps/clu/edit-application/${appNo}`);
+      const encrypid = encryptId(appNo);
+      history.push(`/digit-ui/citizen/obps/clu/edit-application/${encrypid}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(() => {

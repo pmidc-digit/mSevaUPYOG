@@ -146,7 +146,7 @@ const MyApplications = ({ view }) => {
                 </p>
                 <SubmitBar
                   label={t("TL_VIEW_DETAILS")}
-                  onSubmit={() => history.push(`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`)}
+                  onSubmit={() => history.push(`/digit-ui/citizen/noc/search/application-overview/${encodeURIComponentCustom(application?.Applications?.applicationNo)}`)}
                 />
               </Card>
             ))}

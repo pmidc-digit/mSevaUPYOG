@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { SearchField, RadioButtons } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
+import { encryptId } from "../../../utils";
 
 const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
     const { t } = useTranslation()
@@ -14,6 +15,7 @@ const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
             // [t("ES_INBOX_LOCALITY")]: t(locality),
             [t("EVENTS_STATUS_LABEL")]: status ? t(`WF_LAYOUT_${status}`): t(`WF_LAYOUT_${status}`),
             [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
+            "Generated ID" : encryptId(applicationId)
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla
     }))
 
@@ -43,7 +45,7 @@ const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
         </SearchField>
     }
 
-    return ({ data:dataForMobileInboxCards,isTwoDynamicPrefix:true, linkPrefix: window.location.href.includes("/citizen") ?  `/digit-ui/citizen/obps/` : `/digit-ui/employee/obps/`,getRedirectionLink:getRedirectionLink, serviceRequestIdKey: "applicationNo", MobileSortFormValues})
+    return ({ data:dataForMobileInboxCards,isTwoDynamicPrefix:false, linkPrefix: window.location.href.includes("/citizen") ?  `/digit-ui/citizen/obps/bpa-app/` : `/digit-ui/employee/obps/inbox/bpa/`,getRedirectionLink:getRedirectionLink, serviceRequestIdKey: "Generated ID", MobileSortFormValues})
 
 }
 

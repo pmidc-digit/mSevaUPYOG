@@ -90,7 +90,7 @@ const CLUInbox = ({ parentRoute }) => {
   const [statusData, setStatusData] = useState([])
   const [totalCountData, setTotalCountData] = useState(0)
 
-  const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useCLUInbox({
+  const { isLoading: isInboxLoading, data: inboxData, refetch } = Digit.Hooks.obps.useCLUInbox({
     tenantId,
     filters: { ...formState },
   })
@@ -107,9 +107,10 @@ const CLUInbox = ({ parentRoute }) => {
   }, [inboxData])
 
   useEffect(() => {
-    if (inboxData) {
-      inboxData.revalidate()
-    }
+    // if (inboxData) {
+    //   inboxData.revalidate()
+    // }
+    refetch();
   }, [])
 
   const onPageSizeChange = (e) => {

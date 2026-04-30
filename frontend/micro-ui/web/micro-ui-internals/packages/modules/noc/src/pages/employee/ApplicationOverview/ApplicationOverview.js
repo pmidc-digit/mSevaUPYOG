@@ -592,13 +592,15 @@ const NOCEmployeeApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   useEffect(() => {
-    if (workflowDetails) {
-      workflowDetails.revalidate();
-    }
+    // if (workflowDetails) {
+    //   workflowDetails.revalidate();
+    // }
 
-    if (data) {
-      data.revalidate();
-    }
+    // if (data) {
+    //   data.revalidate();
+    // }
+    refetch();
+    workflowDetails.revalidate();
   }, []);
 
   let actions =

@@ -1,5 +1,5 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react";
-import { InboxComposer, CaseIcon, Header } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useEffect } from "react";
+import { InboxComposer, CaseIcon, Header, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
@@ -120,7 +120,7 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = Digit.Hooks.obps.useBPAInbox({
+  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, refetch } = Digit.Hooks.obps.useBPAInbox({
     tenantId,
     filters: { 
       ...formState,
@@ -205,12 +205,24 @@ const Inbox = ({ parentRoute }) => {
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
+  useEffect(() => {
+    refetch()
+  }, [])
+
   return (
     <React.Fragment>
       <Header>
-        {t("ES_COMMON_INBOX")}
-        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
-        {isEmoployee && <p className="inbox-name">{employeeName}</p>}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div>
+            {t("ES_COMMON_INBOX")}
+            {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+            {isEmoployee && <p className="inbox-name">{employeeName}</p>}
+          </div>
+          <div>
+            {isEmoployee && <SubmitBar label={t("User Manual")} onSubmit={() => window.open("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FBPA%2FMarch%2F13%2F1773381614243uFJyzhFqyR.pdf")} />}
+            {/* {isEmoployee && <SubmitBar label={t("Download App")} onSubmit={() => {}} />} */}
+          </div>
+        </div>
       </Header>
       {Digit.Utils.browser.isMobile() &&
         <div style={{marginLeft: "12px"}}>

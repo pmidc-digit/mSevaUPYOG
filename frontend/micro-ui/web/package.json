@@ -48,7 +48,7 @@
     "@mseva/digit-ui-module-fsm": "1.0.6",
     "@mseva/digit-ui-module-hrms": "1.0.23",
     "@mseva/digit-ui-module-mcollect": "1.0.15-UAT.1",
-    "@mseva/digit-ui-module-challangeneration": "1.0.29-UAT.3",
+    "@mseva/digit-ui-module-challangeneration": "1.0.29-UAT.4",
     "@mseva/digit-ui-module-garbagecollection": "1.0.33-UAT.2",
     "@mseva/digit-ui-module-rentandlease": "1.0.51-UAT.14",
     "@mseva/digit-ui-module-noc": "1.0.78-UAT.13",

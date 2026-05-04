@@ -147,7 +147,7 @@ const BpaApplicationDetail = () => {
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
-  const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+  const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
     enabled: !!id, // 👈 only runs when valid
   });
 
@@ -247,7 +247,9 @@ const BpaApplicationDetail = () => {
       window.scrollTo({
         top: 0,
         behavior: "smooth" // use "auto" for instant scroll
-      });    
+      });
+      refetch()
+      workflowDetails.revalidate();
   }, [])
 
   useEffect(() => {

@@ -103,7 +103,7 @@ const BpaApplicationDetail = () => {
   )
   const value = "";
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"])
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+  const { data, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
     enabled: !!id, // 👈 only runs when valid
   })
   console.log('data for obps inbox', data)
@@ -229,7 +229,9 @@ console.log("building category here: & fileNo", usage,fileno);
       window.scrollTo({
         top: 0,
         behavior: "smooth" // use "auto" for instant scroll
-      });    
+      });
+      refetch();
+      workflowDetails.revalidate();
   }, [])
 
   const ecbcDocumentsData = useMemo(() => {

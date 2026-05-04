@@ -43,6 +43,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 Cell: ({row}) =>{ return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "-"},
                 disableSortBy: true,
         },
+        {
+                Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+                accessor: "approvalDate",
+                Cell: ({row}) =>{ return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), 'dd/MM/yyyy')) : "-"},
+                disableSortBy: true,
+        },
         // {
         //     Header: t("ES_INBOX_LOCALITY"),
         //     accessor: (row) => t(row?.locality),

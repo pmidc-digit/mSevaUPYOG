@@ -1463,20 +1463,23 @@ export function getApproveRejectComments(workflowDetails) {
     // ✅ Normalize comment safely
     const rawComment = decisionInstance?.comment || "";
 
-    let conditionText = "";
+    let actualComment = "";
 
     if (rawComment?.includes(delimiter)) {
-      conditionText = rawComment?.split(delimiter)[1] || "";
+      actualComment = rawComment?.split(delimiter)[1] || "";
     } else {
       // If REJECT, keep rawComment. If APPROVE, keep it empty.
-      conditionText = decisionInstance?.action === "REJECT" ? rawComment : "";
+      actualComment = decisionInstance?.action === "REJECT" ? rawComment : "";
     }
 
-    const finalComment = conditionText
-      ? `16. The Approval is subjected to the following conditions: ${conditionText}`
+    const commentLine = actualComment
+      ? `16. The Approval is subjected to the following conditions:`
       : " ";
-
-    return finalComment;
+ 
+    return {
+      approverCommentLine: commentLine, // full sentence
+      approverComment: actualComment, // only the extracted comment
+    };
     
   } catch (e) {
     console.error("comments error", e);

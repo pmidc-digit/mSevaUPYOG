@@ -109,7 +109,6 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  const [comments , setComments] = useState (null)
   
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -746,14 +745,12 @@ const BpaApplicationDetail = () => {
     });
   }
 
-  useEffect(() => {
-      if (workflowDetails?.data!=null && !workflowDetails?.isLoading ){
-        const commentobj = getApproveRejectComments(workflowDetails);
-        if (commentobj){
-          setComments(commentobj)
-        }
-      }
-    }, [workflowDetails]);
+  const comments = useMemo(() => {
+  if (workflowDetails?.data && !workflowDetails?.isLoading) {
+    return getApproveRejectComments(workflowDetails);
+  }
+  return null;
+}, [workflowDetails?.data, workflowDetails?.isLoading]);
 
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {

@@ -135,6 +135,7 @@ public class BPAService {
 			bpaRequest.getBPA().setApprovalNo(null);
 		}
 		Map<String, String> values = edcrService.validateEdcrPlan(bpaRequest, mdmsData);
+		bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_BusinessService);
 		String applicationType = values.get(BPAConstants.APPLICATIONTYPE);
 		this.validateCreateOC(applicationType, values, requestInfo, bpaRequest);
 		bpaValidator.validateCreate(bpaRequest, mdmsData, values);

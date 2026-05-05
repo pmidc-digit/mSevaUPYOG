@@ -114,7 +114,7 @@ const BpaApplicationDetail = () => {
   const cities = Digit.Hooks.useTenants();
   const applicationType = data?.edcrDetails?.appliactionType
   const isOCApplication = applicationType === "BUILDING_OC_PLAN_SCRUTINY";
-  const isBPA = data?.applicationData?.businessService === "BPA_LOW"
+  const isBPA = data?.applicationData?.additionalDetails?.isSelfCertification
 
 
 
@@ -583,9 +583,9 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
   let businessService = []
   let acceptFormat = ".pdf";
 
-  if (data && data?.applicationData?.businessService === "BPA_LOW") {
+  if (data && data?.applicationData?.additionalDetails?.isSelfCertification) {
     businessService = ["BPA.LOW_RISK_PERMIT_FEE"]
-  } else if (data && data?.applicationData?.businessService === "BPA" && data?.applicationData?.riskType === "HIGH") {
+  } else if (data && !data?.applicationData?.additionalDetails?.isSelfCertification && data?.applicationData?.riskType === "HIGH") {
     businessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"]
   } else {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"]
@@ -1658,7 +1658,7 @@ useEffect(() => {
 
   if (
     data &&
-    data?.applicationData?.businessService === "BPA_LOW" &&
+    data?.applicationData?.additionalDetails?.isSelfCertification &&
     data?.collectionBillDetails?.length > 0 &&
     data?.applicationData?.additionalDetails?.isSanctionLetterGenerated
   ) {

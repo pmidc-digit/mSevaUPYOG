@@ -11,6 +11,7 @@ import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/cons
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
@@ -236,7 +237,7 @@ const Inbox = ({ parentRoute }) => {
   return (
     <React.Fragment>
       <Header>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
           <div>
             {t("ES_COMMON_INBOX")}
             {totalCount ? <p className="inbox-count">{totalCount}</p> : null}

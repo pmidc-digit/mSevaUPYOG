@@ -14,9 +14,6 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
     { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
   ];
-
-  console.log("tenantsforoptions", cities);
-  
   const selectedApplicationType = useWatch({control: controlFilterForm, name: "applicationType", defaultValue: filterFormState?.applicationType || null});
   const availableBusinessServicesOptions = Digit.Hooks.obps.useBusinessServiceBasedOnServiceType({applicationType: selectedApplicationType})
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: filterFormState?.businessService || null});

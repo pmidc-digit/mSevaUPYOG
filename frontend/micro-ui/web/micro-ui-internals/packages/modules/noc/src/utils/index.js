@@ -1,7 +1,6 @@
 import React from "react";
 import CryptoJS from "crypto-js";
 
-const SECRET_KEY = localStorage.getItem("token");
 
 export const shouldHideBackButton = (config = []) => {
   return config.filter((key) => window.location.href.includes(key.screenPath)).length > 0 ? true : false;
@@ -411,6 +410,13 @@ export const downloadPdfFromURL = async (receiptUrl) => {
 
 
 export const encodeURIComponentCustom = (text) => {
+  const SECRET_KEY = localStorage.getItem("token");
+    
+  if (!SECRET_KEY) {
+    console.error("SECRET_KEY (token) not found in localStorage");
+    return null;
+  }
+  
   const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
 
   // Make URL safe
@@ -423,6 +429,12 @@ export const encodeURIComponentCustom = (text) => {
 // Decrypt
 export const decodeURIComponentCustom = (cipherText) => {
   try {
+    const SECRET_KEY = localStorage.getItem("token"); 
+    if (!SECRET_KEY) {
+      console.error("SECRET_KEY (token) not found in localStorage");
+      return null;
+    }
+  
     // Restore base64
     const base64 = cipherText
       .replace(/-/g, "+")
@@ -431,6 +443,7 @@ export const decodeURIComponentCustom = (cipherText) => {
     const bytes = CryptoJS.AES.decrypt(base64, SECRET_KEY);
     return bytes.toString(CryptoJS.enc.Utf8);
   } catch (e) {
+    console.error("Error decrypting ID:", e);
     return null;
   }
 };

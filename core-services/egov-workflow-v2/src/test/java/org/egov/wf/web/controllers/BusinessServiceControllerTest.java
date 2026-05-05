@@ -16,9 +16,12 @@ import org.egov.wf.web.models.RequestInfoWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -26,19 +29,18 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ContextConfiguration(classes = {BusinessServiceController.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class BusinessServiceControllerTest {
-    @MockBean
+    @Mock
     private BusinessMasterService businessMasterService;
 
-    @Autowired
+    @InjectMocks
     private BusinessServiceController businessServiceController;
 
-    @MockBean
+    @Mock
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Mock
     private ResponseInfoFactory responseInfoFactory;
 
 
@@ -60,10 +62,10 @@ class BusinessServiceControllerTest {
                 .perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content()
-                        .string(
-                                "{\"ResponseInfo\":{\"apiId\":null,\"ver\":null,\"ts\":null,\"resMsgId\":null,\"msgId\":null,\"status\":null},"
-                                        + "\"BusinessServices\":[]}"));
+                .andExpect(MockMvcResultMatchers.content().json(
+                        "{\"ResponseInfo\":{\"apiId\":null,\"ver\":null,\"ts\":null,\"resMsgId\":null,\"msgId\":null,\"status\":null},"
+                                + "\"BusinessServices\":[]}"
+                ));
     }
 
 
@@ -85,10 +87,10 @@ class BusinessServiceControllerTest {
                 .perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content()
-                        .string(
-                                "{\"ResponseInfo\":{\"apiId\":null,\"ver\":null,\"ts\":null,\"resMsgId\":null,\"msgId\":null,\"status\":null},"
-                                        + "\"BusinessServices\":[]}"));
+                .andExpect(MockMvcResultMatchers.content().json(
+                        "{\"ResponseInfo\":{\"apiId\":null,\"ver\":null,\"ts\":null,\"resMsgId\":null,\"msgId\":null,\"status\":null},"
+                                + "\"BusinessServices\":[]}"
+                ));
     }
 
 

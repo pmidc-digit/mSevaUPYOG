@@ -20,32 +20,32 @@ import org.egov.wf.web.models.Escalation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ContextConfiguration(classes = {EscalationService.class})
-@ExtendWith(SpringExtension.class)
+
+@ExtendWith(MockitoExtension.class)
 class EscalationServiceTest {
-    @MockBean
+    @Mock
     private EscalationRepository escalationRepository;
 
-    @Autowired
+    @InjectMocks
     private EscalationService escalationService;
 
-    @MockBean
+    @Mock
     private EscalationUtil escalationUtil;
 
-    @MockBean
+    @Mock
     private MDMSService mDMSService;
 
-    @MockBean
+    @Mock
     private Producer producer;
 
-    @MockBean
+    @Mock
     private WorkflowConfig workflowConfig;
 
-    @MockBean
+    @Mock
     private WorkflowService workflowService;
 
 

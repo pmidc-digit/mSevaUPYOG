@@ -1,6 +1,9 @@
 package org.egov.wf.service;
 
 import com.jayway.jsonpath.JsonPath;
+
+import jakarta.annotation.PostConstruct;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
@@ -27,7 +30,7 @@ public class MDMSService {
 
    private WorkflowConfig workflowConfig;
 
-   private Map<String,Boolean> stateLevelMapping;
+   private Map<String,Boolean> stateLevelMapping = new HashMap<>();
 
     @Autowired
     public MDMSService(WorkflowConfig config, ServiceRequestRepository serviceRequestRepository, WorkflowConfig workflowConfig) {
@@ -36,13 +39,13 @@ public class MDMSService {
         this.workflowConfig = workflowConfig;
     }
 
-
+     
     public Map<String, Boolean> getStateLevelMapping() {
         return this.stateLevelMapping;
     }
 
 
-    @Bean
+    @PostConstruct
     public void stateLevelMapping(){
         Map<String, Boolean> stateLevelMapping = new HashMap<>();
 

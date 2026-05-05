@@ -11,40 +11,59 @@ import org.egov.tracer.kafka.CustomKafkaTemplate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.ContextConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
-@ContextConfiguration(classes = {Producer.class})
-@ExtendWith(SpringExtension.class)
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.concurrent.CompletableFuture;
+
+
+
+
+@ExtendWith(MockitoExtension.class)
 class ProducerTest {
-    @MockBean(name = "customKafkaTemplate")
+    @Mock(name = "customKafkaTemplate")
     private CustomKafkaTemplate<String, Object> customKafkaTemplate;
 
-    @Autowired
+    @InjectMocks
     private Producer producer;
 
 
     @Test
     void testPush() {
-        ProducerRecord<String, Object> producerRecord = new ProducerRecord<>("Topic", "Value");
 
-        when(this.customKafkaTemplate.send((String) any(), (Object) any())).thenReturn(
-                new SendResult<>(producerRecord, new RecordMetadata(new TopicPartition("Topic", 1), 1L, 1L, 10L, 1L, 3, 3)));
-        this.producer.push("Topic", "Value");
-        verify(this.customKafkaTemplate).send((String) any(), (Object) any());
+            SendResult<String, Object> sendResult = mock(SendResult.class);
+
+            when(this.customKafkaTemplate.send(anyString(), any()))
+                    .thenReturn(sendResult);
+
+            this.producer.push("Topic", "Value");
+
+            verify(this.customKafkaTemplate).send(anyString(), any());
+        
+       
     }
 
 
     @Test
     void testPush2() {
-        ProducerRecord<String, Object> producerRecord = new ProducerRecord<>("Topic", "Value");
+    	 SendResult<String, Object> sendResult = mock(SendResult.class);
 
-        when(this.customKafkaTemplate.send((String) any(), (Object) any())).thenReturn(
-                new SendResult<>(producerRecord, new RecordMetadata(new TopicPartition("Topic", 1), 1L, 1L, 10L, 1L, 3, 3)));
-        this.producer.push("Topic", "Value");
-        verify(this.customKafkaTemplate).send((String) any(), (Object) any());
+         when(this.customKafkaTemplate.send(anyString(), any()))
+                 .thenReturn(sendResult);
+
+         this.producer.push("Topic", "Value");
+
+         verify(this.customKafkaTemplate).send(anyString(), any());
     }
 }
 

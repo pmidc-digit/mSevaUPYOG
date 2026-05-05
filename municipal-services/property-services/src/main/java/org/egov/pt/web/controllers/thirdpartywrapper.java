@@ -3,7 +3,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 import org.egov.pt.repository.rowmapper.CurlWrapperService;
 import org.springframework.beans.factory.annotation.Autowired;

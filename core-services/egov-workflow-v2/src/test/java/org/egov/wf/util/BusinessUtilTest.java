@@ -13,18 +13,19 @@ import org.egov.wf.repository.BusinessServiceRepository;
 import org.egov.wf.web.models.BusinessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ContextConfiguration(classes = {BusinessUtil.class})
-@ExtendWith(SpringExtension.class)
+
+
+
+@ExtendWith(MockitoExtension.class)
 class BusinessUtilTest {
-    @MockBean
+    @Mock
     private BusinessServiceRepository businessServiceRepository;
 
-    @Autowired
+    @InjectMocks
     private BusinessUtil businessUtil;
 
 

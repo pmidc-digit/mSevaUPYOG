@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.egov.pt.models.Property;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**

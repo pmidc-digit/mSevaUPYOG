@@ -10,6 +10,7 @@ import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
+import org.egov.bpa.util.BPAUtil;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
@@ -50,11 +51,15 @@ public class PaymentUpdateService {
 	
 	private UserService userService;
 	
+	private BPAUtil util;
+	
+	private EDCRService edcrService;
+	
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
 			WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper,
-			WorkflowService workflowService, UserService userService) {
+			WorkflowService workflowService, UserService userService, BPAUtil util, EDCRService edcrService) {
 		this.config = config;
 		this.repository = repository;
 		this.wfIntegrator = wfIntegrator;
@@ -62,7 +67,8 @@ public class PaymentUpdateService {
 		this.mapper = mapper;
 		this.workflowService = workflowService;
 		this.userService = userService;
-
+		this.util = util;
+		this.edcrService = edcrService;
 	}
 
 	final String tenantId = "tenantId";
@@ -144,6 +150,13 @@ public class PaymentUpdateService {
 					 */
 					wfIntegrator.callWorkFlow(updateRequest);
 
+					// Change Workflow according to Provided conditions
+					if(BPAConstants.BPA_BusinessService.equalsIgnoreCase(updateRequest.getBPA().getBusinessService())) {
+						Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+						Map<String, String> values = edcrService.validateEdcrPlan(updateRequest, mdmsData);
+						wfIntegrator.callWorkFlow(updateRequest);
+					}
+					
 					log.debug(" the status of the application is : " + updateRequest.getBPA().getStatus());
 
 					/*

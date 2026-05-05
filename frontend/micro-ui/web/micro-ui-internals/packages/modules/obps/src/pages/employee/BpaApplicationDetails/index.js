@@ -85,11 +85,11 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid } = useParams();
+  const { bpaid, tenant } = useParams();
   const id = decryptId(bpaid)
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("tenant-id");
+  const tenantId = localStorage.getItem("tenant-id") === "pb.punjab" ? tenant : localStorage.getItem("tenant-id");
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
@@ -121,7 +121,6 @@ const BpaApplicationDetail = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  console.log("selectedAction",selectedAction)
   const [showModal, setShowModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);

@@ -3,8 +3,6 @@ import { useParams, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { v4 as uuidv4_internal } from 'uuid';
 
-const SECRET_KEY = localStorage.getItem("token");
-
 export const getPattern = (type) => {
   switch (type) {
     case "Name":
@@ -1566,6 +1564,13 @@ export const mergePDFsWithoutLibrary = async (urls) => {
 
 // Encrypt
 export const encryptId = (text) => {
+  const SECRET_KEY = localStorage.getItem("token");
+  
+  if (!SECRET_KEY) {
+    console.error("SECRET_KEY (token) not found in localStorage");
+    return null;
+  }
+
   const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
 
   // Make URL safe
@@ -1578,6 +1583,13 @@ export const encryptId = (text) => {
 // Decrypt
 export const decryptId = (cipherText) => {
   try {
+    const SECRET_KEY = localStorage.getItem("token");
+    
+    if (!SECRET_KEY) {
+      console.error("SECRET_KEY (token) not found in localStorage");
+      return null;
+    }
+
     // Restore base64
     const base64 = cipherText
       .replace(/-/g, "+")
@@ -1586,6 +1598,7 @@ export const decryptId = (cipherText) => {
     const bytes = CryptoJS.AES.decrypt(base64, SECRET_KEY);
     return bytes.toString(CryptoJS.enc.Utf8);
   } catch (e) {
+    console.error("Error decrypting ID:", e);
     return null;
   }
 };

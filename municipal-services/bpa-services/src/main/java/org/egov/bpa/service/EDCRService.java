@@ -26,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
@@ -69,12 +70,14 @@ public class EDCRService {
 		
 		BPASearchCriteria criteria = new BPASearchCriteria();
 		criteria.setEdcrNumber(bpa.getEdcrNumber());
-		List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
-		if(bpas.size()>0){
-			for(int i=0; i<bpas.size(); i++){
-				if(!bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REJECTED) && !bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REVOCATED)){
-					throw new CustomException(BPAErrorConstants.DUPLICATE_EDCR,
-							" Application already exists with EDCR Number " + bpa.getEdcrNumber());
+		if(StringUtils.isEmpty(bpa.getBusinessService())) {
+			List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
+			if(bpas.size()>0){
+				for(int i=0; i<bpas.size(); i++){
+					if(!bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REJECTED) && !bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REVOCATED)){
+						throw new CustomException(BPAErrorConstants.DUPLICATE_EDCR,
+								" Application already exists with EDCR Number " + bpa.getEdcrNumber());
+					}
 				}
 			}
 		}

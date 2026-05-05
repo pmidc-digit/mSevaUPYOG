@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,20 +29,20 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ContextConfiguration(classes = {WorkflowValidator.class})
-@ExtendWith(SpringExtension.class)
+
+@ExtendWith(MockitoExtension.class)
 class WorkflowValidatorTest {
-    @MockBean
+    @Mock
     private BusinessUtil businessUtil;
 
-    @MockBean
+    @Mock
     private WorkflowUtil workflowUtil;
 
-    @Autowired
+    @InjectMocks
     private WorkflowValidator workflowValidator;
 
 
@@ -53,8 +54,8 @@ class WorkflowValidatorTest {
     void testValidateRequestWithProcessInstance() {
 
 
-        when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
-        when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
+    	lenient().when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
+    	lenient().when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
         RequestInfo requestInfo = new RequestInfo();
 
         ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
@@ -72,8 +73,8 @@ class WorkflowValidatorTest {
 
     @Test
     void testValidateRequestWithErrorCode() {
-        when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
-        when(this.businessUtil.getBusinessService((String) any(), (String) any()))
+    	lenient().when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
+    	lenient().when(this.businessUtil.getBusinessService((String) any(), (String) any()))
                 .thenThrow(new CustomException("\\.", "An error occurred"));
         RequestInfo requestInfo = new RequestInfo();
 
@@ -95,18 +96,18 @@ class WorkflowValidatorTest {
 
     void testValidateRequest() {
 
-        when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
-        when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
+    	lenient().when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
+        lenient().when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getAction()).thenReturn(new Action());
-        when(processStateAndAction.getCurrentState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action());
+        lenient().when(processStateAndAction.getCurrentState()).thenReturn(new State());
         State state = new State();
         ArrayList<Document> documents = new ArrayList<>();
         User assigner = new User();
         ArrayList<User> assignes = new ArrayList<>();
         ArrayList<Action> nextActions = new ArrayList<>();
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(
                 new ProcessInstance("42", "42", "Business Service", "42", "Action", "Module Name", state, "Comment", documents,
                         assigner, assignes, nextActions, 1L, 1L, "Previous Status", "Entity", new AuditDetails(), 1, true));
         doNothing().when(processStateAndAction).setAction((Action) any());
@@ -130,18 +131,18 @@ class WorkflowValidatorTest {
     void testValidateRequestWithNull() {
 
 
-        when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
-        when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
+    	lenient().when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
+    	lenient().when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getAction()).thenReturn(null);
-        when(processStateAndAction.getCurrentState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getAction()).thenReturn(null);
+        lenient().when(processStateAndAction.getCurrentState()).thenReturn(new State());
         State state = new State();
         ArrayList<Document> documents = new ArrayList<>();
         User assigner = new User();
         ArrayList<User> assignes = new ArrayList<>();
         ArrayList<Action> nextActions = new ArrayList<>();
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(
                 new ProcessInstance("42", "42", "Business Service", "42", "Action", "Module Name", state, "Comment", documents,
                         assigner, assignes, nextActions, 1L, 1L, "Previous Status", "Entity", new AuditDetails(), 1, true));
         doNothing().when(processStateAndAction).setAction((Action) any());
@@ -163,14 +164,14 @@ class WorkflowValidatorTest {
 
     @Test
     void TestValidateRequest() {
-        when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
-        when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
+    	lenient().when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
+    	lenient().when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
         ArrayList<String> roles = new ArrayList<>();
-        when(processStateAndAction.getAction()).thenReturn(
+        lenient().when(processStateAndAction.getAction()).thenReturn(
                 new Action("01234567-89AB-CDEF-FEDC-BA9876543210", "42", "\\.", "\\.", "\\.", roles, new AuditDetails(), true));
-        when(processStateAndAction.getCurrentState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getCurrentState()).thenReturn(new State());
         State state = new State();
         ArrayList<Document> documents = new ArrayList<>();
         User assigner = new User();
@@ -209,13 +210,13 @@ class WorkflowValidatorTest {
 
     void testValidateRequestState() {
 
-        when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
-        when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
+    	lenient().when(this.workflowUtil.getTenantIdToUserRolesMap((RequestInfo) any())).thenReturn(new HashMap<>());
+    	lenient().when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getAction()).thenReturn(new Action());
-        when(processStateAndAction.getCurrentState()).thenReturn(new State());
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(null);
+        lenient().when(processStateAndAction.getAction()).thenReturn(new Action());
+        lenient().when(processStateAndAction.getCurrentState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(null);
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());
@@ -238,8 +239,13 @@ class WorkflowValidatorTest {
         when(this.businessUtil.getBusinessService((String) any(), (String) any())).thenReturn(new BusinessService());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getAction()).thenThrow(new CustomException("\\.", "An error occurred"));
-        when(processStateAndAction.getCurrentState()).thenThrow(new CustomException("\\.", "An error occurred"));
+        //when(processStateAndAction.getAction()).thenThrow(new CustomException("\\.", "An error occurred"));
+       // when(processStateAndAction.getCurrentState()).thenThrow(new CustomException("\\.", "An error occurred"));
+        lenient().when(processStateAndAction.getAction())
+        .thenThrow(new CustomException("\\.", "An error occurred"));
+
+lenient().when(processStateAndAction.getCurrentState())
+        .thenThrow(new CustomException("\\.", "An error occurred"));
         State state = new State();
         ArrayList<Document> documents = new ArrayList<>();
         User assigner = new User();

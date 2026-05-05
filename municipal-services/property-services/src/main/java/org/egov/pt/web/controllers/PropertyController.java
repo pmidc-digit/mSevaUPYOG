@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.apache.commons.lang3.StringUtils;

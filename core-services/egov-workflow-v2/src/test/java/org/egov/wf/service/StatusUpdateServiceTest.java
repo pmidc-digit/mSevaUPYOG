@@ -1,13 +1,16 @@
 package org.egov.wf.service;
 
 import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
@@ -22,39 +25,49 @@ import org.egov.wf.web.models.State;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {StatusUpdateService.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class StatusUpdateServiceTest {
-    @MockBean
+    @Mock
     private Producer producer;
 
-    @Autowired
+    @InjectMocks
     private StatusUpdateService statusUpdateService;
 
-    @MockBean
+    @Mock
     private WorkflowConfig workflowConfig;
 
 
     @Test
     void testUpdateStatus() {
-        when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
+        when(this.workflowConfig.getSaveTransitionTopic())
+            .thenReturn("Save Transition Topic");
+
+        doNothing().when(this.producer).push(anyString(), any());
+
         RequestInfo requestInfo = new RequestInfo();
-        this.statusUpdateService.updateStatus(requestInfo, new ArrayList<>());
+
+        List<ProcessStateAndAction> list = new ArrayList<>();
+        list.add(mock(ProcessStateAndAction.class)); // ✅ important
+
+        this.statusUpdateService.updateStatus(requestInfo, list);
+
         verify(this.workflowConfig).getSaveTransitionTopic();
-        verify(this.producer).push((String) any(), (Object) any());
+        verify(this.producer).push(anyString(), any());
     }
 
 
     @Test
     void testUpdateStatusWithSaveTransition() {
-        when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
+    	lenient().when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
+    	lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
         RequestInfo requestInfo = new RequestInfo();
 
         ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
@@ -74,8 +87,8 @@ class StatusUpdateServiceTest {
 
     @Test
     void TestUpdateStatus() {
-        when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
+    	lenient().when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
+    	lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
         RequestInfo requestInfo = new RequestInfo();
 
         ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
@@ -103,17 +116,17 @@ class StatusUpdateServiceTest {
 
     @Test
     void testUpdateStatusWithGetResult() {
-        when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
+    	lenient().when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
+    	lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
         State state = new State();
         ArrayList<Document> documents = new ArrayList<>();
         User assigner = new User();
         ArrayList<User> assignes = new ArrayList<>();
         ArrayList<Action> nextActions = new ArrayList<>();
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(
                 new ProcessInstance("42", "42", "Business Service", "42", "Action", "Module Name", state, "Comment", documents,
                         assigner, assignes, nextActions, 1L, 1L, "Previous Status", "Entity", new AuditDetails(), 1, true));
         doNothing().when(processStateAndAction).setAction((Action) any());
@@ -146,12 +159,12 @@ class StatusUpdateServiceTest {
 
     void testUpdateStatusWithNull() {
 
-        when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
-        doNothing().when(this.producer).push((String) any(), (Object) any());
+    	lenient().when(this.workflowConfig.getSaveTransitionTopic()).thenReturn("Save Transition Topic");
+    	lenient().doNothing().when(this.producer).push((String) any(), (Object) any());
         RequestInfo requestInfo = new RequestInfo();
         ProcessStateAndAction processStateAndAction = mock(ProcessStateAndAction.class);
-        when(processStateAndAction.getResultantState()).thenReturn(new State());
-        when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(null);
+        lenient().when(processStateAndAction.getResultantState()).thenReturn(new State());
+        lenient().when(processStateAndAction.getProcessInstanceFromRequest()).thenReturn(null);
         doNothing().when(processStateAndAction).setAction((Action) any());
         doNothing().when(processStateAndAction).setCurrentState((State) any());
         doNothing().when(processStateAndAction).setProcessInstanceFromDb((ProcessInstance) any());

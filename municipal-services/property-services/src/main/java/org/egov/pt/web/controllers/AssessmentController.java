@@ -3,7 +3,7 @@ package org.egov.pt.web.controllers;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;

@@ -3,6 +3,7 @@ package org.egov.wf.validator;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,18 +20,18 @@ import org.egov.wf.web.models.State;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = {BusinessServiceValidator.class})
-@ExtendWith(SpringExtension.class)
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+
+@ExtendWith(MockitoExtension.class)
 class BusinessServiceValidatorTest {
-    @MockBean
+    @Mock
     private BusinessServiceRepository businessServiceRepository;
 
-    @Autowired
+    @InjectMocks
     private BusinessServiceValidator businessServiceValidator;
 
 
@@ -39,7 +40,7 @@ class BusinessServiceValidatorTest {
     void testValidateCreateRequestWithArrayList() {
 
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(new ArrayList<>());
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(new ArrayList<>());
 
     }
 
@@ -50,7 +51,7 @@ class BusinessServiceValidatorTest {
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
 
     }
 
@@ -117,14 +118,14 @@ class BusinessServiceValidatorTest {
 
     void testValidateCreateRequestWithNull() {
 
-        when(this.businessServiceRepository
+    	lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(null);
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
 
     }
 
@@ -201,7 +202,7 @@ class BusinessServiceValidatorTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(null);
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -210,7 +211,7 @@ class BusinessServiceValidatorTest {
         businessServiceList1.add(new BusinessService("42", "01234567-89AB-CDEF-FEDC-BA9876543210", "Business Service",
                 "Business", "Get Uri", "Post Uri", 1L, states, new AuditDetails()));
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList1);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList1);
 
     }
 
@@ -220,7 +221,7 @@ class BusinessServiceValidatorTest {
 
     void testValidateUpdate() {
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(new ArrayList<>());
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(new ArrayList<>());
 
     }
 
@@ -232,7 +233,7 @@ class BusinessServiceValidatorTest {
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
 
     }
 
@@ -262,7 +263,7 @@ class BusinessServiceValidatorTest {
 
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -271,7 +272,7 @@ class BusinessServiceValidatorTest {
         businessServiceList1.add(new BusinessService("42", "01234567-89AB-CDEF-FEDC-BA9876543210", "Business Service",
                 "Business", "Get Uri", "Post Uri", 4L, states, new AuditDetails()));
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList1);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList1);
 
     }
 
@@ -302,13 +303,13 @@ class BusinessServiceValidatorTest {
 
     void testValidateUpdateWithNull() {
 
-        when(this.businessServiceRepository
+    	lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(new ArrayList<>());
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(null);
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList);
 
     }
 
@@ -338,7 +339,7 @@ class BusinessServiceValidatorTest {
         ArrayList<BusinessService> businessServiceList = new ArrayList<>();
         businessServiceList.add(new BusinessService());
         businessServiceList.add(new BusinessService());
-        when(this.businessServiceRepository
+        lenient().when(this.businessServiceRepository
                 .getBusinessServices((org.egov.wf.web.models.BusinessServiceSearchCriteria) any()))
                 .thenReturn(businessServiceList);
 
@@ -347,7 +348,7 @@ class BusinessServiceValidatorTest {
         businessServiceList1.add(new BusinessService("42", "01234567-89AB-CDEF-FEDC-BA9876543210", "Business Service",
                 "Business", "Get Uri", "Post Uri", 4L, states, new AuditDetails()));
         BusinessServiceRequest businessServiceRequest = mock(BusinessServiceRequest.class);
-        when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList1);
+        lenient().when(businessServiceRequest.getBusinessServices()).thenReturn(businessServiceList1);
 
     }
 

@@ -15,7 +15,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.mockito.Mock;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;

@@ -2,7 +2,7 @@ package org.egov.pt.calculator.web.models.property;
 
 import java.math.BigDecimal;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.json.JSONObject;

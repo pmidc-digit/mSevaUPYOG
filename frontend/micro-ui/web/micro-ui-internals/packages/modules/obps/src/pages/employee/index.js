@@ -117,6 +117,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/search/application/bpa/:bpaid`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/inbox/editApplication/bpa/:bpaid`} component={BpaApplicationDetail} />
+          <PrivateRoute path={`${path}/inbox/bpa/:bpaid/:tenant`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox/bpa/:bpaid`} component={BpaApplicationDetail} />
           <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />

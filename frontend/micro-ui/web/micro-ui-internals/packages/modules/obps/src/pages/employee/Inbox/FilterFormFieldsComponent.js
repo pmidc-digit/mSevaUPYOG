@@ -4,7 +4,7 @@ import { Controller, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import cloneDeep from "lodash/cloneDeep";
 
-const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, controlFilterForm, setFilterFormValue, filterFormState, getFilterFormValue, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant }) => {
+const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, controlFilterForm, setFilterFormValue, filterFormState, getFilterFormValue, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant, cities, selectedTenantIdState, setSelectedTenantIdValue, tenantId }) => {
   const { t } = useTranslation()
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = localStorage.getItem("Citizen.tenant-id");
@@ -14,7 +14,6 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
     { code: "ASSIGNED_TO_ALL", name: `${t("ES_INBOX_ASSIGNED_TO_ALL")}` },
   ];
-  
   const selectedApplicationType = useWatch({control: controlFilterForm, name: "applicationType", defaultValue: filterFormState?.applicationType || null});
   const availableBusinessServicesOptions = Digit.Hooks.obps.useBusinessServiceBasedOnServiceType({applicationType: selectedApplicationType})
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: filterFormState?.businessService || null});
@@ -39,6 +38,19 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
   }
 
   return <>
+    {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
+      <div className="filter-label sub-filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+      {cities && cities.length > 0 ? (
+        <Dropdown
+          option={cities}
+          selected={cities.find((city) => city.code === selectedTenantIdState?.tenantId)}
+          select={(value) => {
+            setSelectedTenantIdValue("tenantId", value.code);
+          }}
+          optionKey="name"
+        />
+      ) : null}
+    </FilterFormField>: null}
     {!window.location.href.includes("/citizen") ? 
     <FilterFormField>
     <Controller

@@ -1097,7 +1097,7 @@ const BpaApplicationDetail = () => {
         requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir"
       }
 
-      requestData["approvalDate"] = new Date.now();
+      requestData["approvalDate"] = Date.now();
       const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order)
       // const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] })
       

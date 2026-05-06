@@ -577,8 +577,8 @@ const BpaApplicationDetail = () => {
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA");
+      Cell: ({ value, row }) => {
+        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
       },
     },
   ];

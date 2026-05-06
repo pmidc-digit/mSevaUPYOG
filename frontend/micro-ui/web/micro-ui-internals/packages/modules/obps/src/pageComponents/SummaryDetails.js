@@ -666,7 +666,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // setShowModal(true);
         // setSelectedAction(action);
         console.log("Selected Action", action?.action, otpVerifiedTimestamp, isArchitectDeclared, agree);
-        if(action?.action !== "SAVE_AS_DRAFT" && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
+        if(action?.action !== "SAVE_AS_DRAFT" && currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
             if(!agree){
                 setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
                 return
@@ -1107,6 +1107,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 ) : t("CS_NA")}
                             </div>
                         </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL")}</h2>
+                            <div className="value">
+                                {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
+                                    <LinkButton label={t("View")} onClick={() => window.open(currentStepData?.BasicDetails?.edcrDetails?.dxfFile)} />
+                                ) : t("CS_NA")}
+                            </div>
+                        </div>
                     </div>
 
                     {currentStepData?.createdResponse?.additionalDetails?.oldEDCR?.length > 0 && <div>
@@ -1463,7 +1471,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     {/* <CardSubHeader className="bpa-section-header">{t("BPA_FEE_ESTIMATION_DETAILS")}</CardSubHeader> */}
                     <div className="bpa-table-container">
                         {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation
-                            disable = {currentStepData?.createdResponse?.businessService != "BPA_LOW"}
+                            disable = {!currentStepData?.createdResponse?.additionalDetails?.isSelfCertification}
                             currentStepData={currentStepData}                        
                             development={development}
                             otherCharges={otherCharges}
@@ -1477,14 +1485,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             setError={setError}
                             adjustedAmounts={adjustedAmounts}
                             setAdjustedAmounts={setAdjustedAmounts}
-                            hidePayTwo={currentStepData?.createdResponse?.businessService != "BPA_LOW"}
+                            hidePayTwo={!currentStepData?.createdResponse?.additionalDetails?.isSelfCertification}
                         />}
                     </div>
-                    {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />}
+                    {currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && <CheckBox label={t("BPA_FEES_UNDERTAKING")} onChange={setFeesDeclaration} styles={{ height: "auto", marginTop: "30px" }} checked={isFeesDeclared} />}
                 </div>
 
 
-                {currentStepData?.createdResponse?.businessService === "BPA_LOW" && <div className="bpa-stepper-form-section">
+                {currentStepData?.createdResponse?.additionalDetails?.isSelfCertification && <div className="bpa-stepper-form-section">
                     {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && <CardSubHeader className="bpa-section-header">{t("BPA_Profesion_Consent_Form")}</CardSubHeader>}
                     {/* {(currentStepData?.createdResponse?.status === "INITIATED" || currentStepData?.createdResponse?.status === "BLOCKED") && (
                         <div>

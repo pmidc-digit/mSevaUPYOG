@@ -16,7 +16,7 @@ const OBPSResponse = (props) => {
   const [isSanctionFee, setSanctionFee] = useState("");
   const [billData, setBillData] = useState(null);
 
-  let bpaBusinessService = applicationData?.businessService;
+  let bpaBusinessService = applicationData?.additionalDetails?.isSelfCertification ? "BPA_LOW" : applicationData?.businessService;
   let bpaStatus = applicationData?.status;
   if (bpaBusinessService == "BPA_LOW") bpaBusinessService = "BPA";
 

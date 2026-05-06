@@ -42,6 +42,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   });
 
   const onSubmit = async (data) => {
+    console.log("data",data);
+    // return
+    
     if (currentStepData?.venueDetails?.applicationNo || currentStepData?.apiResponseData?.applicationNo) {
       const ownerData = currentStepData?.ownerDetails;
       const updatedDatacheck = currentStepData?.venueDetails || currentStepData?.apiResponseData;
@@ -72,6 +75,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           additionalDetails: {
             connectionCategory: data?.connectionCategory?.name,
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
+            floorNo:data?.floorNo?.floorNo,
+            defAmount:data?.defAmount
           },
         },
       };
@@ -121,6 +126,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           additionalDetails: {
             connectionCategory: data?.connectionCategory?.name,
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
+             floorNo:data?.floorNo?.floorNo,
+            defAmount:data?.defAmount
           },
         },
       };
@@ -154,14 +161,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       const responseData = await Digit.GCService.validateConnection({ tenantId, filters });
       setLoader(false);
       if (responseData?.canCreateConnection) {
-        setActiveStatus(true);
+        setActiveStatus(false);
       } else {
         setShowToast(true);
         setError(responseData?.message);
       }
     } catch (error) {
       setLoader(false);
-      setActiveStatus(false);
+      setActiveStatus(true);
       setShowToast(true);
       setError(error.response.data?.Errors?.[0]?.message);
     }
@@ -187,12 +194,29 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return Array.from(map.values());
   }, [selectedFloorUnits]);
 
+    const uniqueFloors = React.useMemo(() => {
+    if (!getPUnits?.length) return [];
+
+    const map = new Map();
+
+    getPUnits.forEach((item) => {
+      if (!map.has(item.floorNo)) {
+        map.set(item.floorNo, item);
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
+  }, [getPUnits]);
+
   // PT-1012-2006092
   useEffect(() => {
     if (propertyDetailsFetch?.Properties[0]) {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
       if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
         const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
+      console.log("backStepData====",backStepData);
+      console.log("getPUnits====",getPUnits);
+      
         const location =
           propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress ||
           backStepData?.location ||
@@ -214,14 +238,18 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
         const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
         const checkUnitid = getPUnits?.find((item) => item?.id == backStepData?.unitId);
+        
+        const getFloors= uniqueFloors?.find((item)=>item?.floorNo == backStepData?.additionalDetails?.floorNo)
         setValue("propertyType", pType || null);
         setValue("frequency", freType || null);
         setValue("typeOfWaste", wasteType || null);
         setValue("connectionCategory", connectionCategoryType || null);
         setValue("unitId", checkUnitid || null);
+        setValue("defAmount", backStepData?.additionalDetails?.defAmount || null);
+        setValue("floorNo", getFloors || null);
       }
     }
-  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits]);
+  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits,uniqueFloors]);
 
   const searchProperty = async () => {
     const pId = watch("propertyId");
@@ -251,25 +279,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setPropertyId(null); // prevent auto fetch
   };
 
-  const uniqueFloors = React.useMemo(() => {
-    if (!getPUnits?.length) return [];
 
-    const map = new Map();
-
-    getPUnits.forEach((item) => {
-      if (!map.has(item.floorNo)) {
-        map.set(item.floorNo, item);
-      }
-    });
-
-    return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
-  }, [getPUnits]);
 
   const filterAmountData = (freq, propertyType) => {
     const filterData = amountData?.["gc-services-calculation"]?.GCBillingSlab;
     const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType);
     setValue("defAmount", finalData[0]?.minimumCharge);
   };
+
+  console.log("GCData",GCData?.["sw-services-calculation"]?.PropertyUsageType);
+  
 
   return (
     <React.Fragment>
@@ -499,7 +518,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
               </LabelFieldPair>
 
-              {/* property units  */}
+              {/* floorNo   */}
               <LabelFieldPair style={{ marginBottom: "16px" }}>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}`} <span style={{ color: "red" }}>*</span>
@@ -508,7 +527,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   <Controller
                     control={control}
                     name={"floorNo"}
-                    rules={{ required: t("units is required") }}
+                    rules={{ required: t("Floor is required") }}
                     render={(props) => (
                       <Dropdown
                         style={{ marginBottom: 0 }}
@@ -561,7 +580,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </div>
         <ActionBar>
           <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
-          <SubmitBar label="Next" submit="submit" disabled={!getActiveStatus} />
+          <SubmitBar label="Next" submit="submit" disabled={getActiveStatus} />
         </ActionBar>
       </form>
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}

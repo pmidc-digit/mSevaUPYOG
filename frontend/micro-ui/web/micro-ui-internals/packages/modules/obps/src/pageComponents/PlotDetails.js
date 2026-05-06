@@ -638,7 +638,7 @@ useEffect(() => {
       materialusedinfloor,
       materialusedinroofs,
       estimatedCost,
-      area: data?.planDetail?.planInformation?.plotArea?.toString(),
+      area: data?.planDetail?.plot?.area?.toFixed(2)?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
       builtUpArea: data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString(),
@@ -686,7 +686,7 @@ useEffect(() => {
       estimatedCost,
       stakeholderState,
       stakeholderDistrict,
-      area: data?.planDetail?.planInformation?.plotArea?.toString(),
+      area: data?.planDetail?.plot?.area?.toFixed(2)?.toString(),
       height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
       usage: data?.planDetail?.planInformation?.occupancy,
       builtUpArea: data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString(),
@@ -1058,7 +1058,7 @@ useEffect(() => {
                 option={common}
                 optionKey="i18nKey"
                 t={t}
-                disable={!isSelfCertificationCondition || currentStepData?.createdResponse?.applicationNo}
+                // disable={!isSelfCertificationCondition || currentStepData?.createdResponse?.applicationNo}
               />
             </React.Fragment>
           }

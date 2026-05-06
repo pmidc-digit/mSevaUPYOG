@@ -85,11 +85,11 @@ const CloseBtn = (props) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid } = useParams();
+  const { bpaid, tenant } = useParams();
   const id = decryptId(bpaid)
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("tenant-id");
+  const tenantId = localStorage.getItem("tenant-id") === "pb.punjab" ? tenant : localStorage.getItem("tenant-id");
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
@@ -109,7 +109,6 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  const [comments , setComments] = useState (null)
   
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -121,7 +120,6 @@ const BpaApplicationDetail = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  console.log("selectedAction",selectedAction)
   const [showModal, setShowModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -579,8 +577,8 @@ const BpaApplicationDetail = () => {
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) => {
-        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA");
+      Cell: ({ value, row }) => {
+        return value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)} /> : t("CS_NA");
       },
     },
   ];
@@ -748,14 +746,12 @@ const BpaApplicationDetail = () => {
     });
   }
 
-  useEffect(() => {
-      if (workflowDetails?.data!=null && !workflowDetails?.isLoading ){
-        const commentobj = getApproveRejectComments(workflowDetails);
-        if (commentobj){
-          setComments(commentobj)
-        }
-      }
-    }, [workflowDetails]);
+  const comments = useMemo(() => {
+  if (workflowDetails?.data && !workflowDetails?.isLoading) {
+    return getApproveRejectComments(workflowDetails);
+  }
+  return null;
+}, [workflowDetails?.data, workflowDetails?.isLoading]);
 
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {

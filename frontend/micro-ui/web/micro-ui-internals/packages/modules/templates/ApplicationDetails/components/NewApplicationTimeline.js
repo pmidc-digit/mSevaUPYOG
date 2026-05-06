@@ -218,7 +218,9 @@ export default function NewApplicationTimeline({ workflowDetails, t, tenantId = 
                     {/* Column 3: Action (Right Aligned) */}
                     <div className="custom-card-column custom-card-column-right">
                       <h3 className="custom-action-title">{t("Action")}</h3>
-                      <div className="custom-status-text">{t(item?.performedAction || "CS_COMMON_NA")}</div>
+                      <div className={`custom-status-text ${item?.performedAction === "OBSERVATION" ? "chb-slot-status--unavailable" : ""}`}>
+                        {t(item?.performedAction || "CS_COMMON_NA")}
+                      </div>
                     </div>
                   </div>
 

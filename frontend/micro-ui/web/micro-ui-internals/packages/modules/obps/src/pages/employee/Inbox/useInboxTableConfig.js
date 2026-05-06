@@ -8,6 +8,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
     const GetStatusCell = (value, isSelfCertification) => value === "CS_NA" ? t(value) : value === "Active" || (value>10 && isSelfCertification === "Yes") ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span> 
     const { t } = useTranslation()
+    const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
     
     const tableColumnConfig = useMemo(() => {
         return [
@@ -17,9 +18,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             disableSortBy: true,
             Cell: ({ row }) => {
                 const encryptedId = encryptId(row.original["applicationId"]);
+                console.log("wholerowindatacell", row)
             return (
                 <div>
-                <Link to={window.location.href.includes("/citizen") ? `${parentRoute}/bpa-app/${encryptedId}` : `${parentRoute}/inbox/bpa/${encryptedId}`}>
+                <Link to={window.location.href.includes("/citizen") ? `${parentRoute}/bpa-app/${encryptedId}` : (tenantId === "pb.punjab") ? `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}` : `${parentRoute}/inbox/bpa/${encryptedId}`}>
                     <span className="link">{row.original["applicationId"]}</span>
                 </Link>
                 </div>
@@ -41,6 +43,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 Header: t("CS_APPLICATION_DETAILS_SUBMISSION_DATE"),
                 accessor: "submissionDate",
                 Cell: ({row}) =>{ return row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "-"},
+                disableSortBy: true,
+        },
+        {
+                Header: t("CS_APPLICATION_DETAILS_APPROVAL_DATE"),
+                accessor: "approvalDate",
+                Cell: ({row}) =>{ return row.original?.["approvalDate"] ? GetCell(format(new Date(row.original?.["approvalDate"]), 'dd/MM/yyyy')) : "-"},
                 disableSortBy: true,
         },
         // {

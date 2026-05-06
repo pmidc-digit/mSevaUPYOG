@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { OBPS_BPA_BUSINESS_SERVICES, OBPS_BPA_OC_BUSINESS_SERVICES } from "../../../../constants/constants";
 import useInbox from "../useInbox";
 import { useTranslation } from "react-i18next";
@@ -6,9 +7,25 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm } = filters;
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
+  const stateId = Digit.ULBService.getStateId();
+  const { data: holidayList, isLoading: isHolidayListLoading } =  Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "Holidays" }])
   let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
+
+  // Parse holidays from the MDMS data into a Set for quick lookup
+  const holidaysSet = new Set();
+  if (holidayList?.["common-masters"]?.Holidays) {
+    holidayList["common-masters"].Holidays.forEach(yearData => {
+      yearData.months.forEach(monthData => {
+        monthData.holidays.forEach(dayOfMonth => {
+          // Create a date key for quick lookup (YYYY-MM-DD)
+          const dateKey = `${yearData.year}-${String(monthData.month).padStart(2, '0')}-${String(dayOfMonth).padStart(2, '0')}`;
+          holidaysSet.add(dateKey);
+        });
+      });
+    });
+  }
   let applicationNumber = "";
   if (window.location.href.includes("stakeholder-inbox")) moduleName = "BPAREG";
   if (moduleName == "BPAREG") {
@@ -64,18 +81,41 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     _filters = { ..._filters, offset };
   }
 
+  // Calculate business days (weekdays only, excluding holidays) between two timestamps
+  const getBusinessDaysSinceCreated = (startTime, endTime) => {    
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
+    let count = 0;
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay();
+      // 0 = Sunday, 6 = Saturday - skip weekends
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        // Convert to YYYY-MM-DD format and check if it's a holiday
+        const dateKey = currentDate.toISOString().split('T')[0];
+        // Only count if it's not a holiday
+        if (!holidaysSet.has(dateKey)) {
+          count++;
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return count;
+  };
+
   const getDaysSinceCreated = (createdTime, approvedDate) => {
     if (!createdTime) return "NA";
 
-    if(approvedDate){
-      const diffInMs = approvedDate - createdTime;
-      return Math.floor(diffInMs / (24 * 60 * 60 * 1000));
+    // If application is approved (approvedDate is not 0 and not null)
+    if(approvedDate && approvedDate !== 0){
+      return getBusinessDaysSinceCreated(createdTime, approvedDate);
     }
 
+    // If application is not approved yet, calculate from createdTime to today
     const today = Date.now(); // current time in epoch (ms)
-    const diffInMs = today - createdTime;
-
-    return Math.floor(diffInMs / (24 * 60 * 60 * 1000));
+    return getBusinessDaysSinceCreated(createdTime, today);
   };
 
   return useInbox({
@@ -90,6 +130,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           // submissionDate: application?.ProcessInstance?.auditDetails?.lastModifiedTime,
           submissionDate: application?.businessObject?.applicationDate,
           createdDate: application.businessObject.auditDetails.createdTime,
+          approvalDate: application.businessObject.approvalDate,
           businessService: application?.ProcessInstance?.businessService,
           applicationType: application?.businessObject?.additionalDetails?.applicationType
             ? `WF_BPA_${application?.businessObject?.additionalDetails?.applicationType}`
@@ -110,6 +151,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           category: application.businessObject?.additionalDetails?.categoriesName,
           zone: application.businessObject?.additionalDetails?.zonenumber,
           selfCertification: application.businessObject?.additionalDetails?.isSelfCertification ? "Yes" : "No",
+          tenantId: application.businessObject?.tenantId
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

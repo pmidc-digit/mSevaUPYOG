@@ -745,7 +745,7 @@ const PTRApplicationDetails = () => {
 
   dowloadOptions.push({
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
-          onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "petacknowledgement" }),
+    onClick: () => getRecieptSearch({ tenantId: tenantId, payments: reciept_data?.Payments[0],pdfkey: "petacknowledgement" }),
 
   });
 

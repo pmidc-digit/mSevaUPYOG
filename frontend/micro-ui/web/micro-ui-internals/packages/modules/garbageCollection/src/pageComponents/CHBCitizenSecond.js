@@ -15,7 +15,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [getPUnits, setPUnits] = useState([]);
   const [getActiveStatus, setActiveStatus] = useState(false);
 
-  const { data: GCData = [], isLoading: GCLoading } = Digit.Hooks.useCustomMDMS(tenantId, "sw-services-calculation", [{ name: "PropertyUsageType" }]);
+  const { data: GCData = [], isLoading: GCLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-calculation", [{ name: "PropertyUsageType" }]);
   const { data: WasteType = [], isLoading: WasteTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [{ name: "TypeOfWaste" }]);
   const { data: FreqType = [], isLoading: FreqTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "gc-services-masters", [
     { name: "GarbageCollectionFrequency" },
@@ -42,9 +42,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log("data",data);
-    // return
-    
     if (currentStepData?.venueDetails?.applicationNo || currentStepData?.apiResponseData?.applicationNo) {
       const ownerData = currentStepData?.ownerDetails;
       const updatedDatacheck = currentStepData?.venueDetails || currentStepData?.apiResponseData;
@@ -75,8 +72,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           additionalDetails: {
             connectionCategory: data?.connectionCategory?.name,
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
-            floorNo:data?.floorNo?.floorNo,
-            defAmount:data?.defAmount
+            floorNo: data?.floorNo?.floorNo,
+            defAmount: data?.defAmount
           },
         },
       };
@@ -126,8 +123,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           additionalDetails: {
             connectionCategory: data?.connectionCategory?.name,
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
-             floorNo:data?.floorNo?.floorNo,
-            defAmount:data?.defAmount
+            floorNo: data?.floorNo?.floorNo,
+            defAmount: data?.defAmount
           },
         },
       };
@@ -194,7 +191,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return Array.from(map.values());
   }, [selectedFloorUnits]);
 
-    const uniqueFloors = React.useMemo(() => {
+  const uniqueFloors = React.useMemo(() => {
     if (!getPUnits?.length) return [];
 
     const map = new Map();
@@ -214,18 +211,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
       if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
         const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
-      console.log("backStepData====",backStepData);
-      console.log("getPUnits====",getPUnits);
-      
+
         const location =
           propertyDetailsFetch?.Properties?.[0]?.owners?.[0]?.permanentAddress ||
           backStepData?.location ||
           propertyDetailsFetch?.Properties?.[0]?.address?.locality?.name;
         const plotSize = propertyDetailsFetch?.Properties?.[0]?.landArea || backStepData?.plotSize;
+        const propertyType = propertyDetailsFetch?.Properties?.[0]?.usageCategory || backStepData?.propertyType
+
         if (backStepData?.propertyId) setValue("propertyId", backStepData?.propertyId);
         setValue("location", location);
         setValue("plotSize", plotSize);
-        const pTypeOptions = GCData?.["sw-services-calculation"]?.PropertyUsageType || [];
+        const pTypeOptions = GCData?.["gc-services-calculation"]?.PropertyUsageType || [];
+
         const freqTypeOptions = FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency || [];
         const wasteTypeOptions = WasteType?.["gc-services-masters"]?.TypeOfWaste || [];
         const connectionCatoptions = connectionCategory?.["gc-services-masters"]?.connectionCategory || [];
@@ -233,13 +231,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         const frequency = backStepData?.frequency;
         const typeOfWaste = backStepData?.typeOfWaste;
         const connetionType = backStepData?.connectionCategory;
-        const pType = pTypeOptions?.find((item) => item?.name == backStepData?.propertyType);
-        const freType = freqTypeOptions?.find((item) => item.name == frequency);
+        const pType = pTypeOptions?.find(
+          (item) => item?.name === propertyType || item?.code === propertyType
+        ); const freType = freqTypeOptions?.find((item) => item.name == frequency);
         const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
         const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
         const checkUnitid = getPUnits?.find((item) => item?.id == backStepData?.unitId);
-        
-        const getFloors= uniqueFloors?.find((item)=>item?.floorNo == backStepData?.additionalDetails?.floorNo)
+
+        const getFloors = uniqueFloors?.find((item) => item?.floorNo == backStepData?.additionalDetails?.floorNo)
         setValue("propertyType", pType || null);
         setValue("frequency", freType || null);
         setValue("typeOfWaste", wasteType || null);
@@ -249,7 +248,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         setValue("floorNo", getFloors || null);
       }
     }
-  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits,uniqueFloors]);
+  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits, uniqueFloors]);
 
   const searchProperty = async () => {
     const pId = watch("propertyId");
@@ -287,8 +286,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setValue("defAmount", finalData[0]?.minimumCharge);
   };
 
-  console.log("GCData",GCData?.["sw-services-calculation"]?.PropertyUsageType);
-  
 
   return (
     <React.Fragment>
@@ -348,7 +345,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                           props.onChange(e);
                         }}
                         selected={props.value}
-                        option={GCData?.["sw-services-calculation"]?.PropertyUsageType}
+                        option={GCData?.["gc-services-calculation"]?.PropertyUsageType}
                         optionKey="name"
                       />
                     )}

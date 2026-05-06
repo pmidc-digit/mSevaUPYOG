@@ -23,6 +23,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const dispatch = useDispatch();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const [documentsData, setDocumentsData] = useState([]);
+  const [getPropertyFiltered,setPropertyFiltered] = useState([])
   const [error, setError] = useState(null);
   const { t } = useTranslation();
 
@@ -62,6 +63,13 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
 
   const { data, isLoading, isError } = Digit.Hooks.rentandlease.useRentAndLeaseProperties(filters);
 
+  const { data: rentANDLeaseArea = [], isLoading: RLAreaLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [{ name: "Area" }]);
+  const { data: rentANDLeaseProperty = [], isLoading: RLPropertyLoading } = Digit.Hooks.useCustomMDMS(tenantId, "rentAndLease", [{ name: "RLProperty" }]);
+
+console.log("rentANDLeaseArea",rentANDLeaseArea);
+console.log("rentANDLeaseProperty",rentANDLeaseProperty);
+
+
   const { triggerLoader, triggerToast } = config?.currStepConfig[0];
 
   // 🔹 Form setup
@@ -75,7 +83,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   } = useForm({
     defaultValues: {
       applicationType: { name: t("Legacy"), code: "Legacy" },
-      propertyId: "",
+      // propertyId: "",
       propertyName: "",
       propertyType: "",
       propertySpecific: "",
@@ -131,14 +139,14 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     if (data?.property) {
       // Start with all properties from MDMS
       let properties = data?.property;
-      if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
-        properties = properties.filter(
-          (p) =>
-            p.allotmentType === selectedPropertyType?.code &&
-            p.propertyType === selectedPropertySpecific?.code &&
-            p.locationType === selectedLocationType?.code
-        );
-      }
+      // if (selectedPropertyType && selectedPropertySpecific && selectedLocationType) {
+      //   properties = properties.filter(
+      //     (p) =>
+      //       p.allotmentType === selectedPropertyType?.code &&
+      //       p.propertyType === selectedPropertySpecific?.code &&
+      //       p.locationType === selectedLocationType?.code
+      //   );
+      // }
 
       setFilteredProperties(properties);
     }
@@ -164,9 +172,18 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
   const handlePropertySelect = (property) => {
     if (!property) return;
 
+    console.log("property",property);
+
+    const findPropertySpecific = propertySpecificOptions?.find((item)=> item?.code == property?.propertyType)
+    const findlocationTypeOptions = locationTypeOptions?.find((item)=> item?.code == property?.locationType)
+
+    setValue("propertySpecific",findPropertySpecific)
+    setValue("locationType",findlocationTypeOptions)
+    
+
     // List only the fields you want to prefill
     const fieldsToPrefill = [
-      "propertyId",
+      // "propertyId",
       "propertyName",
       "baseRent",
       "securityDeposit",
@@ -211,6 +228,11 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       acc[key] = data?.[key] || null; // ✅ optional chaining + null fallback
       return acc;
     }, {});
+
+    console.log("propertyDetails",propertyDetails);
+
+    propertyDetails["propertyId"] = propertyDetails?.selectedProperty?.propertyId
+    
 
     // Dispatch to Redux under one key
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM("propertyDetails", propertyDetails));
@@ -301,6 +323,14 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
     }
   }, [watch("arrear")]);
 
+  const filterProperties = (checkProperty)=>{
+const filteredData = rentANDLeaseProperty?.rentAndLease?.RLProperty
+?.filter((item)=> item.areaCode == checkProperty?.code)
+setPropertyFiltered(filteredData)
+console.log("filteredData",filteredData);
+
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("ES_TITILE_PROPERTY_DETAILS")}</CardSectionHeader>
@@ -329,7 +359,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       </LabelFieldPair>
       {errors.applicationType && <CardLabelError className="ral-error-label">{getErrorMessage("applicationType")}</CardLabelError>}
 
-      {/* Property Type Dropdown */}
+  {/* Property Type Dropdown */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("RENT_LEASE_PROPERTY_TYPE")} <span className="mandatory-asterisk">*</span>
@@ -344,6 +374,69 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
         />
       </LabelFieldPair>
       {errors.propertyType && <CardLabelError className="ral-error-label">{getErrorMessage("propertyType")}</CardLabelError>}
+
+
+  {/* application Type */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("Property Area")} <span className="mandatory-asterisk">*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="area"
+          rules={{ required: t("Property Area is required") }}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              // select={props.onChange}
+                  select={(selected) => {
+                // ✅ set propertyName field
+                props.onChange(selected);
+                filterProperties(selected)
+              }}
+              selected={props.value}
+              option={rentANDLeaseArea?.rentAndLease?.Area}
+              defaultValues
+              optionKey="name"
+              t={t}
+            />
+          )}
+        />
+      </LabelFieldPair>
+      {errors.area && <CardLabelError className="ral-error-label">{getErrorMessage("area")}</CardLabelError>}
+
+
+    
+  {/* Property Name Dropdown */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t("RENT_LEASE_PROPERTY_NAME")} <span className="mandatory-asterisk">*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="propertyName"
+          rules={{ required: t("RENT_LEASE_PROPERTY_NAME_REQUIRED") }}
+          render={({ value, onChange }) => (
+            <Dropdown
+              className="form-field"
+              select={(selected) => {
+                // ✅ set propertyName field
+                onChange(selected.propertyName);
+                // ✅ also set propertyId field
+                handlePropertySelect(selected); // ✅ prefill all other fields
+              }}
+              selected={filteredProperties.find((p) => p.propertyName === value)}
+              option={getPropertyFiltered}
+              optionKey="propertyName"
+              t={t}
+            />
+          )}
+        />
+      </LabelFieldPair>
+      {errors.propertyName && <CardLabelError className="ral-error-label">{getErrorMessage("propertyName")}</CardLabelError>}
+
+
+
 
       {/* Property Specific Dropdown */}
       <LabelFieldPair>
@@ -377,36 +470,9 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
       </LabelFieldPair>
       {errors.locationType && <CardLabelError className="ral-error-label">{getErrorMessage("locationType")}</CardLabelError>}
 
-      {/* Property Name Dropdown */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t("RENT_LEASE_PROPERTY_NAME")} <span className="mandatory-asterisk">*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="propertyName"
-          rules={{ required: t("RENT_LEASE_PROPERTY_NAME_REQUIRED") }}
-          render={({ value, onChange }) => (
-            <Dropdown
-              className="form-field"
-              select={(selected) => {
-                // ✅ set propertyName field
-                onChange(selected.propertyName);
-                // ✅ also set propertyId field
-                handlePropertySelect(selected); // ✅ prefill all other fields
-              }}
-              selected={filteredProperties.find((p) => p.propertyName === value)}
-              option={filteredProperties}
-              optionKey="propertyName"
-              t={t}
-            />
-          )}
-        />
-      </LabelFieldPair>
-      {errors.propertyName && <CardLabelError className="ral-error-label">{getErrorMessage("propertyName")}</CardLabelError>}
-
+    
       {/* Property ID */}
-      <LabelFieldPair>
+      {/* <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("RENT_LEASE_PROPERTY_ID")} <span className="mandatory-asterisk">*</span>
         </CardLabel>
@@ -421,7 +487,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
           />
         </div>
       </LabelFieldPair>
-      {errors.propertyId && <CardLabelError className="ral-error-label">{getErrorMessage("propertyId")}</CardLabelError>}
+      {errors.propertyId && <CardLabelError className="ral-error-label">{getErrorMessage("propertyId")}</CardLabelError>} */}
 
       {/* Hidden field for selected property */}
       <Controller control={control} name="selectedProperty" render={() => null} />
@@ -602,7 +668,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
           {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
 
           {/* arrear Start Date */}
-          {/* <LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>
               {t("RAL_ARR_START_DATE")} {watch("arrear") > 0 && <span className="mandatory-asterisk">*</span>}
             </CardLabel>
@@ -632,7 +698,7 @@ const RentAndLeasePropertyDetails = ({ onGoBack, goNext, currentStepData, valida
               />
             </div>
           </LabelFieldPair>
-          {errors.arrearStartDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearStartDate")}</CardLabelError>} */}
+          {errors.arrearStartDate && <CardLabelError className="ral-error-label">{getErrorMessage("arrearStartDate")}</CardLabelError>}
 
           {/*arrear End Date */}
           <LabelFieldPair>

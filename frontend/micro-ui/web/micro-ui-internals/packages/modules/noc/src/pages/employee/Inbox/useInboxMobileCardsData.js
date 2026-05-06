@@ -16,7 +16,7 @@ const useInboxMobileCardsData = ({parentRoute, table }) => {
             // [t("ES_INBOX_LOCALITY")]: locality,
             [t("NOC_PRIMARY_OWNER_NAME_LABEL")]: t(owner),
             [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: t(status),
-            "Generated ID": encodeURIComponentCustom(applicationId)
+            "Vehicle Log": {id: encodeURIComponentCustom(applicationId), hidden: true}
             //  [t("ES_INBOX_LOCALITY")]: t(locality),
             // [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
             // [t("ES_INBOX_SLA_DAYS_REMAINING")]: t(sla)
@@ -48,8 +48,12 @@ const useInboxMobileCardsData = ({parentRoute, table }) => {
         </SearchField>
     }
 
+    const serviceRequestIdKeyFunction = (object) => {
+        return object["Vehicle Log"]?.id
+    }
 
-    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/inbox/application-overview/`, serviceRequestIdKey:"Generated ID", MobileSortFormValues})
+
+    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/inbox/application-overview/`, serviceRequestIdKey: serviceRequestIdKeyFunction, MobileSortFormValues})
 
 }
 

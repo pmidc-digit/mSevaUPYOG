@@ -51,7 +51,7 @@ const CLUApplicationDetails = () => {
   const [empDesignation, setEmpDesignation] = useState(null);
   const [timeObj, setTimeObj] = useState(null);
   const [EmpData, setEmpData] = useState(null);
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
+  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -119,12 +119,11 @@ const CLUApplicationDetails = () => {
       top: 0,
       behavior: "smooth" // use "auto" for instant scroll
     });    
-  }, [])
-
-  useEffect(() => {
     EmployeeData(tenantId, id, businessServiceCode).then((res) => {
       setEmpData(res);
     });
+    refetch();
+    workflowDetails.revalidate()
   }, []); 
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";

@@ -14,35 +14,35 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.noc.calculator.web.models.SanitizeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 /**
  * NOC application object to capture the details of noc related information, landid and related documents.
  */
 @ApiModel(description = "NOC application object to capture the details of noc related information, landid and related documents.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
 public class Clu {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("tenantId")
   private String tenantId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationNo")
   private String applicationNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonIgnore
   @JsonProperty("cluNo")
   private String cluNo = null;
@@ -55,11 +55,11 @@ public class Clu {
   @JsonProperty("owners")
   private List<OwnerInfo> owners;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("cluType")
   private String cluType = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonIgnore
   @JsonProperty("accountId")
   private String accountId = null;
@@ -81,7 +81,7 @@ public class Clu {
   @JsonProperty("status")
   private Status status = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationStatus")
   private String applicationStatus = null;
 

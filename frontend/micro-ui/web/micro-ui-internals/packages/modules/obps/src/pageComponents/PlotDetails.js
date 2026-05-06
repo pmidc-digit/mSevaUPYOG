@@ -1058,7 +1058,7 @@ useEffect(() => {
                 option={common}
                 optionKey="i18nKey"
                 t={t}
-                disable={!isSelfCertificationCondition || currentStepData?.createdResponse?.applicationNo}
+                // disable={!isSelfCertificationCondition || currentStepData?.createdResponse?.applicationNo}
               />
             </React.Fragment>
           }

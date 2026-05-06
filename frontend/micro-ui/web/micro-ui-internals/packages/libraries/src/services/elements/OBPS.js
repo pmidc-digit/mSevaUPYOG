@@ -612,8 +612,8 @@ const getFormattedULBName = (ulbCode = "") => {
       totalAmount = 0,
       collectionBillRes = [];
 
-    if (BPA?.businessService === "BPA_LOW") appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
-    else if (BPA?.businessService === "BPA") appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
+    if (BPA?.additionalDetails?.isSelfCertification) appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
+    else if (!BPA?.additionalDetails?.isSelfCertification) appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
     else if (BPA?.businessService === "BPA_OC") appBusinessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
     else appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
 

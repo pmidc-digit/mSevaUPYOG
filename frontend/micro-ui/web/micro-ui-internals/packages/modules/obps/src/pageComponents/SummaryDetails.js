@@ -987,10 +987,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             <h2>{t(`BPA_PLOT_NUMBER_LABEL`)}</h2>
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}</div>
                         </div>
-                        <div className="row border-none">
+                        {/* <div className="row border-none">
                             <h2>{t(`BPA_KHATHA_NUMBER_LABEL`)}</h2>
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}</div>
-                        </div>
+                        </div> */}
                         <div className="row border-none">
                             <h2>{t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.registrationDetails || t("CS_NA")}</div>
@@ -1107,6 +1107,14 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 ) : t("CS_NA")}
                             </div>
                         </div>
+                        <div className="row border-none">
+                            <h2>{t("BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL")}</h2>
+                            <div className="value">
+                                {currentStepData?.BasicDetails?.edcrDetails?.planReport ? (
+                                    <LinkButton label={t("View")} onClick={() => window.open(currentStepData?.BasicDetails?.edcrDetails?.dxfFile)} />
+                                ) : t("CS_NA")}
+                            </div>
+                        </div>
                     </div>
 
                     {currentStepData?.createdResponse?.additionalDetails?.oldEDCR?.length > 0 && <div>
@@ -1149,16 +1157,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                         <div className="row border-none">
                             <h2>{t("BPA_NUMBER_OF_FLOORS")}</h2>
-                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.NUMBER_OF_FLOORS || t("CS_NA")}</div>
+                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.totalFloors || t("CS_NA")}</div>
                         </div>
                         <div className="row border-none">
                             <h2>{t("BPA_ULB_TYPE")}</h2>
-                            <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.ULB_TYPE || t("CS_NA")}</div>
+                            <div className="value">{currentStepData?.LocationDetails?.selectedCity?.city?.ulbType || t("CS_NA")}</div>
                         </div>
-                        <div className="row border-none">
+                        {/* <div className="row border-none">
                             <h2>{t("BPA_MAUZA")}</h2>
                             <div className="value">{currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")}</div>
-                        </div>
+                        </div> */}
                     </div>
                     <CardSubHeader className="bpa-block-header" style={{marginTop: "16px"}}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
                     <div className="data-table">

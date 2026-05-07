@@ -35,7 +35,7 @@ import NOCImageView from "../../../pageComponents/NOCImageView";
 import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
-import { EmployeeData } from "../../../utils/index";
+import { decodeURIComponentCustom, EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
 import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
@@ -97,7 +97,8 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 };
 
 const NOCEmployeeApplicationOverview = () => {
-  const { id } = useParams();
+  const { nocid } = useParams();
+  const id = decodeURIComponentCustom(nocid);
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();
@@ -114,7 +115,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
   console.log("applicationDetails", applicationDetails);
@@ -591,13 +592,15 @@ const NOCEmployeeApplicationOverview = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   useEffect(() => {
-    if (workflowDetails) {
-      workflowDetails.revalidate();
-    }
+    // if (workflowDetails) {
+    //   workflowDetails.revalidate();
+    // }
 
-    if (data) {
-      data.revalidate();
-    }
+    // if (data) {
+    //   data.revalidate();
+    // }
+    refetch();
+    workflowDetails.revalidate();
   }, []);
 
   let actions =

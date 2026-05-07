@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Card, KeyNote, Loader, SubmitBar, Header } from "@mseva/digit-ui-react-components";
 import { Fragment } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { getBPAFormData } from "../../../utils/index";
+import { encryptId, getBPAFormData } from "../../../utils/index";
 import CustomCard from "../../../pageComponents/CustomCard";
 
 const getServiceType = () => {
@@ -478,14 +478,12 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
     <Fragment>
   
       <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
-      <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
+      {/* <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
         <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
         <span className="link">
           <Link to="/digit-ui/citizen/obps/search/obps-application">{t("BPA_CLICK_HERE_TO_SEARCH_LINK")}</Link>
         </span>
-      </div>
-
-{console.log(finalData, "VVV")}
+      </div> */}
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           console.log("applicationDataForBPAREG", application)
@@ -586,6 +584,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
           );
         } 
          else {
+          const encryptedId = encryptId(application?.applicationNo);
           return (
             <CustomCard key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
@@ -604,7 +603,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
                 note={typeof application?.sla == "string" && application?.sla?.includes("NA") ? t(`${`CS_NA`}`) : application?.sla}
               />
               {/* {(application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED") ? ( */}
-                <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: "" } }}>
+                <Link to={{ pathname: `/digit-ui/citizen/obps/bpa-app/${encryptedId}`, state: { tenantId: "" } }}>
                   <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>
               {/* ) : (

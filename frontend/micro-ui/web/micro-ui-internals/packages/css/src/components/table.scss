@@ -31,6 +31,11 @@
     display: table;
     overflow: hidden;
   }
+
+  .table.cancel-table {
+    display: block !important;
+    overflow: scroll !important;
+  }
 }
 
 .table:hover {

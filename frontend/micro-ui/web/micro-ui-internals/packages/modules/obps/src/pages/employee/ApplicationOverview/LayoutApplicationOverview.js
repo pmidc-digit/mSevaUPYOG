@@ -185,6 +185,13 @@ const LayoutEmployeeApplicationOverview = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
+  React.useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });    
+    }, [])
+
   useEffect(() => {
     let WorkflowService = null;
     const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;

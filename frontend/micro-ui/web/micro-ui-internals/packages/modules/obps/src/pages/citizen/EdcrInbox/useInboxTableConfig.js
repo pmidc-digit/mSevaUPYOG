@@ -64,8 +64,8 @@ const useInboxTableConfig = ({ onPageSizeChange, formState, totalCount, table, d
               dowloadOptions={[
                 {
                   label: t("Building Plan"),
-                  onClick: () => fetchUrl(`${row.original["dxfFileurl"]}`, tenantId),
-                  // onClick: () => window.open(`${row.original["dxfFileurl"]}`, tenantId),
+                  // onClick: () => fetchUrl(`${row.original["dxfFileurl"]}`, tenantId),
+                  onClick: () => window.open(`${row.original["dxfFileurl"]}`),
                 },
                 {
                   label: t("EDCR_SCUTINY_REPORT"),

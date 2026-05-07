@@ -3,6 +3,7 @@ import React,{ useMemo } from "react"
 import { Link } from "react-router-dom"
 import { format } from "date-fns"
 import { useTranslation } from "react-i18next"
+import { encryptId } from "../../../utils"
 
 const useCLUTableConfig = ({
   parentRoute,
@@ -26,9 +27,10 @@ const useCLUTableConfig = ({
         disableSortBy: true,
         Cell: ({ row }) => {
           console.log("row-route", row);
+          const encryptID = encryptId(row.original["applicationId"])
           return (
             <div>
-              <Link to={`${parentRoute}/clu/application-overview/${row.original["applicationId"]}`}>
+              <Link to={`${parentRoute}/clu/application-overview/${encryptID}`}>
                 <span className="link">{row.original["applicationId"]}</span>
               </Link>
             </div>

@@ -24,6 +24,13 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   console.log("coordinates from redux", coordinates);
 
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {

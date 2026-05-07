@@ -19,7 +19,7 @@ export const configBPAApproverApplication = ({
   blockReasonFiltered
 }) => {
   let isRejectOrRevocate = false;
-  if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE") {
+  if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE" || action?.action == "PULLBACK") {
     isRejectOrRevocate = true;
   }
 
@@ -27,7 +27,11 @@ export const configBPAApproverApplication = ({
   if(action?.action == "REVOCATE" || action?.action == "REJECT") {
     isCommentRequired = true;
   }
-  console.log("actionInModal", action);
+  
+  let isCondittionalComentsRequired = false;
+  if(action?.action == "APPROVE") {
+    isCondittionalComentsRequired = true;
+  }
   
   return {
     label: {
@@ -68,6 +72,13 @@ export const configBPAApproverApplication = ({
               />
             ):null ,
           },
+          ...(isCondittionalComentsRequired ? [{
+            label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+            type: "textarea",
+            populators: {
+              name: "conditionalComments",
+            },
+          }] : []),
           {
             label: t("WF_COMMON_COMMENTS"),
             type: "textarea",

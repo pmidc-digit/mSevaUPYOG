@@ -1514,6 +1514,27 @@ export const fetchUrl = async (docUrl, tenantId) => {
   }
 };
 
+export const fetchFilestoreAndTenant = (docUrl, tenantId) => {
+  if (docUrl) {
+    let id = docUrl;
+    let fullTenantId = tenantId;
+
+    if (typeof docUrl === "string" && docUrl.includes("fileStoreId=")) {
+      const queryPart = docUrl.split("?")[1];
+      if (queryPart) {
+        const urlParams = new URLSearchParams(queryPart);
+        id = urlParams.get("fileStoreId") || id;
+        fullTenantId = urlParams.get("tenantId") || fullTenantId;
+      }
+    }
+
+    return {
+      fileStoreId: id,
+      tenantId: fullTenantId,
+    }
+  }
+};
+
 export const fetchOnlyUrl = async (docUrl, tenantId) => {
   if (docUrl) {
     let id = docUrl;

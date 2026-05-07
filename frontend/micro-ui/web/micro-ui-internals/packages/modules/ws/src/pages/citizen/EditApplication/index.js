@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch } from "react-router-dom";
 import { newConfig as newConfigWS } from "../../../config/wsCreateConfig";
-import { getCommencementDataFormat, stringReplaceAll } from "../../../utils/index";
+import { stringReplaceAll } from "../../../utils/index";
 
 const getPath = (path, params) => {
   params &&

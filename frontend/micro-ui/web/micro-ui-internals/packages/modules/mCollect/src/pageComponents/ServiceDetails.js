@@ -18,7 +18,7 @@ import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import _ from "lodash";
-import { getUniqueItemsFromArray, commonTransform, stringReplaceAll, getPattern, convertEpochToDate } from "../utils";
+import { stringReplaceAll, convertEpochToDate } from "../utils";
 
 const createConsumerDetails = (getCities) => ({
   city: getCities()[0] ? getCities()[0] : "",

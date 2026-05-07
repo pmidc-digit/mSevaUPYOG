@@ -1,1 +1,0 @@
-ALTER TABLE egcl_billAccountDetail ADD COLUMN IF NOT EXISTS adjustedamount numeric(12,2);

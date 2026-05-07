@@ -1,1 +1,0 @@
-ALTER TABLE eg_pt_owner ADD COLUMN IF NOT EXISTS  additionaldetails JSONB DEFAULT NULL ;

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import merge from "lodash.merge";
 import { useDispatch } from "react-redux";
 import { createComplaint } from "../../../redux/actions/index";
-import { PGR_CITIZEN_COMPLAINT_CONFIG, SWACH_CITIZEN_CREATE_COMPLAINT } from "../../../constants/Citizen";
+import { SWACH_CITIZEN_CREATE_COMPLAINT } from "../../../constants/Citizen";
 import Response from "./Response";
 
 import { config as defaultConfig } from "./defaultConfig";
@@ -21,7 +21,7 @@ export const CreateComplaint = () => {
   const { data: storeData, isLoading } = Digit.Hooks.useStore.getInitData();
   const { stateInfo } = storeData || {};
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(SWACH_CITIZEN_CREATE_COMPLAINT, {});
-  // const [customConfig, setConfig] = Digit.Hooks.useSessionStorage(PGR_CITIZEN_COMPLAINT_CONFIG, {});
+
   const config = useMemo(() => merge(defaultConfig, Digit.Customizations.PGR.complaintConfig), [Digit.Customizations.PGR.complaintConfig]);
   const [paramState, setParamState] = useState(params);
   const [nextStep, setNextStep] = useState("");
@@ -69,7 +69,7 @@ export const CreateComplaint = () => {
       const { city_complaint, locality_complaint, uploadedImages, complaintType, subType, prioritylevel, details, ...values } = paramState;
       const { code: cityCode, name: city } = city_complaint;
       const { code: localityCode, name: localityName } = locality_complaint;
-      const storedpropertyid =sessionStorage.getItem("propertyid")
+      const storedpropertyid = sessionStorage.getItem("propertyid")
       const _uploadImages = uploadedImages?.map((url) => ({
         documentType: "PHOTO",
         fileStoreId: url,
@@ -82,7 +82,7 @@ export const CreateComplaint = () => {
         complaintType: subType.key,
         cityCode,
         city,
-        prioritylevel: prioritylevel ,
+        prioritylevel: prioritylevel,
         description: details,
         district: city,
         region: city,
@@ -103,12 +103,11 @@ export const CreateComplaint = () => {
 
   const handleSelect = (data) => {
     let c = JSON.parse(sessionStorage.getItem("complaintType"))
-    if(data?.subType)
-    {
-      
-      let data2 ={"complaintType":c}
-      console.log("handleSelect",data,data2)
-      setParams({ ...params, ...data ,...data2 });
+    if (data?.subType) {
+
+      let data2 = { "complaintType": c }
+      console.log("handleSelect", data, data2)
+      setParams({ ...params, ...data, ...data2 });
       goNext();
     }
     else {

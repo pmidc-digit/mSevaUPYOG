@@ -1,8 +1,8 @@
-import React,{ useState }  from "react";
+import React, { useState } from "react";
 import { Card, Banner, CardText, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Link, useRouteMatch } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { PgrRoutes, getRoute } from "../../constants/Routes";
+
 import { useTranslation } from "react-i18next";
 import getSWACHcknowledgementData from "../../utils/getSWACHcknowledgementData"
 const GetActionMessage = ({ action }) => {
@@ -18,11 +18,11 @@ const BannerPicker = ({ response }) => {
   const { swach } = response;
 
   if (swach && swach.response && swach.response.responseInfo) {
-    sessionStorage.removeItem("type" );
+    sessionStorage.removeItem("type");
     sessionStorage.removeItem("pincode");
     sessionStorage.removeItem("tenantId");
     sessionStorage.removeItem("localityCode");
-    sessionStorage.removeItem("landmark"); 
+    sessionStorage.removeItem("landmark");
     sessionStorage.removeItem("propertyid")
     return (
       <Banner
@@ -39,14 +39,14 @@ const BannerPicker = ({ response }) => {
 const Response = (props) => {
   const { t } = useTranslation();
   const { match } = useRouteMatch();
-  const appState = useSelector((state) => {console.log("Response State", state); return state})["swach"];
+  const appState = useSelector((state) => { console.log("Response State", state); return state })["swach"];
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)
-  let id= appState?.swach?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
+  let id = appState?.swach?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
   const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId:tenantId, id },{ enabled: enable ? true : false}); // Respnse Page is changed
-  
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId: tenantId, id }, { enabled: enable ? true : false }); // Respnse Page is changed
+
   const handleDownloadPdf = async (e) => {
     const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
     e.preventDefault()
@@ -61,7 +61,7 @@ const Response = (props) => {
       <Link to="/digit-ui/employee">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
-      {appState.swach.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) =>{handleDownloadPdf(e)}} />}
+      {appState.swach.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) => { handleDownloadPdf(e) }} />}
     </Card>
   );
 };

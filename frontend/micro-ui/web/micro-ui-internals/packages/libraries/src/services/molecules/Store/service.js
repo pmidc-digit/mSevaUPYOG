@@ -55,7 +55,24 @@ export const StoreService = {
     return await Promise.all(allBoundries);
   },
   digitInitData: async (stateCode, enabledModules) => {
-    const { MdmsRes } = await MdmsService.init(stateCode);
+    let MdmsRes;
+    try {
+      const result = await MdmsService.init(stateCode);
+      MdmsRes = result.MdmsRes;
+    } catch (e) {
+      console.error("[digitInitData] MDMS init failed:", e?.message || e);
+      // Return a safe minimal initData so the Redux store doesn't get undefined
+      return {
+        languages: [{ label: "ENGLISH", value: "en_IN" }],
+        stateInfo: {},
+        modules: [],
+        tenants: [],
+        selectedLanguage: "en_IN",
+        localities: {},
+        revenue_localities: {},
+        _mdmsError: e?.message || "MDMS init failed",
+      };
+    }
     const stateInfo = MdmsRes["common-masters"]?.StateInfo?.[0]||{};
     const uiHomePage = MdmsRes["common-masters"]?.uiHomePage?.[0]||{};
     const localities = {};

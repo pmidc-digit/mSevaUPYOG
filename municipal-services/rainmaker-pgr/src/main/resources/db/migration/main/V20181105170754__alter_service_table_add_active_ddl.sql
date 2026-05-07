@@ -1,1 +1,0 @@
-ALTER TABLE eg_pgr_service ADD COLUMN IF NOT EXISTS active boolean DEFAULT true;

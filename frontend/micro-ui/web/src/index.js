@@ -1,7 +1,6 @@
+import { initLibraries } from "@mseva/digit-ui-libraries";
 import React from "react";
 import ReactDOM from "react-dom";
-import { initLibraries } from "@mseva/digit-ui-libraries";
-// import "@egovernments/digit-ui-css/dist/index.css";
 import "./index.css";
 import App from "./App";
 import { TLCustomisations } from "./Customisations/tl/TLCustomisation";
@@ -13,8 +12,6 @@ window.Digit.Customizations = { PGR: {}, TL: TLCustomisations };
 const user = window.Digit.SessionStorage.get("User");
 
 if (!user || !user.access_token || !user.info) {
-  // login detection
-
   const parseValue = (value) => {
     try {
       return JSON.parse(value);
@@ -56,7 +53,6 @@ if (!user || !user.access_token || !user.info) {
   window.Digit.SessionStorage.set("User", userDetails);
   window.Digit.SessionStorage.set("Citizen.tenantId", citizenTenantId);
   window.Digit.SessionStorage.set("Employee.tenantId", employeeTenantId);
-  // end
 }
 
 ReactDOM.render(

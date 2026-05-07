@@ -1,1 +1,0 @@
-ALTER TABLE eg_tl_tradelicensedetail ALTER COLUMN operationalarea TYPE FLOAT USING operationalarea::double precision;

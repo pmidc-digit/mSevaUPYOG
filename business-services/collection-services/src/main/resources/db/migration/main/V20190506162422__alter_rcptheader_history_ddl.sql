@@ -1,1 +1,0 @@
-ALTER TABLE egcl_receiptheader_v1_history ADD COLUMN IF NOT EXISTS payerid varchar(256);

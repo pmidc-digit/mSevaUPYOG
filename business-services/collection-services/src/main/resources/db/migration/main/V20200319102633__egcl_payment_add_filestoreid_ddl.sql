@@ -1,1 +1,0 @@
-ALTER TABLE egcl_payment ADD COLUMN IF NOT EXISTS filestoreid VARCHAR(1024);

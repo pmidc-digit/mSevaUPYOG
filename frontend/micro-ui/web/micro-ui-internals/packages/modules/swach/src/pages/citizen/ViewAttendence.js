@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LinkButton, Button } from "@mseva/digit-ui-react-components";
 
 import {
   Card,

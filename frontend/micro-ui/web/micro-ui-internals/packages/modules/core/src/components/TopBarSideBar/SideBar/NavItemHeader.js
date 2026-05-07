@@ -47,11 +47,11 @@ const NavItemHeader = props => {
     collections: <CollectionIcon />,
   };
   const leftIconArray = icon?.split?.(":")?.[1];
-  const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
-  const iconArr=item?.icon?.leftIcon?.split?.(":")|| item?.leftIcon?.split?.(":");
-  if(iconArr?.[0]=='dynamic'){
+  let leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
+  const iconArr = item?.icon?.leftIcon?.split?.(":") || item?.leftIcon?.split?.(":");
+  if (iconArr?.[0] == 'dynamic') {
     var IconComp = require("@mseva/digit-ui-react-components")?.[iconArr?.[1]];
-    leftIcon=IconComp?<IconComp/>:leftIcon;
+    leftIcon = IconComp ? <IconComp /> : leftIcon;
   }
   const getModuleName = label?.replace(/[ -]/g, "_").toUpperCase();
   const appendTranslate = t(`ACTION_TEST_${getModuleName.toUpperCase()}`);
@@ -61,24 +61,24 @@ const NavItemHeader = props => {
     e.preventDefault();
     setExpand(expanded => !expanded);
   };
-	
+
   return (
     <React.Fragment>
       <button
         className={`${"submenu-container"}`}
         onClick={onExpandChange}
-        style={item?.elementStyle ? {...item?.elementStyle,display:"flex"}:{display:"flex"}}
+        style={item?.elementStyle ? { ...item?.elementStyle, display: "flex" } : { display: "flex" }}
       >
-         <div className={`sidebar-link ${expanded ? "active": ""}`} style={{width:item?.nested ?"240px":"350px",overflow:"auto"}}>{!item?.nested && leftIcon}
-         <div className='actions' style={{padding:"0px",marginRight:"auto"}}>
-         <div data-tip="React-tooltip" data-for={`jk-side-${getModuleName}`}>
-        <span style={{color:expanded ? "#a82227":""}}>{trimModuleName}</span>
-        {trimModuleName?.includes("...") && <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
-                    {t(`ACTION_TEST_${getModuleName}`)}
-                  </ReactTooltip>}
-                </div>
-        </div>
-        <div>{children && expanded ? <ArrowVectorDown/> : children ? <ArrowForward /> : null}</div>
+        <div className={`sidebar-link ${expanded ? "active" : ""}`} style={{ width: item?.nested ? "240px" : "350px", overflow: "auto" }}>{!item?.nested && leftIcon}
+          <div className='actions' style={{ padding: "0px", marginRight: "auto" }}>
+            <div data-tip="React-tooltip" data-for={`jk-side-${getModuleName}`}>
+              <span style={{ color: expanded ? "#a82227" : "" }}>{trimModuleName}</span>
+              {trimModuleName?.includes("...") && <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
+                {t(`ACTION_TEST_${getModuleName}`)}
+              </ReactTooltip>}
+            </div>
+          </div>
+          <div>{children && expanded ? <ArrowVectorDown /> : children ? <ArrowForward /> : null}</div>
         </div>
       </button>
 
@@ -102,7 +102,7 @@ const NavItemHeader = props => {
                       ...item,
                       nested: true,
                       to: resolveLinkPath(item.to, props.item.to),
-                      elementStyle:{marginLeft:"19px"}
+                      elementStyle: { marginLeft: "19px" }
                     }}
                   />
                 </div>
@@ -115,11 +115,11 @@ const NavItemHeader = props => {
                 to={item?.to?.includes("digit-ui") ? item?.to : "/employee/" + item?.to}
                 className="custom-link"
                 activeClassName="actions"
-                style={{marginLeft:"40px", marginTop:"10px"}}
+                style={{ marginLeft: "40px", marginTop: "10px" }}
               >
                 <div data-tip="React-tooltip" data-for={`jk-side-${getModuleName}`}>
-                <span style={{fontSize:"14px"}}>{trimModuleName}</span>
-                {trimModuleName?.includes("...") && <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
+                  <span style={{ fontSize: "14px" }}>{trimModuleName}</span>
+                  {trimModuleName?.includes("...") && <ReactTooltip textColor="white" backgroundColor="grey" place="right" type="info" effect="solid" id={`jk-side-${getModuleName}`}>
                     {t(`ACTION_TEST_${getModuleName}`)}
                   </ReactTooltip>}
                 </div>

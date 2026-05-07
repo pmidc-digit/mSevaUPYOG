@@ -6,6 +6,7 @@ import CitizenApp from "./pages/citizen";
 import getRootReducer from "./redux/reducers";
 import { useTranslation } from "react-i18next";
 import { LOCALE } from "./constants/Localization";
+import { PGR_CITIZEN_CREATE_COMPLAINT } from "./constants/Citizen";
 
 import Inbox from "./pages/employee/Inbox";
 import EmployeeApp from "./EmployeeApp";

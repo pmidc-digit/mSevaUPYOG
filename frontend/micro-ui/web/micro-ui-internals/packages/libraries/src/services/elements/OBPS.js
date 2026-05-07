@@ -855,10 +855,10 @@ const getFormattedULBName = (ulbCode = "") => {
     }
 
     if (BPA?.approvalNo) {
-      applicationDetailsInfo?.values?.push({
-        title: BPA?.businessService !== "BPA_OC" ? "BPA_PERMIT_NUMBER_LABEL" : "BPA_OC_PERMIT_NUMBER_LABEL",
-        value: BPA?.approvalNo || "NA",
-      });
+      // applicationDetailsInfo?.values?.push({
+      //   title: BPA?.businessService !== "BPA_OC" ? "BPA_PERMIT_NUMBER_LABEL" : "BPA_OC_PERMIT_NUMBER_LABEL",
+      //   value: BPA?.approvalNo || "NA",
+      // });
       applicationDetailsInfo?.values?.push({
         title: BPA?.businessService !== "BPA_OC" ? "BPA_PERMIT_VALIDITY" : "BPA_OC_PERMIT_VALIDITY",
         value: BPA?.additionalDetails?.validityDate

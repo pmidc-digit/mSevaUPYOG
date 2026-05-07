@@ -84,6 +84,13 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     { enabled: !!calculatorPayload }
   );
 
+  React.useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
   useEffect(() => {
     revalidate();
   }, [currentStepData?.siteDetails, currentStepData?.applicationDetails]);

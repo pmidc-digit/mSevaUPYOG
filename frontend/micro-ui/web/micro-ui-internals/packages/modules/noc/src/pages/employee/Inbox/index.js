@@ -136,15 +136,16 @@ const Inbox = ({ parentRoute }) => {
   console.log('employeeName, employeeRole', employeeName, employeeRole)
 
 
-  const { isLoading: isInboxLoading, data} = Digit.Hooks.noc.useInbox({
+  const { isLoading: isInboxLoading, data, refetch} = Digit.Hooks.noc.useInbox({
     tenantId,
     filters: { ...formState }
   });
 
   useEffect(()=>{
-    if(data){
-      data.revalidate();
-    }
+    // if(data){
+    //   data.revalidate();
+    // }
+    refetch();
   },[])
   
  // console.log("data in noc==>", data);

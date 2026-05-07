@@ -4,6 +4,7 @@ import SearchFormFieldsComponent from "./SearchFieldComponent";
 import useSearchApplicationTableConfig from "./useTableConfig";
 import SearchApplicationMobileView from "./SearchAtom/mobile";
 import SearchApplicationDesktopView from "./SearchAtom/desktop";
+import { encodeURIComponentCustom } from "../../utils";
 
 
 const SearchApplication = ({ tenantId, t, onSubmit, data, error, isLoading, Count }) => {
@@ -34,6 +35,7 @@ const SearchApplication = ({ tenantId, t, onSubmit, data, error, isLoading, Coun
         [t("NOC_APPLICATION_NUMBER")]: data?.applicationNo || "-",
         [t("TL_COMMON_TABLE_COL_APP_DATE")]: data?.date || "-",
         [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: data?.applicationStatus ? t(`${data.applicationStatus}`) : "-",
+        "Generated ID": encodeURIComponentCustom(data?.applicationNo)
       })),
     [data]
   );

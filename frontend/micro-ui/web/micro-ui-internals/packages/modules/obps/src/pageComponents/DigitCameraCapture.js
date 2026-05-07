@@ -25,7 +25,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
     async function startCamera() {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
+          video: { facingMode: { exact: "environment" } },
           audio: false
         });
 
@@ -34,6 +34,7 @@ const DigitCameraCapture = ({ onCapture, onCancel }) => {
         setStream(mediaStream);
       } catch (err) {
         setError("Camera permission denied");
+        return;
       }
     }
 

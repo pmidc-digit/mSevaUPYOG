@@ -40,6 +40,13 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.obps.OBPSFormReducer.ownerPhotos;
   });
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
+  }, [])
+
   // console.log("ownerIds(redux)", ownerIds);
   // console.log("ownerPhotos (redux)", ownerPhotos);
 

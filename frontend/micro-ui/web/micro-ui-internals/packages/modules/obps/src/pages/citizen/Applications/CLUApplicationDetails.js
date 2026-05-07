@@ -28,7 +28,7 @@ import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
 import { getCLUAcknowledgementData } from "../../../utils/getCLUAcknowledgementData";
-import { amountToWords, formatDuration } from "../../../utils/index";
+import { amountToWords, decryptId, encryptId, formatDuration } from "../../../utils/index";
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 import CLUImageView from "../../../pageComponents/CLUImgeView";
 import CLUSitePhotographs from "../../../pageComponents/CLUSitePhotographs";
@@ -39,7 +39,8 @@ import PaymentHistory from "../../../../../templates/ApplicationDetails/componen
 import { EmployeeData } from "../../../utils/index";
 
 const CLUApplicationDetails = () => {
-  const { id } = useParams();
+  const { cluid } = useParams();
+  const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
@@ -50,7 +51,7 @@ const CLUApplicationDetails = () => {
   const [empDesignation, setEmpDesignation] = useState(null);
   const [timeObj, setTimeObj] = useState(null);
   const [EmpData, setEmpData] = useState(null);
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -68,7 +69,7 @@ const CLUApplicationDetails = () => {
   const disableFeeTable = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"];
   const disableSiteInspectionImage = ["INITIATED", "PENDINGAPPLICATIONPAYMENT", "FIELDINSPECTION_INPROGRESS"];
 
-  //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+  //   if (window.location.href.includes("/obps") || window.location.href.includes("/clu")) {
   //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
   //     const userInfo = userInfos ? JSON.parse(userInfos) : {};
   //     user = userInfo?.value;
@@ -114,9 +115,15 @@ const CLUApplicationDetails = () => {
   }, [applicationDetails?.Clu]);
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth" // use "auto" for instant scroll
+    });    
     EmployeeData(tenantId, id, businessServiceCode).then((res) => {
       setEmpData(res);
     });
+    refetch();
+    workflowDetails.revalidate()
   }, []); 
 
   const businessServiceCode = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteDetails?.businessService || "";
@@ -151,6 +158,9 @@ const CLUApplicationDetails = () => {
     tenantId: tenantId,
     id: id,
     moduleCode: businessServiceCode,
+    config: {
+      enabled: !!id
+    }
   });
 
   const geoLocations = useMemo(() => {
@@ -216,6 +226,7 @@ const CLUApplicationDetails = () => {
         ownersString = firmName;
       }
       let conditionText = "";
+      
       if (approvecomments?.includes("[#?..**]")) {
         conditionText = approvecomments.split("[#?..**]")[1] || "";
       }
@@ -223,6 +234,15 @@ const CLUApplicationDetails = () => {
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
+      const hasConditionText =
+      typeof conditionText === "string" && conditionText?.trim().length > 0;
+
+      const conditionData = {
+        conditionLine: hasConditionText
+          ? "The above approval is subjected to the following conditions:"
+          : " ",
+        conditionText: hasConditionText ? conditionText : " ",
+      };
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
@@ -237,6 +257,7 @@ const CLUApplicationDetails = () => {
                 ...payments,
                 Clu: application,
                 ApproverComment: finalComment,
+                conditionData:conditionData,
                 usage,
                 amountinwords,
                 approvalDate: approvalDate,
@@ -522,7 +543,8 @@ const CLUApplicationDetails = () => {
     };
 
     if (action?.action == "EDIT") {
-      history.push(`/digit-ui/citizen/obps/clu/edit-application/${appNo}`);
+      const encrypid = encryptId(appNo);
+      history.push(`/digit-ui/citizen/obps/clu/edit-application/${encrypid}`);
     } else if (action?.action == "DRAFT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL" });
       setTimeout(() => {
@@ -613,7 +635,10 @@ const CLUApplicationDetails = () => {
   )?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
   const ownersList = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
+  const firmName = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+
+  const isFirm = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
 
   const siteInspectionEmp = useMemo(() => {
     return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;

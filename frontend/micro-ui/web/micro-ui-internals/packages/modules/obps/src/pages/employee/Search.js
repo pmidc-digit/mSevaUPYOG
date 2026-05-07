@@ -4,13 +4,13 @@ import { useLocation } from "react-router-dom";
 
 const Search = ({ path }) => {
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-  const userInfo = userInfos ? JSON.parse(userInfos) : {};
-  const userInformation = userInfo?.value?.info;
+  const userInfo = Digit.UserService.getUser();
+  const userInformation = userInfo?.info;
 
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   // const tenantId = window?.localStorage?.getItem("Citizen.tenant-id");
-  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const tenantId = window.location.href.includes("citizen") ? window?.localStorage?.getItem("CITIZEN.CITY") : Digit.ULBService.getCurrentTenantId();
 
   console.log("HWWWW");
   const location = useLocation();
@@ -119,7 +119,10 @@ const Search = ({ path }) => {
   }
   const { data: bpaData = [], isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     selectedType,
-    payload,
+    {
+      ...payload,
+      createdBy: payload?.createdBy || (window.location.href.includes("/citizen") ? userInformation?.uuid : ""),
+    },
     tenantId,
     filters,
     params,

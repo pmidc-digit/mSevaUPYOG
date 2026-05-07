@@ -40,7 +40,7 @@ import CLUFeeEstimationDetailsTable from "../../../pageComponents/CLUFeesEstimat
 import CLUDocumentChecklist from "../../../pageComponents/CLUDocumentCheckList";
 import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
-import { amountToWords, formatDuration } from "../../../utils";
+import { amountToWords, decryptId, formatDuration } from "../../../utils";
 import PaymentHistory from "../../../../../templates/ApplicationDetails/components/PaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
@@ -108,7 +108,8 @@ const CloseBtn = (props) => {
 };
 
 const CLUEmployeeApplicationDetails = () => {
-  const { id } = useParams();
+  const { cluid } = useParams();
+  const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
@@ -135,7 +136,7 @@ const CLUEmployeeApplicationDetails = () => {
   const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
     const [showPdfModal, setShowPdfModal] = useState(false);
-  const { isLoading, data } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -307,6 +308,15 @@ const CLUEmployeeApplicationDetails = () => {
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
+      const hasConditionText =
+      typeof conditionText === "string" && conditionText?.trim().length > 0;
+
+      const conditionData = {
+        conditionLine: hasConditionText
+          ? "The above approval is subjected to the following conditions:"
+          : " ",
+        conditionText: hasConditionText ? conditionText : " ",
+      };
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
@@ -319,6 +329,7 @@ const CLUEmployeeApplicationDetails = () => {
                 ...payments,
                 Clu: application,
                 ApproverComment: finalComment,
+                conditionData:conditionData,
                 usage,
                 amountinwords,
                 approvalDate: approvalDate,
@@ -364,10 +375,10 @@ const CLUEmployeeApplicationDetails = () => {
       // refetch();
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${id}`;
-
+      const authToken = localStorage.getItem('token');
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl },
+        { fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
@@ -501,13 +512,15 @@ const CLUEmployeeApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   useEffect(() => {
-    if (workflowDetails) {
-      workflowDetails.revalidate();
-    }
+    // if (workflowDetails) {
+    //   workflowDetails.revalidate();
+    // }
 
-    if (data) {
-      data.revalidate();
-    }
+    // if (data) {
+    //   data.revalidate();
+    // }
+    refetch();
+    workflowDetails.revalidate();
   }, []);
 
   let actions =
@@ -932,7 +945,14 @@ const CLUEmployeeApplicationDetails = () => {
         doc?.documentType?.includes("Owner Id") ||
         doc?.documentType?.includes("Owner Photo")
       )
-  )?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  )?.filter((doc) => doc?.documentAttachment)?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+
+  React.useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });    
+  }, [])
 
   useEffect(() => {
     const fetchDistances = async () => {
@@ -985,7 +1005,10 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   const ownersList = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const combinedOwnersName = ownersList?.join(", ");
+  const firmName = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
+
+  const isFirm = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
 
   const siteInspectionEmp = useMemo(() => {
     return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;

@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
 import { format } from "date-fns";
+import { encryptId } from "../../../utils";
 const CLUMyApplications = ({ view }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -54,10 +55,10 @@ const CLUMyApplications = ({ view }) => {
   const columns = useMemo(
     () => [
       {
-        Header: t("BPA_APPLICATION_NUMBER"),
+        Header: t("CLU_APPLICATION_NUMBER"),
         accessor: (row) => row?.Applications?.applicationNo,
         Cell: ({ row }) => (
-          <Link to={`/digit-ui/citizen/obps/clu/application-overview/${row.original?.Applications?.applicationNo}`}>
+          <Link to={`/digit-ui/citizen/obps/clu/application-overview/${encryptId(row.original?.Applications?.applicationNo)}`}>
             {GetCell(row.original?.Applications?.applicationNo)}
           </Link>
         ),
@@ -69,7 +70,7 @@ const CLUMyApplications = ({ view }) => {
           GetCell(row.original?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
       },
       {
-        Header: t("BPA_APPLICATION_STATUS"),
+        Header: t("CLU_APPLICATION_STATUS"),
         accessor: (row) => row?.Applications?.applicationStatus,
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
       },
@@ -96,7 +97,7 @@ const CLUMyApplications = ({ view }) => {
         Cell: ({ row }) => (
           <SubmitBar
             label={t("TL_VIEW_DETAILS")}
-            onSubmit={() => history.push(`/digit-ui/citizen/obps/clu/application-overview/${row.original?.Applications?.applicationNo}`)}
+            onSubmit={() => history.push(`/digit-ui/citizen/obps/clu/application-overview/${encryptId(row.original?.Applications?.applicationNo)}`)}
           />
         ),
       },
@@ -132,7 +133,7 @@ const CLUMyApplications = ({ view }) => {
                 </p>
                 <SubmitBar
                   label={t("TL_VIEW_DETAILS")}
-                  onSubmit={() => history.push(`/digit-ui/citizen/obps/clu/application-overview/${application?.Applications?.applicationNo}`)}
+                  onSubmit={() => history.push(`/digit-ui/citizen/obps/clu/application-overview/${encryptId(application?.Applications?.applicationNo)}`)}
                 />
               </Card>
             ))}

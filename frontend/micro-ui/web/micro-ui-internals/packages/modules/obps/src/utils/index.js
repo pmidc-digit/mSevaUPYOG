@@ -1,5 +1,6 @@
 import cloneDeep from "lodash/cloneDeep";
 import { useParams, useLocation } from "react-router-dom";
+import CryptoJS from "crypto-js";
 
 export const getPattern = (type) => {
   switch (type) {
@@ -1463,20 +1464,23 @@ export function getApproveRejectComments(workflowDetails) {
     // ✅ Normalize comment safely
     const rawComment = decisionInstance?.comment || "";
 
-    let conditionText = "";
+    let actualComment = "";
 
     if (rawComment?.includes(delimiter)) {
-      conditionText = rawComment?.split(delimiter)[1] || "";
+      actualComment = rawComment?.split(delimiter)[1] || "";
     } else {
       // If REJECT, keep rawComment. If APPROVE, keep it empty.
-      conditionText = decisionInstance?.action === "REJECT" ? rawComment : "";
+      actualComment = decisionInstance?.action === "REJECT" ? rawComment : "";
     }
 
-    const finalComment = conditionText
-      ? `16. The Approval is subjected to the following conditions: ${conditionText}`
+    const commentLine = actualComment
+      ? `16. The Approval is subjected to the following conditions:`
       : " ";
-
-    return finalComment;
+ 
+    return {
+      approverCommentLine: commentLine, // full sentence
+      approverComment: actualComment, // only the extracted comment
+    };
     
   } catch (e) {
     console.error("comments error", e);
@@ -1559,3 +1563,44 @@ export const mergePDFsWithoutLibrary = async (urls) => {
     window.print(); // User selects "Save as PDF"
   }, 2000);
 }
+
+// Encrypt
+export const encryptId = (text) => {
+  const SECRET_KEY = localStorage.getItem("token");
+  
+  if (!SECRET_KEY) {
+    console.error("SECRET_KEY (token) not found in localStorage");
+    return null;
+  }
+
+  const encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+
+  // Make URL safe
+  return encrypted
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
+};
+
+// Decrypt
+export const decryptId = (cipherText) => {
+  try {
+    const SECRET_KEY = localStorage.getItem("token");
+    
+    if (!SECRET_KEY) {
+      console.error("SECRET_KEY (token) not found in localStorage");
+      return null;
+    }
+
+    // Restore base64
+    const base64 = cipherText
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    const bytes = CryptoJS.AES.decrypt(base64, SECRET_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  } catch (e) {
+    console.error("Error decrypting ID:", e);
+    return null;
+  }
+};

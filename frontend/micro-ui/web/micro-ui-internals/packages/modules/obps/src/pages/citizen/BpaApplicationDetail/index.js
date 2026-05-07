@@ -54,10 +54,12 @@ import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitec
 import ApplicationTimeline from "../../../../../templates/ApplicationDetails/components/ApplicationTimeline"
 import NewApplicationTimeline from "../../../../../templates/ApplicationDetails/components/NewApplicationTimeline"
 import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew"
+import { decryptId } from "../../../utils/index";
 
 
 const BpaApplicationDetail = () => {
-  const { id } = useParams()
+  const { bpaid } = useParams()
+  const id = decryptId(bpaid)
   const { t } = useTranslation()
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = localStorage.getItem("CITIZEN.CITY")
@@ -85,8 +87,6 @@ const BpaApplicationDetail = () => {
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [userSelected, setUser] = useState(null);
-  const [comments , setComments] = useState (null)
-
 
   const user = Digit.UserService.getUser()
 
@@ -103,7 +103,9 @@ const BpaApplicationDetail = () => {
   )
   const value = "";
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"])
-  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id })
+  const { data, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+    enabled: !!id, // 👈 only runs when valid
+  })
   console.log('data for obps inbox', data)
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
   const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
@@ -223,6 +225,15 @@ console.log("building category here: & fileNo", usage,fileno);
   //         }));
   // }, [fileUrls, t]);
 
+  useEffect(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth" // use "auto" for instant scroll
+      });
+      refetch();
+      workflowDetails.revalidate();
+  }, [])
+
   const ecbcDocumentsData = useMemo(() => {
   const docs = getDocsFromFileUrls(fileUrls) || [];
 
@@ -306,14 +317,13 @@ console.log('userInfo', userInfo)
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
 
-  useEffect(() => {
-    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "ESIGNED" || data?.applicationStatus === "REJECTED")){
-      const commentobj = getApproveRejectComments(workflowDetails);
-      if (commentobj){
-        setComments(commentobj)
-      }
+  const comments = useMemo(() => {
+    if (workflowDetails?.data && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")) {
+      return getApproveRejectComments(workflowDetails);
     }
-  }, [workflowDetails]);
+    return null;
+  }, [workflowDetails?.data, workflowDetails?.isLoading, data?.applicationStatus]);
+  
 
   useEffect(() => {
       if (!userSelected) {
@@ -531,11 +541,11 @@ console.log(stakeholderAddress,"stakeholderAddress");  }
     {
       Header: t(" "),
       accessor: "value",
-      Cell: ({ value }) =>
+      Cell: ({ value, row }) =>
         value ? (
           <LinkButton style={{ float: "right", display: "inline" }}
             label={t("View")}
-            onClick={() => routeTo(value)}
+            onClick={() => row?.original?.title === "BPA_APPLICATION_UPLOAD_DIAGRAM_LABEL" ? window.open(value) : fetchUrl(value, tenantId)}
           />
         ) : (
           t("CS_NA")
@@ -724,7 +734,15 @@ useEffect(() => {
     let response = null
     console.log('payments here here', payments)
     const fee = payments?.totalAmountPaid;
-    console.log('fee', fee)
+    
+
+    const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+
+    data.additionalDetails = {
+      ...data?.applicationData?.additionalDetails,
+      adjustedAmounts
+    };
+
 
   const amountinwords = amountToWords(fee)
   console.log('amountinwords', amountinwords)

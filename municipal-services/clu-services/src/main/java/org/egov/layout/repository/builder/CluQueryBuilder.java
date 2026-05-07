@@ -134,7 +134,18 @@ public class CluQueryBuilder {
 			log.info(criteria.getTenantId());
 		}
 
-
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" clu.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
+			} else {
+				builder.append(" clu.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatuses);
+			}
+		}
 
 
 
@@ -192,18 +203,7 @@ public class CluQueryBuilder {
                         addToPreparedStatement(preparedStmtList, approvalNos);
                     }
                 }
-		String applicationStatus = criteria.getApplicationStatus();
-		if (applicationStatus != null) {
-			List<String> applicationStatuses = Arrays.asList(applicationStatus.split(","));
-			addClauseIfRequired(builder);
-			if (isFuzzyEnabled) {
-				builder.append(" clu.applicationstatus LIKE ANY(ARRAY[ ").append(createQuery(applicationStatuses)).append("])");
-				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationStatuses);
-			} else {
-				builder.append(" clu.applicationstatus IN (").append(createQuery(applicationStatuses)).append(")");
-				addToPreparedStatement(preparedStmtList, applicationStatuses);
-			}
-		}
+
 		
 //		String source = criteria.getSource();
 //		if (source!=null) {

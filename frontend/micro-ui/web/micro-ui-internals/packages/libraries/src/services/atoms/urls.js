@@ -230,6 +230,7 @@ const Urls = {
   edcr: {
     create: "/edcr/rest/dcr/scrutinize",
     anonymousCreate: "/edcr/rest/dcr/anonymousScrutinize",
+    mergeSanctionLetter: "/edcr/rest/dcr/mergeSanctionLetter"
   },
 
   events: {

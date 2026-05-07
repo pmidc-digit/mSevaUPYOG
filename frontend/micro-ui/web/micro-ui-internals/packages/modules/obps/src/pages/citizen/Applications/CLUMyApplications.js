@@ -54,7 +54,7 @@ const CLUMyApplications = ({ view }) => {
   const columns = useMemo(
     () => [
       {
-        Header: t("BPA_APPLICATION_NUMBER"),
+        Header: t("CLU_APPLICATION_NUMBER"),
         accessor: (row) => row?.Applications?.applicationNo,
         Cell: ({ row }) => (
           <Link to={`/digit-ui/citizen/obps/clu/application-overview/${row.original?.Applications?.applicationNo}`}>
@@ -69,7 +69,7 @@ const CLUMyApplications = ({ view }) => {
           GetCell(row.original?.Applications?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-"),
       },
       {
-        Header: t("BPA_APPLICATION_STATUS"),
+        Header: t("CLU_APPLICATION_STATUS"),
         accessor: (row) => row?.Applications?.applicationStatus,
         Cell: ({ row }) => GetCell(t(row.original?.Applications?.applicationStatus) || row.original?.Applications?.applicationStatus || "-"),
       },

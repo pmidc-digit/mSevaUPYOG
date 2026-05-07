@@ -106,7 +106,6 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  const [comments , setComments] = useState (null)
   
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -730,14 +729,12 @@ const BpaApplicationDetail = () => {
     });
   }
 
-  useEffect(() => {
-      if (workflowDetails?.data!=null && !workflowDetails?.isLoading ){
-        const commentobj = getApproveRejectComments(workflowDetails);
-        if (commentobj){
-          setComments(commentobj)
-        }
-      }
-    }, [workflowDetails]);
+  const comments = useMemo(() => {
+  if (workflowDetails?.data && !workflowDetails?.isLoading) {
+    return getApproveRejectComments(workflowDetails);
+  }
+  return null;
+}, [workflowDetails?.data, workflowDetails?.isLoading]);
 
   const userInfo = Digit.UserService.getUser();
   const rolearray = userInfo?.info?.roles.filter((item) => {
@@ -1027,14 +1024,18 @@ const BpaApplicationDetail = () => {
 
   async function getPermitOccupancyOrderSearchFilestore({ tenantId }, order, mode = "download") {
       const nowIST = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST';
-      const newValidityDate = new Date(data?.applicationData?.approvalDate);
+      const newValidityDate = Date.now();
   
-      // validity date = approval date + 3 as per feedback
-      newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
-      const approvalDatePlusThree = newValidityDate.getTime();
+            
+      const validityDateObj = new Date(newValidityDate);
+
+      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
+
+      const approvalDatePlusThree = validityDateObj.getTime();
+
   
       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate, designation, approverComment: comments }
+      const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }], subjectLine, fileno, nowIST, newValidityDate : approvalDatePlusThree, designation, approverComment: comments }
       let count = 0
       for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
         if (
@@ -1449,10 +1450,11 @@ const BpaApplicationDetail = () => {
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
+      const authToken = localStorage.getItem('token');
 
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl },
+        { fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {

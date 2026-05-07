@@ -263,7 +263,11 @@ const CLUStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const ownersList = currentStepData?.applicationDetails?.owners?.map(
     (item) => item.ownerOrFirmName
   );
-  const combinedOwnersName = ownersList?.join(", ");
+  const applicantDetails = currentStepData?.applicationDetails?.owners;
+  const firmName = applicantDetails?.[0]?.firmName;
+  const isFirm = currentStepData?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+
 
   const CLUSummary = Digit?.ComponentRegistryService?.getComponent("CLUSummary");
 

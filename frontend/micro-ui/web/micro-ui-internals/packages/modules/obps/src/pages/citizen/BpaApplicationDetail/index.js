@@ -85,8 +85,6 @@ const BpaApplicationDetail = () => {
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [userSelected, setUser] = useState(null);
-  const [comments , setComments] = useState (null)
-
 
   const user = Digit.UserService.getUser()
 
@@ -306,14 +304,13 @@ console.log('userInfo', userInfo)
   const [errorFile, setError] = useState(null);
   const [isFileLoading, setIsFileLoading] = useState(false)
 
-  useEffect(() => {
-    if (workflowDetails?.data!=null && !workflowDetails?.isLoading && (data?.applicationStatus === "ESIGNED" || data?.applicationStatus === "REJECTED")){
-      const commentobj = getApproveRejectComments(workflowDetails);
-      if (commentobj){
-        setComments(commentobj)
-      }
+  const comments = useMemo(() => {
+    if (workflowDetails?.data && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")) {
+      return getApproveRejectComments(workflowDetails);
     }
-  }, [workflowDetails]);
+    return null;
+  }, [workflowDetails?.data, workflowDetails?.isLoading, data?.applicationStatus]);
+  
 
   useEffect(() => {
       if (!userSelected) {
@@ -724,7 +721,15 @@ useEffect(() => {
     let response = null
     console.log('payments here here', payments)
     const fee = payments?.totalAmountPaid;
-    console.log('fee', fee)
+    
+
+    const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
+
+    data.additionalDetails = {
+      ...data?.applicationData?.additionalDetails,
+      adjustedAmounts
+    };
+
 
   const amountinwords = amountToWords(fee)
   console.log('amountinwords', amountinwords)

@@ -16,7 +16,7 @@ RUN yarn add @mseva/digit-ui-module-common@1.1.92
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.3.9
-RUN yarn add @mseva/digit-ui-module-swach@1.0.55-UAT.1
+RUN yarn add @mseva/digit-ui-module-swach@1.0.57
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39-UAT.1
 RUN yarn add @mseva/digit-ui-module-tl@1.0.31-UAT.1.1
 RUN yarn add @mseva/digit-ui-module-obps@1.2.0
@@ -25,7 +25,7 @@ RUN yarn add @mseva/upyog-ui-module-ads@1.1.90
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.91-UAT.8
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.44-UAT.7
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-UAT.7
-RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.31
+RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.32
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-UAT.3
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-UAT.13
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.76

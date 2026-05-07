@@ -38,7 +38,7 @@ export const ModalConfig = ({ t, action, setAmount, getChallanData, selectFile, 
             ),
           },
           {
-            label: t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
+            label: `${t("TL_APPROVAL_CHECKLIST_BUTTON_UP_FILE")} *`,
             populators: (
               <div>
                 <UploadFile

@@ -44,7 +44,8 @@ import {
   getBase64Img,
   getApproveRejectComments,
   fetchUrl,
-  decryptId
+  decryptId,
+  fetchFilestoreAndTenant
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -1465,13 +1466,36 @@ const BpaApplicationDetail = () => {
       // console.log("🎯 Starting certificate eSign process...");
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
+      const uploadedDiagramObject = fetchFilestoreAndTenant(data?.edcrDetails?.updatedDxfFile, tenantId)
+      
+      const payload = {
+        uploadedDiagram: {
+          ...uploadedDiagramObject
+        },
+        sanctionLetter: {
+          filestoreId: fileStoreId,
+          tenantId: tenantId
+        },
+        details: {
+          ulbName: data?.applicationData?.additionalDetails?.UlbName,
+          dateOfApproval: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false }).replace(',', '') + ' IST',
+          fileNumber: data?.applicationData?.applicationNo,
+          buildingCategory: data?.applicationData?.additionalDetails?.categoriesName,
+          professionalName: data?.applicationData?.additionalDetails?.stakeholderName,
+          plotArea: data?.applicationData?.additionalDetails?.area,
+          builtUpArea: data?.applicationData?.additionalDetails?.builtUpArea,
+          isAutoApproved: false
+        }
+      }
+
+      const mergedFilestore = await Digit.EDCRService.mergeSanctionLetter({additionalDetails: payload}, "pb");
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/bpa/esign/complete/${id}`;
       const authToken = localStorage.getItem('token');
 
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken },
+        { fileStoreId: mergedFilestore?.fileStoreId || fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {

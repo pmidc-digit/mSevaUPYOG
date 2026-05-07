@@ -25,7 +25,7 @@ const Inbox = ({ parentRoute }) => {
     moduleName: "bpa-services",
     applicationStatus: [],
     locality: [],
-    assignee: "ASSIGNED_TO_ME",
+    assignee: isEmoployee ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL",
     applicationType: [],
   };
 

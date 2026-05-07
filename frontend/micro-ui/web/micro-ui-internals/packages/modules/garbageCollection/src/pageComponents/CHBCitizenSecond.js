@@ -280,9 +280,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
 
 
-  const filterAmountData = (freq, propertyType) => {
+  const filterAmountData = ( propertyType) => {
+    const freq = watch("frequency")?.name
     const filterData = amountData?.["gc-services-calculation"]?.GCBillingSlab;
-    const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType);
+    const finalData = filterData?.filter((item) => item.billingCycle === freq && item.buildingType === propertyType?.usageCategory);
     setValue("defAmount", finalData[0]?.minimumCharge);
   };
 
@@ -424,7 +425,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         className="form-field"
                         select={(e) => {
                           props.onChange(e);
-                          filterAmountData(e?.name, watch("propertyType")?.code);
                         }}
                         selected={props.value}
                         option={FreqType?.["gc-services-masters"]?.GarbageCollectionFrequency}
@@ -436,28 +436,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
               </LabelFieldPair>
 
-              {/* amount */}
-              <LabelFieldPair style={{ marginBottom: "16px" }}>
-                <CardLabel className="card-label-smaller">{`${t("Amount")}`}</CardLabel>
-                <div className="form-field">
-                  <Controller
-                    control={control}
-                    name="defAmount"
-                    render={(props) => (
-                      <TextInput
-                        style={{ marginBottom: 0 }}
-                        value={props.value}
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                        }}
-                        disabled={true}
-                        t={t}
-                      />
-                    )}
-                  />
-                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
-                </div>
-              </LabelFieldPair>
+         
 
               {/* waste type  */}
               <LabelFieldPair style={{ marginBottom: "16px" }}>
@@ -561,6 +540,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                           props.onChange(e);
                           const pID = propertyDetailsFetch?.Properties[0]?.propertyId;
                           checkConnection(pID, e?.id);
+                          filterAmountData(e);
+
                         }}
                         selected={props.value}
                         option={uniqueUsageCategories}
@@ -570,6 +551,29 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     )}
                   />
                   {errors?.unitId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.unitId.message}</p>}
+                </div>
+              </LabelFieldPair>
+
+                   {/* amount */}
+              <LabelFieldPair style={{ marginBottom: "16px" }}>
+                <CardLabel className="card-label-smaller">{`${t("Amount")}`}</CardLabel>
+                <div className="form-field">
+                  <Controller
+                    control={control}
+                    name="defAmount"
+                    render={(props) => (
+                      <TextInput
+                        style={{ marginBottom: 0 }}
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        disabled={true}
+                        t={t}
+                      />
+                    )}
+                  />
+                  {errors?.location && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.location.message}</p>}
                 </div>
               </LabelFieldPair>
             </div>

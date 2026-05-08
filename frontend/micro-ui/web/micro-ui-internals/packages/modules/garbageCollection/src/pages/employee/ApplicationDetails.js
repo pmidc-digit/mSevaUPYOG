@@ -166,22 +166,22 @@ const ChallanApplicationDetails = () => {
   const isCemp = user?.info?.roles.find((role) => role.code === "GC_CEMP")?.code;
 
   const getAcknowledgement = async () => {
-    setLoader(true);
-    try {
-      const applications = getChallanData;
-      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-      setTimeout(() => {
-        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+      setLoader(true);
+      try {
+        const applications = getChallanData;
+        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+        setTimeout(() => {
+          Digit.Utils.pdf.generate(acknowldgementDataAPI);
+          setLoader(false);
+        }, 0);
+      } catch (error) {
+        console.error("Error generating acknowledgement:", error);
         setLoader(false);
-      }, 0);
-    } catch (error) {
-      console.error("Error generating acknowledgement:", error);
-      setLoader(false);
-    }
-  };
+      }
+    };
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
       businessService: "GC.ONE_TIME_FEE",
@@ -202,7 +202,7 @@ const ChallanApplicationDetails = () => {
       let response = null;
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] };
-      } else {
+      }else {
         response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
@@ -319,6 +319,8 @@ const ChallanApplicationDetails = () => {
     }
   };
 
+  console.log("getChallanData", getChallanData);
+
   const handleDiscontinue = async (data) => {
     console.log("data", data);
     // return;
@@ -386,17 +388,14 @@ const ChallanApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions ral-app-details-header">
           <Header className="ral-header-32">{t("Application Details")}</Header>
-          {isCemp &&
-            (getChallanData?.applicationStatus === "APPROVED" || getChallanData?.applicationStatus === "CONNECTION_ACTIVATED") &&
-            dowloadOptions &&
-            dowloadOptions.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            )}
+          {isCemp && (getChallanData?.applicationStatus === "APPROVED" ||getChallanData?.applicationStatus === "CONNECTION_ACTIVATED" ) && dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )}
         </div>
         <Card>
           <CardSubHeader style={{ fontSize: "24px", margin: "30px 0 5px" }}>{t("GC_OWNER_DETAILS")}</CardSubHeader>

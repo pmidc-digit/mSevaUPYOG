@@ -389,29 +389,14 @@ const ApplicationDetails = () => {
     });
 
     window.open(fileStore[fileStoreId], "_blank");
-  };
-  async function getAcknowledgementLetter({ tenantId, payments, ...params }) {
-    let application = new_data;
-    let fileStoreId = application?.permissionLetterFilestoreId;
-
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, ...application }] }, "advacknowledgement");
-      fileStoreId = response?.filestoreIds[0];
-    }
-
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-      fileStoreIds: fileStoreId,
-    });
-
-    window.open(fileStore[fileStoreId], "_blank");
-  };
+  }
 
   // ADDED: build download options from receipt hook
   let downloadOptions = [];
   if (bookingObj?.bookingStatus === "BOOKED" || bookingObj?.bookingStatus === "CANCELLED") {
     downloadOptions.push({
       label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
-      onClick: () => getAcknowledgementLetter({ tenantId: tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () => downloadAcknowledgement(application),
     });
     if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false) {
       downloadOptions.push({

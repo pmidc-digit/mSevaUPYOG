@@ -419,8 +419,6 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
         poleNo: first.poleNo,
         amount,
         amountForDaysChosen,
-        bookingFromTime: first.bookingFromTime,
-        bookingToTime: first.bookingToTime,
       };
     });
 

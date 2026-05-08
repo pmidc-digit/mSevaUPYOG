@@ -97,11 +97,45 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       setLoader(true);
       try {
         const response = await Digit.CHBServices.create(payload);
+        slotsSearch(response)
         setLoader(false);
         goNext(response?.hallsBookingApplication);
       } catch (error) {
         setLoader(false);
       }
+    }
+  };
+  const slotsSearch = async (data) => {
+    console.log("check data", data);
+    // console.log("check currentStepData",currentStepData);
+    // return
+    const verifyData = data?.hallsBookingApplication?.[0]?.bookingSlotDetails
+
+    setLoader(true);
+
+    const payload = {
+      tenantId: tenantId,
+      bookingId: data?.hallsBookingApplication?.[0]?.bookingId,
+      communityHallCode: data?.hallsBookingApplication?.[0]?.communityHallCode,
+      hallCode: verifyData?.[0]?.hallCode,
+      bookingStartDate: verifyData?.[0]?.bookingDate,
+      bookingEndDate: verifyData?.at(-1)?.bookingEndDate,
+      isTimerRequired: true,
+    };
+
+    console.log("payload", payload)
+    // return
+
+    try {
+      const response = await Digit.CHBServices.slot_search({ filters: payload });
+
+      setLoader(false);
+      // setSlots(response?.hallSlotAvailabiltityDetails);
+      // setShowInfo(true);
+      // return response;
+    } catch (error) {
+      console.log("error", error);
+      setLoader(false);
     }
   };
 

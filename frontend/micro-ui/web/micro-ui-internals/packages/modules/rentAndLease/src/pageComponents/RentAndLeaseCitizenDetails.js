@@ -55,6 +55,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
 
     return {
       propertyId: propertyDetails.propertyId,
+      applicationType:additionalDetails?.applicationType,
       tenantId,
       previousApplicationNumber,
       startDate: startDateEpoch,
@@ -141,6 +142,9 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       goNext(data);
       return;
     }
+
+    console.log("PAYLOAD",payload);
+    
 
     triggerLoader(true);
     try {

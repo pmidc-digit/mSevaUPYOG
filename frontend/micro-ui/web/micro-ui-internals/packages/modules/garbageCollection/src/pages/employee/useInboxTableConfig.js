@@ -33,6 +33,18 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
       },
       {
+        Header: t("Connection Number"),
+        accessor: "connectionNo",
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          return (
+            <div>
+              <span>{row.original?.connectionNo || "N/A"}</span>
+            </div>
+          );
+        },
+      },
+      {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
         accessor: "createdtime",
         Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),

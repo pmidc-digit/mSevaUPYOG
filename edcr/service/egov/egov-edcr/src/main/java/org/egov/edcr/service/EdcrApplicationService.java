@@ -125,6 +125,9 @@ public class EdcrApplicationService {
     @Autowired
     private EdcrApplicationDetailService edcrApplicationDetailService;
 
+    @Autowired
+    private DxfToPdfConverterService dxfToPdfConverterService;
+
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
     }
@@ -455,129 +458,36 @@ public class EdcrApplicationService {
 //            LOG.error("Error occurred when processing PDF!!!!!", e);
 //        }
 //    }
-    
+
 
 
 private void updateFile(Plan pl, EdcrApplication edcrApplication) {
-    long start = System.currentTimeMillis();
-    String filePath = edcrApplication.getSavedDxfFile().getAbsolutePath();
     String newFileName = edcrApplication.getDxfFile().getOriginalFilename()
             .replace(".dxf", "_system_scrutinized.pdf");
-    File finalOutputFile = new File(newFileName);
-
-    LOG.info("🔄 Starting scrutinized PDF generation for: {}", newFileName);
 
     File tempPdf = null;
     try {
-        // --- Step 1: Convert DXF → PDF using Aspose CAD ---
         tempPdf = File.createTempFile("scrutinized_", ".pdf");
-        LOG.debug("Temporary PDF path: {}", tempPdf.getAbsolutePath());
 
-        try (Image cadImage = Image.load(filePath);
-             FileOutputStream tempOut = new FileOutputStream(tempPdf)) {
-
-            PdfOptions pdfOptions = new PdfOptions();
-            CadRasterizationOptions rasterOpts = new CadRasterizationOptions();
-            rasterOpts.setBackgroundColor(Color.getWhite());
-            rasterOpts.setDrawType(CadDrawTypeMode.UseObjectColor);
-            rasterOpts.setPageWidth(2480); // ~A4 horizontal, smaller to reduce memory
-            rasterOpts.setPageHeight(3508); // ~A4 vertical
-            rasterOpts.setAutomaticLayoutsScaling(true);
-            rasterOpts.setNoScaling(false);
-            pdfOptions.setVectorRasterizationOptions(rasterOpts);
-
-            cadImage.save(tempOut, pdfOptions);
-            LOG.debug("✅ CAD to PDF conversion complete.");
-        } catch (OutOfMemoryError oom) {
-            LOG.error("❌ OutOfMemoryError while converting DXF → PDF: {}", filePath, oom);
-            throw oom;
-        } catch (Exception ex) {
-            LOG.error("❌ Error converting DXF → PDF: {}", filePath, ex);
-            throw ex;
+        try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile());
+             FileOutputStream pdfOut = new FileOutputStream(tempPdf)) {
+            dxfToPdfConverterService.processAndConvert(dxfInput, pdfOut);
         }
 
-        // --- Step 2: Post-process PDF (timestamp, incremental save) ---
-        try (RandomAccessBufferedFileInputStream rar = new RandomAccessBufferedFileInputStream(tempPdf);
-             PDDocument document = PDDocument.load(rar);
-             BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(finalOutputFile))) {
+        FileStoreMapper fileStoreMapper = fileStoreService.store(
+                tempPdf, newFileName, "application/pdf", FILESTORE_MODULECODE);
 
-            PDPage page = document.getPage(0);
-            float pageWidth = page.getMediaBox().getWidth();
-            float pageHeight = page.getMediaBox().getHeight();
+        edcrApplication.getEdcrApplicationDetails().get(0).setScrutinizedDxfFileId(fileStoreMapper);
 
-            // Set initial view to center
-            PDPageXYZDestination dest = new PDPageXYZDestination();
-            dest.setPage(page);
-            dest.setLeft((int) (pageWidth / 2f));
-            dest.setTop((int) (pageHeight / 2f));
-            dest.setZoom(1.0f);
-            document.getDocumentCatalog().setOpenAction(dest);
-
-            try (PDPageContentStream contentStream = new PDPageContentStream(
-                    document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
-
-                PDExtendedGraphicsState gs = new PDExtendedGraphicsState();
-                gs.setNonStrokingAlphaConstant(0.7f);
-                contentStream.setGraphicsStateParameters(gs);
-
-                // --- (COMMENTED WATERMARK IMAGE CODE - preserved) ---
-//                InputStream imageStream = EdcrApplication.class.getResourceAsStream("/tcpicon.jpg");
-//                java.awt.image.BufferedImage image1 = ImageIO.read(imageStream);
-//                PDImageXObject image = LosslessFactory.createFromImage(document, image1);
-//                float scale = 10f;
-//                float watermarkWidth = image.getWidth() * scale;
-//                float watermarkHeight = image.getHeight() * scale;
-//                float watermarkXPos = (pageWidth - watermarkWidth) / 2;
-//                float watermarkYPos = (pageHeight - watermarkHeight) / 2;
-//                contentStream.drawImage(image, watermarkXPos, watermarkYPos, watermarkWidth, watermarkHeight);
-
-                // --- Add timestamp ---
-                String timestamp = LocalDateTime.now().format(TS_FORMAT);
-                float fontSize = 24f;
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, fontSize);
-                float textWidth = (PDType1Font.HELVETICA_BOLD.getStringWidth(timestamp) / 1000f) * fontSize;
-
-                float xPos = Math.max(20, pageWidth - textWidth - 20);
-                float yPos = 20f;
-                contentStream.beginText();
-                contentStream.newLineAtOffset(xPos, yPos);
-                contentStream.showText(timestamp);
-                contentStream.endText();
-            }
-
-            // Incremental save to reduce memory usage
-            document.saveIncremental(out);
-            LOG.info("✅ PDF timestamp appended incrementally.");
-
-        } catch (Exception pdfEx) {
-            LOG.error("❌ Error during PDF post-processing for '{}': {}", newFileName, pdfEx.getMessage(), pdfEx);
-            throw pdfEx;
-        }
-
-        // --- Step 3: Store to Filestore ---
-        try {
-            FileStoreMapper fileStoreMapper = fileStoreService.store(
-                    finalOutputFile, finalOutputFile.getName(),
-                    edcrApplication.getDxfFile().getContentType(), FILESTORE_MODULECODE);
-
-            edcrApplication.getEdcrApplicationDetails()
-                    .get(0).setScrutinizedDxfFileId(fileStoreMapper);
-
-            LOG.info("📁 File stored successfully in filestore: {}", 
-                    fileStoreMapper != null ? fileStoreMapper.getFileStoreId() : "null");
-        } catch (Exception storeEx) {
-            LOG.error("❌ Failed to store generated PDF in filestore: {}", storeEx.getMessage(), storeEx);
-            throw storeEx;
-        }
-
+        LOG.info("PDF stored successfully in filestore: {}",
+                fileStoreMapper != null ? fileStoreMapper.getFileStoreId() : "null");
     } catch (Exception e) {
-        LOG.error("🚨 Error in updateFile() for '{}': {}", newFileName, e.getMessage(), e);
+        LOG.error("Error in updateFile() for '{}': {}", newFileName, e.getMessage(), e);
+        throw new RuntimeException(e);
     } finally {
         if (tempPdf != null && tempPdf.exists() && !tempPdf.delete()) {
-            LOG.warn("⚠️ Temporary PDF not deleted: {}", tempPdf.getAbsolutePath());
+            LOG.warn("Temporary PDF not deleted: {}", tempPdf.getAbsolutePath());
         }
-        long elapsed = System.currentTimeMillis() - start;
-        LOG.info("⚡ updateFile() completed in {} ms → {}", elapsed, newFileName);
     }
 }
     

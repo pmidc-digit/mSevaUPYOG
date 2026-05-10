@@ -13,10 +13,11 @@ import { convertEpochToDate } from "../../../utils/index";
 const AssessmentDetails = () => {
   const { t } = useTranslation();
 
-
+  const isCitizen = window?.location?.href?.includes("citizen");
+  const tenantId = isCitizen ? "pb" : Digit.ULBService.getCurrentTenantId();
   const [penalty, setPenalty] = useState("")
   const [rebate, setRebate] = useState("")
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+ // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { id: applicationNo } = useParams();
   const stateId = Digit.ULBService.getStateId();
   const location = useLocation();
@@ -33,7 +34,7 @@ const AssessmentDetails = () => {
   const [selectedPenalityReason, setSelectedPenalityReason] = useState(null);
   const [selectedRebateReason, setSelectedRebateReason] = useState(null);
   const [showCalc, setShowCalc] = useState(false)
-  const [isCheck,setIsCheck]=useState(false)
+  const [isCheck,setIsCheck]=useState(true)
   const [unitsCharge, setUnitsCharge] = useState()
   const first_temp = useRef();
   const second_temp = useRef();
@@ -310,11 +311,11 @@ console.log("isCheck",isCheck)
             // queryClient.clear();
             // queryClient.setQueryData(["PT_ASSESSMENT", propertyId, location?.state?.Assessment?.financialYear], true);
             if (userType?.value?.info?.type == "CITIZEN") {
-                history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_ASSESS_PROPERTY")})
+                history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:data?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:data?.Assessments[0],previouspath:location,headerName:t("PT_ASSESS_PROPERTY")})
             //  history.push(`/digit-ui/citizen/payment/my-bills/PT/${AssessmentData?.propertyId}`);
             }
             else {
-                history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_ASSESS_PROPERTY")})
+                history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:data?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:data?.Assessments[0],previouspath:location,headerName:t("PT_ASSESS_PROPERTY")})
               //proceeedToPay()
             }
 

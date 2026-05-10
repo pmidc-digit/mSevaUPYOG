@@ -13,6 +13,8 @@ import {
   ActionBar,
   SubmitBar,
   Table,
+  Modal,
+  Dropdown,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -45,6 +47,20 @@ import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
 import ApplicationTimeline from "./ApplicationTimeline";
 import NewApplicationTimeline from "./NewApplicationTimeline";
+
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+  </svg>
+);
+
+const CloseBtn = (props) => (
+  <div className="icon-bg-secondary" onClick={props.onClick}>
+    <CloseIcon />
+  </div>
+);
+
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -69,6 +85,24 @@ function ApplicationDetailsContent({
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
   const [payments, setPayments] = useState([]);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
+  const [financialYears, setFinancialYears] = useState([]);
+  //console,log("applicationDetails",applicationDetails)
+  const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "egf-master",
+    [{ name: "FinancialYear", filter: "[?(@.module == 'PT')]" }]
+  );
+
+  useEffect(() => {
+    if (financialYearsData?.["egf-master"]?.["FinancialYear"]) {
+      const sorted = [...financialYearsData["egf-master"]["FinancialYear"]].sort(
+        (a, b) => b.startingDate - a.startingDate
+      );
+      setFinancialYears(sorted);
+    }
+  }, [financialYearsData]);
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
 
@@ -487,7 +521,27 @@ function ApplicationDetailsContent({
     // alert("edit property");
   };
   const AccessProperty = () => {
-    alert("access property");
+    setSelectedFinancialYear(null);
+    setShowAccessModal(true);
+  };
+
+  const handleAccessPropertySubmit = () => {
+    if (!selectedFinancialYear) return;
+    const pID = applicationDetails?.applicationData?.propertyId || propertyId;
+    setShowAccessModal(false);
+    history.replace({
+      pathname: `/digit-ui/citizen/pt/property/assessment-details/${pID}`,
+      state: {
+        Assessment: {
+          financialYear: selectedFinancialYear?.name || selectedFinancialYear?.code,
+          propertyId: pID,
+          tenantId: applicationData?.tenantId || tenantId,
+          source: applicationData?.source,
+          channel: applicationData?.channel,
+          assessmentDate: Date.now(),
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -861,9 +915,35 @@ function ApplicationDetailsContent({
       ) : (
         <div></div>
       )}
+      {showAccessModal && (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("PT_SELECT_FINANCIAL_YEAR")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowAccessModal(false)} />}
+          actionCancelLabel={t("CORE_COMMON_CANCEL")}
+          actionCancelOnSubmit={() => setShowAccessModal(false)}
+          actionSaveLabel={t("PT_SELECT")}
+          actionSaveOnSubmit={handleAccessPropertySubmit}
+          isDisabled={!selectedFinancialYear}
+        >
+          {financialYearsLoading ? (
+            <Loader />
+          ) : (
+            <div style={{ padding: "8px 0" }}>
+              <Dropdown
+                option={financialYears}
+                optionKey="code"
+                selected={selectedFinancialYear}
+                select={setSelectedFinancialYear}
+                placeholder={t("PT_SELECT_FINANCIAL_YEAR")}
+              />
+            </div>
+          )}
+        </Modal>
+      )}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );
 }
 
 export default ApplicationDetailsContent;
+

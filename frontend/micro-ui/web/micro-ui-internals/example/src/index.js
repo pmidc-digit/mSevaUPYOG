@@ -34,7 +34,7 @@ import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-mod
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 //import { initOBPSComponents, OBPSReducers } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
-//import { initNOCComponents, NOCReducers, NOCLinks, NOCModule } from "@mseva/digit-ui-module-noc";
+import { initNOCComponents, NOCReducers, NOCLinks, NOCModule } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
@@ -206,7 +206,7 @@ const initDigitUI = () => {
     //ptr: PTRReducers(initData),
     //ads: ADSReducers(initData),
     //chb: CHBReducers(initData),
-    //noc: NOCReducers(initData),
+    noc: NOCReducers(initData),
     //obps: OBPSReducers(initData),
     //challan: ChallanReducers(initData),
     //rentAndLease: RentAndLeaseReducers(initData),

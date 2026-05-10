@@ -2,6 +2,7 @@ import { LinkLabel } from '@mseva/digit-ui-react-components';
 import React, { useState } from 'react'
 import { useHistory, useParams,Link } from "react-router-dom";
 const ApplicationHistory = ({ applicationData }) => {
+   // console.log("applicationData",applicationData);
     const [isOpen, setIsOpen] = useState(false);
       const history = useHistory();
     const toggleAccordion = () => {

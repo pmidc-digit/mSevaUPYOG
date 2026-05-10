@@ -9,7 +9,21 @@ const AssessmentHistory = ({ assessmentData }) => {
         setIsOpen(!isOpen);
     };
 
-    
+    function getLatestAssessments(Assessments = []) {
+        let latestAssessments = [];
+        let financialYears = [];
+        Assessments.sort((a1, a2) => a2.assessmentDate - a1.assessmentDate);
+        Assessments.map(Assessment => {
+            if (!financialYears.includes(Assessment.financialYear)) {
+                latestAssessments.push(Assessment);
+                financialYears.push(Assessment.financialYear);
+            }
+        });
+        return latestAssessments;
+    }
+
+    const filteredAssessments = getLatestAssessments(assessmentData);
+
 function formatAssessmentDate(timestamp) {
   const date = new Date(timestamp);
   const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -46,7 +60,7 @@ function formatAssessmentDate(timestamp) {
             </div>
             {isOpen && (
                 <div className="accordion-body" style={{ padding: " 15px", backgroundColor: "#fff" }}>
-                    {assessmentData.map((assessment, index) => (
+                    {filteredAssessments.map((assessment, index) => (
                         <div key={index} className="assessment-item" style={{ marginBottom: "15px" }}>
                             <div className="assessment-row" style={{
 
@@ -100,7 +114,7 @@ function formatAssessmentDate(timestamp) {
           <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}onClick={() => alert(`Cancelled ${assessment.number}`)}>Cancel</button>
         </div>
 </div>
-                          {index!==(assessmentData.length - 1) &&  <hr />}
+                          {index !== (filteredAssessments.length - 1) && <hr />}
                         </div>
                     ))}
                 </div>

@@ -26,10 +26,11 @@ const CloseBtn = (props) => {
 
 const PropertyDetails = () => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isCitizen = window?.location?.href?.includes("citizen");
+  const tenantId = isCitizen ? "pb" : Digit.ULBService.getCurrentTenantId();
   const { id:applicationNumber } = useParams(); 
  
-  console.log("application Number",applicationNumber)
+  //console.log("application Number",applicationNumber)
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
@@ -44,8 +45,9 @@ const PropertyDetails = () => {
   // const isMobile = window.Digit.Utils.browser.isMobile();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
-  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, 'pb', applicationNumber);
+  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t ,tenantId, applicationNumber);
   const { data: fetchBillData, isLoading: fetchBillLoading, revalidate } = Digit.Hooks.useFetchBillsForBuissnessService({
+    tenantId : tenantId,
     businessService: "PT",
     consumerCode: applicationNumber,
   });

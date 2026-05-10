@@ -6,8 +6,13 @@ import MyProperty from "./my-properties";
 
 export const MyProperties = () => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+  const isCitizen = window?.location?.href?.includes("citizen");
+  const tenantId = isCitizen ? "pb" : Digit.ULBService.getCurrentTenantId();
   const [applicationsList, setApplicationsList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const w = window.innerWidth;
+  const gridCols = w >= 1024 ? "repeat(3, 1fr)" : w >= 640 ? "repeat(2, 1fr)" : "1fr";
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -18,6 +23,8 @@ export const MyProperties = () => {
         setApplicationsList(response?.Properties?.length ? response.Properties : []);
       } catch (error) {
         setApplicationsList([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchProperties();
@@ -25,30 +32,40 @@ export const MyProperties = () => {
 
   return (
     <React.Fragment>
-      <Header>{`${t("PT_MY_PROPERTIES_HEADER")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header>
-      <div>
-        {applicationsList?.length > 0 &&
-          applicationsList.map((application, index) => (
-            <div key={index}>
-              <MyProperty application={application} />
-            </div>
-          ))}
-        {!(applicationsList?.length > 0) && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>}
+      <Header>{`${t("PT_MY_PROPERTIES_HEADER")} ${applicationsList.length > 0 ? `(${applicationsList.length})` : ""}`}</Header>
 
-        {/* {applicationsList?.length !== 0 && (
-          <div>
-            <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-              <span className="link">{<Link to={`/digit-ui/citizen/pt/property/my-property/${t1}`}>{t("PT_LOAD_MORE_MSG")}</Link>}</span>
-            </p>
+      <div style={{ padding: "0 16px", maxWidth: "1200px" }}>
+
+        {isLoading && (
+          <p style={{ color: "#94a3b8", marginTop: "16px" }}>{t("PT_LOADING_PROPERTIES")}</p>
+        )}
+
+        {!isLoading && applicationsList.length === 0 && (
+          <p style={{ color: "#64748b", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>
+        )}
+         
+        {!isLoading && applicationsList.length > 0 && (
+         
+          <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: "16px", marginTop: "8px" }}>
+            {applicationsList.map((application, index) => (
+              <MyProperty key={`${application.propertyId}-${index}`} application={application} />
+            ))}
           </div>
-        )} */}
+          
+        )}
+        
+        {!isLoading && (
+          <p style={{ marginTop: "20px" }}>
+            <Link
+              to="/digit-ui/citizen/pt/property/new-application/info"
+              style={{ fontSize: "13px", color: "#2947A3", fontWeight: 600 }}
+            >
+              + {t("PT_COMMON_CLICK_HERE_TO_REGISTER_NEW_PROPERTY")}
+            </Link>
+          </p>
+        )}
+
       </div>
-      <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-        {/* {applicationsList.length === 0? t("PT_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION"): " "} */}
-        <span className="link" style={{ display: "block" }}>
-          <Link to="/digit-ui/citizen/pt/property/new-application/info">{t("PT_COMMON_CLICK_HERE_TO_REGISTER_NEW_PROPERTY")}</Link>
-        </span>
-      </p>
     </React.Fragment>
   );
 };

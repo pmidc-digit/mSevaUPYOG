@@ -229,7 +229,13 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
           fileStoreIds: response.filestoreIds[0],
         });
 
-        window.open(fileStore[response.filestoreIds[0]], "_blank");
+        
+      response?.filestoreIds?.forEach((id) => {
+        if (fileStore[id]) {
+          window.open(fileStore[id], "_blank");
+        }
+      });
+
       } catch (err) {
         console.error("error in receipt generation", err);
         setShowToast?.({

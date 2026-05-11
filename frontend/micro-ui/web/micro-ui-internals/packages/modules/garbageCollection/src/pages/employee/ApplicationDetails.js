@@ -165,31 +165,21 @@ const ChallanApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "GC_CEMP")?.code;
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "GC.ONE_TIME_FEE",
-      consumerCodes: id,
-      isEmployee: false,
-    },
-    { enabled: id ? true : false }
-  );
-
   const getAcknowledgement = async () => {
-    setLoader(true);
-    try {
-      const applications = getChallanData;
-      const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
-      const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
-      setTimeout(() => {
-        Digit.Utils.pdf.generate(acknowldgementDataAPI);
+      setLoader(true);
+      try {
+        const applications = getChallanData;
+        const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+        const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
+        setTimeout(() => {
+          Digit.Utils.pdf.generate(acknowldgementDataAPI);
+          setLoader(false);
+        }, 0);
+      } catch (error) {
+        console.error("Error generating acknowledgement:", error);
         setLoader(false);
-      }, 0);
-    } catch (error) {
-      console.error("Error generating acknowledgement:", error);
-      setLoader(false);
-    }
-  };
+      }
+    };
 
   const dowloadOptions = [];
 
@@ -198,13 +188,13 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
+  if (acknowledgementIds) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
         printBillReceipt({
           businessService: "GC.ONE_TIME_FEE",
-          receiptNumber: acknowledgementIds || id,
+          receiptNumber: acknowledgementIds,
           rootKey: "PAYMENTS",
         }),
     });

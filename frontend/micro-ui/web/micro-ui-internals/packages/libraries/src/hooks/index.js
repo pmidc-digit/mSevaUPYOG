@@ -911,6 +911,7 @@ const Hooks = {
   useEvents,
   useClearNotifications,
   useNotificationCount,
+  usePrintBillReceipt,
   useStore,
   useDocumentSearch,
   useTenants,

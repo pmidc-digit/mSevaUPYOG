@@ -11,6 +11,7 @@ import useCLUTableConfig from "./useCLUTableConfig";
 const CLUInbox = ({ parentRoute }) => {
   window.scroll(0, 0)
   const { t } = useTranslation()
+  const { data: cities } = Digit.Hooks.useTenants();
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id")
 
@@ -33,6 +34,10 @@ const CLUInbox = ({ parentRoute }) => {
     sortOrder: "ASC",
   }
 
+  const selectedTenantIdDefaultValues = {
+    tenantId: cities?.[0]?.code || null,
+  };
+
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
@@ -44,6 +49,9 @@ const CLUInbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("CLU.INBOX", { ...state, tableForm: payload.data })
         return { ...state, tableForm: payload.data }
+      case "mutateSelectedTenantId":
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, selectedTenantId: payload.data });
+        return { ...state, selectedTenantId: payload.data };
       default:
         break
     }
@@ -57,10 +65,22 @@ const CLUInbox = ({ parentRoute }) => {
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues })
   }
 
+
+  const onSelectedTenantIdReset = (setSelectedTenantIdValue) => {
+    setSelectedTenantIdValue("tenantId", tenantId || null);
+    dispatch({ action: "mutateSelectedTenantId", data: selectedTenantIdDefaultValues });
+  };
+
+  const setSelectedTenantIdValue = (key, value) => {
+    console.log("ValueChangeinTenant", key, value);
+    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+  };
+
   const onFilterFormReset = (setFilterFormValue) => {
     setFilterFormValue("moduleName", "clu-service")
     setFilterFormValue("applicationStatus", "")
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL")
+    onSelectedTenantIdReset(setFilterFormValue)
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues })
   }
 
@@ -75,12 +95,14 @@ const CLUInbox = ({ parentRoute }) => {
         filterForm: filterFormDefaultValues,
         searchForm: searchFormDefaultValues,
         tableForm: tableOrderFormDefaultValues,
+        selectedTenantId: selectedTenantIdDefaultValues,
       }
     )
   }, [
     Object.values(InboxObjectInSessionStorage?.filterForm || {}),
     Object.values(InboxObjectInSessionStorage?.searchForm || {}),
     Object.values(InboxObjectInSessionStorage?.tableForm || {}),
+    Object.values(InboxObjectInSessionStorage?.selectedTenantId || {}),
   ])
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue)
@@ -91,8 +113,11 @@ const CLUInbox = ({ parentRoute }) => {
   const [totalCountData, setTotalCountData] = useState(0)
 
   const { isLoading: isInboxLoading, data: inboxData, refetch } = Digit.Hooks.obps.useCLUInbox({
-    tenantId,
+    tenantId: (tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
     filters: { ...formState },
+    config: {
+      enabled: !!tenantId,
+    }
   })
 
   //console.log("inboxData ==>", inboxData)
@@ -154,6 +179,10 @@ const CLUInbox = ({ parentRoute }) => {
           setFilterFormValue,
           filterFormState: formState?.filterForm,
           getFilterFormValue,
+          cities,
+          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
+          setSelectedTenantIdValue,
+          tenantId
         }}
       />
     ),
@@ -196,6 +225,7 @@ const CLUInbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
+    tenantId
   })
 
   const propsForInboxMobileCards = useCLUInboxMobileCardsData({ parentRoute, table:tableData })

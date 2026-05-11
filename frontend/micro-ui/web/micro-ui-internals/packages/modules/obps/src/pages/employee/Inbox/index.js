@@ -142,7 +142,7 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, refetch } = Digit.Hooks.obps.useBPAInbox({
-    tenantId: (isEmoployee && tenantId === "pb.punjab") ? formState?.selectedTenantId?.tenantId : tenantId,
+    tenantId: (isEmoployee && tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
     filters: { 
       ...formState,
       filterForm: {
@@ -150,6 +150,7 @@ const Inbox = ({ parentRoute }) => {
         businessService: formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
       }
      },
+    config: { enabled: !!tenantId }
   });
 
 
@@ -187,7 +188,7 @@ const Inbox = ({ parentRoute }) => {
           localitiesForEmployeesCurrentTenant,
           loadingLocalitiesForEmployeesCurrentTenant,
           cities,
-          selectedTenantIdState: formState?.selectedTenantId,
+          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
           setSelectedTenantIdValue,
           tenantId
         }}

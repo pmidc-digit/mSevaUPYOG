@@ -108,11 +108,11 @@ const CloseBtn = (props) => {
 };
 
 const CLUEmployeeApplicationDetails = () => {
-  const { cluid } = useParams();
+  const { cluid, tenant } = useParams();
   const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.localStorage.getItem("Employee.tenant-id") === "pb.punjab"? tenant : window.localStorage.getItem("Employee.tenant-id");
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);

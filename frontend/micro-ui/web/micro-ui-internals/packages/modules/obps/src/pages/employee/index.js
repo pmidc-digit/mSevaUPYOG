@@ -127,6 +127,7 @@ const EmployeeApp = ({ path }) => {
           <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
 
           <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />  
+          <PrivateRoute path={`${path}/clu/application-overview/:cluid/:tenant`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/application-overview/:cluid`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />  
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />

@@ -12,3 +12,5 @@ export const OBPS_BPA_LOW_BUSINESS_SERVICES = [ "BPA_LOW"];
 export const OBPS_BPA_OC_BUSINESS_SERVICES = ["BPA_OC"];
 
 export const OBPS_CLU_BUSINESS_SERVICES = ["CLU_MC", "CLU_NP", "CLU_MC_HIGH", "CLU_NP_HIGH", "CLU_MC_OTH", "CLU_NP_OTH"];
+
+export const MSEVA_APP_LINK = "https://play.google.com/store/apps/details?id=com.mseva.punjab";

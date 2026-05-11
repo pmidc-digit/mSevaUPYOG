@@ -1,17 +1,19 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
-import { InboxComposer, ComplaintIcon, Header, Loader  } from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, Loader, SubmitBar  } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { businessServiceList } from "../../../utils";
+import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   const [employeeName, setEmployeeName] = useState("");
   const [employeeRole, setEmployeeRole] = useState("");
-
+  const { data: cities } = Digit.Hooks.useTenants();
+  const isMobile = window.Digit.Utils.browser.isMobile();
   
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -37,6 +39,10 @@ const Inbox = ({ parentRoute }) => {
     sortOrder: "DESC",
   };
 
+  const selectedTenantIdDefaultValues = {
+    tenantId: cities?.[0]?.code || null,
+  };
+
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
@@ -48,11 +54,24 @@ const Inbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("NOC.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
+      case "mutateSelectedTenantId":
+        Digit.SessionStorage.set("CLU.INBOX", { ...state, selectedTenantId: payload.data });
+        return { ...state, selectedTenantId: payload.data };
       default:
         break;
     }
   }
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("NOC.INBOX");
+
+  const onSelectedTenantIdReset = (setSelectedTenantIdValue) => {
+    setSelectedTenantIdValue("tenantId", tenantId || null);
+    dispatch({ action: "mutateSelectedTenantId", data: selectedTenantIdDefaultValues });
+  };
+
+  const setSelectedTenantIdValue = (key, value) => {
+    console.log("ValueChangeinTenant", key, value);
+    dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+  };
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null);
@@ -66,6 +85,7 @@ const Inbox = ({ parentRoute }) => {
     setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
     setFilterFormValue("applicationType", []);
+    onSelectedTenantIdReset(setFilterFormValue)
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
   };
 
@@ -80,12 +100,14 @@ const Inbox = ({ parentRoute }) => {
         filterForm: filterFormDefaultValues,
         searchForm: searchFormDefaultValues,
         tableForm: tableOrderFormDefaultValues,
+        selectedTenantId: selectedTenantIdDefaultValues,
       }
     );
   }, [
     Object.values(InboxObjectInSessionStorage?.filterForm || {}),
     Object.values(InboxObjectInSessionStorage?.searchForm || {}),
     Object.values(InboxObjectInSessionStorage?.tableForm || {}),
+    Object.values(InboxObjectInSessionStorage?.selectedTenantId || {}),
   ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
@@ -137,8 +159,11 @@ const Inbox = ({ parentRoute }) => {
 
 
   const { isLoading: isInboxLoading, data, refetch} = Digit.Hooks.noc.useInbox({
-    tenantId,
-    filters: { ...formState }
+    tenantId: (tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
+    filters: { ...formState },
+    config: {
+      enabled: !!tenantId,
+    }
   });
 
   useEffect(()=>{
@@ -195,6 +220,10 @@ const Inbox = ({ parentRoute }) => {
           getFilterFormValue,
           localitiesForEmployeesCurrentTenant,
           loadingLocalitiesForEmployeesCurrentTenant,
+          cities,
+          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
+          setSelectedTenantIdValue,
+          tenantId
         }}
       />
     ),
@@ -231,7 +260,7 @@ const Inbox = ({ parentRoute }) => {
     onFilterFormReset,
   };
 
-  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } });
+  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId } });
 
   const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table });
 
@@ -243,11 +272,11 @@ const Inbox = ({ parentRoute }) => {
   return (
     <>
       <Header>
-        {employeeData &&
-          !isLoading &&
-          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-        
+        {employeeData && !isLoading &&`Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
         <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
+        {<SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
+        </div>
       </Header>
       <InboxComposer
         {...{

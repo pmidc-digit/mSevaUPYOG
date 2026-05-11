@@ -593,7 +593,7 @@ const BpaApplicationDetail = () => {
     {
       Header: t(""),
       accessor: "planReport",
-      Cell: ({ value }) => (value ? <LinkButton className="view-link-button" label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
+      Cell: ({ value }) => (value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => fetchUrl(value, tenantId)} /> : t("CS_NA")),
     },
   ];
   // const ecbcDocumentsData = useMemo(() => {
@@ -1715,6 +1715,7 @@ const BpaApplicationDetail = () => {
                             //     </p> */}
                             //   </Fragment>
                             // )})
+                            <React.Fragment>
                             <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1726,9 +1727,8 @@ const BpaApplicationDetail = () => {
                               manualPagination={false}
                               isPaginationRequired={false}
                             />
-                          ) : null}
 
-                          {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 && (
+                            {detail?.isScrutinyDetails && data?.applicationData?.additionalDetails?.oldEDCR?.length > 0 && (
                             <Table
                               className="customTable table-border-style"
                               t={t}
@@ -1741,6 +1741,8 @@ const BpaApplicationDetail = () => {
                               isPaginationRequired={false}
                             />
                           )}
+                          </React.Fragment>
+                          ) : null}
 
                           {/* to get Owner values */}
                           {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
@@ -1834,6 +1836,23 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
+                              {!(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && ["DOC_VERIFICATION_PENDING", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
+                                  {(
+                                    <div>
+                                      {pdfLoading ? <Loader /> : <Table
+                                        className="customTable table-border-style"
+                                        t={t}
+                                        data={documentsData}
+                                        columns={documentsColumns}
+                                        getCellProps={() => ({ style: {} })}
+                                        disableSort={true}
+                                        autoSort={false}
+                                        manualPagination={false}
+                                        isPaginationRequired={false}
+                                      />}
+                                    </div>
+                                  )}
+                              </div>}
                               {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
                                 {(
                                     <StatusTable>
@@ -1892,22 +1911,6 @@ const BpaApplicationDetail = () => {
                           {/* to get FieldInspection values */}
                           {detail?.isFieldInspection ? (
                             <div>
-                              {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" &&
-                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-                                  <Card>
-                                    <InspectionReport
-                                      isCitizen={true}
-                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
-                                      onSelect={onChangeReport}
-                                    />
-                                  </Card>
-                                )}
-                              {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
-                                data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 && (
-                                  <Card>
-                                    <InspectionReportDisplay fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} />
-                                  </Card>
-                                )}
                               {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
                                 (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
                                   <Card>
@@ -1918,6 +1921,13 @@ const BpaApplicationDetail = () => {
                                       geoLocations={geoLocations}
                                       customOpen={routeToImage}
                                     />
+                                  </Card>
+                                )}
+
+                              {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
+                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length === 0 && (
+                                  <Card>
+                                    <div id="fieldInspection">{t("Site Inspection is in progress, Checklist will be available once completed.")}</div>
                                   </Card>
                                 )}
 
@@ -1965,6 +1975,22 @@ const BpaApplicationDetail = () => {
                                   )}
                                 </Card>
                               )}
+                              {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" &&
+                                (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
+                                  <Card>
+                                    <InspectionReport
+                                      isCitizen={true}
+                                      fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                                      onSelect={onChangeReport}
+                                    />
+                                  </Card>
+                                )}
+                              {data?.applicationData?.status != "INSPECTION_REPORT_PENDING" &&
+                                data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 && (
+                                  <Card>
+                                    <InspectionReportDisplay fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} />
+                                  </Card>
+                                )}
                             </div>
                           ) : null}
 

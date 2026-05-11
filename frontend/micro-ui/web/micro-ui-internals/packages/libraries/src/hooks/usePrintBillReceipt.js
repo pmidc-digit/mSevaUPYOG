@@ -7,16 +7,23 @@ import { useCallback } from "react";
 const normalizeBills = (data) => {
   if (!data) return [];
 
-  // Bills array
+  // ✅ Bills array
   if (Array.isArray(data)) return data;
 
-  // Payments response
+  // ✅ Full Payments response: { Payments: [] }
   if (Array.isArray(data?.Payments)) {
     return data.Payments.flatMap((payment) => payment.paymentDetails?.map((pd) => pd.bill)?.filter(Boolean) || []);
   }
 
-  // Single bill object
-  if (data?.billDetails) return [data];
+  // ✅ Single Payment object
+  if (Array.isArray(data?.paymentDetails)) {
+    return data.paymentDetails?.map((pd) => pd.bill)?.filter(Boolean) || [];
+  }
+
+  // ✅ Single Bill object
+  if (Array.isArray(data?.billDetails)) {
+    return [data];
+  }
 
   return [];
 };
@@ -72,7 +79,13 @@ const transformBillsForPdf = (Bills, meta = {}) => {
           identifier,
 
           ...(searchData && {
-            [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
+            [businessService === "rl-services"
+              ? "rlSearchData"
+              : businessService === "GC.ONE_TIME_FEE"
+              ? "gcSearchData"
+              : businessService === "GC"
+              ? "gcSearchData"
+              : undefined]: searchData,
           }),
 
           ...commonMeta,
@@ -114,13 +127,8 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
       const bill = pd?.bill;
       if (!bill) return;
 
-      const {
-        billDetails = [],
-        consumerCode,
-        applicationNumber,
-        billNumber,
-        ...billLevelData // billDetails removed
-      } = bill;
+      // IMMUTABLE split
+      const { billDetails = [], consumerCode, applicationNumber, billNumber, ...billLevelData } = bill;
 
       const identifier = consumerCode || applicationNumber;
       const searchData = searchDataMap[identifier] || null;
@@ -129,28 +137,29 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
         extractedBillDetails?.push({
           ...detail,
           billRootData: {
-            //  bill-level context
+            // CLEAN bill (no billDetails)
             ...billLevelData,
+            consumerCode,
+            applicationNumber,
             billNumber,
 
-            // payment-level context (ONLY here)
+            // payment-level context
             ...paymentLevelData,
 
-            // keep paymentDetails here as requested
             paymentDetails,
 
             identifier,
 
             ...(searchData && {
-              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
+              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : undefined]: searchData,
             }),
+
             generatedAt,
           },
         });
       });
 
-      // remove duplicate billDetails entirely
-      pd.bill = billLevelData;
+      // ✅ NOTHING is written back to pd.bill
     });
 
     return {
@@ -164,6 +173,21 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
   return { Payments: transformedPayments };
 };
 
+const normalizePayments = (data) => {
+  if (!data) return null;
+
+  // Full Payments response
+  if (Array.isArray(data?.Payments)) {
+    return data;
+  }
+
+  // Single Payment object → wrap it
+  if (Array.isArray(data?.paymentDetails)) {
+    return { Payments: [data] };
+  }
+
+  return null;
+};
 /* =========================
    Hook (public API)
    ========================= */
@@ -171,23 +195,30 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
 export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, t, pdfkey }) => {
   const printReceipt = useCallback(
     async ({ billOrPaymentResponse = null, businessService, receiptNumber = null, rootKey = "BILLS" }) => {
-
-      console.log('receiptNumber in hook', receiptNumber)
+      console.log("receiptNumber in hook, and billOrPaymentResponse ", receiptNumber, billOrPaymentResponse);
       try {
         setLoader?.(true);
 
         let sourceData = billOrPaymentResponse;
 
-        if (receiptNumber) {
-          const encodedReceiptNumber = encodeURIComponent(receiptNumber);
-          console.log('encodedReceiptNumber', encodedReceiptNumber);
+        // ✅ 1. Prefer explicitly passed Payments
 
-          const billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: encodedReceiptNumber });
+        const normalizedPayments = normalizePayments(billOrPaymentResponse);
+        const hasPayments = !!normalizedPayments;
+
+        console.log("hasPayments,normalizedPayments", hasPayments, normalizedPayments);
+        if (!hasPayments && receiptNumber) {
+          let billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: encodeURIComponent(receiptNumber) });
+
+          if (!billPayments?.Payments?.length) {
+            billPayments = await Digit.PaymentService.recieptSearch(tenantId, businessService, { consumerCodes: receiptNumber });
+          }
 
           sourceData = billPayments;
         }
-
+        console.log("sourceData", sourceData);
         const billsArray = normalizeBills(sourceData);
+        console.log("billsArray", billsArray);
         if (!billsArray?.length) {
           throw new Error("No bills found");
         }
@@ -206,10 +237,12 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
           })
         );
 
+        const paymentsSource = rootKey === "PAYMENTS" ? normalizePayments(sourceData) : null;
+
         // Build PDF payload
         const pdfPayload =
           rootKey === "PAYMENTS"
-            ? transformPaymentsForPdf(sourceData, {
+            ? transformPaymentsForPdf(paymentsSource, {
                 businessService,
                 generatedAt: Date.now(),
                 searchDataMap,

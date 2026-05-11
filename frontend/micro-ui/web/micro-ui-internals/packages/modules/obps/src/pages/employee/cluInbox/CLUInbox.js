@@ -1,17 +1,19 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { InboxComposer, CaseIcon, Header } from "@mseva/digit-ui-react-components";
+import { InboxComposer, CaseIcon, Header, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 import CLUFilterFormFieldsComponent from "./CLUFilterFormFieldsComponent";
 import CLUSearchFormFields from "./CLUSearchFormFields";
 import useCLUInboxMobileCardsData from "./useCLUInboxMobileCardsData";
 import useCLUTableConfig from "./useCLUTableConfig";
+import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
 
 
 const CLUInbox = ({ parentRoute }) => {
   window.scroll(0, 0)
   const { t } = useTranslation()
   const { data: cities } = Digit.Hooks.useTenants();
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id")
 
@@ -261,12 +263,10 @@ const CLUInbox = ({ parentRoute }) => {
   return (
     <>
       <Header>
-        {employeeData &&
-          !isEmployeeLoading &&
-          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-          <div>
-            {t("ES_COMMON_INBOX")}
-            {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null}
+        {employeeData && !isEmployeeLoading && `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
+        <div> {t("ES_COMMON_INBOX")} {totalCountData ? <p className="inbox-count">{totalCountData}</p> : null} </div>
+        {<SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
         </div>
       </Header>
       <InboxComposer

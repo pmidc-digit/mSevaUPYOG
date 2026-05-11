@@ -6,7 +6,7 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
-import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
+import { MSEVA_APP_LINK, OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
@@ -244,9 +244,9 @@ const Inbox = ({ parentRoute }) => {
             {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
             {isEmoployee && <p className="inbox-name">{employeeName}</p>}
           </div>
-          <div>
+          <div style={{ display: "flex", flexDirection: "row", gap: "5px"}}>
             {isEmoployee && <SubmitBar label={t("User Manual")} onSubmit={() => window.open("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FBPA%2FMarch%2F13%2F1773381614243uFJyzhFqyR.pdf")} />}
-            {/* {isEmoployee && <SubmitBar label={t("Download App")} onSubmit={() => {}} />} */}
+            {isEmoployee && <SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
           </div>
         </div>
       </Header>

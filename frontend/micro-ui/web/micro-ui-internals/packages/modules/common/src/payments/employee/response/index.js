@@ -141,7 +141,17 @@ export const SuccessfulPayment = (props) => {
     select: (data) =>
       businessService === "GC.ONE_TIME_FEE"
         ? "garbage-receipt"
+        : businessService === "rl-services"
+        ? "rentandlease-receipt"
         : data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
+  });
+
+  
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({
+    tenantId,
+    setLoader: setPrinting,
+    t,
+    pdfkey : generatePdfKey
   });
 
   const printCertificate = async () => {
@@ -156,6 +166,7 @@ export const SuccessfulPayment = (props) => {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
   };
+
 
   // const printpetCertificate = async () => {
   //   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -457,28 +468,6 @@ const printMCollectReceipt = async () => {
   }
 };
 
-  const printRLReceipt = async () => {
-    if (printing) return;
-    setPrinting(true);
-    try {
-      const applicationDetails = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: consumerCode } });
-      let application = applicationDetails;
-      let fileStoreId = applicationDetails?.BookingApplication?.[0]?.paymentReceiptFilestoreId;
-      if (!fileStoreId) {
-        const payments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
-        let response = await Digit.PaymentService.generatePdf(
-          tenantId,
-          { Payments: [{ ...(payments?.Payments?.[0] || {}), ...application }] },
-          "rentandlease-receipt"
-        );
-        fileStoreId = response?.filestoreIds[0];
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
-    } finally {
-      setPrinting(false);
-    }
-  };
   const svCertificate = async () => {
     //const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = tenantId;
@@ -896,6 +885,7 @@ const printMCollectReceipt = async () => {
           <div style={{ display: "flex", justifyContent: "space-evenly" }}>
             {businessService !== "chb-services" &&
               businessService !== "adv-services" &&
+              businessService !== "GC.ONE_TIME_FEE" &&
               businessService !== "pet-services" &&
               businessService !== "NDC" &&
               businessService !== "Challan_Generation" &&
@@ -919,7 +909,7 @@ const printMCollectReceipt = async () => {
                   )}
                 </div>
               )}
-{/* 
+            {/* 
             {businessService == "TL" ? (
               <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printCertificate}>
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -1089,9 +1079,21 @@ const printMCollectReceipt = async () => {
               </div>
             ) : null}
 
-            {businessService == "rl-services" ? (
+            {businessService === "rl-services" || businessService === "GC.ONE_TIME_FEE" ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
-                <div className="primary-label-btn d-grid" onClick={printing ? undefined : printRLReceipt}>
+                <div
+                  className="primary-label-btn d-grid"
+                  onClick={
+                    printing
+                      ? undefined
+                      : () =>
+                          printBillReceipt({
+                            businessService: businessService,
+                            receiptNumber : receiptNumber,
+                            rootKey: "PAYMENTS",
+                          })
+                  }
+                >
                   {printing ? (
                     <Loader />
                   ) : (

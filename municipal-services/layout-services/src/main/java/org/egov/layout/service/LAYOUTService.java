@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -561,7 +561,7 @@ public class LAYOUTService {
         }
 
 	public List<DocumentCheckList> searchDocumentCheckLists(String applicatioinNo, String tenantId){
-		if(net.logstash.logback.encoder.org.apache.commons.lang.StringUtils.isEmpty(applicatioinNo))
+		if(StringUtils.isEmpty(applicatioinNo))
 			throw new CustomException(LAYOUTConstants.INVALID_REQUEST, "Application number should not be null or Empity.");
 		return nocRepository.getDocumentCheckList(applicatioinNo, tenantId);
 	}

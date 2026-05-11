@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import org.egov.layout.web.model.AuditDetails;
 import org.egov.layout.web.model.Workflow;
-import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.layout.web.model.SanitizeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,44 +26,44 @@ import lombok.NoArgsConstructor;
  */
 @ApiModel(description = "BPA application object to capture the details of land, land owners, and address of the land.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:52:32.717Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:52:32.717Z[GMT]")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class BPA   {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationNo")
   private String applicationNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("approvalNo")
   private String approvalNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("accountId")
   private String accountId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("edcrNumber")
   private String edcrNumber = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("riskType")
   private String riskType = null;
   
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("businessService")
   private String businessService = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("landId")
   private String landId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("tenantId")
   private String tenantId = null;
 
@@ -73,7 +73,7 @@ public class BPA   {
   @JsonProperty("applicationDate")
   private Long applicationDate = null;
   
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("status")
   private String status = null;
 

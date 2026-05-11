@@ -21,8 +21,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @Service
 @Slf4j
@@ -100,7 +100,7 @@ public class WorkflowIntegrator {
 		}
 		
 		obj.put(DOCUMENTSKEY, noc.getWorkflow().getDocuments());
-		array.add(obj);
+		array.put(obj);
 		JSONObject workFlowRequest = new JSONObject();
 		workFlowRequest.put(REQUESTINFOKEY, nocRequest.getRequestInfo());
 		workFlowRequest.put(WORKFLOWREQUESTARRAYKEY, array);

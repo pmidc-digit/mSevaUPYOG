@@ -18,35 +18,34 @@ import java.util.List;
 
 import org.egov.layout.web.model.enums.ApplicationType;
 import org.egov.layout.web.model.enums.Status;
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 /**
  * NOC application object to capture the details of layout related information, landid and related documents.
  */
 @ApiModel(description = "NOC application object to capture the details of layout related information, landid and related documents.")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
 public class Layout {
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("tenantId")
   private String tenantId = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationNo")
   private String applicationNo = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonIgnore
   @JsonProperty("layoutNo")
   private String layoutNo = null;
@@ -59,25 +58,25 @@ public class Layout {
   @JsonProperty("owners")
   private List<OwnerInfo> owners;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("layoutType")
   private String layoutType = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonIgnore
   @JsonProperty("accountId")
   private String accountId = null;
 
-//  @SafeHtml
+//  @SanitizeHtml
 //
 //  @JsonProperty("source")
 //  private String source = null;
 
-//  @SafeHtml
+//  @SanitizeHtml
 //  @JsonProperty("sourceRefId")
 //  private String sourceRefId = null;
 
-//  @SafeHtml
+//  @SanitizeHtml
 //  @JsonProperty("landId")
 //  private String landId = null;
 
@@ -85,7 +84,7 @@ public class Layout {
   @JsonProperty("status")
   private Status status = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationStatus")
   private String applicationStatus = null;
 
@@ -105,7 +104,7 @@ public class Layout {
   @JsonProperty("layoutDetails")
   private LayoutDetails nocDetails = null;
 
-  @SafeHtml
+  @SanitizeHtml
   @NotNull(message = "Vasika Number is required")
   @Size(min = 1, max = 15)
   @JsonProperty("vasikaNumber")

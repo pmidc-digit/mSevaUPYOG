@@ -79,13 +79,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
           identifier,
 
           ...(searchData && {
-            [businessService === "rl-services"
-              ? "rlSearchData"
-              : businessService === "GC.ONE_TIME_FEE"
-              ? "gcSearchData"
-              : businessService === "GC"
-              ? "gcSearchData"
-              : undefined]: searchData,
+            [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
           }),
 
           ...commonMeta,
@@ -151,7 +145,7 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
             identifier,
 
             ...(searchData && {
-              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : undefined]: searchData,
+              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
             }),
 
             generatedAt,
@@ -195,7 +189,7 @@ const normalizePayments = (data) => {
 export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, t, pdfkey }) => {
   const printReceipt = useCallback(
     async ({ billOrPaymentResponse = null, businessService, receiptNumber = null, rootKey = "BILLS" }) => {
-      console.log("receiptNumber in hook, and billOrPaymentResponse ", receiptNumber, billOrPaymentResponse);
+
       try {
         setLoader?.(true);
 

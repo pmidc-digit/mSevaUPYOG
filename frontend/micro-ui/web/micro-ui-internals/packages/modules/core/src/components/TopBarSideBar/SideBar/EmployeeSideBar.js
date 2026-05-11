@@ -4,12 +4,15 @@ import { Loader, SearchIcon } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import NavItem from "./NavItem";
 import _, { findIndex } from "lodash";
+import SidebarProfile from "./SidebarProfile";
 
 const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogout }) => {
   const sidebarRef = useRef(null);
   const { isLoading, data } = Digit.Hooks.useAccessControl();
   const [search, setSearch] = useState("");
   const { t } = useTranslation();
+  const user = Digit.UserService.getUser();
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
   useEffect(() => {
     if (isLoading) {
       return <Loader />;
@@ -21,7 +24,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
   }, [isLoading, mobileView]);
 
   const expandNav = () => {
-    sidebarRef.current.style.width = "350px";
+    sidebarRef.current.style.width = "260px";
     sidebarRef.current.style.overflow = "auto";
 
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((element) => {
@@ -29,7 +32,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     });
   };
   const collapseNav = () => {
-    sidebarRef.current.style.width = "65px";
+    sidebarRef.current.style.width = "56px";
     sidebarRef.current.style.overflow = "hidden";
 
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((element) => {
@@ -162,9 +165,9 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
   const renderSearch = () => {
     return (
       <div className="submenu-container">
-        <div className="sidebar-link">
-          <div className="actions search-icon-wrapper">
-            <SearchIcon className="search-icon" />
+        <div className="sidebar-link" style={{ margin: "6px 8px", padding: "6px 10px", borderRadius: "8px" }}>
+          <div className="actions search-icon-wrapper" style={{ gap: "8px", padding: "0" }}>
+            <SearchIcon className="search-icon" style={{ width: "14px", height: "14px" }} />
             <input
               className="employee-search-input"
               type="text"
@@ -172,6 +175,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
               name="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              style={{ fontSize: "12px", border: "none", background: "transparent", outline: "none", width: "100%" }}
             />
           </div>
         </div>
@@ -198,32 +202,37 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
   const mobileSidebarStyle = {
     position: "fixed",
     top: 0,
-    left: isSidebarOpen ? 0 : "-280px",
-    width: "280px",
+    left: isSidebarOpen ? 0 : "-300px",
+    width: "300px",
     height: "100vh",
     backgroundColor: "#fff",
     zIndex: 9999,
-    transition: "left 0.3s ease",
+    transition: "left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     overflowY: "auto",
-    boxShadow: isSidebarOpen ? "2px 0 8px rgba(0,0,0,0.15)" : "none",
+    boxShadow: isSidebarOpen ? "4px 0 20px rgba(0,60,113,0.15)" : "none",
+    display: "flex",
+    flexDirection: "column",
   };
 
   const mobileHeaderStyle = {
-    padding: "16px",
-    borderBottom: "1px solid #e5e7eb",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
+    padding: "0",
+    flexShrink: 0,
+    position: "relative",
   };
 
   const closeButtonStyle = {
-    background: "none",
-    border: "none",
-    fontSize: "24px",
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "rgba(255,255,255,0.15)",
+    border: "1px solid rgba(255,255,255,0.3)",
+    borderRadius: "6px",
+    fontSize: "18px",
+    lineHeight: "1",
     cursor: "pointer",
-    color: "#6b7280",
+    color: "#ffffff",
     padding: "4px 8px",
+    zIndex: 1,
   };
 
   // Mobile view render
@@ -239,101 +248,168 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
                 margin: 0 !important;
               }
               .employee-mobile-sidebar .sidebar-link {
-                padding: 12px 16px !important;
+                padding: 10px 16px !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: space-between !important;
-                border-bottom: 1px solid #f3f4f6 !important;
+                border-left: 3px solid transparent !important;
                 cursor: pointer !important;
+                transition: all 0.18s ease !important;
               }
               .employee-mobile-sidebar .sidebar-link:hover {
-                background-color: #f9fafb !important;
+                background-color: #F4F7FB !important;
+                border-left-color: rgba(0,60,113,0.2) !important;
               }
               .employee-mobile-sidebar .sidebar-link.active {
-                background-color: #eef2ff !important;
-                border-left: 3px solid #4f46e5 !important;
+                background-color: #EEF4FF !important;
+                border-left: 3px solid #003C71 !important;
+              }
+              .employee-mobile-sidebar .sidebar-link.active .nav-icon-box {
+                background-color: #003C71 !important;
+              }
+              .employee-mobile-sidebar .sidebar-link.active .nav-icon-box svg {
+                fill: #ffffff !important;
+              }
+              .employee-mobile-sidebar .sidebar-link.active span,
+              .employee-mobile-sidebar .sidebar-link.active a,
+              .employee-mobile-sidebar .sidebar-link.active .custom-link span {
+                color: #003C71 !important;
+                font-weight: 600 !important;
               }
               .employee-mobile-sidebar .actions {
                 display: flex !important;
                 align-items: center !important;
-                gap: 12px !important;
+                gap: 10px !important;
                 padding: 0 !important;
               }
-              .employee-mobile-sidebar .actions svg {
-                width: 20px !important;
-                height: 20px !important;
-                fill: #6b7280 !important;
+              .employee-mobile-sidebar .nav-icon-box {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                border-radius: 8px !important;
+                background-color: #F0F4F9 !important;
+                transition: background-color 0.18s ease !important;
+              }
+              .employee-mobile-sidebar .nav-icon-box svg {
+                width: 17px !important;
+                height: 17px !important;
+                fill: #626A6E !important;
+                margin: 0 !important;
               }
               .employee-mobile-sidebar .actions span,
               .employee-mobile-sidebar .actions a,
               .employee-mobile-sidebar .custom-link {
-                font-size: 14px !important;
-                color: #1f2937 !important;
+                font-size: 13px !important;
+                color: #374151 !important;
                 text-decoration: none !important;
                 font-weight: 500 !important;
               }
               .employee-mobile-sidebar .dropdown-link {
                 display: flex !important;
-                padding: 10px 16px 10px 48px !important;
-                font-size: 13px !important;
-                color: #4b5563 !important;
+                padding: 9px 16px 9px 54px !important;
+                font-size: 12px !important;
+                color: #505A5F !important;
                 text-decoration: none !important;
-                border-bottom: 1px solid #f9fafb !important;
+                border-left: 2px solid transparent !important;
+                transition: all 0.18s ease !important;
               }
               .employee-mobile-sidebar .dropdown-link:hover {
-                background-color: #f3f4f6 !important;
+                background-color: rgba(0,60,113,0.04) !important;
+                color: #003C71 !important;
               }
               .employee-mobile-sidebar .dropdown-link.active {
-                background-color: #eef2ff !important;
-                color: #4f46e5 !important;
+                background-color: rgba(0,60,113,0.04) !important;
+                color: #003C71 !important;
+                font-weight: 600 !important;
+                border-left-color: #003C71 !important;
               }
               .employee-mobile-sidebar .search-icon-wrapper {
-                padding: 8px 16px !important;
+                padding: 8px 12px !important;
                 display: flex !important;
                 align-items: center !important;
                 gap: 8px !important;
-                background-color: #f9fafb !important;
-                margin: 8px 12px !important;
-                border-radius: 6px !important;
-                border: 1px solid #e5e7eb !important;
+                background-color: #F3F2F1 !important;
+                margin: 10px 12px 4px !important;
+                border-radius: 8px !important;
+                border: 1px solid #DEE0E2 !important;
+              }
+              .employee-mobile-sidebar .search-icon-wrapper svg {
+                fill: #626A6E !important;
+                width: 16px !important;
+                height: 16px !important;
               }
               .employee-mobile-sidebar .employee-search-input {
                 border: none !important;
                 background: transparent !important;
                 outline: none !important;
-                font-size: 14px !important;
+                font-size: 13px !important;
                 width: 100% !important;
+                color: #1F1F1F !important;
               }
             `}
           </style>
+
+          {/* Profile header */}
           <div style={mobileHeaderStyle}>
-            <span style={{ fontWeight: 600, fontSize: "16px", color: "#1f2937" }}>{t("")}</span>
             <button style={closeButtonStyle} onClick={closeSidebar}>×</button>
+            {user?.access_token
+              ? <SidebarProfile info={user?.info} stateName={storeData?.stateInfo?.name} t={t} />
+              : (
+                <div style={{
+                  background: "linear-gradient(140deg, #003C71 0%, #1A5CA8 100%)",
+                  padding: "1.25rem 1.25rem 1rem",
+                }}>
+                  <div style={{ fontSize: "1rem", fontWeight: "700", color: "#ffffff" }}>Employee Portal</div>
+                  <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.75)", marginTop: "2px" }}>mSeva Punjab</div>
+                </div>
+              )
+            }
           </div>
-          <div style={{ padding: "8px 0" }}>
+
+          {/* Menu items */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
             {renderSearch()}
             {splitKeyValue(closeSidebar)}
           </div>
-          {handleLogout && (
-            <div style={{ borderTop: "1px solid #e5e7eb", padding: "16px" }}>
+
+          {/* Footer + Logout */}
+          <div style={{
+            borderTop: "2px solid #DEE0E2",
+            backgroundColor: "#F3F2F1",
+            flexShrink: 0,
+          }}>
+            {handleLogout && (
               <button
                 onClick={handleLogout}
                 style={{
                   width: "100%",
-                  padding: "12px",
-                  
-                  color: "black",
+                  padding: "12px 16px",
+                  background: "none",
                   border: "none",
-                  borderRadius: "6px",
+                  borderBottom: "1px solid #DEE0E2",
                   cursor: "pointer",
-                  fontWeight: 500,
-                  marginTop:"-1rem"
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  color: "#D4351C",
+                  fontSize: "13px",
+                  fontWeight: "600",
                 }}
               >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
                 {t("CORE_COMMON_LOGOUT")}
               </button>
+            )}
+            <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", alignItems: "center", gap: "1px" }}>
+              <div style={{ fontSize: "0.6875rem", fontWeight: "600", color: "#003C71" }}>mSeva Punjab</div>
+              <div style={{ fontSize: "0.625rem", color: "#626A6E" }}>© 2025 UPMCGCL</div>
             </div>
-          )}
+          </div>
         </div>
       </React.Fragment>
     );

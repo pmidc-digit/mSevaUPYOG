@@ -112,16 +112,35 @@ const NavBar = ({
           display: "flex",
           alignItems: "center",
           gap: "0.75rem",
-          color: isActive ? "#4f46e5" : "#374151",
+          padding: "0.5rem 1rem",
           cursor: "pointer",
-          transition: "background-color 0.2s ease",
           textDecoration: "none",
-          fontSize: "0.9375rem",
-          fontWeight: isActive ? "500" : "400",
+          width: "100%",
         }}
       >
-        <span style={{ display: "flex", alignItems: "center", minWidth: "20px" }}>{leftIcon}</span>
-        <div className="menu-label">{itemComponent}</div>
+        <span style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          width: "34px", height: "34px", borderRadius: "8px", flexShrink: 0,
+          backgroundColor: isActive ? "#003C71" : "#F0F4F9",
+          color: isActive ? "#ffffff" : "#626A6E",
+          transition: "all 0.2s ease",
+        }}>
+          {leftIcon}
+        </span>
+        <div className="menu-label" style={{
+          flex: 1,
+          fontSize: "0.875rem",
+          fontWeight: isActive ? "600" : "400",
+          color: isActive ? "#003C71" : "#374151",
+          lineHeight: "1.4",
+        }}>
+          {itemComponent}
+        </div>
+        {isActive && (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#003C71" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        )}
       </span>
     )
 
@@ -233,11 +252,11 @@ const NavBar = ({
             transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             background: "#ffffff",
             zIndex: "1250",
-            maxWidth: "350px",
-            minWidth:"330px",
-            width: "350px",
+            maxWidth: "300px",
+            minWidth: "280px",
+            width: "300px",
             transform: `${open ? "translateX(0)" : "translateX(-100%)"}`,
-            boxShadow: "2px 0 8px rgba(0, 0, 0, 0.1)",
+            boxShadow: "4px 0 20px rgba(0, 60, 113, 0.15)",
             overflowY: "hidden",
           }}
         >
@@ -260,13 +279,13 @@ const NavBar = ({
                   className={`sidebar-list ${pathname === item.link ? "active" : ""}`}
                   key={index}
                   style={{
-                    backgroundColor: pathname === item.link ? "#eef2ff" : "transparent",
-                    borderLeft: pathname === item.link ? "3px solid #4f46e5" : "3px solid transparent",
+                    backgroundColor: pathname === item.link ? "#EEF4FF" : "transparent",
+                    borderLeft: pathname === item.link ? "3px solid #003C71" : "3px solid transparent",
                     transition: "all 0.2s ease",
                   }}
                   onMouseEnter={(e) => {
                     if (pathname !== item.link) {
-                      e.currentTarget.style.backgroundColor = "#f9fafb"
+                      e.currentTarget.style.backgroundColor = "#F4F7FB"
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -282,12 +301,18 @@ const NavBar = ({
             <div
               className="sidebar-footer"
               style={{
-                borderTop: "1px solid #e5e7eb",
-                padding: "1rem",
-                backgroundColor: "#f9fafb",
+                borderTop: "2px solid #DEE0E2",
+                padding: "0.875rem 1rem",
+                backgroundColor: "#F3F2F1",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
               }}
             >
-              <div className="side-bar-footer">{Footer}</div>
+              <div className="side-bar-footer" style={{ display: "contents" }}>{Footer}</div>
+              <div style={{ fontSize: "0.75rem", fontWeight: "600", color: "#003C71", letterSpacing: "0.02em" }}>
+                mSeva Punjab
+              </div>
+              <div style={{ fontSize: "0.6875rem", color: "#505A5F" }}>Government of Punjab</div>
+              <div style={{ fontSize: "0.625rem", color: "#626A6E", marginTop: "2px" }}>© 2025 UPMCGCL. All rights reserved.</div>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@
   border: none !important;
   border-radius: 0.375rem;
   padding: 0.5rem 1rem;
-  font-family: "Noto Sans", sans-serif;
+  font-family: var(--digit-font-family);
   font-weight: 500;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -42,31 +42,31 @@
 
 .selector-button-primary {
   @extend .selector-button;
-  background-color: #2947a3 !important;
+  background-color: #003C71 !important;
   width: 100%;
 
   &:hover {
-    background-color: #1e3a8a !important;
+    background-color: #002554 !important;
   }
 }
 
 .selector-button-secondary {
   @extend .selector-button;
   background-color: #ffffff !important;
-  color: #2947a3 !important;
+  color: #003C71 !important;
 
   h2 {
-    color: #2947a3 !important;
+    color: #003C71 !important;
   }
 }
 
 .selector-button-border {
-  background-color: #2947a3 !important;
+  background-color: #003C71 !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 0.375rem;
   padding: 0.5rem 1rem;
-  font-family: "Noto Sans", sans-serif;
+  font-family: var(--digit-font-family);
   font-weight: 500;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -86,7 +86,7 @@
 
 
   &:hover {
-    background-color: #1e3a8a !important;
+    background-color: #002554 !important;
     opacity: 0.9;
   }
 

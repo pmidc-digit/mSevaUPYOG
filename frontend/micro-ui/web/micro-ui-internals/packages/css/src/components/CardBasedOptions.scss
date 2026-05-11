@@ -113,34 +113,34 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #3B82F6;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #003C71;
 }
 
 .new-card-header-title {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
-  color: #111827;
+  color: #003C71;
   margin: 0;
 }
 
 .new-card-view-button {
   background: transparent;
   border: none;
-  color: #3B82F6;
-  font-size: 16px;
+  color: #003C71;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 8px;
   transition: background 0.2s ease;
 }
 .new-card-view-button:hover {
-  background: #EFF6FF;
+  background: #EEF4FF;
 }
 
 /* Cards grid */
@@ -156,53 +156,54 @@
 
 /* Individual option card */
 .new-card-option {
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 20px;
   margin: 8px;
-  min-width: 220px;
+  min-width: 180px;
   flex: 1 1 calc(25% - 16px);
   max-width: calc(25% - 16px);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.22s ease;
+  border: 1.5px solid #DEE0E2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   transform: translateY(0);
   box-sizing: border-box;
+  background: #ffffff;
 }
 .new-card-option:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-4px);
 }
 
-/* Icon wrapper */
+/* Icon wrapper — rounded square */
 .new-card-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   color: #fff;
-  font-size: 24px;
+  flex-shrink: 0;
 }
 .new-card-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   fill: #fff;
 }
 
 /* Service name and access row */
 .new-card-service-name {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
-  color: #111827;
-  margin-bottom: 8px;
+  color: #1F1F1F;
+  margin-bottom: 10px;
+  line-height: 1.4;
 }
 
 .new-card-access {
-  font-size: 14px;
-  color: #6B7280;
+  font-size: 12px;
+  color: #626A6E;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -210,8 +211,9 @@
 
 /* Arrow */
 .new-card-arrow {
-  color: #3B82F6;
-  font-size: 18px;
+  color: #003C71;
+  display: flex;
+  align-items: center;
 }
 
 /* Per-index background classes (backgrounds for the card root) */

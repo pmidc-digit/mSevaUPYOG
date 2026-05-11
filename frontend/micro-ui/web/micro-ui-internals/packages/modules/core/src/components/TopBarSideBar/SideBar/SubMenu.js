@@ -1,9 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  ArrowForward,
-  ArrowVectorDown,
-  ArrowDirection,
   HomeIcon,
   ComplaintIcon,
   BPAHomeIcon,
@@ -17,6 +14,17 @@ import {
   FinanceChartIcon,
   CollectionIcon,
 } from "@mseva/digit-ui-react-components";
+
+const ChevronRight = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+const ChevronDown = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
 import { useTranslation } from "react-i18next";
 import ReactTooltip from "react-tooltip";
 
@@ -53,7 +61,7 @@ const SubMenu = ({ item, onLinkClick }) => {
       <div className="submenu-container">
         <div className={`sidebar-link  ${pathname === item?.navigationURL ? "active" : ""}`}>
           <div className="actions">
-            {leftIcon}
+            <span className="nav-icon-box">{leftIcon}</span>
             {item.navigationURL?.indexOf("/digit-ui") === -1 ? (
               <a
                 data-tip="React-tooltip"
@@ -99,7 +107,7 @@ const SubMenu = ({ item, onLinkClick }) => {
         <div className="submenu-container">
           <div onClick={item.links && showSubnav} className={`sidebar-link`}>
             <div className="actions">
-              {leftIcon}
+              <span className="nav-icon-box">{leftIcon}</span>
               <div data-tip="React-tooltip" data-for={`jk-side-${getModuleName}`}>
                 <span> {trimModuleName} </span>
 
@@ -112,7 +120,9 @@ const SubMenu = ({ item, onLinkClick }) => {
                 <span className="tooltiptext">{t(`ACTION_TEST_${getModuleName}`)}</span>
               </div>{" "} */}
             </div>
-            <div> {item.links && subnav ? <ArrowVectorDown /> : item.links ? <ArrowForward /> : null} </div>
+            <span className="nav-arrow">
+              {item.links && subnav ? <ChevronDown /> : item.links ? <ChevronRight /> : null}
+            </span>
           </div>
         </div>
 

@@ -7,7 +7,7 @@ RUN apk add --no-cache \
     g++ \
     git
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.1.68-UAT.20
+RUN yarn add @mseva/digit-ui-libraries@1.1.68-UAT.21
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
@@ -17,7 +17,7 @@ RUN yarn add @mseva/digit-ui-module-noc@1.0.78-UAT.16
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32-UAT.2
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.23
 RUN yarn add @mseva/digit-ui-module-core@1.0.66-UAT.10
-RUN yarn add @mseva/digit-ui-module-common@1.1.88-UAT.15
+RUN yarn add @mseva/digit-ui-module-common@1.1.88-UAT.16
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-UAT.16
@@ -31,8 +31,8 @@ RUN yarn add @mseva/upyog-ui-module-chb@1.1.91-UAT.9
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.44-UAT.7
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-UAT.7
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29-UAT.5
-RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-UAT.4
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-UAT.15
+RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-UAT.5
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-UAT.16
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-UAT.8
 ARG WORK_DIR
 WORKDIR /app

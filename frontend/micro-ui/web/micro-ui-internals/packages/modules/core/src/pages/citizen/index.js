@@ -72,13 +72,18 @@ const Home = ({
     [
       {
         name: "actions-test",
-        filter: "[?(@.url == 'digit-ui-card')]",
+        // Keep default digit-ui cards, and include only PT_MY_PROPERTIES from mseva-ui-card
+        filter: "[?(@.url == 'digit-ui-card' || (@.url == 'mseva-ui-card' && @.name == 'PT_MY_PROPERTIES'))]",
       },
     ],
     {
       select: (data) => {
         const formattedData = data?.["ACCESSCONTROL-ACTIONS-TEST"]?.["actions-test"]
-          ?.filter((el) => el.enabled === true)
+          ?.filter(
+            (el) =>
+              el.enabled === true &&
+              (el.url === "digit-ui-card" || (el.url === "mseva-ui-card" && el.name === "PT_MY_PROPERTIES"))
+          )
           .reduce((a, b) => {
             a[b.parentModule] = a[b.parentModule]?.length > 0 ? [b, ...a[b.parentModule]] : [b];
             return a;

@@ -315,7 +315,7 @@ const OwnerForm1 = (_props) => {
                 select={props.onChange}
                 optionKey="i18nkey"
                 onBlur={props.onBlur}
-                disable={isEdit}
+                disable={false}
                 t={t}
               />
             )}
@@ -338,7 +338,7 @@ const OwnerForm1 = (_props) => {
                 select={props.onChange}
                 optionKey="i18nkey"
                 onBlur={props.onBlur}
-                disable={isEdit}
+                disable={false}
                 t={t}
               />
             )}
@@ -432,7 +432,7 @@ const OwnerForm1 = (_props) => {
                     setFocusIndex({ index: -1 });
                     props.onBlur(e);
                   }}
-                  disable={isEdit}
+                  disable={false}
                 />
               )}
             />

@@ -176,7 +176,10 @@ const CitizenHomeCardAccordian = ({ header, links = [], state, Icon, Info, isInf
             } ${isMobile ? "mobile" : ""}`} >
             {links.map((link, index) => {
               const colorScheme = cardColors[index % cardColors.length]
-            
+              const linkPathname =
+                typeof link?.link === "string" && link.link.startsWith("/mseva-ui")
+                  ? link.link.replace("/mseva-ui", "/digit-ui")
+                  : link?.link
 
               const isExternalLink =
                 link?.parentModule?.toUpperCase() === "BIRTH" ||
@@ -206,7 +209,7 @@ const CitizenHomeCardAccordian = ({ header, links = [], state, Icon, Info, isInf
                 return (
                   <Link
                     key={index}
-                    to={{ pathname: link.link, state: link.state }}
+                    to={{ pathname: linkPathname, state: link.state }}
                    
                      className="new-accordion-card"
                     onMouseEnter={(e) => {

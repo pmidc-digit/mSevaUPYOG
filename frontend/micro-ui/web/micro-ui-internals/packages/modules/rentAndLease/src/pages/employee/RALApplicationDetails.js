@@ -127,7 +127,6 @@ const RALApplicationDetails = () => {
         }),
     });
   }
-
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles) && e.action !== "EDIT";

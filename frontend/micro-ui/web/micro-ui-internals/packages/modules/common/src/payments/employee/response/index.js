@@ -38,7 +38,7 @@ export const SuccessfulPayment = (props) => {
   props.setLink(combineResponseFSM);
   const checkParam = useParams();
   const queryParams = new URLSearchParams(location.search);
-
+    const [allowFetchBill, setallowFetchBill] = useState(false);
   const egPgTxnId = queryParams.get("eg_pg_txnid");
   const razorpayPaymentId = queryParams.get("razorpayPaymentId");
   const razorpayOrderId = queryParams.get("razorpayOrderId");
@@ -83,6 +83,31 @@ export const SuccessfulPayment = (props) => {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
+  const checkRecieptNumber = dataCheck?.payments?.Payments?.[0]?.paymentDetails[0]?.receiptNumber;
+
+
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId,
+      businessService: businessService,
+      receiptNumbers: checkRecieptNumber,
+    },
+    {
+      retry: false,
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+      select: (dat) => {
+        return dat.Payments[0];
+      },
+      enabled: allowFetchBill,
+    }
+  );
+
+    useEffect(() => {
+      if (dataCheck && dataCheck.txnStatus && dataCheck.txnStatus !== "FAILURE") {
+        setallowFetchBill(true);
+      }
+    }, [dataCheck]);
 
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
@@ -868,9 +893,7 @@ const printMCollectReceipt = async () => {
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
   };
-  if (isLoading) return <Loader />;
-
-  const checkRecieptNumber = dataCheck?.payments?.Payments?.[0]?.paymentDetails[0]?.receiptNumber;
+  if (isLoading || recieptDataLoading) return <Loader />;
 
   return (
     <React.Fragment>
@@ -1093,6 +1116,7 @@ const printMCollectReceipt = async () => {
                             businessService: businessService,
                             receiptNumber : receiptNumber,
                             rootKey: "PAYMENTS",
+                            billOrPaymentResponse: reciept_data,
                           })
                   }
                 >

@@ -16,9 +16,9 @@ const FilterFormFieldsComponent = ({
   loadingApplicationTypesOfBPA,
   localitiesForEmployeesCurrentTenant,
   loadingLocalitiesForEmployeesCurrentTenant,
+  cities, selectedTenantIdState, setSelectedTenantIdValue, tenantId
 }) => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getStateId();
 
 
   const availableOptions = [
@@ -34,6 +34,19 @@ const FilterFormFieldsComponent = ({
   console.log("status heres===>", statuses);
   return (
     <>
+      {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
+        <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+        {cities && cities.length > 0 ? (
+          <Dropdown
+            option={cities}
+            selected={cities.find((city) => city.code === selectedTenantIdState?.tenantId)}
+            select={(value) => {
+              setSelectedTenantIdValue("tenantId", value.code);
+            }}
+            optionKey="name"
+          />
+        ) : null}
+      </FilterFormField> : null}
       <FilterFormField>
         <Controller
           name="assignee"

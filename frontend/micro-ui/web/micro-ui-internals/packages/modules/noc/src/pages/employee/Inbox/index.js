@@ -1,17 +1,19 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
-import { InboxComposer, ComplaintIcon, Header, Loader  } from "@mseva/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, Loader, SubmitBar  } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { businessServiceList } from "../../../utils";
+import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   const [employeeName, setEmployeeName] = useState("");
   const [employeeRole, setEmployeeRole] = useState("");
   const { data: cities } = Digit.Hooks.useTenants();
+  const isMobile = window.Digit.Utils.browser.isMobile();
   
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -270,11 +272,11 @@ const Inbox = ({ parentRoute }) => {
   return (
     <>
       <Header>
-        {employeeData &&
-          !isLoading &&
-          `Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
-        
+        {employeeData && !isLoading &&`Welcome ${employeeName}, ${t(`COMMON_MASTERS_DESIGNATION_${employeeRole}`)}`}
+        <div style={{...{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }, ...isMobile?{flexDirection: "column"}:{} }}>
         <div> {t("ES_COMMON_INBOX")} {totalCount ? <p className="inbox-count">{totalCount}</p> : null}</div>
+        {<SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
+        </div>
       </Header>
       <InboxComposer
         {...{

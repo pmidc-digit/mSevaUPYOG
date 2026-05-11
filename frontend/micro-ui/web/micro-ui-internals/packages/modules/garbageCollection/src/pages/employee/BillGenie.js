@@ -115,7 +115,7 @@ const BillGenie = () => {
       Cell: ({ row }) => {
         return (
           <div style={{ display: "flex", gap: "15px" }}>
-            <SubmitBar label="Download" onSubmit={() => getReceiptSearch(getBills)} />
+            <SubmitBar label="Download" onSubmit={() => getReceiptSearch(getBills[row.original._index])} />
             {row?.original?.status == "Active" && (
               <SubmitBar
                 label="Pay"
@@ -132,7 +132,8 @@ const BillGenie = () => {
   ];
 
   const slotlistRows =
-    getBills?.map((bills) => ({
+    getBills?.map((bills, index) => ({
+      _index: index,    
       uuid: bills?.consumerCode,
       createdtime: bills?.billDate,
       status: t(bills.status),

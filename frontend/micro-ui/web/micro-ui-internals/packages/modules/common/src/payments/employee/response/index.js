@@ -51,6 +51,7 @@ export const SuccessfulPayment = (props) => {
   console.log("businessService", businessService);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   receiptNumber = receiptNumber?.replace(/%2F/g, "/");
+  console.log('receiptNumber in response page', receiptNumber)
   const { data = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -132,7 +133,7 @@ export const SuccessfulPayment = (props) => {
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
-      businessService === "GC.ONE_TIME_FEE"
+      businessService === "GC.ONE_TIME_FEE" || businessService === "GC"
         ? "garbage-receipt"
         : businessService === "rl-services"
         ? "rentandlease-receipt"
@@ -862,6 +863,7 @@ export const SuccessfulPayment = (props) => {
             {businessService !== "chb-services" &&
               businessService !== "adv-services" &&
               businessService !== "GC.ONE_TIME_FEE" &&
+              businessService !== "GC" &&
               businessService !== "pet-services" &&
               businessService !== "NDC" &&
               businessService !== "Challan_Generation" && (
@@ -1036,7 +1038,7 @@ export const SuccessfulPayment = (props) => {
               </div>
             ) : null}
 
-            {businessService === "rl-services" || businessService === "GC.ONE_TIME_FEE" ? (
+            {businessService === "rl-services" || businessService === "GC.ONE_TIME_FEE" || businessService === "GC"  ? (
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
                 <div
                   className="primary-label-btn d-grid"

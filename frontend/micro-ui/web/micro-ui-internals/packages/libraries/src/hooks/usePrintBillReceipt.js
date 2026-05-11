@@ -36,6 +36,11 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
         return res?.GarbageConnection?.[0] || null;
       }
 
+      case "GC": {
+        const res = await Digit.GCService.search({ tenantId, filters });
+        return res?.GarbageConnection?.[0] || null;
+      }
+
       default:
         console.warn("No search handler for service:", serviceType);
         return null;
@@ -67,7 +72,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
           identifier,
 
           ...(searchData && {
-            [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : undefined]: searchData,
+            [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
           }),
 
           ...commonMeta,
@@ -137,7 +142,7 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
             identifier,
 
             ...(searchData && {
-              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : undefined]: searchData,
+              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
             }),
             generatedAt,
           },
@@ -166,13 +171,19 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
 export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, t, pdfkey }) => {
   const printReceipt = useCallback(
     async ({ billOrPaymentResponse = null, businessService, receiptNumber = null, rootKey = "BILLS" }) => {
+
+      console.log('receiptNumber in hook', receiptNumber)
       try {
         setLoader?.(true);
 
         let sourceData = billOrPaymentResponse;
 
         if (receiptNumber) {
-          const billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
+          const encodedReceiptNumber = encodeURIComponent(receiptNumber);
+          console.log('encodedReceiptNumber', encodedReceiptNumber);
+
+          const billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: encodedReceiptNumber });
+
           sourceData = billPayments;
         }
 
@@ -229,13 +240,11 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
           fileStoreIds: response.filestoreIds[0],
         });
 
-        
-      response?.filestoreIds?.forEach((id) => {
-        if (fileStore[id]) {
-          window.open(fileStore[id], "_blank");
-        }
-      });
-
+        response?.filestoreIds?.forEach((id) => {
+          if (fileStore[id]) {
+            window.open(fileStore[id], "_blank");
+          }
+        });
       } catch (err) {
         console.error("error in receipt generation", err);
         setShowToast?.({

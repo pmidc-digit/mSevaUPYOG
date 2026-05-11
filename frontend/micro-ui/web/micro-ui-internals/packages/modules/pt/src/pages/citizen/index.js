@@ -9,6 +9,10 @@ import PaymentDetails from "../../utils/PaymentDetails";
 
 const PropertyBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
+  const pathname = location.pathname;
+  const isPtPropertyRoute = pathname.includes("pt/property/");
+  const isMyPropertiesRoute = pathname.includes("my-properties");
+
   const crumbs = [
     {
       path: "/digit-ui/citizen",
@@ -18,13 +22,18 @@ const PropertyBreadCrumbs = ({ location }) => {
     {
       path: "/digit-ui/citizen/pt-home",
       content: `${t("Property")} Home`,
-      show: location.pathname.includes("pt/property/") ? true : false,
+      show: isPtPropertyRoute,
     },
-
+    // Same destination as MDMS PT_MY_PROPERTIES (navigationURL → use /digit-ui/... in MDMS for SPA)
+    {
+      path: "/digit-ui/citizen/pt/property/my-properties",
+      content: t("PT_MY_PROPERTIES"),
+      show: isMyPropertiesRoute,
+    },
     {
       path: "/digit-ui/citizen/pt-home",
       content: t("PET_SERVICE"),
-      show: location.pathname.includes("pt/property/test") ? true : false,
+      show: pathname.includes("pt/property/test"),
     },
   ];
   return <BreadCrumb crumbs={crumbs} />;

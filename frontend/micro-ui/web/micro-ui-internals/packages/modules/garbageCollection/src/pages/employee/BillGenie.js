@@ -27,6 +27,12 @@ const BillGenie = () => {
   const [getBills, setBills] = useState([]);
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
+  const { printReceipt } = Digit.Hooks.usePrintBillReceipt({
+    tenantId,
+    setLoader,
+    t,
+    pdfkey: "garbage-bill"
+  });
   const {
     control,
     handleSubmit,
@@ -69,6 +75,7 @@ const BillGenie = () => {
     }
   };
 
+
   const handleApiData = async () => {
     setLoader(true);
     const filters = {};
@@ -108,7 +115,7 @@ const BillGenie = () => {
       Cell: ({ row }) => {
         return (
           <div style={{ display: "flex", gap: "15px" }}>
-            <SubmitBar label="Download" onSubmit={() => getRecieptSearch({ tenantId, bills: getBills })} />
+            <SubmitBar label="Download" onSubmit={() => getReceiptSearch(getBills)} />
             {row?.original?.status == "Active" && (
               <SubmitBar
                 label="Pay"
@@ -131,22 +138,15 @@ const BillGenie = () => {
       status: t(bills.status),
     })) || [];
 
-  const getRecieptSearch = async ({ tenantId, bills }) => {
-    try {
-      setLoader(true);
-      const response = await Digit.PaymentService.generatePdf(tenantId, { Bills: [...bills] }, "garbage-bill");
-
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    } catch (error) {
-      console.error("Receipt generation failed", error);
-    } finally {
-      setLoader(false);
-    }
+  
+  const getReceiptSearch = async (bill) => {
+    printReceipt({
+      billOrPaymentResponse: bill, 
+      businessService: "GC.ONE_TIME_FEE",
+      rootKey: "BILLS",
+    });
   };
+
 
   return (
     <React.Fragment>

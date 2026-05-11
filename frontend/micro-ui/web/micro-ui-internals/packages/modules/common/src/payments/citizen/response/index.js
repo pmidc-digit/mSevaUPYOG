@@ -114,6 +114,7 @@ const WrapPaymentComponent = (props) => {
     }
   );
 
+  console.log('reciept_data in citizen response', reciept_data)
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
       business_service === "BPA.NC_SAN_FEE"
@@ -1314,8 +1315,9 @@ const WrapPaymentComponent = (props) => {
                 : () =>
                     printBillReceipt({
                       businessService: business_service,
-                      receiptNumber: receiptNumber,
+                      receiptNumber: receiptNumber || consumerCode,
                       rootKey: "PAYMENTS",
+                      billOrPaymentResponse: reciept_data,
                     })
             }
           >

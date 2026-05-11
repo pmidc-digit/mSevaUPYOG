@@ -188,13 +188,13 @@ const ChallanApplicationDetails = () => {
     onClick: () => getAcknowledgement(),
   });
 
-  if (acknowledgementIds) {
+  if (acknowledgementIds || id) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
         printBillReceipt({
           businessService: "GC.ONE_TIME_FEE",
-          receiptNumber: acknowledgementIds,
+          receiptNumber: acknowledgementIds || id,
           rootKey: "PAYMENTS",
         }),
     });

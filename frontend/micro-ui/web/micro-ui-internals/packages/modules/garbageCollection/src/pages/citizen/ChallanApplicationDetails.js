@@ -125,6 +125,16 @@ const ChallanApplicationDetails = () => {
 
   // sessionStorage.setItem("chb", JSON.stringify(application));
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "GC.ONE_TIME_FEE",
+      consumerCodes: acknowledgementIds,
+      isEmployee: false,
+    },
+    { enabled: acknowledgementIds ? true : false }
+  );
+
   const getAcknowledgement = async () => {
     setLoader(true);
     try {
@@ -166,7 +176,7 @@ const ChallanApplicationDetails = () => {
   });
 
   
-  if (acknowledgementIds) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
@@ -269,7 +279,7 @@ const ChallanApplicationDetails = () => {
 
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
       </div>
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

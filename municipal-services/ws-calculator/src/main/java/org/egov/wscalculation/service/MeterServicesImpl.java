@@ -5,18 +5,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.HashMap;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wscalculation.repository.WSCalculationDao;
 import org.egov.wscalculation.validator.WSCalculationValidator;
 import org.egov.wscalculation.validator.WSCalculationWorkflowValidator;
 import org.egov.wscalculation.web.models.AuditDetails;
+import org.egov.wscalculation.constants.WSCalculationConstant;
+import org.egov.wscalculation.web.models.BulkMeterReading;
 import org.egov.wscalculation.web.models.CalculationCriteria;
 import org.egov.wscalculation.web.models.CalculationReq;
 import org.egov.wscalculation.web.models.CancelDemandReq;
-import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.web.models.MeterConnectionRequest;
 import org.egov.wscalculation.web.models.MeterConnectionRequests;
 import org.egov.wscalculation.web.models.MeterReading;
@@ -71,7 +72,7 @@ public class MeterServicesImpl implements MeterService {
 			wsCalculationValidator.validateMeterReading(meterConnectionRequest, true);
 		}
 		enrichmentService.enrichMeterReadingRequest(meterConnectionRequest);
-		// ✅ NEW: Calculate and set consumption before saving
+	    // ✅ NEW: Calculate and set consumption before saving
 	    setConsumption(meterConnectionRequest.getMeterReading());
 		meterReadingsList.add(meterConnectionRequest.getMeterReading());
 		wSCalculationDao.saveMeterReading(meterConnectionRequest);
@@ -80,6 +81,7 @@ public class MeterServicesImpl implements MeterService {
 		}
 		return meterReadingsList;
 	}
+	
 	
 	/**
 	 * ✅ Calculates and sets consumption on the MeterReading before persisting.
@@ -302,7 +304,8 @@ public class MeterServicesImpl implements MeterService {
 
 	    return meterReadingslist;
 	}
-	
+	/* PI-20175 BULKMETERREADING*/
+
 	private void generateDemandForMeterReading(List<MeterReading> meterReadingsList, RequestInfo requestInfo) {
 		List<CalculationCriteria> criteriaList = new ArrayList<>();
 		meterReadingsList.forEach(reading -> {
@@ -315,6 +318,11 @@ public class MeterServicesImpl implements MeterService {
 			criteria.setFrom(reading.getLastReadingDate());
 			criteria.setTo(reading.getCurrentReadingDate());
 			criteria.setMeterStatus(reading.getMeterStatus());
+			// ✅ NEW: pass isBulkMeter so EstimationService can pick correct
+			// maxReading from MDMS when meterStatus == "Reset":
+			//   isBulkMeter=true  → bulkMeterMaxReading (e.g. 100000)
+			//   isBulkMeter=false → meterMaxReading     (e.g. 10000)
+			criteria.setIsBulkMeter(reading.getIsBulkMeter());
 			criteriaList.add(criteria);
 		});
 		CalculationReq calculationRequest = CalculationReq.builder().requestInfo(requestInfo)
@@ -336,6 +344,10 @@ public class MeterServicesImpl implements MeterService {
 	@Override
 	public List<MeterReading> searchMeterReadings(MeterReadingSearchCriteria criteria, RequestInfo requestInfo) {
 		return wSCalculationDao.searchMeterReadings(criteria);
+	}
+	
+	public List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria, RequestInfo requestInfo) {
+		return wSCalculationDao.searchMeterReadingsV2(criteria);
 	}
 
 

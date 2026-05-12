@@ -9,12 +9,19 @@ import org.kabeja.batik.tools.SAXPDFSerializer;
 import org.kabeja.dxf.helpers.Point;
 import org.springframework.stereotype.Service;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 public class DxfToPdfConverterService {
@@ -117,13 +124,131 @@ public class DxfToPdfConverterService {
         // Sync Header Variables to the new Padded View
         updateHeaderExtents(doc, x, y, x + w, y + h);
 
-        generator.generate(doc, serializer, props);
+        // ── FONT FIX ──────────────────────────────────────────────────────────
+        // Wrap the serializer so every SAX event passes through
+        // FontNormalizingContentHandler before reaching the PDF serializer.
+        // This rewrites ALL font-family values to Arial, preventing mixed-font
+        // DXF files from producing misaligned / overflowing labels in the PDF.
+        // No other part of the pipeline is touched.
+        generator.generate(doc, new FontNormalizingContentHandler(serializer), props);
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // FontNormalizingContentHandler
+    //
+    // A thin SAX ContentHandler decorator that replaces every font-family
+    // value with "Arial" — both as a standalone attribute and inside inline
+    // CSS style strings — before delegating to the real handler.
+    //
+    // Why SAX level?  SVGGenerator streams SAX events directly into the PDF
+    // serializer; there is no intermediate SVG string to patch.  Intercepting
+    // at this layer is therefore the *minimal* change that works regardless of
+    // how many different fonts the DXF file references.
+    // ══════════════════════════════════════════════════════════════════════════
+    private static class FontNormalizingContentHandler implements ContentHandler {
+
+        // Matches "font-family : SomeFont" (with optional whitespace, any value)
+        private static final Pattern FONT_FAMILY_CSS =
+                Pattern.compile("font-family\\s*:\\s*[^;\"']+",
+                        Pattern.CASE_INSENSITIVE);
+
+        private final ContentHandler delegate;
+
+        FontNormalizingContentHandler(ContentHandler delegate) {
+            this.delegate = delegate;
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+
+        /**
+         * Normalise an inline CSS style value such as
+         * "font-family:Romans;font-size:12;fill:#000000"
+         */
+        private String normalizeCssStyle(String style) {
+            if (style == null) return null;
+            return FONT_FAMILY_CSS.matcher(style).replaceAll("font-family:Arial");
+        }
+
+        /**
+         * Return a (possibly new) Attributes object where every font-family
+         * reference has been replaced by Arial.  Uses a lazy copy so unchanged
+         * attribute lists are never copied.
+         */
+        private Attributes normalizeAttributes(Attributes atts) {
+            AttributesImpl copy = null; // created only when a change is needed
+
+            for (int i = 0; i < atts.getLength(); i++) {
+                String local = atts.getLocalName(i);
+                String value = atts.getValue(i);
+                String rewritten = value;
+
+                if ("font-family".equalsIgnoreCase(local)) {
+                    // e.g.  font-family="Romans"
+                    rewritten = "Arial";
+                } else if ("style".equalsIgnoreCase(local)) {
+                    // e.g.  style="font-family:Romans;font-size:14"
+                    rewritten = normalizeCssStyle(value);
+                }
+
+                if (!rewritten.equals(value)) {
+                    if (copy == null) {
+                        copy = new AttributesImpl(atts); // lazy copy
+                    }
+                    copy.setValue(i, rewritten);
+                }
+            }
+
+            return (copy != null) ? copy : atts;
+        }
+
+        // ── ContentHandler ────────────────────────────────────────────────────
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes atts)
+                throws SAXException {
+            delegate.startElement(uri, localName, qName, normalizeAttributes(atts));
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            delegate.endElement(uri, localName, qName);
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            delegate.characters(ch, start, length);
+        }
+
+        @Override public void startDocument() throws SAXException { delegate.startDocument(); }
+        @Override public void endDocument()    throws SAXException { delegate.endDocument(); }
+
+        @Override public void startPrefixMapping(String prefix, String uri) throws SAXException {
+            delegate.startPrefixMapping(prefix, uri);
+        }
+        @Override public void endPrefixMapping(String prefix) throws SAXException {
+            delegate.endPrefixMapping(prefix);
+        }
+        @Override public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+            delegate.ignorableWhitespace(ch, start, length);
+        }
+        @Override public void processingInstruction(String target, String data) throws SAXException {
+            delegate.processingInstruction(target, data);
+        }
+        @Override public void skippedEntity(String name) throws SAXException {
+            delegate.skippedEntity(name);
+        }
+        @Override public void setDocumentLocator(Locator locator) {
+            delegate.setDocumentLocator(locator);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Everything below is unchanged from the original
+    // ══════════════════════════════════════════════════════════════════════════
 
     private void updateHeaderExtents(DXFDocument doc, double minX, double minY, double maxX, double maxY) {
         DXFHeader header = doc.getDXFHeader();
         if (header != null) {
-            // Note: Use String.valueOf to satisfy the compiler
             DXFVariable maxVar = new DXFVariable("$EXTMAX");
             maxVar.setValue("10", String.valueOf(maxX));
             maxVar.setValue("20", String.valueOf(maxY));
@@ -187,28 +312,22 @@ public class DxfToPdfConverterService {
                 String raw = original.getText();
                 if (raw == null) continue;
 
-                // Normalize line endings
                 String[] lines = raw
                         .replace("\r\n", "\n")
                         .replace('\r', '\n')
                         .split("\n");
 
                 if (lines.length <= 1) {
-                    // Single line — no change needed
                     normalizePlanInfoText(original);
                     continue;
                 }
 
-                // ── MULTI-LINE SPLIT ──
-                // Each line gets its own Y offset based on text height
                 double startX = original.getInsertPoint().getX();
                 double startY = original.getInsertPoint().getY();
-                double lineHeight = original.getHeight() * 1.5; // 1.5x for spacing
+                double lineHeight = original.getHeight() * 1.5;
 
-                // Set first line on original entity
                 original.setText(lines[0]);
 
-                // Create new DXFText entities for remaining lines
                 for (int i = 1; i < lines.length; i++) {
                     DXFText newLine = new DXFText();
                     newLine.setText(lines[i]);
@@ -216,7 +335,6 @@ public class DxfToPdfConverterService {
                     newLine.setColor(original.getColor());
                     newLine.setLineWeight(-1);
 
-                    // setInsertPoint nahi hai — directly getInsertPoint() pe set karo
                     newLine.getInsertPoint().setX(startX);
                     newLine.getInsertPoint().setY(startY - (i * lineHeight));
                     newLine.getInsertPoint().setZ(0.0);
@@ -298,14 +416,12 @@ public class DxfToPdfConverterService {
             System.out.println("FULL DXF ANALYSIS REPORT");
             System.out.println("==========================================");
 
-            // 1. Iterate through all Layers
             Iterator layerIterator = doc.getDXFLayerIterator();
             while (layerIterator.hasNext()) {
                 DXFLayer layer = (DXFLayer) layerIterator.next();
                 System.out.println("\nLAYER: " + layer.getName());
                 System.out.println("------------------------------------------");
 
-                // 2. Get all Entity Types available on this specific layer
                 Iterator typeIterator = layer.getDXFEntityTypeIterator();
 
                 if (!typeIterator.hasNext()) {
@@ -329,7 +445,6 @@ public class DxfToPdfConverterService {
     }
 
     private void processEntity(Object obj, String type) {
-        // --- LINE MEASUREMENTS ---
         if (obj instanceof DXFLine) {
             DXFLine line = (DXFLine) obj;
             double length = Math.sqrt(
@@ -340,35 +455,25 @@ public class DxfToPdfConverterService {
                     length, line.getStartPoint().getX(), line.getStartPoint().getY(),
                     line.getEndPoint().getX(), line.getEndPoint().getY());
         }
-
-        // --- POLYLINE / LWPOLYLINE (Plans, Walls, Boundaries) ---
         else if (obj instanceof DXFPolyline) {
             DXFPolyline poly = (DXFPolyline) obj;
             System.out.printf("  [POLYLINE] Total Perimeter: %.4f | Vertices: %d | Closed: %b%n",
                     poly.getLength(), poly.getVertexCount(), poly.isClosed());
         }
-
-        // --- TEXT & MTEXT (PlanInfo, Labels, Dimensions) ---
         else if (obj instanceof DXFText) {
             DXFText txt = (DXFText) obj;
-            // This covers both DXFText and DXFMText in most Kabeja versions
             String content = txt.getText();
             System.out.printf("  [TEXT/INFO] Content: \"%s\" | At: (%.2f, %.2f) | Height: %.2f%n",
                     content, txt.getInsertPoint().getX(), txt.getInsertPoint().getY(), txt.getHeight());
         }
-
-        // --- CIRCLES & ARCS ---
         else if (obj instanceof DXFCircle) {
             DXFCircle circle = (DXFCircle) obj;
             double circumference = 2 * Math.PI * circle.getRadius();
             System.out.printf("  [CIRCLE] Radius: %.4f | Circumference: %.4f | Center: (%.2f,%.2f)%n",
                     circle.getRadius(), circumference, circle.getCenterPoint().getX(), circle.getCenterPoint().getY());
         }
-
-        // --- CATCH ALL FOR OTHER TYPES ---
         else {
             System.out.println("  [ENTITY: " + type + "] Basic data found, but specialized measurement not implemented.");
         }
     }
-
 }

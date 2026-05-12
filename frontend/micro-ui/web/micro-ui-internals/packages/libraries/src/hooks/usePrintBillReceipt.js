@@ -208,7 +208,7 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
 
         console.log("hasPayments,normalizedPayments", hasPayments, normalizedPayments);
         if (!hasPayments && receiptNumber) {
-          let billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: encodeURIComponent(receiptNumber) });
+          let billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
 
           if (!billPayments?.Payments?.length) {
             billPayments = await Digit.PaymentService.recieptSearch(tenantId, businessService, { consumerCodes: receiptNumber });

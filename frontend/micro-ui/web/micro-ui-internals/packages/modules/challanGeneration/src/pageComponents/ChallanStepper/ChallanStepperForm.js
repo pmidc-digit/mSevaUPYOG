@@ -57,14 +57,15 @@ const ChallanStepperForm = () => {
       shouldUnregister: false,
     },
   });
-const getActs = (offenceType, offenceActData) =>
-  offenceType?.acts?.map(
-    (code) => offenceActData?.Challan?.Acts?.find((a) => a?.code === code)?.name
-  )?.filter(Boolean)?.join(", ") || "";
+  const getActs = (offenceType, offenceActData) =>
+    offenceType?.acts
+      ?.map((code) => offenceActData?.Challan?.Acts?.find((a) => a?.code === code)?.name)
+      ?.filter(Boolean)
+      ?.join(", ") || "";
 
   const onSubmit = async (data) => {
     let missingDocs = [];
-    const actString = getActs(data?.offenceType, OffenceActData); 
+    const actString = getActs(data?.offenceType, OffenceActData);
     docData?.Challan?.Documents?.forEach((doc) => {
       if (doc.required) {
         const hasFile = documentsData?.documents?.some((d) => d.documentType.includes(doc.code) && d.filestoreId);

@@ -3,7 +3,7 @@ import { Modal, Card, CheckBox } from "@mseva/digit-ui-react-components";
 import { useForm } from "react-hook-form";
 
 const Heading = (props) => {
-  return <h1 className="heading-m">{props.t("CHB_CANCEL")}</h1>;
+  return <h1 className="heading-m">{props.t("ADS_CANCEL_BOOKING")}</h1>;
 };
 
 const Close = () => (
@@ -45,7 +45,7 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
     >
       <Card style={{ boxShadow: "none" }}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CheckBox label={t("ADS_CONFIRM_CANCEL_BOOKING")} onChange={setdeclarationhandler} style={{ height: "auto" }} />
+          <CheckBox label={t("ADS_CANCEL_BOOKING")} onChange={setdeclarationhandler} style={{ height: "auto" }} />
         </form>
       </Card>
     </Modal>

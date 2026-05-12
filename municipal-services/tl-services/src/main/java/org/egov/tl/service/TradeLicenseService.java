@@ -499,6 +499,14 @@ public class TradeLicenseService {
 			};
             List<TradeLicense> searchResult = getLicensesWithOwnerInfo(tradeLicenseRequest);
             
+            if(businessService_BPA.equalsIgnoreCase(businessServicefromPath) && CollectionUtils.isEmpty(searchResult)) {
+            	String tenantId = tradeLicenseRequest.getLicenses().get(0).getTenantId();
+            	tradeLicenseRequest.getLicenses().forEach(license -> licence.setTenantId(null));
+            	searchResult = getLicensesWithOwnerInfo(tradeLicenseRequest);
+            	tradeLicenseRequest.getLicenses().forEach(license -> licence.setTenantId(tenantId));
+            }
+            	
+            
             validateLatestApplicationCancellation(tradeLicenseRequest, businessServiceMap);
 
             enrichmentService.enrichTLUpdateRequest(tradeLicenseRequest, businessServiceMap);
@@ -512,6 +520,9 @@ public class TradeLicenseService {
             Map<String, Difference> diffMap = diffService.getDifference(tradeLicenseRequest, searchResult);
             Map<String, Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessServiceMap, searchResult);
 
+            if(businessService_BPA.equalsIgnoreCase(businessServicefromPath))
+            	enrichmentService.checkBPAREGTradeTypeChange(tradeLicenseRequest, searchResult);
+            
             /*
              * call workflow service if it's enable else uses internal workflow process
              */

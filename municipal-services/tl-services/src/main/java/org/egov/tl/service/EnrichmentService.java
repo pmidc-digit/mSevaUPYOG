@@ -842,5 +842,22 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 
 		return CollectionUtils.isEmpty(licenses) ? null : licenses.get(0);
 	}
+	
+	/**
+	 * Change Application number if Trade type change
+	 * 
+	 * @param tradeLicenseRequest
+	 * @param searchResult
+	 */
+	public void checkBPAREGTradeTypeChange(TradeLicenseRequest tradeLicenseRequest, List<TradeLicense> searchResult) {
+		
+		String requestTradeType = tradeLicenseRequest.getLicenses().get(0).getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+		String searchTradeType = searchResult.get(0).getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0];
+		
+		if(!requestTradeType.equalsIgnoreCase(searchTradeType)){
+			setIdgenIds(tradeLicenseRequest);
+		}
+		
+	}
     
 }

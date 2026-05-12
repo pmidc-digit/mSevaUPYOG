@@ -1,3 +1,416 @@
+/* =============================================
+   Indian Government Theme Overrides
+   Replaces CDN-served @pmidc/upyog-css values
+   Primary: Deep Navy #003C71 | Accent: Saffron #B5451B
+   Font: Noto Sans (multilingual Indian script support)
+   Typography: Compact scale for data-dense layout
+   ============================================= */
+
+/* --- Typography scale (compact) --- */
+.text-heading-xl-dt { font-size: 40px !important; line-height: 48px !important; }
+.text-heading-xl    { font-size: 28px !important; line-height: 36px !important; }
+.text-heading-l-dt  { font-size: 30px !important; line-height: 36px !important; }
+.text-heading-l     { font-size: 22px !important; line-height: 30px !important; }
+.text-heading-m-dt  { font-size: 20px !important; line-height: 28px !important; }
+.text-heading-m     { font-size: 16px !important; line-height: 24px !important; }
+.text-heading-s     { font-size: 14px !important; line-height: 22px !important; }
+.text-caption-xl-dt { font-size: 22px !important; line-height: 28px !important; }
+.text-caption-xl    { font-size: 16px !important; line-height: 22px !important; }
+.text-caption-l-dt  { font-size: 20px !important; line-height: 24px !important; }
+.text-caption-l     { font-size: 15px !important; line-height: 19px !important; }
+.text-caption-m-dt  { font-size: 16px !important; line-height: 20px !important; }
+.text-caption-m     { font-size: 14px !important; line-height: 18px !important; }
+.text-form-field    { font-size: 14px !important; line-height: 18px !important; }
+.text-body-l-dt     { font-size: 16px !important; line-height: 24px !important; }
+.text-body-l        { font-size: 14px !important; line-height: 22px !important; }
+.text-body-s-dt     { font-size: 14px !important; line-height: 20px !important; }
+.text-body-s        { font-size: 12px !important; line-height: 16px !important; }
+.text-legend        { font-size: 16px !important; line-height: 20px !important; }
+.text-link          { font-size: 14px !important; line-height: 22px !important; }
+.text-text-btn      { font-size: 14px !important; line-height: 20px !important; }
+
+:root {
+  --digit-font-family: "Noto Sans", sans-serif;
+}
+
+/* Font */
+body,
+body * {
+  font-family: var(--digit-font-family) !important;
+}
+
+/* Background */
+.bg-primary-main  { background-color: #003C71 !important; }
+.bg-primary-light { background-color: #1A5CA8 !important; }
+.bg-primary-dark  { background-color: #002554 !important; }
+.bg-secondary     { background-color: #B5451B !important; }
+.bg-grey-bg       { background-color: #F3F2F1 !important; }
+.bg-grey-mid      { background-color: #DEE0E2 !important; }
+.bg-grey-light    { background-color: #F8F8F8 !important; }
+.bg-grey-dark     { background-color: #626A6E !important; }
+.bg-success       { background-color: #00703C !important; }
+.bg-error         { background-color: #D4351C !important; }
+.bg-focus         { background-color: #FFBF00 !important; }
+
+/* Text */
+.text-primary-main  { color: #003C71 !important; }
+.text-primary-light { color: #1A5CA8 !important; }
+.text-primary-dark  { color: #002554 !important; }
+.text-secondary     { color: #B5451B !important; }
+.text-text-primary  { color: #1F1F1F !important; }
+.text-text-secondary { color: #505A5F !important; }
+.text-link-normal   { color: #003C71 !important; }
+.text-link-hover    { color: #002554 !important; }
+.text-success       { color: #00703C !important; }
+.text-error         { color: #D4351C !important; }
+.text-grey-dark     { color: #626A6E !important; }
+
+/* Borders */
+.border-primary-main  { border-color: #003C71 !important; }
+.border-primary-light { border-color: #1A5CA8 !important; }
+.border-primary-dark  { border-color: #002554 !important; }
+.border-secondary     { border-color: #B5451B !important; }
+.border-border        { border-color: #B1B4B6 !important; }
+.border-input-border  { border-color: #0B0C0C !important; }
+.border-focus         { border-color: #FFBF00 !important; }
+.border-success       { border-color: #00703C !important; }
+.border-error         { border-color: #D4351C !important; }
+
+/* Navbar */
+.navbar {
+  background: #003C71 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Buttons — override hardcoded old-blue selectors from CDN */
+.selector-button-primary,
+.selector-button-border {
+  background-color: #003C71 !important;
+}
+.selector-button-primary:hover,
+.selector-button-border:hover {
+  background-color: #002554 !important;
+}
+.selector-button-secondary {
+  color: #003C71 !important;
+  border: 1px solid #003C71 !important;
+}
+.selector-button-secondary h2 {
+  color: #003C71 !important;
+}
+
+/* Submit bar (primary action button) */
+.submit-bar {
+  background-color: #003C71 !important;
+}
+.submit-bar:hover {
+  background-color: #002554 !important;
+}
+
+/* Links */
+a {
+  color: #003C71 !important;
+}
+a:hover {
+  color: #002554 !important;
+}
+
+/* Focus ring — golden yellow for accessibility */
+*:focus {
+  outline-color: #FFBF00 !important;
+}
+
+/* Card heading colour */
+.h1 {
+  color: #003C71 !important;
+}
+
+/* Body container background */
+.body-container {
+  background-color: #F3F2F1 !important;
+}
+
+/* Bread crumb */
+.bread-crumb {
+  color: #505A5F !important;
+}
+
+/* Back button */
+.back-btn,
+.back-btn2 {
+  color: #003C71 !important;
+  border-color: #003C71 !important;
+}
+
+/* ===================================================
+   Employee Desktop Sidebar — override CDN class styles
+   =================================================== */
+
+/* Compact sidebar item */
+.sidebar .sidebar-link {
+  padding: 8px 12px !important;
+  margin: 2px 6px !important;
+  border-left: 3px solid transparent !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  background-image: none !important;
+}
+
+/* Active: navy highlight (replaces CDN indigo→purple gradient) */
+.sidebar .sidebar-link.active {
+  color: #003C71 !important;
+  background: #EEF4FF !important;
+  background-image: none !important;
+  border-left-color: #003C71 !important;
+}
+.sidebar .sidebar-link.active svg {
+  fill: #003C71 !important;
+}
+.sidebar .sidebar-link.active .nav-icon-box {
+  background-color: #003C71 !important;
+}
+.sidebar .sidebar-link.active .nav-icon-box svg {
+  fill: #ffffff !important;
+}
+
+/* Hover */
+.sidebar .sidebar-link:hover {
+  background-color: rgba(0, 60, 113, 0.06) !important;
+  background-image: none !important;
+  color: #003C71 !important;
+  border-left-color: rgba(0, 60, 113, 0.2) !important;
+}
+.sidebar .sidebar-link:hover .nav-icon-box {
+  background-color: rgba(0, 60, 113, 0.1) !important;
+}
+.sidebar .sidebar-link:hover svg {
+  fill: #003C71 !important;
+}
+
+/* Icon box — compact 28px */
+.sidebar .nav-icon-box {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 7px !important;
+  background-color: #F0F4F9 !important;
+  transition: background-color 0.18s ease !important;
+  flex-shrink: 0 !important;
+}
+.sidebar .nav-icon-box svg {
+  width: 14px !important;
+  height: 14px !important;
+  fill: #626A6E !important;
+  margin: 0 !important;
+}
+
+/* Actions row gap */
+.sidebar .actions {
+  gap: 10px !important;
+}
+.sidebar .sidebar-link span {
+  margin-left: 0 !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+/* Chevron arrow — small and subtle */
+.sidebar .nav-arrow {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.18s ease, transform 0.2s ease;
+}
+.sidebar .sidebar-link:hover .nav-arrow,
+.sidebar .sidebar-link.active .nav-arrow {
+  opacity: 1;
+}
+.sidebar .nav-arrow svg {
+  width: 12px !important;
+  height: 12px !important;
+  fill: none !important;
+  stroke: #626A6E;
+  margin: 0 !important;
+}
+.sidebar .sidebar-link.active .nav-arrow svg {
+  stroke: #003C71;
+}
+
+/* Dropdown sub-links */
+.sidebar .dropdown-link {
+  font-size: 12px !important;
+  color: #505A5F !important;
+  padding: 7px 12px 7px 52px !important;
+  margin-left: 0 !important;
+  border-left: 2px solid transparent !important;
+  transition: all 0.15s ease !important;
+}
+.sidebar .dropdown-link:hover {
+  background: rgba(0, 60, 113, 0.05) !important;
+  color: #003C71 !important;
+  border-left-color: rgba(0, 60, 113, 0.25) !important;
+}
+.sidebar .dropdown-link.active {
+  color: #003C71 !important;
+  font-weight: 600 !important;
+  background: rgba(0, 60, 113, 0.04) !important;
+  border-left-color: #003C71 !important;
+}
+
+/* Search box inside sidebar */
+.sidebar .search-icon-wrapper {
+  background-color: #F3F2F1 !important;
+  border: 1px solid #DEE0E2 !important;
+  border-radius: 7px !important;
+  margin: 8px 10px 4px !important;
+  padding: 6px 10px !important;
+}
+.sidebar .search-icon-wrapper svg {
+  fill: #626A6E !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+.sidebar .employee-search-input {
+  font-size: 12px !important;
+  color: #1F1F1F !important;
+}
+
+/* Responsive: sidebar collapses to icon-only at 65px */
+@media (min-width: 640px) {
+  .employee .main {
+    margin-left: 70px !important;
+    transition: margin-left 0.25s ease !important;
+  }
+}
+
+/* =====================================================
+   Citizen Dashboard — override CDN-served SCSS classes
+   ===================================================== */
+
+/* Hero banner: navy gradient replaces old indigo→dark-blue */
+.hero-banner-styles {
+  background: linear-gradient(140deg, #003C71 0%, #1A5CA8 100%) !important;
+  border-radius: 16px !important;
+  padding: 52px 40px 44px !important;
+  margin: 20px 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.hero-title-styles {
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin-bottom: 8px !important;
+  letter-spacing: -0.3px !important;
+}
+.heroSubtitleStyles {
+  font-size: 15px !important;
+  color: rgba(255,255,255,0.9) !important;
+  margin-bottom: 26px !important;
+}
+.searchBarStyles {
+  max-width: 560px !important;
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 11px 18px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+}
+.searchInputStyles {
+  font-size: 13px !important;
+  color: #1F1F1F !important;
+}
+.searchIconStyles svg {
+  fill: #626A6E !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Services section wrapper */
+.ServicesSection {
+  padding: 0 8px !important;
+}
+
+/* Card grid — 4 columns desktop, 2 tablet, 1 mobile */
+.new-card-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 14px !important;
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 1100px) {
+  .new-card-cards-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 780px) {
+  .new-card-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .hero-title-styles { font-size: 24px !important; }
+  .heroSubtitleStyles { font-size: 13px !important; }
+  .hero-banner-styles { padding: 36px 20px 32px !important; }
+}
+@media (max-width: 480px) {
+  .new-card-cards-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* Cards — override flex-based sizing since we use CSS Grid now */
+.new-card-option {
+  flex: unset !important;
+  max-width: unset !important;
+  min-width: unset !important;
+  margin: 0 !important;
+  border-radius: 14px !important;
+  padding: 18px !important;
+  border: 1.5px solid #DEE0E2 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+  transition: all 0.22s ease !important;
+  background: #ffffff !important;
+}
+.new-card-icon {
+  border-radius: 12px !important;
+  width: 46px !important;
+  height: 46px !important;
+  margin-bottom: 12px !important;
+}
+.new-card-icon svg {
+  width: 22px !important;
+  height: 22px !important;
+  fill: #ffffff !important;
+}
+.new-card-service-name {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1F1F1F !important;
+  margin-bottom: 8px !important;
+  line-height: 1.4 !important;
+}
+.new-card-access {
+  font-size: 11px !important;
+  color: #626A6E !important;
+}
+
+/* Section header line */
+.new-card-header-section {
+  border-bottom: 2px solid #003C71 !important;
+  margin-bottom: 18px !important;
+}
+.new-card-header-title {
+  font-size: 18px !important;
+  color: #003C71 !important;
+}
+
+/* HomePageWrapper padding */
+.HomePageWrapper {
+  padding: 0 24px !important;
+}
+@media (max-width: 640px) {
+  .HomePageWrapper { padding: 0 12px !important; }
+}
+
+/* ===== employee-card-input (existing rule below) ===== */
+
 .employee-card-input {
     padding-left: 8px;
     outline: 2px solid transparent;

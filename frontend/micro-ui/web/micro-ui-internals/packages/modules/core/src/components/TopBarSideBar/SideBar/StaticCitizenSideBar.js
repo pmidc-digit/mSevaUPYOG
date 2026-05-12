@@ -198,17 +198,35 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           display: "flex",
           alignItems: "center",
           gap: "0.75rem",
-          color: isActive ? "#4f46e5" : "#374151",
+          padding: "0.5rem 1rem",
           cursor: "pointer",
           textDecoration: "none",
-          fontSize: "0.9375rem",
-          fontWeight: isActive ? "500" : "400",
-          marginLeft: "10px",
-          marginRight: "10px",
+          width: "100%",
         }}
       >
-        <span style={{ display: "flex", alignItems: "center", minWidth: "20px" }}>{leftIcon}</span>
-        <div className="menu-label">{itemComponent}</div>
+        <span style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          width: "34px", height: "34px", borderRadius: "8px", flexShrink: 0,
+          backgroundColor: isActive ? "#003C71" : "#F0F4F9",
+          color: isActive ? "#ffffff" : "#626A6E",
+          transition: "all 0.2s ease",
+        }}>
+          {leftIcon}
+        </span>
+        <div className="menu-label" style={{
+          flex: 1,
+          fontSize: "0.875rem",
+          fontWeight: isActive ? "600" : "400",
+          color: isActive ? "#003C71" : "#374151",
+          lineHeight: "1.4",
+        }}>
+          {itemComponent}
+        </div>
+        {isActive && (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#003C71" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        )}
       </span>
     )
 
@@ -305,8 +323,9 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             position: isMobile ? "static" : "fixed",
             top: isMobile ? "auto" : "0",
             left: isMobile ? "auto" : "0",
-            width: isMobile ? "100%" : "350px",
+            width: isMobile ? "100%" : "280px",
             overflowY: isMobile ? "auto" : "hidden",
+            boxShadow: "2px 0 12px rgba(0,0,0,0.08)",
           }}
         >
           {profileItem}
@@ -327,16 +346,16 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
                   key={index}
                   style={{
                     backgroundColor:
-                      pathname === item?.link || pathname === item?.sidebarURL ? "#eef2ff" : "transparent",
+                      pathname === item?.link || pathname === item?.sidebarURL ? "#EEF4FF" : "transparent",
                     borderLeft:
                       pathname === item?.link || pathname === item?.sidebarURL
-                        ? "3px solid #4f46e5"
+                        ? "3px solid #003C71"
                         : "3px solid transparent",
                     transition: "all 0.2s ease",
                   }}
                   onMouseEnter={(e) => {
                     if (pathname !== item?.link && pathname !== item?.sidebarURL) {
-                      e.currentTarget.style.backgroundColor = "#f9fafb"
+                      e.currentTarget.style.backgroundColor = "#F4F7FB"
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -352,14 +371,17 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
             <div
               className="sidebar-footer"
               style={{
-                borderTop: "1px solid #e5e7eb",
-                backgroundColor: "#f9fafb",
+                borderTop: "2px solid #DEE0E2",
+                backgroundColor: "#F3F2F1",
+                padding: "0.875rem 1rem",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
               }}
             >
-              <div style={{ fontSize: "0.75rem", color: "#6b7280", textAlign: "center" }}>
-                <p style={{ margin: "0 0 0.5rem 0" }}>© 2025 mSeva Punjab</p>
-                <p style={{ margin: "0" }}>Powered by UPMCGCL</p>
+              <div style={{ fontSize: "0.75rem", fontWeight: "600", color: "#003C71", letterSpacing: "0.02em" }}>
+                mSeva Punjab
               </div>
+              <div style={{ fontSize: "0.6875rem", color: "#505A5F" }}>Government of Punjab</div>
+              <div style={{ fontSize: "0.625rem", color: "#626A6E", marginTop: "2px" }}>© 2025 UPMCGCL. All rights reserved.</div>
             </div>
           </div>
         </div>

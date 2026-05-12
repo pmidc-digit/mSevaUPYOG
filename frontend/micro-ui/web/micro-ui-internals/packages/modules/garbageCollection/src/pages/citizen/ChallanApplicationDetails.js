@@ -177,7 +177,7 @@ const ChallanApplicationDetails = () => {
   });
 
   
-  if (acknowledgementIds) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>

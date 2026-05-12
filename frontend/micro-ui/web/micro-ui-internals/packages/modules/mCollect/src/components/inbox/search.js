@@ -60,7 +60,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   <CloseSvg />
                 </span>
               </div>
-            )} 
+            )}
             <div className="complaint-input-container" style={{ width: "100%", textAlign: "start" }}>
               {searchFields?.map((input, index) => (
                 <div key={input.name} className="input-fields">
@@ -78,7 +78,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                               <MobileNumber
                                 onChange={props.onChange}
                                 value={props.value}
-                                style={{width: "100%"}}
+                                style={{ width: "100%" }}
                                 componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
                               />
                             )}
@@ -100,33 +100,33 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   </span>
                 </div>
               ))}
-              
+
             </div>
             {isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%", display: "flex", alignItems: "center", justifyContent: "flex-end"}}>
-                  {type === "desktop" && !mobileView && (
-                    <SubmitBar
-                      className="submit-bar-search"
-                      label={t("CS_INBOX_SEARCH")}
-                      submit
-                    />
-                  )}
-                  {type === "desktop" && !mobileView && (
-                    <span style={{ paddingTop: "9px", margin: "0rem 2rem" }} className="clear-search">
-                      {clearAll()}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {type === "desktop" && !mobileView && !isInboxPage && (
-                <div className="search-action-wrapper">
-                  <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
-                  <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+              <div className="search-action-wrapper" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+                {type === "desktop" && !mobileView && (
+                  <SubmitBar
+                    className="submit-bar-search"
+                    label={t("CS_INBOX_SEARCH")}
+                    submit
+                  />
+                )}
+                {type === "desktop" && !mobileView && (
+                  <span style={{ paddingTop: "9px", margin: "0rem 2rem" }} className="clear-search">
                     {clearAll()}
-                  </div>
+                  </span>
+                )}
+              </div>
+            )}
+
+            {type === "desktop" && !mobileView && !isInboxPage && (
+              <div className="search-action-wrapper">
+                <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
+                <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
+                  {clearAll()}
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

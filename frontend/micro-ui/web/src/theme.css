@@ -1,0 +1,932 @@
+/* src/theme.css */
+
+/* 1. Global CSS Variables for the Theme */
+:root {
+  /* Premium Indigo & Blue Palette */
+  --theme-primary: #4F46E5;
+  /* Indigo 600 */
+  --theme-primary-hover: #4338CA;
+  /* Indigo 700 */
+  --theme-primary-light: #EEF2FF;
+  /* Indigo 50 */
+
+  --theme-secondary: #0EA5E9;
+  /* Light Blue 500 */
+  --theme-accent: #8B5CF6;
+  /* Violet 500 */
+
+  --theme-bg-main: #F3F4F6;
+  /* Cool Gray 100 */
+  --theme-bg-surface: rgba(255, 255, 255, 0.95);
+  /* Glassmorphism Base */
+
+  --theme-text-primary: #111827;
+  /* Gray 900 */
+  --theme-text-secondary: #4B5563;
+  /* Gray 600 */
+  --theme-text-muted: #9CA3AF;
+  /* Gray 400 */
+
+  --theme-border: #E5E7EB;
+  /* Gray 200 */
+
+  /* Typography */
+  --theme-font-family: 'Outfit', 'Roboto', 'Inter', sans-serif;
+
+  /* Borders & Shadows */
+  --theme-radius-sm: 6px;
+  --theme-radius-md: 10px;
+  --theme-radius-lg: 16px;
+  --theme-radius-xl: 24px;
+
+  --theme-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --theme-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --theme-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom Slim Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: var(--theme-radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* 2. Global Typography Overrides */
+body,
+.digit-ui-wrapper,
+div,
+span,
+p,
+a,
+button,
+input,
+textarea,
+select {
+  font-family: var(--theme-font-family) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--theme-font-family) !important;
+  color: var(--theme-text-primary);
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+body {
+  background-color: var(--theme-bg-main) !important;
+  color: var(--theme-text-primary);
+}
+
+/* 3. Core Structural Overrides */
+/* Glassmorphism TopBar */
+.topbar {
+  background: var(--theme-bg-surface) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--theme-shadow-sm) !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5) !important;
+  transition: all 0.3s ease;
+}
+
+.topbar .right-info,
+.topbar .right-info span,
+.topbar .right-info svg {
+  color: var(--theme-text-primary) !important;
+  fill: var(--theme-text-primary) !important;
+}
+
+/* Sidebar Overrides */
+.sidebar {
+  background-color: #FFFFFF !important;
+  border-right: 1px solid var(--theme-border) !important;
+  box-shadow: none !important;
+}
+
+/* Sidebar Layout & Text */
+.sidebar a,
+.sidebar .menu-item {
+  color: var(--theme-text-secondary) !important;
+  transition: all 0.2s ease-in-out !important;
+  border-radius: var(--theme-radius-md) !important;
+  margin: 4px 8px !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.sidebar a svg,
+.sidebar .menu-item svg {
+  fill: var(--theme-text-secondary) !important;
+  color: var(--theme-text-secondary) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Hover and Active States */
+.sidebar a:hover,
+.sidebar .menu-item:hover,
+.sidebar a.active,
+.sidebar .menu-item.active,
+.sidebar a[class*="active"],
+.sidebar .menu-item[class*="active"] {
+  background-color: var(--theme-primary-light) !important;
+  color: var(--theme-primary) !important;
+  transform: translateX(4px);
+}
+
+.sidebar a:hover span,
+.sidebar .menu-item:hover span,
+.sidebar a.active span,
+.sidebar .menu-item.active span,
+.sidebar a[class*="active"] span,
+.sidebar .menu-item[class*="active"] span {
+  color: var(--theme-primary) !important;
+}
+
+.sidebar a:hover svg,
+.sidebar .menu-item:hover svg,
+.sidebar a.active svg,
+.sidebar .menu-item.active svg,
+.sidebar a[class*="active"] svg,
+.sidebar .menu-item[class*="active"] svg {
+  fill: var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
+}
+
+/* Hamburger Menu Icon */
+.sidebar>svg,
+.sidebar .hamburger-icon {
+  fill: var(--theme-text-primary) !important;
+  color: var(--theme-text-primary) !important;
+  margin: 16px !important;
+}
+
+/* App container background */
+.app-container,
+.main-content {
+  background-color: var(--theme-bg-main) !important;
+}
+
+/* 4. Common Component Overrides (Buttons, Cards, Inputs) */
+.submit-bar,
+button.primary-button {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary)) !important;
+  border-radius: var(--theme-radius-md) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em;
+  box-shadow: var(--theme-shadow-md) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Button Pulse Hover Effect */
+.submit-bar:hover,
+button.primary-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--theme-shadow-hover) !important;
+}
+
+.submit-bar:active,
+button.primary-button:active {
+  transform: translateY(0) !important;
+}
+
+.card,
+.employeeCard {
+  background-color: #FFFFFF !important;
+  border-radius: 16px !important;
+  /* Premium Modern Curve */
+  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.05), 0 2px 8px -2px rgba(15, 23, 42, 0.03) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  padding: 32px !important;
+  transition: all 0.3s ease !important;
+  overflow-x: auto !important;
+  /* Proper scrollbar for overflowing content */
+  max-width: 100% !important;
+}
+
+.card:hover,
+.employeeCard:hover {
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.08) !important;
+  /* Lift Effect */
+}
+
+/* Old flex grid removed in favor of CSS Grid at the bottom of the file */
+/* Form Inputs & Dropdowns */
+.employee-card-input,
+.citizen-card-input,
+.employee-card-input-error,
+.card-input-error,
+.select,
+.select-active,
+.TL-Tradetype-disabled {
+  border-radius: var(--theme-radius-sm) !important;
+  border: 1px solid var(--theme-border) !important;
+  background-color: #F9FAFB !important;
+  box-sizing: border-box !important;
+  height: 40px !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Specific fix for disabled pseudo-inputs to mimic real textboxes */
+.TL-Tradetype-disabled {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  color: #6B7280 !important;
+}
+
+/* Flex is ONLY for the dropdown wrapper, not for <input> elements */
+.select,
+.select-active {
+  display: flex;
+  align-items: center;
+}
+
+.employee-card-input,
+.citizen-card-input,
+.employee-card-input-error,
+.card-input-error {
+  padding: 0 14px !important;
+  width: 100% !important;
+  /* Inputs properly fill their responsive flex grid cell */
+}
+
+/* Fix for inner dropdown input */
+.select input,
+.select-active input,
+.employee-select-wrap--elipses {
+  border: none !important;
+  background: transparent !important;
+  height: 38px !important;
+  padding: 0 14px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+/* Fix for +91 Mobile Number Prefix Overlap */
+.employee-card-input.mobile-number-input-with-prefix,
+.citizen-card-input.mobile-number-input-with-prefix,
+input.mobile-number-input-with-prefix {
+  padding-left: 45px !important;
+}
+
+.mobile-number-prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--theme-text-secondary);
+  font-weight: 500;
+  z-index: 2;
+  font-size: 14px;
+}
+
+.employee-card-input:focus,
+.citizen-card-input:focus,
+.employee-card-input-error:focus,
+.card-input-error:focus,
+.select-active {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 4px var(--theme-primary-light) !important;
+  outline: none !important;
+  background-color: #FFFFFF !important;
+}
+
+/* Reduce Placeholder / Helper Text Size */
+::-webkit-input-placeholder {
+  font-size: 12px !important;
+  color: var(--theme-text-muted) !important;
+}
+
+::-moz-placeholder {
+  font-size: 12px !important;
+  color: var(--theme-text-muted) !important;
+}
+
+:-ms-input-placeholder {
+  font-size: 12px !important;
+  color: var(--theme-text-muted) !important;
+}
+
+::placeholder {
+  font-size: 12px !important;
+  color: var(--theme-text-muted) !important;
+}
+
+/* Table Enhancements */
+table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+}
+
+th {
+  background-color: #F8FAFC !important;
+  color: var(--theme-text-secondary) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem !important;
+  padding: 16px !important;
+  border-bottom: 2px solid var(--theme-border) !important;
+}
+
+td {
+  padding: 16px !important;
+  border-bottom: 1px solid var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+  transition: background-color 0.2s ease;
+}
+
+tr:hover td {
+  background-color: #F8FAFC !important;
+}
+
+/* --------------------------------------
+   GLOBAL RESPONSIVE LAYOUT (INBOX & TABLES)
+   -------------------------------------- */
+.inbox-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  /* Allow the sidebar and the main content to stack on small screens */
+  gap: 24px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Sidebar / Filter Box */
+.inbox-container .filters-container {
+  flex: 1 1 250px !important;
+  max-width: 300px;
+}
+
+/* Main Content Area (Search + Table) */
+.inbox-container>div:last-child {
+  flex: 1 1 600px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  /* CRITICAL: Prevents wide tables from blowing out the flex container */
+  box-sizing: border-box !important;
+}
+
+/* Ensure ALL tables and their immediate wrappers can scroll horizontally if they exceed screen width */
+.tjkjk,
+.result,
+.table-container {
+  overflow-x: auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* --------------------------------------
+   ALIGN SEARCH AND TABLE CONTAINERS
+   -------------------------------------- */
+/* Kill inline margins on wrappers since the parent inbox-container now uses standard 'gap' */
+.inbox-container>div:last-child>form {
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.inbox-container>div:last-child>.result {
+  margin-left: 0 !important;
+  /* Overrides inline style={{ marginLeft: "24px" }} */
+  margin-right: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure search containers wrap correctly instead of spilling out and match table width */
+.search-container,
+.inbox-search-wrapper,
+.inbox-action-container,
+form.search-form {
+  margin-left: 0 !important;
+  /* Overrides .TL-search-ml-24 */
+  margin-right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Bulletproof CSS Grid for form fields (Overrides legacy margins) */
+.complaint-input-container {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 20px !important;
+  /* Slightly larger gap for premium feel */
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.complaint-input-container .input-fields {
+  margin: 0 !important;
+  /* Overrides conflicting UPYOG native margins */
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+/* --------------------------------------
+   PREMIUM INBOX BEAUTIFICATION (UI/UX)
+   -------------------------------------- */
+
+/* Elevated Cards (Sidebar & Search Box) */
+.inbox-container .filters-container,
+.inbox-container .search-container {
+  background-color: #FFFFFF !important;
+  border-radius: 16px !important;
+  /* Modern softer corners */
+  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.05), 0 2px 8px -2px rgba(15, 23, 42, 0.03) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  padding: 32px !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Explicitly protect the "Trade License" header from breaking weirdly */
+.filters-container .header,
+.filters-container .header * {
+  word-break: keep-all !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Fix Text Wrapping of Checkboxes */
+.filters-container .checkbox-wrap {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  margin-bottom: 16px !important;
+}
+
+/* Fix Alignment of Radio Buttons (RadioButtons component renders multiple divs inside .radio-wrap) */
+.filters-container .radio-wrap>div {
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+}
+
+.filters-container .radio-wrap .radio-btn-wrap {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+.filters-container .radio-wrap label {
+  margin: 0 !important;
+  margin-left: 12px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+.inbox-container .filters-container:hover,
+.inbox-container .search-container:hover {
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.08) !important;
+  /* Lift effect */
+}
+
+/* Form Labels */
+.complaint-input-container .input-fields label,
+.filters-container label {
+  color: #475569 !important;
+  /* Slate 600 */
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  margin-bottom: 8px !important;
+  display: inline-block !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Gradient Primary Button (Search) */
+.submit-bar {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  font-size: 14px !important;
+}
+
+.submit-bar:hover {
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Clear Search Link */
+.clear-search,
+.TL-search-clear-wrapper .link {
+  color: #64748B !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: color 0.2s ease !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+}
+
+.clear-search:hover,
+.TL-search-clear-wrapper .link:hover {
+  color: #2563EB !important;
+  text-decoration: underline !important;
+}
+
+/* Headers */
+.complaint-header h2,
+.filters-container .filter-label,
+.filters-container h2 {
+  color: #0F172A !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  margin-bottom: 24px !important;
+  display: block !important;
+  border-bottom: 2px solid #F1F5F9 !important;
+  padding-bottom: 12px !important;
+}
+
+/* Premium Table UI Wrapper */
+.inbox-container .tjkjk {
+  background-color: #FFFFFF !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  margin-top: 24px !important;
+}
+
+/* Table Headers */
+table th {
+  background-color: #F8FAFC !important;
+  color: #64748B !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 20px 24px !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+  white-space: nowrap !important;
+}
+
+/* Table Rows */
+table td {
+  padding: 16px 24px !important;
+  color: #334155 !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+  vertical-align: middle !important;
+}
+
+table tr:last-child td {
+  border-bottom: none !important;
+}
+
+table tr:hover td {
+  background-color: #F8FAFC !important;
+}
+
+/* Links inside Table (Application No.) */
+table td a,
+.link a {
+  color: #2563EB !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+table td a:hover,
+.link a:hover {
+  color: #1D4ED8 !important;
+  text-decoration: underline !important;
+}
+
+/* --------------------------------------
+   PREMIUM NEW APPLICATION / FORMCOMPOSER UI
+   -------------------------------------- */
+
+/* Main Header inside application cards */
+.card-header,
+.employeeCard>h2,
+.form-header {
+  color: #0F172A !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  margin-bottom: 28px !important;
+  border-bottom: 2px solid #F1F5F9 !important;
+  padding-bottom: 14px !important;
+}
+
+/* Section Sub-headers */
+.card-sub-header,
+.card-section-header {
+  color: #334155 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  margin-top: 28px !important;
+  margin-bottom: 16px !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Form Labels */
+.card-label,
+.employee-card-label {
+  color: #475569 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Card Text for descriptions */
+.card-text {
+  color: #64748B !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  margin-bottom: 20px !important;
+}
+
+/* Form Action Buttons Wrapper (Bottom line) */
+.action-bar-wrap,
+.submit-bar-wrap {
+  margin-top: 32px !important;
+  padding-top: 24px !important;
+  border-top: 1px solid #E2E8F0 !important;
+}
+
+/* =========================================================================
+   LOGIN PAGE PREMIUM REDESIGN (Split-Screen Enterprise Hero)
+   ========================================================================= */
+
+.employee-login-page {
+  height: 100vh !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important; /* Push container to the right */
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important; 
+  position: relative !important;
+  background: #ffffff !important;
+}
+
+/* Make sure language plugin stays on top */
+.language-plugin {
+  position: absolute !important;
+  top: 24px !important;
+  right: 24px !important;
+  z-index: 10 !important;
+}
+
+/* Left Side Hero Panel (Physical DOM Element) */
+.employee-login-left-panel {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 60% !important;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.7) 100%), url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop") center/cover no-repeat !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 60px !important;
+  color: white !important;
+  box-sizing: border-box !important;
+}
+
+.employee-login-logo-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 40px !important;
+}
+
+.employee-login-logo-wrap svg {
+  width: 36px !important;
+  height: 36px !important;
+  fill: white !important;
+}
+
+.employee-login-logo-wrap span {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+}
+
+.employee-login-left-panel h1 {
+  font-size: 48px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  margin: 0 0 20px 0 !important;
+  color: white !important;
+  max-width: 500px !important;
+}
+
+.employee-login-left-panel p {
+  font-size: 18px !important;
+  font-weight: 400 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  line-height: 1.6 !important;
+  max-width: 450px !important;
+}
+
+.employee-login-left-footer {
+  font-size: 14px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  max-width: 400px !important;
+  line-height: 1.5 !important;
+}
+
+/* Right Side Login Panel */
+.employee-login-container {
+  width: 40% !important;
+  min-width: 440px !important;
+  max-width: none !important;
+  height: 100vh !important;
+  background: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 60px !important;
+  box-sizing: border-box !important;
+  z-index: 5 !important;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+.employee-login-content {
+  width: 100% !important;
+  max-width: 380px !important; 
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+/* Login Card - Removed border because panel is already white */
+.employee-login-card {
+  padding: 0 !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.employee-login-form .card {
+  box-shadow: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+.employee-login-form .card-header { display: none !important; }
+.employee-login-form .card-body { padding: 0 !important; }
+
+/* Custom Form Composer Heading */
+.employee-login-form h1 {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0 0 8px 0 !important;
+  text-align: left !important;
+  width: 100% !important;
+}
+
+.employee-login-form .employee-login-desc {
+  font-size: 15px !important;
+  color: #64748b !important;
+  margin-bottom: 32px !important;
+  text-align: left !important;
+  width: 100% !important;
+}
+
+/* Inputs */
+.employee-login-form .card-label {
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  color: #475569 !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+  text-align: left !important;
+}
+
+.employee-login-form input,
+.employee-city-dropdown {
+  width: 100% !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+  color: #0f172a !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+}
+
+.employee-login-form input:focus,
+.employee-city-dropdown:focus {
+  outline: none !important;
+  background: #ffffff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* Button */
+.employee-login-form button[type="submit"] {
+  width: 100% !important;
+  margin-top: 32px !important;
+  padding: 14px !important;
+  border-radius: 8px !important;
+  background: #2563eb !important;
+  color: white !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+}
+
+.employee-login-form button[type="submit"]:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Secondary Button (Forgot Password) */
+.employee-login-form .secondary-label {
+  display: block !important;
+  margin-top: 24px !important;
+  color: #2563eb !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+.employee-login-form .secondary-label:hover {
+  color: #1d4ed8 !important;
+}
+
+/* Footer */
+.employee-login-footer {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #94a3b8 !important;
+  text-align: center !important;
+  margin-top: 48px !important;
+  width: 100% !important;
+}
+.employee-login-footer a { color: #64748b !important; text-decoration: none !important; font-weight: 600 !important; }
+.employee-login-footer a:hover { color: #0f172a !important; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .employee-login-left-panel {
+    display: none !important;
+  }
+  .employee-login-page {
+    justify-content: center !important;
+    background: #f8fafc !important;
+  }
+  .employee-login-container {
+    width: 100% !important;
+    min-width: 100% !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  .employee-login-card {
+    background: #ffffff !important;
+    padding: 32px 24px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+}

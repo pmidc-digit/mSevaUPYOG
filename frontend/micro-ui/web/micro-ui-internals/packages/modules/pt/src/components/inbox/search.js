@@ -171,7 +171,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ))}
 
               {isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%"}}>
+                <div className="search-action-wrapper" style={{ width: "100%" }}>
                   {type === "desktop" && !mobileView && (
                     <SubmitBar
                       className="submit-bar-search"

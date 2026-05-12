@@ -149,9 +149,13 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
   //   filters,
   //   config:{}
   // })
-  if (data?.table?.length !== null) {
-    if (isMobile) {
-      return (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
+    <div>
+      {isMobile ? (
         <MobileInbox
           data={data}
           isLoading={isLoading}
@@ -168,9 +172,7 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
           filterComponent={filterComponent}
           localities={localities}
         />
-      );
-    } else {
-      return (
+      ) : (
         <div>
           {isInbox && (
             <Header>
@@ -200,16 +202,14 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
             parentRoute={parentRoute}
             searchParams={searchParams}
             sortParams={sortParams}
-            totalRecords={totalRecords}
+            totalRecords={data?.totalCount || 0}
             filterComponent={filterComponent}
             localities={localities}
           />
         </div>
-      );
-    }
-  } else {
-    return <Loader />;
-  }
+      )}
+    </div>
+  );
 };
 
 export default Inbox;

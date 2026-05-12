@@ -136,7 +136,7 @@ const DesktopInbox = ({
   let result;
   if (isLoading) {
     result = <Loader />;
-  } else if (data?.table?.length === 0) {
+  } else if (!data?.table || data?.table?.length === 0) {
     result = (
       <Card style={{ marginTop: 20 }}>
         {t("CS_MYAPPLICATIONS_NO_APPLICATION")

@@ -2,6 +2,7 @@ import { initLibraries } from "@mseva/digit-ui-libraries";
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
+import "./theme.css";
 import App from "./App";
 import { TLCustomisations } from "./Customisations/tl/TLCustomisation";
 

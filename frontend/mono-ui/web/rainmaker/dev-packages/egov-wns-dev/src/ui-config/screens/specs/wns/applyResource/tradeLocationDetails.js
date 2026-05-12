@@ -77,8 +77,8 @@ export const tradeLocationDetails = getCommonCard(
                       /[.]/g,
                       "_"
                     )}_REVENUE_${item.code
-                    .toUpperCase()
-                    .replace(/[._:-\s\/]/g, "_")}`
+                      .toUpperCase()
+                      .replace(/[._:-\s\/]/g, "_")}`
                 });
                 return result;
               }, []);

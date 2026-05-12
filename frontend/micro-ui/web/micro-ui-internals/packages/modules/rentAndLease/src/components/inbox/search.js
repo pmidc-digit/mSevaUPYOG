@@ -130,7 +130,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchParams, isInboxPage,
                 </div>
               ))}
               {type === "desktop" && !mobileView && isInboxPage && (
-                <div className="search-action-wrapper" style={{width: "100%"}}>
+                <div className="search-action-wrapper" style={{ width: "100%" }}>
                   <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
                   <span style={{ paddingTop: "9px" }} className="clear-search">
                     {clearAll()}

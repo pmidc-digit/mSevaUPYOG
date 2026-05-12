@@ -1529,7 +1529,7 @@ export const fetchFilestoreAndTenant = (docUrl, tenantId) => {
     }
 
     return {
-      fileStoreId: id,
+      filestoreId: id,
       tenantId: fullTenantId,
     }
   }

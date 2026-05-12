@@ -32,7 +32,7 @@ import lombok.Setter;
 @ApiModel(description = "This is lightweight meter reading object that can be used as reference by definitions needing meterreading linking.")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-11-12T10:46:14.653+05:30[Asia/Kolkata]")
-public class MeterReading {
+public class BulkMeterReading {
 
 	@SafeHtml
 	@JsonProperty("id")
@@ -99,6 +99,10 @@ public class MeterReading {
 	@SafeHtml
 	@JsonProperty("connectionNo")
 	private String connectionNo = null;
+	
+	@SafeHtml
+	@JsonProperty("usageCategory")
+    private String usageCategory = null;
 
 	@JsonProperty("consumption")
 	private Double consumption = null;
@@ -114,19 +118,10 @@ public class MeterReading {
 	@JsonProperty("tenantId")
 	private String tenantId = null;
 
-	public MeterReading id(String id) {
+	public BulkMeterReading id(String id) {
 		this.id = id;
 		return this;
 	}
-	
-	// ✅ NEW: isBulkMeter field
-	// Sent from CURL request. Drives which MDMS max reading cap is used for
-	// meter status "Reset":
-	//   true  → bulkMeterMaxReading (e.g. 100000)
-	//   false → meterMaxReading     (e.g. 10000)
-	// Has no effect for any other meter status.
-	@JsonProperty("isBulkMeter")
-	private Boolean isBulkMeter = false;
 
 	
 
@@ -150,13 +145,18 @@ public class MeterReading {
 		this.id = id;
 	}
 
-	public MeterReading billingPeriod(String billingPeriod) {
+	public BulkMeterReading billingPeriod(String billingPeriod) {
 		this.billingPeriod = billingPeriod;
 		return this;
 	}
 
-	public MeterReading connectionNo(String connectionNo) {
+	public BulkMeterReading connectionNo(String connectionNo) {
 		this.connectionNo = connectionNo;
+		return this;
+	}
+	
+	public BulkMeterReading usageCategory(String usageCategory) {
+		this.usageCategory = usageCategory;
 		return this;
 	}
 
@@ -193,7 +193,7 @@ public class MeterReading {
 		this.billingPeriod = billingPeriod;
 	}
 
-	public MeterReading meterStatus(MeterStatusEnum meterStatus) {
+	public BulkMeterReading meterStatus(MeterStatusEnum meterStatus) {
 		this.meterStatus = meterStatus;
 		return this;
 	}
@@ -214,7 +214,7 @@ public class MeterReading {
 //		this.meterStatus = meterStatus;
 //	}
 
-	public MeterReading lastReading(Double lastReading) {
+	public BulkMeterReading lastReading(Double lastReading) {
 		this.lastReading = lastReading;
 		return this;
 	}
@@ -235,7 +235,7 @@ public class MeterReading {
 		this.lastReading = lastReading;
 	}
 
-	public MeterReading lastReadingDate(Long lastReadingDate) {
+	public BulkMeterReading lastReadingDate(Long lastReadingDate) {
 		this.lastReadingDate = lastReadingDate;
 		return this;
 	}
@@ -256,12 +256,12 @@ public class MeterReading {
 		this.lastReadingDate = lastReadingDate;
 	}
 
-	public MeterReading currentReading(Double currentReading) {
+	public BulkMeterReading currentReading(Double currentReading) {
 		this.currentReading = currentReading;
 		return this;
 	}
 
-	public MeterReading consumption(Double consumption) {
+	public BulkMeterReading consumption(Double consumption) {
 		this.consumption = consumption;
 		return this;
 	}
@@ -290,7 +290,7 @@ public class MeterReading {
 		this.currentReading = currentReading;
 	}
 
-	public MeterReading currentReadingDate(Long currentReadingDate) {
+	public BulkMeterReading currentReadingDate(Long currentReadingDate) {
 		this.currentReadingDate = currentReadingDate;
 		return this;
 	}
@@ -311,7 +311,7 @@ public class MeterReading {
 		this.currentReadingDate = currentReadingDate;
 	}
 
-	public MeterReading generateDemand(Boolean generateDemand) {
+	public BulkMeterReading generateDemand(Boolean generateDemand) {
 		this.generateDemand = generateDemand;
 		return this;
 	}
@@ -324,7 +324,7 @@ public class MeterReading {
 		this.generateDemand = generateDemand;
 	}
 
-	public MeterReading auditDetails(AuditDetails auditDetails) {
+	public BulkMeterReading auditDetails(AuditDetails auditDetails) {
 		this.auditDetails = auditDetails;
 		return this;
 	}
@@ -343,7 +343,7 @@ public class MeterReading {
 		this.auditDetails = auditDetails;
 	}
 
-	public MeterReading tenantId(String tenantId) {
+	public BulkMeterReading tenantId(String tenantId) {
 		this.tenantId = tenantId;
 		return this;
 	}
@@ -365,22 +365,23 @@ public class MeterReading {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		MeterReading meterReading = (MeterReading) o;
-		return Objects.equals(this.id, meterReading.id)
-				&& Objects.equals(this.billingPeriod, meterReading.billingPeriod)
-				&& Objects.equals(this.meterStatus, meterReading.meterStatus)
-				&& Objects.equals(this.lastReading, meterReading.lastReading)
-				&& Objects.equals(this.lastReadingDate, meterReading.lastReadingDate)
-				&& Objects.equals(this.currentReading, meterReading.currentReading)
-				&& Objects.equals(this.currentReadingDate, meterReading.currentReadingDate)
-				&& Objects.equals(this.consumption, meterReading.consumption)
-				&& Objects.equals(this.tenantId, meterReading.tenantId);
+		BulkMeterReading bulkMeterReading = (BulkMeterReading) o;
+		return Objects.equals(this.id, bulkMeterReading.id)
+				&& Objects.equals(this.billingPeriod, bulkMeterReading.billingPeriod)
+				&& Objects.equals(this.meterStatus, bulkMeterReading.meterStatus)
+				&& Objects.equals(this.lastReading, bulkMeterReading.lastReading)
+				&& Objects.equals(this.lastReadingDate, bulkMeterReading.lastReadingDate)
+				&& Objects.equals(this.currentReading, bulkMeterReading.currentReading)
+				&& Objects.equals(this.currentReadingDate, bulkMeterReading.currentReadingDate)
+				&& Objects.equals(this.consumption, bulkMeterReading.consumption)
+				&& Objects.equals(this.usageCategory, bulkMeterReading.usageCategory)
+				&& Objects.equals(this.tenantId, bulkMeterReading.tenantId);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(id, billingPeriod, meterStatus, lastReading, lastReadingDate, currentReading,
-				currentReadingDate, tenantId);
+				currentReadingDate, usageCategory, tenantId);
 	}
 
 	@Override
@@ -396,6 +397,7 @@ public class MeterReading {
 		sb.append("    currentReading: ").append(toIndentedString(currentReading)).append("\n");
 		sb.append("    currentReadingDate: ").append(toIndentedString(currentReadingDate)).append("\n");
 		sb.append("    consumption: ").append(toIndentedString(consumption)).append("\n");
+		sb.append("    usageCategory: ").append(toIndentedString(usageCategory)).append("\n");
 		sb.append("	   tenantId: ").append(toIndentedString(tenantId)).append("\n");
 		sb.append("}");
 		return sb.toString();

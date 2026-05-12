@@ -27,6 +27,9 @@ public class MeterReadingSearchCriteria {
     @JsonProperty("limit")
     private Integer limit;
 
+    @JsonProperty("locality")
+    private String locality;
+    
     public boolean isEmpty() {
         return (StringUtils.isEmpty(this.tenantId) && CollectionUtils.isEmpty(this.connectionNos));
     }

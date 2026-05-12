@@ -146,6 +146,13 @@ public class WSCalculatorQueryBuilder {
 			+ "(id, eg_ws_scheduler_id, locality, module, createdtime, lastupdatedtime, status, tenantid, reason, consumercode) "
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?);";
 	
+	public static final String METERREADINGQUERY = "SELECT DISTINCT ON (mr.connectionNo) mr.id, mr.connectionNo as connectionId, epp.usagecategory as usageCategory, mr.billingPeriod, mr.meterStatus, mr.lastReading, mr.lastReadingDate, mr.currentReading,"
+			+ " mr.currentReadingDate, mr.createdBy as mr_createdBy, mr.tenantid, mr.lastModifiedBy as mr_lastModifiedBy,"
+			+ " mr.createdTime as mr_createdTime, mr.lastModifiedTime as mr_lastModifiedTime FROM eg_ws_meterreading mr "
+			+ INNER_JOIN_STRING + " eg_ws_connection conn  ON mr.connectionno = conn.connectionno  AND mr.tenantid = conn.tenantid  "
+			+ INNER_JOIN_STRING +" eg_ws_service ews  ON conn.id = ews.connection_id " + INNER_JOIN_STRING +" eg_pt_property epp  ON conn.property_id = epp.propertyid "
+			+ INNER_JOIN_STRING +" eg_pt_address epa  ON epa.propertyid = epp.id ";
+	
 	public static final String RELATED_SW_CONNECTION_SEARCH_QUERY = "SELECT conn.relatedSwConn from eg_ws_connection conn ";
 
 	public String getDistinctTenantIds() {
@@ -1139,11 +1146,50 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		}
 		
 		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.applicationstatus = 'CONNECTION_ACTIVATED' ");
+		query.append(" conn.applicationstatus IN ('CONNECTION_ACTIVATED', 'APPROVED') ");
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.status = 'Active' ");
 		
 		return query.toString();
 		
+	}
+	
+	/**
+	 * 
+	 * @param criteria          would be meter reading criteria
+	 * @param preparedStatement Prepared SQL Statement
+	 * @return Query for given criteria
+	 */
+	public String getSearchQueryStringV2(MeterReadingSearchCriteria criteria, List<Object> preparedStatement) {
+		if (criteria.isEmpty()) {
+			return null;
+		}
+		StringBuilder query = new StringBuilder(METERREADINGQUERY);
+		
+		if (!StringUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" mr.tenantid= ? ");
+			preparedStatement.add(criteria.getTenantId());
+		}
+		if (!StringUtils.isEmpty(criteria.getLocality())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" epa.locality= ? ");
+			preparedStatement.add(criteria.getLocality());
+		}
+		
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" ews.connectiontype = 'Metered' \r\n");
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" conn.status = 'Active' \r\n");
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" conn.applicationstatus IN ('CONNECTION_ACTIVATED', 'APPROVED') \r\n");
+		
+		if (!CollectionUtils.isEmpty(criteria.getConnectionNos())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" mr.connectionNo IN (").append(createQuery(criteria.getConnectionNos())).append(" )");
+			addToPreparedStatement(preparedStatement, criteria.getConnectionNos());
+		}
+		query.append(" ORDER BY mr.connectionNo, mr.currentReadingDate DESC \r\n");
+		return addPaginationWrapper(query, preparedStatement, criteria);
 	}
 }

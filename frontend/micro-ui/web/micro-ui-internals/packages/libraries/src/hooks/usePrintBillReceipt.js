@@ -4,6 +4,25 @@ import { useCallback } from "react";
    Helpers (private)
    ========================= */
 
+const cleanBillAccountDetails = (billAccountDetails = []) => {
+  const hasArrears = billAccountDetails?.some(
+    (item) => item?.taxHeadCode === "RL_ARREAR_FEE" && item?.amount > 0
+  );
+
+  return billAccountDetails?.filter((item) => {
+    // remove roundoff always
+    if (item?.taxHeadCode === "RL_FEE_ROUND_OFF" || item?.taxHeadCode === "GC_FEE_ROUND_OFF") return false;
+
+    // remove security deposit ONLY if arrears exist
+    if (hasArrears && item?.taxHeadCode === "RL_SECURITY_DEPOSIT_FEE") {
+      return false;
+    }
+
+    return true;
+  });
+};
+
+
 const normalizeBills = (data) => {
   if (!data) return [];
 
@@ -73,6 +92,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
     const searchData = searchDataMap[identifier] || null;
 
     billDetails?.forEach((detail) => {
+      const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
       mergedBillDetails?.push({
         billRootData: {
           ...billRootData,
@@ -85,6 +105,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
           ...commonMeta,
         },
         ...detail,
+        billAccountDetails: cleanedAccountDetails,
       });
     });
   });
@@ -128,8 +149,10 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
       const searchData = searchDataMap[identifier] || null;
 
       billDetails?.forEach((detail) => {
+        const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
         extractedBillDetails?.push({
           ...detail,
+          billAccountDetails: cleanedAccountDetails,
           billRootData: {
             // CLEAN bill (no billDetails)
             ...billLevelData,

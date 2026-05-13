@@ -25,7 +25,6 @@ import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
-import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.validator.AmendmentValidator;
@@ -35,11 +34,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import io.jaegertracing.thriftjava.Log;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
+
 public class AmendmentService {
 	
 	@Autowired

@@ -71,19 +71,17 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const designationCode = empData?.officer?.designation; // e.g. "DESIG_68"
   const designationKey = designationCode ? `COMMON_MASTERS_DESIGNATION_${designationCode}` : null;
   const designation = designationKey ? t(designationKey, { defaultValue: designationCode }) : "NA";
-
   const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
   const ptObj = appData?.NdcDetails?.find(item => item.businessService === 'PT');
   const propertyId = ptObj?.consumerCode;
-  console.log('ptObj', ptObj)
 
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA";
   const remarks = appData?.NdcDetails?.[0]?.additionalDetails?.remarks || null;
-
+  const reason = t(appData?.reason) || null;
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
   const dateOfApplication = add?.dateOfApplication || "NA";
@@ -111,6 +109,8 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: `${appData?.owners?.[0]?.fatherOrHusbandName || "NA"}`, bold: true , fontSize: 9 },
   { text: " resident of ", bold: false , fontSize: 9},
   { text: `${address}.\n`, bold: true ,fontSize: 9 },
+  { text: " Reason For Applying: ", bold: false , fontSize: 9},
+  { text: `${reason}.\n`, bold: true ,fontSize: 9 },
   {
     text: [
       { text: `• This is to certify that, as per the records and data with ${ulbName}, all applicable municipal dues related to the above mentioned property have been duly recovered/deposited. `, bold: true , fontSize: 9 },

@@ -198,6 +198,15 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const startDate = watch("startDate");
 
+  const getMaxDate = () => {
+  if (!startDate) return "";
+
+  const d = new Date(startDate);
+  d.setDate(d.getDate() + 5);
+
+  return d.toLocaleDateString("en-CA"); // YYYY-MM-DD
+};
+
   return (
     <React.Fragment>
       <form className="employeeCard" onSubmit={handleSubmit(onSubmit)}>
@@ -303,12 +312,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                     type={"date"}
                     className="form-field chb-form-field-margin"
                     value={props.value}
+                    min={startDate}
+                  max={getMaxDate()}
                     // min={
                     //   startDate
                     //     ? new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                     //     : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                     // }
-                    min={startDate || new Date().toISOString().split("T")[0]}
+                    // min={startDate || new Date().toISOString().split("T")[0]}
                     onChange={(e) => {
                       props.onChange(e.target.value);
                       trigger("endDate");

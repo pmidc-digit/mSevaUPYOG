@@ -26,6 +26,7 @@ import LayoutResponseCitizen from "./Applications/LayoutResponseCitizen";
 import LayoutApplicantDetails from "../../pageComponents/LayoutApplicantDetails";
 import LayoutApplicationDetails from "./Applications/LayoutApplicationSummary";
 import { OCStepperForm } from "./OcupationalCertificateStepper/OCStepperForm";
+import BPAEsignResponse from "../employee/BPAEsignResponse";
 
 
 
@@ -166,6 +167,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <AppContainer><Search {...props} parentRoute={path} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={(props) => <AppContainer><CreateEDCR {...props} /></AppContainer>} />
         <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={(props) => <AppContainer><CreateOCEDCR {...props} /></AppContainer>} />
+        <PrivateRoute path={`${path}/bpa/esign/complete/:id/:file`} component={BPAEsignResponse} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType`} component={NewBuildingPermit} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType/stepper`} component={SelfCertificationStepper} />
         <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType`} component={OCBuildingPermit} />

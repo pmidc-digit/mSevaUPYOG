@@ -34,9 +34,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-
 @Service
-
 public class AmendmentService {
 	
 	@Autowired

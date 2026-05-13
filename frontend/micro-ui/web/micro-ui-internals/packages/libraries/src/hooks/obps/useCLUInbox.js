@@ -59,6 +59,7 @@ const useCLUInbox = ({ tenantId, filters, config = {} }) => {
             owner: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerOrFirmName || "-",
             professionalName: application?.businessObject?.cluDetails?.additionalDetails?.applicationDetails?.professionalName || "-",
             documents: application?.businessObject?.documents || application?.documents || [],
+            tenantId: application?.businessObject?.tenantId
           };
         });
 

@@ -7,17 +7,17 @@ RUN apk add --no-cache \
     g++ \
     git
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.23
+RUN yarn add @mseva/digit-ui-libraries@1.1.68-dev.1.28
 RUN yarn add @mseva/digit-ui-module-bills@1.0.8
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.6
 RUN yarn add @mseva/digit-ui-module-dss@1.0.6
 RUN yarn add @mseva/digit-ui-module-mcollect@1.0.15-DEV.4
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.26
-RUN yarn add @mseva/digit-ui-module-noc@1.0.79-dev.16
+RUN yarn add @mseva/digit-ui-module-noc@1.0.79-dev.18
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.32-dev.1
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.23
-RUN yarn add @mseva/digit-ui-module-core@1.0.66-dev.1.11
-RUN yarn add @mseva/digit-ui-module-common@1.1.88-dev.1.29
+RUN yarn add @mseva/digit-ui-module-core@1.0.66-dev.1.12
+RUN yarn add @mseva/digit-ui-module-common@1.1.88-dev.1.30
 RUN yarn add @mseva/digit-ui-module-ws@1.0.15
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.6
 RUN yarn add @mseva/digit-ui-module-ptr@1.3.4-dev.2.11
@@ -25,15 +25,15 @@ RUN yarn add @mseva/digit-ui-module-swach@1.0.55
 RUN yarn add @mseva/digit-ui-module-pt@1.0.39-dev.1.6
 RUN yarn add @mseva/digit-ui-module-tl@1.0.31-dev.1.7
 RUN yarn add @mseva/digit-ui-module-firenoc@1.0.0-dev.1.3
-RUN yarn add @mseva/digit-ui-module-obps@1.1.89-dev.1.56
+RUN yarn add @mseva/digit-ui-module-obps@1.1.89-dev.1.58
 RUN yarn add @mseva/digit-ui-module-sv@1.1.49-dev.1.13
 RUN yarn add @mseva/upyog-ui-module-ads@1.1.86-dev.2.7
 RUN yarn add @mseva/upyog-ui-module-chb@1.1.91-dev.1.14
 RUN yarn add @mseva/upyog-ui-module-asset@1.1.44-dev.1.13
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-dev.1.11
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.29-dev.6
-RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-dev.1.5
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-dev.1.20
+RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.33-dev.1.6
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.51-dev.1.21
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.72-dev.1.12
 ARG WORK_DIR
 WORKDIR /app

@@ -48,12 +48,12 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
         setShowToast(null);
         let queryObj = {
             permitDate: convertDateToEpoch(permitDate),
-            approvalNo: permitNumber
+            applicationNo: permitNumber
         };
         setLoading(true);
         Digit.OBPSService.BPASearch(tenantId, queryObj)
             .then((result, err) => {
-                if (result?.BPA?.length > 0) {
+                if (result?.BPA?.length > 0 && result?.BPA?.[0]?.approvalNo) {
                     const edcrNumber = result?.BPA?.[0]?.edcrNumber;
                     const tenantIdForEdcr = stateId;
                     if (permitDate === convertEpochToDate(result?.BPA?.[0]?.approvalDate)) {
@@ -65,7 +65,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                                     if (response?.edcrDetail?.length > 0) {
                                         const isPrimaryOwner = result?.BPA?.[0]?.landInfo?.owners?.filter(data => (data.isPrimaryOwner && data.isPrimaryOwner != "false"));
                                         response.edcrDetail[0].applicantName = isPrimaryOwner?.[0]?.name;
-                                        response.edcrDetail[0].ocPermitNumber = permitNumber;
+                                        response.edcrDetail[0].ocPermitNumber = result?.BPA?.[0]?.approvalNo;
                                         response.edcrDetail[0].ocPermitdate = permitDate;
                                         response.edcrDetail[0].appliedBy = architectName
                                         setPermitEdcrData(response?.edcrDetail?.[0]);
@@ -113,7 +113,7 @@ const OCeDCRScrutiny = ({ t, config, onSelect, userType, formData, ownerIndex = 
                 <CardCaption>{`${t("BPA_OC_NEW_BUILDING_CONSTRUCTION_LABEL")}`}</CardCaption>
                 <CardHeader>{`${t("BPA_OC_EDCR_SCRUTINY_LABEL")}`}</CardHeader>
                 <CardText>{`${t("BPA_PROVIDE_BPN_AND_BPD_APP_LABEL")}`}</CardText>
-                <CardLabel>{`${t("EDCR_BUILDING_PERMIT_NUM_LABEL")} *`}</CardLabel>
+                <CardLabel>{`${t("BPA_PERMIT_APPLICATION_NUMBER_LABEL")} *`}</CardLabel>
                 <TextInput
                     isMandatory={false}
                     optionKey="i18nKey"

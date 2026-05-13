@@ -44,6 +44,15 @@ const RALApplicationDetails = () => {
   const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt"});
 
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "rl-services",
+      consumerCodes: acknowledgementIds,
+      isEmployee: false,
+    },
+    { enabled: acknowledgementIds ? true : false }
+  );
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -116,7 +125,7 @@ const RALApplicationDetails = () => {
         onClick: () => getAcknowledgement(),
       });
   }
-  if (acknowledgementIds) {
+  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () =>
@@ -560,7 +569,7 @@ const RALApplicationDetails = () => {
       </div>
 
       {showToast && <Toast error={showToast.key} label={t(showToast.label)} isDleteBtn={true} onClose={closeToast} style={{ zIndex: 1000 }} />}
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

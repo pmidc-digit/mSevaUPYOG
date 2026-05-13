@@ -4,6 +4,22 @@ import { useCallback } from "react";
    Helpers (private)
    ========================= */
 
+const cleanBillAccountDetails = (billAccountDetails = []) => {
+  const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.amount) > 0);
+
+  return billAccountDetails?.filter((item) => {
+    // remove roundoff always
+    if (item?.taxHeadCode === "RL_FEE_ROUND_OFF" || item?.taxHeadCode === "GC_FEE_ROUND_OFF") return false;
+
+    // remove security deposit ONLY if arrears exist
+    if (hasArrears && item?.taxHeadCode === "RL_SECURITY_DEPOSIT_FEE") {
+      return false;
+    }
+
+    return true;
+  });
+};
+
 const normalizeBills = (data) => {
   if (!data) return [];
 
@@ -38,14 +54,22 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
         return res?.AllotmentDetails?.[0] || null;
       }
 
-      case "GC.ONE_TIME_FEE": {
-        const res = await Digit.GCService.search({ tenantId, filters });
-        return res?.GarbageConnection?.[0] || null;
-      }
-
+      case "GC.ONE_TIME_FEE":
       case "GC": {
-        const res = await Digit.GCService.search({ tenantId, filters });
-        return res?.GarbageConnection?.[0] || null;
+        let res = await Digit.GCService.search({ tenantId, filters });
+
+        let data = res?.GarbageConnection?.[0];
+
+        // fallback for connection number 
+        if (!data) {
+          res = await Digit.GCService.search({
+            tenantId,
+            filters: { connectionNumber: identifier },
+          });
+          data = res?.GarbageConnection?.[0];
+        }
+
+        return data || null;
       }
 
       default:
@@ -73,18 +97,26 @@ const transformBillsForPdf = (Bills, meta = {}) => {
     const searchData = searchDataMap[identifier] || null;
 
     billDetails?.forEach((detail) => {
+      const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
       mergedBillDetails?.push({
         billRootData: {
           ...billRootData,
           identifier,
 
           ...(searchData && {
-            [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
+            [businessService === "rl-services"
+              ? "rlSearchData"
+              : businessService === "GC.ONE_TIME_FEE"
+              ? "gcSearchData"
+              : businessService === "GC"
+              ? "gcSearchData"
+              : undefined]: searchData,
           }),
 
           ...commonMeta,
         },
         ...detail,
+        billAccountDetails: cleanedAccountDetails,
       });
     });
   });
@@ -128,8 +160,10 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
       const searchData = searchDataMap[identifier] || null;
 
       billDetails?.forEach((detail) => {
+        const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
         extractedBillDetails?.push({
           ...detail,
+          billAccountDetails: cleanedAccountDetails,
           billRootData: {
             // CLEAN bill (no billDetails)
             ...billLevelData,
@@ -145,7 +179,13 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
             identifier,
 
             ...(searchData && {
-              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
+              [businessService === "rl-services"
+                ? "rlSearchData"
+                : businessService === "GC.ONE_TIME_FEE"
+                ? "gcSearchData"
+                : businessService === "GC"
+                ? "gcSearchData"
+                : undefined]: searchData,
             }),
 
             generatedAt,
@@ -189,7 +229,6 @@ const normalizePayments = (data) => {
 export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, t, pdfkey }) => {
   const printReceipt = useCallback(
     async ({ billOrPaymentResponse = null, businessService, receiptNumber = null, rootKey = "BILLS" }) => {
-
       try {
         setLoader?.(true);
 
@@ -202,7 +241,7 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
 
         console.log("hasPayments,normalizedPayments", hasPayments, normalizedPayments);
         if (!hasPayments && receiptNumber) {
-          let billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: encodeURIComponent(receiptNumber) });
+          let billPayments = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNumber });
 
           if (!billPayments?.Payments?.length) {
             billPayments = await Digit.PaymentService.recieptSearch(tenantId, businessService, { consumerCodes: receiptNumber });

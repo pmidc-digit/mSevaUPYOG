@@ -2,14 +2,17 @@ import { Banner, Card, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect, use } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
-import { stringReplaceAll } from "../../utils";
+import { encryptId, stringReplaceAll } from "../../utils";
 
 const BPAEsignResponse = () => {
   const location = useLocation();
   const { pathname } = location;
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const isCitizen = window.location.href.includes("citizen")
+  const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
+  const userInfo = Digit.UserService.getUser();
+  const userUUID = userInfo?.info?.uuid;
 
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -59,7 +62,7 @@ const BPAEsignResponse = () => {
           },
           workflow: { 
             action: "ESIGN",
-            assignes: [application?.accountId, ...(application?.landInfo?.owners?.map(owner => owner?.uuid) || [])]
+            assignes: isCitizen ? null : [application?.accountId, ...(application?.landInfo?.owners?.map(owner => owner?.uuid) || [])]
           },
         },
       };
@@ -81,7 +84,8 @@ const BPAEsignResponse = () => {
           }, 1000);
 
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/obps/inbox/bpa/${applicationNo}`);
+            const encryptedID = encryptId(applicationNo);
+            history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
           }, 10000);
 
           return () => {
@@ -98,7 +102,8 @@ const BPAEsignResponse = () => {
 
           // redirect after showing toast
           const timeout = setTimeout(() => {
-            history.push(`/digit-ui/employee/obps/inbox/bpa/${applicationNo}`);
+            const encryptedID = encryptId(applicationNo);
+            history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
           }, 10000);
 
           return () => clearTimeout(timeout);          
@@ -113,7 +118,8 @@ const BPAEsignResponse = () => {
 
         // redirect after showing toast
         const timeout = setTimeout(() => {
-          history.push(`/digit-ui/employee/obps/inbox/bpa/${applicationNo}`);
+          const encryptedID = encryptId(applicationNo);
+          history.push(isCitizen? `/digit-ui/citizen/obps/bpa-app/${encryptedID}` : `/digit-ui/employee/obps/inbox/bpa/${encryptedID}`);
         }, 10000);
 
         return () => clearTimeout(timeout);    

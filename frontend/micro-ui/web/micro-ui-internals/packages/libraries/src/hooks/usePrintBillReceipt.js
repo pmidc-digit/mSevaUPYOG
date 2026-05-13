@@ -5,9 +5,7 @@ import { useCallback } from "react";
    ========================= */
 
 const cleanBillAccountDetails = (billAccountDetails = []) => {
-  const hasArrears = billAccountDetails?.some(
-    (item) => item?.taxHeadCode === "RL_ARREAR_FEE" && item?.amount > 0
-  );
+  const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.amount) > 0);
 
   return billAccountDetails?.filter((item) => {
     // remove roundoff always
@@ -21,7 +19,6 @@ const cleanBillAccountDetails = (billAccountDetails = []) => {
     return true;
   });
 };
-
 
 const normalizeBills = (data) => {
   if (!data) return [];
@@ -57,14 +54,22 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
         return res?.AllotmentDetails?.[0] || null;
       }
 
-      case "GC.ONE_TIME_FEE": {
-        const res = await Digit.GCService.search({ tenantId, filters });
-        return res?.GarbageConnection?.[0] || null;
-      }
-
+      case "GC.ONE_TIME_FEE":
       case "GC": {
-        const res = await Digit.GCService.search({ tenantId, filters });
-        return res?.GarbageConnection?.[0] || null;
+        let res = await Digit.GCService.search({ tenantId, filters });
+
+        let data = res?.GarbageConnection?.[0];
+
+        // fallback for connection number 
+        if (!data) {
+          res = await Digit.GCService.search({
+            tenantId,
+            filters: { connectionNumber: identifier },
+          });
+          data = res?.GarbageConnection?.[0];
+        }
+
+        return data || null;
       }
 
       default:
@@ -99,7 +104,13 @@ const transformBillsForPdf = (Bills, meta = {}) => {
           identifier,
 
           ...(searchData && {
-            [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
+            [businessService === "rl-services"
+              ? "rlSearchData"
+              : businessService === "GC.ONE_TIME_FEE"
+              ? "gcSearchData"
+              : businessService === "GC"
+              ? "gcSearchData"
+              : undefined]: searchData,
           }),
 
           ...commonMeta,
@@ -168,7 +179,13 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
             identifier,
 
             ...(searchData && {
-              [businessService === "rl-services" ? "rlSearchData" : businessService === "GC.ONE_TIME_FEE" ? "gcSearchData" : businessService === "GC" ? "gcSearchData" : undefined]: searchData,
+              [businessService === "rl-services"
+                ? "rlSearchData"
+                : businessService === "GC.ONE_TIME_FEE"
+                ? "gcSearchData"
+                : businessService === "GC"
+                ? "gcSearchData"
+                : undefined]: searchData,
             }),
 
             generatedAt,
@@ -212,7 +229,6 @@ const normalizePayments = (data) => {
 export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, t, pdfkey }) => {
   const printReceipt = useCallback(
     async ({ billOrPaymentResponse = null, businessService, receiptNumber = null, rootKey = "BILLS" }) => {
-
       try {
         setLoader?.(true);
 

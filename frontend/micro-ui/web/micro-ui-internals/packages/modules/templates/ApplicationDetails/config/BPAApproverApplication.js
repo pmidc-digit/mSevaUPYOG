@@ -72,13 +72,6 @@ export const configBPAApproverApplication = ({
               />
             ):null ,
           },
-          ...(isCondittionalComentsRequired ? [{
-            label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
-            type: "textarea",
-            populators: {
-              name: "conditionalComments",
-            },
-          }] : []),
           {
             label: t("WF_COMMON_COMMENTS"),
             type: "textarea",
@@ -87,6 +80,13 @@ export const configBPAApproverApplication = ({
               name: "comments",
             },
           },
+          ...(isCondittionalComentsRequired ? [{
+            label: t("WF_CONDITIONAL_COMMENTS_LABEL"),
+            type: "textarea",
+            populators: {
+              name: "conditionalComments",
+            },
+          }] : []),
           {
             label: `${t("WF_APPROVAL_UPLOAD_HEAD")}`,
             populators: (

@@ -122,6 +122,8 @@ const TopBar = ({
   const isLoggedIn = !!userDetails?.access_token;
   const userInfo = Digit.UserService.getUser()?.info;
   const isUserProfessional = window.location.href.includes("/citizen") && userInfo?.roles?.some(role => role?.code?.startsWith("BPA"))
+  const userName = userInfo?.name || userInfo?.userInfo?.name || "User";
+  const loggedin = userDetails?.access_token ? true : false
 
   if (CITIZEN) {
     return (
@@ -139,12 +141,17 @@ const TopBar = ({
             {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}>
               {/* <ChangeLanguage dropdown={true} /> */}
             </div>}
-            {isUserProfessional && (
+            {(isUserProfessional && loggedin) && (
               <div className="left">
                 {!window.location.href.includes("employee/user/login") &&
                   !window.location.href.includes("employee/user/language-selection") && (
                     <ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo}/>
                   )}
+              </div>
+            )}
+            {(!mobileView && loggedin && !isUserProfessional) && (
+              <div className="ulb-name" style={{paddingRight: "20px", textOverflow: "ellipsis", fontSize: "15px", whiteSpace: "nowrap"}}>
+                {`Hello, ${userName}`}
               </div>
             )}
             {!urlsToDisableNotificationIcon(pathname) && (
@@ -165,7 +172,7 @@ const TopBar = ({
       </div>
     )
   }
-  const loggedin = userDetails?.access_token ? true : false
+
   return (
     <div className="topbar" style={topbarStyle}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}

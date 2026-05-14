@@ -167,8 +167,11 @@ public class AmendmentService {
 			
 			AuditDetails auditDetails = util.getAuditDetail(requestInfo);
 			if (demands.size() > 1)
-				Collections.sort(demands, Comparator.comparing(Demand::getTaxPeriodFrom)
-						.thenComparing(Demand::getTaxPeriodTo).reversed());
+			/*	Collections.sort(demands, Comparator.comparing(Demand::getTaxPeriodFrom)
+						.thenComparing(Demand::getTaxPeriodTo).reversed());*/
+				
+				demands.sort(Comparator.comparing(Demand::getTaxPeriodFrom));
+
 			Demand demand = demands.get(0);
 			amendment.getDemandDetails().forEach(detail -> {
 			

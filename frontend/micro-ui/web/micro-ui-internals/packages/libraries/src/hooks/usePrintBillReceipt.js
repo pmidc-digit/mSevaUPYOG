@@ -50,7 +50,7 @@ const fetchServiceSearchData = async ({ serviceType, identifier, tenantId }) => 
   try {
     switch (serviceType) {
       case "rl-services": {
-        const res = await Digit.RentAndLeaseService.search({ tenantId, filters });
+        const res = await Digit.RentAndLeaseService.search({ tenantId, filters: { applicationNumbers: identifier } });
         return res?.AllotmentDetails?.[0] || null;
       }
 

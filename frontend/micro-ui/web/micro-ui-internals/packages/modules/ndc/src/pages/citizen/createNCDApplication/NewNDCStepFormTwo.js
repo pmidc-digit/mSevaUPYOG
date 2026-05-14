@@ -62,8 +62,9 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
-    console.log("final data===||||?", data);
-    console.log("checkFormData||?====", checkFormData);
+    // Pick the source of truth for the application
+    const baseApplication = checkFormData?.responseData?.[0] || {};
+
 
     // Build owners array
     const owners = [
@@ -77,17 +78,14 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       },
     ];
 
-    // Pick the source of truth for the application
-    const baseApplication = checkFormData?.responseData?.[0] || {};
 
     // Clone and modify workflow action
     const updatedApplication = {
       ...baseApplication,
       workflow: {
-        ...baseApplication?.workflow,
-        // action: actionStatus,
+        action: "DRAFT",
       },
-      owners: owners,
+      // owners: owners,
       NdcDetails: baseApplication?.NdcDetails,
       Documents: [], // We'll populate below
     };

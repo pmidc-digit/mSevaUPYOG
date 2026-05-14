@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar } from "@mseva/digit-ui-react-components";
+import { EmployeeData, downloadPdfFromURL, getNOCSanctionLetter , getNOCAcknowledgementData, amountToWords } from "../../../utils";
+import { Header, Loader, Card, CardSectionHeader, StatusTable, Row, SubmitBar, ActionBar,MultiLink } from "@mseva/digit-ui-react-components";
 
 const formatDate = (epoch) => {
   if (!epoch) return "-";
@@ -41,7 +42,10 @@ const FireNOCApplicationOverview = () => {
   const location = useLocation();
   const history = useHistory();
   const { t } = useTranslation();
-
+  const [loading, setLoading] = useState(false);
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
+  const [showOptions, setShowOptions] = useState(false);
   const queryParams = new URLSearchParams(location.search);
   const tenantId = queryParams.get("tenantId") || Digit.ULBService.getStateId();
 
@@ -52,6 +56,7 @@ const FireNOCApplicationOverview = () => {
 
   const [payment, setPayment] = useState(null);
   const [workflow, setWorkflow] = useState([]);
+  const [workflowObj, setWorkflowObj] = useState([]);
 
   useEffect(() => {
     if (!appNo || !tenantId) return;
@@ -95,8 +100,33 @@ const FireNOCApplicationOverview = () => {
     )
       .then((r) => r.json())
       .then((data) => setWorkflow([...(data?.ProcessInstances || [])].reverse()))
+      .then((data) => setWorkflowObj([...(data || [])]))
       .catch(() => {});
   }, [appNo, tenantId]);
+
+  const finalComment = useMemo(() => {
+    if (!workflowObj || workflowObj.length === 0) {
+      return "";
+    }
+
+    const commentsobj = workflowObj[0]?.data?.timeline
+      ?.filter((item) => item?.performedAction === "APPROVE")
+      ?.flatMap((item) => item?.wfComment || []);
+
+    const approvercomments = commentsobj?.[0];
+
+    let conditionText = "";
+    if (approvercomments?.includes("[#?..**]")) {
+      conditionText = approvercomments.split("[#?..**]")[1] || "";
+    }
+
+    return conditionText
+      ? {
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
+      : "";
+  }, [workflowObj]);
 
   if (isLoading) return <Loader />;
   if (!fireNOC)
@@ -107,6 +137,7 @@ const FireNOCApplicationOverview = () => {
     );
 
   const details = fireNOC.fireNOCDetails;
+  console.log('details', details)
   const owner = details?.applicantDetails?.owners?.[0];
   const building = details?.buildings?.[0];
   const address = details?.propertyDetails?.address;
@@ -118,11 +149,76 @@ const FireNOCApplicationOverview = () => {
 
   const paymentDetail = payment?.paymentDetails?.[0];
   const isPendingPayment = details?.status === "PENDINGPAYMENT";
+  
+  const dowloadOptions = [];
+  let EmpData = EmployeeData(tenantId, appNo);
+  const handleDownloadPdf = async () => {
+    try {
+      setLoading(true);
+      const Property = details;
+      const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+      const site = Property?.nocDetails?.additionalDetails?.siteDetails;
+      const ulbType = site?.ulbType;
+      const ulbName = site?.ulbName?.city?.name || site?.ulbName;
+
+      const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t);
+      setTimeout(() => {
+        Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
+      }, 0);
+    } catch (error) {
+      // console.error("Error generating acknowledgement:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, ...params }) {
+    try {
+      setLoading(true);
+      if (!details) {
+        throw new Error("fire Noc Application data is missing");
+      }
+      const nocSanctionData = await getNOCSanctionLetter(details, t, EmpData, finalComment);
+      const fee = payments?.totalAmountPaid;
+      const amountinwords = amountToWords(fee);
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] }, pdfkey);
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+      const receiptUrl = fileStore[response.filestoreIds[0]];
+      await downloadPdfFromURL(receiptUrl);
+    } catch (error) {
+      // console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+  dowloadOptions.push({
+    label: t("Application Form"),
+    onClick: handleDownloadPdf,
+  });
+  
+    if (paymentDetail && paymentDetail.length > 0) {
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: paymentDetail?.tenantId, payments: paymentDetail, pdfkey: "firenocreceipt", EmpData }),
+      });
+    }
+  
 
   return (
     <React.Fragment>
     <div className="cardHeaderWithOptions">
       <Header>{t("NOC_APPLICATION_DETAILS")}</Header>
+      {loading && <Loader />}
+              {dowloadOptions && dowloadOptions.length > 0 && (
+                <MultiLink
+                  className="multilinkWrapper"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                />
+              )}
     </div>
     <div style={{ padding: "24px" }}>
 

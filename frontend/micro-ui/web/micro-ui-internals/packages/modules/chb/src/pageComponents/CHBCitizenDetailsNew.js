@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar,Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
 import CitizenConsent from "../components/CitizenConsent";
@@ -19,6 +19,9 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const [getDisable, setDisable] = useState({ name: false, email: false, address: false });
   const [getShowOtp, setShowOtp] = useState(false);
   const { mobileNumber, emailId, name } = user?.info;
+    const [error, setError] = useState(null);
+
+  
   const {
     control,
     handleSubmit,
@@ -38,6 +41,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   });
 
   const onSubmit = async (data) => {
+    
     const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidCHB");
 
     if (currentStepData?.venueDetails?.[0]?.bookingNo) {
@@ -101,14 +105,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         setLoader(false);
         goNext(response?.hallsBookingApplication);
       } catch (error) {
+       
+        const errorMessage  = error?.response?.data?.Errors[0]?.message
+        setError(errorMessage)
+
         setLoader(false);
       }
     }
   };
   const slotsSearch = async (data) => {
-    console.log("check data", data);
-    // console.log("check currentStepData",currentStepData);
-    // return
     const verifyData = data?.hallsBookingApplication?.[0]?.bookingSlotDetails
 
     setLoader(true);
@@ -123,9 +128,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       isTimerRequired: true,
     };
 
-    console.log("payload", payload)
-    // return
-
     try {
       const response = await Digit.CHBServices.slot_search({ filters: payload });
 
@@ -134,7 +136,6 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       // setShowInfo(true);
       // return response;
     } catch (error) {
-      console.log("error", error);
       setLoader(false);
     }
   };
@@ -403,7 +404,8 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
           // bpaData={data?.applicationData} // Pass the complete BPA application data
           tenantId={tenantId} // Pass tenant ID for API calls
         />
-      )}
+      )}      
+        {error && <Toast isDleteBtn={true} label={error} onClose={() => setError(null)} error />}
       {loader && <Loader page={true} />}
     </React.Fragment>
   );

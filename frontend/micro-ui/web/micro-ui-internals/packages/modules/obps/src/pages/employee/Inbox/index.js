@@ -6,7 +6,7 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
-import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
+import { MSEVA_APP_LINK, OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
@@ -142,7 +142,7 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, refetch } = Digit.Hooks.obps.useBPAInbox({
-    tenantId: (isEmoployee && tenantId === "pb.punjab") ? formState?.selectedTenantId?.tenantId : tenantId,
+    tenantId: (isEmoployee && tenantId === "pb.punjab") ? (formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId) : tenantId,
     filters: { 
       ...formState,
       filterForm: {
@@ -150,6 +150,7 @@ const Inbox = ({ parentRoute }) => {
         businessService: formState?.filterForm?.businessService === "BPA" ? OBPS_BPA_NOR_BUSINESS_SERVICES : formState?.filterForm?.businessService || null,
       }
      },
+    config: { enabled: !!tenantId }
   });
 
 
@@ -187,7 +188,7 @@ const Inbox = ({ parentRoute }) => {
           localitiesForEmployeesCurrentTenant,
           loadingLocalitiesForEmployeesCurrentTenant,
           cities,
-          selectedTenantIdState: formState?.selectedTenantId,
+          selectedTenantIdState: formState?.selectedTenantId?.tenantId ? formState?.selectedTenantId : {tenantId: cities?.[0]?.code},
           setSelectedTenantIdValue,
           tenantId
         }}
@@ -243,9 +244,9 @@ const Inbox = ({ parentRoute }) => {
             {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
             {isEmoployee && <p className="inbox-name">{employeeName}</p>}
           </div>
-          <div>
+          <div style={{ display: "flex", flexDirection: "row", gap: "5px"}}>
             {isEmoployee && <SubmitBar label={t("User Manual")} onSubmit={() => window.open("https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FBPA%2FMarch%2F13%2F1773381614243uFJyzhFqyR.pdf")} />}
-            {/* {isEmoployee && <SubmitBar label={t("Download App")} onSubmit={() => {}} />} */}
+            {isEmoployee && <SubmitBar label={t("Android App")} onSubmit={() => window.open(MSEVA_APP_LINK)} />}
           </div>
         </div>
       </Header>

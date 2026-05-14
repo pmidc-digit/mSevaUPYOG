@@ -106,6 +106,7 @@ const ChallanApplicationDetails = () => {
       setLoader(false);
     }
   };
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "garbage-receipt"});
 
   useEffect(() => {
     if (id) {
@@ -119,7 +120,6 @@ const ChallanApplicationDetails = () => {
     setSelectedAction(null);
     setShowModal(false);
   };
-
   const closeToastOne = () => {
     setShowErrorToastt(null);
   };
@@ -165,6 +165,16 @@ const ChallanApplicationDetails = () => {
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const isCemp = user?.info?.roles.find((role) => role.code === "GC_CEMP")?.code;
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "GC.ONE_TIME_FEE",
+      consumerCodes: id,
+      isEmployee: false,
+    },
+    { enabled: id ? true : false }
+  );
+
   const getAcknowledgement = async () => {
       setLoader(true);
       try {
@@ -181,45 +191,22 @@ const ChallanApplicationDetails = () => {
       }
     };
 
-    const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "GC.ONE_TIME_FEE",
-      consumerCodes: id,
-      isEmployee: true,
-    },
-    { enabled: id ? true : false }
-  );
   const dowloadOptions = [];
 
   dowloadOptions.push({
     label: t("CHB_DOWNLOAD_ACK_FORM"),
     onClick: () => getAcknowledgement(),
   });
-  async function getRecieptSearch({ tenantId, payments, ...params }) {
-    setLoader(true);
-    try {
-      let response = null;
-      if (payments?.fileStoreId) {
-        response = { filestoreIds: [payments?.fileStoreId] };
-      }else {
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "garbage-receipt");
-      }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-        fileStoreIds: response.filestoreIds[0],
-      });
-      setLoader(false);
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    } catch (error) {
-      console.error(error);
-      setLoader(false);
-    }
-  }
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false) {
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+      onClick: () =>
+        printBillReceipt({
+          businessService: "GC.ONE_TIME_FEE",
+          receiptNumber: acknowledgementIds || id,
+          rootKey: "PAYMENTS",
+        }),
     });
   }
   let actions =
@@ -534,7 +521,7 @@ const ChallanApplicationDetails = () => {
 
       {showToast && <Toast isDleteBtn={true} error={error} label={getLable} onClose={closeToast} />}
 
-      {(loader || workflowDetails?.isLoading) && <Loader page={true} />}
+      {(loader || recieptDataLoading || workflowDetails?.isLoading) && <Loader page={true} />}
     </React.Fragment>
   );
 };

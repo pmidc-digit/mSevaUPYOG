@@ -97,10 +97,10 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 };
 
 const NOCEmployeeApplicationOverview = () => {
-  const { nocid } = useParams();
+  const { nocid, tenant } = useParams();
   const id = decodeURIComponentCustom(nocid);
   const { t } = useTranslation();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = window.localStorage.getItem("Employee.tenant-id") === "pb.punjab" ? tenant : window.localStorage.getItem("Employee.tenant-id");
   const history = useHistory();
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);

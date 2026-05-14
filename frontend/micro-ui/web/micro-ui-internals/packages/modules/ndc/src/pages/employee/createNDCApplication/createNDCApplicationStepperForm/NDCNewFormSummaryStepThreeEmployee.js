@@ -35,10 +35,10 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
-    console.log("checkFormData", formData);
-
+    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
+    
     // const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map(({ status, ...rest }) => rest);
-    const owners = (inputData?.apiData?.Applications?.[0]?.owners || [])?.map((item) => {
+    const owners = (inputData?.apiData?.Applications?.[0]?.owners || baseApplication?.owners)?.map((item) => {
       const obj = JSON.parse(JSON.stringify(item));
       delete obj.status;
       return obj;
@@ -53,8 +53,10 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     //   },
     // ];
 
+    // return
+    
+
     // Pick the source of truth for the application
-    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
     // Clone and modify workflow action
     // Clone and modify workflow action

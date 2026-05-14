@@ -9,7 +9,7 @@ const cleanBillAccountDetails = (billAccountDetails = []) => {
 
   return billAccountDetails?.filter((item) => {
     // remove roundoff always
-    if (item?.taxHeadCode === "RL_FEE_ROUND_OFF" || item?.taxHeadCode === "GC_FEE_ROUND_OFF") return false;
+    if (item?.taxHeadCode === "RL_FEE_ROUND_OFF" || item?.taxHeadCode === "GC_FEE_ROUND_OFF" || item?.taxHeadCode === "RL_ROUND_OFF" || item?.taxHeadCode === "GC_ROUND_OFF") return false;
 
     // remove security deposit ONLY if arrears exist
     if (hasArrears && item?.taxHeadCode === "RL_SECURITY_DEPOSIT_FEE") {

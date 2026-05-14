@@ -20,7 +20,7 @@ const useGCInbox = ({ tenantId, filters, config = {} }) => {
     processSearchCriteria: {
       assignee: "",
       moduleName: "gc-services",
-      businessService: ["NewGC", "ModifyGCConnection", "DisconnectGCConnection"],
+      businessService: ["NewGC", "DisconnectGCConnection"],
       ...(status && status.length > 0 ? { status: status } : {}),
       // ...(status?.length > 0 ? { status: status } : {}),
     },

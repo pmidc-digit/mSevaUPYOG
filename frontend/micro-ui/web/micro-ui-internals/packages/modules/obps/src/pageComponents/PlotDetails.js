@@ -98,6 +98,7 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   ]
   const { data: buildingHeightData, isLoading: isBuildingHeightLoading} =  Digit.Hooks.useCustomMDMS(tenantId, "BPA", [{ name: "BuildingHeight" }]);
   const inProgressEDCR = React.useRef(new Set());
+  const buildingPermitData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")) || {}
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
@@ -755,6 +756,19 @@ useEffect(() => {
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
+          console.log("UpdateAPIFlow result", result);
+          const newPayload = {
+            ...buildingPermitData,
+            value: {
+              ...buildingPermitData?.value,
+              ...result?.BPA?.[0],
+              data: {
+                ...buildingPermitData?.value?.data,                
+                applicationNo: result?.BPA?.[0]?.applicationNo || formData?.data?.applicationNo
+              }
+            }
+          }
+          sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(newPayload));
           onSelect("LicenseData",{...approvedLicense, landInfo});
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));

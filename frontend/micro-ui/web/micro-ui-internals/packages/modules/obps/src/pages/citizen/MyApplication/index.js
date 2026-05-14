@@ -87,7 +87,6 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
 // useLayoutCitizenSearchApplication removed from this page; layout data won't be fetched here
 
   const getBPAREGFormData = (data) => {
-    console.log("data in getBPAREGFormData", data);
     let license = data;
     const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
     const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
@@ -162,7 +161,7 @@ const userInfoforLayout = Digit.UserService.getUser()?.info || {};
       initiationFlow: true,
       editableFields: {
         "provide-license-type": true,
-        "licensee-details": true,
+        "licensee-details": false,
         "Permanent-address": true,
         "professional-document-details": true,
         isCreate: false,

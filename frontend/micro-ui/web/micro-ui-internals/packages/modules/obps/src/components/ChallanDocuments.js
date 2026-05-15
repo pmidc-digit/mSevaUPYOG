@@ -419,6 +419,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
                 // <div style={!mobile ? { margin: "0px", display: "flex", justifyContent: "center", padding: "0px", width: "46%" } : { width: "80%", display: "flex", marginBottom: "10px", justifyContent: "center" }}>
                 <div className={!mobile ? "center-flex-desktop" : "center-flex-mobile"}>
                   <SubmitBar
+                    className="view-button"
                     onSubmit={() => {
                       routeTo(uploadedFile);
                     }}

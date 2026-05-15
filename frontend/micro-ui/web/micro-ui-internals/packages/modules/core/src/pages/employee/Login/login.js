@@ -287,8 +287,8 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </svg>
           <span>UPYOG ENTERPRISE</span>
         </div>
-        <h1>Elevating Municipal Excellence</h1>
-        <p>Welcome back to the unified platform for municipal operations and citizen management.</p>
+        
+        <h1>Welcome back to the unified platform for municipal operations and citizen management.</h1>
         <div style={{ flexGrow: 1 }}></div>
         <div className="employee-login-left-footer">
           Driving digital transformation for urban governance across India.

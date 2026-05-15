@@ -133,11 +133,11 @@ const PropertyAddressDetails = ({ goNext }) => {
           {errors.surveyId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.surveyId?.message}</p>}
         </div>
       </LabelFieldPair>
-      <div style={colItem}>
+      <div style={colItem} style={{"display" : "flex", "justifyContent" : "center","alignItems" : "center", "width": "50%"}}>
           <button
             className="submit-bar"
             type="button"
-            style={{ color: "white", width: "100%", maxWidth: "100px" }}
+            style={{ color: "white", width: "100%", maxWidth: "300px" }}
             onClick={onGISMapClickScenarioTwo}
           >
             {`${t("Survey ID Map")}`}

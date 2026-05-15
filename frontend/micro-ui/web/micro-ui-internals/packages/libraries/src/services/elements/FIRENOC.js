@@ -20,7 +20,9 @@ export const FIRENOCService = {
         },
       }),
     });
-    const data = await resp.json();
+    const text = await resp.text();
+    if (!text) throw new Error(`Empty response from FIRENOC search (HTTP ${resp.status})`);
+    const data = JSON.parse(text);
     if (!resp.ok) throw data;
     return data;
   },
@@ -43,7 +45,9 @@ export const FIRENOCService = {
       headers: { "Content-Type": "application/json;charset=UTF-8" },
       body: JSON.stringify(body),
     });
-    const data = await resp.json();
+    const text = await resp.text();
+    if (!text) throw new Error(`Empty response from FIRENOC create (HTTP ${resp.status})`);
+    const data = JSON.parse(text);
     if (!resp.ok) throw data;
     return data;
   },
@@ -66,7 +70,9 @@ export const FIRENOCService = {
       headers: { "Content-Type": "application/json;charset=UTF-8" },
       body: JSON.stringify(body),
     });
-    const data = await resp.json();
+    const text = await resp.text();
+    if (!text) throw new Error(`Empty response from FIRENOC update (HTTP ${resp.status})`);
+    const data = JSON.parse(text);
     if (!resp.ok) throw data;
     return data;
   },

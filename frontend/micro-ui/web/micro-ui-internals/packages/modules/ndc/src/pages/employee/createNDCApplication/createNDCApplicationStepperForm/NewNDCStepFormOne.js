@@ -45,7 +45,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
-    const owners = (data?.cpt?.details?.owners || [])?.map((owner) => {
+    const owners = (data?.cpt?.details?.owners || []).map((owner) => {
       const newOwner = JSON.parse(JSON.stringify(owner));
 
       delete newOwner.status;

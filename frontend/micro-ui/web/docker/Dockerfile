@@ -28,7 +28,7 @@ RUN yarn add @mseva/upyog-ui-module-pgrai@1.1.33-UAT.7
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.33
 RUN yarn add @mseva/digit-ui-module-garbagecollection@1.0.34
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.54
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.76
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.77
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

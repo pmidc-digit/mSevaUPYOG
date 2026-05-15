@@ -5,6 +5,33 @@ import { useTranslation } from "react-i18next";
 
 const PTSearchFields = {
   searchId: {
+    ulb: {
+      type: "ulb",
+      label: "PT_SEARCH_ULB",
+      placeHolder: "PT_SEARCH_ULB_PLACEHOLDER",
+      validation: {
+        required: "PTULBMANDATORY",
+      },
+    },
+     mobileNumber: {
+      type: "number",
+      label: "PT_HOME_SEARCH_RESULTS_OWN_MOB_LABEL",
+      placeHolder: "PT_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER",
+      validation: {
+        minLength: {
+          value: 10,
+          message: "CORE_COMMON_MOBILE_ERROR",
+        },
+        maxLength: {
+          value: 10,
+          message: "CORE_COMMON_MOBILE_ERROR",
+        },
+        pattern: {
+          value: /[6789][0-9]{9}/,
+          message: "CORE_COMMON_MOBILE_ERROR",
+        },
+      },
+    },
     propertyIds: {
       type: "text",
       label: "PT_PROPERTY_UNIQUE_ID",
@@ -27,25 +54,52 @@ const PTSearchFields = {
         },
       },
     },
-    mobileNumber: {
-      type: "number",
-      label: "PT_HOME_SEARCH_RESULTS_OWN_MOB_LABEL",
-      placeHolder: "PT_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER",
+     locality: {
+      type: "custom",
+      label: "PT_SEARCH_LOCALITY",
+      placeHolder: "PT_SEARCH_LOCALITY_PLACEHOLDER",
+      validation: {
+        required: "PTLOCALITYMANDATORY",
+      },
+      customComponent: Localities,
+      customCompProps: {
+        boundaryType: "revenue",
+        keepNull: false,
+        optionCardStyles: { height: "600px", overflow: "auto", zIndex: "10" },
+        disableLoader: true,
+      },
+    },
+    name: {
+      type: "text",
+      label: "PT_SEARCHPROPERTY_TABEL_OWNERNAME",
+      placeHolder: "PT_SEARCH_OWNER_NAME_PLACEHOLDER",
       validation: {
         minLength: {
-          value: 10,
-          message: "CORE_COMMON_MOBILE_ERROR",
-        },
-        maxLength: {
-          value: 10,
-          message: "CORE_COMMON_MOBILE_ERROR",
+          value: 3,
+          message: "PT_MIN_3CHAR",
         },
         pattern: {
-          value: /[6789][0-9]{9}/,
-          message: "CORE_COMMON_MOBILE_ERROR",
+          value:  "^[a-zA-Z ]+$",
+          message: "PAYMENT_INVALID_NAME",
         },
       },
     },
+    surveyId: {
+      type: "text",
+      label: "PT_SEARCH_SURVEYID",
+      placeHolder: "PT_SEARCH_SURVEY_ID_PLACEHOLDER",
+      validation: {
+        minLength: {
+          value: 3,
+          message: "PT_MIN_3CHAR",
+        },
+        pattern: {
+          value:  "^[a-zA-Z ]+$",
+          message: "PAYMENT_INVALID_NAME",
+        },
+      },
+    },
+
     // acknowledgementIds: {
     //   type: "text",
     //   label: "PT_PROPERTY_APPLICATION_NO",
@@ -85,38 +139,10 @@ const PTSearchFields = {
         },
       },
     },
-    name: {
-      type: "text",
-      label: "PT_SEARCHPROPERTY_TABEL_OWNERNAME",
-      placeHolder: "PT_SEARCH_OWNER_NAME_PLACEHOLDER",
-      validation: {
-        minLength: {
-          value: 3,
-          message: "PT_MIN_3CHAR",
-        },
-        pattern: {
-          value:  "^[a-zA-Z ]+$",
-          message: "PAYMENT_INVALID_NAME",
-        },
-      },
-    },
+
   },
   defaulterNotice:{
-    locality: {
-      type: "custom",
-      label: "PT_SEARCH_LOCALITY",
-      placeHolder: "PT_SEARCH_LOCALITY_PLACEHOLDER",
-      validation: {
-        required: "PTLOCALITYMANDATORY",
-      },
-      customComponent: Localities,
-      customCompProps: {
-        boundaryType: "revenue",
-        keepNull: false,
-        optionCardStyles: { height: "600px", overflow: "auto", zIndex: "10" },
-        disableLoader: true,
-      },
-    },
+
     propertyType: {
       type: "custom",
       label: "PT_SEARCH_PROPERTY_TYPE",
@@ -141,6 +167,7 @@ const PTSearchFields = {
 };
 
 const defaultValues = {
+  ulb: null,
   propertyIds: "",
   mobileNumber: "",
   oldPropertyId: "",
@@ -154,6 +181,7 @@ const Search = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [payload, setPayload] = useState({});
+  const [searchTenantId, setSearchTenantId] = useState(tenantId);
   const [formData, setFormData] = useState(defaultValues);
   const [searchBy, setSearchBy] = useState("searchId");
   const [showToast, setShowToast] = useState(null);
@@ -167,7 +195,8 @@ const Search = () => {
   });
   const onReset = useCallback(() => {
     setFormData(defaultValues);
-     setPayload({});
+    setPayload({});
+    setSearchTenantId(tenantId);
     setShowToast(null);
   });
 
@@ -178,11 +207,14 @@ const Search = () => {
   },[searchBy])
   const onSubmit = useCallback((_data) => {
     console.log("_data",_data)
+    const selectedTenantId = _data?.ulb?.code || tenantId;
+
     if(Object.keys(_data).includes("propertyType"))
     {
       setFormData(_data);
       console.log("_data2",payload)
       setPayload({locality:_data.locality.code, propertyType:_data.propertyType.code})
+      setSearchTenantId(selectedTenantId);
       console.log("_data3",payload)
     }
     else {
@@ -191,9 +223,10 @@ const Search = () => {
       if (Object.keys(_data).filter((k) => _data[k] && typeof _data[k] !== "object")) {
         setPayload(
           Object.keys(_data)
-            .filter((k) => _data[k])
+            .filter((k) => _data[k] && k !== "ulb")
             .reduce((acc, key) => ({ ...acc, [key]: typeof _data[key] === "object" ? _data[key].code : _data[key] }), {})
         );
+        setSearchTenantId(selectedTenantId);
         console.log("_data4",payload)
         setShowToast(null);
       } else {
@@ -217,9 +250,9 @@ const Search = () => {
       />
       
       {Object.keys(payload).includes("propertyType") ?
-      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={tenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
+      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
       : Object.keys(payload).length > 0 ? (
-        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={tenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
+        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
       ):""}
       {showToast && (
         <Toast

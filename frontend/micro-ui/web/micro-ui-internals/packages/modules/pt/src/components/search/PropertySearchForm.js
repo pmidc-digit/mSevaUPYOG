@@ -81,6 +81,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
   const [usageType, setUsageType] = useState();
   let formValue = watch();
   const fields = PTSearchFields?.[searchBy] || {};
+  const allCities = Digit.Hooks.pt.useTenants()?.sort((a, b) => a?.i18nKey?.localeCompare?.(b?.i18nKey));
   sessionStorage.removeItem("revalidateddone");
   console.log("payload",payload,formValue)
  const setProptype =(e)=>{
@@ -91,7 +92,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
   return (
     <div className="PropertySearchForm">
       <SearchForm onSubmit={onSubmit} className={"pt-property-search"} handleSubmit={handleSubmit}>
-        <SwitchComponent keys={Object.keys(PTSearchFields || {})} searchBy={searchBy} onReset={onReset} t={t} onSwitch={setSearchBy} />
+        {/* <SwitchComponent keys={Object.keys(PTSearchFields || {})} searchBy={searchBy} onReset={onReset} t={t} onSwitch={setSearchBy} /> */}
         {fields &&
           Object.keys(fields).map((key) => {
             let field = fields[key];
@@ -99,7 +100,31 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
             return (
               <SearchField key={key} className={"pt-form-field"}>
                 <label>{t(field?.label)}{`${field?.validation?.required?"*":""}`}</label>
-                {field?.type==="custom"? 
+                {field?.type === "ulb" ?
+                <Controller
+                  name={key}
+                  defaultValue={formValue?.[key]}
+                  rules={field.validation}
+                  control={control}
+                  render={(props) => (
+                    <Dropdown
+                      option={allCities}
+                      optionKey="i18nKey"
+                      selected={formValue?.[key]}
+                      select={(d) => {
+                        Digit.LocalizationService.getLocale({
+                          modules: [`rainmaker-${d?.code}`],
+                          locale: Digit.StoreData.getCurrentLanguage(),
+                          tenantId: d?.code,
+                        });
+                        setValue("locality", null);
+                        props.onChange(d);
+                      }}
+                      t={t}
+                    />
+                  )}
+                />
+                : field?.type==="custom"?
                 <Controller
                  name= {key}
                 defaultValue={formValue?.[key]}
@@ -110,7 +135,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
                     selectLocality={(d) => {
                       props.onChange(d);
                     }}
-                    tenantId={tenantId}
+                    tenantId={formValue?.ulb?.code || tenantId}
                     selected={formValue?.[key]}
                     {...field.customCompProps}
                   />

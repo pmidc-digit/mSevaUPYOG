@@ -165,7 +165,7 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
                 />
                  <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
                 </SearchField>
-                <SearchField>
+                {/* <SearchField>
                     <label>{t("PT_SEARCHPROPERTY_TABEL_APPLICATIONTYPE")}</label>
                     <Controller
                             control={control}
@@ -216,7 +216,7 @@ const PTSearchApplication = ({tenantId, isLoading, t, onSubmit, data, count, set
                         name="toDate"
                         control={control}
                         />
-                </SearchField>
+                </SearchField> */}
                 <SearchField className="submit">
                     <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
                     <p style={{marginTop:"10px"}}

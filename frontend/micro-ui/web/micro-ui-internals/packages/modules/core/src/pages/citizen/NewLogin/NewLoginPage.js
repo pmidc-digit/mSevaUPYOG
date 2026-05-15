@@ -241,7 +241,7 @@ const NewLogin = ({ stateCode }) => {
             <div className="hero-icon-circle">
               <LoginIcon />
             </div>
-            <h1 className="hero-title">Welcome to UPYOG</h1>
+            <h1 className="hero-title">Welcome to mSeva</h1>
             <p className="hero-description">Your digital gateway to urban governance services. Access all municipal services in one place.</p>
             <div className="hero-features">
               <div className="feature-item">

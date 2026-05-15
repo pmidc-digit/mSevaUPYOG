@@ -886,6 +886,7 @@ export const SuccessfulPayment = (props) => {
             {businessService !== "chb-services" &&
               businessService !== "adv-services" &&
               businessService !== "GC.ONE_TIME_FEE" &&
+              businessService !== "rl-services" &&
               businessService !== "GC" &&
               businessService !== "pet-services" &&
               businessService !== "NDC" &&
